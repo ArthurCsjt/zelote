@@ -2,6 +2,19 @@
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import { format } from "date-fns";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "./ui/dialog";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
+import { useState } from "react";
+import { toast } from "./ui/use-toast";
+
+export interface ReturnRecord {
+  returnedBy: {
+    name: string;
+    ra: string;
+  };
+  returnTime: Date;
+}
 
 export interface Loan {
   id: string;
@@ -10,14 +23,42 @@ export interface Loan {
   chromebookId: string;
   purpose: string;
   timestamp: Date;
+  returnRecord?: ReturnRecord;
 }
 
 interface ActiveLoansProps {
   loans: Loan[];
-  onReturn: (loanId: string) => void;
+  onReturn: (loanId: string, returnData: { name: string; ra: string }) => void;
 }
 
 export function ActiveLoans({ loans, onReturn }: ActiveLoansProps) {
+  const [openReturnDialog, setOpenReturnDialog] = useState(false);
+  const [selectedLoanId, setSelectedLoanId] = useState<string | null>(null);
+  const [returnData, setReturnData] = useState({ name: "", ra: "" });
+
+  const handleReturnClick = (loanId: string) => {
+    setSelectedLoanId(loanId);
+    setOpenReturnDialog(true);
+  };
+
+  const handleReturn = () => {
+    if (!returnData.name || !returnData.ra) {
+      toast({
+        title: "Erro",
+        description: "Por favor, preencha todos os campos",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (selectedLoanId) {
+      onReturn(selectedLoanId, returnData);
+      setOpenReturnDialog(false);
+      setReturnData({ name: "", ra: "" });
+      setSelectedLoanId(null);
+    }
+  };
+
   return (
     <div>
       <h2 className="text-xl font-semibold text-gray-800 mb-4">
@@ -57,7 +98,7 @@ export function ActiveLoans({ loans, onReturn }: ActiveLoansProps) {
                 </div>
                 <Button
                   variant="outline"
-                  onClick={() => onReturn(loan.id)}
+                  onClick={() => handleReturnClick(loan.id)}
                   className="ml-4 border-gray-200 hover:bg-gray-100"
                 >
                   Devolver
@@ -67,6 +108,42 @@ export function ActiveLoans({ loans, onReturn }: ActiveLoansProps) {
           ))
         )}
       </div>
+
+      <Dialog open={openReturnDialog} onOpenChange={setOpenReturnDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Devolução de Chromebook</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="returnerName">Nome do Aluno que está devolvendo</Label>
+              <Input
+                id="returnerName"
+                value={returnData.name}
+                onChange={(e) => setReturnData({ ...returnData, name: e.target.value })}
+                placeholder="Digite o nome do aluno"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="returnerRA">RA do Aluno que está devolvendo</Label>
+              <Input
+                id="returnerRA"
+                value={returnData.ra}
+                onChange={(e) => setReturnData({ ...returnData, ra: e.target.value })}
+                placeholder="Digite o RA"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setOpenReturnDialog(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={handleReturn}>
+              Confirmar Devolução
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

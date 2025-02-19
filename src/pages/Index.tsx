@@ -2,9 +2,11 @@
 import { useState } from "react";
 import { LoanForm } from "@/components/LoanForm";
 import { ActiveLoans, Loan } from "@/components/ActiveLoans";
+import { toast } from "./ui/use-toast";
 
 const Index = () => {
   const [loans, setLoans] = useState<Loan[]>([]);
+  const [history, setHistory] = useState<Loan[]>([]);
 
   const handleNewLoan = (formData: {
     studentName: string;
@@ -20,8 +22,39 @@ const Index = () => {
     setLoans([...loans, newLoan]);
   };
 
-  const handleReturn = (loanId: string) => {
+  const handleReturn = (loanId: string, returnData: { name: string; ra: string }) => {
+    const loanToReturn = loans.find((loan) => loan.id === loanId);
+    if (!loanToReturn) return;
+
+    // Create return record
+    const returnedLoan: Loan = {
+      ...loanToReturn,
+      returnRecord: {
+        returnedBy: {
+          name: returnData.name,
+          ra: returnData.ra,
+        },
+        returnTime: new Date(),
+      },
+    };
+
+    // Add to history
+    setHistory([returnedLoan, ...history]);
+
+    // Remove from active loans
     setLoans(loans.filter((loan) => loan.id !== loanId));
+
+    // Show success message with details
+    const returnedByDifferentStudent = 
+      returnData.ra !== loanToReturn.ra || 
+      returnData.name !== loanToReturn.studentName;
+
+    toast({
+      title: "Chromebook Devolvido",
+      description: returnedByDifferentStudent
+        ? `Devolvido por ${returnData.name} (RA: ${returnData.ra})`
+        : "Devolvido pelo próprio aluno",
+    });
   };
 
   return (
