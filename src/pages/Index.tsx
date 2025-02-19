@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { LoanForm } from "@/components/LoanForm";
 import { ActiveLoans, Loan } from "@/components/ActiveLoans";
-import { toast } from "./ui/use-toast";
+import { toast } from "@/components/ui/use-toast";
 
 const Index = () => {
   const [loans, setLoans] = useState<Loan[]>([]);
