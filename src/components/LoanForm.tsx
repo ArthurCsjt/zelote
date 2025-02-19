@@ -9,6 +9,7 @@ interface LoanFormData {
   studentName: string;
   ra: string;
   chromebookId: string;
+  purpose: string;
 }
 
 interface LoanFormProps {
@@ -20,11 +21,12 @@ export function LoanForm({ onSubmit }: LoanFormProps) {
     studentName: "",
     ra: "",
     chromebookId: "",
+    purpose: "",
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.studentName || !formData.ra || !formData.chromebookId) {
+    if (!formData.studentName || !formData.ra || !formData.chromebookId || !formData.purpose) {
       toast({
         title: "Erro",
         description: "Por favor, preencha todos os campos",
@@ -33,7 +35,7 @@ export function LoanForm({ onSubmit }: LoanFormProps) {
       return;
     }
     onSubmit(formData);
-    setFormData({ studentName: "", ra: "", chromebookId: "" });
+    setFormData({ studentName: "", ra: "", chromebookId: "", purpose: "" });
     toast({
       title: "Sucesso",
       description: "Chromebook emprestado com sucesso",
@@ -82,6 +84,20 @@ export function LoanForm({ onSubmit }: LoanFormProps) {
             value={formData.chromebookId}
             onChange={(e) =>
               setFormData({ ...formData, chromebookId: e.target.value })
+            }
+            className="border-gray-200"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="purpose" className="text-gray-700">
+            Finalidade
+          </Label>
+          <Input
+            id="purpose"
+            placeholder="Ex: Aula de Matemática"
+            value={formData.purpose}
+            onChange={(e) =>
+              setFormData({ ...formData, purpose: e.target.value })
             }
             className="border-gray-200"
           />

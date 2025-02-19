@@ -10,6 +10,7 @@ const Index = () => {
     studentName: string;
     ra: string;
     chromebookId: string;
+    purpose: string;
   }) => {
     const newLoan: Loan = {
       id: Math.random().toString(36).substring(7),

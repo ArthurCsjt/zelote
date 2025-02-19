@@ -1,12 +1,14 @@
 
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
+import { format } from "date-fns";
 
 export interface Loan {
   id: string;
   studentName: string;
   ra: string;
   chromebookId: string;
+  purpose: string;
   timestamp: Date;
 }
 
@@ -44,6 +46,13 @@ export function ActiveLoans({ loans, onReturn }: ActiveLoansProps) {
                     <Badge variant="secondary" className="bg-blue-50 text-blue-700 border-blue-100">
                       Chromebook: {loan.chromebookId}
                     </Badge>
+                  </div>
+                  <div className="flex gap-2 flex-wrap mt-2 text-sm text-gray-600">
+                    <span>Finalidade: {loan.purpose}</span>
+                    <span>•</span>
+                    <span>
+                      Retirada: {format(loan.timestamp, "dd/MM/yyyy 'às' HH:mm")}
+                    </span>
                   </div>
                 </div>
                 <Button
