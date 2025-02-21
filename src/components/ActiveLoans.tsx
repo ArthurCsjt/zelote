@@ -7,6 +7,7 @@ import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { useState } from "react";
 import { toast } from "./ui/use-toast";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 
 export interface ReturnRecord {
   returnedBy: {
@@ -33,13 +34,25 @@ export interface Loan {
 
 interface ActiveLoansProps {
   loans: Loan[];
-  onReturn: (loanId: string, returnData: { name: string; ra: string }) => void;
+  onReturn: (loanId: string, returnData: { 
+    name: string; 
+    ra?: string; 
+    email: string;
+    type: 'individual' | 'lote';
+    userType: 'aluno' | 'professor' | 'funcionario';
+  }) => void;
 }
 
 export function ActiveLoans({ loans, onReturn }: ActiveLoansProps) {
   const [openReturnDialog, setOpenReturnDialog] = useState(false);
   const [selectedLoanId, setSelectedLoanId] = useState<string | null>(null);
-  const [returnData, setReturnData] = useState({ name: "", ra: "" });
+  const [returnData, setReturnData] = useState({ 
+    name: "", 
+    ra: "", 
+    email: "",
+    type: 'individual' as const,
+    userType: 'aluno' as const
+  });
 
   const handleReturnClick = (loanId: string) => {
     setSelectedLoanId(loanId);
@@ -47,10 +60,10 @@ export function ActiveLoans({ loans, onReturn }: ActiveLoansProps) {
   };
 
   const handleReturn = () => {
-    if (!returnData.name || !returnData.ra) {
+    if (!returnData.name || !returnData.email) {
       toast({
         title: "Erro",
-        description: "Por favor, preencha todos os campos",
+        description: "Por favor, preencha os campos obrigatórios",
         variant: "destructive",
       });
       return;
@@ -59,7 +72,13 @@ export function ActiveLoans({ loans, onReturn }: ActiveLoansProps) {
     if (selectedLoanId) {
       onReturn(selectedLoanId, returnData);
       setOpenReturnDialog(false);
-      setReturnData({ name: "", ra: "" });
+      setReturnData({ 
+        name: "", 
+        ra: "", 
+        email: "",
+        type: 'individual',
+        userType: 'aluno'
+      });
       setSelectedLoanId(null);
     }
   };
@@ -86,9 +105,11 @@ export function ActiveLoans({ loans, onReturn }: ActiveLoansProps) {
                     {loan.studentName}
                   </h3>
                   <div className="flex gap-2 flex-wrap">
-                    <Badge variant="outline" className="bg-white">
-                      RA: {loan.ra}
-                    </Badge>
+                    {loan.ra && (
+                      <Badge variant="outline" className="bg-white">
+                        RA: {loan.ra}
+                      </Badge>
+                    )}
                     <Badge variant="secondary" className="bg-blue-50 text-blue-700 border-blue-100">
                       Chromebook: {loan.chromebookId}
                     </Badge>
@@ -121,21 +142,73 @@ export function ActiveLoans({ loans, onReturn }: ActiveLoansProps) {
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="returnerName">Nome do Aluno que está devolvendo</Label>
+              <Label htmlFor="returnType">Tipo de Devolução</Label>
+              <Select
+                value={returnData.type}
+                onValueChange={(value: 'individual' | 'lote') =>
+                  setReturnData({ ...returnData, type: value })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o tipo de devolução" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="individual">Individual</SelectItem>
+                  <SelectItem value="lote">Em Lote</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="userType">Tipo de Solicitante</Label>
+              <Select
+                value={returnData.userType}
+                onValueChange={(value: 'aluno' | 'professor' | 'funcionario') =>
+                  setReturnData({ ...returnData, userType: value })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o tipo de solicitante" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="aluno">Aluno</SelectItem>
+                  <SelectItem value="professor">Professor</SelectItem>
+                  <SelectItem value="funcionario">Funcionário</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="returnerName">Nome do Solicitante</Label>
               <Input
                 id="returnerName"
                 value={returnData.name}
                 onChange={(e) => setReturnData({ ...returnData, name: e.target.value })}
-                placeholder="Digite o nome do aluno"
+                placeholder="Digite o nome do solicitante"
               />
             </div>
+
+            {returnData.userType === 'aluno' && (
+              <div className="space-y-2">
+                <Label htmlFor="returnerRA">RA do Aluno (opcional)</Label>
+                <Input
+                  id="returnerRA"
+                  value={returnData.ra}
+                  onChange={(e) => setReturnData({ ...returnData, ra: e.target.value })}
+                  placeholder="Digite o RA"
+                />
+              </div>
+            )}
+
             <div className="space-y-2">
-              <Label htmlFor="returnerRA">RA do Aluno que está devolvendo</Label>
+              <Label htmlFor="returnerEmail">Email</Label>
               <Input
-                id="returnerRA"
-                value={returnData.ra}
-                onChange={(e) => setReturnData({ ...returnData, ra: e.target.value })}
-                placeholder="Digite o RA"
+                id="returnerEmail"
+                type="email"
+                value={returnData.email}
+                onChange={(e) => setReturnData({ ...returnData, email: e.target.value })}
+                placeholder="Digite o email"
+                required
               />
             </div>
           </div>
