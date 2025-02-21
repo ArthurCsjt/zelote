@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { LoanForm } from "@/components/LoanForm";
 import { ActiveLoans, Loan } from "@/components/ActiveLoans";
@@ -14,6 +13,7 @@ const Index = () => {
   const [openReturnDialog, setOpenReturnDialog] = useState(false);
   const [chromebookId, setChromebookId] = useState("");
   const [returnData, setReturnData] = useState({ name: "", ra: "" });
+  const [showLoanForm, setShowLoanForm] = useState(false);
 
   const handleNewLoan = (formData: {
     studentName: string;
@@ -59,7 +59,6 @@ const Index = () => {
     const loanToReturn = loans.find((loan) => loan.id === loanId);
     if (!loanToReturn) return;
 
-    // Create return record
     const returnedLoan: Loan = {
       ...loanToReturn,
       returnRecord: {
@@ -71,13 +70,9 @@ const Index = () => {
       },
     };
 
-    // Add to history
     setHistory([returnedLoan, ...history]);
-
-    // Remove from active loans
     setLoans(loans.filter((loan) => loan.id !== loanId));
 
-    // Show success message with details
     const returnedByDifferentStudent = 
       returnData.ra !== loanToReturn.ra || 
       returnData.name !== loanToReturn.studentName;
@@ -100,22 +95,56 @@ const Index = () => {
           <p className="text-blue-600">
             Escola - Sistema de Empréstimo
           </p>
-          <Button 
-            onClick={() => setOpenReturnDialog(true)}
-            className="mt-4 bg-green-600 hover:bg-green-700"
-          >
-            Devolver Chromebook
-          </Button>
         </header>
 
-        <div className="grid gap-6 md:grid-cols-2">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4">
-            <LoanForm onSubmit={handleNewLoan} />
-          </div>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4">
-            <ActiveLoans loans={loans} onReturn={handleReturn} />
-          </div>
+        <div className="grid grid-cols-2 gap-6 max-w-3xl mx-auto mb-8">
+          <Button
+            variant="outline"
+            className="h-32 text-lg font-medium bg-white hover:bg-blue-50 border-2 border-blue-200"
+            onClick={() => toast({ title: "Cadastro", description: "Funcionalidade em desenvolvimento" })}
+          >
+            Cadastro
+          </Button>
+          <Button
+            variant="outline"
+            className="h-32 text-lg font-medium bg-white hover:bg-blue-50 border-2 border-blue-200"
+            onClick={() => toast({ title: "Dashboard", description: "Funcionalidade em desenvolvimento" })}
+          >
+            Dashboard
+          </Button>
+          <Button
+            variant="outline"
+            className="h-32 text-lg font-medium bg-white hover:bg-blue-50 border-2 border-blue-200"
+            onClick={() => setShowLoanForm(true)}
+          >
+            Retirada
+          </Button>
+          <Button
+            variant="outline"
+            className="h-32 text-lg font-medium bg-white hover:bg-blue-50 border-2 border-blue-200"
+            onClick={() => setOpenReturnDialog(true)}
+          >
+            Devolução
+          </Button>
         </div>
+
+        {showLoanForm && (
+          <div className="grid gap-6 md:grid-cols-2">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4">
+              <LoanForm onSubmit={handleNewLoan} />
+              <Button 
+                variant="outline" 
+                className="mt-4 w-full"
+                onClick={() => setShowLoanForm(false)}
+              >
+                Voltar ao Menu
+              </Button>
+            </div>
+            <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4">
+              <ActiveLoans loans={loans} onReturn={handleReturn} />
+            </div>
+          </div>
+        )}
 
         <Dialog open={openReturnDialog} onOpenChange={setOpenReturnDialog}>
           <DialogContent>
