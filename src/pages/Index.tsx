@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { LoanForm } from "@/components/LoanForm";
 import { ActiveLoans, Loan } from "@/components/ActiveLoans";
@@ -6,20 +7,29 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const Index = () => {
   const [loans, setLoans] = useState<Loan[]>([]);
   const [history, setHistory] = useState<Loan[]>([]);
   const [openReturnDialog, setOpenReturnDialog] = useState(false);
   const [chromebookId, setChromebookId] = useState("");
-  const [returnData, setReturnData] = useState({ name: "", ra: "" });
+  const [returnData, setReturnData] = useState({ 
+    name: "", 
+    ra: "", 
+    email: "",
+    type: 'individual' as 'individual' | 'lote',
+    userType: 'aluno' as 'aluno' | 'professor' | 'funcionario'
+  });
   const [showLoanForm, setShowLoanForm] = useState(false);
 
   const handleNewLoan = (formData: {
     studentName: string;
-    ra: string;
+    ra?: string;
+    email: string;
     chromebookId: string;
     purpose: string;
+    userType: 'aluno' | 'professor' | 'funcionario';
   }) => {
     const newLoan: Loan = {
       id: Math.random().toString(36).substring(7),
@@ -40,10 +50,10 @@ const Index = () => {
       return;
     }
 
-    if (!returnData.name || !returnData.ra) {
+    if (!returnData.name || !returnData.email) {
       toast({
         title: "Erro",
-        description: "Por favor, preencha todos os campos",
+        description: "Por favor, preencha os campos obrigatórios",
         variant: "destructive",
       });
       return;
@@ -52,10 +62,22 @@ const Index = () => {
     handleReturn(loanToReturn.id, returnData);
     setOpenReturnDialog(false);
     setChromebookId("");
-    setReturnData({ name: "", ra: "" });
+    setReturnData({ 
+      name: "", 
+      ra: "", 
+      email: "",
+      type: 'individual',
+      userType: 'aluno'
+    });
   };
 
-  const handleReturn = (loanId: string, returnData: { name: string; ra: string }) => {
+  const handleReturn = (loanId: string, returnData: { 
+    name: string; 
+    ra?: string; 
+    email: string;
+    type: 'individual' | 'lote';
+    userType: 'aluno' | 'professor' | 'funcionario';
+  }) => {
     const loanToReturn = loans.find((loan) => loan.id === loanId);
     if (!loanToReturn) return;
 
@@ -65,23 +87,25 @@ const Index = () => {
         returnedBy: {
           name: returnData.name,
           ra: returnData.ra,
+          email: returnData.email,
+          type: returnData.userType
         },
         returnTime: new Date(),
+        returnType: returnData.type
       },
     };
 
     setHistory([returnedLoan, ...history]);
     setLoans(loans.filter((loan) => loan.id !== loanId));
 
-    const returnedByDifferentStudent = 
-      returnData.ra !== loanToReturn.ra || 
-      returnData.name !== loanToReturn.studentName;
+    const returnedByDifferentPerson = 
+      returnData.email !== loanToReturn.email;
 
     toast({
       title: "Chromebook Devolvido",
-      description: returnedByDifferentStudent
-        ? `Devolvido por ${returnData.name} (RA: ${returnData.ra})`
-        : "Devolvido pelo próprio aluno",
+      description: returnedByDifferentPerson
+        ? `Devolvido por ${returnData.name} (${returnData.email})`
+        : "Devolvido pelo próprio solicitante",
     });
   };
 
@@ -153,6 +177,24 @@ const Index = () => {
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div className="space-y-2">
+                <Label htmlFor="returnType">Tipo de Devolução</Label>
+                <Select
+                  value={returnData.type}
+                  onValueChange={(value: 'individual' | 'lote') =>
+                    setReturnData({ ...returnData, type: value })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o tipo de devolução" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="individual">Individual</SelectItem>
+                    <SelectItem value="lote">Em Lote</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
                 <Label htmlFor="chromebookId">ID do Chromebook</Label>
                 <Input
                   id="chromebookId"
@@ -161,22 +203,57 @@ const Index = () => {
                   placeholder="Digite o ID do Chromebook"
                 />
               </div>
+
               <div className="space-y-2">
-                <Label htmlFor="returnerName">Nome do Aluno que está devolvendo</Label>
+                <Label htmlFor="userType">Tipo de Solicitante</Label>
+                <Select
+                  value={returnData.userType}
+                  onValueChange={(value: 'aluno' | 'professor' | 'funcionario') =>
+                    setReturnData({ ...returnData, userType: value })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o tipo de solicitante" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="aluno">Aluno</SelectItem>
+                    <SelectItem value="professor">Professor</SelectItem>
+                    <SelectItem value="funcionario">Funcionário</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="returnerName">Nome do Solicitante</Label>
                 <Input
                   id="returnerName"
                   value={returnData.name}
                   onChange={(e) => setReturnData({ ...returnData, name: e.target.value })}
-                  placeholder="Digite o nome do aluno"
+                  placeholder="Digite o nome do solicitante"
                 />
               </div>
+
+              {returnData.userType === 'aluno' && (
+                <div className="space-y-2">
+                  <Label htmlFor="returnerRA">RA do Aluno (opcional)</Label>
+                  <Input
+                    id="returnerRA"
+                    value={returnData.ra}
+                    onChange={(e) => setReturnData({ ...returnData, ra: e.target.value })}
+                    placeholder="Digite o RA"
+                  />
+                </div>
+              )}
+
               <div className="space-y-2">
-                <Label htmlFor="returnerRA">RA do Aluno que está devolvendo</Label>
+                <Label htmlFor="returnerEmail">Email</Label>
                 <Input
-                  id="returnerRA"
-                  value={returnData.ra}
-                  onChange={(e) => setReturnData({ ...returnData, ra: e.target.value })}
-                  placeholder="Digite o RA"
+                  id="returnerEmail"
+                  type="email"
+                  value={returnData.email}
+                  onChange={(e) => setReturnData({ ...returnData, email: e.target.value })}
+                  placeholder="Digite o email"
+                  required
                 />
               </div>
             </div>

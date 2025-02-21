@@ -11,18 +11,23 @@ import { toast } from "./ui/use-toast";
 export interface ReturnRecord {
   returnedBy: {
     name: string;
-    ra: string;
+    ra?: string;
+    email: string;
+    type: 'aluno' | 'professor' | 'funcionario';
   };
   returnTime: Date;
+  returnType: 'individual' | 'lote';
 }
 
 export interface Loan {
   id: string;
   studentName: string;
-  ra: string;
+  ra?: string;
+  email: string;
   chromebookId: string;
   purpose: string;
   timestamp: Date;
+  userType: 'aluno' | 'professor' | 'funcionario';
   returnRecord?: ReturnRecord;
 }
 
