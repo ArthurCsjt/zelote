@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { LoanForm } from "@/components/LoanForm";
 import { ActiveLoans, Loan } from "@/components/ActiveLoans";
@@ -8,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ChromebookRegistration } from "@/components/ChromebookRegistration";
 
 const Index = () => {
   const [loans, setLoans] = useState<Loan[]>([]);
@@ -22,6 +22,7 @@ const Index = () => {
     userType: 'aluno' as 'aluno' | 'professor' | 'funcionario'
   });
   const [showLoanForm, setShowLoanForm] = useState(false);
+  const [showRegistrationForm, setShowRegistrationForm] = useState(false);
 
   const handleNewLoan = (formData: {
     studentName: string;
@@ -121,36 +122,51 @@ const Index = () => {
           </p>
         </header>
 
-        <div className="grid grid-cols-2 gap-6 max-w-3xl mx-auto mb-8">
-          <Button
-            variant="outline"
-            className="h-32 text-lg font-medium bg-white hover:bg-blue-50 border-2 border-blue-200"
-            onClick={() => toast({ title: "Cadastro", description: "Funcionalidade em desenvolvimento" })}
-          >
-            Cadastro
-          </Button>
-          <Button
-            variant="outline"
-            className="h-32 text-lg font-medium bg-white hover:bg-blue-50 border-2 border-blue-200"
-            onClick={() => toast({ title: "Dashboard", description: "Funcionalidade em desenvolvimento" })}
-          >
-            Dashboard
-          </Button>
-          <Button
-            variant="outline"
-            className="h-32 text-lg font-medium bg-white hover:bg-blue-50 border-2 border-blue-200"
-            onClick={() => setShowLoanForm(true)}
-          >
-            Retirada
-          </Button>
-          <Button
-            variant="outline"
-            className="h-32 text-lg font-medium bg-white hover:bg-blue-50 border-2 border-blue-200"
-            onClick={() => setOpenReturnDialog(true)}
-          >
-            Devolução
-          </Button>
-        </div>
+        {!showLoanForm && !showRegistrationForm && (
+          <div className="grid grid-cols-2 gap-6 max-w-3xl mx-auto mb-8">
+            <Button
+              variant="outline"
+              className="h-32 text-lg font-medium bg-white hover:bg-blue-50 border-2 border-blue-200"
+              onClick={() => setShowRegistrationForm(true)}
+            >
+              Cadastro
+            </Button>
+            <Button
+              variant="outline"
+              className="h-32 text-lg font-medium bg-white hover:bg-blue-50 border-2 border-blue-200"
+              onClick={() => toast({ title: "Dashboard", description: "Funcionalidade em desenvolvimento" })}
+            >
+              Dashboard
+            </Button>
+            <Button
+              variant="outline"
+              className="h-32 text-lg font-medium bg-white hover:bg-blue-50 border-2 border-blue-200"
+              onClick={() => setShowLoanForm(true)}
+            >
+              Retirada
+            </Button>
+            <Button
+              variant="outline"
+              className="h-32 text-lg font-medium bg-white hover:bg-blue-50 border-2 border-blue-200"
+              onClick={() => setOpenReturnDialog(true)}
+            >
+              Devolução
+            </Button>
+          </div>
+        )}
+
+        {showRegistrationForm && (
+          <div>
+            <ChromebookRegistration />
+            <Button 
+              variant="outline" 
+              className="mt-4 w-full max-w-2xl mx-auto block"
+              onClick={() => setShowRegistrationForm(false)}
+            >
+              Voltar ao Menu
+            </Button>
+          </div>
+        )}
 
         {showLoanForm && (
           <div className="grid gap-6 md:grid-cols-2">
