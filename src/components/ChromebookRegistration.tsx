@@ -5,6 +5,7 @@ import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Textarea } from "./ui/textarea";
 import { toast } from "./ui/use-toast";
+import { QRCodeSVG } from 'qrcode.react';
 
 interface ChromebookData {
   id: string;
@@ -26,6 +27,7 @@ export function ChromebookRegistration() {
     patrimonyNumber: "",
     observations: "",
   });
+  const [showQRCode, setShowQRCode] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,21 +41,10 @@ export function ChromebookRegistration() {
       return;
     }
 
-    // TODO: Implement save functionality
+    setShowQRCode(true);
     toast({
       title: "Sucesso",
       description: "Chromebook cadastrado com sucesso",
-    });
-
-    // Clear form
-    setFormData({
-      id: "",
-      manufacturer: "",
-      model: "",
-      series: "",
-      manufacturingYear: "",
-      patrimonyNumber: "",
-      observations: "",
     });
   };
 
@@ -63,7 +54,6 @@ export function ChromebookRegistration() {
         Cadastro de Chromebook
       </h2>
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* ID do Chromebook - Primeiro campo pois é o identificador principal */}
         <div className="space-y-2">
           <Label htmlFor="chromebookId">ID do Chromebook *</Label>
           <Input
@@ -75,7 +65,6 @@ export function ChromebookRegistration() {
           />
         </div>
 
-        {/* Fabricante - Informação básica do equipamento */}
         <div className="space-y-2">
           <Label htmlFor="manufacturer">Fabricante *</Label>
           <Input
@@ -87,7 +76,6 @@ export function ChromebookRegistration() {
           />
         </div>
 
-        {/* Modelo - Complementa a informação do fabricante */}
         <div className="space-y-2">
           <Label htmlFor="model">Modelo *</Label>
           <Input
@@ -99,7 +87,6 @@ export function ChromebookRegistration() {
           />
         </div>
 
-        {/* Série - Número de série do equipamento */}
         <div className="space-y-2">
           <Label htmlFor="series">Série *</Label>
           <Input
@@ -111,7 +98,6 @@ export function ChromebookRegistration() {
           />
         </div>
 
-        {/* Ano de Fabricação */}
         <div className="space-y-2">
           <Label htmlFor="manufacturingYear">Ano de Fabricação *</Label>
           <Input
@@ -123,7 +109,6 @@ export function ChromebookRegistration() {
           />
         </div>
 
-        {/* Patrimônio - Número de controle interno */}
         <div className="space-y-2">
           <Label htmlFor="patrimonyNumber">Patrimônio *</Label>
           <Input
@@ -135,7 +120,6 @@ export function ChromebookRegistration() {
           />
         </div>
 
-        {/* Observações - Campo opcional para informações adicionais */}
         <div className="space-y-2">
           <Label htmlFor="observations">Observações</Label>
           <Textarea
@@ -150,6 +134,22 @@ export function ChromebookRegistration() {
         <Button type="submit" className="w-full">
           Cadastrar Chromebook
         </Button>
+
+        {showQRCode && (
+          <div className="mt-6 p-4 border border-gray-200 rounded-lg">
+            <h3 className="text-lg font-semibold mb-4">QR Code do Equipamento</h3>
+            <div className="flex justify-center">
+              <QRCodeSVG 
+                value={JSON.stringify(formData)}
+                size={200}
+                level="H"
+              />
+            </div>
+            <p className="text-sm text-gray-500 text-center mt-4">
+              Salve este QR Code para identificar o equipamento
+            </p>
+          </div>
+        )}
       </form>
     </div>
   );
