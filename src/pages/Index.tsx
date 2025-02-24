@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { LoanForm } from "@/components/LoanForm";
 import { ActiveLoans, Loan, ReturnDataType } from "@/components/ActiveLoans";
@@ -7,6 +8,7 @@ import { MainMenu } from "@/components/MainMenu";
 import { Header } from "@/components/Header";
 import { ReturnDialog } from "@/components/ReturnDialog";
 import { Button } from "@/components/ui/button";
+import { LoanHistory } from "@/components/LoanHistory";
 
 const Index = () => {
   const [loans, setLoans] = useState<Loan[]>([]);
@@ -143,20 +145,24 @@ const Index = () => {
         )}
 
         {showLoanForm && (
-          <div className="grid gap-6 md:grid-cols-2">
-            <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4">
-              <LoanForm onSubmit={handleNewLoan} />
-              <Button 
-                variant="outline" 
-                className="mt-4 w-full"
-                onClick={() => setShowLoanForm(false)}
-              >
-                Voltar ao Menu
-              </Button>
+          <div className="space-y-6">
+            <div className="grid gap-6 md:grid-cols-2">
+              <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4">
+                <LoanForm onSubmit={handleNewLoan} />
+                <Button 
+                  variant="outline" 
+                  className="mt-4 w-full"
+                  onClick={() => setShowLoanForm(false)}
+                >
+                  Voltar ao Menu
+                </Button>
+              </div>
+              <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4">
+                <ActiveLoans loans={loans} onReturn={handleReturn} />
+              </div>
             </div>
-            <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4">
-              <ActiveLoans loans={loans} onReturn={handleReturn} />
-            </div>
+            
+            <LoanHistory history={history} />
           </div>
         )}
 

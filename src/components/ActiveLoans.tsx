@@ -116,10 +116,10 @@ export function ActiveLoans({ loans, onReturn }: ActiveLoansProps) {
                       Chromebook: {loan.chromebookId}
                     </Badge>
                   </div>
-                  <div className="flex gap-2 flex-wrap mt-2 text-sm text-gray-600">
+                  <div className="flex gap-2 flex-wrap mt-2 text-sm">
                     <span>Finalidade: {loan.purpose}</span>
                     <span>•</span>
-                    <span>
+                    <span className="text-green-600 font-medium">
                       Retirada: {format(loan.timestamp, "dd/MM/yyyy 'às' HH:mm")}
                     </span>
                   </div>
