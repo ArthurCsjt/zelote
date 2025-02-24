@@ -4,6 +4,7 @@ import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Button } from "./ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
+import { Badge } from "./ui/badge";
 
 interface ReturnDialogProps {
   open: boolean;
@@ -19,7 +20,7 @@ interface ReturnDialogProps {
   };
   onReturnDataChange: (data: {
     name: string;
-    ra?: string;  // Made ra optional here
+    ra?: string;
     email: string;
     type: 'individual' | 'lote';
     userType: 'aluno' | 'professor' | 'funcionario';
@@ -38,97 +39,132 @@ export function ReturnDialog({
 }: ReturnDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Devolução de Chromebook</DialogTitle>
+          <DialogTitle className="text-xl font-semibold text-gray-800">
+            Devolução de Chromebook
+          </DialogTitle>
         </DialogHeader>
-        <div className="space-y-4 py-4">
-          <div className="space-y-2">
-            <Label htmlFor="returnType">Tipo de Devolução</Label>
-            <Select
-              value={returnData.type}
-              onValueChange={(value: 'individual' | 'lote') =>
-                onReturnDataChange({ ...returnData, type: value })
-              }
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione o tipo de devolução" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="individual">Individual</SelectItem>
-                <SelectItem value="lote">Em Lote</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="chromebookId">ID do Chromebook</Label>
-            <Input
-              id="chromebookId"
-              value={chromebookId}
-              onChange={(e) => onChromebookIdChange(e.target.value)}
-              placeholder="Digite o ID do Chromebook"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="userType">Tipo de Solicitante</Label>
-            <Select
-              value={returnData.userType}
-              onValueChange={(value: 'aluno' | 'professor' | 'funcionario') =>
-                onReturnDataChange({ ...returnData, userType: value })
-              }
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione o tipo de solicitante" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="aluno">Aluno</SelectItem>
-                <SelectItem value="professor">Professor</SelectItem>
-                <SelectItem value="funcionario">Funcionário</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="returnerName">Nome do Solicitante</Label>
-            <Input
-              id="returnerName"
-              value={returnData.name}
-              onChange={(e) => onReturnDataChange({ ...returnData, name: e.target.value })}
-              placeholder="Digite o nome do solicitante"
-            />
-          </div>
-
-          {returnData.userType === 'aluno' && (
+        
+        <div className="grid md:grid-cols-2 gap-6">
+          {/* Left Column - Return Form */}
+          <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="returnerRA">RA do Aluno (opcional)</Label>
+              <Label htmlFor="returnType" className="text-gray-700">
+                Tipo de Devolução
+              </Label>
+              <Select
+                value={returnData.type}
+                onValueChange={(value: 'individual' | 'lote') =>
+                  onReturnDataChange({ ...returnData, type: value })
+                }
+              >
+                <SelectTrigger className="bg-white border-gray-200">
+                  <SelectValue placeholder="Selecione o tipo de devolução" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="individual">Individual</SelectItem>
+                  <SelectItem value="lote">Em Lote</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="chromebookId" className="text-gray-700">
+                ID do Chromebook
+              </Label>
+              <div className="relative">
+                <Input
+                  id="chromebookId"
+                  value={chromebookId}
+                  onChange={(e) => onChromebookIdChange(e.target.value)}
+                  placeholder="Digite o ID do Chromebook"
+                  className="bg-white border-gray-200"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="userType" className="text-gray-700">
+                Tipo de Solicitante
+              </Label>
+              <Select
+                value={returnData.userType}
+                onValueChange={(value: 'aluno' | 'professor' | 'funcionario') =>
+                  onReturnDataChange({ ...returnData, userType: value })
+                }
+              >
+                <SelectTrigger className="bg-white border-gray-200">
+                  <SelectValue placeholder="Selecione o tipo de solicitante" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="aluno">Aluno</SelectItem>
+                  <SelectItem value="professor">Professor</SelectItem>
+                  <SelectItem value="funcionario">Funcionário</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Right Column - User Information */}
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="returnerName" className="text-gray-700">
+                Nome do Solicitante
+              </Label>
               <Input
-                id="returnerRA"
-                value={returnData.ra}
-                onChange={(e) => onReturnDataChange({ ...returnData, ra: e.target.value })}
-                placeholder="Digite o RA"
+                id="returnerName"
+                value={returnData.name}
+                onChange={(e) => onReturnDataChange({ ...returnData, name: e.target.value })}
+                placeholder="Digite o nome do solicitante"
+                className="bg-white border-gray-200"
               />
             </div>
-          )}
 
-          <div className="space-y-2">
-            <Label htmlFor="returnerEmail">Email</Label>
-            <Input
-              id="returnerEmail"
-              type="email"
-              value={returnData.email}
-              onChange={(e) => onReturnDataChange({ ...returnData, email: e.target.value })}
-              placeholder="Digite o email"
-              required
-            />
+            {returnData.userType === 'aluno' && (
+              <div className="space-y-2">
+                <Label htmlFor="returnerRA" className="text-gray-700">
+                  RA do Aluno (opcional)
+                </Label>
+                <Input
+                  id="returnerRA"
+                  value={returnData.ra}
+                  onChange={(e) => onReturnDataChange({ ...returnData, ra: e.target.value })}
+                  placeholder="Digite o RA"
+                  className="bg-white border-gray-200"
+                />
+              </div>
+            )}
+
+            <div className="space-y-2">
+              <Label htmlFor="returnerEmail" className="text-gray-700">
+                Email
+              </Label>
+              <Input
+                id="returnerEmail"
+                type="email"
+                value={returnData.email}
+                onChange={(e) => onReturnDataChange({ ...returnData, email: e.target.value })}
+                placeholder="Digite o email"
+                className="bg-white border-gray-200"
+                required
+              />
+            </div>
           </div>
         </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+
+        <DialogFooter className="mt-6 flex-row gap-2">
+          <Button 
+            variant="outline" 
+            onClick={() => onOpenChange(false)}
+            className="flex-1 border-gray-200"
+          >
             Cancelar
           </Button>
-          <Button onClick={onConfirm}>
+          <Button 
+            onClick={onConfirm}
+            className="flex-1 bg-blue-600 hover:bg-blue-700"
+          >
             Confirmar Devolução
           </Button>
         </DialogFooter>
