@@ -9,6 +9,14 @@ import { useState } from "react";
 import { toast } from "./ui/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 
+export type ReturnDataType = {
+  name: string;
+  ra?: string;
+  email: string;
+  type: 'individual' | 'lote';
+  userType: 'aluno' | 'professor' | 'funcionario';
+};
+
 export interface ReturnRecord {
   returnedBy: {
     name: string;
@@ -34,24 +42,18 @@ export interface Loan {
 
 interface ActiveLoansProps {
   loans: Loan[];
-  onReturn: (loanId: string, returnData: { 
-    name: string; 
-    ra?: string; 
-    email: string;
-    type: 'individual' | 'lote';
-    userType: 'aluno' | 'professor' | 'funcionario';
-  }) => void;
+  onReturn: (loanId: string, returnData: ReturnDataType) => void;
 }
 
 export function ActiveLoans({ loans, onReturn }: ActiveLoansProps) {
   const [openReturnDialog, setOpenReturnDialog] = useState(false);
   const [selectedLoanId, setSelectedLoanId] = useState<string | null>(null);
-  const [returnData, setReturnData] = useState({ 
+  const [returnData, setReturnData] = useState<ReturnDataType>({ 
     name: "", 
     ra: "", 
     email: "",
-    type: 'individual' as const,
-    userType: 'aluno' as const
+    type: 'individual',
+    userType: 'aluno'
   });
 
   const handleReturnClick = (loanId: string) => {

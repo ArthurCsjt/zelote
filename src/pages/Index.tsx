@@ -1,24 +1,24 @@
-
 import { useState } from "react";
 import { LoanForm } from "@/components/LoanForm";
-import { ActiveLoans, Loan } from "@/components/ActiveLoans";
+import { ActiveLoans, Loan, ReturnDataType } from "@/components/ActiveLoans";
 import { toast } from "@/components/ui/use-toast";
 import { ChromebookRegistration } from "@/components/ChromebookRegistration";
 import { MainMenu } from "@/components/MainMenu";
 import { Header } from "@/components/Header";
 import { ReturnDialog } from "@/components/ReturnDialog";
+import { Button } from "@/components/ui/button";
 
 const Index = () => {
   const [loans, setLoans] = useState<Loan[]>([]);
   const [history, setHistory] = useState<Loan[]>([]);
   const [openReturnDialog, setOpenReturnDialog] = useState(false);
   const [chromebookId, setChromebookId] = useState("");
-  const [returnData, setReturnData] = useState({ 
+  const [returnData, setReturnData] = useState<ReturnDataType>({ 
     name: "", 
     ra: "", 
     email: "",
-    type: 'individual' as const,
-    userType: 'aluno' as const
+    type: 'individual',
+    userType: 'aluno'
   });
   const [showLoanForm, setShowLoanForm] = useState(false);
   const [showRegistrationForm, setShowRegistrationForm] = useState(false);
@@ -88,13 +88,7 @@ const Index = () => {
     });
   };
 
-  const handleReturn = (loanId: string, returnData: { 
-    name: string; 
-    ra?: string; 
-    email: string;
-    type: 'individual' | 'lote';
-    userType: 'aluno' | 'professor' | 'funcionario';
-  }) => {
+  const handleReturn = (loanId: string, returnData: ReturnDataType) => {
     const loanToReturn = loans.find((loan) => loan.id === loanId);
     if (!loanToReturn) return;
 
