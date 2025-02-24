@@ -12,14 +12,14 @@ interface ReturnDialogProps {
   onChromebookIdChange: (id: string) => void;
   returnData: {
     name: string;
-    ra: string;
+    ra?: string;
     email: string;
     type: 'individual' | 'lote';
     userType: 'aluno' | 'professor' | 'funcionario';
   };
   onReturnDataChange: (data: {
     name: string;
-    ra: string;
+    ra?: string;  // Made ra optional here
     email: string;
     type: 'individual' | 'lote';
     userType: 'aluno' | 'professor' | 'funcionario';
