@@ -9,6 +9,7 @@ import { Header } from "@/components/Header";
 import { ReturnDialog } from "@/components/ReturnDialog";
 import { Button } from "@/components/ui/button";
 import { LoanHistory } from "@/components/LoanHistory";
+import { Dashboard } from "@/components/Dashboard";
 
 const Index = () => {
   const [loans, setLoans] = useState<Loan[]>([]);
@@ -24,17 +25,24 @@ const Index = () => {
   });
   const [showLoanForm, setShowLoanForm] = useState(false);
   const [showRegistrationForm, setShowRegistrationForm] = useState(false);
+  const [showDashboard, setShowDashboard] = useState(false);
 
   const handleNavigation = (route: 'registration' | 'dashboard' | 'loan' | 'return') => {
     switch (route) {
       case 'registration':
         setShowRegistrationForm(true);
+        setShowLoanForm(false);
+        setShowDashboard(false);
         break;
       case 'dashboard':
-        toast({ title: "Dashboard", description: "Funcionalidade em desenvolvimento" });
+        setShowDashboard(true);
+        setShowLoanForm(false);
+        setShowRegistrationForm(false);
         break;
       case 'loan':
         setShowLoanForm(true);
+        setShowRegistrationForm(false);
+        setShowDashboard(false);
         break;
       case 'return':
         setOpenReturnDialog(true);
@@ -127,7 +135,7 @@ const Index = () => {
       <div className="max-w-6xl mx-auto">
         <Header />
 
-        {!showLoanForm && !showRegistrationForm && (
+        {!showLoanForm && !showRegistrationForm && !showDashboard && (
           <MainMenu onNavigate={handleNavigation} />
         )}
 
@@ -142,6 +150,16 @@ const Index = () => {
               Voltar ao Menu
             </Button>
           </div>
+        )}
+
+        {showDashboard && (
+          <Dashboard 
+            activeLoans={loans}
+            history={history}
+            onBack={() => {
+              setShowDashboard(false);
+            }}
+          />
         )}
 
         {showLoanForm && (
