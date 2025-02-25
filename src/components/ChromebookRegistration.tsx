@@ -6,6 +6,14 @@ import { Label } from "./ui/label";
 import { Textarea } from "./ui/textarea";
 import { toast } from "./ui/use-toast";
 import { QRCodeSVG } from 'qrcode.react';
+import { jsPDF } from 'jspdf';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
 
 interface ChromebookData {
   id: string;
@@ -16,6 +24,14 @@ interface ChromebookData {
   patrimonyNumber: string;
   observations?: string;
 }
+
+type QRSize = "small" | "medium" | "large";
+
+const QR_SIZES = {
+  small: { size: 128, label: "Pequeno (3cm)" },
+  medium: { size: 200, label: "Médio (5cm) - Recomendado" },
+  large: { size: 300, label: "Grande (7cm)" },
+};
 
 export function ChromebookRegistration() {
   const [formData, setFormData] = useState<ChromebookData>({
@@ -28,6 +44,7 @@ export function ChromebookRegistration() {
     observations: "",
   });
   const [showQRCode, setShowQRCode] = useState(false);
+  const [qrSize, setQRSize] = useState<QRSize>("medium");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,6 +63,60 @@ export function ChromebookRegistration() {
       title: "Sucesso",
       description: "Chromebook cadastrado com sucesso",
     });
+  };
+
+  const handleDownloadPDF = () => {
+    const canvas = document.getElementById("qr-code-canvas") as HTMLCanvasElement;
+    if (!canvas) return;
+
+    try {
+      const pdf = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: "a4",
+      });
+
+      // Calcular posições para centralizar
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      
+      // Converter o canvas para imagem
+      const imgData = canvas.toDataURL("image/png");
+      
+      // Calcular tamanho do QR Code no PDF (em mm)
+      const qrSize = 50; // 5cm
+      const x = (pageWidth - qrSize) / 2;
+      const y = 20;
+
+      // Adicionar QR Code
+      pdf.addImage(imgData, "PNG", x, y, qrSize, qrSize);
+
+      // Adicionar texto de identificação
+      pdf.setFontSize(12);
+      pdf.setTextColor(0, 0, 0);
+      const text = `ID: ${formData.id}`;
+      const textWidth = pdf.getTextWidth(text);
+      pdf.text(text, (pageWidth - textWidth) / 2, y + qrSize + 10);
+
+      // Adicionar informações adicionais
+      pdf.setFontSize(10);
+      const infoY = y + qrSize + 20;
+      pdf.text(`Modelo: ${formData.model}`, 20, infoY);
+      pdf.text(`Patrimônio: ${formData.patrimonyNumber}`, 20, infoY + 7);
+
+      pdf.save(`qrcode-chromebook-${formData.id}.pdf`);
+
+      toast({
+        title: "Sucesso",
+        description: "PDF gerado com sucesso!",
+      });
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Erro ao gerar o PDF",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -136,17 +207,58 @@ export function ChromebookRegistration() {
         </Button>
 
         {showQRCode && (
-          <div className="mt-6 p-4 border border-gray-200 rounded-lg">
-            <h3 className="text-lg font-semibold mb-4">QR Code do Equipamento</h3>
-            <div className="flex justify-center">
-              <QRCodeSVG 
-                value={JSON.stringify(formData)}
-                size={200}
-                level="H"
-              />
+          <div className="mt-6 p-6 border border-gray-200 rounded-lg space-y-4">
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">QR Code do Equipamento</h3>
+              
+              <div className="space-y-2">
+                <Label htmlFor="qrSize">Tamanho do QR Code</Label>
+                <Select
+                  value={qrSize}
+                  onValueChange={(value: QRSize) => setQRSize(value)}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Selecione o tamanho" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(QR_SIZES).map(([key, { label }]) => (
+                      <SelectItem key={key} value={key}>
+                        {label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-            <p className="text-sm text-gray-500 text-center mt-4">
-              Salve este QR Code para identificar o equipamento
+
+            <div className="flex flex-col items-center gap-4 p-4 bg-white">
+              <div className="relative">
+                <QRCodeSVG 
+                  id="qr-code-canvas"
+                  value={JSON.stringify(formData)}
+                  size={QR_SIZES[qrSize].size}
+                  level="H"
+                  includeMargin
+                />
+                <div className="mt-2 text-center text-sm font-medium text-gray-600">
+                  ID: {formData.id}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-center">
+              <Button
+                type="button"
+                onClick={handleDownloadPDF}
+                className="bg-green-600 hover:bg-green-700"
+              >
+                Baixar QR Code (PDF)
+              </Button>
+            </div>
+
+            <p className="text-sm text-gray-500 text-center">
+              O tamanho médio é recomendado para a maioria dos casos de uso.
+              Escolha o tamanho grande para melhor visibilidade em distância ou o pequeno para economizar espaço.
             </p>
           </div>
         )}
