@@ -1,3 +1,5 @@
+
+import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "./ui/dialog";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
@@ -5,6 +7,7 @@ import { Button } from "./ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { Badge } from "./ui/badge";
 import { QRCodeReader } from "./QRCodeReader";
+import { toast } from "./ui/use-toast";
 
 interface ReturnDialogProps {
   open: boolean;
