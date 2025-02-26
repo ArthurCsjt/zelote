@@ -1,4 +1,3 @@
-
 import { useState } from "react"; // Hook do React para gerenciar estado
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -76,56 +75,76 @@ export function ChromebookRegistration() {
 
   // Função para gerar e baixar o PDF com o QR Code
   const handleDownloadPDF = () => {
-    // Obtém o elemento canvas do QR Code
-    const canvas = document.getElementById("qr-code-canvas") as HTMLCanvasElement;
-    if (!canvas) return;
+    // Obtém o elemento SVG do QR Code
+    const svgElement = document.getElementById("qr-code-svg") as SVGElement;
+    if (!svgElement) return;
 
     try {
-      // Cria um novo documento PDF
-      const pdf = new jsPDF({
-        orientation: "portrait", // Orientação vertical
-        unit: "mm",             // Unidade em milímetros
-        format: "a4",           // Formato A4
-      });
+      // Cria um canvas temporário
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
 
-      // Obtém as dimensões da página
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const pageHeight = pdf.internal.pageSize.getHeight();
+      // Cria uma imagem a partir do SVG
+      const svgData = new XMLSerializer().serializeToString(svgElement);
+      const img = new Image();
       
-      // Converte o QR Code para imagem
-      const imgData = canvas.toDataURL("image/png");
-      
-      // Define o tamanho do QR Code no PDF (50mm = 5cm)
-      const qrSize = 50;
-      const x = (pageWidth - qrSize) / 2;  // Centraliza horizontalmente
-      const y = 20;                        // Margem superior
+      img.onload = () => {
+        // Configura o tamanho do canvas
+        canvas.width = img.width;
+        canvas.height = img.height;
+        
+        // Desenha a imagem no canvas
+        ctx.drawImage(img, 0, 0);
+        
+        // Cria o PDF
+        const pdf = new jsPDF({
+          orientation: "portrait",
+          unit: "mm",
+          format: "a4",
+        });
 
-      // Adiciona o QR Code ao PDF
-      pdf.addImage(imgData, "PNG", x, y, qrSize, qrSize);
+        // Obtém as dimensões da página
+        const pageWidth = pdf.internal.pageSize.getWidth();
+        const pageHeight = pdf.internal.pageSize.getHeight();
+        
+        // Converte o canvas para imagem
+        const imgData = canvas.toDataURL("image/png");
+        
+        // Define o tamanho do QR Code no PDF (50mm = 5cm)
+        const qrSize = 50;
+        const x = (pageWidth - qrSize) / 2;
+        const y = 20;
 
-      // Adiciona o ID do Chromebook abaixo do QR Code
-      pdf.setFontSize(12);
-      pdf.setTextColor(0, 0, 0);
-      const text = `ID: ${formData.id}`;
-      const textWidth = pdf.getTextWidth(text);
-      pdf.text(text, (pageWidth - textWidth) / 2, y + qrSize + 10);
+        // Adiciona o QR Code ao PDF
+        pdf.addImage(imgData, "PNG", x, y, qrSize, qrSize);
 
-      // Adiciona informações adicionais
-      pdf.setFontSize(10);
-      const infoY = y + qrSize + 20;
-      pdf.text(`Modelo: ${formData.model}`, 20, infoY);
-      pdf.text(`Patrimônio: ${formData.patrimonyNumber}`, 20, infoY + 7);
+        // Adiciona o ID do Chromebook abaixo do QR Code
+        pdf.setFontSize(12);
+        pdf.setTextColor(0, 0, 0);
+        const text = `ID: ${formData.id}`;
+        const textWidth = pdf.getTextWidth(text);
+        pdf.text(text, (pageWidth - textWidth) / 2, y + qrSize + 10);
 
-      // Salva o PDF com nome personalizado
-      pdf.save(`qrcode-chromebook-${formData.id}.pdf`);
+        // Adiciona informações adicionais
+        pdf.setFontSize(10);
+        const infoY = y + qrSize + 20;
+        pdf.text(`Modelo: ${formData.model}`, 20, infoY);
+        pdf.text(`Patrimônio: ${formData.patrimonyNumber}`, 20, infoY + 7);
 
-      // Exibe mensagem de sucesso
-      toast({
-        title: "Sucesso",
-        description: "PDF gerado com sucesso!",
-      });
+        // Salva o PDF
+        pdf.save(`qrcode-chromebook-${formData.id}.pdf`);
+
+        toast({
+          title: "Sucesso",
+          description: "PDF gerado com sucesso!",
+        });
+      };
+
+      // Configura a fonte da imagem como o SVG
+      img.src = 'data:image/svg+xml;base64,' + btoa(svgData);
     } catch (error) {
-      // Em caso de erro, exibe mensagem de erro
+      console.error('Erro ao gerar PDF:', error);
       toast({
         title: "Erro",
         description: "Erro ao gerar o PDF",
@@ -262,13 +281,12 @@ export function ChromebookRegistration() {
             <div className="flex flex-col items-center gap-4 p-4 bg-white">
               <div className="relative">
                 <QRCodeSVG 
-                  id="qr-code-canvas"
+                  id="qr-code-svg"
                   value={JSON.stringify(formData)}
                   size={QR_SIZES[qrSize].size}
                   level="H"
                   includeMargin
                 />
-                {/* ID do Chromebook abaixo do QR Code */}
                 <div className="mt-2 text-center text-sm font-medium text-gray-600">
                   ID: {formData.id}
                 </div>
