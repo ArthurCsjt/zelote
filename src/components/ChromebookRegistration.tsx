@@ -75,9 +75,12 @@ export function ChromebookRegistration() {
 
   // Função para gerar e baixar o PDF com o QR Code
   const handleDownloadPDF = () => {
-    // Obtém o elemento SVG do QR Code
-    const svgElement = document.getElementById("qr-code-svg") as SVGElement;
-    if (!svgElement) return;
+    // Obtém o elemento SVG do QR Code e faz a conversão de tipo correta
+    const element = document.getElementById("qr-code-svg");
+    if (!element || !(element instanceof SVGElement)) {
+      console.error('Elemento QR Code não encontrado ou não é um SVG');
+      return;
+    }
 
     try {
       // Cria um canvas temporário
@@ -86,7 +89,7 @@ export function ChromebookRegistration() {
       if (!ctx) return;
 
       // Cria uma imagem a partir do SVG
-      const svgData = new XMLSerializer().serializeToString(svgElement);
+      const svgData = new XMLSerializer().serializeToString(element);
       const img = new Image();
       
       img.onload = () => {
@@ -106,7 +109,6 @@ export function ChromebookRegistration() {
 
         // Obtém as dimensões da página
         const pageWidth = pdf.internal.pageSize.getWidth();
-        const pageHeight = pdf.internal.pageSize.getHeight();
         
         // Converte o canvas para imagem
         const imgData = canvas.toDataURL("image/png");
