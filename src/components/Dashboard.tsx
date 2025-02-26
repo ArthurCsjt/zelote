@@ -1,4 +1,3 @@
-
 import {
   Card,
   CardContent,
@@ -11,7 +10,9 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, BarChart, Ba
 import { format, startOfDay, isToday, isWithinInterval, subDays } from "date-fns";
 import { Loan } from "./ActiveLoans";
 import { Badge } from "./ui/badge";
-import { Computer } from "lucide-react";
+import { Computer, Download } from "lucide-react";
+import jsPDF from "jspdf";
+import { useToast } from "./ui/use-toast";
 
 interface DashboardProps {
   activeLoans: Loan[];
@@ -20,6 +21,7 @@ interface DashboardProps {
 }
 
 export function Dashboard({ activeLoans, history, onBack }: DashboardProps) {
+  const { toast } = useToast();
   const totalChromebooks = 50;
   const availableChromebooks = totalChromebooks - activeLoans.length;
 
@@ -30,7 +32,76 @@ export function Dashboard({ activeLoans, history, onBack }: DashboardProps) {
 
   const COLORS = ["#F97316", "#22C55E"];
 
-  // Preparar dados para o relatório diário
+  const handleDownloadPDF = () => {
+    try {
+      const pdf = new jsPDF();
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      let yPosition = 20;
+
+      pdf.setFontSize(20);
+      pdf.text("Relatório de Uso dos Chromebooks", pageWidth / 2, yPosition, { align: "center" });
+      yPosition += 20;
+
+      pdf.setFontSize(12);
+      pdf.text(`Gerado em: ${format(new Date(), "dd/MM/yyyy 'às' HH:mm")}`, pageWidth / 2, yPosition, { align: "center" });
+      yPosition += 20;
+
+      pdf.setFontSize(16);
+      pdf.text("Estatísticas do Dia", 20, yPosition);
+      yPosition += 10;
+
+      pdf.setFontSize(12);
+      pdf.text(`• Empréstimos hoje: ${todayLoans.length}`, 25, yPosition);
+      yPosition += 7;
+      pdf.text(`• Devoluções hoje: ${todayReturns.length}`, 25, yPosition);
+      yPosition += 7;
+      pdf.text(`• Chromebooks ativos: ${activeLoans.length} de ${totalChromebooks}`, 25, yPosition);
+      yPosition += 7;
+      pdf.text(`• Tempo médio de uso: ${Math.round(averageUsageTime / (1000 * 60))} minutos`, 25, yPosition);
+      yPosition += 20;
+
+      pdf.setFontSize(16);
+      pdf.text("Histórico dos Últimos 7 Dias", 20, yPosition);
+      yPosition += 10;
+
+      pdf.setFontSize(12);
+      last7Days.forEach(day => {
+        pdf.text(`${day.date}: ${day.empréstimos} empréstimos, ${day.devoluções} devoluções`, 25, yPosition);
+        yPosition += 7;
+      });
+      yPosition += 20;
+
+      pdf.setFontSize(16);
+      pdf.text("Empréstimos Ativos", 20, yPosition);
+      yPosition += 10;
+
+      pdf.setFontSize(12);
+      activeLoans.forEach(loan => {
+        if (yPosition > pdf.internal.pageSize.getHeight() - 20) {
+          pdf.addPage();
+          yPosition = 20;
+        }
+        pdf.text(`• ${loan.studentName} - ID: ${loan.chromebookId}`, 25, yPosition);
+        pdf.text(`  Retirada: ${format(loan.timestamp, "dd/MM/yyyy 'às' HH:mm")}`, 25, yPosition + 5);
+        yPosition += 15;
+      });
+
+      pdf.save("relatorio-chromebooks.pdf");
+      
+      toast({
+        title: "Sucesso",
+        description: "Relatório PDF gerado com sucesso!",
+      });
+    } catch (error) {
+      console.error("Erro ao gerar PDF:", error);
+      toast({
+        title: "Erro",
+        description: "Erro ao gerar o relatório PDF",
+        variant: "destructive",
+      });
+    }
+  };
+
   const today = startOfDay(new Date());
   const last7Days = Array.from({ length: 7 }, (_, i) => {
     const date = subDays(today, i);
@@ -48,7 +119,6 @@ export function Dashboard({ activeLoans, history, onBack }: DashboardProps) {
     };
   }).reverse();
 
-  // Calcular estatísticas do dia atual
   const todayLoans = history.filter(loan => isToday(loan.timestamp));
   const todayReturns = todayLoans.filter(loan => loan.returnRecord);
   const averageUsageTime = todayReturns.reduce((acc, loan) => {
@@ -63,9 +133,19 @@ export function Dashboard({ activeLoans, history, onBack }: DashboardProps) {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold tracking-tight">Dashboard</h2>
-        <Button variant="outline" onClick={onBack}>
-          Voltar ao Menu
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={handleDownloadPDF}
+            className="flex items-center gap-2"
+          >
+            <Download className="h-4 w-4" />
+            Baixar Relatório
+          </Button>
+          <Button variant="outline" onClick={onBack}>
+            Voltar ao Menu
+          </Button>
+        </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
