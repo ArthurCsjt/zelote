@@ -7,10 +7,11 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from "recharts";
-import { format } from "date-fns";
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
+import { format, startOfDay, isToday, isWithinInterval, subDays } from "date-fns";
 import { Loan } from "./ActiveLoans";
 import { Badge } from "./ui/badge";
+import { Computer } from "lucide-react";
 
 interface DashboardProps {
   activeLoans: Loan[];
@@ -19,7 +20,7 @@ interface DashboardProps {
 }
 
 export function Dashboard({ activeLoans, history, onBack }: DashboardProps) {
-  const totalChromebooks = 50; // This should come from your actual total
+  const totalChromebooks = 50;
   const availableChromebooks = totalChromebooks - activeLoans.length;
 
   const pieData = [
@@ -29,6 +30,35 @@ export function Dashboard({ activeLoans, history, onBack }: DashboardProps) {
 
   const COLORS = ["#F97316", "#22C55E"];
 
+  // Preparar dados para o relatório diário
+  const today = startOfDay(new Date());
+  const last7Days = Array.from({ length: 7 }, (_, i) => {
+    const date = subDays(today, i);
+    const dailyLoans = history.filter(loan => 
+      isWithinInterval(loan.timestamp, {
+        start: startOfDay(date),
+        end: new Date(date.setHours(23, 59, 59, 999))
+      })
+    );
+    
+    return {
+      date: format(date, "dd/MM"),
+      empréstimos: dailyLoans.length,
+      devoluções: dailyLoans.filter(loan => loan.returnRecord).length,
+    };
+  }).reverse();
+
+  // Calcular estatísticas do dia atual
+  const todayLoans = history.filter(loan => isToday(loan.timestamp));
+  const todayReturns = todayLoans.filter(loan => loan.returnRecord);
+  const averageUsageTime = todayReturns.reduce((acc, loan) => {
+    if (loan.returnRecord) {
+      const duration = loan.returnRecord.returnTime.getTime() - loan.timestamp.getTime();
+      return acc + duration;
+    }
+    return acc;
+  }, 0) / (todayReturns.length || 1);
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -36,6 +66,55 @@ export function Dashboard({ activeLoans, history, onBack }: DashboardProps) {
         <Button variant="outline" onClick={onBack}>
           Voltar ao Menu
         </Button>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-3">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Empréstimos Hoje
+            </CardTitle>
+            <Computer className="h-4 w-4 text-orange-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{todayLoans.length}</div>
+            <p className="text-xs text-muted-foreground">
+              {todayReturns.length} devoluções
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Chromebooks Ativos
+            </CardTitle>
+            <Computer className="h-4 w-4 text-green-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{activeLoans.length}</div>
+            <p className="text-xs text-muted-foreground">
+              de {totalChromebooks} total
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Tempo Médio de Uso
+            </CardTitle>
+            <Computer className="h-4 w-4 text-blue-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {Math.round(averageUsageTime / (1000 * 60))} min
+            </div>
+            <p className="text-xs text-muted-foreground">
+              média do dia
+            </p>
+          </CardContent>
+        </Card>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
@@ -73,76 +152,54 @@ export function Dashboard({ activeLoans, history, onBack }: DashboardProps) {
 
         <Card>
           <CardHeader>
-            <CardTitle>Empréstimos Ativos</CardTitle>
+            <CardTitle>Movimentações por Dia</CardTitle>
             <CardDescription>
-              {activeLoans.length} Chromebooks em uso
+              Últimos 7 dias
             </CardDescription>
           </CardHeader>
-          <CardContent className="max-h-[300px] overflow-y-auto">
-            {activeLoans.map((loan) => (
-              <div
-                key={loan.id}
-                className="mb-3 p-3 bg-orange-50 border border-orange-100 rounded-lg"
-              >
-                <div className="flex justify-between items-start">
-                  <div>
-                    <p className="font-medium">{loan.studentName}</p>
-                    <p className="text-sm text-gray-600">ID: {loan.chromebookId}</p>
-                  </div>
-                  <Badge variant="secondary" className="bg-orange-100 text-orange-700">
-                    Pendente
-                  </Badge>
-                </div>
-                <p className="text-sm text-gray-600 mt-1">
-                  Retirada: {format(loan.timestamp, "dd/MM/yyyy 'às' HH:mm")}
-                </p>
-              </div>
-            ))}
+          <CardContent className="h-[300px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={last7Days}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="empréstimos" fill="#F97316" />
+                <Bar dataKey="devoluções" fill="#22C55E" />
+              </BarChart>
+            </ResponsiveContainer>
           </CardContent>
         </Card>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Histórico de Movimentações</CardTitle>
+          <CardTitle>Empréstimos Ativos</CardTitle>
           <CardDescription>
-            Registro de retiradas e devoluções
+            {activeLoans.length} Chromebooks em uso
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {history.map((loan) => (
-              <div
-                key={loan.id}
-                className="p-3 bg-gray-50 border border-gray-100 rounded-lg"
-              >
-                <div className="flex justify-between items-start">
-                  <div>
-                    <p className="font-medium">{loan.studentName}</p>
-                    <p className="text-sm text-gray-600">ID: {loan.chromebookId}</p>
-                  </div>
-                  <Badge variant="secondary" className="bg-green-100 text-green-700">
-                    Devolvido
-                  </Badge>
+        <CardContent className="max-h-[300px] overflow-y-auto">
+          {activeLoans.map((loan) => (
+            <div
+              key={loan.id}
+              className="mb-3 p-3 bg-orange-50 border border-orange-100 rounded-lg"
+            >
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="font-medium">{loan.studentName}</p>
+                  <p className="text-sm text-gray-600">ID: {loan.chromebookId}</p>
                 </div>
-                <div className="mt-2 text-sm space-y-1">
-                  <p className="text-green-600">
-                    Retirada: {format(loan.timestamp, "dd/MM/yyyy 'às' HH:mm")}
-                  </p>
-                  {loan.returnRecord && (
-                    <p className="text-orange-600">
-                      Devolução: {format(loan.returnRecord.returnTime, "dd/MM/yyyy 'às' HH:mm")}
-                      {loan.returnRecord.returnedBy.email !== loan.email && (
-                        <span className="ml-2 text-gray-600">
-                          (por {loan.returnRecord.returnedBy.name})
-                        </span>
-                      )}
-                    </p>
-                  )}
-                </div>
+                <Badge variant="secondary" className="bg-orange-100 text-orange-700">
+                  Pendente
+                </Badge>
               </div>
-            ))}
-          </div>
+              <p className="text-sm text-gray-600 mt-1">
+                Retirada: {format(loan.timestamp, "dd/MM/yyyy 'às' HH:mm")}
+              </p>
+            </div>
+          ))}
         </CardContent>
       </Card>
     </div>
