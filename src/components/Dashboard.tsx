@@ -1,3 +1,4 @@
+
 import {
   Card,
   CardContent,
@@ -32,76 +33,6 @@ export function Dashboard({ activeLoans, history, onBack }: DashboardProps) {
 
   const COLORS = ["#F97316", "#22C55E"];
 
-  const handleDownloadPDF = () => {
-    try {
-      const pdf = new jsPDF();
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      let yPosition = 20;
-
-      pdf.setFontSize(20);
-      pdf.text("Relatório de Uso dos Chromebooks", pageWidth / 2, yPosition, { align: "center" });
-      yPosition += 20;
-
-      pdf.setFontSize(12);
-      pdf.text(`Gerado em: ${format(new Date(), "dd/MM/yyyy 'às' HH:mm")}`, pageWidth / 2, yPosition, { align: "center" });
-      yPosition += 20;
-
-      pdf.setFontSize(16);
-      pdf.text("Estatísticas do Dia", 20, yPosition);
-      yPosition += 10;
-
-      pdf.setFontSize(12);
-      pdf.text(`• Empréstimos hoje: ${todayLoans.length}`, 25, yPosition);
-      yPosition += 7;
-      pdf.text(`• Devoluções hoje: ${todayReturns.length}`, 25, yPosition);
-      yPosition += 7;
-      pdf.text(`• Chromebooks ativos: ${activeLoans.length} de ${totalChromebooks}`, 25, yPosition);
-      yPosition += 7;
-      pdf.text(`• Tempo médio de uso: ${Math.round(averageUsageTime / (1000 * 60))} minutos`, 25, yPosition);
-      yPosition += 20;
-
-      pdf.setFontSize(16);
-      pdf.text("Histórico dos Últimos 7 Dias", 20, yPosition);
-      yPosition += 10;
-
-      pdf.setFontSize(12);
-      last7Days.forEach(day => {
-        pdf.text(`${day.date}: ${day.empréstimos} empréstimos, ${day.devoluções} devoluções`, 25, yPosition);
-        yPosition += 7;
-      });
-      yPosition += 20;
-
-      pdf.setFontSize(16);
-      pdf.text("Empréstimos Ativos", 20, yPosition);
-      yPosition += 10;
-
-      pdf.setFontSize(12);
-      activeLoans.forEach(loan => {
-        if (yPosition > pdf.internal.pageSize.getHeight() - 20) {
-          pdf.addPage();
-          yPosition = 20;
-        }
-        pdf.text(`• ${loan.studentName} - ID: ${loan.chromebookId}`, 25, yPosition);
-        pdf.text(`  Retirada: ${format(loan.timestamp, "dd/MM/yyyy 'às' HH:mm")}`, 25, yPosition + 5);
-        yPosition += 15;
-      });
-
-      pdf.save("relatorio-chromebooks.pdf");
-      
-      toast({
-        title: "Sucesso",
-        description: "Relatório PDF gerado com sucesso!",
-      });
-    } catch (error) {
-      console.error("Erro ao gerar PDF:", error);
-      toast({
-        title: "Erro",
-        description: "Erro ao gerar o relatório PDF",
-        variant: "destructive",
-      });
-    }
-  };
-
   const today = startOfDay(new Date());
   const last7Days = Array.from({ length: 7 }, (_, i) => {
     const date = subDays(today, i);
@@ -128,6 +59,89 @@ export function Dashboard({ activeLoans, history, onBack }: DashboardProps) {
     }
     return acc;
   }, 0) / (todayReturns.length || 1);
+
+  const generatePDFContent = (pdf: jsPDF) => {
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    let yPosition = 20;
+
+    // Cabeçalho
+    pdf.setFontSize(20);
+    pdf.text("Relatório de Uso dos Chromebooks", pageWidth / 2, yPosition, { align: "center" });
+    yPosition += 20;
+
+    pdf.setFontSize(12);
+    pdf.text(`Gerado em: ${format(new Date(), "dd/MM/yyyy 'às' HH:mm")}`, pageWidth / 2, yPosition, { align: "center" });
+    yPosition += 20;
+
+    // Seção: Estatísticas do Dia
+    pdf.setFontSize(16);
+    pdf.text("Estatísticas do Dia", 20, yPosition);
+    yPosition += 10;
+
+    pdf.setFontSize(12);
+    const dailyStats = [
+      `Empréstimos hoje: ${todayLoans.length}`,
+      `Devoluções hoje: ${todayReturns.length}`,
+      `Chromebooks ativos: ${activeLoans.length} de ${totalChromebooks}`,
+      `Tempo médio de uso: ${Math.round(averageUsageTime / (1000 * 60))} minutos`
+    ];
+
+    dailyStats.forEach(stat => {
+      pdf.text(`• ${stat}`, 25, yPosition);
+      yPosition += 7;
+    });
+    yPosition += 13;
+
+    // Seção: Histórico dos Últimos 7 Dias
+    pdf.setFontSize(16);
+    pdf.text("Histórico dos Últimos 7 Dias", 20, yPosition);
+    yPosition += 10;
+
+    pdf.setFontSize(12);
+    last7Days.forEach(day => {
+      pdf.text(`${day.date}: ${day.empréstimos} empréstimos, ${day.devoluções} devoluções`, 25, yPosition);
+      yPosition += 7;
+    });
+    yPosition += 13;
+
+    // Seção: Empréstimos Ativos
+    pdf.setFontSize(16);
+    pdf.text("Empréstimos Ativos", 20, yPosition);
+    yPosition += 10;
+
+    pdf.setFontSize(12);
+    activeLoans.forEach(loan => {
+      if (yPosition > pdf.internal.pageSize.getHeight() - 20) {
+        pdf.addPage();
+        yPosition = 20;
+      }
+      pdf.text(`• ${loan.studentName} - ID: ${loan.chromebookId}`, 25, yPosition);
+      pdf.text(`  Retirada: ${format(loan.timestamp, "dd/MM/yyyy 'às' HH:mm")}`, 25, yPosition + 5);
+      yPosition += 15;
+    });
+
+    return pdf;
+  };
+
+  const handleDownloadPDF = () => {
+    try {
+      const pdf = new jsPDF();
+      generatePDFContent(pdf);
+      pdf.save("relatorio-chromebooks.pdf");
+      
+      toast({
+        title: "Sucesso",
+        description: "Relatório PDF gerado com sucesso!",
+      });
+    } catch (error) {
+      console.error("Erro ao gerar PDF:", error);
+      toast({
+        title: "Erro",
+        description: "Erro ao gerar o relatório PDF",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <div className="space-y-6">
