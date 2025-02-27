@@ -75,10 +75,16 @@ export function ChromebookRegistration() {
 
   // Função para gerar e baixar o PDF com o QR Code
   const handleDownloadPDF = () => {
-    // Obtém o elemento SVG do QR Code e faz a conversão de tipo correta
-    const element = document.getElementById("qr-code-svg") as SVGSVGElement | null;
+    // Obtém o elemento SVG do QR Code
+    const element = document.getElementById("qr-code-svg");
     if (!element) {
       console.error('Elemento QR Code não encontrado');
+      return;
+    }
+
+    // Verifica se o elemento é um SVG antes de prosseguir
+    if (!(element instanceof SVGElement)) {
+      console.error('Elemento não é um SVG válido');
       return;
     }
 
