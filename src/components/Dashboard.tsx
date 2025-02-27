@@ -11,7 +11,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, BarChart, Ba
 import { format, startOfDay, isToday, isWithinInterval, subDays } from "date-fns";
 import { Loan } from "./ActiveLoans";
 import { Badge } from "./ui/badge";
-import { Computer, Download } from "lucide-react";
+import { Computer, Download, ArrowLeft, BarChart as BarChartIcon, PieChart as PieChartIcon } from "lucide-react";
 import jsPDF from "jspdf";
 import { useToast } from "./ui/use-toast";
 
@@ -144,64 +144,69 @@ export function Dashboard({ activeLoans, history, onBack }: DashboardProps) {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold tracking-tight">Dashboard</h2>
+    <div className="space-y-6 animate-fadeIn">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-blue-700 to-blue-500 bg-clip-text text-transparent">Dashboard</h2>
         <div className="flex gap-2">
           <Button
             variant="outline"
             onClick={handleDownloadPDF}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 hover:bg-blue-50"
           >
             <Download className="h-4 w-4" />
             Baixar Relatório
           </Button>
-          <Button variant="outline" onClick={onBack}>
+          <Button 
+            variant="outline" 
+            onClick={onBack}
+            className="flex items-center gap-2 hover:bg-blue-50"
+          >
+            <ArrowLeft className="h-4 w-4" />
             Voltar ao Menu
           </Button>
         </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
-        <Card>
+        <Card className="stats-card stats-card-orange dashboard-card">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               Empréstimos Hoje
             </CardTitle>
-            <Computer className="h-4 w-4 text-orange-500" />
+            <Computer className="h-5 w-5 text-orange-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{todayLoans.length}</div>
+            <div className="text-3xl font-bold">{todayLoans.length}</div>
             <p className="text-xs text-muted-foreground">
               {todayReturns.length} devoluções
             </p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="stats-card stats-card-green dashboard-card">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               Chromebooks Ativos
             </CardTitle>
-            <Computer className="h-4 w-4 text-green-500" />
+            <Computer className="h-5 w-5 text-green-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{activeLoans.length}</div>
+            <div className="text-3xl font-bold">{activeLoans.length}</div>
             <p className="text-xs text-muted-foreground">
               de {totalChromebooks} total
             </p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="stats-card stats-card-blue dashboard-card">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               Tempo Médio de Uso
             </CardTitle>
-            <Computer className="h-4 w-4 text-blue-500" />
+            <Computer className="h-5 w-5 text-blue-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="text-3xl font-bold">
               {Math.round(averageUsageTime / (1000 * 60))} min
             </div>
             <p className="text-xs text-muted-foreground">
@@ -212,12 +217,15 @@ export function Dashboard({ activeLoans, history, onBack }: DashboardProps) {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Status dos Chromebooks</CardTitle>
-            <CardDescription>
-              Total de {totalChromebooks} equipamentos
-            </CardDescription>
+        <Card className="glass-card dashboard-card">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle>Status dos Chromebooks</CardTitle>
+              <CardDescription>
+                Total de {totalChromebooks} equipamentos
+              </CardDescription>
+            </div>
+            <PieChartIcon className="h-5 w-5 text-muted-foreground" />
           </CardHeader>
           <CardContent className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
@@ -244,30 +252,33 @@ export function Dashboard({ activeLoans, history, onBack }: DashboardProps) {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Movimentações por Dia</CardTitle>
-            <CardDescription>
-              Últimos 7 dias
-            </CardDescription>
+        <Card className="glass-card dashboard-card">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle>Movimentações por Dia</CardTitle>
+              <CardDescription>
+                Últimos 7 dias
+              </CardDescription>
+            </div>
+            <BarChartIcon className="h-5 w-5 text-muted-foreground" />
           </CardHeader>
           <CardContent className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={last7Days}>
-                <CartesianGrid strokeDasharray="3 3" />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} />
                 <XAxis dataKey="date" />
                 <YAxis />
                 <Tooltip />
                 <Legend />
-                <Bar dataKey="empréstimos" fill="#F97316" />
-                <Bar dataKey="devoluções" fill="#22C55E" />
+                <Bar dataKey="empréstimos" fill="#F97316" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="devoluções" fill="#22C55E" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
       </div>
 
-      <Card>
+      <Card className="glass-card dashboard-card">
         <CardHeader>
           <CardTitle>Empréstimos Ativos</CardTitle>
           <CardDescription>
@@ -278,7 +289,7 @@ export function Dashboard({ activeLoans, history, onBack }: DashboardProps) {
           {activeLoans.map((loan) => (
             <div
               key={loan.id}
-              className="mb-3 p-3 bg-orange-50 border border-orange-100 rounded-lg"
+              className="mb-3 p-4 bg-orange-50 border border-orange-100 rounded-lg hover:shadow-md transition-all"
             >
               <div className="flex justify-between items-start">
                 <div>
@@ -294,6 +305,13 @@ export function Dashboard({ activeLoans, history, onBack }: DashboardProps) {
               </p>
             </div>
           ))}
+          
+          {activeLoans.length === 0 && (
+            <div className="text-center py-8 text-gray-500">
+              <Computer className="h-10 w-10 mx-auto mb-2 text-gray-300" />
+              <p>Nenhum empréstimo ativo no momento</p>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
