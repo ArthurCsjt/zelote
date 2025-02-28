@@ -57,6 +57,7 @@ const Index = () => {
     chromebookId: string;
     purpose: string;
     userType: 'aluno' | 'professor' | 'funcionario';
+    loanType: 'individual' | 'lote';
   }) => {
     const newLoan: Loan = {
       id: Math.random().toString(36).substring(7),

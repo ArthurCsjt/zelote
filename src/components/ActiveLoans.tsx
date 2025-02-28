@@ -37,6 +37,7 @@ export interface Loan {
   purpose: string;
   timestamp: Date;
   userType: 'aluno' | 'professor' | 'funcionario';
+  loanType?: 'individual' | 'lote';
   returnRecord?: ReturnRecord;
 }
 
@@ -115,6 +116,11 @@ export function ActiveLoans({ loans, onReturn }: ActiveLoansProps) {
                     <Badge variant="secondary" className="bg-blue-50 text-blue-700 border-blue-100">
                       Chromebook: {loan.chromebookId}
                     </Badge>
+                    {loan.loanType === 'lote' && (
+                      <Badge variant="outline" className="bg-green-50 text-green-700 border-green-100">
+                        Lote
+                      </Badge>
+                    )}
                   </div>
                   <div className="flex gap-2 flex-wrap mt-2 text-sm">
                     <span>Finalidade: {loan.purpose}</span>
