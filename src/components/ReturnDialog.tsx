@@ -9,7 +9,7 @@ import { Badge } from "./ui/badge";
 import { QRCodeReader } from "./QRCodeReader";
 import { toast } from "./ui/use-toast";
 import { Textarea } from "./ui/textarea";
-import { Computer } from "lucide-react";
+import { Computer, Plus, QrCode } from "lucide-react";
 
 interface ReturnDialogProps {
   open: boolean;
@@ -157,7 +157,7 @@ export function ReturnDialog({
                 </div>
               ) : (
                 <div className="space-y-2">
-                  <div className="flex justify-between items-center">
+                  <div className="flex justify-between items-center mb-2">
                     <Label htmlFor="batchDevices" className="text-gray-700">
                       Dispositivos em Lote
                     </Label>
@@ -165,34 +165,44 @@ export function ReturnDialog({
                       {batchDevices.length} dispositivos
                     </Badge>
                   </div>
-                  <div className="flex gap-2">
-                    <Input
-                      id="batchInput"
-                      value={currentBatchInput}
-                      onChange={(e) => setCurrentBatchInput(e.target.value)}
-                      placeholder="Digite o ID do dispositivo"
-                      className="bg-white border-gray-200"
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault();
-                          addDeviceToBatch();
-                        }
-                      }}
-                    />
-                    <Button 
-                      type="button"
-                      variant="outline"
-                      onClick={addDeviceToBatch}
-                    >
-                      Adicionar
-                    </Button>
-                    <Button 
-                      type="button"
-                      variant="outline"
-                      onClick={() => setShowScanner(true)}
-                    >
-                      Escanear QR
-                    </Button>
+                  
+                  <div className="space-y-2">
+                    <div className="flex flex-col gap-2">
+                      <div className="relative w-full">
+                        <Input
+                          id="batchInput"
+                          value={currentBatchInput}
+                          onChange={(e) => setCurrentBatchInput(e.target.value)}
+                          placeholder="Digite o ID do dispositivo"
+                          className="bg-white border-gray-200 pr-16"
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              addDeviceToBatch();
+                            }
+                          }}
+                        />
+                        <Button 
+                          type="button"
+                          variant="ghost"
+                          onClick={addDeviceToBatch}
+                          className="absolute right-1 top-1 h-8 px-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                        >
+                          <Plus className="h-4 w-4 mr-1" />
+                          <span className="text-xs">Adicionar</span>
+                        </Button>
+                      </div>
+                      
+                      <Button 
+                        type="button"
+                        variant="outline"
+                        onClick={() => setShowScanner(true)}
+                        className="w-full bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100 hover:text-blue-800 hover:border-blue-300"
+                      >
+                        <QrCode className="h-4 w-4 mr-2" />
+                        Escanear Código QR
+                      </Button>
+                    </div>
                   </div>
                   
                   <div className="mt-2 p-2 bg-gray-50 rounded-md border border-gray-200 max-h-[150px] overflow-y-auto">
@@ -300,9 +310,10 @@ export function ReturnDialog({
                       Em Lote
                     </Badge>
                   </div>
-                  <p className="text-blue-700 text-sm mb-2">
-                    Quantidade total: <span className="font-bold">{batchDevices.length}</span> dispositivos
-                  </p>
+                  <div className="flex items-center justify-center bg-white p-3 rounded-md mb-2 border border-blue-100">
+                    <span className="text-2xl font-bold text-blue-700 mr-2">{batchDevices.length}</span>
+                    <span className="text-blue-600">dispositivos para devolução</span>
+                  </div>
                   <div className="text-xs text-blue-600">
                     {batchDevices.length === 0 ? (
                       <p>Adicione dispositivos para devolução</p>
