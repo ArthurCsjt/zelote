@@ -67,26 +67,63 @@ const Index = () => {
   };
 
   const handleReturnClick = () => {
-    const loanToReturn = loans.find((loan) => loan.chromebookId === chromebookId);
-    if (!loanToReturn) {
-      toast({
-        title: "Erro",
-        description: "Chromebook não encontrado ou não está emprestado",
-        variant: "destructive",
+    if (returnData.type === 'individual') {
+      const loanToReturn = loans.find((loan) => loan.chromebookId === chromebookId);
+      if (!loanToReturn) {
+        toast({
+          title: "Erro",
+          description: "Chromebook não encontrado ou não está emprestado",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (!returnData.name || !returnData.email) {
+        toast({
+          title: "Erro",
+          description: "Por favor, preencha os campos obrigatórios",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      handleReturn(loanToReturn.id, returnData);
+    } else {
+      // Devolução em lote
+      if (!returnData.name || !returnData.email) {
+        toast({
+          title: "Erro",
+          description: "Por favor, preencha os campos obrigatórios",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const chromebookIds = chromebookId.split(',');
+      let returnedCount = 0;
+      
+      chromebookIds.forEach(id => {
+        const loanToReturn = loans.find(loan => loan.chromebookId === id.trim());
+        if (loanToReturn) {
+          handleReturn(loanToReturn.id, returnData);
+          returnedCount++;
+        }
       });
-      return;
+
+      if (returnedCount === 0) {
+        toast({
+          title: "Atenção",
+          description: "Nenhum dispositivo encontrado para devolução",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Sucesso",
+          description: `${returnedCount} dispositivos devolvidos com sucesso`,
+        });
+      }
     }
 
-    if (!returnData.name || !returnData.email) {
-      toast({
-        title: "Erro",
-        description: "Por favor, preencha os campos obrigatórios",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    handleReturn(loanToReturn.id, returnData);
     setOpenReturnDialog(false);
     setChromebookId("");
     setReturnData({ 
@@ -122,12 +159,14 @@ const Index = () => {
     const returnedByDifferentPerson = 
       returnData.email !== loanToReturn.email;
 
-    toast({
-      title: "Chromebook Devolvido",
-      description: returnedByDifferentPerson
-        ? `Devolvido por ${returnData.name} (${returnData.email})`
-        : "Devolvido pelo próprio solicitante",
-    });
+    if (returnData.type === 'individual') {
+      toast({
+        title: "Chromebook Devolvido",
+        description: returnedByDifferentPerson
+          ? `Devolvido por ${returnData.name} (${returnData.email})`
+          : "Devolvido pelo próprio solicitante",
+      });
+    }
   };
 
   return (
