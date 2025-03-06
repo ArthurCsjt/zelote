@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/components/ui/use-toast";
-import { Computer, User, Lock, Mail, ArrowLeft } from "lucide-react";
+import { Computer, User, Lock, Mail, ArrowLeft, KeyRound, UserPlus, KeySquare } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -207,191 +207,229 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <Card className="w-full max-w-md shadow-lg glass-card">
-        <CardHeader className="space-y-1 text-center">
-          <div className="flex justify-center mb-4">
-            <Computer className="h-12 w-12 text-green-500" />
-          </div>
-          <CardTitle className="text-2xl font-bold">Sistema de Gestão de Chromebooks</CardTitle>
-          <CardDescription>
-            Acesse o sistema para gerenciar empréstimos e devoluções
-          </CardDescription>
-        </CardHeader>
-        
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid grid-cols-3 w-[90%] mx-auto">
-            <TabsTrigger value="login">Login</TabsTrigger>
-            <TabsTrigger value="register">Cadastro</TabsTrigger>
-            <TabsTrigger value="recovery">Recuperar</TabsTrigger>
-          </TabsList>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-blue-100">
+      <div className="w-full max-w-md px-4">
+        <Card className="w-full shadow-lg glass-card border-0 overflow-hidden">
+          <CardHeader className="space-y-1 text-center pb-6 bg-gradient-to-r from-green-500/10 to-blue-500/10">
+            <div className="flex justify-center mb-4">
+              <div className="p-3 rounded-full bg-green-100 shadow-md">
+                <Computer className="h-10 w-10 text-green-600" />
+              </div>
+            </div>
+            <CardTitle className="text-2xl font-bold text-green-800">Sistema de Gestão de Chromebooks</CardTitle>
+            <CardDescription className="text-gray-600">
+              Acesse o sistema para gerenciar empréstimos e devoluções
+            </CardDescription>
+          </CardHeader>
           
-          {/* Aba de Login */}
-          <TabsContent value="login">
-            <form onSubmit={handleLoginSubmit}>
-              <CardContent className="space-y-4 pt-4">
-                <div className="space-y-2">
-                  <Label htmlFor="login-email">Email Institucional</Label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                    <Input
-                      id="login-email"
-                      type="email"
-                      placeholder="seu.email@colegiosaojudas.com.br"
-                      value={loginEmail}
-                      onChange={(e) => setLoginEmail(e.target.value)}
-                      className="pl-10"
-                    />
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid grid-cols-3 w-[90%] mx-auto bg-gray-100/60 mt-4">
+              <TabsTrigger value="login" className="data-[state=active]:bg-white data-[state=active]:text-green-700 flex items-center gap-1">
+                <User className="h-3.5 w-3.5" />
+                <span>Login</span>
+              </TabsTrigger>
+              <TabsTrigger value="register" className="data-[state=active]:bg-white data-[state=active]:text-green-700 flex items-center gap-1">
+                <UserPlus className="h-3.5 w-3.5" />
+                <span>Cadastro</span>
+              </TabsTrigger>
+              <TabsTrigger value="recovery" className="data-[state=active]:bg-white data-[state=active]:text-green-700 flex items-center gap-1">
+                <KeySquare className="h-3.5 w-3.5" />
+                <span>Recuperar</span>
+              </TabsTrigger>
+            </TabsList>
+            
+            {/* Aba de Login */}
+            <TabsContent value="login" className="mt-0 fade-enter">
+              <form onSubmit={handleLoginSubmit}>
+                <CardContent className="space-y-4 pt-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="login-email" className="text-gray-700 flex items-center gap-1.5">
+                      <Mail className="h-4 w-4" />
+                      Email Institucional
+                    </Label>
+                    <div className="relative">
+                      <Input
+                        id="login-email"
+                        type="email"
+                        placeholder="seu.email@colegiosaojudas.com.br"
+                        value={loginEmail}
+                        onChange={(e) => setLoginEmail(e.target.value)}
+                        className="bg-white/70 border-gray-200 focus:border-green-300 transition-all"
+                      />
+                    </div>
+                    <p className="text-xs text-gray-500 italic">
+                      Use seu email institucional com o domínio @colegiosaojudas.com.br
+                    </p>
                   </div>
-                  <p className="text-xs text-gray-500">
-                    Use seu email institucional com o domínio @colegiosaojudas.com.br
-                  </p>
-                </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="login-password" className="text-gray-700 flex items-center gap-1.5">
+                      <Lock className="h-4 w-4" />
+                      Senha
+                    </Label>
+                    <div className="relative">
+                      <Input
+                        id="login-password"
+                        type="password"
+                        placeholder="Digite sua senha"
+                        value={loginPassword}
+                        onChange={(e) => setLoginPassword(e.target.value)}
+                        className="bg-white/70 border-gray-200 focus:border-green-300 transition-all"
+                      />
+                    </div>
+                  </div>
+                </CardContent>
                 
-                <div className="space-y-2">
-                  <Label htmlFor="login-password">Senha</Label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                    <Input
-                      id="login-password"
-                      type="password"
-                      placeholder="Digite sua senha"
-                      value={loginPassword}
-                      onChange={(e) => setLoginPassword(e.target.value)}
-                      className="pl-10"
-                    />
+                <CardFooter className="pb-6">
+                  <Button 
+                    type="submit" 
+                    className="w-full bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 transition-all shadow-md"
+                  >
+                    Entrar
+                  </Button>
+                </CardFooter>
+              </form>
+            </TabsContent>
+            
+            {/* Aba de Registro */}
+            <TabsContent value="register" className="mt-0 fade-enter">
+              <form onSubmit={handleRegisterSubmit}>
+                <CardContent className="space-y-4 pt-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="register-email" className="text-gray-700 flex items-center gap-1.5">
+                      <Mail className="h-4 w-4" />
+                      Email Institucional
+                    </Label>
+                    <div className="relative">
+                      <Input
+                        id="register-email"
+                        type="email"
+                        placeholder="seu.email@colegiosaojudas.com.br"
+                        value={registerEmail}
+                        onChange={(e) => setRegisterEmail(e.target.value)}
+                        className="bg-white/70 border-gray-200 focus:border-green-300 transition-all"
+                      />
+                    </div>
+                    <p className="text-xs text-gray-500 italic">
+                      Use seu email institucional com o domínio @colegiosaojudas.com.br
+                    </p>
                   </div>
-                </div>
-              </CardContent>
-              
-              <CardFooter>
-                <Button type="submit" className="w-full">
-                  Entrar
-                </Button>
-              </CardFooter>
-            </form>
-          </TabsContent>
-          
-          {/* Aba de Registro */}
-          <TabsContent value="register">
-            <form onSubmit={handleRegisterSubmit}>
-              <CardContent className="space-y-4 pt-4">
-                <div className="space-y-2">
-                  <Label htmlFor="register-email">Email Institucional</Label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                    <Input
-                      id="register-email"
-                      type="email"
-                      placeholder="seu.email@colegiosaojudas.com.br"
-                      value={registerEmail}
-                      onChange={(e) => setRegisterEmail(e.target.value)}
-                      className="pl-10"
-                    />
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="register-password" className="text-gray-700 flex items-center gap-1.5">
+                      <Lock className="h-4 w-4" />
+                      Senha
+                    </Label>
+                    <div className="relative">
+                      <Input
+                        id="register-password"
+                        type="password"
+                        placeholder="Crie uma senha forte"
+                        value={registerPassword}
+                        onChange={(e) => setRegisterPassword(e.target.value)}
+                        className="bg-white/70 border-gray-200 focus:border-green-300 transition-all"
+                      />
+                    </div>
                   </div>
-                  <p className="text-xs text-gray-500">
-                    Use seu email institucional com o domínio @colegiosaojudas.com.br
-                  </p>
-                </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="register-confirm-password" className="text-gray-700 flex items-center gap-1.5">
+                      <KeyRound className="h-4 w-4" />
+                      Confirmar Senha
+                    </Label>
+                    <div className="relative">
+                      <Input
+                        id="register-confirm-password"
+                        type="password"
+                        placeholder="Confirme sua senha"
+                        value={registerConfirmPassword}
+                        onChange={(e) => setRegisterConfirmPassword(e.target.value)}
+                        className="bg-white/70 border-gray-200 focus:border-green-300 transition-all"
+                      />
+                    </div>
+                  </div>
+                </CardContent>
                 
-                <div className="space-y-2">
-                  <Label htmlFor="register-password">Senha</Label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                    <Input
-                      id="register-password"
-                      type="password"
-                      placeholder="Crie uma senha forte"
-                      value={registerPassword}
-                      onChange={(e) => setRegisterPassword(e.target.value)}
-                      className="pl-10"
-                    />
+                <CardFooter className="pb-6">
+                  <Button 
+                    type="submit" 
+                    className="w-full bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 transition-all shadow-md"
+                  >
+                    Cadastrar
+                  </Button>
+                </CardFooter>
+              </form>
+            </TabsContent>
+            
+            {/* Aba de Recuperação de Senha */}
+            <TabsContent value="recovery" className="mt-0 fade-enter">
+              <form onSubmit={handleRecoverySubmit}>
+                <CardContent className="space-y-4 pt-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="recovery-email" className="text-gray-700 flex items-center gap-1.5">
+                      <Mail className="h-4 w-4" />
+                      Email Institucional
+                    </Label>
+                    <div className="relative">
+                      <Input
+                        id="recovery-email"
+                        type="email"
+                        placeholder="seu.email@colegiosaojudas.com.br"
+                        value={recoveryEmail}
+                        onChange={(e) => setRecoveryEmail(e.target.value)}
+                        className="bg-white/70 border-gray-200 focus:border-green-300 transition-all"
+                      />
+                    </div>
                   </div>
-                </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="recovery-new-password" className="text-gray-700 flex items-center gap-1.5">
+                      <Lock className="h-4 w-4" />
+                      Nova Senha
+                    </Label>
+                    <div className="relative">
+                      <Input
+                        id="recovery-new-password"
+                        type="password"
+                        placeholder="Digite a nova senha"
+                        value={recoveryNewPassword}
+                        onChange={(e) => setRecoveryNewPassword(e.target.value)}
+                        className="bg-white/70 border-gray-200 focus:border-green-300 transition-all"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="recovery-confirm-password" className="text-gray-700 flex items-center gap-1.5">
+                      <KeyRound className="h-4 w-4" />
+                      Confirmar Nova Senha
+                    </Label>
+                    <div className="relative">
+                      <Input
+                        id="recovery-confirm-password"
+                        type="password"
+                        placeholder="Confirme a nova senha"
+                        value={recoveryConfirmPassword}
+                        onChange={(e) => setRecoveryConfirmPassword(e.target.value)}
+                        className="bg-white/70 border-gray-200 focus:border-green-300 transition-all"
+                      />
+                    </div>
+                  </div>
+                </CardContent>
                 
-                <div className="space-y-2">
-                  <Label htmlFor="register-confirm-password">Confirmar Senha</Label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                    <Input
-                      id="register-confirm-password"
-                      type="password"
-                      placeholder="Confirme sua senha"
-                      value={registerConfirmPassword}
-                      onChange={(e) => setRegisterConfirmPassword(e.target.value)}
-                      className="pl-10"
-                    />
-                  </div>
-                </div>
-              </CardContent>
-              
-              <CardFooter>
-                <Button type="submit" className="w-full">
-                  Cadastrar
-                </Button>
-              </CardFooter>
-            </form>
-          </TabsContent>
-          
-          {/* Aba de Recuperação de Senha */}
-          <TabsContent value="recovery">
-            <form onSubmit={handleRecoverySubmit}>
-              <CardContent className="space-y-4 pt-4">
-                <div className="space-y-2">
-                  <Label htmlFor="recovery-email">Email Institucional</Label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                    <Input
-                      id="recovery-email"
-                      type="email"
-                      placeholder="seu.email@colegiosaojudas.com.br"
-                      value={recoveryEmail}
-                      onChange={(e) => setRecoveryEmail(e.target.value)}
-                      className="pl-10"
-                    />
-                  </div>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="recovery-new-password">Nova Senha</Label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                    <Input
-                      id="recovery-new-password"
-                      type="password"
-                      placeholder="Digite a nova senha"
-                      value={recoveryNewPassword}
-                      onChange={(e) => setRecoveryNewPassword(e.target.value)}
-                      className="pl-10"
-                    />
-                  </div>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="recovery-confirm-password">Confirmar Nova Senha</Label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                    <Input
-                      id="recovery-confirm-password"
-                      type="password"
-                      placeholder="Confirme a nova senha"
-                      value={recoveryConfirmPassword}
-                      onChange={(e) => setRecoveryConfirmPassword(e.target.value)}
-                      className="pl-10"
-                    />
-                  </div>
-                </div>
-              </CardContent>
-              
-              <CardFooter>
-                <Button type="submit" className="w-full">
-                  Recuperar Senha
-                </Button>
-              </CardFooter>
-            </form>
-          </TabsContent>
-        </Tabs>
-      </Card>
+                <CardFooter className="pb-6">
+                  <Button 
+                    type="submit"
+                    className="w-full bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 transition-all shadow-md"
+                  >
+                    Recuperar Senha
+                  </Button>
+                </CardFooter>
+              </form>
+            </TabsContent>
+          </Tabs>
+        </Card>
+      </div>
     </div>
   );
 };
