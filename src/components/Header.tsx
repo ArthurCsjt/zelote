@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 
 export function Header() {
   // Obtém as funções e estados do contexto de autenticação
-  const { isAuthenticated, username, logout } = useAuth();
+  const { isAuthenticated, username, email, logout } = useAuth();
   const navigate = useNavigate();
 
   // Função para lidar com o logout
@@ -27,9 +27,10 @@ export function Header() {
       {/* Exibe informações do usuário e botão de logout quando autenticado */}
       {isAuthenticated && (
         <div className="flex items-center gap-4">
-          <span className="text-sm text-gray-600">
-            Logado como: <strong>{username}</strong>
-          </span>
+          <div className="text-sm text-gray-600 text-right">
+            <div><strong>{username}</strong></div>
+            <div className="text-xs">{email}</div>
+          </div>
           <Button 
             variant="outline" 
             size="sm" 
