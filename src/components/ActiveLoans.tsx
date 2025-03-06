@@ -9,46 +9,72 @@ import { useState } from "react";
 import { toast } from "./ui/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 
+// Define tipos e interfaces utilizados no componente
+
+/**
+ * Tipo para os dados de devolução
+ * Contém informações sobre quem está devolvendo o dispositivo
+ */
 export type ReturnDataType = {
-  name: string;
-  ra?: string;
-  email: string;
-  type: 'individual' | 'lote';
-  userType: 'aluno' | 'professor' | 'funcionario';
+  name: string;                                   // Nome do solicitante
+  ra?: string;                                    // RA (Registro Acadêmico), opcional
+  email: string;                                  // Email do solicitante
+  type: 'individual' | 'lote';                    // Tipo de devolução
+  userType: 'aluno' | 'professor' | 'funcionario'; // Tipo de usuário
 };
 
+/**
+ * Interface para o registro de devolução
+ * Armazena detalhes sobre como o dispositivo foi devolvido
+ */
 export interface ReturnRecord {
-  returnedBy: {
-    name: string;
-    ra?: string;
-    email: string;
-    type: 'aluno' | 'professor' | 'funcionario';
+  returnedBy: {                                  // Informações de quem devolveu
+    name: string;                                // Nome
+    ra?: string;                                 // RA (opcional)
+    email: string;                               // Email
+    type: 'aluno' | 'professor' | 'funcionario'; // Tipo de usuário
   };
-  returnTime: Date;
-  returnType: 'individual' | 'lote';
+  returnTime: Date;                              // Data/hora da devolução
+  returnType: 'individual' | 'lote';             // Tipo de devolução
 }
 
+/**
+ * Interface principal para um empréstimo
+ * Contém todos os dados relacionados a um empréstimo de Chromebook
+ */
 export interface Loan {
-  id: string;
-  studentName: string;
-  ra?: string;
-  email: string;
-  chromebookId: string;
-  purpose: string;
-  timestamp: Date;
-  userType: 'aluno' | 'professor' | 'funcionario';
-  loanType?: 'individual' | 'lote';
-  returnRecord?: ReturnRecord;
+  id: string;                                    // ID único do empréstimo
+  studentName: string;                           // Nome do solicitante
+  ra?: string;                                   // RA (opcional)
+  email: string;                                 // Email do solicitante
+  chromebookId: string;                          // ID do Chromebook
+  purpose: string;                               // Finalidade do empréstimo
+  timestamp: Date;                               // Data/hora do empréstimo
+  userType: 'aluno' | 'professor' | 'funcionario'; // Tipo de usuário
+  loanType?: 'individual' | 'lote';              // Tipo de empréstimo
+  returnRecord?: ReturnRecord;                   // Registro de devolução (se já devolvido)
 }
 
+// Define a interface de props do componente
 interface ActiveLoansProps {
-  loans: Loan[];
-  onReturn: (loanId: string, returnData: ReturnDataType) => void;
+  loans: Loan[];                                 // Lista de empréstimos ativos
+  onReturn: (loanId: string, returnData: ReturnDataType) => void; // Callback de devolução
 }
 
+/**
+ * Componente que exibe a lista de empréstimos ativos
+ * Permite a devolução de dispositivos diretamente da lista
+ */
 export function ActiveLoans({ loans, onReturn }: ActiveLoansProps) {
+  // === ESTADOS (STATES) ===
+  
+  // Controla a abertura/fechamento do diálogo de devolução
   const [openReturnDialog, setOpenReturnDialog] = useState(false);
+  
+  // Armazena o ID do empréstimo selecionado para devolução
   const [selectedLoanId, setSelectedLoanId] = useState<string | null>(null);
+  
+  // Dados da pessoa que está devolvendo o dispositivo
   const [returnData, setReturnData] = useState<ReturnDataType>({ 
     name: "", 
     ra: "", 
@@ -57,12 +83,23 @@ export function ActiveLoans({ loans, onReturn }: ActiveLoansProps) {
     userType: 'aluno'
   });
 
+  // === FUNÇÕES DE MANIPULAÇÃO (HANDLERS) ===
+
+  /**
+   * Função chamada ao clicar no botão "Devolver" de um empréstimo
+   * @param loanId - ID do empréstimo a ser devolvido
+   */
   const handleReturnClick = (loanId: string) => {
     setSelectedLoanId(loanId);
     setOpenReturnDialog(true);
   };
 
+  /**
+   * Função chamada ao confirmar a devolução no diálogo
+   * Valida os dados e chama a callback principal
+   */
   const handleReturn = () => {
+    // Verifica se os campos obrigatórios foram preenchidos
     if (!returnData.name || !returnData.email) {
       toast({
         title: "Erro",
@@ -72,8 +109,11 @@ export function ActiveLoans({ loans, onReturn }: ActiveLoansProps) {
       return;
     }
 
+    // Se há um empréstimo selecionado, processa a devolução
     if (selectedLoanId) {
       onReturn(selectedLoanId, returnData);
+      
+      // Limpa os campos e fecha o diálogo
       setOpenReturnDialog(false);
       setReturnData({ 
         name: "", 
@@ -86,6 +126,7 @@ export function ActiveLoans({ loans, onReturn }: ActiveLoansProps) {
     }
   };
 
+  // === RENDERIZAÇÃO DA INTERFACE (UI) ===
   return (
     <div>
       <h2 className="text-xl font-semibold text-gray-800 mb-4">
@@ -93,10 +134,12 @@ export function ActiveLoans({ loans, onReturn }: ActiveLoansProps) {
       </h2>
       <div className="space-y-3">
         {loans.length === 0 ? (
+          // Mensagem exibida quando não há empréstimos ativos
           <p className="text-center text-gray-500 py-4">
             Nenhum empréstimo ativo
           </p>
         ) : (
+          // Lista de empréstimos ativos
           loans.map((loan) => (
             <div
               key={loan.id}
@@ -104,24 +147,29 @@ export function ActiveLoans({ loans, onReturn }: ActiveLoansProps) {
             >
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
+                  {/* Nome do solicitante */}
                   <h3 className="font-medium text-gray-800">
                     {loan.studentName}
                   </h3>
                   <div className="flex gap-2 flex-wrap">
+                    {/* Badge do RA (se disponível) */}
                     {loan.ra && (
                       <Badge variant="outline" className="bg-white">
                         RA: {loan.ra}
                       </Badge>
                     )}
+                    {/* Badge do ID do Chromebook */}
                     <Badge variant="secondary" className="bg-blue-50 text-blue-700 border-blue-100">
                       Chromebook: {loan.chromebookId}
                     </Badge>
+                    {/* Badge de lote (se aplicável) */}
                     {loan.loanType === 'lote' && (
                       <Badge variant="outline" className="bg-green-50 text-green-700 border-green-100">
                         Lote
                       </Badge>
                     )}
                   </div>
+                  {/* Informações adicionais */}
                   <div className="flex gap-2 flex-wrap mt-2 text-sm">
                     <span>Finalidade: {loan.purpose}</span>
                     <span>•</span>
@@ -130,6 +178,7 @@ export function ActiveLoans({ loans, onReturn }: ActiveLoansProps) {
                     </span>
                   </div>
                 </div>
+                {/* Botão de devolução */}
                 <Button
                   variant="outline"
                   onClick={() => handleReturnClick(loan.id)}
@@ -143,12 +192,14 @@ export function ActiveLoans({ loans, onReturn }: ActiveLoansProps) {
         )}
       </div>
 
+      {/* Diálogo de devolução (aberto quando openReturnDialog = true) */}
       <Dialog open={openReturnDialog} onOpenChange={setOpenReturnDialog}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Devolução de Chromebook</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
+            {/* Seletor de tipo de devolução */}
             <div className="space-y-2">
               <Label htmlFor="returnType">Tipo de Devolução</Label>
               <Select
@@ -167,6 +218,7 @@ export function ActiveLoans({ loans, onReturn }: ActiveLoansProps) {
               </Select>
             </div>
 
+            {/* Seletor de tipo de usuário */}
             <div className="space-y-2">
               <Label htmlFor="userType">Tipo de Solicitante</Label>
               <Select
@@ -186,6 +238,7 @@ export function ActiveLoans({ loans, onReturn }: ActiveLoansProps) {
               </Select>
             </div>
 
+            {/* Campo de nome do solicitante */}
             <div className="space-y-2">
               <Label htmlFor="returnerName">Nome do Solicitante</Label>
               <Input
@@ -196,6 +249,7 @@ export function ActiveLoans({ loans, onReturn }: ActiveLoansProps) {
               />
             </div>
 
+            {/* Campo de RA (apenas para alunos) */}
             {returnData.userType === 'aluno' && (
               <div className="space-y-2">
                 <Label htmlFor="returnerRA">RA do Aluno (opcional)</Label>
@@ -208,6 +262,7 @@ export function ActiveLoans({ loans, onReturn }: ActiveLoansProps) {
               </div>
             )}
 
+            {/* Campo de email */}
             <div className="space-y-2">
               <Label htmlFor="returnerEmail">Email</Label>
               <Input
@@ -220,6 +275,7 @@ export function ActiveLoans({ loans, onReturn }: ActiveLoansProps) {
               />
             </div>
           </div>
+          {/* Botões de ação */}
           <DialogFooter>
             <Button variant="outline" onClick={() => setOpenReturnDialog(false)}>
               Cancelar

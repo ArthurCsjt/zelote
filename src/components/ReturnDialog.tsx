@@ -11,28 +11,33 @@ import { toast } from "./ui/use-toast";
 import { Textarea } from "./ui/textarea";
 import { Computer, Plus, QrCode } from "lucide-react";
 
+// Define a interface de props do componente
 interface ReturnDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  chromebookId: string;
-  onChromebookIdChange: (id: string) => void;
-  returnData: {
-    name: string;
-    ra?: string;
-    email: string;
-    type: 'individual' | 'lote';
-    userType: 'aluno' | 'professor' | 'funcionario';
+  open: boolean;                                   // Controla se o diálogo está aberto
+  onOpenChange: (open: boolean) => void;           // Função chamada quando o estado de abertura muda
+  chromebookId: string;                            // ID do Chromebook a ser devolvido
+  onChromebookIdChange: (id: string) => void;      // Função chamada quando o ID muda
+  returnData: {                                    // Dados da pessoa que está devolvendo
+    name: string;                                  // Nome do solicitante
+    ra?: string;                                   // RA (Registro Acadêmico), opcional
+    email: string;                                 // Email do solicitante
+    type: 'individual' | 'lote';                   // Tipo de devolução
+    userType: 'aluno' | 'professor' | 'funcionario'; // Tipo de usuário
   };
-  onReturnDataChange: (data: {
+  onReturnDataChange: (data: {                     // Função chamada quando os dados mudam
     name: string;
     ra?: string;
     email: string;
     type: 'individual' | 'lote';
     userType: 'aluno' | 'professor' | 'funcionario';
   }) => void;
-  onConfirm: () => void;
+  onConfirm: () => void;                           // Função chamada ao confirmar a devolução
 }
 
+/**
+ * Componente de diálogo para processar devolução de Chromebooks
+ * Permite devoluções individuais ou em lote
+ */
 export function ReturnDialog({
   open,
   onOpenChange,
@@ -42,49 +47,85 @@ export function ReturnDialog({
   onReturnDataChange,
   onConfirm
 }: ReturnDialogProps) {
+  // === ESTADOS (STATES) ===
+  
+  // Controla a exibição do scanner de QR Code
   const [showScanner, setShowScanner] = useState(false);
+  
+  // Lista de dispositivos para devolução em lote
   const [batchDevices, setBatchDevices] = useState<string[]>([]);
+  
+  // Valor atual do campo de entrada para adicionar dispositivos ao lote
   const [currentBatchInput, setCurrentBatchInput] = useState("");
 
+  // === FUNÇÕES DE MANIPULAÇÃO (HANDLERS) ===
+
+  /**
+   * Processa o resultado da leitura do QR Code
+   * @param result - String com o resultado da leitura do QR Code
+   */
   const handleQRCodeScan = (result: string) => {
     try {
+      // Tenta converter o resultado para um objeto JSON
       const data = JSON.parse(result);
+      
+      // Se o objeto contém um ID, adiciona à lista ou atualiza o campo
       if (data.id) {
         if (returnData.type === 'lote') {
+          // Para devolução em lote, adiciona à lista se não existir
           if (!batchDevices.includes(data.id)) {
             setBatchDevices([...batchDevices, data.id]);
           }
         } else {
+          // Para devolução individual, atualiza o campo de ID
           onChromebookIdChange(data.id);
         }
       }
     } catch (error) {
+      // Se houver erro ao processar o QR Code, exibe uma mensagem
       toast({
         title: "Erro",
         description: "QR Code inválido",
         variant: "destructive",
       });
     }
+    // Fecha o scanner após processar
     setShowScanner(false);
   };
 
+  /**
+   * Adiciona um dispositivo à lista de lote
+   * Verifica se o dispositivo já existe na lista antes de adicionar
+   */
   const addDeviceToBatch = () => {
     if (currentBatchInput.trim() && !batchDevices.includes(currentBatchInput.trim())) {
       setBatchDevices([...batchDevices, currentBatchInput.trim()]);
-      setCurrentBatchInput("");
+      setCurrentBatchInput(""); // Limpa o campo após adicionar
     }
   };
 
+  /**
+   * Remove um dispositivo da lista de lote
+   * @param deviceId - ID do dispositivo a ser removido
+   */
   const removeDeviceFromBatch = (deviceId: string) => {
     setBatchDevices(batchDevices.filter(id => id !== deviceId));
   };
 
+  /**
+   * Função chamada ao clicar no botão de confirmação
+   * Processa a devolução e chama a callback principal
+   */
   const handleConfirm = () => {
     if (returnData.type === 'lote') {
-      // Se for em lote, atualiza o chromebookId com todos os IDs separados por vírgula
+      // === DEVOLUÇÃO EM LOTE ===
+      
+      // Se houver dispositivos na lista, atualiza o campo de IDs
       if (batchDevices.length > 0) {
+        // Converte a lista de dispositivos para string, separados por vírgula
         onChromebookIdChange(batchDevices.join(','));
       } else {
+        // Se não houver dispositivos, exibe uma mensagem de erro
         toast({
           title: "Erro",
           description: "Adicione pelo menos um dispositivo para devolução em lote",
@@ -93,11 +134,15 @@ export function ReturnDialog({
         return;
       }
     }
+    
+    // Chama a função de callback para confirmar a devolução
     onConfirm();
   };
 
+  // === RENDERIZAÇÃO DA INTERFACE (UI) ===
   return (
     <>
+      {/* Diálogo principal de devolução */}
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
@@ -107,8 +152,9 @@ export function ReturnDialog({
           </DialogHeader>
           
           <div className="grid md:grid-cols-2 gap-6">
-            {/* Left Column - Return Form */}
+            {/* Coluna Esquerda - Formulário de Devolução */}
             <div className="space-y-4">
+              {/* Seletor de tipo de devolução (individual ou lote) */}
               <div className="space-y-2">
                 <Label htmlFor="returnType" className="text-gray-700">
                   Tipo de Devolução
@@ -133,7 +179,9 @@ export function ReturnDialog({
                 </Select>
               </div>
 
+              {/* Campos específicos para cada tipo de devolução */}
               {returnData.type === 'individual' ? (
+                /* Campo de ID para devolução individual */
                 <div className="space-y-2">
                   <Label htmlFor="chromebookId" className="text-gray-700">
                     ID do Chromebook
@@ -146,6 +194,7 @@ export function ReturnDialog({
                       placeholder="Digite o ID do Chromebook"
                       className="bg-white border-gray-200"
                     />
+                    {/* Botão para escanear QR Code */}
                     <Button 
                       type="button"
                       variant="outline"
@@ -156,7 +205,9 @@ export function ReturnDialog({
                   </div>
                 </div>
               ) : (
+                /* Interface de devolução em lote */
                 <div className="space-y-2">
+                  {/* Cabeçalho com contador de dispositivos */}
                   <div className="flex justify-between items-center mb-2">
                     <Label htmlFor="batchDevices" className="text-gray-700">
                       Dispositivos em Lote
@@ -167,6 +218,7 @@ export function ReturnDialog({
                   </div>
                   
                   <div className="space-y-2">
+                    {/* Campo para adicionar dispositivos */}
                     <div className="flex flex-col gap-2">
                       <div className="relative w-full">
                         <Input
@@ -182,6 +234,7 @@ export function ReturnDialog({
                             }
                           }}
                         />
+                        {/* Botão flutuante para adicionar dispositivo */}
                         <Button 
                           type="button"
                           variant="ghost"
@@ -193,6 +246,7 @@ export function ReturnDialog({
                         </Button>
                       </div>
                       
+                      {/* Botão para escanear QR Code */}
                       <Button 
                         type="button"
                         variant="outline"
@@ -205,15 +259,18 @@ export function ReturnDialog({
                     </div>
                   </div>
                   
+                  {/* Lista de dispositivos adicionados ao lote */}
                   <div className="mt-2 p-2 bg-gray-50 rounded-md border border-gray-200 max-h-[150px] overflow-y-auto">
                     {batchDevices.length > 0 ? (
                       <div className="space-y-2">
+                        {/* Lista de dispositivos */}
                         {batchDevices.map((device, index) => (
                           <div key={index} className="flex justify-between items-center p-2 bg-white rounded border border-gray-100">
                             <div className="flex items-center gap-2">
                               <Computer className="h-4 w-4 text-blue-500" />
                               <span className="text-sm">{device}</span>
                             </div>
+                            {/* Botão para remover dispositivo */}
                             <Button 
                               type="button"
                               variant="ghost"
@@ -226,6 +283,7 @@ export function ReturnDialog({
                         ))}
                       </div>
                     ) : (
+                      /* Mensagem quando nenhum dispositivo foi adicionado */
                       <div className="text-center text-gray-500 py-4">
                         <Computer className="h-10 w-10 mx-auto mb-2 text-gray-300" />
                         <p className="text-sm">Nenhum dispositivo adicionado</p>
@@ -235,6 +293,7 @@ export function ReturnDialog({
                 </div>
               )}
 
+              {/* Seletor de tipo de usuário */}
               <div className="space-y-2">
                 <Label htmlFor="userType" className="text-gray-700">
                   Tipo de Solicitante
@@ -257,8 +316,9 @@ export function ReturnDialog({
               </div>
             </div>
 
-            {/* Right Column - User Information */}
+            {/* Coluna Direita - Informações do Usuário */}
             <div className="space-y-4">
+              {/* Campo de nome do solicitante */}
               <div className="space-y-2">
                 <Label htmlFor="returnerName" className="text-gray-700">
                   Nome do Solicitante
@@ -272,6 +332,7 @@ export function ReturnDialog({
                 />
               </div>
 
+              {/* Campo de RA (apenas para alunos) */}
               {returnData.userType === 'aluno' && (
                 <div className="space-y-2">
                   <Label htmlFor="returnerRA" className="text-gray-700">
@@ -287,6 +348,7 @@ export function ReturnDialog({
                 </div>
               )}
 
+              {/* Campo de email */}
               <div className="space-y-2">
                 <Label htmlFor="returnerEmail" className="text-gray-700">
                   Email
@@ -302,6 +364,7 @@ export function ReturnDialog({
                 />
               </div>
 
+              {/* Resumo da devolução em lote (visível apenas para devolução em lote) */}
               {returnData.type === 'lote' && (
                 <div className="mt-4 p-3 bg-blue-50 border border-blue-100 rounded-lg">
                   <div className="flex items-center justify-between mb-2">
@@ -326,6 +389,7 @@ export function ReturnDialog({
             </div>
           </div>
 
+          {/* Botões de ação no rodapé do diálogo */}
           <DialogFooter className="mt-6 flex-row gap-2">
             <Button 
               variant="outline" 
@@ -347,6 +411,7 @@ export function ReturnDialog({
         </DialogContent>
       </Dialog>
 
+      {/* Componente de leitura de QR Code (visível apenas quando showScanner = true) */}
       <QRCodeReader
         open={showScanner}
         onOpenChange={setShowScanner}

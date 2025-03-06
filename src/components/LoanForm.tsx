@@ -8,21 +8,30 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { Badge } from "./ui/badge";
 import { Computer, Plus, QrCode } from "lucide-react";
 
+// Define a interface dos dados do formulário de empréstimo
 interface LoanFormData {
-  studentName: string;
-  ra?: string;
-  email: string;
-  chromebookId: string;
-  purpose: string;
-  userType: 'aluno' | 'professor' | 'funcionario';
-  loanType: 'individual' | 'lote';
+  studentName: string;    // Nome do solicitante
+  ra?: string;            // RA (Registro Acadêmico), opcional
+  email: string;          // Email do solicitante
+  chromebookId: string;   // ID do Chromebook
+  purpose: string;        // Finalidade do empréstimo
+  userType: 'aluno' | 'professor' | 'funcionario';  // Tipo de usuário
+  loanType: 'individual' | 'lote';                 // Tipo de empréstimo
 }
 
+// Define a interface das props do componente
 interface LoanFormProps {
-  onSubmit: (data: LoanFormData) => void;
+  onSubmit: (data: LoanFormData) => void;  // Função chamada ao enviar o formulário
 }
 
+/**
+ * Componente de formulário para realizar novos empréstimos de Chromebooks
+ * Permite empréstimos individuais ou em lote para alunos, professores ou funcionários
+ */
 export function LoanForm({ onSubmit }: LoanFormProps) {
+  // === ESTADOS (STATES) ===
+  
+  // Estado para armazenar os dados do formulário
   const [formData, setFormData] = useState<LoanFormData>({
     studentName: "",
     ra: "",
@@ -33,24 +42,44 @@ export function LoanForm({ onSubmit }: LoanFormProps) {
     loanType: 'individual'
   });
 
+  // Lista de dispositivos para empréstimo em lote
   const [batchDevices, setBatchDevices] = useState<string[]>([]);
+  
+  // Valor atual do campo de entrada para adicionar dispositivos ao lote
   const [currentBatchInput, setCurrentBatchInput] = useState("");
 
+  // === FUNÇÕES DE MANIPULAÇÃO (HANDLERS) ===
+
+  /**
+   * Adiciona um dispositivo à lista de lote
+   * Verifica se o dispositivo já existe na lista antes de adicionar
+   */
   const addDeviceToBatch = () => {
     if (currentBatchInput.trim() && !batchDevices.includes(currentBatchInput.trim())) {
       setBatchDevices([...batchDevices, currentBatchInput.trim()]);
-      setCurrentBatchInput("");
+      setCurrentBatchInput(""); // Limpa o campo após adicionar
     }
   };
 
+  /**
+   * Remove um dispositivo da lista de lote
+   * @param deviceId - ID do dispositivo a ser removido
+   */
   const removeDeviceFromBatch = (deviceId: string) => {
     setBatchDevices(batchDevices.filter(id => id !== deviceId));
   };
 
+  /**
+   * Função chamada ao enviar o formulário
+   * Valida os dados e processa o empréstimo individual ou em lote
+   */
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault();  // Previne o comportamento padrão do formulário
     
     if (formData.loanType === 'lote') {
+      // === EMPRÉSTIMO EM LOTE ===
+      
+      // Verifica se há dispositivos na lista de lote
       if (batchDevices.length === 0) {
         toast({
           title: "Erro",
@@ -60,15 +89,17 @@ export function LoanForm({ onSubmit }: LoanFormProps) {
         return;
       }
       
-      // Se for empréstimo em lote, processa cada dispositivo individualmente
+      // Processa cada dispositivo individualmente
       let processedCount = 0;
       
       batchDevices.forEach(deviceId => {
+        // Cria um objeto de empréstimo para cada dispositivo
         const loanData = {
           ...formData,
           chromebookId: deviceId
         };
         
+        // Verifica campos obrigatórios
         if (!loanData.studentName || !loanData.email || !loanData.purpose) {
           toast({
             title: "Erro",
@@ -78,11 +109,14 @@ export function LoanForm({ onSubmit }: LoanFormProps) {
           return;
         }
         
+        // Chama a função de callback para processar o empréstimo
         onSubmit(loanData);
         processedCount++;
       });
       
+      // Se processou algum dispositivo, limpa o formulário e exibe mensagem de sucesso
       if (processedCount > 0) {
+        // Limpa o formulário e a lista de dispositivos
         setBatchDevices([]);
         setCurrentBatchInput("");
         setFormData({ 
@@ -95,6 +129,7 @@ export function LoanForm({ onSubmit }: LoanFormProps) {
           loanType: 'individual'
         });
         
+        // Exibe mensagem de sucesso
         toast({
           title: "Sucesso",
           description: `${processedCount} Chromebooks emprestados com sucesso`,
@@ -102,7 +137,9 @@ export function LoanForm({ onSubmit }: LoanFormProps) {
       }
       
     } else {
-      // Empréstimo individual (lógica original)
+      // === EMPRÉSTIMO INDIVIDUAL ===
+      
+      // Verifica campos obrigatórios
       if (!formData.studentName || !formData.email || !formData.chromebookId || !formData.purpose) {
         toast({
           title: "Erro",
@@ -112,7 +149,10 @@ export function LoanForm({ onSubmit }: LoanFormProps) {
         return;
       }
       
+      // Chama a função de callback para processar o empréstimo
       onSubmit(formData);
+      
+      // Limpa o formulário
       setFormData({ 
         studentName: "", 
         ra: "", 
@@ -123,6 +163,7 @@ export function LoanForm({ onSubmit }: LoanFormProps) {
         loanType: 'individual'
       });
       
+      // Exibe mensagem de sucesso
       toast({
         title: "Sucesso",
         description: "Chromebook emprestado com sucesso",
@@ -130,12 +171,14 @@ export function LoanForm({ onSubmit }: LoanFormProps) {
     }
   };
 
+  // === RENDERIZAÇÃO DA INTERFACE (UI) ===
   return (
     <div>
       <h2 className="text-xl font-semibold text-gray-800 mb-4">
         Novo Empréstimo
       </h2>
       <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Seletor de tipo de empréstimo (individual ou lote) */}
         <div className="space-y-2">
           <Label htmlFor="loanType" className="text-gray-700">
             Tipo de Empréstimo
@@ -156,7 +199,9 @@ export function LoanForm({ onSubmit }: LoanFormProps) {
           </Select>
         </div>
 
+        {/* Campos específicos para cada tipo de empréstimo */}
         {formData.loanType === 'individual' ? (
+          /* Campo de ID para empréstimo individual */
           <div className="space-y-2">
             <Label htmlFor="chromebookId" className="text-gray-700">
               ID do Chromebook
@@ -172,7 +217,9 @@ export function LoanForm({ onSubmit }: LoanFormProps) {
             />
           </div>
         ) : (
+          /* Interface de empréstimo em lote */
           <div className="space-y-2">
+            {/* Cabeçalho com contador de dispositivos */}
             <div className="flex justify-between items-center mb-2">
               <Label htmlFor="batchDevices" className="text-gray-700">
                 Dispositivos em Lote
@@ -183,6 +230,7 @@ export function LoanForm({ onSubmit }: LoanFormProps) {
             </div>
             
             <div className="space-y-2">
+              {/* Campo para adicionar dispositivos */}
               <div className="flex flex-col gap-2">
                 <div className="relative w-full">
                   <Input
@@ -198,6 +246,7 @@ export function LoanForm({ onSubmit }: LoanFormProps) {
                       }
                     }}
                   />
+                  {/* Botão flutuante para adicionar dispositivo */}
                   <Button 
                     type="button"
                     variant="ghost"
@@ -210,15 +259,18 @@ export function LoanForm({ onSubmit }: LoanFormProps) {
                 </div>
               </div>
               
+              {/* Lista de dispositivos adicionados ao lote */}
               <div className="mt-2 p-2 bg-gray-50 rounded-md border border-gray-200 max-h-[150px] overflow-y-auto">
                 {batchDevices.length > 0 ? (
                   <div className="space-y-2">
+                    {/* Lista de dispositivos */}
                     {batchDevices.map((device, index) => (
                       <div key={index} className="flex justify-between items-center p-2 bg-white rounded border border-gray-100">
                         <div className="flex items-center gap-2">
                           <Computer className="h-4 w-4 text-green-500" />
                           <span className="text-sm">{device}</span>
                         </div>
+                        {/* Botão para remover dispositivo */}
                         <Button 
                           type="button"
                           variant="ghost"
@@ -231,6 +283,7 @@ export function LoanForm({ onSubmit }: LoanFormProps) {
                     ))}
                   </div>
                 ) : (
+                  /* Mensagem quando nenhum dispositivo foi adicionado */
                   <div className="text-center text-gray-500 py-4">
                     <Computer className="h-10 w-10 mx-auto mb-2 text-gray-300" />
                     <p className="text-sm">Nenhum dispositivo adicionado</p>
@@ -238,6 +291,7 @@ export function LoanForm({ onSubmit }: LoanFormProps) {
                 )}
               </div>
               
+              {/* Resumo do empréstimo em lote (visível apenas se houver dispositivos) */}
               {batchDevices.length > 0 && (
                 <div className="mt-2 p-3 bg-green-50 border border-green-100 rounded-lg">
                   <div className="flex items-center justify-between mb-2">
@@ -256,6 +310,7 @@ export function LoanForm({ onSubmit }: LoanFormProps) {
           </div>
         )}
 
+        {/* Seletor de tipo de usuário */}
         <div className="space-y-2">
           <Label htmlFor="userType" className="text-gray-700">
             Tipo de Solicitante
@@ -277,6 +332,7 @@ export function LoanForm({ onSubmit }: LoanFormProps) {
           </Select>
         </div>
 
+        {/* Campo de nome do solicitante */}
         <div className="space-y-2">
           <Label htmlFor="studentName" className="text-gray-700">
             Nome do Solicitante
@@ -292,6 +348,7 @@ export function LoanForm({ onSubmit }: LoanFormProps) {
           />
         </div>
 
+        {/* Campo de RA (apenas para alunos) */}
         {formData.userType === 'aluno' && (
           <div className="space-y-2">
             <Label htmlFor="ra" className="text-gray-700">
@@ -307,6 +364,7 @@ export function LoanForm({ onSubmit }: LoanFormProps) {
           </div>
         )}
 
+        {/* Campo de email */}
         <div className="space-y-2">
           <Label htmlFor="email" className="text-gray-700">
             Email
@@ -322,6 +380,7 @@ export function LoanForm({ onSubmit }: LoanFormProps) {
           />
         </div>
 
+        {/* Campo de finalidade do empréstimo */}
         <div className="space-y-2">
           <Label htmlFor="purpose" className="text-gray-700">
             Finalidade
@@ -337,6 +396,7 @@ export function LoanForm({ onSubmit }: LoanFormProps) {
           />
         </div>
         
+        {/* Botão de envio do formulário */}
         <Button 
           type="submit" 
           className="w-full bg-blue-600 hover:bg-blue-700"
