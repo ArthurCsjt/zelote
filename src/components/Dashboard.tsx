@@ -145,24 +145,24 @@ export function Dashboard({ activeLoans, history, onBack }: DashboardProps) {
 
   return (
     <div className="space-y-6 animate-fadeIn">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-blue-700 to-blue-500 bg-clip-text text-transparent">Dashboard</h2>
-        <div className="flex gap-2">
+      <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-6">
+        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight bg-gradient-to-r from-blue-700 to-blue-500 bg-clip-text text-transparent">Dashboard</h2>
+        <div className="flex flex-wrap gap-2 w-full sm:w-auto justify-start">
           <Button
             variant="outline"
             onClick={handleDownloadPDF}
-            className="flex items-center gap-2 hover:bg-blue-50"
+            className="flex items-center gap-2 hover:bg-blue-50 px-3"
           >
             <Download className="h-4 w-4" />
-            Baixar Relatório
+            <span className="whitespace-nowrap">Baixar Relatório</span>
           </Button>
           <Button 
             variant="outline" 
             onClick={onBack}
-            className="flex items-center gap-2 hover:bg-blue-50"
+            className="flex items-center gap-2 hover:bg-blue-50 px-3"
           >
             <ArrowLeft className="h-4 w-4" />
-            Voltar ao Menu
+            <span className="whitespace-nowrap">Voltar ao Menu</span>
           </Button>
         </div>
       </div>
@@ -314,6 +314,15 @@ export function Dashboard({ activeLoans, history, onBack }: DashboardProps) {
           )}
         </CardContent>
       </Card>
+      
+      <div className="fixed bottom-4 right-4 sm:hidden">
+        <Button
+          onClick={onBack}
+          className="bg-green-600 hover:bg-green-700 text-white shadow-lg rounded-full h-12 w-12 flex items-center justify-center"
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </Button>
+      </div>
     </div>
   );
 }

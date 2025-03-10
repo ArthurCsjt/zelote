@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -160,6 +161,12 @@
   button {
     white-space: nowrap;
   }
+  
+  /* Dashboard mobile button improvements */
+  .dashboard-actions button {
+    min-width: 140px;
+    margin-bottom: 0.5rem;
+  }
 }
 
 /* Ensure text doesn't overflow on small screens */
@@ -171,3 +178,4 @@
 .content-container {
   @apply px-4 sm:px-6 md:px-8 max-w-full mx-auto;
 }
+
