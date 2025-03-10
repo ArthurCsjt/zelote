@@ -110,3 +110,14 @@
   border-left-color: #0EA5E9;
 }
 
+/* Improved login form styling */
+.form-input-icon {
+  @apply absolute left-3 top-1/2 -translate-y-1/2 text-gray-400;
+}
+
+/* Mobile optimizations */
+@media (max-width: 640px) {
+  .glass-card {
+    margin: 0 16px;
+  }
+}

@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/components/ui/use-toast";
-import { Computer, User, Lock, Mail, ArrowLeft, KeyRound, UserPlus, KeySquare } from "lucide-react";
+import { Computer, User, Lock, Mail, ArrowLeft, KeyRound, UserPlus, KeySquare, LockKeyhole } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -207,9 +207,9 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-blue-100">
-      <div className="w-full max-w-md px-4">
-        <Card className="w-full shadow-lg glass-card border-0 overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-blue-100 p-4">
+      <div className="w-full max-w-md">
+        <Card className="w-full shadow-xl glass-card border-0 overflow-hidden">
           <CardHeader className="space-y-1 text-center pb-6 bg-gradient-to-r from-green-500/10 to-blue-500/10">
             <div className="flex justify-center mb-4">
               <div className="p-3 rounded-full bg-green-100 shadow-md">
@@ -223,7 +223,7 @@ const Login = () => {
           </CardHeader>
           
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid grid-cols-3 w-[90%] mx-auto bg-gray-100/60 mt-4">
+            <TabsList className="grid grid-cols-2 w-[90%] mx-auto bg-gray-100/60 mt-4">
               <TabsTrigger value="login" className="data-[state=active]:bg-white data-[state=active]:text-green-700 flex items-center gap-1">
                 <User className="h-3.5 w-3.5" />
                 <span>Login</span>
@@ -231,10 +231,6 @@ const Login = () => {
               <TabsTrigger value="register" className="data-[state=active]:bg-white data-[state=active]:text-green-700 flex items-center gap-1">
                 <UserPlus className="h-3.5 w-3.5" />
                 <span>Cadastro</span>
-              </TabsTrigger>
-              <TabsTrigger value="recovery" className="data-[state=active]:bg-white data-[state=active]:text-green-700 flex items-center gap-1">
-                <KeySquare className="h-3.5 w-3.5" />
-                <span>Recuperar</span>
               </TabsTrigger>
             </TabsList>
             
@@ -254,7 +250,7 @@ const Login = () => {
                         placeholder="seu.email@colegiosaojudas.com.br"
                         value={loginEmail}
                         onChange={(e) => setLoginEmail(e.target.value)}
-                        className="bg-white/70 border-gray-200 focus:border-green-300 transition-all"
+                        className="bg-white/70 border-gray-200 focus:border-green-300 transition-all pl-3"
                       />
                     </div>
                     <p className="text-xs text-gray-500 italic">
@@ -274,18 +270,28 @@ const Login = () => {
                         placeholder="Digite sua senha"
                         value={loginPassword}
                         onChange={(e) => setLoginPassword(e.target.value)}
-                        className="bg-white/70 border-gray-200 focus:border-green-300 transition-all"
+                        className="bg-white/70 border-gray-200 focus:border-green-300 transition-all pl-3"
                       />
                     </div>
                   </div>
                 </CardContent>
                 
-                <CardFooter className="pb-6">
+                <CardFooter className="flex flex-col space-y-4 pb-6">
                   <Button 
                     type="submit" 
                     className="w-full bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 transition-all shadow-md"
                   >
                     Entrar
+                  </Button>
+                  
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="text-sm text-gray-600 hover:text-green-700 mt-2"
+                    onClick={() => setActiveTab("recovery")}
+                  >
+                    <KeySquare className="h-3.5 w-3.5 mr-1" />
+                    Esqueceu sua senha?
                   </Button>
                 </CardFooter>
               </form>
@@ -307,7 +313,7 @@ const Login = () => {
                         placeholder="seu.email@colegiosaojudas.com.br"
                         value={registerEmail}
                         onChange={(e) => setRegisterEmail(e.target.value)}
-                        className="bg-white/70 border-gray-200 focus:border-green-300 transition-all"
+                        className="bg-white/70 border-gray-200 focus:border-green-300 transition-all pl-3"
                       />
                     </div>
                     <p className="text-xs text-gray-500 italic">
@@ -327,7 +333,7 @@ const Login = () => {
                         placeholder="Crie uma senha forte"
                         value={registerPassword}
                         onChange={(e) => setRegisterPassword(e.target.value)}
-                        className="bg-white/70 border-gray-200 focus:border-green-300 transition-all"
+                        className="bg-white/70 border-gray-200 focus:border-green-300 transition-all pl-3"
                       />
                     </div>
                   </div>
@@ -344,7 +350,7 @@ const Login = () => {
                         placeholder="Confirme sua senha"
                         value={registerConfirmPassword}
                         onChange={(e) => setRegisterConfirmPassword(e.target.value)}
-                        className="bg-white/70 border-gray-200 focus:border-green-300 transition-all"
+                        className="bg-white/70 border-gray-200 focus:border-green-300 transition-all pl-3"
                       />
                     </div>
                   </div>
@@ -365,6 +371,26 @@ const Login = () => {
             <TabsContent value="recovery" className="mt-0 fade-enter">
               <form onSubmit={handleRecoverySubmit}>
                 <CardContent className="space-y-4 pt-6">
+                  <div className="flex items-center mb-4">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      className="text-gray-600 p-0 h-auto"
+                      onClick={() => setActiveTab("login")}
+                    >
+                      <ArrowLeft className="h-4 w-4 mr-2" />
+                      Voltar ao login
+                    </Button>
+                  </div>
+                  
+                  <div className="text-center mb-4">
+                    <div className="mx-auto w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mb-2">
+                      <LockKeyhole className="h-6 w-6 text-blue-600" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-800">Recuperação de Senha</h3>
+                    <p className="text-sm text-gray-600">Informe seu email para redefinir sua senha</p>
+                  </div>
+
                   <div className="space-y-2">
                     <Label htmlFor="recovery-email" className="text-gray-700 flex items-center gap-1.5">
                       <Mail className="h-4 w-4" />
@@ -377,7 +403,7 @@ const Login = () => {
                         placeholder="seu.email@colegiosaojudas.com.br"
                         value={recoveryEmail}
                         onChange={(e) => setRecoveryEmail(e.target.value)}
-                        className="bg-white/70 border-gray-200 focus:border-green-300 transition-all"
+                        className="bg-white/70 border-gray-200 focus:border-green-300 transition-all pl-3"
                       />
                     </div>
                   </div>
@@ -394,7 +420,7 @@ const Login = () => {
                         placeholder="Digite a nova senha"
                         value={recoveryNewPassword}
                         onChange={(e) => setRecoveryNewPassword(e.target.value)}
-                        className="bg-white/70 border-gray-200 focus:border-green-300 transition-all"
+                        className="bg-white/70 border-gray-200 focus:border-green-300 transition-all pl-3"
                       />
                     </div>
                   </div>
@@ -411,7 +437,7 @@ const Login = () => {
                         placeholder="Confirme a nova senha"
                         value={recoveryConfirmPassword}
                         onChange={(e) => setRecoveryConfirmPassword(e.target.value)}
-                        className="bg-white/70 border-gray-200 focus:border-green-300 transition-all"
+                        className="bg-white/70 border-gray-200 focus:border-green-300 transition-all pl-3"
                       />
                     </div>
                   </div>
@@ -420,7 +446,7 @@ const Login = () => {
                 <CardFooter className="pb-6">
                   <Button 
                     type="submit"
-                    className="w-full bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 transition-all shadow-md"
+                    className="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 transition-all shadow-md"
                   >
                     Recuperar Senha
                   </Button>
