@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { LoanForm } from "@/components/LoanForm";
 import { ActiveLoans, Loan, ReturnDataType } from "@/components/ActiveLoans";
@@ -9,7 +10,7 @@ import { ReturnDialog } from "@/components/ReturnDialog";
 import { Button } from "@/components/ui/button";
 import { LoanHistory } from "@/components/LoanHistory";
 import { Dashboard } from "@/components/Dashboard";
-import { ArrowLeft } from "@heroicons/react/24/outline";
+import { ArrowLeft } from "lucide-react";
 
 const Index = () => {
   const [loans, setLoans] = useState<Loan[]>([]);
@@ -28,25 +29,36 @@ const Index = () => {
   const [showDashboard, setShowDashboard] = useState(false);
 
   const handleNavigation = (route: 'registration' | 'dashboard' | 'loan' | 'return') => {
-    switch (route) {
-      case 'registration':
-        setShowRegistrationForm(true);
-        setShowLoanForm(false);
-        setShowDashboard(false);
-        break;
-      case 'dashboard':
-        setShowDashboard(true);
-        setShowLoanForm(false);
-        setShowRegistrationForm(false);
-        break;
-      case 'loan':
-        setShowLoanForm(true);
-        setShowRegistrationForm(false);
-        setShowDashboard(false);
-        break;
-      case 'return':
-        setOpenReturnDialog(true);
-        break;
+    try {
+      switch (route) {
+        case 'registration':
+          setShowRegistrationForm(true);
+          setShowLoanForm(false);
+          setShowDashboard(false);
+          break;
+        case 'dashboard':
+          setShowDashboard(true);
+          setShowLoanForm(false);
+          setShowRegistrationForm(false);
+          break;
+        case 'loan':
+          setShowLoanForm(true);
+          setShowRegistrationForm(false);
+          setShowDashboard(false);
+          break;
+        case 'return':
+          setOpenReturnDialog(true);
+          break;
+        default:
+          console.warn(`Rota não reconhecida: ${route}`);
+      }
+    } catch (error) {
+      console.error("Erro ao navegar:", error);
+      toast({
+        title: "Erro",
+        description: "Ocorreu um erro ao navegar entre as telas",
+        variant: "destructive",
+      });
     }
   };
 
@@ -59,25 +71,49 @@ const Index = () => {
     userType: 'aluno' | 'professor' | 'funcionario';
     loanType: 'individual' | 'lote';
   }) => {
-    const newLoan: Loan = {
-      id: Math.random().toString(36).substring(7),
-      ...formData,
-      timestamp: new Date()
-    };
-    setLoans([...loans, newLoan]);
+    try {
+      if (!formData.studentName || !formData.email || !formData.chromebookId) {
+        toast({
+          title: "Dados incompletos",
+          description: "Preencha todos os campos obrigatórios",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Verificar se o Chromebook já está emprestado
+      if (loans.some(loan => loan.chromebookId === formData.chromebookId)) {
+        toast({
+          title: "Chromebook já emprestado",
+          description: `O Chromebook ID ${formData.chromebookId} já está em uso`,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const newLoan: Loan = {
+        id: Math.random().toString(36).substring(7),
+        ...formData,
+        timestamp: new Date()
+      };
+
+      setLoans(prevLoans => [...prevLoans, newLoan]);
+      toast({
+        title: "Empréstimo registrado",
+        description: `Chromebook ID ${formData.chromebookId} emprestado para ${formData.studentName}`,
+      });
+    } catch (error) {
+      console.error("Erro ao criar novo empréstimo:", error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível registrar o empréstimo",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleReturnClick = () => {
-    if (returnData.type === 'individual') {
-      const loanToReturn = loans.find((loan) => loan.chromebookId === chromebookId);
-      if (!loanToReturn) {
-        toast({
-          title: "Erro",
-          description: "Chromebook não encontrado ou não está emprestado",
-          variant: "destructive",
-        });
-        return;
-      }
+    try {
       if (!returnData.name || !returnData.email) {
         toast({
           title: "Erro",
@@ -86,77 +122,141 @@ const Index = () => {
         });
         return;
       }
-      handleReturn(loanToReturn.id, returnData);
-    } else {
-      if (!returnData.name || !returnData.email) {
-        toast({
-          title: "Erro",
-          description: "Por favor, preencha os campos obrigatórios",
-          variant: "destructive",
-        });
-        return;
-      }
-      const chromebookIds = chromebookId.split(',');
-      let returnedCount = 0;
-      chromebookIds.forEach(id => {
-        const loanToReturn = loans.find(loan => loan.chromebookId === id.trim());
-        if (loanToReturn) {
-          handleReturn(loanToReturn.id, returnData);
-          returnedCount++;
+
+      if (returnData.type === 'individual') {
+        if (!chromebookId.trim()) {
+          toast({
+            title: "Erro",
+            description: "ID do Chromebook não informado",
+            variant: "destructive",
+          });
+          return;
         }
-      });
-      if (returnedCount === 0) {
-        toast({
-          title: "Atenção",
-          description: "Nenhum dispositivo encontrado para devolução",
-          variant: "destructive",
-        });
+
+        const loanToReturn = loans.find((loan) => loan.chromebookId === chromebookId.trim());
+        if (!loanToReturn) {
+          toast({
+            title: "Erro",
+            description: "Chromebook não encontrado ou não está emprestado",
+            variant: "destructive",
+          });
+          return;
+        }
+        
+        handleReturn(loanToReturn.id, returnData);
       } else {
-        toast({
-          title: "Sucesso",
-          description: `${returnedCount} dispositivos devolvidos com sucesso`,
+        // Lote
+        if (!chromebookId.trim()) {
+          toast({
+            title: "Erro",
+            description: "IDs dos Chromebooks não informados",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        const chromebookIds = chromebookId.split(',').map(id => id.trim()).filter(id => id);
+        
+        if (chromebookIds.length === 0) {
+          toast({
+            title: "Erro",
+            description: "Nenhum ID válido informado",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        let returnedCount = 0;
+        let notFoundCount = 0;
+        
+        chromebookIds.forEach(id => {
+          const loanToReturn = loans.find(loan => loan.chromebookId === id);
+          if (loanToReturn) {
+            handleReturn(loanToReturn.id, returnData);
+            returnedCount++;
+          } else {
+            notFoundCount++;
+          }
         });
+
+        if (returnedCount === 0) {
+          toast({
+            title: "Atenção",
+            description: `Nenhum dos ${chromebookIds.length} dispositivos foi encontrado para devolução`,
+            variant: "destructive",
+          });
+        } else {
+          const notFoundMessage = notFoundCount > 0 
+            ? ` (${notFoundCount} não encontrados)`
+            : '';
+            
+          toast({
+            title: "Sucesso",
+            description: `${returnedCount} dispositivos devolvidos com sucesso${notFoundMessage}`,
+          });
+        }
       }
+
+      // Limpar campos após a devolução
+      setOpenReturnDialog(false);
+      setChromebookId("");
+      setReturnData({
+        name: "",
+        ra: "",
+        email: "",
+        type: 'individual',
+        userType: 'aluno'
+      });
+    } catch (error) {
+      console.error("Erro ao processar devolução:", error);
+      toast({
+        title: "Erro",
+        description: "Ocorreu um erro ao processar a devolução",
+        variant: "destructive",
+      });
     }
-    setOpenReturnDialog(false);
-    setChromebookId("");
-    setReturnData({
-      name: "",
-      ra: "",
-      email: "",
-      type: 'individual',
-      userType: 'aluno'
-    });
   };
 
   const handleReturn = (loanId: string, returnData: ReturnDataType) => {
-    const loanToReturn = loans.find((loan) => loan.id === loanId);
-    if (!loanToReturn) return;
-
-    const returnedLoan: Loan = {
-      ...loanToReturn,
-      returnRecord: {
-        returnedBy: {
-          name: returnData.name,
-          ra: returnData.ra,
-          email: returnData.email,
-          type: returnData.userType
-        },
-        returnTime: new Date(),
-        returnType: returnData.type
+    try {
+      const loanToReturn = loans.find((loan) => loan.id === loanId);
+      if (!loanToReturn) {
+        console.warn(`Empréstimo com ID ${loanId} não encontrado`);
+        return;
       }
-    };
 
-    setHistory([returnedLoan, ...history]);
-    setLoans(loans.filter((loan) => loan.id !== loanId));
+      const returnedLoan: Loan = {
+        ...loanToReturn,
+        returnRecord: {
+          returnedBy: {
+            name: returnData.name,
+            ra: returnData.ra,
+            email: returnData.email,
+            type: returnData.userType
+          },
+          returnTime: new Date(),
+          returnType: returnData.type
+        }
+      };
 
-    const returnedByDifferentPerson = returnData.email !== loanToReturn.email;
-    if (returnData.type === 'individual') {
+      setHistory(prevHistory => [returnedLoan, ...prevHistory]);
+      setLoans(prevLoans => prevLoans.filter((loan) => loan.id !== loanId));
+
+      const returnedByDifferentPerson = returnData.email !== loanToReturn.email;
+      if (returnData.type === 'individual') {
+        toast({
+          title: "Chromebook Devolvido",
+          description: returnedByDifferentPerson
+            ? `Devolvido por ${returnData.name} (${returnData.email})`
+            : "Devolvido pelo próprio solicitante",
+        });
+      }
+    } catch (error) {
+      console.error("Erro ao processar devolução específica:", error);
       toast({
-        title: "Chromebook Devolvido",
-        description: returnedByDifferentPerson
-          ? `Devolvido por ${returnData.name} (${returnData.email})`
-          : "Devolvido pelo próprio solicitante",
+        title: "Erro",
+        description: "Ocorreu um erro ao processar esta devolução",
+        variant: "destructive",
       });
     }
   };
