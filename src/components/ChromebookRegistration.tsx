@@ -24,8 +24,9 @@ interface ChromebookData {
   manufacturer: string;    // Fabricante (ex: Lenovo, HP, Dell)
   model: string;           // Modelo do dispositivo
   series: string;          // Número de série do fabricante
-  manufacturingYear: string; // Ano de fabricação do dispositivo
-  patrimonyNumber: string;   // Número de patrimônio da instituição
+  manufacturingYear?: string; // Ano de fabricação do dispositivo (opcional)
+  patrimonyNumber?: string;   // Número de patrimônio da instituição (opcional)
+  maintenanceStatus: 'none' | 'completed' | 'pending'; // Estado de manutenção do dispositivo
   observations?: string;     // Observações adicionais (opcional)
 }
 
@@ -63,6 +64,7 @@ export function ChromebookRegistration() {
     series: "",
     manufacturingYear: "",
     patrimonyNumber: "",
+    maintenanceStatus: 'none',
     observations: "",
   });
 
@@ -89,7 +91,7 @@ export function ChromebookRegistration() {
     e.preventDefault(); // Previne o comportamento padrão do formulário (recarregar a página)
 
     // Verifica se todos os campos obrigatórios foram preenchidos
-    if (!formData.id || !formData.manufacturer || !formData.model || !formData.series || !formData.manufacturingYear || !formData.patrimonyNumber) {
+    if (!formData.id || !formData.manufacturer || !formData.model || !formData.series) {
       // Exibe mensagem de erro se algum campo obrigatório estiver vazio
       toast({
         title: "Erro",
@@ -178,7 +180,18 @@ export function ChromebookRegistration() {
         pdf.setFontSize(10);
         const infoY = y + qrSize + 20;
         pdf.text(`Modelo: ${formData.model}`, 20, infoY);
-        pdf.text(`Patrimônio: ${formData.patrimonyNumber}`, 20, infoY + 7);
+        
+        if (formData.patrimonyNumber) {
+          pdf.text(`Patrimônio: ${formData.patrimonyNumber}`, 20, infoY + 7);
+        }
+        
+        // Adiciona informação sobre o estado de manutenção
+        const maintenanceText = `Estado: ${
+          formData.maintenanceStatus === 'none' ? 'Sem manutenção' : 
+          formData.maintenanceStatus === 'completed' ? 'Manutenção realizada' : 
+          'Manutenção pendente'
+        }`;
+        pdf.text(maintenanceText, 20, infoY + 14);
 
         // 13. Salva o PDF com nome baseado no ID do Chromebook
         pdf.save(`qrcode-chromebook-${formData.id}.pdf`);
@@ -259,28 +272,48 @@ export function ChromebookRegistration() {
           />
         </div>
 
-        {/* Campo: Ano de Fabricação */}
+        {/* Campo: Estado de Manutenção */}
         <div className="space-y-2">
-          <Label htmlFor="manufacturingYear">Ano de Fabricação *</Label>
+          <Label htmlFor="maintenanceStatus">Estado de Manutenção *</Label>
+          <Select
+            value={formData.maintenanceStatus}
+            onValueChange={(value: 'none' | 'completed' | 'pending') => 
+              setFormData({ ...formData, maintenanceStatus: value })
+            }
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Selecione o estado" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">Sem manutenção</SelectItem>
+              <SelectItem value="completed">Manutenção realizada</SelectItem>
+              <SelectItem value="pending">Manutenção pendente</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Campo: Ano de Fabricação (Opcional) */}
+        <div className="space-y-2">
+          <Label htmlFor="manufacturingYear">Ano de Fabricação</Label>
           <Input
             id="manufacturingYear"
             value={formData.manufacturingYear}
             onChange={(e) => setFormData({ ...formData, manufacturingYear: e.target.value })}
             placeholder="Ex: 2023"
-            required
           />
+          <p className="text-xs text-gray-500">Campo opcional</p>
         </div>
 
-        {/* Campo: Número do Patrimônio */}
+        {/* Campo: Número do Patrimônio (Opcional) */}
         <div className="space-y-2">
-          <Label htmlFor="patrimonyNumber">Patrimônio *</Label>
+          <Label htmlFor="patrimonyNumber">Patrimônio</Label>
           <Input
             id="patrimonyNumber"
             value={formData.patrimonyNumber}
             onChange={(e) => setFormData({ ...formData, patrimonyNumber: e.target.value })}
             placeholder="Digite o número do patrimônio"
-            required
           />
+          <p className="text-xs text-gray-500">Campo opcional</p>
         </div>
 
         {/* Campo: Observações (opcional) */}
@@ -293,6 +326,7 @@ export function ChromebookRegistration() {
             placeholder="Digite observações relevantes sobre o equipamento"
             className="min-h-[100px]"
           />
+          <p className="text-xs text-gray-500">Campo opcional</p>
         </div>
 
         {/* Botão de envio do formulário */}
@@ -350,7 +384,7 @@ export function ChromebookRegistration() {
               <Button
                 type="button"
                 onClick={handleDownloadPDF}
-                className="bg-green-600 hover:bg-green-700"
+                className="bg-blue-600 hover:bg-blue-700"
               >
                 Baixar QR Code (PDF)
               </Button>
