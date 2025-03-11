@@ -26,7 +26,6 @@ interface ChromebookData {
   series: string;          // Número de série do fabricante
   manufacturingYear?: string; // Ano de fabricação do dispositivo (opcional)
   patrimonyNumber?: string;   // Número de patrimônio da instituição (opcional)
-  maintenanceStatus: 'none' | 'completed' | 'pending'; // Estado de manutenção do dispositivo
   observations?: string;     // Observações adicionais (opcional)
 }
 
@@ -64,7 +63,6 @@ export function ChromebookRegistration() {
     series: "",
     manufacturingYear: "",
     patrimonyNumber: "",
-    maintenanceStatus: 'none',
     observations: "",
   });
 
@@ -184,14 +182,6 @@ export function ChromebookRegistration() {
         if (formData.patrimonyNumber) {
           pdf.text(`Patrimônio: ${formData.patrimonyNumber}`, 20, infoY + 7);
         }
-        
-        // Adiciona informação sobre o estado de manutenção
-        const maintenanceText = `Estado: ${
-          formData.maintenanceStatus === 'none' ? 'Sem manutenção' : 
-          formData.maintenanceStatus === 'completed' ? 'Manutenção realizada' : 
-          'Manutenção pendente'
-        }`;
-        pdf.text(maintenanceText, 20, infoY + 14);
 
         // 13. Salva o PDF com nome baseado no ID do Chromebook
         pdf.save(`qrcode-chromebook-${formData.id}.pdf`);
@@ -270,26 +260,6 @@ export function ChromebookRegistration() {
             placeholder="Digite o número de série"
             required
           />
-        </div>
-
-        {/* Campo: Estado de Manutenção */}
-        <div className="space-y-2">
-          <Label htmlFor="maintenanceStatus">Estado de Manutenção *</Label>
-          <Select
-            value={formData.maintenanceStatus}
-            onValueChange={(value: 'none' | 'completed' | 'pending') => 
-              setFormData({ ...formData, maintenanceStatus: value })
-            }
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Selecione o estado" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="none">Sem manutenção</SelectItem>
-              <SelectItem value="completed">Manutenção realizada</SelectItem>
-              <SelectItem value="pending">Manutenção pendente</SelectItem>
-            </SelectContent>
-          </Select>
         </div>
 
         {/* Campo: Ano de Fabricação (Opcional) */}
@@ -401,3 +371,4 @@ export function ChromebookRegistration() {
     </div>
   );
 }
+
