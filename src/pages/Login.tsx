@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -207,16 +206,16 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-blue-100 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#D3E4FD] to-[#F0F7FF] p-4">
       <div className="w-full max-w-md">
         <Card className="w-full shadow-xl glass-card border-0 overflow-hidden">
-          <CardHeader className="space-y-1 text-center pb-6 bg-gradient-to-r from-green-500/10 to-blue-500/10">
+          <CardHeader className="space-y-1 text-center pb-6 bg-gradient-to-r from-blue-500/10 to-blue-600/10">
             <div className="flex justify-center mb-4">
-              <div className="p-3 rounded-full bg-green-100 shadow-md">
-                <Computer className="h-10 w-10 text-green-600" />
+              <div className="p-3 rounded-full bg-blue-100 shadow-md">
+                <Computer className="h-10 w-10 text-blue-600" />
               </div>
             </div>
-            <CardTitle className="text-2xl font-bold text-green-800">Sistema de Gestão de Chromebooks</CardTitle>
+            <CardTitle className="text-2xl font-bold text-blue-800">Sistema de Gestão de Chromebooks</CardTitle>
             <CardDescription className="text-gray-600">
               Acesse o sistema para gerenciar empréstimos e devoluções
             </CardDescription>
@@ -224,11 +223,11 @@ const Login = () => {
           
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid grid-cols-2 w-[90%] mx-auto bg-gray-100/60 mt-4">
-              <TabsTrigger value="login" className="data-[state=active]:bg-white data-[state=active]:text-green-700 flex items-center gap-1">
+              <TabsTrigger value="login" className="data-[state=active]:bg-white data-[state=active]:text-blue-700 flex items-center gap-1">
                 <User className="h-3.5 w-3.5" />
                 <span>Login</span>
               </TabsTrigger>
-              <TabsTrigger value="register" className="data-[state=active]:bg-white data-[state=active]:text-green-700 flex items-center gap-1">
+              <TabsTrigger value="register" className="data-[state=active]:bg-white data-[state=active]:text-blue-700 flex items-center gap-1">
                 <UserPlus className="h-3.5 w-3.5" />
                 <span>Cadastro</span>
               </TabsTrigger>
@@ -250,7 +249,7 @@ const Login = () => {
                         placeholder="seu.email@colegiosaojudas.com.br"
                         value={loginEmail}
                         onChange={(e) => setLoginEmail(e.target.value)}
-                        className="bg-white/70 border-gray-200 focus:border-green-300 transition-all pl-3"
+                        className="bg-white/70 border-gray-200 focus:border-blue-300 transition-all pl-3"
                       />
                     </div>
                     <p className="text-xs text-gray-500 italic">
@@ -270,7 +269,7 @@ const Login = () => {
                         placeholder="Digite sua senha"
                         value={loginPassword}
                         onChange={(e) => setLoginPassword(e.target.value)}
-                        className="bg-white/70 border-gray-200 focus:border-green-300 transition-all pl-3"
+                        className="bg-white/70 border-gray-200 focus:border-blue-300 transition-all pl-3"
                       />
                     </div>
                   </div>
@@ -279,7 +278,7 @@ const Login = () => {
                 <CardFooter className="flex flex-col space-y-4 pb-6">
                   <Button 
                     type="submit" 
-                    className="w-full bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 transition-all shadow-md"
+                    className="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 transition-all shadow-md"
                   >
                     Entrar
                   </Button>
@@ -287,7 +286,7 @@ const Login = () => {
                   <Button
                     type="button"
                     variant="ghost"
-                    className="text-sm text-gray-600 hover:text-green-700 mt-2"
+                    className="text-sm text-gray-600 hover:text-blue-700 mt-2"
                     onClick={() => setActiveTab("recovery")}
                   >
                     <KeySquare className="h-3.5 w-3.5 mr-1" />
@@ -313,7 +312,7 @@ const Login = () => {
                         placeholder="seu.email@colegiosaojudas.com.br"
                         value={registerEmail}
                         onChange={(e) => setRegisterEmail(e.target.value)}
-                        className="bg-white/70 border-gray-200 focus:border-green-300 transition-all pl-3"
+                        className="bg-white/70 border-gray-200 focus:border-blue-300 transition-all pl-3"
                       />
                     </div>
                     <p className="text-xs text-gray-500 italic">
@@ -333,7 +332,7 @@ const Login = () => {
                         placeholder="Crie uma senha forte"
                         value={registerPassword}
                         onChange={(e) => setRegisterPassword(e.target.value)}
-                        className="bg-white/70 border-gray-200 focus:border-green-300 transition-all pl-3"
+                        className="bg-white/70 border-gray-200 focus:border-blue-300 transition-all pl-3"
                       />
                     </div>
                   </div>
@@ -350,7 +349,7 @@ const Login = () => {
                         placeholder="Confirme sua senha"
                         value={registerConfirmPassword}
                         onChange={(e) => setRegisterConfirmPassword(e.target.value)}
-                        className="bg-white/70 border-gray-200 focus:border-green-300 transition-all pl-3"
+                        className="bg-white/70 border-gray-200 focus:border-blue-300 transition-all pl-3"
                       />
                     </div>
                   </div>
@@ -359,7 +358,7 @@ const Login = () => {
                 <CardFooter className="pb-6">
                   <Button 
                     type="submit" 
-                    className="w-full bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 transition-all shadow-md"
+                    className="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 transition-all shadow-md"
                   >
                     Cadastrar
                   </Button>
@@ -403,7 +402,7 @@ const Login = () => {
                         placeholder="seu.email@colegiosaojudas.com.br"
                         value={recoveryEmail}
                         onChange={(e) => setRecoveryEmail(e.target.value)}
-                        className="bg-white/70 border-gray-200 focus:border-green-300 transition-all pl-3"
+                        className="bg-white/70 border-gray-200 focus:border-blue-300 transition-all pl-3"
                       />
                     </div>
                   </div>
@@ -420,7 +419,7 @@ const Login = () => {
                         placeholder="Digite a nova senha"
                         value={recoveryNewPassword}
                         onChange={(e) => setRecoveryNewPassword(e.target.value)}
-                        className="bg-white/70 border-gray-200 focus:border-green-300 transition-all pl-3"
+                        className="bg-white/70 border-gray-200 focus:border-blue-300 transition-all pl-3"
                       />
                     </div>
                   </div>
@@ -437,7 +436,7 @@ const Login = () => {
                         placeholder="Confirme a nova senha"
                         value={recoveryConfirmPassword}
                         onChange={(e) => setRecoveryConfirmPassword(e.target.value)}
-                        className="bg-white/70 border-gray-200 focus:border-green-300 transition-all pl-3"
+                        className="bg-white/70 border-gray-200 focus:border-blue-300 transition-all pl-3"
                       />
                     </div>
                   </div>
