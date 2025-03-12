@@ -1,4 +1,3 @@
-
 import {
   Card,
   CardContent,
@@ -64,7 +63,6 @@ export function Dashboard({ activeLoans, history, onBack }: DashboardProps) {
   const todayLoans = history.filter(loan => isToday(loan.timestamp));
   const todayReturns = todayLoans.filter(loan => loan.returnRecord);
   
-  // Nova métrica: tempo médio de uso
   const averageUsageTime = todayReturns.reduce((acc, loan) => {
     if (loan.returnRecord) {
       const duration = loan.returnRecord.returnTime.getTime() - loan.timestamp.getTime();
@@ -73,7 +71,6 @@ export function Dashboard({ activeLoans, history, onBack }: DashboardProps) {
     return acc;
   }, 0) / (todayReturns.length || 1);
 
-  // Nova métrica: empréstimos por tipo de usuário
   const loansByUserType = history.reduce((acc, loan) => {
     const userType = loan.userType || 'aluno';
     acc[userType] = (acc[userType] || 0) + 1;
@@ -85,7 +82,6 @@ export function Dashboard({ activeLoans, history, onBack }: DashboardProps) {
     value: count
   }));
 
-  // Nova métrica: duração média de empréstimos
   const completedLoans = history.filter(loan => loan.returnRecord);
   const averageLoanDurations = completedLoans.reduce((acc, loan) => {
     if (loan.returnRecord) {
@@ -109,7 +105,6 @@ export function Dashboard({ activeLoans, history, onBack }: DashboardProps) {
     minutos: Math.round(data.total / data.count)
   }));
 
-  // Estatísticas mensais
   const last30Days = Array.from({ length: 30 }, (_, i) => {
     const date = subDays(today, i);
     const dailyLoans = history.filter(loan => 
@@ -126,7 +121,6 @@ export function Dashboard({ activeLoans, history, onBack }: DashboardProps) {
     };
   }).reverse();
 
-  // Novos totais
   const totalLoans = history.length;
   const completedLoansCount = history.filter(loan => loan.returnRecord).length;
   const completionRate = totalLoans > 0 ? (completedLoansCount / totalLoans) * 100 : 0;
@@ -135,7 +129,6 @@ export function Dashboard({ activeLoans, history, onBack }: DashboardProps) {
     const pageWidth = pdf.internal.pageSize.getWidth();
     let yPosition = 20;
 
-    // Cabeçalho
     pdf.setFontSize(20);
     pdf.text("Relatório de Uso dos Chromebooks", pageWidth / 2, yPosition, { align: "center" });
     yPosition += 20;
@@ -144,7 +137,6 @@ export function Dashboard({ activeLoans, history, onBack }: DashboardProps) {
     pdf.text(`Gerado em: ${format(new Date(), "dd/MM/yyyy 'às' HH:mm")}`, pageWidth / 2, yPosition, { align: "center" });
     yPosition += 20;
 
-    // Seção: Estatísticas do Dia
     pdf.setFontSize(16);
     pdf.text("Estatísticas do Dia", 20, yPosition);
     yPosition += 10;
@@ -163,7 +155,6 @@ export function Dashboard({ activeLoans, history, onBack }: DashboardProps) {
     });
     yPosition += 13;
 
-    // Seção: Histórico dos Últimos 7 Dias
     pdf.setFontSize(16);
     pdf.text("Histórico dos Últimos 7 Dias", 20, yPosition);
     yPosition += 10;
@@ -175,7 +166,6 @@ export function Dashboard({ activeLoans, history, onBack }: DashboardProps) {
     });
     yPosition += 13;
 
-    // Seção: Empréstimos Ativos
     pdf.setFontSize(16);
     pdf.text("Empréstimos Ativos", 20, yPosition);
     yPosition += 10;
@@ -305,9 +295,8 @@ export function Dashboard({ activeLoans, history, onBack }: DashboardProps) {
       </div>
 
       <Tabs defaultValue="visaogeral" className="w-full">
-        <TabsList className="grid grid-cols-3 mb-4">
+        <TabsList className="grid grid-cols-2 mb-4">
           <TabsTrigger value="visaogeral">Visão Geral</TabsTrigger>
-          <TabsTrigger value="tendencias">Tendências</TabsTrigger>
           <TabsTrigger value="usuarios">Usuários</TabsTrigger>
         </TabsList>
         
@@ -408,84 +397,6 @@ export function Dashboard({ activeLoans, history, onBack }: DashboardProps) {
                   <p>Nenhum empréstimo ativo no momento</p>
                 </div>
               )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="tendencias" className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2">
-            <Card className="glass-card dashboard-card">
-              <CardHeader className="flex flex-row items-center justify-between">
-                <div>
-                  <CardTitle>Tendência Mensal</CardTitle>
-                  <CardDescription>
-                    Últimos 30 dias
-                  </CardDescription>
-                </div>
-                <CalendarRange className="h-5 w-5 text-muted-foreground" />
-              </CardHeader>
-              <CardContent className="h-[300px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={last30Days}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                    <XAxis dataKey="date" tickFormatter={(value, index) => index % 5 === 0 ? value : ''} />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Area type="monotone" dataKey="empréstimos" stroke="#2563EB" fill="#2563EB" fillOpacity={0.2} />
-                    <Area type="monotone" dataKey="devoluções" stroke="#22C55E" fill="#22C55E" fillOpacity={0.2} />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-
-            <Card className="glass-card dashboard-card">
-              <CardHeader className="flex flex-row items-center justify-between">
-                <div>
-                  <CardTitle>Duração Média por Tipo</CardTitle>
-                  <CardDescription>
-                    Em minutos
-                  </CardDescription>
-                </div>
-                <Clock className="h-5 w-5 text-muted-foreground" />
-              </CardHeader>
-              <CardContent className="h-[300px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={durationData}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Bar dataKey="minutos" fill="#2563EB" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-          </div>
-
-          <Card className="glass-card dashboard-card">
-            <CardHeader className="flex flex-row items-center justify-between">
-              <div>
-                <CardTitle>Utilização Diária</CardTitle>
-                <CardDescription>
-                  Histórico dos últimos 7 dias
-                </CardDescription>
-              </div>
-              <Activity className="h-5 w-5 text-muted-foreground" />
-            </CardHeader>
-            <CardContent className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={last7Days}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                  <XAxis dataKey="date" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Line type="monotone" dataKey="empréstimos" stroke="#2563EB" activeDot={{ r: 8 }} />
-                  <Line type="monotone" dataKey="devoluções" stroke="#22C55E" />
-                </LineChart>
-              </ResponsiveContainer>
             </CardContent>
           </Card>
         </TabsContent>
