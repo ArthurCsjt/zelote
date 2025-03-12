@@ -18,7 +18,7 @@ export function Header() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 max-w-[100vw]">
         <div className="w-full sm:w-auto">
           <h1 className="text-xl sm:text-3xl font-bold text-gray-800 break-words">
-            Sistema de Gestão de Chromebooks
+            Zelote
           </h1>
           <p className="text-sm sm:text-base text-gray-500">
             Controle de empréstimos e devoluções
