@@ -102,6 +102,31 @@ export function ChromebookRegistration() {
       return;
     }
 
+    // Salvar o Chromebook no localStorage
+    try {
+      // Obter Chromebooks existentes
+      const existingChromebooksJSON = localStorage.getItem("chromebooks");
+      const existingChromebooks: ChromebookData[] = existingChromebooksJSON 
+        ? JSON.parse(existingChromebooksJSON) 
+        : [];
+      
+      // Verificar se já existe um Chromebook com o mesmo ID
+      if (existingChromebooks.some(device => device.id === formData.id)) {
+        toast({
+          title: "ID Duplicado",
+          description: "Já existe um Chromebook cadastrado com este ID",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      // Adicionar o novo Chromebook
+      const updatedChromebooks = [...existingChromebooks, formData];
+      localStorage.setItem("chromebooks", JSON.stringify(updatedChromebooks));
+    } catch (error) {
+      console.error("Erro ao salvar no localStorage:", error);
+    }
+
     // Se tudo estiver ok, mostra o QR Code e exibe mensagem de sucesso
     setShowQRCode(true);
     toast({

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { LoanForm } from "@/components/LoanForm";
 import { ActiveLoans, Loan, ReturnDataType } from "@/components/ActiveLoans";
@@ -11,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { LoanHistory } from "@/components/LoanHistory";
 import { Dashboard } from "@/components/Dashboard";
 import { ArrowLeft } from "lucide-react";
+import { ChromebookInventory } from "@/components/ChromebookInventory";
 
 const Index = () => {
   const [loans, setLoans] = useState<Loan[]>([]);
@@ -27,27 +27,37 @@ const Index = () => {
   const [showLoanForm, setShowLoanForm] = useState(false);
   const [showRegistrationForm, setShowRegistrationForm] = useState(false);
   const [showDashboard, setShowDashboard] = useState(false);
+  const [showInventory, setShowInventory] = useState(false);
 
-  const handleNavigation = (route: 'registration' | 'dashboard' | 'loan' | 'return') => {
+  const handleNavigation = (route: 'registration' | 'dashboard' | 'loan' | 'return' | 'inventory') => {
     try {
       switch (route) {
         case 'registration':
           setShowRegistrationForm(true);
           setShowLoanForm(false);
           setShowDashboard(false);
+          setShowInventory(false);
           break;
         case 'dashboard':
           setShowDashboard(true);
           setShowLoanForm(false);
           setShowRegistrationForm(false);
+          setShowInventory(false);
           break;
         case 'loan':
           setShowLoanForm(true);
           setShowRegistrationForm(false);
           setShowDashboard(false);
+          setShowInventory(false);
           break;
         case 'return':
           setOpenReturnDialog(true);
+          break;
+        case 'inventory':
+          setShowInventory(true);
+          setShowLoanForm(false);
+          setShowRegistrationForm(false);
+          setShowDashboard(false);
           break;
         default:
           console.warn(`Rota não reconhecida: ${route}`);
@@ -81,7 +91,6 @@ const Index = () => {
         return;
       }
 
-      // Verificar se o Chromebook já está emprestado
       if (loans.some(loan => loan.chromebookId === formData.chromebookId)) {
         toast({
           title: "Chromebook já emprestado",
@@ -145,7 +154,6 @@ const Index = () => {
         
         handleReturn(loanToReturn.id, returnData);
       } else {
-        // Lote
         if (!chromebookId.trim()) {
           toast({
             title: "Erro",
@@ -197,7 +205,6 @@ const Index = () => {
         }
       }
 
-      // Limpar campos após a devolução
       setOpenReturnDialog(false);
       setChromebookId("");
       setReturnData({
@@ -265,7 +272,7 @@ const Index = () => {
     <div className="min-h-screen bg-white p-4">
       <div className="max-w-6xl mx-auto">
         <Header />
-        {!showLoanForm && !showRegistrationForm && !showDashboard && (
+        {!showLoanForm && !showRegistrationForm && !showDashboard && !showInventory && (
           <MainMenu onNavigate={handleNavigation} />
         )}
         {showRegistrationForm && (
@@ -288,6 +295,18 @@ const Index = () => {
               setShowDashboard(false);
             }}
           />
+        )}
+        {showInventory && (
+          <div>
+            <ChromebookInventory />
+            <Button 
+              variant="outline" 
+              className="mt-4 w-full max-w-2xl mx-auto block"
+              onClick={() => setShowInventory(false)}
+            >
+              Voltar ao Menu
+            </Button>
+          </div>
         )}
         {showLoanForm && (
           <div className="space-y-6">
