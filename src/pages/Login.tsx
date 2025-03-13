@@ -75,7 +75,7 @@ const Login = () => {
     if (result.success) {
       toast({
         title: "Login bem-sucedido",
-        description: "Bem-vindo ao sistema de gestão de Chromebooks",
+        description: "Bem-vindo ao sistema de controle de empréstimos e devoluções",
       });
       navigate("/");
     } else {
@@ -237,7 +237,7 @@ const Login = () => {
                 <Computer className="h-10 w-10 text-blue-600" />
               </div>
             </div>
-            <CardTitle className="text-2xl font-bold text-blue-800">Sistema de Gestão de Chromebooks</CardTitle>
+            <CardTitle className="text-2xl font-bold text-blue-800">Zelote</CardTitle>
             <CardDescription className="text-gray-600">
               Acesse o sistema para gerenciar empréstimos e devoluções
             </CardDescription>
