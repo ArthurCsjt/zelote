@@ -7,6 +7,7 @@ import { Textarea } from "./ui/textarea";
 import { toast } from "./ui/use-toast";
 import { QRCodeSVG } from 'qrcode.react'; // Biblioteca para gerar QR Codes
 import { jsPDF } from 'jspdf'; // Biblioteca para gerar PDFs
+import { Checkbox } from "./ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -27,6 +28,7 @@ interface ChromebookData {
   manufacturingYear?: string; // Ano de fabricação do dispositivo (opcional)
   patrimonyNumber?: string;   // Número de patrimônio da instituição (opcional)
   observations?: string;     // Observações adicionais (opcional)
+  isProvisioned: boolean;    // Status de provisionamento do dispositivo
 }
 
 /**
@@ -64,6 +66,7 @@ export function ChromebookRegistration() {
     manufacturingYear: "",
     patrimonyNumber: "",
     observations: "",
+    isProvisioned: false,
   });
 
   /**
@@ -286,6 +289,31 @@ export function ChromebookRegistration() {
           <p className="text-xs text-gray-500">Campo opcional</p>
         </div>
 
+        {/* Campo: Status de Provisionamento */}
+        <div className="flex items-start space-x-3 pt-2">
+          <Checkbox 
+            id="isProvisioned"
+            checked={formData.isProvisioned}
+            onCheckedChange={(checked) => 
+              setFormData({ 
+                ...formData, 
+                isProvisioned: checked === true
+              })
+            }
+          />
+          <div className="space-y-1 leading-none">
+            <Label 
+              htmlFor="isProvisioned" 
+              className="font-medium text-sm cursor-pointer"
+            >
+              Equipamento Provisionado
+            </Label>
+            <p className="text-xs text-gray-500">
+              Marque se o Chromebook já está provisionado no console de administração
+            </p>
+          </div>
+        </div>
+
         {/* Campo: Observações (opcional) */}
         <div className="space-y-2">
           <Label htmlFor="observations">Observações</Label>
@@ -371,4 +399,3 @@ export function ChromebookRegistration() {
     </div>
   );
 }
-
