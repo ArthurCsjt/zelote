@@ -1,7 +1,6 @@
-
 import { Card, CardDescription, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ClipboardList, BarChart3, PlusCircle, RotateCCW, ArchiveRestore, List } from 'lucide-react';
+import { ClipboardList, BarChart3, PlusCircle, RotateCcw, ArchiveRestore, List } from 'lucide-react';
 
 interface MainMenuProps {
   onNavigate: (route: 'registration' | 'dashboard' | 'loan' | 'return' | 'inventory') => void;
@@ -84,7 +83,7 @@ export function MainMenu({ onNavigate }: MainMenuProps) {
             className="w-full bg-amber-600 hover:bg-amber-700"
             onClick={() => onNavigate('return')}
           >
-            <RotateCCW className="mr-2 h-4 w-4" />
+            <RotateCcw className="mr-2 h-4 w-4" />
             Registrar Devolução
           </Button>
         </CardContent>
