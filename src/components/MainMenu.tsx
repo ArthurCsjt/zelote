@@ -1,4 +1,5 @@
 
+import React from 'react';
 import { Card, CardDescription, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ClipboardList, BarChart3, PlusCircle, List } from 'lucide-react';
