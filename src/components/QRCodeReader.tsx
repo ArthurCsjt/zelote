@@ -13,6 +13,16 @@ interface QRCodeReaderProps {
   onScan: (data: string) => void;
 }
 
+// Custom interface for MediaTrackCapabilities with torch
+interface ExtendedMediaTrackCapabilities extends MediaTrackCapabilities {
+  torch?: boolean;
+}
+
+// Custom interface for MediaTrackConstraintSet with torch
+interface ExtendedMediaTrackConstraintSet extends MediaTrackConstraintSet {
+  torch?: boolean;
+}
+
 export function QRCodeReader({ open, onOpenChange, onScan }: QRCodeReaderProps) {
   const [error, setError] = useState<string | null>(null);
   const [scanning, setScanning] = useState(false);
@@ -31,7 +41,7 @@ export function QRCodeReader({ open, onOpenChange, onScan }: QRCodeReaderProps) 
         });
         
         const track = stream.getVideoTracks()[0];
-        const capabilities = track.getCapabilities();
+        const capabilities = track.getCapabilities() as ExtendedMediaTrackCapabilities;
         
         setHasFlash(!!capabilities.torch);
         
@@ -52,9 +62,9 @@ export function QRCodeReader({ open, onOpenChange, onScan }: QRCodeReaderProps) 
       
       const track = stream.getVideoTracks()[0];
       
-      // Toggle torch
+      // Toggle torch with type assertion
       await track.applyConstraints({
-        advanced: [{ torch: !torchEnabled }]
+        advanced: [{ torch: !torchEnabled } as ExtendedMediaTrackConstraintSet]
       });
       
       setTorchEnabled(!torchEnabled);
@@ -157,7 +167,6 @@ export function QRCodeReader({ open, onOpenChange, onScan }: QRCodeReaderProps) 
                   }}
                   videoId="qr-video-element"
                   className="w-full"
-                  onError={handleError}
                   scanDelay={300}
                   videoStyle={{ 
                     objectFit: 'cover', 
