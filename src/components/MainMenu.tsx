@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardDescription, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ClipboardList, BarChart3, PlusCircle, List, Laptop, Settings } from 'lucide-react';
+import { ClipboardList, BarChart3, PlusCircle, List, Laptop, Settings, RotateCcw } from 'lucide-react';
 
 interface MainMenuProps {
   onNavigate: (route: 'registration' | 'dashboard' | 'loan' | 'return' | 'inventory') => void;
@@ -100,6 +100,17 @@ export function MainMenu({ onNavigate }: MainMenuProps) {
       gradientBg: 'bg-gradient-to-br from-white to-violet-50'
     },
     {
+      title: 'Devolução',
+      description: 'Registrar devoluções',
+      content: 'Registre a devolução de Chromebooks emprestados.',
+      buttonText: 'Registrar Devolução',
+      buttonIcon: <RotateCcw className="mr-2 h-5 w-5" />,
+      buttonAction: () => onNavigate('return'),
+      buttonColor: 'bg-amber-600 hover:bg-amber-700',
+      iconColor: 'bg-amber-100',
+      gradientBg: 'bg-gradient-to-br from-white to-amber-50'
+    },
+    {
       title: 'Dashboard',
       description: 'Relatórios e estatísticas',
       content: 'Visualize dados e estatísticas sobre os equipamentos.',
@@ -123,7 +134,7 @@ export function MainMenu({ onNavigate }: MainMenuProps) {
         </p>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8 p-4 max-w-5xl mx-auto">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 p-4 max-w-6xl mx-auto">
         {menuItems.map((item, index) => (
           <div key={index} className="animate-fadeIn" style={{ animationDelay: `${index * 150}ms` }}>
             <MenuItem {...item} />
