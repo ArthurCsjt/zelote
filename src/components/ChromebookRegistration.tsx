@@ -1,4 +1,3 @@
-
 import { useState } from "react"; // Hook do React para gerenciar estado
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -155,7 +154,7 @@ export function ChromebookRegistration() {
 
     try {
       // === PROCESSO DE GERAÇÃO DO PDF ===
-      
+
       // 1. Cria um canvas temporário para desenhar o QR Code
       const canvas = document.createElement("canvas");
       const ctx = canvas.getContext("2d");
@@ -232,6 +231,24 @@ export function ChromebookRegistration() {
         variant: "destructive",
       });
     }
+  };
+
+  /**
+   * Prepara os dados para o QR Code
+   * Simplifica os dados para melhorar a leitura pelos scanners
+   */
+  const getQRCodeData = () => {
+    // Criamos um objeto simplificado com apenas os dados essenciais
+    // para reduzir a complexidade do QR Code e melhorar a leitura
+    const essentialData = {
+      id: formData.id,
+      model: formData.model,
+      series: formData.series,
+      // Incluímos o patrimônio apenas se estiver preenchido
+      ...(formData.patrimonyNumber ? { pat: formData.patrimonyNumber } : {})
+    };
+    
+    return JSON.stringify(essentialData);
   };
 
   // === RENDERIZAÇÃO DA INTERFACE (UI) ===
@@ -385,25 +402,38 @@ export function ChromebookRegistration() {
             </div>
 
             {/* Exibição do QR Code */}
-            <div className="flex flex-col items-center gap-4 p-4 bg-white">
-              <div className="relative">
-                {/* Componente QRCodeSVG da biblioteca qrcode.react */}
+            <div className="flex flex-col items-center gap-4 p-6 bg-white border border-gray-100 rounded-lg shadow-sm">
+              <div className="relative bg-white p-4 rounded-lg">
+                {/* Componente QRCodeSVG da biblioteca qrcode.react com melhorias */}
                 <QRCodeSVG 
                   id="qr-code-svg"
-                  value={JSON.stringify(formData)} // Converte os dados do Chromebook para JSON
-                  size={QR_SIZES[qrSize].size}     // Define o tamanho com base na seleção
-                  level="H"                        // Nível de correção de erro alto (High)
-                  includeMargin                    // Inclui margem ao redor do QR Code
+                  value={getQRCodeData()} // Usa dados simplificados para melhor leitura
+                  size={QR_SIZES[qrSize].size}
+                  level="H" // Nível de correção de erro alto (High)
+                  includeMargin={true} // Inclui margem ao redor do QR Code
+                  bgColor={"#FFFFFF"} // Fundo branco para melhor contraste
+                  fgColor={"#000000"} // Código preto para melhor contraste
+                  style={{
+                    display: 'block',
+                    margin: '0 auto',
+                    borderRadius: '8px',
+                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)'
+                  }}
                 />
                 {/* Exibe o ID do Chromebook abaixo do QR Code */}
-                <div className="mt-2 text-center text-sm font-medium text-gray-600">
-                  ID: {formData.id}
+                <div className="mt-4 text-center">
+                  <span className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-sm font-medium">
+                    ID: {formData.id}
+                  </span>
                 </div>
               </div>
+              <p className="text-sm text-gray-500 text-center max-w-xs">
+                Este QR Code contém informações essenciais do Chromebook e foi otimizado para leitura por câmeras de celular.
+              </p>
             </div>
 
             {/* Botão para baixar o PDF */}
-            <div className="flex justify-center">
+            <div className="flex justify-center mt-4">
               <Button
                 type="button"
                 onClick={handleDownloadPDF}
