@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Card, CardDescription, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ClipboardList, BarChart3, PlusCircle, List, Laptop, Settings, RotateCcw } from 'lucide-react';
 
@@ -33,32 +33,34 @@ const MenuItem = ({
   gradientBg = '',
   disabled = false
 }: MenuItemProps) => (
-  <Card className="shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 overflow-hidden border border-gray-100 h-full">
-    <div className={`h-2 w-full ${buttonColor ? buttonColor.replace('bg-', 'bg-').replace('-600', '-500') : 'bg-primary'}`}></div>
-    <div className={`p-6 ${gradientBg || 'bg-white'}`}>
+  <Card className="shadow-md hover:shadow-xl transition-all duration-500 transform hover:-translate-y-2 overflow-hidden border border-gray-100 h-full group">
+    <div className={`h-2 w-full ${buttonColor ? buttonColor.replace('bg-', 'bg-').replace('-600', '-500') : 'bg-primary'} transition-all duration-300 group-hover:h-3`}></div>
+    <div className={`p-6 ${gradientBg || 'bg-white'} transition-colors duration-500`}>
       <div className="flex items-start justify-between mb-4">
         <div>
-          <h3 className={`text-xl font-bold ${buttonColor ? buttonColor.replace('bg-', 'text-').replace('-600', '-700') : 'text-primary'}`}>
+          <h3 className={`text-xl font-bold ${buttonColor ? buttonColor.replace('bg-', 'text-').replace('-600', '-700') : 'text-primary'} transition-transform duration-300 group-hover:translate-x-1`}>
             {title}
           </h3>
-          <p className="text-sm text-gray-500 mt-1">{description}</p>
+          <p className="text-sm text-gray-500 mt-1 transition-opacity duration-300 group-hover:text-gray-700">{description}</p>
         </div>
-        <div className={`p-3 rounded-full ${iconColor || buttonColor?.replace('bg-', 'bg-').replace('-600', '-100') || 'bg-primary/10'}`}>
+        <div className={`p-3 rounded-full ${iconColor || buttonColor?.replace('bg-', 'bg-').replace('-600', '-100') || 'bg-primary/10'} transition-all duration-300 group-hover:scale-110`}>
           {React.cloneElement(buttonIcon as React.ReactElement, { 
-            className: `h-6 w-6 ${buttonColor?.replace('bg-', 'text-').replace('-600', '-600') || 'text-primary'}` 
+            className: `h-6 w-6 ${buttonColor?.replace('bg-', 'text-').replace('-600', '-600') || 'text-primary'} transition-transform duration-300 group-hover:rotate-12` 
           })}
         </div>
       </div>
-      <p className="text-sm text-gray-600 mb-6 h-12">
+      <p className="text-sm text-gray-600 mb-6 h-12 transition-all duration-300 group-hover:text-gray-800">
         {content}
       </p>
       <Button 
-        className={`w-full ${buttonColor || ''} transition-all duration-300 shadow-sm hover:shadow-md py-5`}
+        className={`w-full ${buttonColor || ''} transition-all duration-500 shadow-sm hover:shadow-md py-5 group-hover:translate-y-[-2px]`}
         onClick={buttonAction}
         disabled={disabled}
       >
-        {buttonIcon}
-        <span className="ml-2">{buttonText}</span>
+        {React.cloneElement(buttonIcon as React.ReactElement, { 
+          className: "mr-2 h-5 w-5 transition-transform duration-300 group-hover:scale-110" 
+        })}
+        <span className="ml-2 transition-transform duration-300 group-hover:translate-x-1">{buttonText}</span>
       </Button>
     </div>
   </Card>
@@ -126,17 +128,24 @@ export function MainMenu({ onNavigate }: MainMenuProps) {
   return (
     <div className="space-y-8">
       <div className="text-center py-6 px-4 animate-fadeIn">
-        <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-violet-600 mb-2">
+        <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-violet-600 mb-2 animate-fadeIn" style={{ animationDelay: '0.2s' }}>
           Sistema de Gerenciamento de Chromebooks
         </h2>
-        <p className="text-gray-600 max-w-2xl mx-auto">
+        <p className="text-gray-600 max-w-2xl mx-auto animate-fadeIn" style={{ animationDelay: '0.4s' }}>
           Gerencie o cadastro, empréstimo e devolução de Chromebooks de forma simples e eficiente
         </p>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 p-4 max-w-6xl mx-auto">
         {menuItems.map((item, index) => (
-          <div key={index} className="animate-fadeIn" style={{ animationDelay: `${index * 150}ms` }}>
+          <div 
+            key={index} 
+            className="animate-fadeIn" 
+            style={{ 
+              animationDelay: `${index * 150}ms`,
+              animation: `fadeIn 0.8s ease-out ${index * 150}ms both`
+            }}
+          >
             <MenuItem {...item} />
           </div>
         ))}
