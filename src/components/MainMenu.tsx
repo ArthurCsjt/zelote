@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ClipboardList, BarChart3, PlusCircle, List, Laptop, Settings, RotateCcw } from 'lucide-react';
@@ -21,6 +21,11 @@ type MenuItemProps = {
   disabled?: boolean;
 };
 
+// Detect if we're on a mobile device
+const isMobileDevice = () => {
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
+};
+
 const MenuItem = ({
   title,
   description,
@@ -32,41 +37,70 @@ const MenuItem = ({
   iconColor = '',
   gradientBg = '',
   disabled = false
-}: MenuItemProps) => (
-  <Card className="shadow-md hover:shadow-xl transition-all duration-500 transform hover:-translate-y-2 overflow-hidden border border-gray-100 h-full group">
-    <div className={`h-2 w-full ${buttonColor ? buttonColor.replace('bg-', 'bg-').replace('-600', '-500') : 'bg-primary'} transition-all duration-300 group-hover:h-3`}></div>
-    <div className={`p-6 ${gradientBg || 'bg-white'} transition-colors duration-500`}>
-      <div className="flex items-start justify-between mb-4">
-        <div>
-          <h3 className={`text-xl font-bold ${buttonColor ? buttonColor.replace('bg-', 'text-').replace('-600', '-700') : 'text-primary'} transition-transform duration-300 group-hover:translate-x-1`}>
-            {title}
-          </h3>
-          <p className="text-sm text-gray-500 mt-1 transition-opacity duration-300 group-hover:text-gray-700">{description}</p>
+}: MenuItemProps) => {
+  const isMobile = isMobileDevice();
+  
+  // Simplified animations for mobile
+  const animationClasses = isMobile 
+    ? "transition-colors duration-300"
+    : "shadow-md hover:shadow-xl transition-all duration-500 transform hover:-translate-y-2";
+
+  // Simplified hover effects for mobile
+  const cardHoverClasses = isMobile ? "" : "group";
+  
+  // Use simpler gradient background on mobile
+  const bgClass = isMobile 
+    ? "bg-white" 
+    : (gradientBg || 'bg-white');
+
+  return (
+    <Card className={`border border-gray-100 h-full overflow-hidden ${animationClasses} ${cardHoverClasses}`}>
+      <div className={`h-2 w-full ${buttonColor ? buttonColor.replace('bg-', 'bg-').replace('-600', '-500') : 'bg-primary'}`}></div>
+      <div className={`p-6 ${bgClass}`}>
+        <div className="flex items-start justify-between mb-4">
+          <div>
+            <h3 className={`text-xl font-bold ${buttonColor ? buttonColor.replace('bg-', 'text-').replace('-600', '-700') : 'text-primary'}`}>
+              {title}
+            </h3>
+            <p className="text-sm text-gray-500 mt-1">{description}</p>
+          </div>
+          <div className={`p-3 rounded-full ${iconColor || buttonColor?.replace('bg-', 'bg-').replace('-600', '-100') || 'bg-primary/10'}`}>
+            {React.cloneElement(buttonIcon as React.ReactElement, { 
+              className: `h-6 w-6 ${buttonColor?.replace('bg-', 'text-').replace('-600', '-600') || 'text-primary'}` 
+            })}
+          </div>
         </div>
-        <div className={`p-3 rounded-full ${iconColor || buttonColor?.replace('bg-', 'bg-').replace('-600', '-100') || 'bg-primary/10'} transition-all duration-300 group-hover:scale-110`}>
+        <p className="text-sm text-gray-600 mb-6 h-12">
+          {content}
+        </p>
+        <Button 
+          className={`w-full ${buttonColor || ''} shadow-sm py-5`}
+          onClick={buttonAction}
+          disabled={disabled}
+        >
           {React.cloneElement(buttonIcon as React.ReactElement, { 
-            className: `h-6 w-6 ${buttonColor?.replace('bg-', 'text-').replace('-600', '-600') || 'text-primary'} transition-transform duration-300 group-hover:rotate-12` 
+            className: "mr-2 h-5 w-5" 
           })}
-        </div>
+          <span className="ml-2">{buttonText}</span>
+        </Button>
       </div>
-      <p className="text-sm text-gray-600 mb-6 h-12 transition-all duration-300 group-hover:text-gray-800">
-        {content}
-      </p>
-      <Button 
-        className={`w-full ${buttonColor || ''} transition-all duration-500 shadow-sm hover:shadow-md py-5 group-hover:translate-y-[-2px]`}
-        onClick={buttonAction}
-        disabled={disabled}
-      >
-        {React.cloneElement(buttonIcon as React.ReactElement, { 
-          className: "mr-2 h-5 w-5 transition-transform duration-300 group-hover:scale-110" 
-        })}
-        <span className="ml-2 transition-transform duration-300 group-hover:translate-x-1">{buttonText}</span>
-      </Button>
-    </div>
-  </Card>
-);
+    </Card>
+  );
+};
 
 export function MainMenu({ onNavigate }: MainMenuProps) {
+  const [isLoaded, setIsLoaded] = useState(false);
+  const isMobile = isMobileDevice();
+
+  useEffect(() => {
+    // Delay animation start to improve initial load performance
+    const timer = setTimeout(() => {
+      setIsLoaded(true);
+    }, 100);
+    
+    return () => clearTimeout(timer);
+  }, []);
+
   const menuItems: MenuItemProps[] = [
     {
       title: 'Cadastro',
@@ -125,26 +159,42 @@ export function MainMenu({ onNavigate }: MainMenuProps) {
     }
   ];
 
+  // Simple fade-in animation that works better on mobile
+  const getFadeInStyle = (index: number) => {
+    if (!isLoaded) return { opacity: 0 };
+    
+    // Use a simpler animation approach on mobile
+    if (isMobile) {
+      return { 
+        opacity: 1,
+        transition: `opacity 0.5s ease-out ${index * 100}ms`
+      };
+    }
+    
+    // More elaborate animation for desktop
+    return { 
+      opacity: 1,
+      transform: 'translateY(0)',
+      transition: `opacity 0.8s ease-out ${index * 150}ms, transform 0.8s ease-out ${index * 150}ms`
+    };
+  };
+
   return (
     <div className="space-y-8">
-      <div className="text-center py-6 px-4 animate-fadeIn">
-        <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-violet-600 mb-2 animate-fadeIn" style={{ animationDelay: '0.2s' }}>
+      <div className="text-center py-6 px-4" style={getFadeInStyle(0)}>
+        <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-violet-600 mb-2">
           Sistema de Gerenciamento de Chromebooks
         </h2>
-        <p className="text-gray-600 max-w-2xl mx-auto animate-fadeIn" style={{ animationDelay: '0.4s' }}>
+        <p className="text-gray-600 max-w-2xl mx-auto">
           Gerencie o cadastro, empréstimo e devolução de Chromebooks de forma simples e eficiente
         </p>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 p-4 max-w-6xl mx-auto">
+      <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 p-4 max-w-6xl mx-auto`}>
         {menuItems.map((item, index) => (
           <div 
             key={index} 
-            className="animate-fadeIn" 
-            style={{ 
-              animationDelay: `${index * 150}ms`,
-              animation: `fadeIn 0.8s ease-out ${index * 150}ms both`
-            }}
+            style={getFadeInStyle(index + 1)}
           >
             <MenuItem {...item} />
           </div>
