@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { QrReader } from 'react-qr-reader';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "./ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "./ui/dialog";
 import { Button } from "./ui/button";
 import { Alert, AlertDescription } from "./ui/alert";
 import { toast } from "./ui/use-toast";
@@ -32,6 +32,7 @@ export function QRCodeReader({ open, onOpenChange, onScan }: QRCodeReaderProps) 
   const [cameraPermission, setCameraPermission] = useState<'granted' | 'denied' | 'pending'>('pending');
   const [activeCamera, setActiveCamera] = useState<'environment' | 'user'>('environment');
   const [videoStream, setVideoStream] = useState<MediaStream | null>(null);
+  const [attemptingRetry, setAttemptingRetry] = useState(false);
   
   const isMobile = useMobile();
 
@@ -45,7 +46,13 @@ export function QRCodeReader({ open, onOpenChange, onScan }: QRCodeReaderProps) 
       result.addEventListener('change', () => {
         setCameraPermission(result.state as 'granted' | 'denied' | 'pending');
       });
+      
+      // If permission is granted, try to access the camera
+      if (result.state === 'granted') {
+        requestCameraAccess();
+      }
     } catch (err) {
+      console.log("Permission API not supported, trying direct camera access");
       // Browser might not support permissions API, try direct access
       requestCameraAccess();
     }
@@ -54,25 +61,41 @@ export function QRCodeReader({ open, onOpenChange, onScan }: QRCodeReaderProps) 
   // Request camera access explicitly
   const requestCameraAccess = async () => {
     try {
+      setAttemptingRetry(true);
+      console.log("Requesting camera with facing mode:", activeCamera);
+      
+      // Stop any existing streams first
+      if (videoStream) {
+        videoStream.getTracks().forEach(track => track.stop());
+        setVideoStream(null);
+      }
+      
       const constraints = {
         video: { 
           facingMode: activeCamera,
-          width: { ideal: isMobile ? 720 : 1280 },
-          height: { ideal: isMobile ? 720 : 720 },
-        }
+          width: { min: 360, ideal: isMobile ? 720 : 1280 },
+          height: { min: 360, ideal: isMobile ? 720 : 720 },
+        },
+        audio: false
       };
       
+      console.log("Camera constraints:", constraints);
+      
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      console.log("Camera access granted, stream:", stream);
       setVideoStream(stream);
       setCameraPermission('granted');
       
       // Now check for torch capability
       checkTorchAvailability(stream);
       setError(null);
+      setScanning(true);
+      setAttemptingRetry(false);
     } catch (err) {
       console.error("Error accessing camera:", err);
       setCameraPermission('denied');
       setError("Acesso à câmera negado. Por favor, verifique as permissões do navegador.");
+      setAttemptingRetry(false);
     }
   };
 
@@ -81,24 +104,34 @@ export function QRCodeReader({ open, onOpenChange, onScan }: QRCodeReaderProps) 
     if (videoStream) {
       // Stop current stream
       videoStream.getTracks().forEach(track => track.stop());
+      setVideoStream(null);
     }
     
     // Toggle camera
     const newCamera = activeCamera === 'environment' ? 'user' : 'environment';
     setActiveCamera(newCamera);
     
+    // Toast notification
+    toast({
+      title: "Trocando câmera",
+      description: newCamera === 'environment' ? "Usando câmera traseira" : "Usando câmera frontal"
+    });
+    
     // Request new stream with toggled camera
     try {
+      setScanning(false);
       const constraints = {
         video: { 
           facingMode: newCamera,
           width: { ideal: isMobile ? 720 : 1280 },
           height: { ideal: isMobile ? 720 : 720 },
-        }
+        },
+        audio: false
       };
       
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
       setVideoStream(stream);
+      setScanning(true);
       
       // Check torch availability for the new camera
       setTorchEnabled(false);
@@ -135,22 +168,27 @@ export function QRCodeReader({ open, onOpenChange, onScan }: QRCodeReaderProps) 
   const toggleTorch = async () => {
     try {
       if (!videoStream) {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: activeCamera }
+        toast({
+          title: "Erro",
+          description: "Sem acesso à câmera",
+          variant: "destructive",
         });
-        setVideoStream(stream);
+        return;
       }
       
-      if (videoStream) {
-        const track = videoStream.getVideoTracks()[0];
-        if (track) {
-          // Toggle torch
-          await track.applyConstraints({
-            advanced: [{ torch: !torchEnabled } as ExtendedMediaTrackConstraintSet]
-          });
-          
-          setTorchEnabled(!torchEnabled);
-        }
+      const track = videoStream.getVideoTracks()[0];
+      if (track) {
+        // Toggle torch
+        await track.applyConstraints({
+          advanced: [{ torch: !torchEnabled } as ExtendedMediaTrackConstraintSet]
+        });
+        
+        setTorchEnabled(!torchEnabled);
+        
+        toast({
+          title: torchEnabled ? "Lanterna desligada" : "Lanterna ligada",
+          description: "",
+        });
       }
     } catch (err) {
       console.error("Error toggling torch:", err);
@@ -200,39 +238,55 @@ export function QRCodeReader({ open, onOpenChange, onScan }: QRCodeReaderProps) 
     setScanning(false);
   };
 
+  // Cleanup function to ensure camera resources are released
+  const cleanupCamera = () => {
+    if (videoStream) {
+      console.log("Cleaning up camera resources");
+      videoStream.getTracks().forEach(track => {
+        track.stop();
+        console.log("Track stopped:", track.label);
+      });
+      setVideoStream(null);
+    }
+    
+    if (torchEnabled) {
+      setTorchEnabled(false);
+    }
+    
+    setScanning(false);
+  };
+
   // Handle dialog open/close
   useEffect(() => {
     if (open) {
+      console.log("Dialog opened, initializing camera");
       setScanning(true);
       setError(null);
       checkCameraPermission();
     } else {
-      setScanning(false);
-      // Clean up video stream when dialog closes
-      if (videoStream) {
-        videoStream.getTracks().forEach(track => track.stop());
-        setVideoStream(null);
-      }
-      
-      // Reset torch when closing
-      if (torchEnabled) {
-        setTorchEnabled(false);
-      }
+      console.log("Dialog closed, cleaning up");
+      cleanupCamera();
     }
+    
+    // Cleanup on component unmount
+    return () => {
+      cleanupCamera();
+    };
   }, [open]);
 
-  // Retry camera access after permission granted
-  useEffect(() => {
-    if (cameraPermission === 'granted' && open && !videoStream) {
-      requestCameraAccess();
-    }
-  }, [cameraPermission, open]);
-
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(state) => {
+      if (!state) {
+        cleanupCamera();
+      }
+      onOpenChange(state);
+    }}>
       <DialogContent className="max-w-sm sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Escaneie o QR Code</DialogTitle>
+          <DialogDescription>
+            Posicione o QR Code dentro da área demarcada
+          </DialogDescription>
         </DialogHeader>
         
         {error ? (
@@ -243,8 +297,16 @@ export function QRCodeReader({ open, onOpenChange, onScan }: QRCodeReaderProps) 
                 variant="outline" 
                 onClick={requestCameraAccess} 
                 className="w-full"
+                disabled={attemptingRetry}
               >
-                Tentar Novamente
+                {attemptingRetry ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Tentando novamente...
+                  </>
+                ) : (
+                  "Tentar Novamente"
+                )}
               </Button>
             </div>
           </Alert>
@@ -274,15 +336,23 @@ export function QRCodeReader({ open, onOpenChange, onScan }: QRCodeReaderProps) 
                     onClick={requestCameraAccess} 
                     variant="outline" 
                     className="bg-white text-gray-800"
+                    disabled={attemptingRetry}
                   >
-                    Permitir Acesso à Câmera
+                    {attemptingRetry ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Acessando...
+                      </>
+                    ) : (
+                      "Permitir Acesso à Câmera"
+                    )}
                   </Button>
                 </div>
               )}
               
-              {cameraPermission === 'granted' && scanning && (
+              {cameraPermission === 'granted' && scanning && videoStream && (
                 <QrReader
-                  key={`qr-reader-${activeCamera}`}
+                  key={`qr-reader-${activeCamera}-${Date.now()}`}
                   onResult={handleScan}
                   constraints={{ 
                     facingMode: activeCamera,
@@ -302,7 +372,7 @@ export function QRCodeReader({ open, onOpenChange, onScan }: QRCodeReaderProps) 
                 />
               )}
               
-              {!scanning && (
+              {cameraPermission === 'granted' && (!scanning || !videoStream) && (
                 <div className="h-64 flex items-center justify-center bg-gray-800">
                   <Loader2 className="h-8 w-8 text-white animate-spin" />
                 </div>
@@ -342,7 +412,10 @@ export function QRCodeReader({ open, onOpenChange, onScan }: QRCodeReaderProps) 
           <Button 
             type="button" 
             variant="destructive" 
-            onClick={() => onOpenChange(false)}
+            onClick={() => {
+              cleanupCamera();
+              onOpenChange(false);
+            }}
             className="w-full sm:w-auto"
           >
             Cancelar
