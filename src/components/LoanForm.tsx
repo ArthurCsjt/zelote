@@ -7,6 +7,7 @@ import { Label } from "./ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { Badge } from "./ui/badge";
 import { Computer, Plus, QrCode } from "lucide-react";
+import { QRCodeReader } from "./QRCodeReader";
 
 // Define a interface dos dados do formulário de empréstimo
 interface LoanFormData {
@@ -48,6 +49,9 @@ export function LoanForm({ onSubmit }: LoanFormProps) {
   // Valor atual do campo de entrada para adicionar dispositivos ao lote
   const [currentBatchInput, setCurrentBatchInput] = useState("");
 
+  // Estado para controlar o diálogo de leitura de QR Code
+  const [isQRReaderOpen, setIsQRReaderOpen] = useState(false);
+
   // === FUNÇÕES DE MANIPULAÇÃO (HANDLERS) ===
 
   /**
@@ -67,6 +71,58 @@ export function LoanForm({ onSubmit }: LoanFormProps) {
    */
   const removeDeviceFromBatch = (deviceId: string) => {
     setBatchDevices(batchDevices.filter(id => id !== deviceId));
+  };
+
+  /**
+   * Processa os dados do QR Code lido
+   * @param data - String contendo os dados do QR Code
+   */
+  const handleQRCodeScan = (data: string) => {
+    try {
+      // Tenta interpretar como JSON
+      const jsonData = JSON.parse(data);
+      
+      if (jsonData.id) {
+        if (formData.loanType === 'individual') {
+          // Para empréstimo individual, atualiza o campo chromebookId
+          setFormData(prev => ({ ...prev, chromebookId: jsonData.id }));
+          toast({
+            title: "QR Code lido com sucesso",
+            description: `ID do Chromebook: ${jsonData.id}`,
+          });
+        } else {
+          // Para empréstimo em lote, adiciona à lista se não existir
+          if (!batchDevices.includes(jsonData.id)) {
+            setBatchDevices(prev => [...prev, jsonData.id]);
+            toast({
+              title: "Dispositivo adicionado ao lote",
+              description: `ID do Chromebook: ${jsonData.id}`,
+            });
+          } else {
+            toast({
+              title: "Dispositivo já adicionado",
+              description: `O Chromebook ${jsonData.id} já está na lista`,
+              variant: "destructive",
+            });
+          }
+        }
+      }
+    } catch (error) {
+      // Se não for JSON, usa diretamente como ID
+      const id = data.trim();
+      if (id) {
+        if (formData.loanType === 'individual') {
+          setFormData(prev => ({ ...prev, chromebookId: id }));
+        } else if (!batchDevices.includes(id)) {
+          setBatchDevices(prev => [...prev, id]);
+        }
+        
+        toast({
+          title: "QR Code lido",
+          description: `ID extraído: ${id}`,
+        });
+      }
+    }
   };
 
   /**
@@ -206,15 +262,25 @@ export function LoanForm({ onSubmit }: LoanFormProps) {
             <Label htmlFor="chromebookId" className="text-gray-700">
               ID do Chromebook
             </Label>
-            <Input
-              id="chromebookId"
-              placeholder="Digite o ID do Chromebook"
-              value={formData.chromebookId}
-              onChange={(e) =>
-                setFormData({ ...formData, chromebookId: e.target.value })
-              }
-              className="border-gray-200"
-            />
+            <div className="flex gap-2">
+              <Input
+                id="chromebookId"
+                placeholder="Digite o ID do Chromebook"
+                value={formData.chromebookId}
+                onChange={(e) =>
+                  setFormData({ ...formData, chromebookId: e.target.value })
+                }
+                className="border-gray-200 flex-1"
+              />
+              <Button 
+                type="button" 
+                variant="outline" 
+                className="border-gray-200 bg-white hover:bg-gray-50"
+                onClick={() => setIsQRReaderOpen(true)}
+              >
+                <QrCode className="h-5 w-5 text-gray-600" />
+              </Button>
+            </div>
           </div>
         ) : (
           /* Interface de empréstimo em lote */
@@ -232,13 +298,13 @@ export function LoanForm({ onSubmit }: LoanFormProps) {
             <div className="space-y-2">
               {/* Campo para adicionar dispositivos */}
               <div className="flex flex-col gap-2">
-                <div className="relative w-full">
+                <div className="relative w-full flex gap-2">
                   <Input
                     id="batchInput"
                     value={currentBatchInput}
                     onChange={(e) => setCurrentBatchInput(e.target.value)}
                     placeholder="Digite o ID do dispositivo"
-                    className="border-gray-200 pr-16"
+                    className="border-gray-200 pr-16 flex-1"
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
                         e.preventDefault();
@@ -255,6 +321,16 @@ export function LoanForm({ onSubmit }: LoanFormProps) {
                   >
                     <Plus className="h-4 w-4 mr-1" />
                     <span className="text-xs">Adicionar</span>
+                  </Button>
+                  
+                  {/* Botão de QR Code para modo lote */}
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    className="border-gray-200 bg-white hover:bg-gray-50 min-w-12"
+                    onClick={() => setIsQRReaderOpen(true)}
+                  >
+                    <QrCode className="h-5 w-5 text-gray-600" />
                   </Button>
                 </div>
               </div>
@@ -406,6 +482,13 @@ export function LoanForm({ onSubmit }: LoanFormProps) {
             : "Emprestar Chromebook"}
         </Button>
       </form>
+
+      {/* Componente de leitura de QR Code */}
+      <QRCodeReader
+        open={isQRReaderOpen}
+        onOpenChange={setIsQRReaderOpen}
+        onScan={handleQRCodeScan}
+      />
     </div>
   );
 }
