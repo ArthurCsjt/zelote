@@ -46,17 +46,17 @@ export function QRCodeReader({ open, onOpenChange, onScan }: QRCodeReaderProps) 
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
     const isAndroid = /android/i.test(navigator.userAgent);
     
-    // Base constraints with reasonable defaults
+    // Improved constraints with better defaults for mobile devices
     const baseConstraints: MediaTrackConstraints = {
       facingMode: activeCamera,
       width: { 
         min: 320,
-        ideal: isMobile ? 640 : 1280,
+        ideal: isMobile ? 720 : 1280,
         max: 1920
       },
       height: { 
         min: 320, 
-        ideal: isMobile ? 480 : 720,
+        ideal: isMobile ? 720 : 720,
         max: 1080
       },
     };
@@ -66,8 +66,8 @@ export function QRCodeReader({ open, onOpenChange, onScan }: QRCodeReaderProps) 
       return {
         video: {
           ...baseConstraints,
-          width: { ideal: 640 },
-          height: { ideal: 480 },
+          width: { ideal: 720 },
+          height: { ideal: 720 },
         },
         audio: false
       };
@@ -145,9 +145,9 @@ export function QRCodeReader({ open, onOpenChange, onScan }: QRCodeReaderProps) 
       const constraints = getCameraConstraints();
       console.log("Camera constraints:", constraints);
       
-      // Timeout for camera access
+      // Timeout for camera access - increased for mobile devices
       const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error("Camera access timeout")), 12000);
+        setTimeout(() => reject(new Error("Camera access timeout")), 15000);
       });
       
       // Try to get camera stream with timeout
@@ -472,24 +472,25 @@ export function QRCodeReader({ open, onOpenChange, onScan }: QRCodeReaderProps) 
               )}
               
               {cameraPermission === 'granted' && scanning && videoStream && (
-                <div className="camera-container" style={{ minHeight: "250px" }}>
+                <div className="camera-container relative" style={{ height: "320px", width: "100%" }}>
                   <QrReader
                     key={`qr-reader-${activeCamera}-${Date.now()}`}
                     onResult={handleScan}
                     constraints={{ 
                       facingMode: activeCamera,
                       aspectRatio: 1,
-                      width: { min: 320, ideal: isMobile ? 640 : 1280 },
-                      height: { min: 320, ideal: isMobile ? 480 : 720 },
+                      width: { min: 320, ideal: 720 },
+                      height: { min: 320, ideal: 720 },
                     }}
                     videoId="qr-video-element"
-                    className="w-full"
+                    className="w-full h-full"
                     scanDelay={300}
                     videoStyle={{ 
                       objectFit: 'cover', 
                       width: '100%',
                       height: '100%',
-                      minHeight: '250px'
+                      display: 'block',
+                      backgroundColor: '#000'
                     }}
                   />
                 </div>

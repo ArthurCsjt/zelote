@@ -30,9 +30,9 @@ export function useMobile() {
       // Screen size check as tertiary indicator
       const hasSmallScreen = window.innerWidth < MOBILE_BREAKPOINT
       
-      // Determine if mobile based on combination of factors
-      const mobileDevice = (hasTouchScreen && (isMobileUserAgent || hasSmallScreen)) || 
-                          (isMobileUserAgent && hasSmallScreen)
+      // Determine if mobile based on combination of factors - prioritize user agent detection
+      // for mobile browsers over just screen size to improve reliability
+      const mobileDevice = isMobileUserAgent || (hasTouchScreen && hasSmallScreen)
       
       setIsMobile(mobileDevice)
     }
