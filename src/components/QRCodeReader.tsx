@@ -42,7 +42,8 @@ export function QRCodeReader({ open, onOpenChange, onScan }: QRCodeReaderProps) 
   
   // Function to determine optimal camera constraints based on device
   const getCameraConstraints = useCallback(() => {
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    // Fix the iOS detection to avoid using MSStream
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
     const isAndroid = /android/i.test(navigator.userAgent);
     
     // Base constraints with reasonable defaults
