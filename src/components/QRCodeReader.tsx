@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
+
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { QrReader } from 'react-qr-reader';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "./ui/dialog";
 import { Button } from "./ui/button";
@@ -30,22 +31,86 @@ export function QRCodeReader({ open, onOpenChange, onScan }: QRCodeReaderProps) 
   const [activeCamera, setActiveCamera] = useState<'environment' | 'user'>('environment');
   const [videoStream, setVideoStream] = useState<MediaStream | null>(null);
   const [attemptingRetry, setAttemptingRetry] = useState(false);
+  const [initAttempts, setInitAttempts] = useState(0);
+  const maxInitAttempts = 3;
+  
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const qrReaderContainerRef = useRef<HTMLDivElement | null>(null);
   
   const isMobile = useMobile();
+  
+  // Function to determine optimal camera constraints based on device
+  const getCameraConstraints = useCallback(() => {
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    const isAndroid = /android/i.test(navigator.userAgent);
+    
+    // Base constraints with reasonable defaults
+    const baseConstraints: MediaTrackConstraints = {
+      facingMode: activeCamera,
+      width: { 
+        min: 320,
+        ideal: isMobile ? 640 : 1280,
+        max: 1920
+      },
+      height: { 
+        min: 320, 
+        ideal: isMobile ? 480 : 720,
+        max: 1080
+      },
+    };
+    
+    // iOS-specific optimizations
+    if (isIOS) {
+      return {
+        video: {
+          ...baseConstraints,
+          width: { ideal: 640 },
+          height: { ideal: 480 },
+        },
+        audio: false
+      };
+    }
+    
+    // Android-specific optimizations
+    if (isAndroid) {
+      return {
+        video: {
+          ...baseConstraints,
+          width: { ideal: 720 },
+          height: { ideal: 720 },
+          frameRate: { ideal: 15, max: 30 }
+        },
+        audio: false
+      };
+    }
+    
+    // Default constraints for other devices
+    return {
+      video: baseConstraints,
+      audio: false
+    };
+  }, [activeCamera, isMobile]);
 
-  const checkCameraPermission = async () => {
+  const checkCameraPermission = useCallback(async () => {
     try {
       setError(null);
       
       if (navigator.permissions && navigator.permissions.query) {
-        const result = await navigator.permissions.query({ name: 'camera' as PermissionName });
-        setCameraPermission(result.state as 'granted' | 'denied' | 'pending');
-        
-        result.addEventListener('change', () => {
+        try {
+          const result = await navigator.permissions.query({ name: 'camera' as PermissionName });
           setCameraPermission(result.state as 'granted' | 'denied' | 'pending');
-        });
-        
-        if (result.state === 'granted') {
+          
+          result.addEventListener('change', () => {
+            setCameraPermission(result.state as 'granted' | 'denied' | 'pending');
+          });
+          
+          if (result.state === 'granted') {
+            requestCameraAccess();
+          }
+        } catch (err) {
+          // Some browsers don't support permission API for camera
+          console.log("Permission API not fully supported, trying direct camera access");
           requestCameraAccess();
         }
       } else {
@@ -53,62 +118,85 @@ export function QRCodeReader({ open, onOpenChange, onScan }: QRCodeReaderProps) 
         requestCameraAccess();
       }
     } catch (err) {
-      console.log("Permission API error, trying direct camera access:", err);
+      console.log("Error checking camera permission:", err);
       requestCameraAccess();
     }
-  };
+  }, []);
 
   const requestCameraAccess = useCallback(async () => {
     try {
       setAttemptingRetry(true);
+      setError(null);
       console.log("Requesting camera access with facing mode:", activeCamera);
       
-      if (videoStream) {
+      // Clean up previous stream if exists
+      if (streamRef.current) {
         console.log("Stopping previous video stream");
-        videoStream.getTracks().forEach(track => {
+        streamRef.current.getTracks().forEach(track => {
           track.stop();
           console.log("Track stopped:", track.label);
         });
+        streamRef.current = null;
         setVideoStream(null);
       }
       
-      const constraints = {
-        video: { 
-          facingMode: activeCamera,
-          width: { min: 320, ideal: isMobile ? 640 : 1280, max: 1920 },
-          height: { min: 320, ideal: isMobile ? 480 : 720, max: 1080 },
-        },
-        audio: false
-      };
-      
+      // Get optimal constraints
+      const constraints = getCameraConstraints();
       console.log("Camera constraints:", constraints);
       
+      // Timeout for camera access
       const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error("Camera access timeout")), 10000);
+        setTimeout(() => reject(new Error("Camera access timeout")), 12000);
       });
       
+      // Try to get camera stream with timeout
       const stream = await Promise.race([
         navigator.mediaDevices.getUserMedia(constraints),
         timeoutPromise
       ]) as MediaStream;
       
       console.log("Camera access granted, stream:", stream);
+      streamRef.current = stream;
       setVideoStream(stream);
       setCameraPermission('granted');
       
+      // On success, reset attempts counter
+      setInitAttempts(0);
+      
+      // Check for torch capability
       checkTorchAvailability(stream);
+      
+      // Everything succeeded
       setError(null);
       setScanning(true);
       setAttemptingRetry(false);
     } catch (err) {
       console.error("Error accessing camera:", err);
-      setCameraPermission('denied');
       
+      // Increment attempt counter
+      const newAttemptCount = initAttempts + 1;
+      setInitAttempts(newAttemptCount);
+      
+      // Set permission denied if we've reached max attempts
+      if (newAttemptCount >= maxInitAttempts) {
+        setCameraPermission('denied');
+      }
+      
+      // Provide detailed error message based on error type
       if (err instanceof Error) {
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+        const isAndroid = /android/i.test(navigator.userAgent);
+        
         if (err.name === "NotAllowedError") {
           setError("Acesso à câmera foi negado. Por favor, permita o acesso à câmera nas configurações do seu navegador.");
         } else if (err.name === "NotReadableError") {
-          setError("Não foi possível acessar a câmera. A câmera pode estar sendo usada por outro aplicativo.");
+          if (isIOS) {
+            setError("Não foi possível acessar a câmera no iOS. Tente fechar outras abas ou aplicativos que possam estar usando a câmera.");
+          } else if (isAndroid) {
+            setError("Não foi possível acessar a câmera no Android. Verifique se outro aplicativo não está usando a câmera e tente novamente.");
+          } else {
+            setError("Não foi possível acessar a câmera. A câmera pode estar sendo usada por outro aplicativo ou guia do navegador.");
+          }
         } else if (err.name === "NotFoundError") {
           setError("Nenhuma câmera encontrada no dispositivo.");
         } else if (err.message === "Camera access timeout") {
@@ -121,12 +209,22 @@ export function QRCodeReader({ open, onOpenChange, onScan }: QRCodeReaderProps) 
       }
       
       setAttemptingRetry(false);
+      
+      // If not at max attempts, try again with different camera
+      if (newAttemptCount < maxInitAttempts && isMobile) {
+        const newCamera = activeCamera === 'environment' ? 'user' : 'environment';
+        console.log(`Attempt ${newAttemptCount}: Trying with different camera: ${newCamera}`);
+        setTimeout(() => {
+          setActiveCamera(newCamera);
+        }, 1000);
+      }
     }
-  }, [activeCamera, isMobile, videoStream]);
+  }, [activeCamera, initAttempts, getCameraConstraints, isMobile]);
 
-  const toggleCamera = async () => {
-    if (videoStream) {
-      videoStream.getTracks().forEach(track => track.stop());
+  const toggleCamera = useCallback(async () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
       setVideoStream(null);
     }
     
@@ -138,43 +236,21 @@ export function QRCodeReader({ open, onOpenChange, onScan }: QRCodeReaderProps) 
       description: newCamera === 'environment' ? "Usando câmera traseira" : "Usando câmera frontal"
     });
     
-    try {
-      setScanning(false);
-      const constraints = {
-        video: { 
-          facingMode: newCamera,
-          width: { ideal: isMobile ? 720 : 1280 },
-          height: { ideal: isMobile ? 720 : 720 },
-        },
-        audio: false
-      };
-      
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
-      setVideoStream(stream);
-      setScanning(true);
-      
-      setTorchEnabled(false);
-      checkTorchAvailability(stream);
-    } catch (err) {
-      console.error("Error switching camera:", err);
-      setError("Erro ao trocar de câmera. Tente novamente.");
-    }
-  };
+    setScanning(false);
+    setInitAttempts(0); // Reset attempts when manually switching camera
+    
+    // Camera will be requested in the useEffect triggered by changing activeCamera
+  }, [activeCamera]);
 
   const checkTorchAvailability = async (stream?: MediaStream) => {
     try {
-      const mediaStream = stream || await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: activeCamera }
-      });
+      const mediaStream = stream || streamRef.current;
+      if (!mediaStream) return;
       
       const videoTrack = mediaStream.getVideoTracks()[0];
       if (videoTrack) {
         const capabilities = videoTrack.getCapabilities() as ExtendedMediaTrackCapabilities;
         setHasFlash(!!capabilities.torch);
-        
-        if (!stream) {
-          mediaStream.getTracks().forEach(track => track.stop());
-        }
       }
     } catch (err) {
       console.error("Error checking torch availability:", err);
@@ -184,7 +260,7 @@ export function QRCodeReader({ open, onOpenChange, onScan }: QRCodeReaderProps) 
 
   const toggleTorch = async () => {
     try {
-      if (!videoStream) {
+      if (!streamRef.current) {
         toast({
           title: "Erro",
           description: "Sem acesso à câmera",
@@ -193,7 +269,7 @@ export function QRCodeReader({ open, onOpenChange, onScan }: QRCodeReaderProps) 
         return;
       }
       
-      const track = videoStream.getVideoTracks()[0];
+      const track = streamRef.current.getVideoTracks()[0];
       if (track) {
         await track.applyConstraints({
           advanced: [{ torch: !torchEnabled } as ExtendedMediaTrackConstraintSet]
@@ -250,17 +326,18 @@ export function QRCodeReader({ open, onOpenChange, onScan }: QRCodeReaderProps) 
 
   const handleError = (err: any) => {
     console.error("QR Code Scanner Error:", err);
-    setError("Erro ao usar a câmera. Verifique as permissões.");
-    setScanning(false);
+    // We'll handle errors via our own system instead
   };
 
   const cleanupCamera = useCallback(() => {
-    if (videoStream) {
-      console.log("Cleaning up camera resources");
-      videoStream.getTracks().forEach(track => {
+    console.log("Cleaning up camera resources");
+    
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => {
         track.stop();
         console.log("Track stopped:", track.label);
       });
+      streamRef.current = null;
       setVideoStream(null);
     }
     
@@ -269,26 +346,34 @@ export function QRCodeReader({ open, onOpenChange, onScan }: QRCodeReaderProps) 
     }
     
     setScanning(false);
-  }, [videoStream, torchEnabled]);
+  }, [torchEnabled]);
 
+  // Effect for initializing camera when dialog opens
   useEffect(() => {
     if (open) {
       console.log("Dialog opened, initializing camera");
       setScanning(true);
       setError(null);
+      setInitAttempts(0);
       
-      setTimeout(() => {
+      // Small delay to ensure dialog is fully rendered
+      const timer = setTimeout(() => {
         checkCameraPermission();
       }, 500);
+      
+      return () => clearTimeout(timer);
     } else {
       console.log("Dialog closed, cleaning up");
       cleanupCamera();
     }
-    
-    return () => {
-      cleanupCamera();
-    };
-  }, [open, cleanupCamera]);
+  }, [open, checkCameraPermission, cleanupCamera]);
+
+  // Effect for handling active camera change
+  useEffect(() => {
+    if (open && cameraPermission !== 'denied') {
+      requestCameraAccess();
+    }
+  }, [activeCamera, open, cameraPermission, requestCameraAccess]);
 
   return (
     <Dialog open={open} onOpenChange={(state) => {
@@ -332,16 +417,17 @@ export function QRCodeReader({ open, onOpenChange, onScan }: QRCodeReaderProps) 
                 <div className="text-sm text-gray-500 mt-2 p-2 bg-gray-50 rounded">
                   <strong>Dica:</strong> Em dispositivos móveis, certifique-se de que:
                   <ul className="list-disc pl-4 mt-1">
-                    <li>As permissões de câmera estão habilitadas</li>
-                    <li>O navegador está atualizado</li>
-                    <li>Tente recarregar a página e tentar novamente</li>
+                    <li>As permissões de câmera estão habilitadas nas configurações do navegador</li>
+                    <li>Feche outros aplicativos ou guias que possam estar usando a câmera</li>
+                    <li>Tente usar o navegador Chrome ou Safari que têm melhor suporte para câmera</li>
+                    <li>Se estiver no iOS, permita acesso à câmera nas configurações do Safari</li>
                   </ul>
                 </div>
               )}
             </div>
           </Alert>
         ) : (
-          <div className="relative">
+          <div className="relative" ref={qrReaderContainerRef}>
             {scanning && cameraPermission === 'granted' && (
               <div className="absolute inset-0 z-10 pointer-events-none">
                 <div className="absolute left-0 right-0 top-1/2 transform -translate-y-1/2">
@@ -363,7 +449,11 @@ export function QRCodeReader({ open, onOpenChange, onScan }: QRCodeReaderProps) 
                   <CameraOff className="h-12 w-12 text-red-400 mb-4" />
                   <p className="text-center mb-4">Permissão da câmera negada.</p>
                   <Button 
-                    onClick={requestCameraAccess} 
+                    onClick={() => {
+                      setInitAttempts(0);
+                      setCameraPermission('pending');
+                      requestCameraAccess();
+                    }} 
                     variant="default"
                     className="bg-blue-500 hover:bg-blue-600 text-white"
                     disabled={attemptingRetry}
@@ -381,25 +471,27 @@ export function QRCodeReader({ open, onOpenChange, onScan }: QRCodeReaderProps) 
               )}
               
               {cameraPermission === 'granted' && scanning && videoStream && (
-                <QrReader
-                  key={`qr-reader-${activeCamera}-${Date.now()}`}
-                  onResult={handleScan}
-                  constraints={{ 
-                    facingMode: activeCamera,
-                    aspectRatio: 1,
-                    width: { min: 320, ideal: isMobile ? 640 : 1280 },
-                    height: { min: 320, ideal: isMobile ? 480 : 720 },
-                  }}
-                  videoId="qr-video-element"
-                  className="w-full"
-                  scanDelay={300}
-                  videoStyle={{ 
-                    objectFit: 'cover', 
-                    width: '100%',
-                    height: '100%',
-                    minHeight: '250px'
-                  }}
-                />
+                <div className="camera-container" style={{ minHeight: "250px" }}>
+                  <QrReader
+                    key={`qr-reader-${activeCamera}-${Date.now()}`}
+                    onResult={handleScan}
+                    constraints={{ 
+                      facingMode: activeCamera,
+                      aspectRatio: 1,
+                      width: { min: 320, ideal: isMobile ? 640 : 1280 },
+                      height: { min: 320, ideal: isMobile ? 480 : 720 },
+                    }}
+                    videoId="qr-video-element"
+                    className="w-full"
+                    scanDelay={300}
+                    videoStyle={{ 
+                      objectFit: 'cover', 
+                      width: '100%',
+                      height: '100%',
+                      minHeight: '250px'
+                    }}
+                  />
+                </div>
               )}
               
               {cameraPermission === 'granted' && (!scanning || !videoStream) && (
