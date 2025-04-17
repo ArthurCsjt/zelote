@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Session, User } from "@supabase/supabase-js";
@@ -43,7 +42,6 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
-  // Estados para controlar a autenticação
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [username, setUsername] = useState<string | null>(null);
   const [email, setEmail] = useState<string | null>(null);
@@ -58,18 +56,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   // Verifica a sessão do usuário ao iniciar e configura um listener para mudanças na autenticação
   useEffect(() => {
-    // Verifica a sessão atual
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setIsAuthenticated(!!session);
-      if (session?.user) {
-        setEmail(session.user.email);
-        setUsername(session.user.email?.split('@')[0] || null);
-      }
-    });
-
-    // Configura o listener para mudanças na autenticação
+    // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
@@ -83,7 +70,24 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       }
     });
 
-    // Limpa o listener quando o componente é desmontado
+    // THEN check for existing session
+    const initSession = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          setSession(session);
+          setUser(session.user);
+          setIsAuthenticated(true);
+          setEmail(session.user.email);
+          setUsername(session.user.email?.split('@')[0] || null);
+        }
+      } catch (error) {
+        console.error("Error initializing session:", error);
+      }
+    };
+
+    initSession();
+
     return () => {
       subscription.unsubscribe();
     };

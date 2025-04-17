@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
+import { useMobile } from "@/hooks/use-mobile";
 import { LoanForm } from "@/components/LoanForm";
 import { ActiveLoans, Loan, ReturnDataType } from "@/components/ActiveLoans";
 import { toast } from "@/components/ui/use-toast";
@@ -8,11 +9,12 @@ import { Header } from "@/components/Header";
 import { ReturnDialog } from "@/components/ReturnDialog";
 import { Button } from "@/components/ui/button";
 import { LoanHistory } from "@/components/LoanHistory";
-import { Dashboard } from "@/components/Dashboard";
-import { ArrowLeft } from "lucide-react";
+import { MobileFriendlyDashboard } from "@/components/MobileFriendlyDashboard";
 import { ChromebookInventory } from "@/components/ChromebookInventory";
+import { ArrowLeft } from "lucide-react";
 
 const Index = () => {
+  const isMobile = useMobile();
   const [loans, setLoans] = useState<Loan[]>([]);
   const [history, setHistory] = useState<Loan[]>([]);
   const [openReturnDialog, setOpenReturnDialog] = useState(false);
@@ -29,38 +31,29 @@ const Index = () => {
   const [showDashboard, setShowDashboard] = useState(false);
   const [showInventory, setShowInventory] = useState(false);
 
-  const handleNavigation = (route: 'registration' | 'dashboard' | 'loan' | 'return' | 'inventory') => {
+  const handleNavigation = useCallback((route: 'registration' | 'dashboard' | 'loan' | 'return' | 'inventory') => {
     try {
+      setShowRegistrationForm(false);
+      setShowLoanForm(false);
+      setShowDashboard(false);
+      setShowInventory(false);
+
       switch (route) {
         case 'registration':
           setShowRegistrationForm(true);
-          setShowLoanForm(false);
-          setShowDashboard(false);
-          setShowInventory(false);
           break;
         case 'dashboard':
           setShowDashboard(true);
-          setShowLoanForm(false);
-          setShowRegistrationForm(false);
-          setShowInventory(false);
           break;
         case 'loan':
           setShowLoanForm(true);
-          setShowRegistrationForm(false);
-          setShowDashboard(false);
-          setShowInventory(false);
           break;
         case 'return':
           setOpenReturnDialog(true);
           break;
         case 'inventory':
           setShowInventory(true);
-          setShowLoanForm(false);
-          setShowRegistrationForm(false);
-          setShowDashboard(false);
           break;
-        default:
-          console.warn(`Rota não reconhecida: ${route}`);
       }
     } catch (error) {
       console.error("Erro ao navegar:", error);
@@ -70,7 +63,7 @@ const Index = () => {
         variant: "destructive",
       });
     }
-  };
+  }, []);
 
   const handleNewLoan = (formData: {
     studentName: string;
@@ -275,48 +268,60 @@ const Index = () => {
         {!showLoanForm && !showRegistrationForm && !showDashboard && !showInventory && (
           <MainMenu onNavigate={handleNavigation} />
         )}
+        
         {showRegistrationForm && (
-          <div>
+          <div className="animate-in fade-in slide-in-from-bottom-5">
             <ChromebookRegistration />
             <Button 
               variant="outline" 
               className="mt-4 w-full max-w-2xl mx-auto block"
-              onClick={() => setShowRegistrationForm(false)}
+              onClick={() => handleNavigation('dashboard')}
             >
               Voltar ao Menu
             </Button>
           </div>
         )}
+        
         {showDashboard && (
-          <Dashboard 
-            activeLoans={loans}
-            history={history}
-            onBack={() => {
-              setShowDashboard(false);
-            }}
-          />
+          <div className="animate-in fade-in slide-in-from-bottom-5">
+            {isMobile ? (
+              <MobileFriendlyDashboard 
+                activeLoans={loans}
+                history={history}
+                onBack={() => handleNavigation('dashboard')}
+              />
+            ) : (
+              <Dashboard 
+                activeLoans={loans}
+                history={history}
+                onBack={() => handleNavigation('dashboard')}
+              />
+            )}
+          </div>
         )}
+        
         {showInventory && (
-          <div>
+          <div className="animate-in fade-in slide-in-from-bottom-5">
             <ChromebookInventory />
             <Button 
               variant="outline" 
               className="mt-4 w-full max-w-2xl mx-auto block"
-              onClick={() => setShowInventory(false)}
+              onClick={() => handleNavigation('dashboard')}
             >
               Voltar ao Menu
             </Button>
           </div>
         )}
+        
         {showLoanForm && (
-          <div className="space-y-6">
+          <div className="space-y-6 animate-in fade-in slide-in-from-bottom-5">
             <div className="grid gap-6 md:grid-cols-2">
               <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4">
                 <LoanForm onSubmit={handleNewLoan} />
                 <Button 
                   variant="outline" 
                   className="mt-4 w-full hidden sm:block"
-                  onClick={() => setShowLoanForm(false)}
+                  onClick={() => handleNavigation('dashboard')}
                 >
                   Voltar ao Menu
                 </Button>
@@ -326,16 +331,19 @@ const Index = () => {
               </div>
             </div>
             <LoanHistory history={history} />
-            <div className="fixed bottom-4 right-4 sm:hidden">
-              <Button
-                onClick={() => setShowLoanForm(false)}
-                className="bg-green-600 hover:bg-green-700 text-white shadow-lg rounded-full h-12 w-12 flex items-center justify-center"
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-            </div>
+            {isMobile && (
+              <div className="fixed bottom-4 right-4">
+                <Button
+                  onClick={() => handleNavigation('dashboard')}
+                  className="bg-green-600 hover:bg-green-700 text-white shadow-lg rounded-full h-12 w-12 flex items-center justify-center"
+                >
+                  <ArrowLeft className="h-5 w-5" />
+                </Button>
+              </div>
+            )}
           </div>
         )}
+        
         <ReturnDialog
           open={openReturnDialog}
           onOpenChange={setOpenReturnDialog}
