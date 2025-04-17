@@ -12,6 +12,7 @@ import { LoanHistory } from "@/components/LoanHistory";
 import { MobileFriendlyDashboard } from "@/components/MobileFriendlyDashboard";
 import { ChromebookInventory } from "@/components/ChromebookInventory";
 import { ArrowLeft } from "lucide-react";
+import { Dashboard } from "@/components/Dashboard";
 
 const Index = () => {
   const isMobile = useMobile();
@@ -284,19 +285,11 @@ const Index = () => {
         
         {showDashboard && (
           <div className="animate-in fade-in slide-in-from-bottom-5">
-            {isMobile ? (
-              <MobileFriendlyDashboard 
-                activeLoans={loans}
-                history={history}
-                onBack={() => handleNavigation('dashboard')}
-              />
-            ) : (
-              <Dashboard 
-                activeLoans={loans}
-                history={history}
-                onBack={() => handleNavigation('dashboard')}
-              />
-            )}
+            <Dashboard 
+              activeLoans={loans}
+              history={history}
+              onBack={() => handleNavigation('dashboard')}
+            />
           </div>
         )}
         
