@@ -35,10 +35,35 @@ interface DashboardProps {
 }
 
 export function Dashboard({ activeLoans, history, onBack }: DashboardProps) {
-  const isMobile = useMobile();
-
-  if (isMobile) {
-    return <MobileFriendlyDashboard activeLoans={activeLoans} history={history} onBack={onBack} />;
+  const [isMobileDashboard, setIsMobileDashboard] = useState(false);
+  
+  const isMobileDevice = useMobile();
+  
+  useEffect(() => {
+    console.log('Dashboard component rendering:', {
+      isMobileDevice,
+      activeLoans: activeLoans.length,
+      history: history.length
+    });
+    
+    const timeout = setTimeout(() => {
+      setIsMobileDashboard(isMobileDevice);
+    }, 100);
+    
+    return () => clearTimeout(timeout);
+  }, [isMobileDevice, activeLoans.length, history.length]);
+  
+  if (isMobileDashboard) {
+    console.log('Rendering MobileFriendlyDashboard');
+    return (
+      <div className="animate-in fade-in slide-in-from-bottom-5 duration-300">
+        <MobileFriendlyDashboard 
+          activeLoans={activeLoans}
+          history={history}
+          onBack={onBack}
+        />
+      </div>
+    );
   }
 
   const { toast } = useToast();
@@ -213,8 +238,10 @@ export function Dashboard({ activeLoans, history, onBack }: DashboardProps) {
     }
   };
 
+  console.log('Rendering desktop Dashboard');
+  
   return (
-    <div className="space-y-6 animate-fadeIn">
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-5 duration-300">
       <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-6">
         <h2 className="text-2xl sm:text-3xl font-bold tracking-tight bg-gradient-to-r from-blue-700 to-blue-500 bg-clip-text text-transparent">Dashboard</h2>
         <div className="flex flex-wrap gap-2 w-full sm:w-auto justify-start">

@@ -10,7 +10,9 @@ export function useMobile() {
     if (typeof window === 'undefined') return
     
     const checkMobile = () => {
-      // Prioritize user agent detection for more reliable mobile detection
+      // Use a combination of methods for reliable detection
+      
+      // 1. User agent detection - most reliable for actual mobile devices
       const userAgent = navigator.userAgent.toLowerCase()
       const mobileKeywords = [
         'android', 'webos', 'iphone', 'ipad', 'ipod', 'blackberry', 
@@ -18,7 +20,7 @@ export function useMobile() {
       ]
       const isMobileUserAgent = mobileKeywords.some(keyword => userAgent.includes(keyword))
       
-      // Use touch capability as secondary indicator
+      // 2. Touch capability - for tablets and touch devices
       const hasTouchScreen = (
         'ontouchstart' in window ||
         navigator.maxTouchPoints > 0 ||
@@ -26,33 +28,37 @@ export function useMobile() {
         navigator.msMaxTouchPoints > 0
       )
       
-      // Screen size as final check
+      // 3. Screen width - fallback for desktop in narrow window
       const hasSmallScreen = window.innerWidth < MOBILE_BREAKPOINT
       
-      // Set mobile state based on multiple indicators for better reliability
-      setIsMobile(isMobileUserAgent || (hasTouchScreen && hasSmallScreen))
+      // Combine all factors - prioritize user agent detection
+      const result = isMobileUserAgent || (hasTouchScreen && hasSmallScreen)
       
-      // Force debug logging to check detection
-      console.log('Mobile detection:', { 
+      console.log('[DEBUG] Mobile detection:', { 
         isMobileUserAgent, 
-        hasTouchScreen, 
-        hasSmallScreen, 
-        result: isMobileUserAgent || (hasTouchScreen && hasSmallScreen),
-        width: window.innerWidth,
-        ua: navigator.userAgent 
-      });
+        userAgent,
+        hasTouchScreen,
+        hasSmallScreen,
+        windowWidth: window.innerWidth,
+        result
+      })
+      
+      setIsMobile(result)
     }
     
-    // Run detection immediately
+    // Initial check and set up listeners
     checkMobile()
-    
-    // Set up listeners for orientation/resize changes
     window.addEventListener('resize', checkMobile)
     window.addEventListener('orientationchange', checkMobile)
     
+    // Force additional check after a short delay (helps with some mobile browsers)
+    const timeout = setTimeout(checkMobile, 500)
+    
+    // Cleanup
     return () => {
       window.removeEventListener('resize', checkMobile)
       window.removeEventListener('orientationchange', checkMobile)
+      clearTimeout(timeout)
     }
   }, [])
 

@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from "react";
 import { useMobile } from "@/hooks/use-mobile";
 import { LoanForm } from "@/components/LoanForm";
@@ -33,8 +32,16 @@ const Index = () => {
   const [showDashboard, setShowDashboard] = useState(false);
   const [showInventory, setShowInventory] = useState(false);
 
+  console.log('Index component rendering', { 
+    isMobile, 
+    showDashboard,
+    windowWidth: typeof window !== 'undefined' ? window.innerWidth : 'SSR'
+  });
+
   const handleNavigation = useCallback((route: 'registration' | 'dashboard' | 'loan' | 'return' | 'inventory') => {
     try {
+      console.log(`Navigating to ${route}`, { isMobile });
+      
       setShowRegistrationForm(false);
       setShowLoanForm(false);
       setShowDashboard(false);
@@ -45,7 +52,12 @@ const Index = () => {
           setShowRegistrationForm(true);
           break;
         case 'dashboard':
+          console.log('Setting showDashboard to true');
           setShowDashboard(true);
+          
+          setTimeout(() => {
+            console.log('After timeout - Dashboard state:', { showDashboard: true, isMobile });
+          }, 100);
           break;
         case 'loan':
           setShowLoanForm(true);
@@ -57,11 +69,6 @@ const Index = () => {
           setShowInventory(true);
           break;
       }
-      
-      // Add debug log when navigating to dashboard
-      if (route === 'dashboard') {
-        console.log('Navigating to dashboard, isMobile:', isMobile);
-      }
     } catch (error) {
       console.error("Erro ao navegar:", error);
       toast({
@@ -70,7 +77,7 @@ const Index = () => {
         variant: "destructive",
       });
     }
-  }, []);
+  }, [isMobile]);
 
   const handleNewLoan = (formData: {
     studentName: string;
@@ -277,7 +284,7 @@ const Index = () => {
         )}
         
         {showRegistrationForm && (
-          <div className="animate-in fade-in slide-in-from-bottom-5">
+          <div className="animate-in fade-in slide-in-from-bottom-5 duration-300">
             <ChromebookRegistration />
             <Button 
               variant="outline" 
@@ -290,7 +297,7 @@ const Index = () => {
         )}
         
         {showDashboard && (
-          <div className="animate-in fade-in slide-in-from-bottom-5">
+          <div className="animate-in fade-in slide-in-from-bottom-5 duration-300">
             <Dashboard 
               activeLoans={loans}
               history={history}
@@ -300,7 +307,7 @@ const Index = () => {
         )}
         
         {showInventory && (
-          <div className="animate-in fade-in slide-in-from-bottom-5">
+          <div className="animate-in fade-in slide-in-from-bottom-5 duration-300">
             <ChromebookInventory />
             <Button 
               variant="outline" 
@@ -313,7 +320,7 @@ const Index = () => {
         )}
         
         {showLoanForm && (
-          <div className="space-y-6 animate-in fade-in slide-in-from-bottom-5">
+          <div className="space-y-6 animate-in fade-in slide-in-from-bottom-5 duration-300">
             <div className="grid gap-6 md:grid-cols-2">
               <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4">
                 <LoanForm onSubmit={handleNewLoan} />

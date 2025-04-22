@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useEffect } from 'react';
 import {
   Card,
   CardContent,
@@ -33,9 +33,17 @@ interface MobileFriendlyDashboardProps {
 
 export function MobileFriendlyDashboard({ activeLoans, history, onBack }: MobileFriendlyDashboardProps) {
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState('visaogeral');
+  const [activeTab, setActiveTab] = React.useState('visaogeral');
   const totalChromebooks = 50;
   const availableChromebooks = totalChromebooks - activeLoans.length;
+
+  // Add useEffect for debugging
+  useEffect(() => {
+    console.log('MobileFriendlyDashboard mounted', {
+      activeLoans: activeLoans.length,
+      history: history.length
+    });
+  }, [activeLoans.length, history.length]);
 
   // Simplified data processing for mobile
   const pieData = [
@@ -119,9 +127,11 @@ export function MobileFriendlyDashboard({ activeLoans, history, onBack }: Mobile
     }
   };
 
+  console.log('Rendering MobileFriendlyDashboard content');
+
   // Use a simplified rendering approach for mobile
   return (
-    <div className="space-y-4 animate-in fade-in">
+    <div className="space-y-4 animate-in fade-in duration-300">
       <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-4">
         <h2 className="text-xl sm:text-2xl font-bold tracking-tight bg-gradient-to-r from-blue-700 to-blue-500 bg-clip-text text-transparent">Dashboard</h2>
         <div className="flex flex-wrap gap-2 w-full sm:w-auto justify-start">
