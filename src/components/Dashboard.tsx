@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -35,34 +35,25 @@ interface DashboardProps {
 }
 
 export function Dashboard({ activeLoans, history, onBack }: DashboardProps) {
-  const [isMobileDashboard, setIsMobileDashboard] = useState(false);
-  
-  const isMobileDevice = useMobile();
+  const isMobile = useMobile();
   
   useEffect(() => {
-    console.log('Dashboard component rendering:', {
-      isMobileDevice,
-      activeLoans: activeLoans.length,
-      history: history.length
+    console.log('Dashboard rendered with:', { 
+      isMobile, 
+      activeLoans: activeLoans.length, 
+      history: history.length,
+      windowWidth: window.innerWidth
     });
-    
-    const timeout = setTimeout(() => {
-      setIsMobileDashboard(isMobileDevice);
-    }, 100);
-    
-    return () => clearTimeout(timeout);
-  }, [isMobileDevice, activeLoans.length, history.length]);
+  }, [isMobile, activeLoans.length, history.length]);
   
-  if (isMobileDashboard) {
-    console.log('Rendering MobileFriendlyDashboard');
+  if (isMobile) {
+    console.log('Rendering mobile dashboard view');
     return (
-      <div className="animate-in fade-in slide-in-from-bottom-5 duration-300">
-        <MobileFriendlyDashboard 
-          activeLoans={activeLoans}
-          history={history}
-          onBack={onBack}
-        />
-      </div>
+      <MobileFriendlyDashboard 
+        activeLoans={activeLoans}
+        history={history}
+        onBack={onBack}
+      />
     );
   }
 

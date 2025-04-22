@@ -10,40 +10,17 @@ export function useMobile() {
     if (typeof window === 'undefined') return
     
     const checkMobile = () => {
-      // Use a combination of methods for reliable detection
-      
-      // 1. User agent detection - most reliable for actual mobile devices
-      const userAgent = navigator.userAgent.toLowerCase()
-      const mobileKeywords = [
-        'android', 'webos', 'iphone', 'ipad', 'ipod', 'blackberry', 
-        'windows phone', 'mobile', 'tablet'
-      ]
-      const isMobileUserAgent = mobileKeywords.some(keyword => userAgent.includes(keyword))
-      
-      // 2. Touch capability - for tablets and touch devices
-      const hasTouchScreen = (
-        'ontouchstart' in window ||
-        navigator.maxTouchPoints > 0 ||
-        // @ts-ignore - MS prefixed properties
-        navigator.msMaxTouchPoints > 0
-      )
-      
-      // 3. Screen width - fallback for desktop in narrow window
+      // Simplificando a detecção para maior confiabilidade
+      // Priorizar screen width para uma detecção mais consistente
       const hasSmallScreen = window.innerWidth < MOBILE_BREAKPOINT
       
-      // Combine all factors - prioritize user agent detection
-      const result = isMobileUserAgent || (hasTouchScreen && hasSmallScreen)
-      
       console.log('[DEBUG] Mobile detection:', { 
-        isMobileUserAgent, 
-        userAgent,
-        hasTouchScreen,
-        hasSmallScreen,
         windowWidth: window.innerWidth,
-        result
+        hasSmallScreen,
+        breakpoint: MOBILE_BREAKPOINT
       })
       
-      setIsMobile(result)
+      setIsMobile(hasSmallScreen)
     }
     
     // Initial check and set up listeners
