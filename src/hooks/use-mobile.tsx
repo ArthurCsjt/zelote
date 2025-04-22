@@ -29,11 +29,24 @@ export function useMobile() {
       // Screen size as final check
       const hasSmallScreen = window.innerWidth < MOBILE_BREAKPOINT
       
-      // Prioritize user agent detection for better reliability
+      // Set mobile state based on multiple indicators for better reliability
       setIsMobile(isMobileUserAgent || (hasTouchScreen && hasSmallScreen))
+      
+      // Force debug logging to check detection
+      console.log('Mobile detection:', { 
+        isMobileUserAgent, 
+        hasTouchScreen, 
+        hasSmallScreen, 
+        result: isMobileUserAgent || (hasTouchScreen && hasSmallScreen),
+        width: window.innerWidth,
+        ua: navigator.userAgent 
+      });
     }
     
+    // Run detection immediately
     checkMobile()
+    
+    // Set up listeners for orientation/resize changes
     window.addEventListener('resize', checkMobile)
     window.addEventListener('orientationchange', checkMobile)
     

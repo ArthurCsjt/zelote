@@ -121,7 +121,7 @@ export function MobileFriendlyDashboard({ activeLoans, history, onBack }: Mobile
 
   // Use a simplified rendering approach for mobile
   return (
-    <div className="space-y-4 animate-fadeIn">
+    <div className="space-y-4 animate-in fade-in">
       <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-4">
         <h2 className="text-xl sm:text-2xl font-bold tracking-tight bg-gradient-to-r from-blue-700 to-blue-500 bg-clip-text text-transparent">Dashboard</h2>
         <div className="flex flex-wrap gap-2 w-full sm:w-auto justify-start">

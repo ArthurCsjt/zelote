@@ -1,3 +1,4 @@
+
 import { useState, useCallback } from "react";
 import { useMobile } from "@/hooks/use-mobile";
 import { LoanForm } from "@/components/LoanForm";
@@ -55,6 +56,11 @@ const Index = () => {
         case 'inventory':
           setShowInventory(true);
           break;
+      }
+      
+      // Add debug log when navigating to dashboard
+      if (route === 'dashboard') {
+        console.log('Navigating to dashboard, isMobile:', isMobile);
       }
     } catch (error) {
       console.error("Erro ao navegar:", error);
