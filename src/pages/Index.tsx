@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useMobile } from "@/hooks/use-mobile";
 import { LoanForm } from "@/components/LoanForm";
 import { ActiveLoans, Loan, ReturnDataType } from "@/components/ActiveLoans";
@@ -27,48 +27,21 @@ const Index = () => {
     type: 'individual',
     userType: 'aluno'
   });
-  const [showLoanForm, setShowLoanForm] = useState(false);
-  const [showRegistrationForm, setShowRegistrationForm] = useState(false);
-  const [showDashboard, setShowDashboard] = useState(false);
-  const [showInventory, setShowInventory] = useState(false);
+  const [currentView, setCurrentView] = useState<'menu' | 'loan' | 'registration' | 'dashboard' | 'inventory'>('menu');
 
-  console.log('Index component rendering', { 
-    isMobile, 
-    showDashboard,
-    windowWidth: typeof window !== 'undefined' ? window.innerWidth : 'SSR'
-  });
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [currentView]);
 
   const handleNavigation = useCallback((route: 'registration' | 'dashboard' | 'loan' | 'return' | 'inventory') => {
     try {
-      console.log(`Navigating to ${route}`, { isMobile });
-      
-      setShowRegistrationForm(false);
-      setShowLoanForm(false);
-      setShowDashboard(false);
-      setShowInventory(false);
-
-      switch (route) {
-        case 'registration':
-          setShowRegistrationForm(true);
-          break;
-        case 'dashboard':
-          console.log('Setting showDashboard to true');
-          setShowDashboard(true);
-          
-          setTimeout(() => {
-            console.log('After timeout - Dashboard state:', { showDashboard: true, isMobile });
-          }, 100);
-          break;
-        case 'loan':
-          setShowLoanForm(true);
-          break;
-        case 'return':
-          setOpenReturnDialog(true);
-          break;
-        case 'inventory':
-          setShowInventory(true);
-          break;
+      if (route === 'return') {
+        setOpenReturnDialog(true);
+        return;
       }
+      
+      setCurrentView(route);
+      
     } catch (error) {
       console.error("Erro ao navegar:", error);
       toast({
@@ -77,7 +50,11 @@ const Index = () => {
         variant: "destructive",
       });
     }
-  }, [isMobile]);
+  }, []);
+
+  const handleBackToMenu = useCallback(() => {
+    setCurrentView('menu');
+  }, []);
 
   const handleNewLoan = (formData: {
     studentName: string;
@@ -275,59 +252,62 @@ const Index = () => {
     }
   };
 
-  return (
-    <div className="min-h-screen bg-white p-4">
-      <div className="max-w-6xl mx-auto">
-        <Header />
-        {!showLoanForm && !showRegistrationForm && !showDashboard && !showInventory && (
-          <MainMenu onNavigate={handleNavigation} />
-        )}
-        
-        {showRegistrationForm && (
+  const renderCurrentView = () => {
+    switch (currentView) {
+      case 'registration':
+        return (
           <div className="animate-in fade-in slide-in-from-bottom-5 duration-300">
             <ChromebookRegistration />
             <Button 
               variant="outline" 
               className="mt-4 w-full max-w-2xl mx-auto block"
-              onClick={() => handleNavigation('dashboard')}
+              onClick={handleBackToMenu}
             >
               Voltar ao Menu
             </Button>
           </div>
-        )}
-        
-        {showDashboard && (
+        );
+      case 'dashboard':
+        return isMobile ? (
+          <div className="animate-in fade-in duration-300">
+            <MobileFriendlyDashboard 
+              activeLoans={loans}
+              history={history}
+              onBack={handleBackToMenu}
+            />
+          </div>
+        ) : (
           <div className="animate-in fade-in slide-in-from-bottom-5 duration-300">
             <Dashboard 
               activeLoans={loans}
               history={history}
-              onBack={() => handleNavigation('dashboard')}
+              onBack={handleBackToMenu}
             />
           </div>
-        )}
-        
-        {showInventory && (
+        );
+      case 'inventory':
+        return (
           <div className="animate-in fade-in slide-in-from-bottom-5 duration-300">
             <ChromebookInventory />
             <Button 
               variant="outline" 
               className="mt-4 w-full max-w-2xl mx-auto block"
-              onClick={() => handleNavigation('dashboard')}
+              onClick={handleBackToMenu}
             >
               Voltar ao Menu
             </Button>
           </div>
-        )}
-        
-        {showLoanForm && (
+        );
+      case 'loan':
+        return (
           <div className="space-y-6 animate-in fade-in slide-in-from-bottom-5 duration-300">
             <div className="grid gap-6 md:grid-cols-2">
               <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4">
                 <LoanForm onSubmit={handleNewLoan} />
                 <Button 
                   variant="outline" 
-                  className="mt-4 w-full hidden sm:block"
-                  onClick={() => handleNavigation('dashboard')}
+                  className="mt-4 w-full"
+                  onClick={handleBackToMenu}
                 >
                   Voltar ao Menu
                 </Button>
@@ -337,19 +317,18 @@ const Index = () => {
               </div>
             </div>
             <LoanHistory history={history} />
-            {isMobile && (
-              <div className="fixed bottom-4 right-4">
-                <Button
-                  onClick={() => handleNavigation('dashboard')}
-                  className="bg-green-600 hover:bg-green-700 text-white shadow-lg rounded-full h-12 w-12 flex items-center justify-center"
-                >
-                  <ArrowLeft className="h-5 w-5" />
-                </Button>
-              </div>
-            )}
           </div>
-        )}
-        
+        );
+      default:
+        return <MainMenu onNavigate={handleNavigation} />;
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-white p-4">
+      <div className="max-w-6xl mx-auto">
+        <Header />
+        {renderCurrentView()}
         <ReturnDialog
           open={openReturnDialog}
           onOpenChange={setOpenReturnDialog}

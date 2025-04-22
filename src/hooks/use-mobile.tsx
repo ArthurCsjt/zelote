@@ -10,31 +10,22 @@ export function useMobile() {
     if (typeof window === 'undefined') return
     
     const checkMobile = () => {
-      // Simplificando a detecção para maior confiabilidade
-      // Priorizar screen width para uma detecção mais consistente
       const hasSmallScreen = window.innerWidth < MOBILE_BREAKPOINT
-      
-      console.log('[DEBUG] Mobile detection:', { 
-        windowWidth: window.innerWidth,
-        hasSmallScreen,
-        breakpoint: MOBILE_BREAKPOINT
-      })
-      
       setIsMobile(hasSmallScreen)
     }
     
-    // Initial check and set up listeners
+    // Initial check
     checkMobile()
-    window.addEventListener('resize', checkMobile)
-    window.addEventListener('orientationchange', checkMobile)
     
-    // Force additional check after a short delay (helps with some mobile browsers)
-    const timeout = setTimeout(checkMobile, 500)
+    // Setup listeners for window resize
+    window.addEventListener('resize', checkMobile)
+    
+    // Force additional check after a delay to handle some edge cases
+    const timeout = setTimeout(checkMobile, 100)
     
     // Cleanup
     return () => {
       window.removeEventListener('resize', checkMobile)
-      window.removeEventListener('orientationchange', checkMobile)
       clearTimeout(timeout)
     }
   }, [])
