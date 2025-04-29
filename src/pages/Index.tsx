@@ -32,7 +32,6 @@ const Index = () => {
   // Ensure smooth scrolling to top when changing views
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    
     console.log('View changed to:', currentView, 'isMobile:', isMobile);
   }, [currentView, isMobile]);
 
@@ -43,7 +42,8 @@ const Index = () => {
         return;
       }
       
-      console.log('Navigating to:', route);
+      // Garantir que a navegação seja limpa
+      console.log('Navegando para:', route);
       setCurrentView(route);
       
     } catch (error) {
@@ -56,10 +56,12 @@ const Index = () => {
     }
   }, []);
 
+  // Simplificado para garantir consistência
   const handleBackToMenu = useCallback(() => {
-    console.log('Returning to menu from:', currentView);
+    console.log('Retornando ao menu principal');
+    // Mudança direta de estado sem efeitos colaterais
     setCurrentView('menu');
-  }, [currentView]);
+  }, []);
 
   const handleNewLoan = (formData: {
     studentName: string;
@@ -258,7 +260,7 @@ const Index = () => {
   };
 
   const renderCurrentView = () => {
-    console.log('Rendering view:', currentView, 'isMobile:', isMobile, 'isReady:', isReady);
+    console.log('Renderizando view:', currentView, 'isMobile:', isMobile, 'isReady:', isReady);
     
     // Wait for mobile detection to be ready
     if (!isReady) {
