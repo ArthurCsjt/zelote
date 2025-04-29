@@ -1,4 +1,3 @@
-
 import React from 'react';
 import {
   Card,
@@ -23,13 +22,21 @@ export function MobileFriendlyDashboard({ activeLoans, history, onBack }: Mobile
   const totalChromebooks = 50;
   const availableChromebooks = totalChromebooks - activeLoans.length;
 
+  // Handler with event prevention to ensure clean navigation
+  const handleBack = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (typeof onBack === 'function') {
+      onBack();
+    }
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex flex-col justify-between items-start gap-4 mb-4">
         <h2 className="text-xl font-bold tracking-tight bg-gradient-to-r from-blue-700 to-blue-500 bg-clip-text text-transparent">Dashboard</h2>
         <Button 
           variant="outline" 
-          onClick={onBack}
+          onClick={handleBack}
           size="sm"
           className="flex items-center gap-1 hover:bg-blue-50 px-2 w-full justify-center"
         >
