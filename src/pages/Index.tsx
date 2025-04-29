@@ -35,7 +35,7 @@ const Index = () => {
     console.log('View changed to:', currentView, 'isMobile:', isMobile);
   }, [currentView, isMobile]);
 
-  // Método de navegação melhorado para dispositivos móveis
+  // Método de navegação simplificado
   const handleNavigation = useCallback((route: 'registration' | 'dashboard' | 'loan' | 'return' | 'inventory') => {
     try {
       if (route === 'return') {
@@ -44,11 +44,7 @@ const Index = () => {
       }
       
       console.log('Navegando para:', route);
-      
-      // Para evitar problemas de renderização em dispositivos móveis
-      requestAnimationFrame(() => {
-        setCurrentView(route);
-      });
+      setCurrentView(route);
       
     } catch (error) {
       console.error("Erro ao navegar:", error);
@@ -60,15 +56,10 @@ const Index = () => {
     }
   }, []);
 
-  // Melhorado para funcionar consistentemente em dispositivos móveis
+  // Função simplificada para voltar ao menu
   const handleBackToMenu = useCallback(() => {
-    console.log('Tentando voltar ao menu principal');
-    
-    // Usando requestAnimationFrame para garantir que a mudança de view aconteça no próximo ciclo de renderização
-    requestAnimationFrame(() => {
-      console.log('Executando setCurrentView para menu');
-      setCurrentView('menu');
-    });
+    console.log('Voltando ao menu via função handleBackToMenu');
+    setCurrentView('menu');
   }, []);
 
   const handleNewLoan = (formData: {
@@ -297,10 +288,7 @@ const Index = () => {
               <MobileFriendlyDashboard 
                 activeLoans={loans}
                 history={history}
-                onBack={() => {
-                  console.log('MobileFriendlyDashboard: onBack executado');
-                  handleBackToMenu();
-                }}
+                onBack={handleBackToMenu} // Mantendo apenas como fallback, não será usado na nova abordagem
               />
             </div>
           );
