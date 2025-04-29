@@ -35,6 +35,7 @@ const Index = () => {
     console.log('View changed to:', currentView, 'isMobile:', isMobile);
   }, [currentView, isMobile]);
 
+  // Método de navegação melhorado para dispositivos móveis
   const handleNavigation = useCallback((route: 'registration' | 'dashboard' | 'loan' | 'return' | 'inventory') => {
     try {
       if (route === 'return') {
@@ -42,9 +43,12 @@ const Index = () => {
         return;
       }
       
-      // Garantir que a navegação seja limpa
       console.log('Navegando para:', route);
-      setCurrentView(route);
+      
+      // Para evitar problemas de renderização em dispositivos móveis
+      requestAnimationFrame(() => {
+        setCurrentView(route);
+      });
       
     } catch (error) {
       console.error("Erro ao navegar:", error);
@@ -56,11 +60,15 @@ const Index = () => {
     }
   }, []);
 
-  // Simplificado para garantir consistência
+  // Melhorado para funcionar consistentemente em dispositivos móveis
   const handleBackToMenu = useCallback(() => {
-    console.log('Retornando ao menu principal');
-    // Mudança direta de estado sem efeitos colaterais
-    setCurrentView('menu');
+    console.log('Tentando voltar ao menu principal');
+    
+    // Usando requestAnimationFrame para garantir que a mudança de view aconteça no próximo ciclo de renderização
+    requestAnimationFrame(() => {
+      console.log('Executando setCurrentView para menu');
+      setCurrentView('menu');
+    });
   }, []);
 
   const handleNewLoan = (formData: {
@@ -283,12 +291,16 @@ const Index = () => {
         );
       case 'dashboard':
         if (isMobile) {
+          console.log('Renderizando dashboard mobile');
           return (
             <div className="animate-in fade-in duration-300">
               <MobileFriendlyDashboard 
                 activeLoans={loans}
                 history={history}
-                onBack={handleBackToMenu}
+                onBack={() => {
+                  console.log('MobileFriendlyDashboard: onBack executado');
+                  handleBackToMenu();
+                }}
               />
             </div>
           );
