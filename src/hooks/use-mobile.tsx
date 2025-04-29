@@ -31,4 +31,8 @@ export function useMobile() {
   return { isMobile, isReady }
 }
 
-export const useIsMobile = useMobile
+// This wrapper returns just the isMobile boolean to maintain compatibility with code expecting a boolean
+export const useIsMobile = () => {
+  const { isMobile } = useMobile()
+  return isMobile
+}
