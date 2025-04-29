@@ -5,6 +5,7 @@ const MOBILE_BREAKPOINT = 768
 
 export function useMobile() {
   const [isMobile, setIsMobile] = React.useState<boolean>(false)
+  const [isReady, setIsReady] = React.useState<boolean>(false)
 
   React.useEffect(() => {
     if (typeof window === 'undefined') return
@@ -12,6 +13,7 @@ export function useMobile() {
     const checkMobile = () => {
       const hasSmallScreen = window.innerWidth < MOBILE_BREAKPOINT
       setIsMobile(hasSmallScreen)
+      setIsReady(true)
     }
     
     // Initial check
@@ -20,17 +22,13 @@ export function useMobile() {
     // Setup listeners for window resize
     window.addEventListener('resize', checkMobile)
     
-    // Force additional check after a delay to handle some edge cases
-    const timeout = setTimeout(checkMobile, 100)
-    
     // Cleanup
     return () => {
       window.removeEventListener('resize', checkMobile)
-      clearTimeout(timeout)
     }
   }, [])
 
-  return isMobile
+  return { isMobile, isReady }
 }
 
 export const useIsMobile = useMobile

@@ -15,7 +15,7 @@ import { ArrowLeft } from "lucide-react";
 import { Dashboard } from "@/components/Dashboard";
 
 const Index = () => {
-  const isMobile = useMobile();
+  const { isMobile, isReady } = useMobile();
   const [loans, setLoans] = useState<Loan[]>([]);
   const [history, setHistory] = useState<Loan[]>([]);
   const [openReturnDialog, setOpenReturnDialog] = useState(false);
@@ -29,9 +29,12 @@ const Index = () => {
   });
   const [currentView, setCurrentView] = useState<'menu' | 'loan' | 'registration' | 'dashboard' | 'inventory'>('menu');
 
+  // Ensure smooth scrolling to top when changing views
   useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [currentView]);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    
+    console.log('View changed to:', currentView, 'isMobile:', isMobile);
+  }, [currentView, isMobile]);
 
   const handleNavigation = useCallback((route: 'registration' | 'dashboard' | 'loan' | 'return' | 'inventory') => {
     try {
@@ -40,6 +43,7 @@ const Index = () => {
         return;
       }
       
+      console.log('Navigating to:', route);
       setCurrentView(route);
       
     } catch (error) {
@@ -53,8 +57,9 @@ const Index = () => {
   }, []);
 
   const handleBackToMenu = useCallback(() => {
+    console.log('Returning to menu from:', currentView);
     setCurrentView('menu');
-  }, []);
+  }, [currentView]);
 
   const handleNewLoan = (formData: {
     studentName: string;
@@ -253,10 +258,17 @@ const Index = () => {
   };
 
   const renderCurrentView = () => {
+    console.log('Rendering view:', currentView, 'isMobile:', isMobile, 'isReady:', isReady);
+    
+    // Wait for mobile detection to be ready
+    if (!isReady) {
+      return <div className="flex items-center justify-center min-h-[50vh]">Carregando...</div>;
+    }
+    
     switch (currentView) {
       case 'registration':
         return (
-          <div className="animate-in fade-in slide-in-from-bottom-5 duration-300">
+          <div className="animate-in fade-in duration-300">
             <ChromebookRegistration />
             <Button 
               variant="outline" 
@@ -268,26 +280,30 @@ const Index = () => {
           </div>
         );
       case 'dashboard':
-        return isMobile ? (
-          <div className="animate-in fade-in duration-300">
-            <MobileFriendlyDashboard 
-              activeLoans={loans}
-              history={history}
-              onBack={handleBackToMenu}
-            />
-          </div>
-        ) : (
-          <div className="animate-in fade-in slide-in-from-bottom-5 duration-300">
-            <Dashboard 
-              activeLoans={loans}
-              history={history}
-              onBack={handleBackToMenu}
-            />
-          </div>
-        );
+        if (isMobile) {
+          return (
+            <div className="animate-in fade-in duration-300">
+              <MobileFriendlyDashboard 
+                activeLoans={loans}
+                history={history}
+                onBack={handleBackToMenu}
+              />
+            </div>
+          );
+        } else {
+          return (
+            <div className="animate-in fade-in duration-300">
+              <Dashboard 
+                activeLoans={loans}
+                history={history}
+                onBack={handleBackToMenu}
+              />
+            </div>
+          );
+        }
       case 'inventory':
         return (
-          <div className="animate-in fade-in slide-in-from-bottom-5 duration-300">
+          <div className="animate-in fade-in duration-300">
             <ChromebookInventory />
             <Button 
               variant="outline" 
@@ -300,7 +316,7 @@ const Index = () => {
         );
       case 'loan':
         return (
-          <div className="space-y-6 animate-in fade-in slide-in-from-bottom-5 duration-300">
+          <div className="space-y-6 animate-in fade-in duration-300">
             <div className="grid gap-6 md:grid-cols-2">
               <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4">
                 <LoanForm onSubmit={handleNewLoan} />

@@ -26,7 +26,6 @@ import jsPDF from "jspdf";
 import { useToast } from "./ui/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MobileFriendlyDashboard } from "./MobileFriendlyDashboard";
-import { useMobile } from "@/hooks/use-mobile";
 
 interface DashboardProps {
   activeLoans: Loan[];
@@ -35,28 +34,6 @@ interface DashboardProps {
 }
 
 export function Dashboard({ activeLoans, history, onBack }: DashboardProps) {
-  const isMobile = useMobile();
-  
-  useEffect(() => {
-    console.log('Dashboard rendered with:', { 
-      isMobile, 
-      activeLoans: activeLoans.length, 
-      history: history.length,
-      windowWidth: window.innerWidth
-    });
-  }, [isMobile, activeLoans.length, history.length]);
-  
-  if (isMobile) {
-    console.log('Rendering mobile dashboard view');
-    return (
-      <MobileFriendlyDashboard 
-        activeLoans={activeLoans}
-        history={history}
-        onBack={onBack}
-      />
-    );
-  }
-
   const { toast } = useToast();
   const totalChromebooks = 50;
   const availableChromebooks = totalChromebooks - activeLoans.length;
@@ -229,8 +206,6 @@ export function Dashboard({ activeLoans, history, onBack }: DashboardProps) {
     }
   };
 
-  console.log('Rendering desktop Dashboard');
-  
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-5 duration-300">
       <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-6">

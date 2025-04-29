@@ -31,10 +31,10 @@ export function MobileFriendlyDashboard({ activeLoans, history, onBack }: Mobile
           variant="outline" 
           onClick={onBack}
           size="sm"
-          className="flex items-center gap-1 hover:bg-blue-50 px-2"
+          className="flex items-center gap-1 hover:bg-blue-50 px-2 w-full justify-center"
         >
           <ArrowLeft className="h-4 w-4" />
-          <span>Voltar</span>
+          <span>Voltar ao Menu</span>
         </Button>
       </div>
 
