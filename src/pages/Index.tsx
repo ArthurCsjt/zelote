@@ -1,3 +1,4 @@
+
 import { useState, useCallback, useEffect } from "react";
 import { useMobile } from "@/hooks/use-mobile";
 import { LoanForm } from "@/components/LoanForm";
@@ -19,6 +20,7 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
   DialogTrigger,
 } from "@/components/ui/dialog";
 import {
