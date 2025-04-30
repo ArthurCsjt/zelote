@@ -1,3 +1,4 @@
+
 import { useState, useCallback, useEffect } from "react";
 import { useMobile } from "@/hooks/use-mobile";
 import { LoanForm } from "@/components/LoanForm";
@@ -288,7 +289,7 @@ const Index = () => {
               <MobileFriendlyDashboard 
                 activeLoans={loans}
                 history={history}
-                onBack={handleBackToMenu} // Mantendo apenas como fallback, não será usado na nova abordagem
+                onBack={handleBackToMenu}
               />
             </div>
           );
@@ -325,7 +326,11 @@ const Index = () => {
                 <Button 
                   variant="outline" 
                   className="mt-4 w-full"
-                  onClick={handleBackToMenu}
+                  onClick={() => {
+                    console.log('Botão voltar do menu empréstimo clicado');
+                    // Abordagem direta sem nenhuma lógica complexa
+                    setCurrentView('menu');
+                  }}
                 >
                   Voltar ao Menu
                 </Button>
