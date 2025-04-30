@@ -33,11 +33,11 @@ import {
 } from "@/components/ui/sheet";
 
 const Index = () => {
-  // ... keep existing code (state variables and constants)
   const { isMobile, isReady } = useMobile();
   const [loans, setLoans] = useState<Loan[]>([]);
   const [history, setHistory] = useState<Loan[]>([]);
   const [openReturnDialog, setOpenReturnDialog] = useState(false);
+  const [openLoanDialog, setOpenLoanDialog] = useState(false); // Nova state para controlar o diálogo de empréstimo
   const [chromebookId, setChromebookId] = useState("");
   const [returnData, setReturnData] = useState<ReturnDataType>({
     name: "",
@@ -63,6 +63,11 @@ const Index = () => {
         return;
       }
       
+      if (route === 'loan') {
+        setOpenLoanDialog(true); // Abrir o diálogo de empréstimo ao invés de mudar de view
+        return;
+      }
+      
       console.log('Navegando para:', route);
       setCurrentView(route);
       setOpenNavSheet(false); // Fecha o sheet de navegação ao navegar
@@ -82,6 +87,7 @@ const Index = () => {
     console.log('Voltando ao menu via função handleBackToMenu');
     setCurrentView('menu');
     setOpenNavSheet(false);
+    setOpenLoanDialog(false); // Fechar o diálogo de empréstimo ao voltar
   }, []);
 
   // ... keep existing code (handleNewLoan, handleReturnClick, handleReturn functions)
@@ -329,6 +335,34 @@ const Index = () => {
     </Sheet>
   );
 
+  // Diálogo de Empréstimo (similar ao ReturnDialog)
+  const LoanDialog = () => (
+    <Dialog open={openLoanDialog} onOpenChange={setOpenLoanDialog}>
+      <DialogContent className="max-w-6xl">
+        <DialogHeader>
+          <DialogTitle className="text-xl font-semibold text-gray-800">
+            Empréstimo de Chromebook
+          </DialogTitle>
+        </DialogHeader>
+        
+        <div className="grid gap-6 md:grid-cols-2">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4">
+            <LoanForm onSubmit={handleNewLoan} />
+          </div>
+          <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4">
+            <ActiveLoans loans={loans} onReturn={handleReturn} />
+          </div>
+        </div>
+        
+        <LoanHistory history={history} />
+        
+        <DialogFooter className="mt-4">
+          <Button onClick={() => setOpenLoanDialog(false)}>Voltar</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+
   const renderCurrentView = () => {
     console.log('Renderizando view:', currentView, 'isMobile:', isMobile, 'isReady:', isReady);
     
@@ -390,25 +424,10 @@ const Index = () => {
           </div>
         );
       case 'loan':
+        // Não renderizamos mais o conteúdo aqui, pois agora está no diálogo
         return (
           <div className="space-y-6 animate-in fade-in duration-300">
-            <div className="grid gap-6 md:grid-cols-2">
-              <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4">
-                <LoanForm onSubmit={handleNewLoan} />
-                {/* Substituímos o botão "Voltar" pelo botão de menu de navegação */}
-                <Button 
-                  variant="outline" 
-                  className="mt-4 w-full"
-                  onClick={() => setOpenNavSheet(true)}
-                >
-                  Menu de Navegação
-                </Button>
-              </div>
-              <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4">
-                <ActiveLoans loans={loans} onReturn={handleReturn} />
-              </div>
-            </div>
-            <LoanHistory history={history} />
+            <MainMenu onNavigate={handleNavigation} />
           </div>
         );
       default:
@@ -432,6 +451,8 @@ const Index = () => {
           onReturnDataChange={setReturnData}
           onConfirm={handleReturnClick}
         />
+        {/* Adicione o diálogo de empréstimo */}
+        <LoanDialog />
       </div>
     </div>
   );
