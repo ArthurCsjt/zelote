@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect } from "react";
 import { useMobile } from "@/hooks/use-mobile";
 import { LoanForm } from "@/components/LoanForm";
 import { ActiveLoans, Loan, ReturnDataType } from "@/components/ActiveLoans";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { ChromebookRegistration } from "@/components/ChromebookRegistration";
 import { MainMenu } from "@/components/MainMenu";
 import { Header } from "@/components/Header";
@@ -11,10 +11,29 @@ import { Button } from "@/components/ui/button";
 import { LoanHistory } from "@/components/LoanHistory";
 import { MobileFriendlyDashboard } from "@/components/MobileFriendlyDashboard";
 import { ChromebookInventory } from "@/components/ChromebookInventory";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, X } from "lucide-react";
 import { Dashboard } from "@/components/Dashboard";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 
 const Index = () => {
+  // ... keep existing code (state variables and constants)
   const { isMobile, isReady } = useMobile();
   const [loans, setLoans] = useState<Loan[]>([]);
   const [history, setHistory] = useState<Loan[]>([]);
@@ -28,6 +47,7 @@ const Index = () => {
     userType: 'aluno'
   });
   const [currentView, setCurrentView] = useState<'menu' | 'loan' | 'registration' | 'dashboard' | 'inventory'>('menu');
+  const [openNavSheet, setOpenNavSheet] = useState(false);
 
   // Ensure smooth scrolling to top when changing views
   useEffect(() => {
@@ -45,6 +65,7 @@ const Index = () => {
       
       console.log('Navegando para:', route);
       setCurrentView(route);
+      setOpenNavSheet(false); // Fecha o sheet de navegação ao navegar
       
     } catch (error) {
       console.error("Erro ao navegar:", error);
@@ -60,8 +81,10 @@ const Index = () => {
   const handleBackToMenu = useCallback(() => {
     console.log('Voltando ao menu via função handleBackToMenu');
     setCurrentView('menu');
+    setOpenNavSheet(false);
   }, []);
 
+  // ... keep existing code (handleNewLoan, handleReturnClick, handleReturn functions)
   const handleNewLoan = (formData: {
     studentName: string;
     ra?: string;
@@ -258,6 +281,54 @@ const Index = () => {
     }
   };
 
+  // Componente de navegação suspenso
+  const NavigationSheet = () => (
+    <Sheet open={openNavSheet} onOpenChange={setOpenNavSheet}>
+      <SheetTrigger asChild>
+        <Button 
+          variant="outline" 
+          className="fixed top-4 right-4 z-40 p-2 h-10 w-10" 
+          size="icon"
+        >
+          <X className="h-5 w-5" />
+        </Button>
+      </SheetTrigger>
+      <SheetContent className="sm:max-w-md">
+        <SheetHeader>
+          <SheetTitle>Menu de Navegação</SheetTitle>
+          <SheetDescription>
+            Escolha para onde deseja navegar
+          </SheetDescription>
+        </SheetHeader>
+        <div className="py-6 grid gap-4">
+          <Button onClick={() => handleBackToMenu()} className="w-full">
+            Menu Principal
+          </Button>
+          <Button onClick={() => handleNavigation('loan')} className="w-full">
+            Empréstimos
+          </Button>
+          <Button onClick={() => handleNavigation('dashboard')} className="w-full">
+            Dashboard
+          </Button>
+          <Button onClick={() => handleNavigation('registration')} className="w-full">
+            Cadastro de Chromebooks
+          </Button>
+          <Button onClick={() => handleNavigation('inventory')} className="w-full">
+            Inventário
+          </Button>
+          <Button onClick={() => handleNavigation('return')} className="w-full">
+            Devolver Chromebook
+          </Button>
+        </div>
+        <SheetFooter>
+          <SheetClose asChild>
+            <Button variant="outline" onClick={() => setOpenNavSheet(false)}>Fechar</Button>
+          </SheetClose>
+        </SheetFooter>
+      </SheetContent>
+    </Sheet>
+  );
+
   const renderCurrentView = () => {
     console.log('Renderizando view:', currentView, 'isMobile:', isMobile, 'isReady:', isReady);
     
@@ -271,12 +342,13 @@ const Index = () => {
         return (
           <div className="animate-in fade-in duration-300">
             <ChromebookRegistration />
+            {/* Botão X para abrir o menu de navegação */}
             <Button 
               variant="outline" 
               className="mt-4 w-full max-w-2xl mx-auto block"
-              onClick={handleBackToMenu}
+              onClick={() => setOpenNavSheet(true)}
             >
-              Voltar ao Menu
+              Menu de Navegação
             </Button>
           </div>
         );
@@ -307,12 +379,13 @@ const Index = () => {
         return (
           <div className="animate-in fade-in duration-300">
             <ChromebookInventory />
+            {/* Botão X para abrir o menu de navegação */}
             <Button 
               variant="outline" 
               className="mt-4 w-full max-w-2xl mx-auto block"
-              onClick={handleBackToMenu}
+              onClick={() => setOpenNavSheet(true)}
             >
-              Voltar ao Menu
+              Menu de Navegação
             </Button>
           </div>
         );
@@ -322,12 +395,13 @@ const Index = () => {
             <div className="grid gap-6 md:grid-cols-2">
               <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4">
                 <LoanForm onSubmit={handleNewLoan} />
+                {/* Substituímos o botão "Voltar" pelo botão de menu de navegação */}
                 <Button 
                   variant="outline" 
                   className="mt-4 w-full"
-                  onClick={handleBackToMenu}  // Usando o mesmo handleBackToMenu que funciona no dashboard
+                  onClick={() => setOpenNavSheet(true)}
                 >
-                  Voltar ao Menu
+                  Menu de Navegação
                 </Button>
               </div>
               <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4">
@@ -347,6 +421,8 @@ const Index = () => {
       <div className="max-w-6xl mx-auto">
         <Header />
         {renderCurrentView()}
+        {/* Sempre renderize o Sheet de navegação, mas só aparece quando aberto */}
+        <NavigationSheet />
         <ReturnDialog
           open={openReturnDialog}
           onOpenChange={setOpenReturnDialog}
