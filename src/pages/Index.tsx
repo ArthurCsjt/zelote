@@ -1,4 +1,3 @@
-
 import { useState, useCallback, useEffect } from "react";
 import { useMobile } from "@/hooks/use-mobile";
 import { LoanForm } from "@/components/LoanForm";
@@ -39,7 +38,7 @@ const Index = () => {
   const [loans, setLoans] = useState<Loan[]>([]);
   const [history, setHistory] = useState<Loan[]>([]);
   const [openReturnDialog, setOpenReturnDialog] = useState(false);
-  const [openLoanDialog, setOpenLoanDialog] = useState(false); // Nova state para controlar o diálogo de empréstimo
+  const [openLoanDialog, setOpenLoanDialog] = useState(false);
   const [chromebookId, setChromebookId] = useState("");
   const [returnData, setReturnData] = useState<ReturnDataType>({
     name: "",
@@ -66,13 +65,13 @@ const Index = () => {
       }
       
       if (route === 'loan') {
-        setOpenLoanDialog(true); // Abrir o diálogo de empréstimo ao invés de mudar de view
+        setOpenLoanDialog(true);
         return;
       }
       
       console.log('Navegando para:', route);
       setCurrentView(route);
-      setOpenNavSheet(false); // Fecha o sheet de navegação ao navegar
+      setOpenNavSheet(false);
       
     } catch (error) {
       console.error("Erro ao navegar:", error);
@@ -89,10 +88,9 @@ const Index = () => {
     console.log('Voltando ao menu via função handleBackToMenu');
     setCurrentView('menu');
     setOpenNavSheet(false);
-    setOpenLoanDialog(false); // Fechar o diálogo de empréstimo ao voltar
+    setOpenLoanDialog(false);
   }, []);
 
-  // ... keep existing code (handleNewLoan, handleReturnClick, handleReturn functions)
   const handleNewLoan = (formData: {
     studentName: string;
     ra?: string;
@@ -356,7 +354,9 @@ const Index = () => {
           </div>
         </div>
         
-        <LoanHistory history={history} />
+        <div className="mt-6">
+          <LoanHistory history={history} />
+        </div>
         
         <DialogFooter className="mt-4">
           <Button onClick={() => setOpenLoanDialog(false)}>Voltar</Button>
