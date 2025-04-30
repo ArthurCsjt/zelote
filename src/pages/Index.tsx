@@ -1,4 +1,3 @@
-
 import { useState, useCallback, useEffect } from "react";
 import { useMobile } from "@/hooks/use-mobile";
 import { LoanForm } from "@/components/LoanForm";
@@ -326,11 +325,7 @@ const Index = () => {
                 <Button 
                   variant="outline" 
                   className="mt-4 w-full"
-                  onClick={() => {
-                    console.log('Botão voltar do menu empréstimo clicado');
-                    // Abordagem direta sem nenhuma lógica complexa
-                    setCurrentView('menu');
-                  }}
+                  onClick={handleBackToMenu}  // Usando o mesmo handleBackToMenu que funciona no dashboard
                 >
                   Voltar ao Menu
                 </Button>
