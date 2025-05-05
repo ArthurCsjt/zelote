@@ -153,6 +153,7 @@ export function QRCodeReader({ open, onOpenChange, onScan }: QRCodeReaderProps) 
         onScan(scanData);
         onOpenChange(false);
         setScanning(false);
+        cleanupCamera();
         
         toast({
           title: "Sucesso",
@@ -187,11 +188,22 @@ export function QRCodeReader({ open, onOpenChange, onScan }: QRCodeReaderProps) 
     }
   }, [activeCamera, open, cameraPermission, requestCameraAccess]);
   
+  // Handle dialog close properly
+  const handleDialogClose = (state: boolean) => {
+    if (!state) {
+      cleanupCamera();
+    }
+    onOpenChange(state);
+  };
+  
+  // Handle cancel button click
+  const handleCancel = () => {
+    cleanupCamera();
+    onOpenChange(false);
+  };
+  
   return (
-    <Dialog open={open} onOpenChange={(state) => {
-      if (!state) cleanupCamera();
-      onOpenChange(state);
-    }}>
+    <Dialog open={open} onOpenChange={handleDialogClose}>
       <DialogContent className="max-w-sm sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Escaneie o QR Code</DialogTitle>
@@ -303,10 +315,7 @@ export function QRCodeReader({ open, onOpenChange, onScan }: QRCodeReaderProps) 
           <Button 
             type="button" 
             variant="destructive" 
-            onClick={() => {
-              cleanupCamera();
-              onOpenChange(false);
-            }}
+            onClick={handleCancel}
             className="w-full sm:w-auto"
           >
             Cancelar
@@ -316,4 +325,3 @@ export function QRCodeReader({ open, onOpenChange, onScan }: QRCodeReaderProps) 
     </Dialog>
   );
 }
-
