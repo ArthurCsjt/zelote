@@ -1,3 +1,4 @@
+
 import { useState } from "react"; // Hook do React para gerenciar estado
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -7,6 +8,7 @@ import { toast } from "./ui/use-toast";
 import { QRCodeSVG } from 'qrcode.react'; // Biblioteca para gerar QR Codes
 import { jsPDF } from 'jspdf'; // Biblioteca para gerar PDFs
 import { Checkbox } from "./ui/checkbox";
+import { ArrowLeft } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -30,6 +32,11 @@ interface ChromebookData {
   isProvisioned: boolean;    // Status de provisionamento do dispositivo
 }
 
+// Adicionar prop onBack para o componente
+interface ChromebookRegistrationProps {
+  onBack?: () => void;
+}
+
 /**
  * Tipos possíveis de tamanho para o QR Code
  * Define as opções disponíveis para o usuário
@@ -50,7 +57,7 @@ const QR_SIZES = {
  * Componente para cadastro e registro de Chromebooks
  * Permite criar QR Codes e gerar PDFs para identificação dos dispositivos
  */
-export function ChromebookRegistration() {
+export function ChromebookRegistration({ onBack }: ChromebookRegistrationProps) {
   // === ESTADOS (STATES) ===
   
   /**
@@ -81,6 +88,15 @@ export function ChromebookRegistration() {
   const [qrSize, setQRSize] = useState<QRSize>("medium");
 
   // === FUNÇÕES DE MANIPULAÇÃO (HANDLERS) ===
+
+  /**
+   * Função para lidar com o clique no botão voltar - NOVA
+   */
+  const handleBackClick = () => {
+    if (onBack) {
+      onBack();
+    }
+  };
 
   /**
    * Função chamada quando o formulário é enviado
@@ -254,9 +270,22 @@ export function ChromebookRegistration() {
   // === RENDERIZAÇÃO DA INTERFACE (UI) ===
   return (
     <div className="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-sm border border-gray-100">
-      <h2 className="text-2xl font-semibold text-gray-800 mb-6">
-        Cadastro de Chromebook
-      </h2>
+      <div className="flex flex-col sm:flex-row justify-between items-start mb-6">
+        <h2 className="text-2xl font-semibold text-gray-800 mb-4 sm:mb-0">
+          Cadastro de Chromebook
+        </h2>
+        
+        {/* Botão voltar - NOVO */}
+        <Button 
+          variant="outline" 
+          onClick={handleBackClick}
+          className="flex items-center gap-1 hover:bg-blue-50"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          <span>Voltar ao Menu</span>
+        </Button>
+      </div>
+      
       {/* Formulário de cadastro */}
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Campo: ID do Chromebook */}

@@ -22,7 +22,7 @@ import {
 import { Textarea } from "./ui/textarea";
 import { Label } from "./ui/label";
 import { toast } from "./ui/use-toast";
-import { Search } from "lucide-react";
+import { Search, ArrowLeft } from "lucide-react";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "./ui/pagination";
 
 // Interface for Chromebook data structure
@@ -37,7 +37,11 @@ interface ChromebookData {
   isProvisioned: boolean;
 }
 
-export function ChromebookInventory() {
+interface ChromebookInventoryProps {
+  onBack?: () => void;
+}
+
+export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
   // State for storing all Chromebooks
   const [chromebooks, setChromebooks] = useState<ChromebookData[]>([]);
   // State for search term
@@ -156,11 +160,30 @@ export function ChromebookInventory() {
     }
   };
 
+  // Handle back button click - NOVO
+  const handleBackClick = () => {
+    if (onBack) {
+      onBack();
+    }
+  };
+
   return (
     <div className="max-w-6xl mx-auto p-6 bg-white rounded-lg shadow-sm border border-gray-100">
-      <h2 className="text-2xl font-semibold text-gray-800 mb-6">
-        Inventário de Chromebooks
-      </h2>
+      <div className="flex flex-col sm:flex-row justify-between items-start mb-6">
+        <h2 className="text-2xl font-semibold text-gray-800 mb-4 sm:mb-0">
+          Inventário de Chromebooks
+        </h2>
+        
+        {/* Botão voltar - NOVO */}
+        <Button 
+          variant="outline" 
+          onClick={handleBackClick} 
+          className="flex items-center gap-1 hover:bg-blue-50"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          <span>Voltar ao Menu</span>
+        </Button>
+      </div>
 
       {/* Search and filters */}
       <div className="flex flex-col sm:flex-row gap-4 mb-6">

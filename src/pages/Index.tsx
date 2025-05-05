@@ -380,15 +380,7 @@ const Index = () => {
       case 'registration':
         return (
           <div className="animate-in fade-in duration-300">
-            <ChromebookRegistration />
-            {/* Botão X para abrir o menu de navegação */}
-            <Button 
-              variant="outline" 
-              className="mt-4 w-full max-w-2xl mx-auto block"
-              onClick={() => setOpenNavSheet(true)}
-            >
-              Menu de Navegação
-            </Button>
+            <ChromebookRegistration onBack={handleBackToMenu} />
           </div>
         );
       case 'dashboard':
@@ -417,15 +409,7 @@ const Index = () => {
       case 'inventory':
         return (
           <div className="animate-in fade-in duration-300">
-            <ChromebookInventory />
-            {/* Botão X para abrir o menu de navegação */}
-            <Button 
-              variant="outline" 
-              className="mt-4 w-full max-w-2xl mx-auto block"
-              onClick={() => setOpenNavSheet(true)}
-            >
-              Menu de Navegação
-            </Button>
+            <ChromebookInventory onBack={handleBackToMenu} />
           </div>
         );
       case 'loan':
