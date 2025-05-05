@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
@@ -125,10 +124,6 @@ export function LoanForm({ onSubmit }: LoanFormProps) {
     }
   };
 
-  /**
-   * Função chamada ao enviar o formulário
-   * Valida os dados e processa o empréstimo individual ou em lote
-   */
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();  // Previne o comportamento padrão do formulário
     
