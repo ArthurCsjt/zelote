@@ -13,6 +13,7 @@ import { MobileFriendlyDashboard } from "@/components/MobileFriendlyDashboard";
 import { ChromebookInventory } from "@/components/ChromebookInventory";
 import { ArrowLeft, X } from "lucide-react";
 import { Dashboard } from "@/components/Dashboard";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Dialog,
   DialogContent,
@@ -335,28 +336,30 @@ const Index = () => {
     </Sheet>
   );
 
-  // Diálogo de Empréstimo (similar ao ReturnDialog)
+  // Diálogo de Empréstimo com ScrollArea para permitir rolagem
   const LoanDialog = () => (
     <Dialog open={openLoanDialog} onOpenChange={setOpenLoanDialog}>
-      <DialogContent className="max-w-6xl">
+      <DialogContent className="max-w-6xl max-h-[90vh] flex flex-col">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold text-gray-800">
             Empréstimo de Chromebook
           </DialogTitle>
         </DialogHeader>
         
-        <div className="grid gap-6 md:grid-cols-2">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4">
-            <LoanForm onSubmit={handleNewLoan} />
+        <ScrollArea className="flex-1 overflow-auto pr-4" style={{ maxHeight: "calc(90vh - 160px)" }}>
+          <div className="grid gap-6 md:grid-cols-2">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4">
+              <LoanForm onSubmit={handleNewLoan} />
+            </div>
+            <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4">
+              <ActiveLoans loans={loans} onReturn={handleReturn} />
+            </div>
           </div>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4">
-            <ActiveLoans loans={loans} onReturn={handleReturn} />
+          
+          <div className="mt-6">
+            <LoanHistory history={history} />
           </div>
-        </div>
-        
-        <div className="mt-6">
-          <LoanHistory history={history} />
-        </div>
+        </ScrollArea>
         
         <DialogFooter className="mt-4">
           <Button onClick={() => setOpenLoanDialog(false)}>Voltar</Button>
