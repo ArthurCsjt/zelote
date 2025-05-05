@@ -14,6 +14,15 @@ interface QRCodeReaderProps {
   onScan: (data: string) => void;
 }
 
+// Extended types to handle torch property
+interface ExtendedCapabilities extends MediaTrackCapabilities {
+  torch?: boolean;
+}
+
+interface ExtendedConstraints extends MediaTrackConstraintSet {
+  torch?: boolean;
+}
+
 export function QRCodeReader({ open, onOpenChange, onScan }: QRCodeReaderProps) {
   const [error, setError] = useState<string | null>(null);
   const [scanning, setScanning] = useState(false);
@@ -67,10 +76,10 @@ export function QRCodeReader({ open, onOpenChange, onScan }: QRCodeReaderProps) 
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
       streamRef.current = stream;
       
-      // Check if device has torch capability
+      // Check if device has torch capability with proper type assertion
       const videoTrack = stream.getVideoTracks()[0];
       if (videoTrack) {
-        const capabilities = videoTrack.getCapabilities();
+        const capabilities = videoTrack.getCapabilities() as ExtendedCapabilities;
         setHasFlash(!!capabilities.torch);
       }
       
@@ -108,15 +117,16 @@ export function QRCodeReader({ open, onOpenChange, onScan }: QRCodeReaderProps) 
     });
   }, [activeCamera]);
   
-  // Toggle flashlight
+  // Toggle flashlight with proper type handling
   const toggleTorch = async () => {
     try {
       if (!streamRef.current) return;
       
       const track = streamRef.current.getVideoTracks()[0];
       if (track) {
+        // Use type assertion for the constraints
         await track.applyConstraints({
-          advanced: [{ torch: !torchEnabled }]
+          advanced: [{ torch: !torchEnabled } as ExtendedConstraints]
         });
         
         setTorchEnabled(!torchEnabled);
@@ -306,3 +316,4 @@ export function QRCodeReader({ open, onOpenChange, onScan }: QRCodeReaderProps) 
     </Dialog>
   );
 }
+
