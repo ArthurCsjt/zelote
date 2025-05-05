@@ -23,11 +23,11 @@ export function MobileFriendlyDashboard({ activeLoans, history, onBack }: Mobile
   const totalChromebooks = 50;
   const availableChromebooks = totalChromebooks - activeLoans.length;
 
-  // Abordagem completamente nova: botão com navegação direta para o menu
-  const navigateToMenu = () => {
-    console.log('Botão voltar pressionado - Nova implementação');
-    // Navegar diretamente para o menu, sem usar callbacks complexos
-    window.location.href = "/";
+  // Remover a implementação incorreta que estava usando window.location.href
+  // E utilizar a função onBack que é passada como prop
+  const handleBackToMenu = () => {
+    console.log('Botão voltar pressionado - Utilizando callback onBack');
+    onBack();
   };
 
   return (
@@ -36,7 +36,7 @@ export function MobileFriendlyDashboard({ activeLoans, history, onBack }: Mobile
         <h2 className="text-xl font-bold tracking-tight bg-gradient-to-r from-blue-700 to-blue-500 bg-clip-text text-transparent">Dashboard</h2>
         <Button 
           variant="outline" 
-          onClick={navigateToMenu}
+          onClick={handleBackToMenu}
           size="sm"
           className="flex items-center gap-1 hover:bg-blue-50 px-2 w-full justify-center"
         >
