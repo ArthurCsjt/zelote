@@ -6,29 +6,30 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 will-change-transform",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90",
+        default: "bg-primary text-white hover:bg-primary/90 shadow-sm",
         destructive:
           "bg-destructive text-destructive-foreground hover:bg-destructive/90",
         outline:
-          "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
+          "border border-input bg-background hover:bg-accent hover:text-accent-foreground shadow-sm",
         secondary:
-          "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+          "bg-secondary text-secondary-foreground hover:bg-secondary/80 shadow-sm",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
-        qrcode: "bg-violet-600 text-white hover:bg-violet-700 shadow-md",
-        success: "bg-green-600 text-white hover:bg-green-700",
+        qrcode: "bg-violet-600 text-white hover:bg-violet-700 shadow-sm",
+        success: "bg-green-600 text-white hover:bg-green-700 shadow-sm",
         camera: "bg-blue-500 text-white hover:bg-blue-600 shadow-md active:shadow-inner active:translate-y-0.5",
+        apple: "bg-white border border-gray-200 text-gray-800 hover:bg-gray-50 shadow-sm transition-all",
       },
       size: {
-        default: "h-10 px-4 py-2",
-        sm: "h-9 rounded-md px-3",
-        lg: "h-11 rounded-md px-8",
-        icon: "h-10 w-10",
-        mobile: "h-12 px-6 py-3 text-base", // Larger size for mobile touchscreens
+        default: "h-10 px-5 py-2 rounded-xl",
+        sm: "h-9 rounded-lg px-3",
+        lg: "h-11 rounded-xl px-8",
+        icon: "h-10 w-10 rounded-full",
+        mobile: "h-12 px-6 py-3 text-base rounded-xl", // Larger size for mobile touchscreens
       },
     },
     defaultVariants: {
