@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   Card,
   CardContent,
@@ -7,10 +7,17 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line, Area, AreaChart } from "recharts";
-import { format, startOfDay, isToday, isWithinInterval, subDays, differenceInMinutes } from "date-fns";
+import { 
+  PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, 
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line, 
+  Area, AreaChart, ComposedChart
+} from "recharts";
+import { format, startOfDay, isToday, isWithinInterval, subDays, differenceInMinutes, 
+  subMonths, subWeeks, startOfWeek, startOfMonth, endOfMonth, endOfWeek, addDays } from "date-fns";
 import { Loan } from "./ActiveLoans";
 import { Badge } from "./ui/badge";
+import { Progress } from "./ui/progress";
+import { ChartContainer, ChartTooltipContent, ChartLegendContent } from "./ui/chart";
 import { 
   Computer, 
   Download, 
@@ -19,8 +26,10 @@ import {
   PieChart as PieChartIcon, 
   Clock, 
   Users, 
+  Calendar,
   CalendarRange, 
-  Activity 
+  Activity,
+  ChartLine
 } from "lucide-react";
 import jsPDF from "jspdf";
 import { useToast } from "./ui/use-toast";
@@ -35,6 +44,8 @@ interface DashboardProps {
 
 export function Dashboard({ activeLoans, history, onBack }: DashboardProps) {
   const { toast } = useToast();
+  const [periodView, setPeriodView] = useState<'daily' | 'weekly' | 'monthly'>('daily');
+  const [periodData, setPeriodData] = useState<any[]>([]);
   const totalChromebooks = 50;
   const availableChromebooks = totalChromebooks - activeLoans.length;
 
@@ -45,35 +56,117 @@ export function Dashboard({ activeLoans, history, onBack }: DashboardProps) {
 
   const COLORS = ["#2563EB", "#22C55E"];
 
-  const today = startOfDay(new Date());
-  const last7Days = Array.from({ length: 7 }, (_, i) => {
-    const date = subDays(today, i);
-    const dailyLoans = history.filter(loan => 
-      isWithinInterval(loan.timestamp, {
-        start: startOfDay(date),
-        end: new Date(date.setHours(23, 59, 59, 999))
-      })
-    );
-    
-    return {
-      date: format(date, "dd/MM"),
-      empréstimos: dailyLoans.length,
-      devoluções: dailyLoans.filter(loan => loan.returnRecord).length,
-    };
-  }).reverse();
+  // Função para obter dados baseados no período selecionado
+  useEffect(() => {
+    const currentDate = new Date();
+    let filteredData: any[] = [];
 
-  const todayLoans = history.filter(loan => isToday(loan.timestamp));
-  const todayReturns = todayLoans.filter(loan => loan.returnRecord);
+    switch(periodView) {
+      case 'daily':
+        // Dados por hora do dia atual
+        filteredData = Array.from({ length: 24 }, (_, i) => {
+          const hour = i;
+          const hourLoans = history.filter(loan => {
+            return isToday(loan.timestamp) && loan.timestamp.getHours() === hour;
+          });
+          
+          return {
+            hora: `${hour}h`,
+            empréstimos: hourLoans.length,
+            devoluções: hourLoans.filter(loan => loan.returnRecord).length,
+          };
+        });
+        break;
+      
+      case 'weekly':
+        // Dados dos últimos 7 dias
+        filteredData = Array.from({ length: 7 }, (_, i) => {
+          const date = subDays(currentDate, 6 - i);
+          const dailyLoans = history.filter(loan => 
+            isWithinInterval(loan.timestamp, {
+              start: startOfDay(date),
+              end: new Date(date.setHours(23, 59, 59, 999))
+            })
+          );
+          
+          return {
+            date: format(date, "dd/MM"),
+            empréstimos: dailyLoans.length,
+            devoluções: dailyLoans.filter(loan => loan.returnRecord).length,
+          };
+        });
+        break;
+      
+      case 'monthly':
+        // Dados dos últimos 30 dias
+        filteredData = Array.from({ length: 30 }, (_, i) => {
+          const date = subDays(currentDate, 29 - i);
+          const dailyLoans = history.filter(loan => 
+            isWithinInterval(loan.timestamp, {
+              start: startOfDay(date),
+              end: new Date(date.setHours(23, 59, 59, 999))
+            })
+          );
+          
+          return {
+            date: format(date, "dd/MM"),
+            empréstimos: dailyLoans.length,
+            devoluções: dailyLoans.filter(loan => loan.returnRecord).length,
+          };
+        });
+        break;
+    }
+    
+    setPeriodData(filteredData);
+  }, [periodView, history]);
+
+  // Obter dados filtrados pelo período atual
+  const getFilteredLoans = () => {
+    const today = new Date();
+    let startDate: Date;
+    let endDate = today;
+
+    switch(periodView) {
+      case 'daily':
+        startDate = startOfDay(today);
+        break;
+      case 'weekly':
+        startDate = startOfWeek(today, { weekStartsOn: 1 });
+        endDate = endOfWeek(today, { weekStartsOn: 1 });
+        break;
+      case 'monthly':
+        startDate = startOfMonth(today);
+        endDate = endOfMonth(today);
+        break;
+      default:
+        startDate = startOfDay(today);
+    }
+
+    return history.filter(loan => 
+      isWithinInterval(loan.timestamp, { start: startDate, end: endDate })
+    );
+  };
+
+  const filteredLoans = getFilteredLoans();
+  const filteredReturns = filteredLoans.filter(loan => loan.returnRecord);
   
-  const averageUsageTime = todayReturns.reduce((acc, loan) => {
+  // Estatísticas
+  const completionRate = filteredLoans.length > 0 
+    ? (filteredReturns.length / filteredLoans.length) * 100 
+    : 0;
+
+  const averageUsageTime = filteredReturns.reduce((acc, loan) => {
     if (loan.returnRecord) {
-      const duration = loan.returnRecord.returnTime.getTime() - loan.timestamp.getTime();
+      const duration = differenceInMinutes(
+        loan.returnRecord.returnTime, 
+        loan.timestamp
+      );
       return acc + duration;
     }
     return acc;
-  }, 0) / (todayReturns.length || 1);
+  }, 0) / (filteredReturns.length || 1);
 
-  const loansByUserType = history.reduce((acc, loan) => {
+  const loansByUserType = filteredLoans.reduce((acc, loan) => {
     const userType = loan.userType || 'aluno';
     acc[userType] = (acc[userType] || 0) + 1;
     return acc;
@@ -84,7 +177,7 @@ export function Dashboard({ activeLoans, history, onBack }: DashboardProps) {
     value: count
   }));
 
-  const completedLoans = history.filter(loan => loan.returnRecord);
+  const completedLoans = filteredLoans.filter(loan => loan.returnRecord);
   const averageLoanDurations = completedLoans.reduce((acc, loan) => {
     if (loan.returnRecord) {
       const durationMinutes = differenceInMinutes(
@@ -107,32 +200,20 @@ export function Dashboard({ activeLoans, history, onBack }: DashboardProps) {
     minutos: Math.round(data.total / data.count)
   }));
 
-  const last30Days = Array.from({ length: 30 }, (_, i) => {
-    const date = subDays(today, i);
-    const dailyLoans = history.filter(loan => 
-      isWithinInterval(loan.timestamp, {
-        start: startOfDay(date),
-        end: new Date(date.setHours(23, 59, 59, 999))
-      })
-    );
-    
-    return {
-      date: format(date, "dd/MM"),
-      empréstimos: dailyLoans.length,
-      devoluções: dailyLoans.filter(loan => loan.returnRecord).length,
-    };
-  }).reverse();
+  // Texto do período selecionado
+  const periodText = {
+    daily: 'Hoje',
+    weekly: 'Esta Semana',
+    monthly: 'Este Mês'
+  };
 
-  const totalLoans = history.length;
-  const completedLoansCount = history.filter(loan => loan.returnRecord).length;
-  const completionRate = totalLoans > 0 ? (completedLoansCount / totalLoans) * 100 : 0;
-
+  // Função para gerar o PDF do relatório
   const generatePDFContent = (pdf: jsPDF) => {
     const pageWidth = pdf.internal.pageSize.getWidth();
     let yPosition = 20;
 
     pdf.setFontSize(20);
-    pdf.text("Relatório de Uso dos Chromebooks", pageWidth / 2, yPosition, { align: "center" });
+    pdf.text(`Relatório de Uso dos Chromebooks - ${periodText[periodView]}`, pageWidth / 2, yPosition, { align: "center" });
     yPosition += 20;
 
     pdf.setFontSize(12);
@@ -140,30 +221,31 @@ export function Dashboard({ activeLoans, history, onBack }: DashboardProps) {
     yPosition += 20;
 
     pdf.setFontSize(16);
-    pdf.text("Estatísticas do Dia", 20, yPosition);
+    pdf.text(`Estatísticas do ${periodText[periodView]}`, 20, yPosition);
     yPosition += 10;
 
     pdf.setFontSize(12);
-    const dailyStats = [
-      `Empréstimos hoje: ${todayLoans.length}`,
-      `Devoluções hoje: ${todayReturns.length}`,
+    const periodStats = [
+      `Empréstimos: ${filteredLoans.length}`,
+      `Devoluções: ${filteredReturns.length}`,
       `Chromebooks ativos: ${activeLoans.length} de ${totalChromebooks}`,
-      `Tempo médio de uso: ${Math.round(averageUsageTime / (1000 * 60))} minutos`
+      `Tempo médio de uso: ${Math.round(averageUsageTime)} minutos`,
+      `Taxa de devolução: ${completionRate.toFixed(0)}%`
     ];
 
-    dailyStats.forEach(stat => {
+    periodStats.forEach(stat => {
       pdf.text(`• ${stat}`, 25, yPosition);
       yPosition += 7;
     });
     yPosition += 13;
 
     pdf.setFontSize(16);
-    pdf.text("Histórico dos Últimos 7 Dias", 20, yPosition);
+    pdf.text("Empréstimos por Tipo de Usuário", 20, yPosition);
     yPosition += 10;
 
     pdf.setFontSize(12);
-    last7Days.forEach(day => {
-      pdf.text(`${day.date}: ${day.empréstimos} empréstimos, ${day.devoluções} devoluções`, 25, yPosition);
+    Object.entries(loansByUserType).forEach(([type, count]) => {
+      pdf.text(`• ${type.charAt(0).toUpperCase() + type.slice(1)}: ${count}`, 25, yPosition);
       yPosition += 7;
     });
     yPosition += 13;
@@ -190,11 +272,11 @@ export function Dashboard({ activeLoans, history, onBack }: DashboardProps) {
     try {
       const pdf = new jsPDF();
       generatePDFContent(pdf);
-      pdf.save("relatorio-chromebooks.pdf");
+      pdf.save(`relatorio-chromebooks-${periodView}.pdf`);
       
       toast({
         title: "Sucesso",
-        description: "Relatório PDF gerado com sucesso!",
+        description: `Relatório ${periodText[periodView]} gerado com sucesso!`,
       });
     } catch (error) {
       console.error("Erro ao gerar PDF:", error);
@@ -209,7 +291,12 @@ export function Dashboard({ activeLoans, history, onBack }: DashboardProps) {
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-5 duration-300">
       <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-6">
-        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight bg-gradient-to-r from-blue-700 to-blue-500 bg-clip-text text-transparent">Dashboard</h2>
+        <div>
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight bg-gradient-to-r from-blue-700 to-blue-500 bg-clip-text text-transparent">
+            Dashboard
+          </h2>
+          <p className="text-gray-500">Visualize estatísticas e relatórios de uso dos Chromebooks</p>
+        </div>
         <div className="flex flex-wrap gap-2 w-full sm:w-auto justify-start">
           <Button
             variant="outline"
@@ -230,80 +317,121 @@ export function Dashboard({ activeLoans, history, onBack }: DashboardProps) {
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card className="stats-card stats-card-blue dashboard-card">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Empréstimos Hoje
-            </CardTitle>
-            <Computer className="h-5 w-5 text-blue-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">{todayLoans.length}</div>
-            <p className="text-xs text-muted-foreground">
-              {todayReturns.length} devoluções
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="stats-card stats-card-green dashboard-card">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Chromebooks Ativos
-            </CardTitle>
-            <Computer className="h-5 w-5 text-green-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">{activeLoans.length}</div>
-            <p className="text-xs text-muted-foreground">
-              de {totalChromebooks} total
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="stats-card stats-card-blue dashboard-card">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Tempo Médio de Uso
-            </CardTitle>
-            <Clock className="h-5 w-5 text-blue-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">
-              {Math.round(averageUsageTime / (1000 * 60))} min
-            </div>
-            <p className="text-xs text-muted-foreground">
-              média do dia
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="stats-card stats-card-blue dashboard-card">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Taxa de Devolução
-            </CardTitle>
-            <Activity className="h-5 w-5 text-blue-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">
-              {completionRate.toFixed(0)}%
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {completedLoansCount} de {totalLoans} empréstimos
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Tabs defaultValue="visaogeral" className="w-full">
-        <TabsList className="grid grid-cols-2 mb-4">
-          <TabsTrigger value="visaogeral">Visão Geral</TabsTrigger>
-          <TabsTrigger value="usuarios">Usuários</TabsTrigger>
+      <Tabs defaultValue="daily" className="w-full" onValueChange={(v) => setPeriodView(v as 'daily' | 'weekly' | 'monthly')}>
+        <TabsList className="grid w-full sm:w-auto grid-cols-3 max-w-md mb-4">
+          <TabsTrigger value="daily" className="flex items-center gap-1">
+            <Calendar className="h-4 w-4" />
+            <span>Diário</span>
+          </TabsTrigger>
+          <TabsTrigger value="weekly" className="flex items-center gap-1">
+            <CalendarRange className="h-4 w-4" />
+            <span>Semanal</span>
+          </TabsTrigger>
+          <TabsTrigger value="monthly" className="flex items-center gap-1">
+            <ChartLine className="h-4 w-4" />
+            <span>Mensal</span>
+          </TabsTrigger>
         </TabsList>
-        
-        <TabsContent value="visaogeral" className="space-y-4">
+
+        <div className="grid gap-4 md:grid-cols-4">
+          <Card className="stats-card stats-card-blue dashboard-card">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Empréstimos {periodText[periodView]}
+              </CardTitle>
+              <Computer className="h-5 w-5 text-blue-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold">{filteredLoans.length}</div>
+              <p className="text-xs text-muted-foreground">
+                {filteredReturns.length} devoluções
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="stats-card stats-card-green dashboard-card">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Chromebooks Ativos
+              </CardTitle>
+              <Computer className="h-5 w-5 text-green-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold">{activeLoans.length}</div>
+              <div className="flex items-center gap-2 mt-1">
+                <Progress value={(activeLoans.length / totalChromebooks) * 100} className="h-2" />
+                <span className="text-xs text-muted-foreground">
+                  {((activeLoans.length / totalChromebooks) * 100).toFixed(0)}%
+                </span>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="stats-card stats-card-blue dashboard-card">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Tempo Médio de Uso
+              </CardTitle>
+              <Clock className="h-5 w-5 text-blue-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold">
+                {Math.round(averageUsageTime)} min
+              </div>
+              <p className="text-xs text-muted-foreground">
+                média {periodView === 'daily' ? 'do dia' : periodView === 'weekly' ? 'da semana' : 'do mês'}
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="stats-card stats-card-blue dashboard-card">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Taxa de Devolução
+              </CardTitle>
+              <Activity className="h-5 w-5 text-blue-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold">
+                {completionRate.toFixed(0)}%
+              </div>
+              <div className="flex items-center gap-2 mt-1">
+                <Progress value={completionRate} className="h-2" />
+                <span className="text-xs text-muted-foreground">
+                  {filteredReturns.length} de {filteredLoans.length}
+                </span>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <TabsContent value="daily" className="space-y-4 mt-6">
           <div className="grid gap-4 md:grid-cols-2">
+            <Card className="glass-card dashboard-card">
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle>Atividade por Hora</CardTitle>
+                  <CardDescription>
+                    Movimentação ao longo do dia
+                  </CardDescription>
+                </div>
+                <BarChartIcon className="h-5 w-5 text-muted-foreground" />
+              </CardHeader>
+              <CardContent className="h-[300px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={periodData}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                    <XAxis dataKey="hora" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="empréstimos" fill="#2563EB" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="devoluções" fill="#22C55E" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+
             <Card className="glass-card dashboard-card">
               <CardHeader className="flex flex-row items-center justify-between">
                 <div>
@@ -338,11 +466,15 @@ export function Dashboard({ activeLoans, history, onBack }: DashboardProps) {
                 </ResponsiveContainer>
               </CardContent>
             </Card>
+          </div>
+        </TabsContent>
 
+        <TabsContent value="weekly" className="space-y-4 mt-6">
+          <div className="grid gap-4 md:grid-cols-2">
             <Card className="glass-card dashboard-card">
               <CardHeader className="flex flex-row items-center justify-between">
                 <div>
-                  <CardTitle>Movimentações por Dia</CardTitle>
+                  <CardTitle>Movimentações na Semana</CardTitle>
                   <CardDescription>
                     Últimos 7 dias
                   </CardDescription>
@@ -351,7 +483,7 @@ export function Dashboard({ activeLoans, history, onBack }: DashboardProps) {
               </CardHeader>
               <CardContent className="h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={last7Days}>
+                  <BarChart data={periodData}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} />
                     <XAxis dataKey="date" />
                     <YAxis />
@@ -363,44 +495,97 @@ export function Dashboard({ activeLoans, history, onBack }: DashboardProps) {
                 </ResponsiveContainer>
               </CardContent>
             </Card>
-          </div>
 
-          <Card className="glass-card dashboard-card">
-            <CardHeader>
-              <CardTitle>Empréstimos Ativos</CardTitle>
-              <CardDescription>
-                {activeLoans.length} Chromebooks em uso
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="max-h-[300px] overflow-y-auto">
-              {activeLoans.map((loan) => (
-                <div
-                  key={loan.id}
-                  className="mb-3 p-4 bg-blue-50 border border-blue-100 rounded-lg hover:shadow-md transition-all"
-                >
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <p className="font-medium">{loan.studentName}</p>
-                      <p className="text-sm text-gray-600">ID: {loan.chromebookId}</p>
-                    </div>
-                    <Badge variant="secondary" className="bg-blue-100 text-blue-700">
-                      Pendente
-                    </Badge>
-                  </div>
-                  <p className="text-sm text-gray-600 mt-1">
-                    Retirada: {format(loan.timestamp, "dd/MM/yyyy 'às' HH:mm")}
-                  </p>
+            <Card className="glass-card dashboard-card">
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle>Tendência de Uso</CardTitle>
+                  <CardDescription>
+                    Padrão semanal
+                  </CardDescription>
                 </div>
-              ))}
-              
-              {activeLoans.length === 0 && (
-                <div className="text-center py-8 text-gray-500">
-                  <Computer className="h-10 w-10 mx-auto mb-2 text-gray-300" />
-                  <p>Nenhum empréstimo ativo no momento</p>
+                <ChartLine className="h-5 w-5 text-muted-foreground" />
+              </CardHeader>
+              <CardContent className="h-[300px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <ComposedChart data={periodData}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                    <XAxis dataKey="date" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Area type="monotone" dataKey="empréstimos" fill="#2563EB" fillOpacity={0.2} stroke="#2563EB" />
+                    <Line type="monotone" dataKey="devoluções" stroke="#22C55E" />
+                  </ComposedChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="monthly" className="space-y-4 mt-6">
+          <div className="grid gap-4 md:grid-cols-2">
+            <Card className="glass-card dashboard-card">
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle>Visão Mensal</CardTitle>
+                  <CardDescription>
+                    Últimos 30 dias
+                  </CardDescription>
                 </div>
-              )}
-            </CardContent>
-          </Card>
+                <BarChartIcon className="h-5 w-5 text-muted-foreground" />
+              </CardHeader>
+              <CardContent className="h-[300px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={periodData}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                    <XAxis dataKey="date" tickFormatter={(value, index) => index % 5 === 0 ? value : ''} />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Area type="monotone" dataKey="empréstimos" stackId="1" stroke="#2563EB" fill="#2563EB" fillOpacity={0.5} />
+                    <Area type="monotone" dataKey="devoluções" stackId="2" stroke="#22C55E" fill="#22C55E" fillOpacity={0.5} />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+
+            <Card className="glass-card dashboard-card">
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle>Distribuição por Usuários</CardTitle>
+                  <CardDescription>
+                    Perfil de empréstimos
+                  </CardDescription>
+                </div>
+                <Users className="h-5 w-5 text-muted-foreground" />
+              </CardHeader>
+              <CardContent className="h-[300px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={userTypeData}
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="value"
+                      label
+                    >
+                      {userTypeData.map((entry, index) => (
+                        <Cell 
+                          key={`cell-${index}`} 
+                          fill={['#2563EB', '#3B82F6', '#60A5FA'][index % 3]} 
+                        />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                    <Legend />
+                  </PieChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
 
         <TabsContent value="usuarios" className="space-y-4">
@@ -495,6 +680,45 @@ export function Dashboard({ activeLoans, history, onBack }: DashboardProps) {
           </div>
         </TabsContent>
       </Tabs>
+      
+      <Card className="glass-card dashboard-card mt-6">
+        <CardHeader>
+          <CardTitle>Empréstimos Ativos</CardTitle>
+          <CardDescription>
+            {activeLoans.length} Chromebooks em uso
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="max-h-[300px] overflow-y-auto">
+          {activeLoans.length === 0 && (
+            <div className="text-center py-8 text-gray-500">
+              <Computer className="h-10 w-10 mx-auto mb-2 text-gray-300" />
+              <p>Nenhum empréstimo ativo no momento</p>
+            </div>
+          )}
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {activeLoans.map((loan) => (
+              <div
+                key={loan.id}
+                className="p-4 bg-blue-50 border-l-4 border-l-blue-500 rounded-lg hover:shadow-md transition-all"
+              >
+                <div className="flex justify-between items-start">
+                  <div>
+                    <p className="font-medium">{loan.studentName}</p>
+                    <p className="text-sm text-gray-600">ID: {loan.chromebookId}</p>
+                  </div>
+                  <Badge variant="secondary" className="bg-blue-100 text-blue-700">
+                    Pendente
+                  </Badge>
+                </div>
+                <p className="text-sm text-gray-600 mt-1">
+                  Retirada: {format(loan.timestamp, "dd/MM/yyyy 'às' HH:mm")}
+                </p>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
       
       <div className="fixed bottom-4 right-4 sm:hidden">
         <Button
