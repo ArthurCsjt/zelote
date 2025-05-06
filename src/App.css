@@ -6,6 +6,13 @@
   text-align: center;
 }
 
+/* Mobile-friendly adjustments */
+@media (max-width: 768px) {
+  #root {
+    padding: 1rem;
+  }
+}
+
 .logo {
   height: 6em;
   padding: 1.5em;
@@ -46,4 +53,31 @@
 .read-the-docs {
   color: rgba(60, 60, 67, 0.6);
   font-size: 0.9em;
+}
+
+/* PWA-specific styles */
+body {
+  overscroll-behavior-y: contain; /* Prevents pull-to-refresh */
+  -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+  -webkit-tap-highlight-color: transparent; /* Remove tap highlight on iOS */
+}
+
+/* Disable text selection for better mobile experience */
+.no-select {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Add iOS-style safe area insets */
+@supports (padding: max(0px)) {
+  body {
+    padding-left: max(2rem, env(safe-area-inset-left));
+    padding-right: max(2rem, env(safe-area-inset-right));
+    padding-bottom: max(2rem, env(safe-area-inset-bottom));
+    padding-top: max(2rem, env(safe-area-inset-top));
+  }
 }
