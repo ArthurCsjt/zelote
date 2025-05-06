@@ -48,15 +48,10 @@ const MenuItem = ({
   // Simplified hover effects for mobile
   const cardHoverClasses = isMobile ? "" : "group";
   
-  // Use simpler gradient background on mobile
-  const bgClass = isMobile 
-    ? "bg-white" 
-    : (gradientBg || 'bg-white');
-
   return (
-    <Card className={`border border-gray-100 h-full overflow-hidden ${animationClasses} ${cardHoverClasses}`}>
+    <Card className={`glass-card border-0 border-white/20 overflow-hidden ${animationClasses} ${cardHoverClasses}`}>
       <div className={`h-2 w-full ${buttonColor ? buttonColor.replace('bg-', 'bg-').replace('-600', '-500') : 'bg-primary'}`}></div>
-      <div className={`p-6 ${bgClass}`}>
+      <div className={`p-6`}>
         <div className="flex items-start justify-between mb-4">
           <div>
             <h3 className={`text-xl font-bold ${buttonColor ? buttonColor.replace('bg-', 'text-').replace('-600', '-700') : 'text-primary'}`}>
@@ -190,7 +185,7 @@ export function MainMenu({ onNavigate }: MainMenuProps) {
         </p>
       </div>
       
-      <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 p-4 max-w-6xl mx-auto`}>
+      <div className={`glass-morphism p-8 rounded-xl grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 max-w-6xl mx-auto`}>
         {menuItems.map((item, index) => (
           <div 
             key={index} 
