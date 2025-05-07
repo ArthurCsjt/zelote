@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ClipboardList, BarChart3, PlusCircle, List, Laptop, Settings, RotateCcw } from 'lucide-react';
 
@@ -8,79 +8,9 @@ interface MainMenuProps {
   onNavigate: (route: 'registration' | 'dashboard' | 'loan' | 'return' | 'inventory') => void;
 }
 
-type MenuItemProps = {
-  title: string;
-  description: string;
-  content: string;
-  buttonText: string;
-  buttonIcon: React.ReactNode;
-  buttonAction: () => void;
-  buttonColor?: string;
-  iconColor?: string;
-  gradientBg?: string;
-  disabled?: boolean;
-};
-
 // Detect if we're on a mobile device
 const isMobileDevice = () => {
   return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
-};
-
-const MenuItem = ({
-  title,
-  description,
-  content,
-  buttonText,
-  buttonIcon,
-  buttonAction,
-  buttonColor = '',
-  iconColor = '',
-  gradientBg = '',
-  disabled = false
-}: MenuItemProps) => {
-  const isMobile = isMobileDevice();
-  
-  // Simplified animations for mobile
-  const animationClasses = isMobile 
-    ? "transition-colors duration-300"
-    : "shadow-md hover:shadow-xl transition-all duration-500 transform hover:-translate-y-2";
-
-  // Simplified hover effects for mobile
-  const cardHoverClasses = isMobile ? "" : "group";
-  
-  return (
-    <Card className={`glass-card border-0 border-white/20 overflow-hidden ${animationClasses} ${cardHoverClasses}`}>
-      <div className={`h-2 w-full ${buttonColor ? buttonColor.replace('bg-', 'bg-').replace('-600', '-500') : 'bg-primary'}`}></div>
-      <div className={`p-6`}>
-        <div className="flex items-start justify-between mb-4">
-          <div>
-            <h3 className={`text-xl font-bold ${buttonColor ? buttonColor.replace('bg-', 'text-').replace('-600', '-700') : 'text-primary'}`}>
-              {title}
-            </h3>
-            <p className="text-sm text-gray-500 mt-1">{description}</p>
-          </div>
-          <div className={`p-3 rounded-full ${iconColor || buttonColor?.replace('bg-', 'bg-').replace('-600', '-100') || 'bg-primary/10'}`}>
-            {React.cloneElement(buttonIcon as React.ReactElement, { 
-              className: `h-6 w-6 ${buttonColor?.replace('bg-', 'text-').replace('-600', '-600') || 'text-primary'}` 
-            })}
-          </div>
-        </div>
-        <p className="text-sm text-gray-600 mb-6 h-12">
-          {content}
-        </p>
-        <Button 
-          className={`w-full ${buttonColor || ''} shadow-sm py-5`}
-          onClick={buttonAction}
-          disabled={disabled}
-        >
-          {React.cloneElement(buttonIcon as React.ReactElement, { 
-            className: "mr-2 h-5 w-5" 
-          })}
-          <span className="ml-2">{buttonText}</span>
-        </Button>
-      </div>
-    </Card>
-  );
 };
 
 export function MainMenu({ onNavigate }: MainMenuProps) {
@@ -96,61 +26,51 @@ export function MainMenu({ onNavigate }: MainMenuProps) {
     return () => clearTimeout(timer);
   }, []);
 
-  const menuItems: MenuItemProps[] = [
+  const menuItems = [
     {
       title: 'Cadastro',
       description: 'Registrar novos Chromebooks',
       content: 'Cadastre novos dispositivos e gere QR Codes para identificação.',
-      buttonText: 'Cadastrar Chromebook',
-      buttonIcon: <PlusCircle className="mr-2 h-5 w-5" />,
-      buttonAction: () => onNavigate('registration'),
-      iconColor: 'bg-green-100',
-      buttonColor: 'bg-green-600 hover:bg-green-700',
-      gradientBg: 'bg-gradient-to-br from-white to-green-50'
+      icon: <PlusCircle className="h-5 w-5" />,
+      action: () => onNavigate('registration'),
+      color: 'bg-green-600 hover:bg-green-700',
+      textColor: 'text-green-700'
     },
     {
       title: 'Inventário',
       description: 'Gerenciar Chromebooks',
       content: 'Visualize, edite ou altere o status dos dispositivos cadastrados.',
-      buttonText: 'Ver Inventário',
-      buttonIcon: <Laptop className="mr-2 h-5 w-5" />,
-      buttonAction: () => onNavigate('inventory'),
-      buttonColor: 'bg-blue-600 hover:bg-blue-700',
-      iconColor: 'bg-blue-100',
-      gradientBg: 'bg-gradient-to-br from-white to-blue-50'
+      icon: <Laptop className="h-5 w-5" />,
+      action: () => onNavigate('inventory'),
+      color: 'bg-blue-600 hover:bg-blue-700',
+      textColor: 'text-blue-700'
     },
     {
       title: 'Empréstimo',
       description: 'Gerenciar empréstimos',
       content: 'Registre novos empréstimos de Chromebooks e veja os ativos.',
-      buttonText: 'Gerenciar Empréstimos',
-      buttonIcon: <ClipboardList className="mr-2 h-5 w-5" />,
-      buttonAction: () => onNavigate('loan'),
-      buttonColor: 'bg-violet-600 hover:bg-violet-700',
-      iconColor: 'bg-violet-100',
-      gradientBg: 'bg-gradient-to-br from-white to-violet-50'
+      icon: <ClipboardList className="h-5 w-5" />,
+      action: () => onNavigate('loan'),
+      color: 'bg-violet-600 hover:bg-violet-700',
+      textColor: 'text-violet-700'
     },
     {
       title: 'Devolução',
       description: 'Registrar devoluções',
       content: 'Registre a devolução de Chromebooks emprestados.',
-      buttonText: 'Registrar Devolução',
-      buttonIcon: <RotateCcw className="mr-2 h-5 w-5" />,
-      buttonAction: () => onNavigate('return'),
-      buttonColor: 'bg-amber-600 hover:bg-amber-700',
-      iconColor: 'bg-amber-100',
-      gradientBg: 'bg-gradient-to-br from-white to-amber-50'
+      icon: <RotateCcw className="h-5 w-5" />,
+      action: () => onNavigate('return'),
+      color: 'bg-amber-600 hover:bg-amber-700',
+      textColor: 'text-amber-700'
     },
     {
       title: 'Dashboard',
       description: 'Relatórios e estatísticas',
       content: 'Visualize dados e estatísticas sobre os equipamentos.',
-      buttonText: 'Ver Dashboard',
-      buttonIcon: <BarChart3 className="mr-2 h-5 w-5" />,
-      buttonAction: () => onNavigate('dashboard'),
-      buttonColor: 'bg-rose-600 hover:bg-rose-700',
-      iconColor: 'bg-rose-100',
-      gradientBg: 'bg-gradient-to-br from-white to-rose-50'
+      icon: <BarChart3 className="h-5 w-5" />,
+      action: () => onNavigate('dashboard'),
+      color: 'bg-rose-600 hover:bg-rose-700',
+      textColor: 'text-rose-700'
     }
   ];
 
@@ -185,13 +105,40 @@ export function MainMenu({ onNavigate }: MainMenuProps) {
         </p>
       </div>
       
-      <div className={`glass-morphism p-8 rounded-xl grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 max-w-6xl mx-auto`}>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-6xl mx-auto">
         {menuItems.map((item, index) => (
           <div 
             key={index} 
             style={getFadeInStyle(index + 1)}
+            className="transition duration-300"
           >
-            <MenuItem {...item} />
+            <Card className="border border-gray-100 bg-white overflow-hidden h-full shadow-sm hover:shadow-md">
+              <div className={`h-1 w-full ${item.color.replace('hover:', '')}`}></div>
+              <CardContent className="p-6">
+                <div className="flex items-center mb-4">
+                  <div className={`mr-4 p-3 rounded-full ${item.textColor.replace('text-', 'bg-').replace('-700', '-100')}`}>
+                    {item.icon}
+                  </div>
+                  <div>
+                    <h3 className={`text-xl font-bold ${item.textColor}`}>
+                      {item.title}
+                    </h3>
+                    <p className="text-sm text-gray-500">{item.description}</p>
+                  </div>
+                </div>
+                <p className="text-sm text-gray-600 mb-4">
+                  {item.content}
+                </p>
+                <Button 
+                  variant="outline"
+                  className={`w-full border transition-all ${item.textColor} hover:${item.color.replace('bg-', '')} hover:text-white`}
+                  onClick={item.action}
+                >
+                  {item.icon}
+                  {item.title}
+                </Button>
+              </CardContent>
+            </Card>
           </div>
         ))}
       </div>

@@ -23,6 +23,8 @@ const buttonVariants = cva(
         success: "bg-green-600 text-white hover:bg-green-700 shadow-sm",
         camera: "bg-blue-500 text-white hover:bg-blue-600 shadow-md active:shadow-inner active:translate-y-0.5",
         apple: "bg-white border border-gray-200 text-gray-800 hover:bg-gray-50 shadow-sm transition-all",
+        text: "bg-transparent hover:bg-gray-100 text-gray-800 font-semibold",
+        simple: "bg-transparent border-b-2 border-transparent hover:border-current text-current px-1 py-1 rounded-none transition-all",
       },
       size: {
         default: "h-10 px-5 py-2 rounded-xl",
@@ -30,6 +32,8 @@ const buttonVariants = cva(
         lg: "h-11 rounded-xl px-8",
         icon: "h-10 w-10 rounded-full",
         mobile: "h-12 px-6 py-3 text-base rounded-xl", // Larger size for mobile touchscreens
+        compact: "h-8 px-3 py-1 text-sm",
+        minimal: "h-auto px-1 py-0",
       },
     },
     defaultVariants: {
