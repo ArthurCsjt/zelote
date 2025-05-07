@@ -35,7 +35,8 @@ export function MainMenu({ onNavigate }: MainMenuProps) {
       action: () => onNavigate('registration'),
       bgColor: 'bg-gradient-to-r from-green-500 to-green-600',
       textColor: 'text-green-700',
-      hoverColor: 'hover:bg-green-700'
+      hoverColor: 'hover:bg-green-700',
+      borderColor: 'border-green-500'
     },
     {
       title: 'Inventário',
@@ -45,7 +46,8 @@ export function MainMenu({ onNavigate }: MainMenuProps) {
       action: () => onNavigate('inventory'),
       bgColor: 'bg-gradient-to-r from-blue-500 to-blue-600',
       textColor: 'text-blue-700',
-      hoverColor: 'hover:bg-blue-700'
+      hoverColor: 'hover:bg-blue-700',
+      borderColor: 'border-blue-500'
     },
     {
       title: 'Empréstimo',
@@ -55,7 +57,8 @@ export function MainMenu({ onNavigate }: MainMenuProps) {
       action: () => onNavigate('loan'),
       bgColor: 'bg-gradient-to-r from-violet-500 to-violet-600',
       textColor: 'text-violet-700',
-      hoverColor: 'hover:bg-violet-700'
+      hoverColor: 'hover:bg-violet-700',
+      borderColor: 'border-violet-500'
     },
     {
       title: 'Devolução',
@@ -65,7 +68,8 @@ export function MainMenu({ onNavigate }: MainMenuProps) {
       action: () => onNavigate('return'),
       bgColor: 'bg-gradient-to-r from-amber-500 to-amber-600',
       textColor: 'text-amber-700',
-      hoverColor: 'hover:bg-amber-700'
+      hoverColor: 'hover:bg-amber-700',
+      borderColor: 'border-amber-500'
     },
     {
       title: 'Dashboard',
@@ -75,7 +79,8 @@ export function MainMenu({ onNavigate }: MainMenuProps) {
       action: () => onNavigate('dashboard'),
       bgColor: 'bg-gradient-to-r from-rose-500 to-rose-600',
       textColor: 'text-rose-700',
-      hoverColor: 'hover:bg-rose-700'
+      hoverColor: 'hover:bg-rose-700',
+      borderColor: 'border-rose-500'
     }
   ];
 
@@ -117,7 +122,7 @@ export function MainMenu({ onNavigate }: MainMenuProps) {
             style={getFadeInStyle(index + 1)}
             className="transition duration-300"
           >
-            <Card className="border border-gray-100 bg-white overflow-hidden h-full shadow-sm hover:shadow-md">
+            <Card className={`border-2 ${item.borderColor} bg-white overflow-hidden h-full shadow-sm hover:shadow-md transition-all`}>
               <div className="p-6">
                 <div className="flex items-center mb-4">
                   <div className={`mr-4 p-3 rounded-full ${item.textColor.replace('text-', 'bg-').replace('-700', '-100')}`}>
