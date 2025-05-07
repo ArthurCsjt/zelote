@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ClipboardList, BarChart3, PlusCircle, List, Laptop, Settings, RotateCcw } from 'lucide-react';
 
@@ -33,8 +33,9 @@ export function MainMenu({ onNavigate }: MainMenuProps) {
       content: 'Cadastre novos dispositivos e gere QR Codes para identificação.',
       icon: <PlusCircle className="h-5 w-5" />,
       action: () => onNavigate('registration'),
-      color: 'bg-green-600 hover:bg-green-700',
-      textColor: 'text-green-700'
+      bgColor: 'bg-gradient-to-r from-green-500 to-green-600',
+      textColor: 'text-green-700',
+      hoverColor: 'hover:bg-green-700'
     },
     {
       title: 'Inventário',
@@ -42,8 +43,9 @@ export function MainMenu({ onNavigate }: MainMenuProps) {
       content: 'Visualize, edite ou altere o status dos dispositivos cadastrados.',
       icon: <Laptop className="h-5 w-5" />,
       action: () => onNavigate('inventory'),
-      color: 'bg-blue-600 hover:bg-blue-700',
-      textColor: 'text-blue-700'
+      bgColor: 'bg-gradient-to-r from-blue-500 to-blue-600',
+      textColor: 'text-blue-700',
+      hoverColor: 'hover:bg-blue-700'
     },
     {
       title: 'Empréstimo',
@@ -51,8 +53,9 @@ export function MainMenu({ onNavigate }: MainMenuProps) {
       content: 'Registre novos empréstimos de Chromebooks e veja os ativos.',
       icon: <ClipboardList className="h-5 w-5" />,
       action: () => onNavigate('loan'),
-      color: 'bg-violet-600 hover:bg-violet-700',
-      textColor: 'text-violet-700'
+      bgColor: 'bg-gradient-to-r from-violet-500 to-violet-600',
+      textColor: 'text-violet-700',
+      hoverColor: 'hover:bg-violet-700'
     },
     {
       title: 'Devolução',
@@ -60,8 +63,9 @@ export function MainMenu({ onNavigate }: MainMenuProps) {
       content: 'Registre a devolução de Chromebooks emprestados.',
       icon: <RotateCcw className="h-5 w-5" />,
       action: () => onNavigate('return'),
-      color: 'bg-amber-600 hover:bg-amber-700',
-      textColor: 'text-amber-700'
+      bgColor: 'bg-gradient-to-r from-amber-500 to-amber-600',
+      textColor: 'text-amber-700',
+      hoverColor: 'hover:bg-amber-700'
     },
     {
       title: 'Dashboard',
@@ -69,8 +73,9 @@ export function MainMenu({ onNavigate }: MainMenuProps) {
       content: 'Visualize dados e estatísticas sobre os equipamentos.',
       icon: <BarChart3 className="h-5 w-5" />,
       action: () => onNavigate('dashboard'),
-      color: 'bg-rose-600 hover:bg-rose-700',
-      textColor: 'text-rose-700'
+      bgColor: 'bg-gradient-to-r from-rose-500 to-rose-600',
+      textColor: 'text-rose-700',
+      hoverColor: 'hover:bg-rose-700'
     }
   ];
 
@@ -113,8 +118,7 @@ export function MainMenu({ onNavigate }: MainMenuProps) {
             className="transition duration-300"
           >
             <Card className="border border-gray-100 bg-white overflow-hidden h-full shadow-sm hover:shadow-md">
-              <div className={`h-1 w-full ${item.color.replace('hover:', '')}`}></div>
-              <CardContent className="p-6">
+              <div className="p-6">
                 <div className="flex items-center mb-4">
                   <div className={`mr-4 p-3 rounded-full ${item.textColor.replace('text-', 'bg-').replace('-700', '-100')}`}>
                     {item.icon}
@@ -130,14 +134,13 @@ export function MainMenu({ onNavigate }: MainMenuProps) {
                   {item.content}
                 </p>
                 <Button 
-                  variant="outline"
-                  className={`w-full border transition-all ${item.textColor} hover:${item.color.replace('bg-', '')} hover:text-white`}
+                  className={`w-full text-white ${item.bgColor} hover:opacity-90 transition-all`}
                   onClick={item.action}
                 >
                   {item.icon}
-                  {item.title}
+                  <span className="ml-2">{item.title}</span>
                 </Button>
-              </CardContent>
+              </div>
             </Card>
           </div>
         ))}
