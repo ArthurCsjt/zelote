@@ -7,6 +7,9 @@
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#0a84ff",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "prefer_related_applications": false,
   "icons": [
     {
       "src": "/icons/icon-72x72.png",
@@ -55,6 +58,27 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshots/screen1.png",
+      "sizes": "1280x720",
+      "type": "image/png"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Novo Empréstimo",
+      "short_name": "Emprestar",
+      "description": "Iniciar um novo empréstimo",
+      "url": "/?action=loan"
+    },
+    {
+      "name": "Registrar Devolução",
+      "short_name": "Devolver",
+      "description": "Registrar uma devolução",
+      "url": "/?action=return"
     }
   ]
 }

@@ -1,11 +1,11 @@
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Zelote</title>
-    <meta name="description" content="Sistema de controle de empréstimos e devoluções" />
+    <meta name="description" content="Sistema de controle de empréstimos e devoluções de Chromebooks" />
     <meta name="author" content="Lovable" />
     <meta property="og:image" content="/og-image.png" />
     
@@ -24,6 +24,14 @@
     <link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-192x192.png">
     <link rel="apple-touch-icon" sizes="167x167" href="/icons/icon-152x152.png">
     
+    <!-- iOS Splash Screens -->
+    <link rel="apple-touch-startup-image" href="/icons/splash/apple-splash-2048-2732.jpg" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+    <link rel="apple-touch-startup-image" href="/icons/splash/apple-splash-1668-2388.jpg" media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+    <link rel="apple-touch-startup-image" href="/icons/splash/apple-splash-1536-2048.jpg" media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+    <link rel="apple-touch-startup-image" href="/icons/splash/apple-splash-1125-2436.jpg" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+    <link rel="apple-touch-startup-image" href="/icons/splash/apple-splash-828-1792.jpg" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+    <link rel="apple-touch-startup-image" href="/icons/splash/apple-splash-750-1334.jpg" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+    
     <!-- Favicon -->
     <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-72x72.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/icons/icon-72x72.png">
@@ -35,17 +43,96 @@
     <!-- IMPORTANT: DO NOT REMOVE THIS SCRIPT TAG OR THIS VERY COMMENT! -->
     <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
     <script type="module" src="/src/main.tsx"></script>
-    <!-- PWA Registration Script -->
+    
+    <!-- PWA Registration Script with update notification -->
     <script>
       if ('serviceWorker' in navigator) {
+        let refreshing = false;
+
+        // Track when the service worker updates and notify the user
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          if (refreshing) return;
+          refreshing = true;
+          window.location.reload();
+        });
+        
         window.addEventListener('load', () => {
           navigator.serviceWorker.register('/service-worker.js')
             .then(registration => {
               console.log('ServiceWorker registration successful with scope: ', registration.scope);
+              
+              // Check for updates periodically
+              setInterval(() => {
+                registration.update()
+                  .catch(error => console.log('Update check failed: ', error));
+              }, 60 * 60 * 1000); // Check once per hour
+              
+              // Listen for new versions and prompt user to update
+              registration.addEventListener('updatefound', () => {
+                const newWorker = registration.installing;
+                
+                newWorker.addEventListener('statechange', () => {
+                  if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                    // New version available
+                    if (confirm('Nova versão disponível! Deseja atualizar agora?')) {
+                      newWorker.postMessage({ type: 'SKIP_WAITING' });
+                    }
+                  }
+                });
+              });
             })
             .catch(error => {
               console.log('ServiceWorker registration failed: ', error);
             });
+        });
+      }
+      
+      // Add the app to home screen
+      let deferredPrompt;
+      const addBtn = document.createElement('button');
+      addBtn.style.display = 'none';
+      
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        
+        if (!localStorage.getItem('pwaInstallDismissed')) {
+          setTimeout(() => {
+            showInstallPromotion();
+          }, 3000);
+        }
+      });
+      
+      function showInstallPromotion() {
+        if (!deferredPrompt) return;
+        
+        // Create promotion element
+        const promoDiv = document.createElement('div');
+        promoDiv.innerHTML = `
+          <div style="position: fixed; bottom: 20px; left: 20px; right: 20px; background: #fff; padding: 15px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); z-index: 1000; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <p style="margin: 0; font-weight: bold;">Instalar Zelote</p>
+              <p style="margin: 5px 0 0 0; font-size: 14px;">Adicione à tela inicial para acesso rápido</p>
+            </div>
+            <div>
+              <button id="pwa-install-btn" style="background: #0a84ff; color: white; border: none; padding: 10px 15px; border-radius: 5px; margin-right: 10px;">Instalar</button>
+              <button id="pwa-dismiss-btn" style="background: transparent; border: 1px solid #ccc; padding: 10px 15px; border-radius: 5px;">Agora não</button>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(promoDiv);
+        
+        document.getElementById('pwa-install-btn').addEventListener('click', async () => {
+          deferredPrompt.prompt();
+          const { outcome } = await deferredPrompt.userChoice;
+          console.log(`User response: ${outcome}`);
+          deferredPrompt = null;
+          promoDiv.remove();
+        });
+        
+        document.getElementById('pwa-dismiss-btn').addEventListener('click', () => {
+          localStorage.setItem('pwaInstallDismissed', 'true');
+          promoDiv.remove();
         });
       }
     </script>
