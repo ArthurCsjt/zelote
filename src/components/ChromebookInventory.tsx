@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -25,6 +26,17 @@ import { Search, ArrowLeft } from "lucide-react";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "./ui/pagination";
 import { ScrollArea } from "./ui/scroll-area";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { 
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "./ui/popover";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
 
 // Interface for Chromebook data structure
 interface ChromebookData {
@@ -315,10 +327,15 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
         </Pagination>
       )}
 
-      {/* Enhanced Edit Dialog for better mobile support */}
+      {/* Improved Edit Dialog with better mobile support */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent 
-          className={`${isMobile ? 'w-[95vw] p-4' : 'sm:max-w-lg'} max-h-[95vh] overflow-hidden`}
+          className="sm:max-w-lg px-4 py-4 h-auto max-h-[90vh] overflow-hidden"
+          style={{
+            width: isMobile ? 'calc(100vw - 32px)' : 'auto',
+            top: isMobile ? '50%' : undefined,
+            transform: isMobile ? 'translate(-50%, -50%)' : undefined
+          }}
         >
           <DialogHeader>
             <DialogTitle>Editar Chromebook</DialogTitle>
@@ -329,10 +346,11 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
           </DialogHeader>
 
           {editingChromebook && (
-            <ScrollArea 
-              className={`${isMobile ? 'max-h-[60vh]' : 'max-h-[65vh]'} pr-4 -mx-1 px-1`}
-            >
-              <div className="space-y-4 py-4">
+            <div className="overflow-y-auto my-4 pr-1" style={{
+              maxHeight: isMobile ? 'calc(70vh - 180px)' : '65vh',
+              paddingBottom: '1rem'
+            }}>
+              <div className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="id">ID do Chromebook *</Label>
                   <Input
@@ -429,10 +447,10 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
                   <p className="text-xs text-gray-500">Campo opcional</p>
                 </div>
               </div>
-            </ScrollArea>
+            </div>
           )}
 
-          <DialogFooter className={`mt-6 pt-4 border-t ${isMobile ? 'flex-col space-y-2' : ''}`}>
+          <DialogFooter className={`mt-2 pt-4 border-t ${isMobile ? 'flex-col space-y-2' : ''}`}>
             <Button
               variant="outline"
               onClick={() => {
