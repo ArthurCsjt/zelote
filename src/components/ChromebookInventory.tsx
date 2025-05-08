@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -177,7 +176,7 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
         
         {/* Botão voltar - NOVO */}
         <Button 
-          variant="outline" 
+          variant="back" 
           onClick={handleBackClick} 
           className="flex items-center gap-1 hover:bg-blue-50"
         >
@@ -312,9 +311,9 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
         </Pagination>
       )}
 
-      {/* Edit Dialog */}
+      {/* Edit Dialog - Updated with improved scrolling */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="sm:max-w-lg max-h-[90vh]">
+        <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-hidden">
           <DialogHeader>
             <DialogTitle>Editar Chromebook</DialogTitle>
             <DialogDescription>
@@ -324,8 +323,8 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
           </DialogHeader>
 
           {editingChromebook && (
-            <ScrollArea className="pr-4 max-h-[60vh]">
-              <div className="space-y-4 mt-4">
+            <ScrollArea className="max-h-[60vh] pr-4">
+              <div className="space-y-4 py-4">
                 <div className="space-y-2">
                   <Label htmlFor="id">ID do Chromebook *</Label>
                   <Input
@@ -425,7 +424,7 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
             </ScrollArea>
           )}
 
-          <DialogFooter className="mt-4">
+          <DialogFooter className="mt-6 pt-4 border-t">
             <Button
               variant="outline"
               onClick={() => {
@@ -435,7 +434,9 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
             >
               Cancelar
             </Button>
-            <Button onClick={handleSaveEdit}>Salvar Alterações</Button>
+            <Button variant="back" onClick={handleSaveEdit}>
+              Salvar Alterações
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
