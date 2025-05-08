@@ -26,6 +26,7 @@ const buttonVariants = cva(
         text: "bg-transparent hover:bg-gray-100 text-gray-800 font-semibold",
         simple: "bg-transparent border-b-2 border-transparent hover:border-current text-current px-1 py-1 rounded-none transition-all",
         gradient: "text-white bg-gradient-to-r shadow-md hover:shadow-lg active:shadow-sm transition-all",
+        back: "bg-purple-600 text-white hover:bg-purple-700 shadow-sm flex items-center justify-center w-full md:w-auto",
       },
       size: {
         default: "h-10 px-5 py-2 rounded-xl",

@@ -1,3 +1,4 @@
+
 import { useState, useCallback, useEffect } from "react";
 import { useMobile } from "@/hooks/use-mobile";
 import { LoanForm } from "@/components/LoanForm";
@@ -362,7 +363,10 @@ const Index = () => {
         </ScrollArea>
         
         <DialogFooter className="mt-4">
-          <Button onClick={() => setOpenLoanDialog(false)}>Voltar</Button>
+          <Button variant="back" onClick={() => setOpenLoanDialog(false)}>
+            <ArrowLeft className="mr-1" />
+            Voltar
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

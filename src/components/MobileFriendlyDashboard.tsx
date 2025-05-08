@@ -93,16 +93,18 @@ export function MobileFriendlyDashboard({ activeLoans, history, onBack }: Mobile
   return (
     <div className="space-y-4 animate-in fade-in duration-300">
       <div className="flex flex-col justify-between items-start gap-4 mb-4">
-        <h2 className="text-xl font-bold tracking-tight bg-gradient-to-r from-blue-700 to-blue-500 bg-clip-text text-transparent">Dashboard</h2>
-        <Button 
-          variant="outline" 
-          onClick={handleBackToMenu}
-          size="sm"
-          className="flex items-center gap-1 hover:bg-blue-50 px-2 w-full justify-center"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          <span>Voltar ao Menu</span>
-        </Button>
+        <div className="flex w-full justify-between items-center">
+          <h2 className="text-xl font-bold tracking-tight bg-gradient-to-r from-blue-700 to-blue-500 bg-clip-text text-transparent">Dashboard</h2>
+          <Button 
+            variant="back" 
+            onClick={handleBackToMenu}
+            size="sm"
+            className="flex items-center gap-1"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            <span>Voltar</span>
+          </Button>
+        </div>
       </div>
 
       <Tabs defaultValue="daily" className="w-full" onValueChange={(v) => setPeriodView(v as 'daily' | 'weekly' | 'monthly')}>
