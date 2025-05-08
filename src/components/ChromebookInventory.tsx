@@ -24,6 +24,7 @@ import { toast } from "./ui/use-toast";
 import { Search, ArrowLeft } from "lucide-react";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "./ui/pagination";
 import { ScrollArea } from "./ui/scroll-area";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 // Interface for Chromebook data structure
 interface ChromebookData {
@@ -42,6 +43,9 @@ interface ChromebookInventoryProps {
 }
 
 export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
+  // Check if on mobile device
+  const isMobile = useIsMobile();
+  
   // State for storing all Chromebooks
   const [chromebooks, setChromebooks] = useState<ChromebookData[]>([]);
   // State for search term
@@ -160,7 +164,7 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
     }
   };
 
-  // Handle back button click - NOVO
+  // Handle back button click
   const handleBackClick = () => {
     if (onBack) {
       onBack();
@@ -174,7 +178,7 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
           Inventário de Chromebooks
         </h2>
         
-        {/* Botão voltar - NOVO */}
+        {/* Botão voltar */}
         <Button 
           variant="back" 
           onClick={handleBackClick} 
@@ -311,9 +315,11 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
         </Pagination>
       )}
 
-      {/* Edit Dialog - Updated with improved scrolling */}
+      {/* Enhanced Edit Dialog for better mobile support */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-hidden">
+        <DialogContent 
+          className={`${isMobile ? 'w-[95vw] p-4' : 'sm:max-w-lg'} max-h-[95vh] overflow-hidden`}
+        >
           <DialogHeader>
             <DialogTitle>Editar Chromebook</DialogTitle>
             <DialogDescription>
@@ -323,7 +329,9 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
           </DialogHeader>
 
           {editingChromebook && (
-            <ScrollArea className="max-h-[60vh] pr-4">
+            <ScrollArea 
+              className={`${isMobile ? 'max-h-[60vh]' : 'max-h-[65vh]'} pr-4 -mx-1 px-1`}
+            >
               <div className="space-y-4 py-4">
                 <div className="space-y-2">
                   <Label htmlFor="id">ID do Chromebook *</Label>
@@ -424,17 +432,22 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
             </ScrollArea>
           )}
 
-          <DialogFooter className="mt-6 pt-4 border-t">
+          <DialogFooter className={`mt-6 pt-4 border-t ${isMobile ? 'flex-col space-y-2' : ''}`}>
             <Button
               variant="outline"
               onClick={() => {
                 setIsEditDialogOpen(false);
                 setEditingChromebook(null);
               }}
+              className={isMobile ? 'w-full' : ''}
             >
               Cancelar
             </Button>
-            <Button variant="back" onClick={handleSaveEdit}>
+            <Button 
+              variant="back" 
+              onClick={handleSaveEdit}
+              className={isMobile ? 'w-full' : ''}
+            >
               Salvar Alterações
             </Button>
           </DialogFooter>
