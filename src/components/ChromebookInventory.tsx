@@ -24,7 +24,6 @@ import { Label } from "./ui/label";
 import { toast } from "./ui/use-toast";
 import { Search, ArrowLeft } from "lucide-react";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "./ui/pagination";
-import { ScrollArea } from "./ui/scroll-area";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { 
   Popover,
@@ -327,30 +326,38 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
         </Pagination>
       )}
 
-      {/* Improved Edit Dialog with better mobile support */}
+      {/* Improved Edit Dialog with custom scrolling */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent 
-          className="sm:max-w-lg px-4 py-4 h-auto max-h-[90vh] overflow-hidden"
+          className="p-0 max-w-lg"
           style={{
-            width: isMobile ? 'calc(100vw - 32px)' : 'auto',
-            top: isMobile ? '50%' : undefined,
-            transform: isMobile ? 'translate(-50%, -50%)' : undefined
+            width: isMobile ? 'calc(100vw - 32px)' : undefined,
+            maxHeight: isMobile ? '90vh' : '95vh',
+            height: 'auto',
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden'
           }}
         >
-          <DialogHeader>
-            <DialogTitle>Editar Chromebook</DialogTitle>
-            <DialogDescription>
-              Atualize as informações do Chromebook. Os campos marcados com *
-              são obrigatórios.
-            </DialogDescription>
-          </DialogHeader>
+          <div className="px-6 pt-6 pb-2">
+            <DialogHeader>
+              <DialogTitle>Editar Chromebook</DialogTitle>
+              <DialogDescription>
+                Atualize as informações do Chromebook. Os campos marcados com *
+                são obrigatórios.
+              </DialogDescription>
+            </DialogHeader>
+          </div>
 
           {editingChromebook && (
-            <div className="overflow-y-auto my-4 pr-1" style={{
-              maxHeight: isMobile ? 'calc(70vh - 180px)' : '65vh',
-              paddingBottom: '1rem'
-            }}>
-              <div className="space-y-4">
+            <div 
+              className="overflow-y-auto flex-1 px-6" 
+              style={{
+                scrollbarWidth: 'thin',
+                scrollbarColor: '#d1d5db transparent'
+              }}
+            >
+              <div className="space-y-4 py-4">
                 <div className="space-y-2">
                   <Label htmlFor="id">ID do Chromebook *</Label>
                   <Input
@@ -450,25 +457,27 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
             </div>
           )}
 
-          <DialogFooter className={`mt-2 pt-4 border-t ${isMobile ? 'flex-col space-y-2' : ''}`}>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setIsEditDialogOpen(false);
-                setEditingChromebook(null);
-              }}
-              className={isMobile ? 'w-full' : ''}
-            >
-              Cancelar
-            </Button>
-            <Button 
-              variant="back" 
-              onClick={handleSaveEdit}
-              className={isMobile ? 'w-full' : ''}
-            >
-              Salvar Alterações
-            </Button>
-          </DialogFooter>
+          <div className="px-6 py-4 mt-2 border-t">
+            <DialogFooter className={isMobile ? 'flex-col space-y-2' : ''}>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setIsEditDialogOpen(false);
+                  setEditingChromebook(null);
+                }}
+                className={isMobile ? 'w-full' : ''}
+              >
+                Cancelar
+              </Button>
+              <Button 
+                variant="back" 
+                onClick={handleSaveEdit}
+                className={isMobile ? 'w-full' : ''}
+              >
+                Salvar Alterações
+              </Button>
+            </DialogFooter>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
