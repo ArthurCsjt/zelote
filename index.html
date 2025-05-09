@@ -108,6 +108,8 @@
         
         // Create promotion element
         const promoDiv = document.createElement('div');
+        const promoId = 'zelote-pwa-promo-' + Date.now();
+        promoDiv.id = promoId;
         promoDiv.innerHTML = `
           <div style="position: fixed; bottom: 20px; left: 20px; right: 20px; background: #fff; padding: 15px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); z-index: 1000; display: flex; justify-content: space-between; align-items: center;">
             <div>
@@ -115,24 +117,35 @@
               <p style="margin: 5px 0 0 0; font-size: 14px;">Adicione à tela inicial para acesso rápido</p>
             </div>
             <div>
-              <button id="pwa-install-btn" style="background: #0a84ff; color: white; border: none; padding: 10px 15px; border-radius: 5px; margin-right: 10px;">Instalar</button>
-              <button id="pwa-dismiss-btn" style="background: transparent; border: 1px solid #ccc; padding: 10px 15px; border-radius: 5px;">Agora não</button>
+              <button id="pwa-install-btn-${promoId}" style="background: #0a84ff; color: white; border: none; padding: 10px 15px; border-radius: 5px; margin-right: 10px; cursor: pointer;">Instalar</button>
+              <button id="pwa-dismiss-btn-${promoId}" style="background: transparent; border: 1px solid #ccc; padding: 10px 15px; border-radius: 5px; cursor: pointer;">Agora não</button>
             </div>
           </div>
         `;
         document.body.appendChild(promoDiv);
         
-        document.getElementById('pwa-install-btn').addEventListener('click', async () => {
-          deferredPrompt.prompt();
-          const { outcome } = await deferredPrompt.userChoice;
-          console.log(`User response: ${outcome}`);
-          deferredPrompt = null;
-          promoDiv.remove();
+        // Add event listeners with correct scoping
+        document.getElementById(`pwa-install-btn-${promoId}`).addEventListener('click', () => {
+          if (deferredPrompt) {
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then((choiceResult) => {
+              console.log(`User ${choiceResult.outcome} the install prompt`);
+              if (choiceResult.outcome === 'accepted') {
+                console.log('User accepted the install prompt');
+              }
+              deferredPrompt = null;
+            });
+            // Remove the promotion after user interaction
+            const promoElement = document.getElementById(promoId);
+            if (promoElement) promoElement.remove();
+          }
         });
         
-        document.getElementById('pwa-dismiss-btn').addEventListener('click', () => {
+        document.getElementById(`pwa-dismiss-btn-${promoId}`).addEventListener('click', () => {
+          console.log('User dismissed the install prompt');
           localStorage.setItem('pwaInstallDismissed', 'true');
-          promoDiv.remove();
+          const promoElement = document.getElementById(promoId);
+          if (promoElement) promoElement.remove();
         });
       }
     </script>
