@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -19,6 +18,7 @@ import {
   DialogDescription,
   DialogFooter
 } from "./ui/dialog";
+import { ScrollArea } from "./ui/scroll-area";
 import { Textarea } from "./ui/textarea";
 import { Label } from "./ui/label";
 import { toast } from "./ui/use-toast";
@@ -328,25 +328,17 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
 
       {/* Improved Edit Dialog with better scrolling on mobile */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="flex flex-col p-0 max-h-[90vh] overflow-hidden">
-          <div className="px-6 pt-6 pb-2 border-b">
-            <DialogHeader>
-              <DialogTitle>Editar Chromebook</DialogTitle>
-              <DialogDescription>
-                Atualize as informações do Chromebook. Os campos marcados com *
-                são obrigatórios.
-              </DialogDescription>
-            </DialogHeader>
-          </div>
-
+        <DialogContent className="sm:max-w-[425px] max-w-[95vw] p-0">
+          <DialogHeader className="px-6 pt-6 pb-2 border-b">
+            <DialogTitle>Editar Chromebook</DialogTitle>
+            <DialogDescription>
+              Atualize as informações do Chromebook. Os campos marcados com *
+              são obrigatórios.
+            </DialogDescription>
+          </DialogHeader>
+          
           {editingChromebook && (
-            <div 
-              className="flex-grow overflow-y-auto px-6 py-4"
-              style={{
-                scrollbarWidth: 'thin',
-                scrollbarColor: '#d1d5db transparent'
-              }}
-            >
+            <ScrollArea className="max-h-[50vh] md:max-h-[60vh] px-6 py-4">
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="id">ID do Chromebook *</Label>
@@ -444,30 +436,28 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
                   <p className="text-xs text-gray-500">Campo opcional</p>
                 </div>
               </div>
-            </div>
+            </ScrollArea>
           )}
 
-          <div className="border-t px-6 py-4 mt-auto">
-            <DialogFooter className={isMobile ? 'flex-col space-y-2' : ''}>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setIsEditDialogOpen(false);
-                  setEditingChromebook(null);
-                }}
-                className={isMobile ? 'w-full' : ''}
-              >
-                Cancelar
-              </Button>
-              <Button 
-                variant="back" 
-                onClick={handleSaveEdit}
-                className={isMobile ? 'w-full' : ''}
-              >
-                Salvar Alterações
-              </Button>
-            </DialogFooter>
-          </div>
+          <DialogFooter className="px-6 py-4 border-t">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsEditDialogOpen(false);
+                setEditingChromebook(null);
+              }}
+              className={isMobile ? 'w-full mb-2' : ''}
+            >
+              Cancelar
+            </Button>
+            <Button 
+              variant="back" 
+              onClick={handleSaveEdit}
+              className={isMobile ? 'w-full' : ''}
+            >
+              Salvar Alterações
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
