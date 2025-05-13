@@ -326,20 +326,10 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
         </Pagination>
       )}
 
-      {/* Improved Edit Dialog with custom scrolling */}
+      {/* Improved Edit Dialog with better scrolling on mobile */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent 
-          className="p-0 max-w-lg"
-          style={{
-            width: isMobile ? 'calc(100vw - 32px)' : undefined,
-            maxHeight: isMobile ? '90vh' : '95vh',
-            height: 'auto',
-            display: 'flex',
-            flexDirection: 'column',
-            overflow: 'hidden'
-          }}
-        >
-          <div className="px-6 pt-6 pb-2">
+        <DialogContent className="flex flex-col p-0 max-h-[90vh] overflow-hidden">
+          <div className="px-6 pt-6 pb-2 border-b">
             <DialogHeader>
               <DialogTitle>Editar Chromebook</DialogTitle>
               <DialogDescription>
@@ -351,13 +341,13 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
 
           {editingChromebook && (
             <div 
-              className="overflow-y-auto flex-1 px-6" 
+              className="flex-grow overflow-y-auto px-6 py-4"
               style={{
                 scrollbarWidth: 'thin',
                 scrollbarColor: '#d1d5db transparent'
               }}
             >
-              <div className="space-y-4 py-4">
+              <div className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="id">ID do Chromebook *</Label>
                   <Input
@@ -457,7 +447,7 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
             </div>
           )}
 
-          <div className="px-6 py-4 mt-2 border-t">
+          <div className="border-t px-6 py-4 mt-auto">
             <DialogFooter className={isMobile ? 'flex-col space-y-2' : ''}>
               <Button
                 variant="outline"
