@@ -4,7 +4,7 @@ import { Input } from "./ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { toast } from "@/hooks/use-toast";
-import { ArrowLeft, Edit, Trash2, Plus, Search, Filter } from "lucide-react";
+import { ArrowLeft, Edit, Trash2, Plus, Search, Filter, Save } from "lucide-react";
 import { useMobile } from "@/hooks/use-mobile";
 import {
   Select,
@@ -524,30 +524,31 @@ export function ChromebookInventory({ onBack }: { onBack: () => void }) {
               </SheetDescription>
             </SheetHeader>
             
-            <div className="flex-1 overflow-y-auto px-6 py-4">
+            <div className="flex-1 overflow-y-auto px-6 py-4 pb-20">
               <EditForm />
             </div>
 
-            <SheetFooter className="px-6 py-4 border-t bg-white">
-              <div className="flex gap-3 w-full">
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setIsEditDialogOpen(false);
-                    setEditingChromebook(null);
-                  }}
-                  className="flex-1"
-                >
-                  Cancelar
-                </Button>
-                <Button 
-                  onClick={handleSaveEdit}
-                  className="flex-1"
-                >
-                  Salvar Alterações
-                </Button>
-              </div>
-            </SheetFooter>
+            {/* Botão flutuante para mobile */}
+            <Button
+              onClick={handleSaveEdit}
+              className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 z-50 bg-blue-600 hover:bg-blue-700"
+              size="icon"
+            >
+              <Save className="h-6 w-6" />
+            </Button>
+
+            {/* Botão de cancelar discreto no canto inferior esquerdo */}
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsEditDialogOpen(false);
+                setEditingChromebook(null);
+              }}
+              className="fixed bottom-6 left-6 h-12 px-4 rounded-full shadow-md z-50 bg-white"
+              size="sm"
+            >
+              Cancelar
+            </Button>
           </SheetContent>
         </Sheet>
       ) : (
