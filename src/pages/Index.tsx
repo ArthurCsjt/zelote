@@ -1,5 +1,5 @@
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import { useMobile } from "@/hooks/use-mobile";
 import { LoanForm } from "@/components/LoanForm";
 import { ActiveLoans, Loan, ReturnDataType } from "@/components/ActiveLoans";
@@ -22,7 +22,6 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   Sheet,
@@ -70,7 +69,7 @@ const Index = () => {
     console.log('View changed to:', currentView, 'isMobile:', isMobile);
   }, [currentView, isMobile]);
 
-  // Método de navegação simplificado
+  // Método de navegação otimizado com useCallback
   const handleNavigation = useCallback((route: 'registration' | 'dashboard' | 'loan' | 'return' | 'inventory') => {
     try {
       if (route === 'return') {
@@ -97,7 +96,7 @@ const Index = () => {
     }
   }, []);
 
-  // Função simplificada para voltar ao menu
+  // Função otimizada para voltar ao menu
   const handleBackToMenu = useCallback(() => {
     console.log('Voltando ao menu via função handleBackToMenu');
     setCurrentView('menu');
@@ -105,7 +104,7 @@ const Index = () => {
     setOpenLoanDialog(false);
   }, []);
 
-  const handleNewLoan = (formData: {
+  const handleNewLoan = useCallback((formData: {
     studentName: string;
     ra?: string;
     email: string;
@@ -152,9 +151,53 @@ const Index = () => {
         variant: "destructive",
       });
     }
-  };
+  }, [loans]);
 
-  const handleReturnClick = () => {
+  const handleReturn = useCallback((loanId: string, returnData: ReturnDataType) => {
+    try {
+      const loanToReturn = loans.find((loan) => loan.id === loanId);
+      if (!loanToReturn) {
+        console.warn(`Empréstimo com ID ${loanId} não encontrado`);
+        return;
+      }
+
+      const returnedLoan: Loan = {
+        ...loanToReturn,
+        returnRecord: {
+          returnedBy: {
+            name: returnData.name,
+            ra: returnData.ra,
+            email: returnData.email,
+            type: returnData.userType
+          },
+          returnTime: new Date(),
+          returnType: returnData.type
+        }
+      };
+
+      setHistory(prevHistory => [returnedLoan, ...prevHistory]);
+      setLoans(prevLoans => prevLoans.filter((loan) => loan.id !== loanId));
+
+      const returnedByDifferentPerson = returnData.email !== loanToReturn.email;
+      if (returnData.type === 'individual') {
+        toast({
+          title: "Chromebook Devolvido",
+          description: returnedByDifferentPerson
+            ? `Devolvido por ${returnData.name} (${returnData.email})`
+            : "Devolvido pelo próprio solicitante",
+        });
+      }
+    } catch (error) {
+      console.error("Erro ao processar devolução específica:", error);
+      toast({
+        title: "Erro",
+        description: "Ocorreu um erro ao processar esta devolução",
+        variant: "destructive",
+      });
+    }
+  }, [loans]);
+
+  const handleReturnClick = useCallback(() => {
     try {
       if (!returnData.name || !returnData.email) {
         toast({
@@ -255,54 +298,10 @@ const Index = () => {
         variant: "destructive",
       });
     }
-  };
+  }, [returnData, chromebookId, loans, handleReturn]);
 
-  const handleReturn = (loanId: string, returnData: ReturnDataType) => {
-    try {
-      const loanToReturn = loans.find((loan) => loan.id === loanId);
-      if (!loanToReturn) {
-        console.warn(`Empréstimo com ID ${loanId} não encontrado`);
-        return;
-      }
-
-      const returnedLoan: Loan = {
-        ...loanToReturn,
-        returnRecord: {
-          returnedBy: {
-            name: returnData.name,
-            ra: returnData.ra,
-            email: returnData.email,
-            type: returnData.userType
-          },
-          returnTime: new Date(),
-          returnType: returnData.type
-        }
-      };
-
-      setHistory(prevHistory => [returnedLoan, ...prevHistory]);
-      setLoans(prevLoans => prevLoans.filter((loan) => loan.id !== loanId));
-
-      const returnedByDifferentPerson = returnData.email !== loanToReturn.email;
-      if (returnData.type === 'individual') {
-        toast({
-          title: "Chromebook Devolvido",
-          description: returnedByDifferentPerson
-            ? `Devolvido por ${returnData.name} (${returnData.email})`
-            : "Devolvido pelo próprio solicitante",
-        });
-      }
-    } catch (error) {
-      console.error("Erro ao processar devolução específica:", error);
-      toast({
-        title: "Erro",
-        description: "Ocorreu um erro ao processar esta devolução",
-        variant: "destructive",
-      });
-    }
-  };
-
-  // Componente de navegação suspenso
-  const NavigationSheet = () => (
+  // Memoizar componentes complexos para evitar re-renders desnecessários
+  const NavigationSheet = useMemo(() => (
     <Sheet open={openNavSheet} onOpenChange={setOpenNavSheet}>
       <SheetTrigger asChild>
         <Button 
@@ -321,7 +320,7 @@ const Index = () => {
           </SheetDescription>
         </SheetHeader>
         <div className="py-6 grid gap-4">
-          <Button onClick={() => handleBackToMenu()} className="w-full">
+          <Button onClick={handleBackToMenu} className="w-full">
             Menu Principal
           </Button>
           <Button onClick={() => handleNavigation('loan')} className="w-full">
@@ -347,10 +346,10 @@ const Index = () => {
         </SheetFooter>
       </SheetContent>
     </Sheet>
-  );
+  ), [openNavSheet, handleBackToMenu, handleNavigation]);
 
-  // Diálogo de Empréstimo com ScrollArea para permitir rolagem
-  const LoanDialog = () => (
+  // Memoizar diálogo de empréstimo
+  const LoanDialog = useMemo(() => (
     <Dialog open={openLoanDialog} onOpenChange={setOpenLoanDialog}>
       <DialogContent className="max-w-6xl max-h-[90vh] flex flex-col">
         <DialogHeader>
@@ -375,16 +374,16 @@ const Index = () => {
         </ScrollArea>
         
         <DialogFooter className="mt-4">
-          <Button variant="back" onClick={() => setOpenLoanDialog(false)}>
+          <Button variant="outline" onClick={() => setOpenLoanDialog(false)}>
             <ArrowLeft className="mr-1" />
             Voltar
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  );
+  ), [openLoanDialog, handleNewLoan, loans, handleReturn, history]);
 
-  const renderCurrentView = () => {
+  const renderCurrentView = useCallback(() => {
     console.log('Renderizando view:', currentView, 'isMobile:', isMobile, 'isReady:', isReady);
     
     // Wait for mobile detection to be ready
@@ -430,7 +429,6 @@ const Index = () => {
             </div>
           );
         case 'loan':
-          // Não renderizamos mais o conteúdo aqui, pois agora está no diálogo
           return (
             <div className="space-y-6 animate-in fade-in duration-300">
               <MainMenu onNavigate={handleNavigation} />
@@ -452,15 +450,14 @@ const Index = () => {
         </div>
       );
     }
-  };
+  }, [currentView, isMobile, isReady, loans, history, handleBackToMenu, handleNavigation]);
 
   return (
     <div className="min-h-screen bg-white p-4">
       <div className="max-w-6xl mx-auto">
         <Header onMenuClick={() => setOpenNavSheet(true)} />
         {renderCurrentView()}
-        {/* Sempre renderize o Sheet de navegação, mas só aparece quando aberto */}
-        <NavigationSheet />
+        {NavigationSheet}
         <ReturnDialog
           open={openReturnDialog}
           onOpenChange={setOpenReturnDialog}
@@ -470,8 +467,7 @@ const Index = () => {
           onReturnDataChange={setReturnData}
           onConfirm={handleReturnClick}
         />
-        {/* Adicione o diálogo de empréstimo */}
-        <LoanDialog />
+        {LoanDialog}
       </div>
     </div>
   );

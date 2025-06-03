@@ -1,52 +1,44 @@
 
-import { useState, useEffect } from 'react';
-
-const MOBILE_BREAKPOINT = 768;
+import { useState, useEffect, useMemo } from "react";
 
 export function useMobile() {
-  const [isMobile, setIsMobile] = useState(false);
+  const [windowSize, setWindowSize] = useState({
+    width: typeof window !== 'undefined' ? window.innerWidth : 0,
+    height: typeof window !== 'undefined' ? window.innerHeight : 0,
+  });
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    const checkMobile = () => {
-      try {
-        const userAgent = typeof window !== 'undefined' ? window.navigator.userAgent : '';
-        const mobileRegex = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
-        const isMobileUA = mobileRegex.test(userAgent);
-        const isMobileWidth = typeof window !== 'undefined' ? window.innerWidth < MOBILE_BREAKPOINT : false;
-        
-        setIsMobile(isMobileUA || isMobileWidth);
-        setIsReady(true);
-      } catch (error) {
-        console.error('Erro ao detectar dispositivo móvel:', error);
-        // Em caso de erro, assumir desktop
-        setIsMobile(false);
-        setIsReady(true);
-      }
-    };
-
-    // Verificar imediatamente
-    checkMobile();
-
-    // Adicionar listener para mudanças de tamanho
+    // Função otimizada para detectar mudanças de tamanho
     const handleResize = () => {
-      try {
-        const isMobileWidth = window.innerWidth < MOBILE_BREAKPOINT;
-        const userAgent = window.navigator.userAgent;
-        const mobileRegex = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
-        const isMobileUA = mobileRegex.test(userAgent);
-        
-        setIsMobile(isMobileUA || isMobileWidth);
-      } catch (error) {
-        console.error('Erro no resize:', error);
-      }
+      setWindowSize({
+        width: window.innerWidth,
+        height: window.innerHeight,
+      });
     };
 
-    if (typeof window !== 'undefined') {
-      window.addEventListener('resize', handleResize);
-      return () => window.removeEventListener('resize', handleResize);
-    }
+    // Throttle para otimizar performance
+    let timeoutId: NodeJS.Timeout;
+    const throttledResize = () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(handleResize, 100);
+    };
+
+    // Set initial size e marcar como ready
+    handleResize();
+    setIsReady(true);
+
+    window.addEventListener("resize", throttledResize);
+    return () => {
+      window.removeEventListener("resize", throttledResize);
+      clearTimeout(timeoutId);
+    };
   }, []);
 
-  return { isMobile, isReady };
+  // Memoizar o resultado para evitar re-renders desnecessários
+  const isMobile = useMemo(() => {
+    return windowSize.width < 768;
+  }, [windowSize.width]);
+
+  return { isMobile, isReady, windowSize };
 }

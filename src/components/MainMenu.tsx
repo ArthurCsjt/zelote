@@ -1,21 +1,22 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ClipboardList, BarChart3, PlusCircle, List, Laptop, Settings, RotateCcw } from 'lucide-react';
+import { ClipboardList, BarChart3, PlusCircle, Laptop, RotateCcw } from 'lucide-react';
 
 interface MainMenuProps {
   onNavigate: (route: 'registration' | 'dashboard' | 'loan' | 'return' | 'inventory') => void;
 }
 
-// Detect if we're on a mobile device
-const isMobileDevice = () => {
+// Detect if we're on a mobile device - função memoizada
+const isMobileDevice = (): boolean => {
+  if (typeof window === 'undefined') return false;
   return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
 };
 
 export function MainMenu({ onNavigate }: MainMenuProps) {
   const [isLoaded, setIsLoaded] = useState(false);
-  const isMobile = isMobileDevice();
+  const isMobile = useMemo(() => isMobileDevice(), []);
 
   useEffect(() => {
     // Delay animation start to improve initial load performance
@@ -26,12 +27,13 @@ export function MainMenu({ onNavigate }: MainMenuProps) {
     return () => clearTimeout(timer);
   }, []);
 
-  const menuItems = [
+  // Memoizar itens do menu para evitar recriação
+  const menuItems = useMemo(() => [
     {
       title: 'Cadastro',
       description: 'Registrar novos Chromebooks',
       content: 'Cadastre novos dispositivos e gere QR Codes para identificação.',
-      icon: <PlusCircle className="h-5 w-5" />,
+      icon: PlusCircle,
       action: () => onNavigate('registration'),
       bgColor: 'bg-gradient-to-r from-green-500 to-green-600',
       textColor: 'text-green-700',
@@ -42,7 +44,7 @@ export function MainMenu({ onNavigate }: MainMenuProps) {
       title: 'Inventário',
       description: 'Gerenciar Chromebooks',
       content: 'Visualize, edite ou altere o status dos dispositivos cadastrados.',
-      icon: <Laptop className="h-5 w-5" />,
+      icon: Laptop,
       action: () => onNavigate('inventory'),
       bgColor: 'bg-gradient-to-r from-blue-500 to-blue-600',
       textColor: 'text-blue-700',
@@ -53,7 +55,7 @@ export function MainMenu({ onNavigate }: MainMenuProps) {
       title: 'Empréstimo',
       description: 'Gerenciar empréstimos',
       content: 'Registre novos empréstimos de Chromebooks e veja os ativos.',
-      icon: <ClipboardList className="h-5 w-5" />,
+      icon: ClipboardList,
       action: () => onNavigate('loan'),
       bgColor: 'bg-gradient-to-r from-violet-500 to-violet-600',
       textColor: 'text-violet-700',
@@ -64,7 +66,7 @@ export function MainMenu({ onNavigate }: MainMenuProps) {
       title: 'Devolução',
       description: 'Registrar devoluções',
       content: 'Registre a devolução de Chromebooks emprestados.',
-      icon: <RotateCcw className="h-5 w-5" />,
+      icon: RotateCcw,
       action: () => onNavigate('return'),
       bgColor: 'bg-gradient-to-r from-amber-500 to-amber-600',
       textColor: 'text-amber-700',
@@ -75,14 +77,14 @@ export function MainMenu({ onNavigate }: MainMenuProps) {
       title: 'Dashboard',
       description: 'Relatórios e estatísticas',
       content: 'Visualize dados e estatísticas sobre os equipamentos.',
-      icon: <BarChart3 className="h-5 w-5" />,
+      icon: BarChart3,
       action: () => onNavigate('dashboard'),
       bgColor: 'bg-gradient-to-r from-rose-500 to-rose-600',
       textColor: 'text-rose-700',
       hoverColor: 'hover:bg-rose-700',
       borderColor: 'border-rose-500'
     }
-  ];
+  ], [onNavigate]);
 
   // Simple fade-in animation that works better on mobile
   const getFadeInStyle = (index: number) => {
@@ -116,39 +118,42 @@ export function MainMenu({ onNavigate }: MainMenuProps) {
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-6xl mx-auto">
-        {menuItems.map((item, index) => (
-          <div 
-            key={index} 
-            style={getFadeInStyle(index + 1)}
-            className="transition duration-300"
-          >
-            <Card className={`border-2 ${item.borderColor} bg-white overflow-hidden h-full shadow-sm hover:shadow-md transition-all`}>
-              <div className="p-6">
-                <div className="flex items-center mb-4">
-                  <div className={`mr-4 p-3 rounded-full ${item.textColor.replace('text-', 'bg-').replace('-700', '-100')}`}>
-                    {item.icon}
+        {menuItems.map((item, index) => {
+          const IconComponent = item.icon;
+          return (
+            <div 
+              key={item.title} 
+              style={getFadeInStyle(index + 1)}
+              className="transition duration-300"
+            >
+              <Card className={`border-2 ${item.borderColor} bg-white overflow-hidden h-full shadow-sm hover:shadow-md transition-all`}>
+                <div className="p-6">
+                  <div className="flex items-center mb-4">
+                    <div className={`mr-4 p-3 rounded-full ${item.textColor.replace('text-', 'bg-').replace('-700', '-100')}`}>
+                      <IconComponent className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h3 className={`text-xl font-bold ${item.textColor}`}>
+                        {item.title}
+                      </h3>
+                      <p className="text-sm text-gray-500">{item.description}</p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className={`text-xl font-bold ${item.textColor}`}>
-                      {item.title}
-                    </h3>
-                    <p className="text-sm text-gray-500">{item.description}</p>
-                  </div>
+                  <p className="text-sm text-gray-600 mb-4">
+                    {item.content}
+                  </p>
+                  <Button 
+                    className={`w-full text-white ${item.bgColor} hover:opacity-90 transition-all`}
+                    onClick={item.action}
+                  >
+                    <IconComponent className="h-4 w-4 mr-2" />
+                    <span>{item.title}</span>
+                  </Button>
                 </div>
-                <p className="text-sm text-gray-600 mb-4">
-                  {item.content}
-                </p>
-                <Button 
-                  className={`w-full text-white ${item.bgColor} hover:opacity-90 transition-all`}
-                  onClick={item.action}
-                >
-                  {item.icon}
-                  <span className="ml-2">{item.title}</span>
-                </Button>
-              </div>
-            </Card>
-          </div>
-        ))}
+              </Card>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
