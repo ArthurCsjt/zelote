@@ -1,38 +1,52 @@
 
-import * as React from "react"
+import { useState, useEffect } from 'react';
 
-const MOBILE_BREAKPOINT = 768
+const MOBILE_BREAKPOINT = 768;
 
 export function useMobile() {
-  const [isMobile, setIsMobile] = React.useState<boolean>(false)
-  const [isReady, setIsReady] = React.useState<boolean>(false)
+  const [isMobile, setIsMobile] = useState(false);
+  const [isReady, setIsReady] = useState(false);
 
-  React.useEffect(() => {
-    if (typeof window === 'undefined') return
-    
+  useEffect(() => {
     const checkMobile = () => {
-      const hasSmallScreen = window.innerWidth < MOBILE_BREAKPOINT
-      setIsMobile(hasSmallScreen)
-      setIsReady(true)
-    }
-    
-    // Initial check
-    checkMobile()
-    
-    // Setup listeners for window resize
-    window.addEventListener('resize', checkMobile)
-    
-    // Cleanup
-    return () => {
-      window.removeEventListener('resize', checkMobile)
-    }
-  }, [])
+      try {
+        const userAgent = typeof window !== 'undefined' ? window.navigator.userAgent : '';
+        const mobileRegex = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
+        const isMobileUA = mobileRegex.test(userAgent);
+        const isMobileWidth = typeof window !== 'undefined' ? window.innerWidth < MOBILE_BREAKPOINT : false;
+        
+        setIsMobile(isMobileUA || isMobileWidth);
+        setIsReady(true);
+      } catch (error) {
+        console.error('Erro ao detectar dispositivo móvel:', error);
+        // Em caso de erro, assumir desktop
+        setIsMobile(false);
+        setIsReady(true);
+      }
+    };
 
-  return { isMobile, isReady }
-}
+    // Verificar imediatamente
+    checkMobile();
 
-// This wrapper returns just the isMobile boolean to maintain compatibility with code expecting a boolean
-export const useIsMobile = () => {
-  const { isMobile } = useMobile()
-  return isMobile
+    // Adicionar listener para mudanças de tamanho
+    const handleResize = () => {
+      try {
+        const isMobileWidth = window.innerWidth < MOBILE_BREAKPOINT;
+        const userAgent = window.navigator.userAgent;
+        const mobileRegex = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
+        const isMobileUA = mobileRegex.test(userAgent);
+        
+        setIsMobile(isMobileUA || isMobileWidth);
+      } catch (error) {
+        console.error('Erro no resize:', error);
+      }
+    };
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('resize', handleResize);
+      return () => window.removeEventListener('resize', handleResize);
+    }
+  }, []);
+
+  return { isMobile, isReady };
 }

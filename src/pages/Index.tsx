@@ -1,4 +1,3 @@
-
 import { useState, useCallback, useEffect } from "react";
 import { useMobile } from "@/hooks/use-mobile";
 import { LoanForm } from "@/components/LoanForm";
@@ -51,6 +50,18 @@ const Index = () => {
   });
   const [currentView, setCurrentView] = useState<'menu' | 'loan' | 'registration' | 'dashboard' | 'inventory'>('menu');
   const [openNavSheet, setOpenNavSheet] = useState(false);
+
+  // Loading state enquanto detecta o dispositivo
+  if (!isReady) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-white">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Carregando aplicação...</p>
+        </div>
+      </div>
+    );
+  }
 
   // Ensure smooth scrolling to top when changing views
   useEffect(() => {
@@ -380,51 +391,65 @@ const Index = () => {
       return <div className="flex items-center justify-center min-h-[50vh]">Carregando...</div>;
     }
     
-    switch (currentView) {
-      case 'registration':
-        return (
-          <div className="animate-in fade-in duration-300">
-            <ChromebookRegistration onBack={handleBackToMenu} />
-          </div>
-        );
-      case 'dashboard':
-        if (isMobile) {
-          console.log('Renderizando dashboard mobile');
+    try {
+      switch (currentView) {
+        case 'registration':
           return (
             <div className="animate-in fade-in duration-300">
-              <MobileFriendlyDashboard 
-                activeLoans={loans}
-                history={history}
-                onBack={handleBackToMenu}
-              />
+              <ChromebookRegistration onBack={handleBackToMenu} />
             </div>
           );
-        } else {
+        case 'dashboard':
+          if (isMobile) {
+            console.log('Renderizando dashboard mobile');
+            return (
+              <div className="animate-in fade-in duration-300">
+                <MobileFriendlyDashboard 
+                  activeLoans={loans}
+                  history={history}
+                  onBack={handleBackToMenu}
+                />
+              </div>
+            );
+          } else {
+            return (
+              <div className="animate-in fade-in duration-300">
+                <Dashboard 
+                  activeLoans={loans}
+                  history={history}
+                  onBack={handleBackToMenu}
+                />
+              </div>
+            );
+          }
+        case 'inventory':
           return (
             <div className="animate-in fade-in duration-300">
-              <Dashboard 
-                activeLoans={loans}
-                history={history}
-                onBack={handleBackToMenu}
-              />
+              <ChromebookInventory onBack={handleBackToMenu} />
             </div>
           );
-        }
-      case 'inventory':
-        return (
-          <div className="animate-in fade-in duration-300">
-            <ChromebookInventory onBack={handleBackToMenu} />
+        case 'loan':
+          // Não renderizamos mais o conteúdo aqui, pois agora está no diálogo
+          return (
+            <div className="space-y-6 animate-in fade-in duration-300">
+              <MainMenu onNavigate={handleNavigation} />
+            </div>
+          );
+        default:
+          return <MainMenu onNavigate={handleNavigation} />;
+      }
+    } catch (error) {
+      console.error('Erro ao renderizar view:', error);
+      return (
+        <div className="flex items-center justify-center min-h-[50vh]">
+          <div className="text-center">
+            <p className="text-red-600 mb-4">Erro ao carregar a tela</p>
+            <Button onClick={() => setCurrentView('menu')}>
+              Voltar ao Menu
+            </Button>
           </div>
-        );
-      case 'loan':
-        // Não renderizamos mais o conteúdo aqui, pois agora está no diálogo
-        return (
-          <div className="space-y-6 animate-in fade-in duration-300">
-            <MainMenu onNavigate={handleNavigation} />
-          </div>
-        );
-      default:
-        return <MainMenu onNavigate={handleNavigation} />;
+        </div>
+      );
     }
   };
 
