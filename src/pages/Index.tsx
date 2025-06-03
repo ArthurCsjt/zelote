@@ -1,3 +1,4 @@
+
 import { useState, useCallback, useEffect } from "react";
 import { useMobile } from "@/hooks/use-mobile";
 import { LoanForm } from "@/components/LoanForm";
@@ -456,7 +457,7 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-white p-4">
       <div className="max-w-6xl mx-auto">
-        <Header />
+        <Header onMenuClick={() => setOpenNavSheet(true)} />
         {renderCurrentView()}
         {/* Sempre renderize o Sheet de navegação, mas só aparece quando aberto */}
         <NavigationSheet />
