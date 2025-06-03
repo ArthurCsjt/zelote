@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { toast } from "@/hooks/use-toast";
 import { ArrowLeft, Edit, Trash2, Plus, Search, Filter } from "lucide-react";
+import { useMobile } from "@/hooks/use-mobile";
 import {
   Select,
   SelectContent,
@@ -20,6 +21,15 @@ import {
   DialogDescription,
   DialogFooter
 } from "./ui/dialog";
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from "./ui/sheet";
 import { Textarea } from "./ui/textarea";
 import { Label } from "./ui/label";
 
@@ -66,6 +76,7 @@ const getStatusLabel = (status: string) => {
 };
 
 export function ChromebookInventory({ onBack }: { onBack: () => void }) {
+  const { isMobile } = useMobile();
   const [chromebooks, setChromebooks] = useState<Chromebook[]>([]);
   const [filteredChromebooks, setFilteredChromebooks] = useState<Chromebook[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -210,6 +221,146 @@ export function ChromebookInventory({ onBack }: { onBack: () => void }) {
       description: "Chromebook removido com sucesso",
     });
   };
+
+  // Componente do formulário de edição
+  const EditForm = () => (
+    <div className="space-y-4">
+      <div className="space-y-2">
+        <Label htmlFor="edit-id">ID do Chromebook *</Label>
+        <Input
+          id="edit-id"
+          value={editingChromebook?.id || ''}
+          onChange={(e) => editingChromebook && setEditingChromebook({
+            ...editingChromebook,
+            id: e.target.value
+          })}
+          placeholder="Ex: CHR001"
+          className="w-full"
+        />
+      </div>
+      
+      <div className="space-y-2">
+        <Label htmlFor="edit-brand">Marca *</Label>
+        <Input
+          id="edit-brand"
+          value={editingChromebook?.brand || ''}
+          onChange={(e) => editingChromebook && setEditingChromebook({
+            ...editingChromebook,
+            brand: e.target.value
+          })}
+          placeholder="Ex: Acer, HP, Lenovo"
+          className="w-full"
+        />
+      </div>
+      
+      <div className="space-y-2">
+        <Label htmlFor="edit-model">Modelo *</Label>
+        <Input
+          id="edit-model"
+          value={editingChromebook?.model || ''}
+          onChange={(e) => editingChromebook && setEditingChromebook({
+            ...editingChromebook,
+            model: e.target.value
+          })}
+          placeholder="Ex: Chromebook 314"
+          className="w-full"
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="edit-serial">Número de Série *</Label>
+        <Input
+          id="edit-serial"
+          value={editingChromebook?.serialNumber || ''}
+          onChange={(e) => editingChromebook && setEditingChromebook({
+            ...editingChromebook,
+            serialNumber: e.target.value
+          })}
+          placeholder="Ex: ABC123456789"
+          className="w-full"
+        />
+      </div>
+      
+      <div className="space-y-2">
+        <Label htmlFor="edit-patrimony">Patrimônio *</Label>
+        <Input
+          id="edit-patrimony"
+          value={editingChromebook?.patrimony || ''}
+          onChange={(e) => editingChromebook && setEditingChromebook({
+            ...editingChromebook,
+            patrimony: e.target.value
+          })}
+          placeholder="Ex: PAT001"
+          className="w-full"
+        />
+      </div>
+      
+      <div className="space-y-2">
+        <Label htmlFor="edit-status">Status *</Label>
+        <Select
+          value={editingChromebook?.status || 'disponivel'}
+          onValueChange={(value: 'disponivel' | 'emprestado' | 'manutencao' | 'danificado') => 
+            editingChromebook && setEditingChromebook({
+              ...editingChromebook,
+              status: value
+            })
+          }
+        >
+          <SelectTrigger className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="disponivel">Disponível</SelectItem>
+            <SelectItem value="emprestado">Emprestado</SelectItem>
+            <SelectItem value="manutencao">Manutenção</SelectItem>
+            <SelectItem value="danificado">Danificado</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="edit-location">Local</Label>
+        <Input
+          id="edit-location"
+          value={editingChromebook?.location || ''}
+          onChange={(e) => editingChromebook && setEditingChromebook({
+            ...editingChromebook,
+            location: e.target.value
+          })}
+          placeholder="Ex: Sala 101"
+          className="w-full"
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="edit-acquisition">Data de Aquisição</Label>
+        <Input
+          id="edit-acquisition"
+          type="date"
+          value={editingChromebook?.acquisitionDate || ''}
+          onChange={(e) => editingChromebook && setEditingChromebook({
+            ...editingChromebook,
+            acquisitionDate: e.target.value
+          })}
+          className="w-full"
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="edit-notes">Observações</Label>
+        <Textarea
+          id="edit-notes"
+          value={editingChromebook?.notes || ''}
+          onChange={(e) => editingChromebook && setEditingChromebook({
+            ...editingChromebook,
+            notes: e.target.value
+          })}
+          placeholder="Observações adicionais..."
+          className="w-full min-h-[80px]"
+        />
+      </div>
+    </div>
+  );
 
   return (
     <div className="space-y-6">
@@ -359,98 +510,78 @@ export function ChromebookInventory({ onBack }: { onBack: () => void }) {
         </div>
       )}
 
-      {/* Edit Dialog - Simplified version */}
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="max-w-md mx-auto max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Editar Chromebook</DialogTitle>
-            <DialogDescription>
-              Atualize as informações do Chromebook
-            </DialogDescription>
-          </DialogHeader>
-          
-          {editingChromebook && (
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="edit-id">ID do Chromebook *</Label>
-                <Input
-                  id="edit-id"
-                  value={editingChromebook.id}
-                  onChange={(e) => setEditingChromebook({
-                    ...editingChromebook,
-                    id: e.target.value
-                  })}
-                  placeholder="Ex: CHR001"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="edit-brand">Marca *</Label>
-                <Input
-                  id="edit-brand"
-                  value={editingChromebook.brand}
-                  onChange={(e) => setEditingChromebook({
-                    ...editingChromebook,
-                    brand: e.target.value
-                  })}
-                  placeholder="Ex: Acer, HP, Lenovo"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="edit-model">Modelo *</Label>
-                <Input
-                  id="edit-model"
-                  value={editingChromebook.model}
-                  onChange={(e) => setEditingChromebook({
-                    ...editingChromebook,
-                    model: e.target.value
-                  })}
-                  placeholder="Ex: Chromebook 314"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="edit-status">Status *</Label>
-                <Select
-                  value={editingChromebook.status}
-                  onValueChange={(value: 'disponivel' | 'emprestado' | 'manutencao' | 'danificado') => 
-                    setEditingChromebook({
-                      ...editingChromebook,
-                      status: value
-                    })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="disponivel">Disponível</SelectItem>
-                    <SelectItem value="emprestado">Emprestado</SelectItem>
-                    <SelectItem value="manutencao">Manutenção</SelectItem>
-                    <SelectItem value="danificado">Danificado</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+      {/* Mobile Edit Sheet */}
+      {isMobile ? (
+        <Sheet open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+          <SheetContent 
+            side="bottom" 
+            className="h-[90vh] flex flex-col p-0"
+          >
+            <SheetHeader className="px-6 pt-6 pb-4 border-b">
+              <SheetTitle>Editar Chromebook</SheetTitle>
+              <SheetDescription>
+                Atualize as informações do Chromebook
+              </SheetDescription>
+            </SheetHeader>
+            
+            <div className="flex-1 overflow-y-auto px-6 py-4">
+              <EditForm />
             </div>
-          )}
 
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setIsEditDialogOpen(false);
-                setEditingChromebook(null);
-              }}
-            >
-              Cancelar
-            </Button>
-            <Button onClick={handleSaveEdit}>
-              Salvar Alterações
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            <SheetFooter className="px-6 py-4 border-t bg-white">
+              <div className="flex gap-3 w-full">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setIsEditDialogOpen(false);
+                    setEditingChromebook(null);
+                  }}
+                  className="flex-1"
+                >
+                  Cancelar
+                </Button>
+                <Button 
+                  onClick={handleSaveEdit}
+                  className="flex-1"
+                >
+                  Salvar Alterações
+                </Button>
+              </div>
+            </SheetFooter>
+          </SheetContent>
+        </Sheet>
+      ) : (
+        /* Desktop Edit Dialog */
+        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+          <DialogContent className="max-w-md mx-auto max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Editar Chromebook</DialogTitle>
+              <DialogDescription>
+                Atualize as informações do Chromebook
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="py-4">
+              <EditForm />
+            </div>
+
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setIsEditDialogOpen(false);
+                  setEditingChromebook(null);
+                }}
+              >
+                Cancelar
+              </Button>
+              <Button onClick={handleSaveEdit}>
+                Salvar Alterações
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
 
       {/* Add Dialog */}
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
