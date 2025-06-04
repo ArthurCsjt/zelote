@@ -222,6 +222,11 @@ export function ChromebookInventory({ onBack }: { onBack: () => void }) {
     });
   };
 
+  const handleCancelEdit = () => {
+    setIsEditDialogOpen(false);
+    setEditingChromebook(null);
+  };
+
   // Componente do formulário de edição
   const EditForm = () => (
     <div className="space-y-4">
@@ -517,37 +522,38 @@ export function ChromebookInventory({ onBack }: { onBack: () => void }) {
             side="bottom" 
             className="h-[90vh] flex flex-col p-0"
           >
-            <SheetHeader className="px-6 pt-6 pb-4 border-b">
-              <div className="flex items-center justify-between">
+            {/* Fixed Header with Action Buttons */}
+            <div className="bg-white border-b border-gray-200 px-6 py-4 flex-shrink-0 sticky top-0 z-10">
+              <div className="flex items-center justify-between mb-3">
                 <div className="flex-1">
-                  <SheetTitle>Editar Chromebook</SheetTitle>
-                  <SheetDescription>
+                  <SheetTitle className="text-lg font-semibold">Editar Chromebook</SheetTitle>
+                  <SheetDescription className="text-sm text-gray-600">
                     Atualize as informações do Chromebook
                   </SheetDescription>
                 </div>
-                <div className="flex items-center gap-2 ml-4">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setIsEditDialogOpen(false);
-                      setEditingChromebook(null);
-                    }}
-                  >
-                    <X className="h-4 w-4 mr-1" />
-                    Cancelar
-                  </Button>
-                  <Button
-                    size="sm"
-                    onClick={handleSaveEdit}
-                  >
-                    <Save className="h-4 w-4 mr-1" />
-                    Salvar
-                  </Button>
-                </div>
               </div>
-            </SheetHeader>
+              
+              {/* Action Buttons - Always visible at top */}
+              <div className="flex items-center gap-3">
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={handleCancelEdit}
+                >
+                  <X className="h-4 w-4 mr-2" />
+                  Cancelar
+                </Button>
+                <Button
+                  className="flex-1"
+                  onClick={handleSaveEdit}
+                >
+                  <Save className="h-4 w-4 mr-2" />
+                  Salvar Alterações
+                </Button>
+              </div>
+            </div>
             
+            {/* Scrollable Content */}
             <div className="flex-1 overflow-y-auto px-6 py-4">
               <EditForm />
             </div>
@@ -556,39 +562,38 @@ export function ChromebookInventory({ onBack }: { onBack: () => void }) {
       ) : (
         /* Desktop Edit Dialog */
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-          <DialogContent className="max-w-md mx-auto max-h-[80vh] overflow-y-auto">
-            <DialogHeader>
-              <div className="flex items-center justify-between">
-                <div className="flex-1">
-                  <DialogTitle>Editar Chromebook</DialogTitle>
-                  <DialogDescription>
-                    Atualize as informações do Chromebook
-                  </DialogDescription>
-                </div>
-                <div className="flex items-center gap-2 ml-4">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setIsEditDialogOpen(false);
-                      setEditingChromebook(null);
-                    }}
-                  >
-                    <X className="h-4 w-4 mr-1" />
-                    Cancelar
-                  </Button>
-                  <Button
-                    size="sm"
-                    onClick={handleSaveEdit}
-                  >
-                    <Save className="h-4 w-4 mr-1" />
-                    Salvar
-                  </Button>
-                </div>
+          <DialogContent className="max-w-md mx-auto max-h-[85vh] overflow-hidden flex flex-col">
+            {/* Fixed Header with Action Buttons */}
+            <div className="bg-white border-b border-gray-200 pb-4 flex-shrink-0">
+              <DialogHeader className="mb-4">
+                <DialogTitle className="text-lg font-semibold">Editar Chromebook</DialogTitle>
+                <DialogDescription className="text-sm text-gray-600">
+                  Atualize as informações do Chromebook
+                </DialogDescription>
+              </DialogHeader>
+              
+              {/* Action Buttons - Always visible at top */}
+              <div className="flex items-center gap-3">
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={handleCancelEdit}
+                >
+                  <X className="h-4 w-4 mr-2" />
+                  Cancelar
+                </Button>
+                <Button
+                  className="flex-1"
+                  onClick={handleSaveEdit}
+                >
+                  <Save className="h-4 w-4 mr-2" />
+                  Salvar Alterações
+                </Button>
               </div>
-            </DialogHeader>
+            </div>
             
-            <div className="py-4">
+            {/* Scrollable Content */}
+            <div className="flex-1 overflow-y-auto py-4">
               <EditForm />
             </div>
           </DialogContent>
