@@ -2,10 +2,11 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ClipboardList, BarChart3, PlusCircle, Laptop, RotateCcw } from 'lucide-react';
+import { ClipboardList, BarChart3, PlusCircle, Laptop, RotateCcw, Users } from 'lucide-react';
+import { useUserProfile } from '@/hooks/useUserProfile';
 
 interface MainMenuProps {
-  onNavigate: (route: 'registration' | 'dashboard' | 'loan' | 'return' | 'inventory') => void;
+  onNavigate: (route: 'registration' | 'dashboard' | 'loan' | 'return' | 'inventory' | 'user-management') => void;
 }
 
 // Detect if we're on a mobile device - função memoizada
@@ -17,6 +18,7 @@ const isMobileDevice = (): boolean => {
 export function MainMenu({ onNavigate }: MainMenuProps) {
   const [isLoaded, setIsLoaded] = useState(false);
   const isMobile = useMemo(() => isMobileDevice(), []);
+  const { isSuperAdmin, isLoading: profileLoading } = useUserProfile();
 
   useEffect(() => {
     // Delay animation start to improve initial load performance
@@ -28,63 +30,82 @@ export function MainMenu({ onNavigate }: MainMenuProps) {
   }, []);
 
   // Memoizar itens do menu para evitar recriação
-  const menuItems = useMemo(() => [
-    {
-      title: 'Cadastro',
-      description: 'Registrar novos Chromebooks',
-      content: 'Cadastre novos dispositivos e gere QR Codes para identificação.',
-      icon: PlusCircle,
-      action: () => onNavigate('registration'),
-      bgColor: 'bg-gradient-to-r from-green-500 to-green-600',
-      textColor: 'text-green-700',
-      hoverColor: 'hover:bg-green-700',
-      borderColor: 'border-green-500'
-    },
-    {
-      title: 'Inventário',
-      description: 'Gerenciar Chromebooks',
-      content: 'Visualize, edite ou altere o status dos dispositivos cadastrados.',
-      icon: Laptop,
-      action: () => onNavigate('inventory'),
-      bgColor: 'bg-gradient-to-r from-blue-500 to-blue-600',
-      textColor: 'text-blue-700',
-      hoverColor: 'hover:bg-blue-700',
-      borderColor: 'border-blue-500'
-    },
-    {
-      title: 'Empréstimo',
-      description: 'Gerenciar empréstimos',
-      content: 'Registre novos empréstimos de Chromebooks e veja os ativos.',
-      icon: ClipboardList,
-      action: () => onNavigate('loan'),
-      bgColor: 'bg-gradient-to-r from-violet-500 to-violet-600',
-      textColor: 'text-violet-700',
-      hoverColor: 'hover:bg-violet-700',
-      borderColor: 'border-violet-500'
-    },
-    {
-      title: 'Devolução',
-      description: 'Registrar devoluções',
-      content: 'Registre a devolução de Chromebooks emprestados.',
-      icon: RotateCcw,
-      action: () => onNavigate('return'),
-      bgColor: 'bg-gradient-to-r from-amber-500 to-amber-600',
-      textColor: 'text-amber-700',
-      hoverColor: 'hover:bg-amber-700',
-      borderColor: 'border-amber-500'
-    },
-    {
-      title: 'Dashboard',
-      description: 'Relatórios e estatísticas',
-      content: 'Visualize dados e estatísticas sobre os equipamentos.',
-      icon: BarChart3,
-      action: () => onNavigate('dashboard'),
-      bgColor: 'bg-gradient-to-r from-rose-500 to-rose-600',
-      textColor: 'text-rose-700',
-      hoverColor: 'hover:bg-rose-700',
-      borderColor: 'border-rose-500'
+  const menuItems = useMemo(() => {
+    const baseItems = [
+      {
+        title: 'Cadastro',
+        description: 'Registrar novos Chromebooks',
+        content: 'Cadastre novos dispositivos e gere QR Codes para identificação.',
+        icon: PlusCircle,
+        action: () => onNavigate('registration'),
+        bgColor: 'bg-gradient-to-r from-green-500 to-green-600',
+        textColor: 'text-green-700',
+        hoverColor: 'hover:bg-green-700',
+        borderColor: 'border-green-500'
+      },
+      {
+        title: 'Inventário',
+        description: 'Gerenciar Chromebooks',
+        content: 'Visualize, edite ou altere o status dos dispositivos cadastrados.',
+        icon: Laptop,
+        action: () => onNavigate('inventory'),
+        bgColor: 'bg-gradient-to-r from-blue-500 to-blue-600',
+        textColor: 'text-blue-700',
+        hoverColor: 'hover:bg-blue-700',
+        borderColor: 'border-blue-500'
+      },
+      {
+        title: 'Empréstimo',
+        description: 'Gerenciar empréstimos',
+        content: 'Registre novos empréstimos de Chromebooks e veja os ativos.',
+        icon: ClipboardList,
+        action: () => onNavigate('loan'),
+        bgColor: 'bg-gradient-to-r from-violet-500 to-violet-600',
+        textColor: 'text-violet-700',
+        hoverColor: 'hover:bg-violet-700',
+        borderColor: 'border-violet-500'
+      },
+      {
+        title: 'Devolução',
+        description: 'Registrar devoluções',
+        content: 'Registre a devolução de Chromebooks emprestados.',
+        icon: RotateCcw,
+        action: () => onNavigate('return'),
+        bgColor: 'bg-gradient-to-r from-amber-500 to-amber-600',
+        textColor: 'text-amber-700',
+        hoverColor: 'hover:bg-amber-700',
+        borderColor: 'border-amber-500'
+      },
+      {
+        title: 'Dashboard',
+        description: 'Relatórios e estatísticas',
+        content: 'Visualize dados e estatísticas sobre os equipamentos.',
+        icon: BarChart3,
+        action: () => onNavigate('dashboard'),
+        bgColor: 'bg-gradient-to-r from-rose-500 to-rose-600',
+        textColor: 'text-rose-700',
+        hoverColor: 'hover:bg-rose-700',
+        borderColor: 'border-rose-500'
+      }
+    ];
+
+    // Adicionar item de gerenciamento de usuários apenas para super admin
+    if (isSuperAdmin && !profileLoading) {
+      baseItems.push({
+        title: 'Usuários',
+        description: 'Gerenciar usuários e permissões',
+        content: 'Gerencie papéis e permissões dos usuários do sistema.',
+        icon: Users,
+        action: () => onNavigate('user-management'),
+        bgColor: 'bg-gradient-to-r from-purple-500 to-purple-600',
+        textColor: 'text-purple-700',
+        hoverColor: 'hover:bg-purple-700',
+        borderColor: 'border-purple-500'
+      });
     }
-  ], [onNavigate]);
+
+    return baseItems;
+  }, [onNavigate, isSuperAdmin, profileLoading]);
 
   // Simple fade-in animation that works better on mobile
   const getFadeInStyle = (index: number) => {

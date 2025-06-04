@@ -1,4 +1,3 @@
-
 import { useState, useCallback, useEffect, useMemo } from "react";
 import { useMobile } from "@/hooks/use-mobile";
 import { LoanForm } from "@/components/LoanForm";
@@ -12,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { LoanHistory } from "@/components/LoanHistory";
 import { MobileFriendlyDashboard } from "@/components/MobileFriendlyDashboard";
 import { ChromebookInventory } from "@/components/ChromebookInventory";
+import { UserManagement } from "@/components/UserManagement";
 import { ArrowLeft, X } from "lucide-react";
 import { Dashboard } from "@/components/Dashboard";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -48,7 +48,7 @@ const Index = () => {
     type: 'individual',
     userType: 'aluno'
   });
-  const [currentView, setCurrentView] = useState<'menu' | 'loan' | 'registration' | 'dashboard' | 'inventory'>('menu');
+  const [currentView, setCurrentView] = useState<'menu' | 'loan' | 'registration' | 'dashboard' | 'inventory' | 'user-management'>('menu');
   const [openNavSheet, setOpenNavSheet] = useState(false);
 
   // Loading state enquanto detecta o dispositivo
@@ -70,7 +70,7 @@ const Index = () => {
   }, [currentView, isMobile]);
 
   // Método de navegação otimizado com useCallback
-  const handleNavigation = useCallback((route: 'registration' | 'dashboard' | 'loan' | 'return' | 'inventory') => {
+  const handleNavigation = useCallback((route: 'registration' | 'dashboard' | 'loan' | 'return' | 'inventory' | 'user-management') => {
     try {
       if (route === 'return') {
         setOpenReturnDialog(true);
@@ -338,6 +338,9 @@ const Index = () => {
           <Button onClick={() => handleNavigation('return')} className="w-full">
             Devolver Chromebook
           </Button>
+          <Button onClick={() => handleNavigation('user-management')} className="w-full">
+            Gerenciar Usuários
+          </Button>
         </div>
         <SheetFooter>
           <SheetClose asChild>
@@ -426,6 +429,12 @@ const Index = () => {
           return (
             <div className="animate-in fade-in duration-300">
               <ChromebookInventory onBack={handleBackToMenu} />
+            </div>
+          );
+        case 'user-management':
+          return (
+            <div className="animate-in fade-in duration-300">
+              <UserManagement onBack={handleBackToMenu} />
             </div>
           );
         case 'loan':

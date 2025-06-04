@@ -44,8 +44,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           // Para desenvolvimento, vamos auto-autenticar
           const defaultUser = {
             id: 'demo-user',
-            email: 'demo@zelote.com',
-            name: 'Usuário Demo'
+            email: 'arthur.alencar@colegiosaojudas.com.br',
+            name: 'Arthur Alencar'
           };
           setUser(defaultUser);
           localStorage.setItem('zelote_user', JSON.stringify(defaultUser));
@@ -55,8 +55,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         // Em caso de erro, vamos auto-autenticar para desenvolvimento
         const defaultUser = {
           id: 'demo-user',
-          email: 'demo@zelote.com',
-          name: 'Usuário Demo'
+          email: 'arthur.alencar@colegiosaojudas.com.br',
+          name: 'Arthur Alencar'
         };
         setUser(defaultUser);
         localStorage.setItem('zelote_user', JSON.stringify(defaultUser));
@@ -74,7 +74,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const user = {
         id: 'demo-user',
         email: email,
-        name: 'Usuário'
+        name: email === 'arthur.alencar@colegiosaojudas.com.br' ? 'Arthur Alencar' : 'Usuário'
       };
       setUser(user);
       localStorage.setItem('zelote_user', JSON.stringify(user));
