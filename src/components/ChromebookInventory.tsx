@@ -4,7 +4,7 @@ import { Input } from "./ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { toast } from "@/hooks/use-toast";
-import { ArrowLeft, Edit, Trash2, Plus, Search, Filter, Save } from "lucide-react";
+import { ArrowLeft, Edit, Trash2, Plus, Search, Filter, Save, X } from "lucide-react";
 import { useMobile } from "@/hooks/use-mobile";
 import {
   Select,
@@ -518,37 +518,39 @@ export function ChromebookInventory({ onBack }: { onBack: () => void }) {
             className="h-[90vh] flex flex-col p-0"
           >
             <SheetHeader className="px-6 pt-6 pb-4 border-b">
-              <SheetTitle>Editar Chromebook</SheetTitle>
-              <SheetDescription>
-                Atualize as informações do Chromebook
-              </SheetDescription>
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <SheetTitle>Editar Chromebook</SheetTitle>
+                  <SheetDescription>
+                    Atualize as informações do Chromebook
+                  </SheetDescription>
+                </div>
+                <div className="flex items-center gap-2 ml-4">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setIsEditDialogOpen(false);
+                      setEditingChromebook(null);
+                    }}
+                  >
+                    <X className="h-4 w-4 mr-1" />
+                    Cancelar
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={handleSaveEdit}
+                  >
+                    <Save className="h-4 w-4 mr-1" />
+                    Salvar
+                  </Button>
+                </div>
+              </div>
             </SheetHeader>
             
-            <div className="flex-1 overflow-y-auto px-6 py-4 pb-20">
+            <div className="flex-1 overflow-y-auto px-6 py-4">
               <EditForm />
             </div>
-
-            {/* Botão flutuante para mobile */}
-            <Button
-              onClick={handleSaveEdit}
-              className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 z-50 bg-blue-600 hover:bg-blue-700"
-              size="icon"
-            >
-              <Save className="h-6 w-6" />
-            </Button>
-
-            {/* Botão de cancelar discreto no canto inferior esquerdo */}
-            <Button
-              variant="outline"
-              onClick={() => {
-                setIsEditDialogOpen(false);
-                setEditingChromebook(null);
-              }}
-              className="fixed bottom-6 left-6 h-12 px-4 rounded-full shadow-md z-50 bg-white"
-              size="sm"
-            >
-              Cancelar
-            </Button>
           </SheetContent>
         </Sheet>
       ) : (
@@ -556,30 +558,39 @@ export function ChromebookInventory({ onBack }: { onBack: () => void }) {
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
           <DialogContent className="max-w-md mx-auto max-h-[80vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Editar Chromebook</DialogTitle>
-              <DialogDescription>
-                Atualize as informações do Chromebook
-              </DialogDescription>
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <DialogTitle>Editar Chromebook</DialogTitle>
+                  <DialogDescription>
+                    Atualize as informações do Chromebook
+                  </DialogDescription>
+                </div>
+                <div className="flex items-center gap-2 ml-4">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setIsEditDialogOpen(false);
+                      setEditingChromebook(null);
+                    }}
+                  >
+                    <X className="h-4 w-4 mr-1" />
+                    Cancelar
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={handleSaveEdit}
+                  >
+                    <Save className="h-4 w-4 mr-1" />
+                    Salvar
+                  </Button>
+                </div>
+              </div>
             </DialogHeader>
             
             <div className="py-4">
               <EditForm />
             </div>
-
-            <DialogFooter>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setIsEditDialogOpen(false);
-                  setEditingChromebook(null);
-                }}
-              >
-                Cancelar
-              </Button>
-              <Button onClick={handleSaveEdit}>
-                Salvar Alterações
-              </Button>
-            </DialogFooter>
           </DialogContent>
         </Dialog>
       )}
