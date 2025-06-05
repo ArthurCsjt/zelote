@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -23,15 +24,14 @@ import {
 } from "./ui/dialog";
 import {
   Sheet,
-  SheetClose,
   SheetContent,
   SheetDescription,
-  SheetFooter,
   SheetHeader,
   SheetTitle,
 } from "./ui/sheet";
 import { Textarea } from "./ui/textarea";
 import { Label } from "./ui/label";
+import { ScrollArea } from "./ui/scroll-area";
 
 interface Chromebook {
   id: string;
@@ -227,146 +227,6 @@ export function ChromebookInventory({ onBack }: { onBack: () => void }) {
     setEditingChromebook(null);
   };
 
-  // Componente do formulário de edição
-  const EditForm = () => (
-    <div className="space-y-4">
-      <div className="space-y-2">
-        <Label htmlFor="edit-id">ID do Chromebook *</Label>
-        <Input
-          id="edit-id"
-          value={editingChromebook?.id || ''}
-          onChange={(e) => editingChromebook && setEditingChromebook({
-            ...editingChromebook,
-            id: e.target.value
-          })}
-          placeholder="Ex: CHR001"
-          className="w-full"
-        />
-      </div>
-      
-      <div className="space-y-2">
-        <Label htmlFor="edit-brand">Marca *</Label>
-        <Input
-          id="edit-brand"
-          value={editingChromebook?.brand || ''}
-          onChange={(e) => editingChromebook && setEditingChromebook({
-            ...editingChromebook,
-            brand: e.target.value
-          })}
-          placeholder="Ex: Acer, HP, Lenovo"
-          className="w-full"
-        />
-      </div>
-      
-      <div className="space-y-2">
-        <Label htmlFor="edit-model">Modelo *</Label>
-        <Input
-          id="edit-model"
-          value={editingChromebook?.model || ''}
-          onChange={(e) => editingChromebook && setEditingChromebook({
-            ...editingChromebook,
-            model: e.target.value
-          })}
-          placeholder="Ex: Chromebook 314"
-          className="w-full"
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="edit-serial">Número de Série *</Label>
-        <Input
-          id="edit-serial"
-          value={editingChromebook?.serialNumber || ''}
-          onChange={(e) => editingChromebook && setEditingChromebook({
-            ...editingChromebook,
-            serialNumber: e.target.value
-          })}
-          placeholder="Ex: ABC123456789"
-          className="w-full"
-        />
-      </div>
-      
-      <div className="space-y-2">
-        <Label htmlFor="edit-patrimony">Patrimônio *</Label>
-        <Input
-          id="edit-patrimony"
-          value={editingChromebook?.patrimony || ''}
-          onChange={(e) => editingChromebook && setEditingChromebook({
-            ...editingChromebook,
-            patrimony: e.target.value
-          })}
-          placeholder="Ex: PAT001"
-          className="w-full"
-        />
-      </div>
-      
-      <div className="space-y-2">
-        <Label htmlFor="edit-status">Status *</Label>
-        <Select
-          value={editingChromebook?.status || 'disponivel'}
-          onValueChange={(value: 'disponivel' | 'emprestado' | 'manutencao' | 'danificado') => 
-            editingChromebook && setEditingChromebook({
-              ...editingChromebook,
-              status: value
-            })
-          }
-        >
-          <SelectTrigger className="w-full">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="disponivel">Disponível</SelectItem>
-            <SelectItem value="emprestado">Emprestado</SelectItem>
-            <SelectItem value="manutencao">Manutenção</SelectItem>
-            <SelectItem value="danificado">Danificado</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="edit-location">Local</Label>
-        <Input
-          id="edit-location"
-          value={editingChromebook?.location || ''}
-          onChange={(e) => editingChromebook && setEditingChromebook({
-            ...editingChromebook,
-            location: e.target.value
-          })}
-          placeholder="Ex: Sala 101"
-          className="w-full"
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="edit-acquisition">Data de Aquisição</Label>
-        <Input
-          id="edit-acquisition"
-          type="date"
-          value={editingChromebook?.acquisitionDate || ''}
-          onChange={(e) => editingChromebook && setEditingChromebook({
-            ...editingChromebook,
-            acquisitionDate: e.target.value
-          })}
-          className="w-full"
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="edit-notes">Observações</Label>
-        <Textarea
-          id="edit-notes"
-          value={editingChromebook?.notes || ''}
-          onChange={(e) => editingChromebook && setEditingChromebook({
-            ...editingChromebook,
-            notes: e.target.value
-          })}
-          placeholder="Observações adicionais..."
-          className="w-full min-h-[80px]"
-        />
-      </div>
-    </div>
-  );
-
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -518,84 +378,330 @@ export function ChromebookInventory({ onBack }: { onBack: () => void }) {
       {/* Mobile Edit Sheet */}
       {isMobile ? (
         <Sheet open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-          <SheetContent 
-            side="bottom" 
-            className="h-[90vh] flex flex-col p-0"
-          >
-            {/* Fixed Header with Action Buttons */}
-            <div className="bg-white border-b border-gray-200 px-6 py-4 flex-shrink-0 sticky top-0 z-10">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex-1">
-                  <SheetTitle className="text-lg font-semibold">Editar Chromebook</SheetTitle>
-                  <SheetDescription className="text-sm text-gray-600">
-                    Atualize as informações do Chromebook
-                  </SheetDescription>
+          <SheetContent side="bottom" className="h-[95vh] p-0">
+            <div className="flex flex-col h-full">
+              {/* Fixed Header */}
+              <div className="border-b border-gray-200 p-6 bg-white">
+                <SheetHeader className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <SheetTitle className="text-lg font-semibold">Editar Chromebook</SheetTitle>
+                      <SheetDescription className="text-sm text-gray-600 mt-1">
+                        Atualize as informações do Chromebook
+                      </SheetDescription>
+                    </div>
+                  </div>
+                </SheetHeader>
+                
+                {/* Action Buttons */}
+                <div className="flex gap-3 mt-4">
+                  <Button
+                    variant="outline"
+                    className="flex-1"
+                    onClick={handleCancelEdit}
+                  >
+                    <X className="h-4 w-4 mr-2" />
+                    Cancelar
+                  </Button>
+                  <Button
+                    className="flex-1"
+                    onClick={handleSaveEdit}
+                  >
+                    <Save className="h-4 w-4 mr-2" />
+                    Salvar
+                  </Button>
                 </div>
               </div>
               
-              {/* Action Buttons - Always visible at top */}
-              <div className="flex items-center gap-3">
-                <Button
-                  variant="outline"
-                  className="flex-1"
-                  onClick={handleCancelEdit}
-                >
-                  <X className="h-4 w-4 mr-2" />
-                  Cancelar
-                </Button>
-                <Button
-                  className="flex-1"
-                  onClick={handleSaveEdit}
-                >
-                  <Save className="h-4 w-4 mr-2" />
-                  Salvar Alterações
-                </Button>
-              </div>
-            </div>
-            
-            {/* Scrollable Content */}
-            <div className="flex-1 overflow-y-auto px-6 py-4">
-              <EditForm />
+              {/* Scrollable Content */}
+              <ScrollArea className="flex-1">
+                <div className="p-6 space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-id">ID do Chromebook *</Label>
+                    <Input
+                      id="edit-id"
+                      value={editingChromebook?.id || ''}
+                      onChange={(e) => editingChromebook && setEditingChromebook({
+                        ...editingChromebook,
+                        id: e.target.value
+                      })}
+                      placeholder="Ex: CHR001"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-brand">Marca *</Label>
+                    <Input
+                      id="edit-brand"
+                      value={editingChromebook?.brand || ''}
+                      onChange={(e) => editingChromebook && setEditingChromebook({
+                        ...editingChromebook,
+                        brand: e.target.value
+                      })}
+                      placeholder="Ex: Acer, HP, Lenovo"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-model">Modelo *</Label>
+                    <Input
+                      id="edit-model"
+                      value={editingChromebook?.model || ''}
+                      onChange={(e) => editingChromebook && setEditingChromebook({
+                        ...editingChromebook,
+                        model: e.target.value
+                      })}
+                      placeholder="Ex: Chromebook 314"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-serial">Número de Série *</Label>
+                    <Input
+                      id="edit-serial"
+                      value={editingChromebook?.serialNumber || ''}
+                      onChange={(e) => editingChromebook && setEditingChromebook({
+                        ...editingChromebook,
+                        serialNumber: e.target.value
+                      })}
+                      placeholder="Ex: ABC123456789"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-patrimony">Patrimônio *</Label>
+                    <Input
+                      id="edit-patrimony"
+                      value={editingChromebook?.patrimony || ''}
+                      onChange={(e) => editingChromebook && setEditingChromebook({
+                        ...editingChromebook,
+                        patrimony: e.target.value
+                      })}
+                      placeholder="Ex: PAT001"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-status">Status *</Label>
+                    <Select
+                      value={editingChromebook?.status || 'disponivel'}
+                      onValueChange={(value: 'disponivel' | 'emprestado' | 'manutencao' | 'danificado') => 
+                        editingChromebook && setEditingChromebook({
+                          ...editingChromebook,
+                          status: value
+                        })
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="disponivel">Disponível</SelectItem>
+                        <SelectItem value="emprestado">Emprestado</SelectItem>
+                        <SelectItem value="manutencao">Manutenção</SelectItem>
+                        <SelectItem value="danificado">Danificado</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-location">Local</Label>
+                    <Input
+                      id="edit-location"
+                      value={editingChromebook?.location || ''}
+                      onChange={(e) => editingChromebook && setEditingChromebook({
+                        ...editingChromebook,
+                        location: e.target.value
+                      })}
+                      placeholder="Ex: Sala 101"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-acquisition">Data de Aquisição</Label>
+                    <Input
+                      id="edit-acquisition"
+                      type="date"
+                      value={editingChromebook?.acquisitionDate || ''}
+                      onChange={(e) => editingChromebook && setEditingChromebook({
+                        ...editingChromebook,
+                        acquisitionDate: e.target.value
+                      })}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-notes">Observações</Label>
+                    <Textarea
+                      id="edit-notes"
+                      value={editingChromebook?.notes || ''}
+                      onChange={(e) => editingChromebook && setEditingChromebook({
+                        ...editingChromebook,
+                        notes: e.target.value
+                      })}
+                      placeholder="Observações adicionais..."
+                      className="min-h-[80px]"
+                    />
+                  </div>
+                  
+                  {/* Extra padding at bottom for safe scrolling */}
+                  <div className="h-4"></div>
+                </div>
+              </ScrollArea>
             </div>
           </SheetContent>
         </Sheet>
       ) : (
         /* Desktop Edit Dialog */
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-          <DialogContent className="max-w-md mx-auto max-h-[85vh] overflow-hidden flex flex-col">
-            {/* Fixed Header with Action Buttons */}
-            <div className="bg-white border-b border-gray-200 pb-4 flex-shrink-0">
-              <DialogHeader className="mb-4">
-                <DialogTitle className="text-lg font-semibold">Editar Chromebook</DialogTitle>
-                <DialogDescription className="text-sm text-gray-600">
-                  Atualize as informações do Chromebook
-                </DialogDescription>
-              </DialogHeader>
-              
-              {/* Action Buttons - Always visible at top */}
-              <div className="flex items-center gap-3">
-                <Button
-                  variant="outline"
-                  className="flex-1"
-                  onClick={handleCancelEdit}
-                >
-                  <X className="h-4 w-4 mr-2" />
-                  Cancelar
-                </Button>
-                <Button
-                  className="flex-1"
-                  onClick={handleSaveEdit}
-                >
-                  <Save className="h-4 w-4 mr-2" />
-                  Salvar Alterações
-                </Button>
-              </div>
-            </div>
+          <DialogContent className="max-w-md mx-auto max-h-[80vh] overflow-hidden flex flex-col">
+            <DialogHeader>
+              <DialogTitle>Editar Chromebook</DialogTitle>
+              <DialogDescription>
+                Atualize as informações do Chromebook
+              </DialogDescription>
+            </DialogHeader>
             
-            {/* Scrollable Content */}
-            <div className="flex-1 overflow-y-auto py-4">
-              <EditForm />
-            </div>
+            <ScrollArea className="flex-1 pr-4">
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-id-desktop">ID do Chromebook *</Label>
+                  <Input
+                    id="edit-id-desktop"
+                    value={editingChromebook?.id || ''}
+                    onChange={(e) => editingChromebook && setEditingChromebook({
+                      ...editingChromebook,
+                      id: e.target.value
+                    })}
+                    placeholder="Ex: CHR001"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="edit-brand-desktop">Marca *</Label>
+                  <Input
+                    id="edit-brand-desktop"
+                    value={editingChromebook?.brand || ''}
+                    onChange={(e) => editingChromebook && setEditingChromebook({
+                      ...editingChromebook,
+                      brand: e.target.value
+                    })}
+                    placeholder="Ex: Acer, HP, Lenovo"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="edit-model-desktop">Modelo *</Label>
+                  <Input
+                    id="edit-model-desktop"
+                    value={editingChromebook?.model || ''}
+                    onChange={(e) => editingChromebook && setEditingChromebook({
+                      ...editingChromebook,
+                      model: e.target.value
+                    })}
+                    placeholder="Ex: Chromebook 314"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="edit-serial-desktop">Número de Série *</Label>
+                  <Input
+                    id="edit-serial-desktop"
+                    value={editingChromebook?.serialNumber || ''}
+                    onChange={(e) => editingChromebook && setEditingChromebook({
+                      ...editingChromebook,
+                      serialNumber: e.target.value
+                    })}
+                    placeholder="Ex: ABC123456789"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="edit-patrimony-desktop">Patrimônio *</Label>
+                  <Input
+                    id="edit-patrimony-desktop"
+                    value={editingChromebook?.patrimony || ''}
+                    onChange={(e) => editingChromebook && setEditingChromebook({
+                      ...editingChromebook,
+                      patrimony: e.target.value
+                    })}
+                    placeholder="Ex: PAT001"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="edit-status-desktop">Status *</Label>
+                  <Select
+                    value={editingChromebook?.status || 'disponivel'}
+                    onValueChange={(value: 'disponivel' | 'emprestado' | 'manutencao' | 'danificado') => 
+                      editingChromebook && setEditingChromebook({
+                        ...editingChromebook,
+                        status: value
+                      })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="disponivel">Disponível</SelectItem>
+                      <SelectItem value="emprestado">Emprestado</SelectItem>
+                      <SelectItem value="manutencao">Manutenção</SelectItem>
+                      <SelectItem value="danificado">Danificado</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="edit-location-desktop">Local</Label>
+                  <Input
+                    id="edit-location-desktop"
+                    value={editingChromebook?.location || ''}
+                    onChange={(e) => editingChromebook && setEditingChromebook({
+                      ...editingChromebook,
+                      location: e.target.value
+                    })}
+                    placeholder="Ex: Sala 101"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="edit-acquisition-desktop">Data de Aquisição</Label>
+                  <Input
+                    id="edit-acquisition-desktop"
+                    type="date"
+                    value={editingChromebook?.acquisitionDate || ''}
+                    onChange={(e) => editingChromebook && setEditingChromebook({
+                      ...editingChromebook,
+                      acquisitionDate: e.target.value
+                    })}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="edit-notes-desktop">Observações</Label>
+                  <Textarea
+                    id="edit-notes-desktop"
+                    value={editingChromebook?.notes || ''}
+                    onChange={(e) => editingChromebook && setEditingChromebook({
+                      ...editingChromebook,
+                      notes: e.target.value
+                    })}
+                    placeholder="Observações adicionais..."
+                    className="min-h-[80px]"
+                  />
+                </div>
+              </div>
+            </ScrollArea>
+
+            <DialogFooter className="mt-6">
+              <Button variant="outline" onClick={handleCancelEdit}>
+                Cancelar
+              </Button>
+              <Button onClick={handleSaveEdit}>
+                Salvar Alterações
+              </Button>
+            </DialogFooter>
           </DialogContent>
         </Dialog>
       )}
