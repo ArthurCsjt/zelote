@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -179,6 +178,7 @@ export function ChromebookInventory({ onBack }: { onBack: () => void }) {
   };
 
   const handleEditChromebook = (chromebook: Chromebook) => {
+    console.log('Opening edit modal for:', chromebook.id);
     setEditingChromebook({ ...chromebook });
     setIsEditDialogOpen(true);
   };
@@ -375,26 +375,41 @@ export function ChromebookInventory({ onBack }: { onBack: () => void }) {
         </div>
       )}
 
-      {/* NEW MODERN EDIT INTERFACE - Mobile Sheet */}
+      {/* EDIT INTERFACE - Mobile Sheet optimized for PWA */}
       {isMobile ? (
         <Sheet open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-          <SheetContent side="bottom" className="h-[95vh] p-0 bg-gradient-to-br from-slate-50 to-blue-50">
-            <div className="flex flex-col h-full">
-              {/* Modern Header with gradient */}
-              <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 rounded-b-3xl shadow-xl">
-                <div className="flex items-center justify-between mb-4">
+          <SheetContent 
+            side="bottom" 
+            className="h-[100dvh] max-h-[100dvh] p-0 bg-white border-0 rounded-t-2xl fixed inset-x-0 bottom-0 z-[100] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom"
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              zIndex: 100,
+              height: '100vh',
+              maxHeight: '100vh',
+              width: '100vw',
+              borderRadius: 0,
+            }}
+          >
+            <div className="flex flex-col h-full bg-white">
+              {/* Fixed Header */}
+              <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 flex-shrink-0 safe-area-top">
+                <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-                      <Monitor className="h-5 w-5" />
+                    <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+                      <Monitor className="h-4 w-4" />
                     </div>
                     <div>
-                      <h2 className="text-xl font-bold">Editar Chromebook</h2>
-                      <p className="text-blue-100 text-sm">Atualize as informações do dispositivo</p>
+                      <h2 className="text-lg font-bold">Editar Chromebook</h2>
+                      <p className="text-blue-100 text-sm">ID: {editingChromebook?.id}</p>
                     </div>
                   </div>
                 </div>
                 
-                {/* Action Buttons with new style */}
+                {/* Action Buttons */}
                 <div className="flex gap-3">
                   <Button
                     variant="outline"
@@ -414,103 +429,94 @@ export function ChromebookInventory({ onBack }: { onBack: () => void }) {
                 </div>
               </div>
               
-              {/* Scrollable Content with Cards */}
-              <ScrollArea className="flex-1 px-6 py-6">
-                <div className="space-y-6">
-                  {/* Basic Information Card */}
-                  <Card className="shadow-md border-0 bg-white/80 backdrop-blur-sm">
-                    <CardHeader className="pb-4">
-                      <CardTitle className="text-lg flex items-center text-gray-800">
-                        <Hash className="h-5 w-5 mr-2 text-blue-600" />
-                        Informações Básicas
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="edit-id" className="text-gray-700 font-medium">ID do Chromebook *</Label>
+              {/* Scrollable Content */}
+              <div className="flex-1 overflow-y-auto bg-gray-50">
+                <div className="p-4 space-y-4 pb-8">
+                  {/* Basic Information */}
+                  <div className="bg-white rounded-xl p-4 shadow-sm">
+                    <h3 className="font-semibold text-gray-800 mb-3 flex items-center">
+                      <Hash className="h-4 w-4 mr-2 text-blue-600" />
+                      Informações Básicas
+                    </h3>
+                    <div className="space-y-3">
+                      <div>
+                        <Label className="text-sm font-medium text-gray-700">ID *</Label>
                         <Input
-                          id="edit-id"
                           value={editingChromebook?.id || ''}
                           onChange={(e) => editingChromebook && setEditingChromebook({
                             ...editingChromebook,
                             id: e.target.value
                           })}
+                          className="mt-1"
                           placeholder="Ex: CHR001"
-                          className="border-gray-200 focus:border-blue-500"
                         />
                       </div>
                       
                       <div className="grid grid-cols-2 gap-3">
-                        <div className="space-y-2">
-                          <Label htmlFor="edit-brand" className="text-gray-700 font-medium">Marca *</Label>
+                        <div>
+                          <Label className="text-sm font-medium text-gray-700">Marca *</Label>
                           <Input
-                            id="edit-brand"
                             value={editingChromebook?.brand || ''}
                             onChange={(e) => editingChromebook && setEditingChromebook({
                               ...editingChromebook,
                               brand: e.target.value
                             })}
+                            className="mt-1"
                             placeholder="Ex: Acer"
-                            className="border-gray-200 focus:border-blue-500"
                           />
                         </div>
                         
-                        <div className="space-y-2">
-                          <Label htmlFor="edit-model" className="text-gray-700 font-medium">Modelo *</Label>
+                        <div>
+                          <Label className="text-sm font-medium text-gray-700">Modelo *</Label>
                           <Input
-                            id="edit-model"
                             value={editingChromebook?.model || ''}
                             onChange={(e) => editingChromebook && setEditingChromebook({
                               ...editingChromebook,
                               model: e.target.value
                             })}
-                            placeholder="Ex: Chromebook 314"
-                            className="border-gray-200 focus:border-blue-500"
+                            className="mt-1"
+                            placeholder="Ex: CB314"
                           />
                         </div>
                       </div>
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </div>
 
-                  {/* Technical Details Card */}
-                  <Card className="shadow-md border-0 bg-white/80 backdrop-blur-sm">
-                    <CardHeader className="pb-4">
-                      <CardTitle className="text-lg flex items-center text-gray-800">
-                        <FileText className="h-5 w-5 mr-2 text-green-600" />
-                        Detalhes Técnicos
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="edit-serial" className="text-gray-700 font-medium">Número de Série *</Label>
+                  {/* Technical Details */}
+                  <div className="bg-white rounded-xl p-4 shadow-sm">
+                    <h3 className="font-semibold text-gray-800 mb-3 flex items-center">
+                      <FileText className="h-4 w-4 mr-2 text-green-600" />
+                      Detalhes Técnicos
+                    </h3>
+                    <div className="space-y-3">
+                      <div>
+                        <Label className="text-sm font-medium text-gray-700">Número de Série *</Label>
                         <Input
-                          id="edit-serial"
                           value={editingChromebook?.serialNumber || ''}
                           onChange={(e) => editingChromebook && setEditingChromebook({
                             ...editingChromebook,
                             serialNumber: e.target.value
                           })}
+                          className="mt-1"
                           placeholder="Ex: ABC123456789"
-                          className="border-gray-200 focus:border-blue-500"
                         />
                       </div>
                       
-                      <div className="space-y-2">
-                        <Label htmlFor="edit-patrimony" className="text-gray-700 font-medium">Patrimônio *</Label>
+                      <div>
+                        <Label className="text-sm font-medium text-gray-700">Patrimônio *</Label>
                         <Input
-                          id="edit-patrimony"
                           value={editingChromebook?.patrimony || ''}
                           onChange={(e) => editingChromebook && setEditingChromebook({
                             ...editingChromebook,
                             patrimony: e.target.value
                           })}
+                          className="mt-1"
                           placeholder="Ex: PAT001"
-                          className="border-gray-200 focus:border-blue-500"
                         />
                       </div>
                       
-                      <div className="space-y-2">
-                        <Label htmlFor="edit-status" className="text-gray-700 font-medium">Status *</Label>
+                      <div>
+                        <Label className="text-sm font-medium text-gray-700">Status *</Label>
                         <Select
                           value={editingChromebook?.status || 'disponivel'}
                           onValueChange={(value: 'disponivel' | 'emprestado' | 'manutencao' | 'danificado') => 
@@ -520,7 +526,7 @@ export function ChromebookInventory({ onBack }: { onBack: () => void }) {
                             })
                           }
                         >
-                          <SelectTrigger className="border-gray-200 focus:border-blue-500">
+                          <SelectTrigger className="mt-1">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -531,77 +537,69 @@ export function ChromebookInventory({ onBack }: { onBack: () => void }) {
                           </SelectContent>
                         </Select>
                       </div>
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </div>
 
-                  {/* Location & Additional Info Card */}
-                  <Card className="shadow-md border-0 bg-white/80 backdrop-blur-sm">
-                    <CardHeader className="pb-4">
-                      <CardTitle className="text-lg flex items-center text-gray-800">
-                        <MapPin className="h-5 w-5 mr-2 text-purple-600" />
-                        Localização e Informações Adicionais
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="edit-location" className="text-gray-700 font-medium">Local</Label>
+                  {/* Location & Additional Info */}
+                  <div className="bg-white rounded-xl p-4 shadow-sm">
+                    <h3 className="font-semibold text-gray-800 mb-3 flex items-center">
+                      <MapPin className="h-4 w-4 mr-2 text-purple-600" />
+                      Informações Adicionais
+                    </h3>
+                    <div className="space-y-3">
+                      <div>
+                        <Label className="text-sm font-medium text-gray-700">Local</Label>
                         <Input
-                          id="edit-location"
                           value={editingChromebook?.location || ''}
                           onChange={(e) => editingChromebook && setEditingChromebook({
                             ...editingChromebook,
                             location: e.target.value
                           })}
-                          placeholder="Ex: Sala 101, Laboratório A"
-                          className="border-gray-200 focus:border-blue-500"
+                          className="mt-1"
+                          placeholder="Ex: Sala 101"
                         />
                       </div>
 
-                      <div className="space-y-2">
-                        <Label htmlFor="edit-acquisition" className="text-gray-700 font-medium flex items-center">
-                          <Calendar className="h-4 w-4 mr-1" />
+                      <div>
+                        <Label className="text-sm font-medium text-gray-700 flex items-center">
+                          <Calendar className="h-3 w-3 mr-1" />
                           Data de Aquisição
                         </Label>
                         <Input
-                          id="edit-acquisition"
                           type="date"
                           value={editingChromebook?.acquisitionDate || ''}
                           onChange={(e) => editingChromebook && setEditingChromebook({
                             ...editingChromebook,
                             acquisitionDate: e.target.value
                           })}
-                          className="border-gray-200 focus:border-blue-500"
+                          className="mt-1"
                         />
                       </div>
 
-                      <div className="space-y-2">
-                        <Label htmlFor="edit-notes" className="text-gray-700 font-medium flex items-center">
-                          <StickyNote className="h-4 w-4 mr-1" />
+                      <div>
+                        <Label className="text-sm font-medium text-gray-700 flex items-center">
+                          <StickyNote className="h-3 w-3 mr-1" />
                           Observações
                         </Label>
                         <Textarea
-                          id="edit-notes"
                           value={editingChromebook?.notes || ''}
                           onChange={(e) => editingChromebook && setEditingChromebook({
                             ...editingChromebook,
                             notes: e.target.value
                           })}
-                          placeholder="Observações adicionais sobre o equipamento..."
-                          className="min-h-[100px] border-gray-200 focus:border-blue-500 resize-none"
+                          className="mt-1 min-h-[80px] resize-none"
+                          placeholder="Observações adicionais..."
                         />
                       </div>
-                    </CardContent>
-                  </Card>
-                  
-                  {/* Extra padding at bottom for safe scrolling */}
-                  <div className="h-6"></div>
+                    </div>
+                  </div>
                 </div>
-              </ScrollArea>
+              </div>
             </div>
           </SheetContent>
         </Sheet>
       ) : (
-        /* Desktop Edit Dialog with new design */
+        /* Desktop Edit Dialog */
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
           <DialogContent className="max-w-2xl mx-auto max-h-[85vh] overflow-hidden flex flex-col bg-gradient-to-br from-slate-50 to-blue-50">
             <DialogHeader className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 rounded-t-lg -m-6 mb-6">
@@ -619,6 +617,7 @@ export function ChromebookInventory({ onBack }: { onBack: () => void }) {
             </DialogHeader>
             
             <ScrollArea className="flex-1 pr-4">
+              {/* ... keep existing code (desktop edit form content) */}
               <div className="space-y-6">
                 {/* Basic Information Card */}
                 <Card className="shadow-md border-0 bg-white/80 backdrop-blur-sm">
