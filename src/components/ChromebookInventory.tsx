@@ -1,13 +1,11 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "./ui/button";
 import { toast } from "@/hooks/use-toast";
 import { ArrowLeft, Plus } from "lucide-react";
-import { ChromebookCard } from "./ChromebookCard";
+import { ExpandableChromebookCard } from "./ExpandableChromebookCard";
 import { ChromebookFilters } from "./ChromebookFilters";
 import { ChromebookStats } from "./ChromebookStats";
 import { AddChromebookDialog } from "./AddChromebookDialog";
-import { EditChromebookDialog } from "./EditChromebookDialog";
 
 interface Chromebook {
   id: string;
@@ -19,6 +17,8 @@ interface Chromebook {
   location?: string;
   acquisitionDate?: string;
   notes?: string;
+  manufacturingYear?: string;
+  isProvisioned?: boolean;
 }
 
 export function ChromebookInventory({ onBack }: { onBack: () => void }) {
@@ -27,8 +27,6 @@ export function ChromebookInventory({ onBack }: { onBack: () => void }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [editingChromebook, setEditingChromebook] = useState<Chromebook | null>(null);
 
   useEffect(() => {
     const savedChromebooks = localStorage.getItem('chromebooks');
@@ -64,23 +62,6 @@ export function ChromebookInventory({ onBack }: { onBack: () => void }) {
     setChromebooks(updatedChromebooks);
     localStorage.setItem('chromebooks', JSON.stringify(updatedChromebooks));
     setIsAddDialogOpen(false);
-  };
-
-  const handleEditChromebook = (chromebook: Chromebook) => {
-    console.log('Opening edit modal for:', chromebook.id);
-    setEditingChromebook(chromebook);
-    setIsEditDialogOpen(true);
-  };
-
-  const handleSaveEdit = (updatedChromebook: Chromebook) => {
-    const updatedChromebooks = chromebooks.map(cb => 
-      cb.id === updatedChromebook.id ? updatedChromebook : cb
-    );
-    
-    setChromebooks(updatedChromebooks);
-    localStorage.setItem('chromebooks', JSON.stringify(updatedChromebooks));
-    setIsEditDialogOpen(false);
-    setEditingChromebook(null);
   };
 
   const handleDeleteChromebook = (id: string) => {
@@ -129,12 +110,11 @@ export function ChromebookInventory({ onBack }: { onBack: () => void }) {
       <ChromebookStats chromebooks={chromebooks} />
 
       {/* Chromebooks List */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="space-y-4">
         {filteredChromebooks.map((chromebook) => (
-          <ChromebookCard
+          <ExpandableChromebookCard
             key={chromebook.id}
             chromebook={chromebook}
-            onEdit={handleEditChromebook}
             onDelete={handleDeleteChromebook}
           />
         ))}
@@ -152,14 +132,6 @@ export function ChromebookInventory({ onBack }: { onBack: () => void }) {
         onClose={() => setIsAddDialogOpen(false)}
         onAdd={handleAddChromebook}
         existingIds={chromebooks.map(cb => cb.id)}
-      />
-
-      {/* Edit Dialog */}
-      <EditChromebookDialog
-        isOpen={isEditDialogOpen}
-        onClose={() => setIsEditDialogOpen(false)}
-        chromebook={editingChromebook}
-        onSave={handleSaveEdit}
       />
     </div>
   );
