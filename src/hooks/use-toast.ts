@@ -1,3 +1,4 @@
+
 import * as React from "react"
 
 import type {
@@ -179,7 +180,7 @@ function useToast() {
         listeners.splice(index, 1)
       }
     }
-  }, [state])
+  }, []) // Remove state dependency to prevent infinite re-renders
 
   return {
     ...state,
