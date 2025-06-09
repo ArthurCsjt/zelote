@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ClipboardList, BarChart3, PlusCircle, Laptop, RotateCcw, Users } from 'lucide-react';
@@ -9,25 +9,9 @@ interface MainMenuProps {
   onNavigate: (route: 'registration' | 'dashboard' | 'loan' | 'return' | 'inventory' | 'user-management') => void;
 }
 
-// Detect if we're on a mobile device - função memoizada
-const isMobileDevice = (): boolean => {
-  if (typeof window === 'undefined') return false;
-  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
-};
-
 export function MainMenu({ onNavigate }: MainMenuProps) {
-  const [isLoaded, setIsLoaded] = useState(false);
-  const isMobile = useMemo(() => isMobileDevice(), []);
+  const [isLoaded, setIsLoaded] = useState(true); // Start as loaded to avoid useEffect
   const { isSuperAdmin, isLoading: profileLoading } = useUserProfile();
-
-  useEffect(() => {
-    // Delay animation start to improve initial load performance
-    const timer = setTimeout(() => {
-      setIsLoaded(true);
-    }, 100);
-    
-    return () => clearTimeout(timer);
-  }, []);
 
   // Memoizar itens do menu para evitar recriação
   const menuItems = useMemo(() => {
@@ -107,29 +91,9 @@ export function MainMenu({ onNavigate }: MainMenuProps) {
     return baseItems;
   }, [onNavigate, isSuperAdmin, profileLoading]);
 
-  // Simple fade-in animation that works better on mobile
-  const getFadeInStyle = (index: number) => {
-    if (!isLoaded) return { opacity: 0 };
-    
-    // Use a simpler animation approach on mobile
-    if (isMobile) {
-      return { 
-        opacity: 1,
-        transition: `opacity 0.5s ease-out ${index * 100}ms`
-      };
-    }
-    
-    // More elaborate animation for desktop
-    return { 
-      opacity: 1,
-      transform: 'translateY(0)',
-      transition: `opacity 0.8s ease-out ${index * 150}ms, transform 0.8s ease-out ${index * 150}ms`
-    };
-  };
-
   return (
     <div className="space-y-8">
-      <div className="text-center py-6 px-4" style={getFadeInStyle(0)}>
+      <div className="text-center py-6 px-4 opacity-100 transition-opacity duration-500">
         <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-violet-600 mb-2">
           Sistema de Gerenciamento de Chromebooks
         </h2>
@@ -144,8 +108,10 @@ export function MainMenu({ onNavigate }: MainMenuProps) {
           return (
             <div 
               key={item.title} 
-              style={getFadeInStyle(index + 1)}
-              className="transition duration-300"
+              className="opacity-100 transition-opacity duration-500"
+              style={{ 
+                transitionDelay: `${index * 100}ms`
+              }}
             >
               <Card className={`border-2 ${item.borderColor} bg-white overflow-hidden h-full shadow-sm hover:shadow-md transition-all`}>
                 <div className="p-6">
