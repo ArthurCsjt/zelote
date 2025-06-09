@@ -1,8 +1,9 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "./ui/button";
 import { toast } from "@/hooks/use-toast";
 import { ArrowLeft, Plus } from "lucide-react";
-import { ExpandableChromebookCard } from "./ExpandableChromebookCard";
+import { EditableChromebookCard } from "./EditableChromebookCard";
 import { ChromebookFilters } from "./ChromebookFilters";
 import { ChromebookStats } from "./ChromebookStats";
 import { AddChromebookDialog } from "./AddChromebookDialog";
@@ -64,6 +65,14 @@ export function ChromebookInventory({ onBack }: { onBack: () => void }) {
     setIsAddDialogOpen(false);
   };
 
+  const handleSaveChromebook = (updatedChromebook: Chromebook) => {
+    const updatedChromebooks = chromebooks.map(cb => 
+      cb.id === updatedChromebook.id ? updatedChromebook : cb
+    );
+    setChromebooks(updatedChromebooks);
+    localStorage.setItem('chromebooks', JSON.stringify(updatedChromebooks));
+  };
+
   const handleDeleteChromebook = (id: string) => {
     const updatedChromebooks = chromebooks.filter(cb => cb.id !== id);
     setChromebooks(updatedChromebooks);
@@ -76,53 +85,83 @@ export function ChromebookInventory({ onBack }: { onBack: () => void }) {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-in fade-in duration-500">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
-          <Button variant="outline" size="icon" onClick={onBack}>
+          <Button variant="outline" size="icon" onClick={onBack} className="shadow-sm">
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">
+            <h1 className="text-3xl font-bold text-gray-900 mb-1">
               Inventário de Chromebooks
             </h1>
             <p className="text-gray-600">
-              Gerencie todos os Chromebooks cadastrados
+              Gerencie todos os Chromebooks cadastrados com edição inline
             </p>
           </div>
         </div>
-        <Button onClick={() => setIsAddDialogOpen(true)}>
+        <Button 
+          onClick={() => setIsAddDialogOpen(true)}
+          className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-200"
+        >
           <Plus className="h-4 w-4 mr-2" />
           Adicionar Chromebook
         </Button>
       </div>
 
       {/* Filters and Search */}
-      <ChromebookFilters
-        searchTerm={searchTerm}
-        onSearchChange={setSearchTerm}
-        statusFilter={statusFilter}
-        onStatusFilterChange={setStatusFilter}
-      />
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+        <ChromebookFilters
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+          statusFilter={statusFilter}
+          onStatusFilterChange={setStatusFilter}
+        />
+      </div>
 
       {/* Statistics */}
       <ChromebookStats chromebooks={chromebooks} />
 
       {/* Chromebooks List */}
       <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-gray-800">
+            Lista de Chromebooks ({filteredChromebooks.length})
+          </h2>
+          <div className="text-sm text-gray-500">
+            Clique em um card para ver mais detalhes
+          </div>
+        </div>
+        
         {filteredChromebooks.map((chromebook) => (
-          <ExpandableChromebookCard
+          <EditableChromebookCard
             key={chromebook.id}
             chromebook={chromebook}
+            onSave={handleSaveChromebook}
             onDelete={handleDeleteChromebook}
           />
         ))}
       </div>
 
       {filteredChromebooks.length === 0 && (
-        <div className="text-center py-12">
-          <p className="text-gray-500">Nenhum Chromebook encontrado</p>
+        <div className="text-center py-16">
+          <div className="w-24 h-24 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+            <Plus className="h-8 w-8 text-gray-400" />
+          </div>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhum Chromebook encontrado</h3>
+          <p className="text-gray-500 mb-4">
+            {searchTerm || statusFilter !== "all" 
+              ? "Tente ajustar os filtros de pesquisa" 
+              : "Comece adicionando seu primeiro Chromebook"
+            }
+          </p>
+          {!searchTerm && statusFilter === "all" && (
+            <Button onClick={() => setIsAddDialogOpen(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              Adicionar Primeiro Chromebook
+            </Button>
+          )}
         </div>
       )}
 
