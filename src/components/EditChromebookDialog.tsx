@@ -72,19 +72,19 @@ export function EditChromebookDialog({ isOpen, onClose, chromebook, onSave }: Ed
   };
 
   const FormContent = () => (
-    <div className="space-y-6 p-4">
+    <div className="space-y-4 p-2">
       {/* Header */}
-      <div className="space-y-2">
-        <h2 className="text-2xl font-bold text-gray-900">Editar Chromebook</h2>
-        <p className="text-sm text-gray-600">
+      <div className="space-y-1">
+        <h2 className="text-xl font-bold text-gray-900">Editar Chromebook</h2>
+        <p className="text-xs text-gray-600">
           Atualize as informações do Chromebook. Os campos marcados com * são obrigatórios.
         </p>
       </div>
 
       {/* Form Fields */}
-      <div className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="edit-id" className="text-sm font-medium text-gray-700">
+      <div className="space-y-3">
+        <div className="space-y-1">
+          <Label htmlFor="edit-id" className="text-xs font-medium text-gray-700">
             ID do Chromebook *
           </Label>
           <Input
@@ -96,12 +96,12 @@ export function EditChromebookDialog({ isOpen, onClose, chromebook, onSave }: Ed
             })}
             placeholder="Digite o ID"
             required
-            className="w-full"
+            className="h-8 text-sm"
           />
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="edit-brand" className="text-sm font-medium text-gray-700">
+        <div className="space-y-1">
+          <Label htmlFor="edit-brand" className="text-xs font-medium text-gray-700">
             Fabricante *
           </Label>
           <Input
@@ -113,12 +113,12 @@ export function EditChromebookDialog({ isOpen, onClose, chromebook, onSave }: Ed
             })}
             placeholder="Digite o fabricante"
             required
-            className="w-full"
+            className="h-8 text-sm"
           />
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="edit-model" className="text-sm font-medium text-gray-700">
+        <div className="space-y-1">
+          <Label htmlFor="edit-model" className="text-xs font-medium text-gray-700">
             Modelo *
           </Label>
           <Input
@@ -130,12 +130,12 @@ export function EditChromebookDialog({ isOpen, onClose, chromebook, onSave }: Ed
             })}
             placeholder="Digite o modelo"
             required
-            className="w-full"
+            className="h-8 text-sm"
           />
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="edit-serial" className="text-sm font-medium text-gray-700">
+        <div className="space-y-1">
+          <Label htmlFor="edit-serial" className="text-xs font-medium text-gray-700">
             Série *
           </Label>
           <Input
@@ -147,12 +147,12 @@ export function EditChromebookDialog({ isOpen, onClose, chromebook, onSave }: Ed
             })}
             placeholder="Digite a série"
             required
-            className="w-full"
+            className="h-8 text-sm"
           />
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="edit-year" className="text-sm font-medium text-gray-700">
+        <div className="space-y-1">
+          <Label htmlFor="edit-year" className="text-xs font-medium text-gray-700">
             Ano de Fabricação
           </Label>
           <Input
@@ -164,12 +164,12 @@ export function EditChromebookDialog({ isOpen, onClose, chromebook, onSave }: Ed
               manufacturingYear: e.target.value
             })}
             placeholder="Digite o ano"
-            className="w-full"
+            className="h-8 text-sm"
           />
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="edit-patrimony" className="text-sm font-medium text-gray-700">
+        <div className="space-y-1">
+          <Label htmlFor="edit-patrimony" className="text-xs font-medium text-gray-700">
             Patrimônio
           </Label>
           <Input
@@ -180,12 +180,12 @@ export function EditChromebookDialog({ isOpen, onClose, chromebook, onSave }: Ed
               patrimony: e.target.value
             })}
             placeholder="Digite o número do patrimônio"
-            className="w-full"
+            className="h-8 text-sm"
           />
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="edit-status" className="text-sm font-medium text-gray-700">
+        <div className="space-y-1">
+          <Label htmlFor="edit-status" className="text-xs font-medium text-gray-700">
             Status
           </Label>
           <Select
@@ -197,7 +197,7 @@ export function EditChromebookDialog({ isOpen, onClose, chromebook, onSave }: Ed
               })
             }
           >
-            <SelectTrigger className="w-full">
+            <SelectTrigger className="h-8 text-sm">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -209,8 +209,8 @@ export function EditChromebookDialog({ isOpen, onClose, chromebook, onSave }: Ed
           </Select>
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="edit-location" className="text-sm font-medium text-gray-700">
+        <div className="space-y-1">
+          <Label htmlFor="edit-location" className="text-xs font-medium text-gray-700">
             Local
           </Label>
           <Input
@@ -221,12 +221,12 @@ export function EditChromebookDialog({ isOpen, onClose, chromebook, onSave }: Ed
               location: e.target.value
             })}
             placeholder="Ex: Sala 101"
-            className="w-full"
+            className="h-8 text-sm"
           />
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="edit-acquisition" className="text-sm font-medium text-gray-700">
+        <div className="space-y-1">
+          <Label htmlFor="edit-acquisition" className="text-xs font-medium text-gray-700">
             Data de Aquisição
           </Label>
           <Input
@@ -237,7 +237,7 @@ export function EditChromebookDialog({ isOpen, onClose, chromebook, onSave }: Ed
               ...editingChromebook,
               acquisitionDate: e.target.value
             })}
-            className="w-full"
+            className="h-8 text-sm"
           />
         </div>
 
@@ -250,14 +250,14 @@ export function EditChromebookDialog({ isOpen, onClose, chromebook, onSave }: Ed
               isProvisioned: checked as boolean
             })}
           />
-          <Label htmlFor="isProvisioned" className="text-sm font-medium text-gray-700">
+          <Label htmlFor="isProvisioned" className="text-xs font-medium text-gray-700">
             Equipamento já provisionado
           </Label>
         </div>
 
         {editingChromebook?.isProvisioned && (
-          <div className="space-y-2">
-            <Label htmlFor="edit-notes" className="text-sm font-medium text-gray-700">
+          <div className="space-y-1">
+            <Label htmlFor="edit-notes" className="text-xs font-medium text-gray-700">
               Observações
             </Label>
             <Textarea
@@ -268,28 +268,28 @@ export function EditChromebookDialog({ isOpen, onClose, chromebook, onSave }: Ed
                 notes: e.target.value
               })}
               placeholder="Digite observações relevantes sobre o equipamento"
-              className="min-h-[80px] resize-none w-full"
+              className="min-h-[60px] resize-none text-sm"
             />
           </div>
         )}
       </div>
 
       {/* Action Buttons */}
-      <div className="flex gap-3 pt-6">
+      <div className="flex gap-2 pt-4">
         <Button
           variant="outline"
           onClick={handleCancel}
-          className="flex-1 bg-gray-200 text-gray-800 hover:bg-gray-300 border-gray-300"
+          className="flex-1 h-8 text-xs bg-gray-200 text-gray-800 hover:bg-gray-300 border-gray-300"
         >
-          <X className="h-4 w-4 mr-2" />
+          <X className="h-3 w-3 mr-1" />
           Cancelar
         </Button>
         <Button
           onClick={handleSave}
-          className="flex-1 bg-green-600 text-white hover:bg-green-700"
+          className="flex-1 h-8 text-xs bg-green-600 text-white hover:bg-green-700"
         >
-          <Save className="h-4 w-4 mr-2" />
-          Salvar Alterações
+          <Save className="h-3 w-3 mr-1" />
+          Salvar
         </Button>
       </div>
     </div>
@@ -300,21 +300,11 @@ export function EditChromebookDialog({ isOpen, onClose, chromebook, onSave }: Ed
       <Sheet open={isOpen} onOpenChange={onClose}>
         <SheetContent 
           side="bottom" 
-          className="h-[100dvh] max-h-[100dvh] p-0 bg-white border-0 rounded-t-2xl fixed inset-x-0 bottom-0 z-[100] overflow-y-auto"
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            zIndex: 100,
-            height: '100vh',
-            maxHeight: '100vh',
-            width: '100vw',
-            borderRadius: 0,
-          }}
+          className="h-[95vh] max-h-[95vh] p-0 bg-white border-0 rounded-t-2xl fixed inset-x-0 bottom-0 z-[100] overflow-hidden"
         >
-          <FormContent />
+          <ScrollArea className="h-full">
+            <FormContent />
+          </ScrollArea>
         </SheetContent>
       </Sheet>
     );
@@ -322,8 +312,8 @@ export function EditChromebookDialog({ isOpen, onClose, chromebook, onSave }: Ed
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl mx-auto max-h-[90vh] overflow-hidden flex flex-col">
-        <ScrollArea className="flex-1 pr-4">
+      <DialogContent className="max-w-md mx-auto max-h-[85vh] overflow-hidden flex flex-col p-0">
+        <ScrollArea className="flex-1">
           <FormContent />
         </ScrollArea>
       </DialogContent>
