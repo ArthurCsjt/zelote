@@ -1,5 +1,4 @@
 
-import { createRoot } from 'react-dom/client'
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -52,7 +51,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
  * Componente principal da aplicação
  * Configura os provedores globais e o roteamento
  */
-const App = () => {
+function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
@@ -82,6 +81,6 @@ const App = () => {
       </AuthProvider>
     </QueryClientProvider>
   );
-};
+}
 
 export default App;
