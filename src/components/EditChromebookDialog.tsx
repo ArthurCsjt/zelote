@@ -4,6 +4,7 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Textarea } from "./ui/textarea";
+import { Checkbox } from "./ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "./ui/dialog";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "./ui/sheet";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
@@ -11,7 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { ScrollArea } from "./ui/scroll-area";
 import { toast } from "@/hooks/use-toast";
 import { useMobile } from "@/hooks/use-mobile";
-import { Monitor, Hash, FileText, MapPin, Calendar, StickyNote, Save, X } from "lucide-react";
+import { Monitor, Hash, FileText, MapPin, Calendar, StickyNote, Save, X, Settings } from "lucide-react";
 
 interface Chromebook {
   id: string;
@@ -23,6 +24,8 @@ interface Chromebook {
   location?: string;
   acquisitionDate?: string;
   notes?: string;
+  manufacturingYear?: string;
+  isProvisioned?: boolean;
 }
 
 interface EditChromebookDialogProps {
@@ -46,7 +49,7 @@ export function EditChromebookDialog({ isOpen, onClose, chromebook, onSave }: Ed
     if (!editingChromebook) return;
 
     if (!editingChromebook.id || !editingChromebook.brand || !editingChromebook.model || 
-        !editingChromebook.serialNumber || !editingChromebook.patrimony) {
+        !editingChromebook.serialNumber) {
       toast({
         title: "Erro",
         description: "Preencha todos os campos obrigatórios",
@@ -98,7 +101,7 @@ export function EditChromebookDialog({ isOpen, onClose, chromebook, onSave }: Ed
                   </div>
                   <div>
                     <h2 className="text-lg font-bold">Editar Chromebook</h2>
-                    <p className="text-blue-100 text-sm">ID: {editingChromebook?.id}</p>
+                    <p className="text-blue-100 text-sm">Atualize as informações do Chromebook. Os campos marcados com * são obrigatórios.</p>
                   </div>
                 </div>
               </div>
@@ -118,7 +121,7 @@ export function EditChromebookDialog({ isOpen, onClose, chromebook, onSave }: Ed
                   onClick={handleSave}
                 >
                   <Save className="h-4 w-4 mr-2" />
-                  Salvar
+                  Salvar Alterações
                 </Button>
               </div>
             </div>
@@ -134,7 +137,7 @@ export function EditChromebookDialog({ isOpen, onClose, chromebook, onSave }: Ed
                   </h3>
                   <div className="space-y-3">
                     <div>
-                      <Label className="text-sm font-medium text-gray-700">ID *</Label>
+                      <Label className="text-sm font-medium text-gray-700">ID do Chromebook *</Label>
                       <Input
                         value={editingChromebook?.id || ''}
                         onChange={(e) => editingChromebook && setEditingChromebook({
@@ -142,36 +145,51 @@ export function EditChromebookDialog({ isOpen, onClose, chromebook, onSave }: Ed
                           id: e.target.value
                         })}
                         className="mt-1"
-                        placeholder="Ex: CHR001"
+                        placeholder="Digite o ID"
+                        required
                       />
                     </div>
                     
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <Label className="text-sm font-medium text-gray-700">Marca *</Label>
-                        <Input
-                          value={editingChromebook?.brand || ''}
-                          onChange={(e) => editingChromebook && setEditingChromebook({
-                            ...editingChromebook,
-                            brand: e.target.value
-                          })}
-                          className="mt-1"
-                          placeholder="Ex: Acer"
-                        />
-                      </div>
-                      
-                      <div>
-                        <Label className="text-sm font-medium text-gray-700">Modelo *</Label>
-                        <Input
-                          value={editingChromebook?.model || ''}
-                          onChange={(e) => editingChromebook && setEditingChromebook({
-                            ...editingChromebook,
-                            model: e.target.value
-                          })}
-                          className="mt-1"
-                          placeholder="Ex: CB314"
-                        />
-                      </div>
+                    <div>
+                      <Label className="text-sm font-medium text-gray-700">Fabricante *</Label>
+                      <Input
+                        value={editingChromebook?.brand || ''}
+                        onChange={(e) => editingChromebook && setEditingChromebook({
+                          ...editingChromebook,
+                          brand: e.target.value
+                        })}
+                        className="mt-1"
+                        placeholder="Digite o fabricante"
+                        required
+                      />
+                    </div>
+                    
+                    <div>
+                      <Label className="text-sm font-medium text-gray-700">Modelo *</Label>
+                      <Input
+                        value={editingChromebook?.model || ''}
+                        onChange={(e) => editingChromebook && setEditingChromebook({
+                          ...editingChromebook,
+                          model: e.target.value
+                        })}
+                        className="mt-1"
+                        placeholder="Digite o modelo"
+                        required
+                      />
+                    </div>
+                    
+                    <div>
+                      <Label className="text-sm font-medium text-gray-700">Série *</Label>
+                      <Input
+                        value={editingChromebook?.serialNumber || ''}
+                        onChange={(e) => editingChromebook && setEditingChromebook({
+                          ...editingChromebook,
+                          serialNumber: e.target.value
+                        })}
+                        className="mt-1"
+                        placeholder="Digite a série"
+                        required
+                      />
                     </div>
                   </div>
                 </div>
@@ -183,34 +201,37 @@ export function EditChromebookDialog({ isOpen, onClose, chromebook, onSave }: Ed
                     Detalhes Técnicos
                   </h3>
                   <div className="space-y-3">
-                    <div>
-                      <Label className="text-sm font-medium text-gray-700">Número de Série *</Label>
-                      <Input
-                        value={editingChromebook?.serialNumber || ''}
-                        onChange={(e) => editingChromebook && setEditingChromebook({
-                          ...editingChromebook,
-                          serialNumber: e.target.value
-                        })}
-                        className="mt-1"
-                        placeholder="Ex: ABC123456789"
-                      />
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <Label className="text-sm font-medium text-gray-700">Ano de Fabricação</Label>
+                        <Input
+                          type="number"
+                          value={editingChromebook?.manufacturingYear || ''}
+                          onChange={(e) => editingChromebook && setEditingChromebook({
+                            ...editingChromebook,
+                            manufacturingYear: e.target.value
+                          })}
+                          className="mt-1"
+                          placeholder="Digite o ano"
+                        />
+                      </div>
+                      
+                      <div>
+                        <Label className="text-sm font-medium text-gray-700">Patrimônio</Label>
+                        <Input
+                          value={editingChromebook?.patrimony || ''}
+                          onChange={(e) => editingChromebook && setEditingChromebook({
+                            ...editingChromebook,
+                            patrimony: e.target.value
+                          })}
+                          className="mt-1"
+                          placeholder="Digite o número do patrimônio"
+                        />
+                      </div>
                     </div>
                     
                     <div>
-                      <Label className="text-sm font-medium text-gray-700">Patrimônio *</Label>
-                      <Input
-                        value={editingChromebook?.patrimony || ''}
-                        onChange={(e) => editingChromebook && setEditingChromebook({
-                          ...editingChromebook,
-                          patrimony: e.target.value
-                        })}
-                        className="mt-1"
-                        placeholder="Ex: PAT001"
-                      />
-                    </div>
-                    
-                    <div>
-                      <Label className="text-sm font-medium text-gray-700">Status *</Label>
+                      <Label className="text-sm font-medium text-gray-700">Status</Label>
                       <Select
                         value={editingChromebook?.status || 'disponivel'}
                         onValueChange={(value: 'disponivel' | 'emprestado' | 'manutencao' | 'danificado') => 
@@ -234,11 +255,11 @@ export function EditChromebookDialog({ isOpen, onClose, chromebook, onSave }: Ed
                   </div>
                 </div>
 
-                {/* Location & Additional Info */}
+                {/* Location & Provisioning */}
                 <div className="bg-white rounded-xl p-4 shadow-sm">
                   <h3 className="font-semibold text-gray-800 mb-3 flex items-center">
-                    <MapPin className="h-4 w-4 mr-2 text-purple-600" />
-                    Informações Adicionais
+                    <Settings className="h-4 w-4 mr-2 text-purple-600" />
+                    Configurações e Local
                   </h3>
                   <div className="space-y-3">
                     <div>
@@ -270,21 +291,37 @@ export function EditChromebookDialog({ isOpen, onClose, chromebook, onSave }: Ed
                       />
                     </div>
 
-                    <div>
-                      <Label className="text-sm font-medium text-gray-700 flex items-center">
-                        <StickyNote className="h-3 w-3 mr-1" />
-                        Observações
-                      </Label>
-                      <Textarea
-                        value={editingChromebook?.notes || ''}
-                        onChange={(e) => editingChromebook && setEditingChromebook({
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="isProvisioned"
+                        checked={editingChromebook?.isProvisioned || false}
+                        onCheckedChange={(checked) => editingChromebook && setEditingChromebook({
                           ...editingChromebook,
-                          notes: e.target.value
+                          isProvisioned: checked as boolean
                         })}
-                        className="mt-1 min-h-[80px] resize-none"
-                        placeholder="Observações adicionais..."
                       />
+                      <Label htmlFor="isProvisioned" className="text-sm font-medium text-gray-700">
+                        Equipamento já provisionado
+                      </Label>
                     </div>
+
+                    {editingChromebook?.isProvisioned && (
+                      <div>
+                        <Label className="text-sm font-medium text-gray-700 flex items-center">
+                          <StickyNote className="h-3 w-3 mr-1" />
+                          Observações
+                        </Label>
+                        <Textarea
+                          value={editingChromebook?.notes || ''}
+                          onChange={(e) => editingChromebook && setEditingChromebook({
+                            ...editingChromebook,
+                            notes: e.target.value
+                          })}
+                          className="mt-1 min-h-[80px] resize-none"
+                          placeholder="Digite observações relevantes sobre o equipamento"
+                        />
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -306,7 +343,7 @@ export function EditChromebookDialog({ isOpen, onClose, chromebook, onSave }: Ed
             <div>
               <DialogTitle className="text-xl font-bold">Editar Chromebook</DialogTitle>
               <DialogDescription className="text-blue-100">
-                Atualize as informações do dispositivo
+                Atualize as informações do Chromebook. Os campos marcados com * são obrigatórios.
               </DialogDescription>
             </div>
           </div>
@@ -333,13 +370,14 @@ export function EditChromebookDialog({ isOpen, onClose, chromebook, onSave }: Ed
                         ...editingChromebook,
                         id: e.target.value
                       })}
-                      placeholder="Ex: CHR001"
+                      placeholder="Digite o ID"
                       className="border-gray-200 focus:border-blue-500"
+                      required
                     />
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="edit-brand-desktop" className="text-gray-700 font-medium">Marca *</Label>
+                    <Label htmlFor="edit-brand-desktop" className="text-gray-700 font-medium">Fabricante *</Label>
                     <Input
                       id="edit-brand-desktop"
                       value={editingChromebook?.brand || ''}
@@ -347,24 +385,43 @@ export function EditChromebookDialog({ isOpen, onClose, chromebook, onSave }: Ed
                         ...editingChromebook,
                         brand: e.target.value
                       })}
-                      placeholder="Ex: Acer, HP, Lenovo"
+                      placeholder="Digite o fabricante"
                       className="border-gray-200 focus:border-blue-500"
+                      required
                     />
                   </div>
                 </div>
                 
-                <div className="space-y-2">
-                  <Label htmlFor="edit-model-desktop" className="text-gray-700 font-medium">Modelo *</Label>
-                  <Input
-                    id="edit-model-desktop"
-                    value={editingChromebook?.model || ''}
-                    onChange={(e) => editingChromebook && setEditingChromebook({
-                      ...editingChromebook,
-                      model: e.target.value
-                    })}
-                    placeholder="Ex: Chromebook 314"
-                    className="border-gray-200 focus:border-blue-500"
-                  />
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-model-desktop" className="text-gray-700 font-medium">Modelo *</Label>
+                    <Input
+                      id="edit-model-desktop"
+                      value={editingChromebook?.model || ''}
+                      onChange={(e) => editingChromebook && setEditingChromebook({
+                        ...editingChromebook,
+                        model: e.target.value
+                      })}
+                      placeholder="Digite o modelo"
+                      className="border-gray-200 focus:border-blue-500"
+                      required
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-serial-desktop" className="text-gray-700 font-medium">Série *</Label>
+                    <Input
+                      id="edit-serial-desktop"
+                      value={editingChromebook?.serialNumber || ''}
+                      onChange={(e) => editingChromebook && setEditingChromebook({
+                        ...editingChromebook,
+                        serialNumber: e.target.value
+                      })}
+                      placeholder="Digite a série"
+                      className="border-gray-200 focus:border-blue-500"
+                      required
+                    />
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -380,21 +437,22 @@ export function EditChromebookDialog({ isOpen, onClose, chromebook, onSave }: Ed
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="edit-serial-desktop" className="text-gray-700 font-medium">Número de Série *</Label>
+                    <Label htmlFor="edit-year-desktop" className="text-gray-700 font-medium">Ano de Fabricação</Label>
                     <Input
-                      id="edit-serial-desktop"
-                      value={editingChromebook?.serialNumber || ''}
+                      id="edit-year-desktop"
+                      type="number"
+                      value={editingChromebook?.manufacturingYear || ''}
                       onChange={(e) => editingChromebook && setEditingChromebook({
                         ...editingChromebook,
-                        serialNumber: e.target.value
+                        manufacturingYear: e.target.value
                       })}
-                      placeholder="Ex: ABC123456789"
+                      placeholder="Digite o ano"
                       className="border-gray-200 focus:border-blue-500"
                     />
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="edit-patrimony-desktop" className="text-gray-700 font-medium">Patrimônio *</Label>
+                    <Label htmlFor="edit-patrimony-desktop" className="text-gray-700 font-medium">Patrimônio</Label>
                     <Input
                       id="edit-patrimony-desktop"
                       value={editingChromebook?.patrimony || ''}
@@ -402,14 +460,14 @@ export function EditChromebookDialog({ isOpen, onClose, chromebook, onSave }: Ed
                         ...editingChromebook,
                         patrimony: e.target.value
                       })}
-                      placeholder="Ex: PAT001"
+                      placeholder="Digite o número do patrimônio"
                       className="border-gray-200 focus:border-blue-500"
                     />
                   </div>
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="edit-status-desktop" className="text-gray-700 font-medium">Status *</Label>
+                  <Label htmlFor="edit-status-desktop" className="text-gray-700 font-medium">Status</Label>
                   <Select
                     value={editingChromebook?.status || 'disponivel'}
                     onValueChange={(value: 'disponivel' | 'emprestado' | 'manutencao' | 'danificado') => 
@@ -433,12 +491,12 @@ export function EditChromebookDialog({ isOpen, onClose, chromebook, onSave }: Ed
               </CardContent>
             </Card>
 
-            {/* Location & Additional Info Card */}
+            {/* Configuration & Location Card */}
             <Card className="shadow-md border-0 bg-white/80 backdrop-blur-sm">
               <CardHeader className="pb-4">
                 <CardTitle className="text-lg flex items-center text-gray-800">
-                  <MapPin className="h-5 w-5 mr-2 text-purple-600" />
-                  Localização e Informações Adicionais
+                  <Settings className="h-5 w-5 mr-2 text-purple-600" />
+                  Configurações e Localização
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -475,32 +533,48 @@ export function EditChromebookDialog({ isOpen, onClose, chromebook, onSave }: Ed
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="edit-notes-desktop" className="text-gray-700 font-medium flex items-center">
-                    <StickyNote className="h-4 w-4 mr-1" />
-                    Observações
-                  </Label>
-                  <Textarea
-                    id="edit-notes-desktop"
-                    value={editingChromebook?.notes || ''}
-                    onChange={(e) => editingChromebook && setEditingChromebook({
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="isProvisionedDesktop"
+                    checked={editingChromebook?.isProvisioned || false}
+                    onCheckedChange={(checked) => editingChromebook && setEditingChromebook({
                       ...editingChromebook,
-                      notes: e.target.value
+                      isProvisioned: checked as boolean
                     })}
-                    placeholder="Observações adicionais..."
-                    className="min-h-[80px] border-gray-200 focus:border-blue-500"
                   />
+                  <Label htmlFor="isProvisionedDesktop" className="text-gray-700 font-medium">
+                    Equipamento já provisionado
+                  </Label>
                 </div>
+
+                {editingChromebook?.isProvisioned && (
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-notes-desktop" className="text-gray-700 font-medium flex items-center">
+                      <StickyNote className="h-4 w-4 mr-1" />
+                      Observações
+                    </Label>
+                    <Textarea
+                      id="edit-notes-desktop"
+                      value={editingChromebook?.notes || ''}
+                      onChange={(e) => editingChromebook && setEditingChromebook({
+                        ...editingChromebook,
+                        notes: e.target.value
+                      })}
+                      placeholder="Digite observações relevantes sobre o equipamento"
+                      className="min-h-[80px] border-gray-200 focus:border-blue-500"
+                    />
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
         </ScrollArea>
 
         <DialogFooter className="mt-6">
-          <Button variant="outline" onClick={handleCancel}>
+          <Button variant="outline" onClick={handleCancel} className="bg-gray-200 text-black hover:bg-gray-300">
             Cancelar
           </Button>
-          <Button onClick={handleSave} className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+          <Button onClick={handleSave} className="bg-green-600 text-white hover:bg-green-700">
             Salvar Alterações
           </Button>
         </DialogFooter>
