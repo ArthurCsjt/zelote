@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
 interface User {
@@ -29,17 +30,25 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
+  // Adicionar console.log para debug
+  console.log('AuthProvider: Inicializando componente');
+  
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    console.log('AuthProvider: useEffect executado');
+    
     // Simular verificação de autenticação
     const checkAuth = () => {
       try {
+        console.log('AuthProvider: Verificando autenticação no localStorage');
         const savedUser = localStorage.getItem('zelote_user');
         if (savedUser) {
+          console.log('AuthProvider: Usuário encontrado no localStorage');
           setUser(JSON.parse(savedUser));
         } else {
+          console.log('AuthProvider: Nenhum usuário no localStorage, criando usuário padrão');
           // Para desenvolvimento, vamos auto-autenticar
           const defaultUser = {
             id: 'demo-user',
@@ -61,6 +70,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         localStorage.setItem('zelote_user', JSON.stringify(defaultUser));
       } finally {
         setIsLoading(false);
+        console.log('AuthProvider: Loading finalizado');
       }
     };
 
@@ -69,6 +79,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const login = async (email: string, password: string) => {
     try {
+      console.log('AuthProvider: Tentativa de login para:', email);
       // Simular login - aceitar qualquer email/senha para desenvolvimento
       const user = {
         id: 'demo-user',
@@ -77,6 +88,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       };
       setUser(user);
       localStorage.setItem('zelote_user', JSON.stringify(user));
+      console.log('AuthProvider: Login realizado com sucesso');
     } catch (error) {
       console.error('Erro no login:', error);
       throw new Error('Falha no login');
@@ -84,6 +96,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   };
 
   const logout = () => {
+    console.log('AuthProvider: Realizando logout');
     setUser(null);
     localStorage.removeItem('zelote_user');
   };
@@ -95,6 +108,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     login,
     logout
   };
+
+  console.log('AuthProvider: Renderizando com estado:', { isAuthenticated: !!user, isLoading });
 
   return (
     <AuthContext.Provider value={value}>
