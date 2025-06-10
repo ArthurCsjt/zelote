@@ -30,26 +30,18 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
-  // Adicionar console.log para debug
-  console.log('AuthProvider: Inicializando componente');
-  
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    console.log('AuthProvider: useEffect executado');
-    
-    // Simular verificação de autenticação
-    const checkAuth = () => {
+    const initializeAuth = async () => {
       try {
-        console.log('AuthProvider: Verificando autenticação no localStorage');
         const savedUser = localStorage.getItem('zelote_user');
         if (savedUser) {
-          console.log('AuthProvider: Usuário encontrado no localStorage');
-          setUser(JSON.parse(savedUser));
+          const parsedUser = JSON.parse(savedUser);
+          setUser(parsedUser);
         } else {
-          console.log('AuthProvider: Nenhum usuário no localStorage, criando usuário padrão');
-          // Para desenvolvimento, vamos auto-autenticar
+          // Auto-login para desenvolvimento
           const defaultUser = {
             id: 'demo-user',
             email: 'arthur.alencar@colegiosaojudas.com.br',
@@ -59,36 +51,29 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           localStorage.setItem('zelote_user', JSON.stringify(defaultUser));
         }
       } catch (error) {
-        console.error('Erro ao verificar autenticação:', error);
-        // Em caso de erro, vamos auto-autenticar para desenvolvimento
-        const defaultUser = {
-          id: 'demo-user',
-          email: 'arthur.alencar@colegiosaojudas.com.br',
-          name: 'Arthur Alencar'
-        };
-        setUser(defaultUser);
-        localStorage.setItem('zelote_user', JSON.stringify(defaultUser));
+        console.error('Erro na inicialização:', error);
+        // Em caso de erro, limpar estado
+        setUser(null);
+        localStorage.removeItem('zelote_user');
       } finally {
         setIsLoading(false);
-        console.log('AuthProvider: Loading finalizado');
       }
     };
 
-    checkAuth();
+    initializeAuth();
   }, []);
 
   const login = async (email: string, password: string) => {
     try {
-      console.log('AuthProvider: Tentativa de login para:', email);
-      // Simular login - aceitar qualquer email/senha para desenvolvimento
-      const user = {
+      // Simular autenticação
+      const newUser = {
         id: 'demo-user',
         email: email,
         name: email === 'arthur.alencar@colegiosaojudas.com.br' ? 'Arthur Alencar' : 'Usuário'
       };
-      setUser(user);
-      localStorage.setItem('zelote_user', JSON.stringify(user));
-      console.log('AuthProvider: Login realizado com sucesso');
+      
+      setUser(newUser);
+      localStorage.setItem('zelote_user', JSON.stringify(newUser));
     } catch (error) {
       console.error('Erro no login:', error);
       throw new Error('Falha no login');
@@ -96,12 +81,11 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   };
 
   const logout = () => {
-    console.log('AuthProvider: Realizando logout');
     setUser(null);
     localStorage.removeItem('zelote_user');
   };
 
-  const value = {
+  const contextValue: AuthContextType = {
     user,
     isAuthenticated: !!user,
     isLoading,
@@ -109,10 +93,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     logout
   };
 
-  console.log('AuthProvider: Renderizando com estado:', { isAuthenticated: !!user, isLoading });
-
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   );
