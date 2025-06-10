@@ -8,7 +8,6 @@ import Index from "./pages/Index";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 
-// Cria uma instância do QueryClient para gerenciar o estado das consultas
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -18,14 +17,9 @@ const queryClient = new QueryClient({
   },
 });
 
-/**
- * Componente que verifica se o usuário está autenticado
- * Se não estiver, redireciona para a página de login
- */
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated, isLoading } = useAuth();
   
-  // Mostrar loading enquanto verifica autenticação
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -37,41 +31,27 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     );
   }
   
-  // Se não estiver autenticado, redireciona para a página de login
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
   
-  // Se estiver autenticado, renderiza o conteúdo protegido
   return <>{children}</>;
 };
 
-/**
- * Componente principal da aplicação
- * Configura os provedores globais e o roteamento
- */
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <TooltipProvider>
-          {/* Componente para exibição de notificações toast usando Sonner */}
           <Toaster />
-          
-          {/* Configuração do roteamento da aplicação */}
           <BrowserRouter>
             <Routes>
-              {/* Rota de login (pública) */}
               <Route path="/login" element={<Login />} />
-              
-              {/* Rota principal (protegida) */}
               <Route path="/" element={
                 <ProtectedRoute>
                   <Index />
                 </ProtectedRoute>
               } />
-              
-              {/* Rota de fallback para URLs não encontradas */}
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

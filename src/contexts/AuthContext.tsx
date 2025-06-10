@@ -29,69 +29,72 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
-export const AuthProvider = ({ children }: AuthProviderProps) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+  const [authState, setAuthState] = useState<{
+    user: User | null;
+    isLoading: boolean;
+  }>({
+    user: null,
+    isLoading: true
+  });
 
-  useEffect(() => {
-    const initializeAuth = async () => {
-      try {
-        const savedUser = localStorage.getItem('zelote_user');
-        if (savedUser) {
-          const parsedUser = JSON.parse(savedUser);
-          setUser(parsedUser);
-        } else {
-          // Auto-login para desenvolvimento
-          const defaultUser = {
-            id: 'demo-user',
-            email: 'arthur.alencar@colegiosaojudas.com.br',
-            name: 'Arthur Alencar'
-          };
-          setUser(defaultUser);
-          localStorage.setItem('zelote_user', JSON.stringify(defaultUser));
-        }
-      } catch (error) {
-        console.error('Erro na inicialização:', error);
-        // Em caso de erro, limpar estado
-        setUser(null);
-        localStorage.removeItem('zelote_user');
-      } finally {
-        setIsLoading(false);
+  // Função para inicializar autenticação
+  const initAuth = React.useCallback(() => {
+    try {
+      const savedUser = localStorage.getItem('zelote_user');
+      if (savedUser) {
+        const parsedUser = JSON.parse(savedUser);
+        setAuthState({ user: parsedUser, isLoading: false });
+      } else {
+        // Auto-login para desenvolvimento
+        const defaultUser: User = {
+          id: 'demo-user',
+          email: 'arthur.alencar@colegiosaojudas.com.br',
+          name: 'Arthur Alencar'
+        };
+        setAuthState({ user: defaultUser, isLoading: false });
+        localStorage.setItem('zelote_user', JSON.stringify(defaultUser));
       }
-    };
-
-    initializeAuth();
+    } catch (error) {
+      console.error('Erro na inicialização:', error);
+      setAuthState({ user: null, isLoading: false });
+      localStorage.removeItem('zelote_user');
+    }
   }, []);
 
-  const login = async (email: string, password: string) => {
+  // Efeito para inicializar apenas uma vez
+  useEffect(() => {
+    initAuth();
+  }, [initAuth]);
+
+  const login = React.useCallback(async (email: string, password: string): Promise<void> => {
     try {
-      // Simular autenticação
-      const newUser = {
+      const newUser: User = {
         id: 'demo-user',
         email: email,
         name: email === 'arthur.alencar@colegiosaojudas.com.br' ? 'Arthur Alencar' : 'Usuário'
       };
       
-      setUser(newUser);
+      setAuthState({ user: newUser, isLoading: false });
       localStorage.setItem('zelote_user', JSON.stringify(newUser));
     } catch (error) {
       console.error('Erro no login:', error);
       throw new Error('Falha no login');
     }
-  };
+  }, []);
 
-  const logout = () => {
-    setUser(null);
+  const logout = React.useCallback(() => {
+    setAuthState({ user: null, isLoading: false });
     localStorage.removeItem('zelote_user');
-  };
+  }, []);
 
-  const contextValue: AuthContextType = {
-    user,
-    isAuthenticated: !!user,
-    isLoading,
+  const contextValue: AuthContextType = React.useMemo(() => ({
+    user: authState.user,
+    isAuthenticated: !!authState.user,
+    isLoading: authState.isLoading,
     login,
     logout
-  };
+  }), [authState.user, authState.isLoading, login, logout]);
 
   return (
     <AuthContext.Provider value={contextValue}>
