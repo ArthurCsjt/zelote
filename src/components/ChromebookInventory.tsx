@@ -1,9 +1,8 @@
-
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { Button } from "./ui/button";
 import { toast } from "@/hooks/use-toast";
 import { ArrowLeft, Plus } from "lucide-react";
-import { EditableChromebookCard } from "./EditableChromebookCard";
+import { ExpandableChromebookCard } from "./ExpandableChromebookCard";
 import { ChromebookFilters } from "./ChromebookFilters";
 import { ChromebookStats } from "./ChromebookStats";
 import { AddChromebookDialog } from "./AddChromebookDialog";
@@ -120,49 +119,19 @@ export function ChromebookInventory({ onBack }: { onBack: () => void }) {
     });
   }, [chromebooks, saveToLocalStorage]);
 
-  const handleSaveChromebook = useCallback((updatedChromebook: Chromebook) => {
-    console.log('Saving chromebook:', updatedChromebook.id);
-    
-    // Verificar se ID duplicado (exceto para o próprio item)
-    const isDuplicateId = chromebooks.some(cb => 
-      cb.id === updatedChromebook.id && cb !== chromebooks.find(original => 
-        original.id === updatedChromebook.id || 
-        original.serialNumber === updatedChromebook.serialNumber
-      )
-    );
-    
-    if (isDuplicateId) {
-      toast({
-        title: "Erro",
-        description: `Já existe um Chromebook com ID ${updatedChromebook.id}`,
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const updatedChromebooks = chromebooks.map(cb => {
-      // Encontrar pelo ID original ou número de série para permitir edição do ID
-      if (cb.id === updatedChromebook.id || cb.serialNumber === updatedChromebook.serialNumber) {
-        return updatedChromebook;
-      }
-      return cb;
-    });
-    
-    setChromebooks(updatedChromebooks);
-    saveToLocalStorage(updatedChromebooks);
-  }, [chromebooks, saveToLocalStorage]);
-
   const handleDeleteChromebook = useCallback((id: string) => {
     console.log('Deleting chromebook:', id);
     
-    const updatedChromebooks = chromebooks.filter(cb => cb.id !== id);
-    setChromebooks(updatedChromebooks);
-    saveToLocalStorage(updatedChromebooks);
-    
-    toast({
-      title: "Sucesso",
-      description: "Chromebook removido com sucesso",
-    });
+    if (window.confirm(`Tem certeza que deseja excluir o Chromebook ${id}?`)) {
+      const updatedChromebooks = chromebooks.filter(cb => cb.id !== id);
+      setChromebooks(updatedChromebooks);
+      saveToLocalStorage(updatedChromebooks);
+      
+      toast({
+        title: "Sucesso",
+        description: "Chromebook removido com sucesso",
+      });
+    }
   }, [chromebooks, saveToLocalStorage]);
 
   if (isLoading) {
@@ -189,7 +158,7 @@ export function ChromebookInventory({ onBack }: { onBack: () => void }) {
               Inventário de Chromebooks
             </h1>
             <p className="text-gray-600">
-              Gerencie todos os Chromebooks cadastrados com edição inline
+              Gerencie todos os Chromebooks cadastrados
             </p>
           </div>
         </div>
@@ -222,17 +191,16 @@ export function ChromebookInventory({ onBack }: { onBack: () => void }) {
             Lista de Chromebooks ({filteredChromebooks.length})
           </h2>
           <div className="text-sm text-gray-500">
-            Clique em um card para editá-lo
+            Clique em um card para expandir
           </div>
         </div>
         
         {filteredChromebooks.length > 0 ? (
           <div className="space-y-4">
             {filteredChromebooks.map((chromebook) => (
-              <EditableChromebookCard
+              <ExpandableChromebookCard
                 key={`${chromebook.id}-${chromebook.serialNumber}`}
                 chromebook={chromebook}
-                onSave={handleSaveChromebook}
                 onDelete={handleDeleteChromebook}
               />
             ))}
