@@ -59,11 +59,17 @@ const getStatusLabel = (status: string) => {
 export function ExpandableChromebookCard({ chromebook, onDelete }: ExpandableChromebookCardProps) {
   const [isOpen, setIsOpen] = useState(false);
 
+  // Lidar com clique no botão de excluir de forma segura
+  const handleDeleteClick = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Impedir que o evento de clique se propague para o card
+    onDelete(chromebook.id);
+  };
+
   return (
     <Card className="shadow-md hover:shadow-lg transition-all duration-200 border border-gray-200 rounded-xl overflow-hidden">
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         <CollapsibleTrigger asChild>
-          <CardContent className="p-4 cursor-pointer hover:bg-gray-50 transition-colors">
+          <CardContent className="p-4 cursor-pointer hover:bg-gray-50 transition-colors" aria-expanded={isOpen} role="button" aria-label={`Detalhes do Chromebook ${chromebook.id}`}>
             <div className="flex justify-between items-center">
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-2">
@@ -84,6 +90,7 @@ export function ExpandableChromebookCard({ chromebook, onDelete }: ExpandableChr
                   "h-5 w-5 text-gray-400 transition-transform duration-200",
                   isOpen && "rotate-180"
                 )}
+                aria-hidden="true"
               />
             </div>
           </CardContent>
@@ -168,10 +175,7 @@ export function ExpandableChromebookCard({ chromebook, onDelete }: ExpandableChr
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onDelete(chromebook.id);
-                  }}
+                  onClick={handleDeleteClick}
                   className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
                 >
                   <Trash2 className="h-4 w-4 mr-2" />
