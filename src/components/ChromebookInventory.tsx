@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { Button } from "./ui/button";
 import { toast } from "@/hooks/use-toast";
 import { ArrowLeft, Plus } from "lucide-react";
@@ -23,31 +23,53 @@ interface Chromebook {
 }
 
 export function ChromebookInventory({ onBack }: { onBack: () => void }) {
+  console.log('ChromebookInventory component mounted');
+  
   const [chromebooks, setChromebooks] = useState<Chromebook[]>([]);
-  const [filteredChromebooks, setFilteredChromebooks] = useState<Chromebook[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
+  // Carregar dados do localStorage
   useEffect(() => {
-    const savedChromebooks = localStorage.getItem('chromebooks');
-    if (savedChromebooks) {
-      const parsed = JSON.parse(savedChromebooks);
-      setChromebooks(parsed);
-      setFilteredChromebooks(parsed);
+    console.log('Loading chromebooks from localStorage');
+    
+    try {
+      const savedChromebooks = localStorage.getItem('chromebooks');
+      if (savedChromebooks) {
+        const parsed = JSON.parse(savedChromebooks);
+        console.log('Loaded chromebooks:', parsed.length);
+        setChromebooks(parsed);
+      } else {
+        console.log('No saved chromebooks found');
+      }
+    } catch (error) {
+      console.error('Error loading chromebooks from localStorage:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao carregar dados salvos",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
   }, []);
 
-  useEffect(() => {
+  // Filtrar chromebooks
+  const filteredChromebooks = useMemo(() => {
+    console.log('Filtering chromebooks, search:', searchTerm, 'status:', statusFilter);
+    
     let filtered = chromebooks;
 
-    if (searchTerm) {
+    if (searchTerm.trim()) {
+      const searchLower = searchTerm.toLowerCase();
       filtered = filtered.filter(chromebook =>
-        chromebook.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        chromebook.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        chromebook.model.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        chromebook.serialNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        chromebook.patrimony.toLowerCase().includes(searchTerm.toLowerCase())
+        chromebook.id.toLowerCase().includes(searchLower) ||
+        chromebook.brand.toLowerCase().includes(searchLower) ||
+        chromebook.model.toLowerCase().includes(searchLower) ||
+        chromebook.serialNumber.toLowerCase().includes(searchLower) ||
+        chromebook.patrimony.toLowerCase().includes(searchLower)
       );
     }
 
@@ -55,34 +77,104 @@ export function ChromebookInventory({ onBack }: { onBack: () => void }) {
       filtered = filtered.filter(chromebook => chromebook.status === statusFilter);
     }
 
-    setFilteredChromebooks(filtered);
+    console.log('Filtered chromebooks count:', filtered.length);
+    return filtered;
   }, [chromebooks, searchTerm, statusFilter]);
 
-  const handleAddChromebook = (chromebook: Chromebook) => {
+  // Salvar no localStorage
+  const saveToLocalStorage = useCallback((data: Chromebook[]) => {
+    try {
+      localStorage.setItem('chromebooks', JSON.stringify(data));
+      console.log('Saved chromebooks to localStorage:', data.length);
+    } catch (error) {
+      console.error('Error saving to localStorage:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao salvar dados",
+        variant: "destructive",
+      });
+    }
+  }, []);
+
+  const handleAddChromebook = useCallback((chromebook: Chromebook) => {
+    console.log('Adding new chromebook:', chromebook.id);
+    
+    // Verificar se ID já existe
+    if (chromebooks.some(cb => cb.id === chromebook.id)) {
+      toast({
+        title: "Erro",
+        description: `Chromebook com ID ${chromebook.id} já existe`,
+        variant: "destructive",
+      });
+      return;
+    }
+
     const updatedChromebooks = [...chromebooks, chromebook];
     setChromebooks(updatedChromebooks);
-    localStorage.setItem('chromebooks', JSON.stringify(updatedChromebooks));
+    saveToLocalStorage(updatedChromebooks);
     setIsAddDialogOpen(false);
-  };
+    
+    toast({
+      title: "Sucesso",
+      description: `Chromebook ${chromebook.id} adicionado com sucesso`,
+    });
+  }, [chromebooks, saveToLocalStorage]);
 
-  const handleSaveChromebook = (updatedChromebook: Chromebook) => {
-    const updatedChromebooks = chromebooks.map(cb => 
-      cb.id === updatedChromebook.id ? updatedChromebook : cb
+  const handleSaveChromebook = useCallback((updatedChromebook: Chromebook) => {
+    console.log('Saving chromebook:', updatedChromebook.id);
+    
+    // Verificar se ID duplicado (exceto para o próprio item)
+    const isDuplicateId = chromebooks.some(cb => 
+      cb.id === updatedChromebook.id && cb !== chromebooks.find(original => 
+        original.id === updatedChromebook.id || 
+        original.serialNumber === updatedChromebook.serialNumber
+      )
     );
-    setChromebooks(updatedChromebooks);
-    localStorage.setItem('chromebooks', JSON.stringify(updatedChromebooks));
-  };
+    
+    if (isDuplicateId) {
+      toast({
+        title: "Erro",
+        description: `Já existe um Chromebook com ID ${updatedChromebook.id}`,
+        variant: "destructive",
+      });
+      return;
+    }
 
-  const handleDeleteChromebook = (id: string) => {
+    const updatedChromebooks = chromebooks.map(cb => {
+      // Encontrar pelo ID original ou número de série para permitir edição do ID
+      if (cb.id === updatedChromebook.id || cb.serialNumber === updatedChromebook.serialNumber) {
+        return updatedChromebook;
+      }
+      return cb;
+    });
+    
+    setChromebooks(updatedChromebooks);
+    saveToLocalStorage(updatedChromebooks);
+  }, [chromebooks, saveToLocalStorage]);
+
+  const handleDeleteChromebook = useCallback((id: string) => {
+    console.log('Deleting chromebook:', id);
+    
     const updatedChromebooks = chromebooks.filter(cb => cb.id !== id);
     setChromebooks(updatedChromebooks);
-    localStorage.setItem('chromebooks', JSON.stringify(updatedChromebooks));
+    saveToLocalStorage(updatedChromebooks);
     
     toast({
       title: "Sucesso",
       description: "Chromebook removido com sucesso",
     });
-  };
+  }, [chromebooks, saveToLocalStorage]);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Carregando inventário...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
@@ -130,40 +222,44 @@ export function ChromebookInventory({ onBack }: { onBack: () => void }) {
             Lista de Chromebooks ({filteredChromebooks.length})
           </h2>
           <div className="text-sm text-gray-500">
-            Clique em um card para ver mais detalhes
+            Clique em um card para editá-lo
           </div>
         </div>
         
-        {filteredChromebooks.map((chromebook) => (
-          <EditableChromebookCard
-            key={chromebook.id}
-            chromebook={chromebook}
-            onSave={handleSaveChromebook}
-            onDelete={handleDeleteChromebook}
-          />
-        ))}
-      </div>
-
-      {filteredChromebooks.length === 0 && (
-        <div className="text-center py-16">
-          <div className="w-24 h-24 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
-            <Plus className="h-8 w-8 text-gray-400" />
+        {filteredChromebooks.length > 0 ? (
+          <div className="space-y-4">
+            {filteredChromebooks.map((chromebook) => (
+              <EditableChromebookCard
+                key={`${chromebook.id}-${chromebook.serialNumber}`}
+                chromebook={chromebook}
+                onSave={handleSaveChromebook}
+                onDelete={handleDeleteChromebook}
+              />
+            ))}
           </div>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhum Chromebook encontrado</h3>
-          <p className="text-gray-500 mb-4">
-            {searchTerm || statusFilter !== "all" 
-              ? "Tente ajustar os filtros de pesquisa" 
-              : "Comece adicionando seu primeiro Chromebook"
-            }
-          </p>
-          {!searchTerm && statusFilter === "all" && (
-            <Button onClick={() => setIsAddDialogOpen(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Adicionar Primeiro Chromebook
-            </Button>
-          )}
-        </div>
-      )}
+        ) : (
+          <div className="text-center py-16">
+            <div className="w-24 h-24 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+              <Plus className="h-8 w-8 text-gray-400" />
+            </div>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              {searchTerm || statusFilter !== "all" ? "Nenhum Chromebook encontrado" : "Nenhum Chromebook cadastrado"}
+            </h3>
+            <p className="text-gray-500 mb-4">
+              {searchTerm || statusFilter !== "all" 
+                ? "Tente ajustar os filtros de pesquisa" 
+                : "Comece adicionando seu primeiro Chromebook"
+              }
+            </p>
+            {(!searchTerm && statusFilter === "all") && (
+              <Button onClick={() => setIsAddDialogOpen(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Adicionar Primeiro Chromebook
+              </Button>
+            )}
+          </div>
+        )}
+      </div>
 
       {/* Add Dialog */}
       <AddChromebookDialog

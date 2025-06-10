@@ -32,74 +32,137 @@ interface EditableChromebookCardProps {
 }
 
 const getStatusColor = (status: string) => {
-  switch (status) {
-    case 'disponivel':
-      return 'bg-green-100 text-green-800 border-green-200';
-    case 'emprestado':
-      return 'bg-blue-100 text-blue-800 border-blue-200';
-    case 'manutencao':
-      return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-    case 'danificado':
-      return 'bg-red-100 text-red-800 border-red-200';
-    default:
-      return 'bg-gray-100 text-gray-800 border-gray-200';
-  }
+  const statusColors = {
+    'disponivel': 'bg-green-100 text-green-800 border-green-200',
+    'emprestado': 'bg-blue-100 text-blue-800 border-blue-200',
+    'manutencao': 'bg-yellow-100 text-yellow-800 border-yellow-200',
+    'danificado': 'bg-red-100 text-red-800 border-red-200'
+  };
+  return statusColors[status as keyof typeof statusColors] || 'bg-gray-100 text-gray-800 border-gray-200';
 };
 
 const getStatusLabel = (status: string) => {
-  switch (status) {
-    case 'disponivel':
-      return 'Disponível';
-    case 'emprestado':
-      return 'Emprestado';
-    case 'manutencao':
-      return 'Manutenção';
-    case 'danificado':
-      return 'Danificado';
-    default:
-      return status;
-  }
+  const statusLabels = {
+    'disponivel': 'Disponível',
+    'emprestado': 'Emprestado',
+    'manutencao': 'Manutenção',
+    'danificado': 'Danificado'
+  };
+  return statusLabels[status as keyof typeof statusLabels] || status;
 };
 
 export function EditableChromebookCard({ chromebook, onSave, onDelete }: EditableChromebookCardProps) {
+  console.log('EditableChromebookCard rendered for:', chromebook.id);
+  
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState<Chromebook>(chromebook);
+  const [isLoading, setIsLoading] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    console.log('Chromebook data updated:', chromebook.id);
     setEditData(chromebook);
   }, [chromebook]);
 
-  const handleSave = () => {
-    if (!editData.id || !editData.brand || !editData.model || !editData.serialNumber) {
+  const validateData = (data: Chromebook): boolean => {
+    console.log('Validating chromebook data:', data);
+    
+    if (!data.id?.trim()) {
       toast({
-        title: "Erro",
-        description: "Preencha todos os campos obrigatórios",
+        title: "Erro de Validação",
+        description: "ID é obrigatório",
         variant: "destructive",
       });
+      return false;
+    }
+    
+    if (!data.brand?.trim()) {
+      toast({
+        title: "Erro de Validação",
+        description: "Fabricante é obrigatório",
+        variant: "destructive",
+      });
+      return false;
+    }
+    
+    if (!data.model?.trim()) {
+      toast({
+        title: "Erro de Validação",
+        description: "Modelo é obrigatório",
+        variant: "destructive",
+      });
+      return false;
+    }
+    
+    if (!data.serialNumber?.trim()) {
+      toast({
+        title: "Erro de Validação",
+        description: "Número de série é obrigatório",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleSave = async () => {
+    console.log('Attempting to save chromebook:', editData.id);
+    
+    if (!validateData(editData)) {
       return;
     }
 
-    onSave(editData);
-    setIsEditing(false);
+    setIsLoading(true);
     
-    toast({
-      title: "Sucesso",
-      description: "Chromebook atualizado com sucesso",
-    });
+    try {
+      await new Promise(resolve => setTimeout(resolve, 100)); // Simular pequeno delay
+      onSave(editData);
+      setIsEditing(false);
+      
+      console.log('Chromebook saved successfully:', editData.id);
+      toast({
+        title: "Sucesso",
+        description: "Chromebook atualizado com sucesso",
+      });
+    } catch (error) {
+      console.error('Error saving chromebook:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao salvar chromebook",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleCancel = () => {
+    console.log('Canceling edit for chromebook:', chromebook.id);
     setEditData(chromebook);
     setIsEditing(false);
   };
 
   const handleEdit = () => {
+    console.log('Starting edit for chromebook:', chromebook.id);
     setIsEditing(true);
-    // Scroll to card for better UX
+    
     setTimeout(() => {
       cardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }, 100);
+  };
+
+  const handleDelete = () => {
+    console.log('Deleting chromebook:', chromebook.id);
+    
+    if (window.confirm(`Tem certeza que deseja excluir o Chromebook ${chromebook.id}?`)) {
+      onDelete(chromebook.id);
+    }
+  };
+
+  const handleFieldChange = (field: keyof Chromebook, value: any) => {
+    console.log(`Updating field ${field} for chromebook ${chromebook.id}:`, value);
+    setEditData(prev => ({ ...prev, [field]: value }));
   };
 
   if (isEditing) {
@@ -115,13 +178,23 @@ export function EditableChromebookCard({ chromebook, onSave, onDelete }: Editabl
               Editando Chromebook
             </h3>
             <div className="flex gap-2">
-              <Button size="sm" variant="outline" onClick={handleCancel}>
+              <Button 
+                size="sm" 
+                variant="outline" 
+                onClick={handleCancel}
+                disabled={isLoading}
+              >
                 <X className="h-4 w-4 mr-1" />
                 Cancelar
               </Button>
-              <Button size="sm" onClick={handleSave} className="bg-green-600 hover:bg-green-700">
+              <Button 
+                size="sm" 
+                onClick={handleSave} 
+                className="bg-green-600 hover:bg-green-700"
+                disabled={isLoading}
+              >
                 <Save className="h-4 w-4 mr-1" />
-                Salvar
+                {isLoading ? 'Salvando...' : 'Salvar'}
               </Button>
             </div>
           </div>
@@ -131,36 +204,40 @@ export function EditableChromebookCard({ chromebook, onSave, onDelete }: Editabl
               <div>
                 <label className="text-xs font-medium text-gray-600 mb-1 block">ID *</label>
                 <Input
-                  value={editData.id}
-                  onChange={(e) => setEditData({ ...editData, id: e.target.value })}
+                  value={editData.id || ''}
+                  onChange={(e) => handleFieldChange('id', e.target.value)}
                   className="h-9"
+                  placeholder="ID do Chromebook"
                 />
               </div>
               
               <div>
                 <label className="text-xs font-medium text-gray-600 mb-1 block">Fabricante *</label>
                 <Input
-                  value={editData.brand}
-                  onChange={(e) => setEditData({ ...editData, brand: e.target.value })}
+                  value={editData.brand || ''}
+                  onChange={(e) => handleFieldChange('brand', e.target.value)}
                   className="h-9"
+                  placeholder="Ex: Acer, Lenovo"
                 />
               </div>
               
               <div>
                 <label className="text-xs font-medium text-gray-600 mb-1 block">Modelo *</label>
                 <Input
-                  value={editData.model}
-                  onChange={(e) => setEditData({ ...editData, model: e.target.value })}
+                  value={editData.model || ''}
+                  onChange={(e) => handleFieldChange('model', e.target.value)}
                   className="h-9"
+                  placeholder="Modelo do equipamento"
                 />
               </div>
               
               <div>
                 <label className="text-xs font-medium text-gray-600 mb-1 block">Número de Série *</label>
                 <Input
-                  value={editData.serialNumber}
-                  onChange={(e) => setEditData({ ...editData, serialNumber: e.target.value })}
+                  value={editData.serialNumber || ''}
+                  onChange={(e) => handleFieldChange('serialNumber', e.target.value)}
                   className="h-9"
+                  placeholder="Número de série"
                 />
               </div>
             </div>
@@ -169,9 +246,10 @@ export function EditableChromebookCard({ chromebook, onSave, onDelete }: Editabl
               <div>
                 <label className="text-xs font-medium text-gray-600 mb-1 block">Patrimônio</label>
                 <Input
-                  value={editData.patrimony}
-                  onChange={(e) => setEditData({ ...editData, patrimony: e.target.value })}
+                  value={editData.patrimony || ''}
+                  onChange={(e) => handleFieldChange('patrimony', e.target.value)}
                   className="h-9"
+                  placeholder="Número do patrimônio"
                 />
               </div>
               
@@ -180,7 +258,7 @@ export function EditableChromebookCard({ chromebook, onSave, onDelete }: Editabl
                 <Select
                   value={editData.status}
                   onValueChange={(value: 'disponivel' | 'emprestado' | 'manutencao' | 'danificado') => 
-                    setEditData({ ...editData, status: value })
+                    handleFieldChange('status', value)
                   }
                 >
                   <SelectTrigger className="h-9">
@@ -199,7 +277,7 @@ export function EditableChromebookCard({ chromebook, onSave, onDelete }: Editabl
                 <label className="text-xs font-medium text-gray-600 mb-1 block">Local</label>
                 <Input
                   value={editData.location || ''}
-                  onChange={(e) => setEditData({ ...editData, location: e.target.value })}
+                  onChange={(e) => handleFieldChange('location', e.target.value)}
                   className="h-9"
                   placeholder="Ex: Sala 101"
                 />
@@ -210,8 +288,11 @@ export function EditableChromebookCard({ chromebook, onSave, onDelete }: Editabl
                 <Input
                   type="number"
                   value={editData.manufacturingYear || ''}
-                  onChange={(e) => setEditData({ ...editData, manufacturingYear: e.target.value })}
+                  onChange={(e) => handleFieldChange('manufacturingYear', e.target.value)}
                   className="h-9"
+                  placeholder="Ex: 2023"
+                  min="2000"
+                  max={new Date().getFullYear()}
                 />
               </div>
             </div>
@@ -223,7 +304,7 @@ export function EditableChromebookCard({ chromebook, onSave, onDelete }: Editabl
               <Input
                 type="date"
                 value={editData.acquisitionDate || ''}
-                onChange={(e) => setEditData({ ...editData, acquisitionDate: e.target.value })}
+                onChange={(e) => handleFieldChange('acquisitionDate', e.target.value)}
                 className="h-9 max-w-xs"
               />
             </div>
@@ -232,7 +313,7 @@ export function EditableChromebookCard({ chromebook, onSave, onDelete }: Editabl
               <Checkbox
                 id="isProvisioned"
                 checked={editData.isProvisioned || false}
-                onCheckedChange={(checked) => setEditData({ ...editData, isProvisioned: checked as boolean })}
+                onCheckedChange={(checked) => handleFieldChange('isProvisioned', checked)}
               />
               <label htmlFor="isProvisioned" className="text-sm font-medium text-gray-700">
                 Equipamento já provisionado
@@ -244,7 +325,7 @@ export function EditableChromebookCard({ chromebook, onSave, onDelete }: Editabl
                 <label className="text-xs font-medium text-gray-600 mb-1 block">Observações</label>
                 <Textarea
                   value={editData.notes || ''}
-                  onChange={(e) => setEditData({ ...editData, notes: e.target.value })}
+                  onChange={(e) => handleFieldChange('notes', e.target.value)}
                   className="min-h-[80px] resize-none"
                   placeholder="Digite observações relevantes sobre o equipamento"
                 />
@@ -257,7 +338,10 @@ export function EditableChromebookCard({ chromebook, onSave, onDelete }: Editabl
   }
 
   return (
-    <Card className="group shadow-md hover:shadow-xl transition-all duration-300 border border-gray-200 rounded-xl overflow-hidden hover:scale-[1.02] cursor-pointer bg-gradient-to-r from-white to-gray-50">
+    <Card 
+      className="group shadow-md hover:shadow-xl transition-all duration-300 border border-gray-200 rounded-xl overflow-hidden hover:scale-[1.02] cursor-pointer bg-gradient-to-r from-white to-gray-50"
+      onClick={handleEdit}
+    >
       <CardContent className="p-5">
         <div className="flex justify-between items-start mb-4">
           <div className="flex-1">
@@ -279,7 +363,10 @@ export function EditableChromebookCard({ chromebook, onSave, onDelete }: Editabl
             <Button
               size="sm"
               variant="outline"
-              onClick={handleEdit}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleEdit();
+              }}
               className="bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-700 shadow-sm"
             >
               <Edit3 className="h-4 w-4 mr-1" />
@@ -288,7 +375,10 @@ export function EditableChromebookCard({ chromebook, onSave, onDelete }: Editabl
             <Button
               size="sm"
               variant="outline"
-              onClick={() => onDelete(chromebook.id)}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDelete();
+              }}
               className="bg-red-50 hover:bg-red-100 border-red-200 text-red-700 shadow-sm"
             >
               <Trash2 className="h-4 w-4 mr-1" />
@@ -301,7 +391,7 @@ export function EditableChromebookCard({ chromebook, onSave, onDelete }: Editabl
           <div className="space-y-2">
             <div className="bg-gray-50 rounded-lg p-3 border border-gray-100">
               <span className="text-xs font-medium text-gray-500 uppercase tracking-wide block mb-1">Patrimônio</span>
-              <span className="text-sm font-semibold text-gray-900">{chromebook.patrimony}</span>
+              <span className="text-sm font-semibold text-gray-900">{chromebook.patrimony || 'N/A'}</span>
             </div>
             
             {chromebook.location && (
