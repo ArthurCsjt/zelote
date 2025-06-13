@@ -130,6 +130,11 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
     startIndex + itemsPerPage
   );
 
+  // Reset pagination when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, statusFilter]);
+
   // Get status information for display
   const getStatusInfo = (status: string) => {
     switch (status) {
@@ -164,7 +169,7 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
     setChromebooks(updatedChromebooks);
     toast({
       title: "Status atualizado",
-      description: `Status do Chromebook alterado para ${newStatus}`,
+      description: `Status do Chromebook alterado para ${getStatusInfo(newStatus).label}`,
     });
   };
 
@@ -231,7 +236,7 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
     setEditingChromebook(null);
     toast({
       title: "Sucesso",
-      description: `Chromebook ${editingChromebook.id} atualizado com sucesso`,
+      description: `Chromebook ${editingChromebook.patrimonyNumber || editingChromebook.id} atualizado com sucesso`,
     });
   };
 
@@ -251,7 +256,7 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
     setChromebookToDelete(null);
     toast({
       title: "Sucesso",
-      description: `Chromebook ${chromebookToDelete.id} excluído com sucesso`,
+      description: `Chromebook ${chromebookToDelete.patrimonyNumber || chromebookToDelete.id} excluído com sucesso`,
     });
   };
 
@@ -448,7 +453,7 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
             <PaginationItem>
               <PaginationPrevious
                 onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+                className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
               />
             </PaginationItem>
 
@@ -457,6 +462,7 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
                 <PaginationLink
                   isActive={currentPage === page}
                   onClick={() => setCurrentPage(page)}
+                  className="cursor-pointer"
                 >
                   {page}
                 </PaginationLink>
@@ -471,7 +477,7 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
                 className={
                   currentPage === totalPages
                     ? "pointer-events-none opacity-50"
-                    : ""
+                    : "cursor-pointer"
                 }
               />
             </PaginationItem>
