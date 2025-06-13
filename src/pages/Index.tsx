@@ -33,6 +33,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { TouchFriendlyButton } from "@/components/TouchFriendlyButton";
 
 const Index = () => {
   const { isMobile, isReady } = useMobile();
@@ -462,10 +463,36 @@ const Index = () => {
   }, [currentView, isMobile, isReady, loans, history, handleBackToMenu, handleNavigation]);
 
   return (
-    <div className="min-h-screen bg-white p-4">
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen bg-gray-50">
+      <div className="w-full">
         <Header onMenuClick={() => setOpenNavSheet(true)} />
-        {renderCurrentView()}
+        
+        {/* Mobile Layout with responsive padding */}
+        <div className="px-2 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 md:py-8 pb-20 sm:pb-8">
+          <div className="max-w-7xl mx-auto">
+            {renderCurrentView()}
+          </div>
+        </div>
+        
+        {/* Mobile Navigation */}
+        {isMobile && (
+          <div className="md:hidden">
+            <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-2 py-2 z-40">
+              <div className="flex justify-around items-center max-w-md mx-auto">
+                <TouchFriendlyButton
+                  variant="ghost"
+                  size="sm"
+                  className="flex flex-col items-center justify-center min-h-[48px] min-w-[48px]"
+                  onClick={() => setCurrentView('menu')}
+                >
+                  <ArrowLeft className="h-4 w-4 mb-1" />
+                  <span className="text-xs">Menu</span>
+                </TouchFriendlyButton>
+              </div>
+            </div>
+          </div>
+        )}
+        
         {NavigationSheet}
         <ReturnDialog
           open={openReturnDialog}

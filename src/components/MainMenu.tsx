@@ -1,147 +1,119 @@
 
-import React, { useState, useMemo } from 'react';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { ClipboardList, BarChart3, PlusCircle, Laptop, RotateCcw, Users } from 'lucide-react';
-import { useUserProfile } from '@/hooks/useUserProfile';
+import React from 'react';
+import { ResponsiveText } from './ResponsiveText';
+import { ResponsiveGrid } from './ResponsiveGrid';
+import { MobileOptimizedCard } from './MobileOptimizedCard';
+import { TouchFriendlyButton } from './TouchFriendlyButton';
+import { Computer, BarChart, Users, Package, ArrowLeft, Settings } from "lucide-react";
 
 interface MainMenuProps {
   onNavigate: (route: 'registration' | 'dashboard' | 'loan' | 'return' | 'inventory' | 'user-management') => void;
 }
 
+const menuItems = [
+  {
+    id: 'loan' as const,
+    title: 'Empréstimos',
+    description: 'Gerenciar empréstimos de Chromebooks',
+    icon: Computer,
+    color: 'from-blue-500 to-blue-600',
+  },
+  {
+    id: 'dashboard' as const,
+    title: 'Dashboard',
+    description: 'Visualizar estatísticas e relatórios',
+    icon: BarChart,
+    color: 'from-green-500 to-green-600',
+  },
+  {
+    id: 'inventory' as const,
+    title: 'Inventário',
+    description: 'Gerenciar estoque de Chromebooks',
+    icon: Package,
+    color: 'from-purple-500 to-purple-600',
+  },
+  {
+    id: 'registration' as const,
+    title: 'Cadastro',
+    description: 'Cadastrar novos Chromebooks',
+    icon: Settings,
+    color: 'from-orange-500 to-orange-600',
+  },
+  {
+    id: 'user-management' as const,
+    title: 'Usuários',
+    description: 'Gerenciar usuários do sistema',
+    icon: Users,
+    color: 'from-indigo-500 to-indigo-600',
+  },
+  {
+    id: 'return' as const,
+    title: 'Devoluções',
+    description: 'Processar devoluções',
+    icon: ArrowLeft,
+    color: 'from-red-500 to-red-600',
+  },
+];
+
 export function MainMenu({ onNavigate }: MainMenuProps) {
-  const [isLoaded, setIsLoaded] = useState(true); // Start as loaded to avoid useEffect
-  const { isSuperAdmin, isLoading: profileLoading } = useUserProfile();
-
-  // Memoizar itens do menu para evitar recriação
-  const menuItems = useMemo(() => {
-    const baseItems = [
-      {
-        title: 'Cadastro',
-        description: 'Registrar novos Chromebooks',
-        content: 'Cadastre novos dispositivos e gere QR Codes para identificação.',
-        icon: PlusCircle,
-        action: () => onNavigate('registration'),
-        bgColor: 'bg-gradient-to-r from-green-500 to-green-600',
-        textColor: 'text-green-700',
-        hoverColor: 'hover:bg-green-700',
-        borderColor: 'border-green-500'
-      },
-      {
-        title: 'Inventário',
-        description: 'Gerenciar Chromebooks',
-        content: 'Visualize, edite ou altere o status dos dispositivos cadastrados.',
-        icon: Laptop,
-        action: () => onNavigate('inventory'),
-        bgColor: 'bg-gradient-to-r from-blue-500 to-blue-600',
-        textColor: 'text-blue-700',
-        hoverColor: 'hover:bg-blue-700',
-        borderColor: 'border-blue-500'
-      },
-      {
-        title: 'Empréstimo',
-        description: 'Gerenciar empréstimos',
-        content: 'Registre novos empréstimos de Chromebooks e veja os ativos.',
-        icon: ClipboardList,
-        action: () => onNavigate('loan'),
-        bgColor: 'bg-gradient-to-r from-violet-500 to-violet-600',
-        textColor: 'text-violet-700',
-        hoverColor: 'hover:bg-violet-700',
-        borderColor: 'border-violet-500'
-      },
-      {
-        title: 'Devolução',
-        description: 'Registrar devoluções',
-        content: 'Registre a devolução de Chromebooks emprestados.',
-        icon: RotateCcw,
-        action: () => onNavigate('return'),
-        bgColor: 'bg-gradient-to-r from-amber-500 to-amber-600',
-        textColor: 'text-amber-700',
-        hoverColor: 'hover:bg-amber-700',
-        borderColor: 'border-amber-500'
-      },
-      {
-        title: 'Dashboard',
-        description: 'Relatórios e estatísticas',
-        content: 'Visualize dados e estatísticas sobre os equipamentos.',
-        icon: BarChart3,
-        action: () => onNavigate('dashboard'),
-        bgColor: 'bg-gradient-to-r from-rose-500 to-rose-600',
-        textColor: 'text-rose-700',
-        hoverColor: 'hover:bg-rose-700',
-        borderColor: 'border-rose-500'
-      }
-    ];
-
-    // Adicionar item de gerenciamento de usuários apenas para super admin
-    if (isSuperAdmin && !profileLoading) {
-      baseItems.push({
-        title: 'Usuários',
-        description: 'Gerenciar usuários e permissões',
-        content: 'Gerencie papéis e permissões dos usuários do sistema.',
-        icon: Users,
-        action: () => onNavigate('user-management'),
-        bgColor: 'bg-gradient-to-r from-purple-500 to-purple-600',
-        textColor: 'text-purple-700',
-        hoverColor: 'hover:bg-purple-700',
-        borderColor: 'border-purple-500'
-      });
-    }
-
-    return baseItems;
-  }, [onNavigate, isSuperAdmin, profileLoading]);
-
   return (
-    <div className="space-y-8">
-      <div className="text-center py-6 px-4 opacity-100 transition-opacity duration-500">
-        <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-violet-600 mb-2">
+    <div className="space-y-6 sm:space-y-8">
+      {/* Header */}
+      <div className="text-center space-y-2 sm:space-y-4 px-4">
+        <ResponsiveText variant="h1" className="bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
+          Zelote
+        </ResponsiveText>
+        <ResponsiveText variant="body" className="text-gray-600 max-w-2xl mx-auto">
           Sistema de Gerenciamento de Chromebooks
-        </h2>
-        <p className="text-gray-600 max-w-2xl mx-auto">
-          Gerencie o cadastro, empréstimo e devolução de Chromebooks de forma simples e eficiente
-        </p>
+        </ResponsiveText>
       </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-6xl mx-auto">
-        {menuItems.map((item, index) => {
-          const IconComponent = item.icon;
+
+      {/* Menu Grid */}
+      <ResponsiveGrid 
+        cols={{ default: 1, sm: 2, lg: 3 }}
+        gap={4}
+        className="px-2 sm:px-4"
+      >
+        {menuItems.map((item) => {
+          const Icon = item.icon;
+          
           return (
-            <div 
-              key={item.title} 
-              className="opacity-100 transition-opacity duration-500"
-              style={{ 
-                transitionDelay: `${index * 100}ms`
-              }}
+            <MobileOptimizedCard
+              key={item.id}
+              className="group hover:scale-[1.02] transition-all duration-200 cursor-pointer"
+              touchFriendly
             >
-              <Card className={`border-2 ${item.borderColor} bg-white overflow-hidden h-full shadow-sm hover:shadow-md transition-all`}>
-                <div className="p-6">
-                  <div className="flex items-center mb-4">
-                    <div className={`mr-4 p-3 rounded-full ${item.textColor.replace('text-', 'bg-').replace('-700', '-100')}`}>
-                      <IconComponent className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <h3 className={`text-xl font-bold ${item.textColor}`}>
-                        {item.title}
-                      </h3>
-                      <p className="text-sm text-gray-500">{item.description}</p>
-                    </div>
+              <TouchFriendlyButton
+                variant="ghost"
+                className="w-full h-full p-4 sm:p-6 text-left justify-start hover:bg-transparent"
+                onClick={() => onNavigate(item.id)}
+              >
+                <div className="space-y-3 sm:space-y-4 w-full">
+                  {/* Icon */}
+                  <div className={`
+                    w-12 h-12 sm:w-14 sm:h-14 rounded-xl 
+                    bg-gradient-to-r ${item.color}
+                    flex items-center justify-center
+                    group-hover:scale-110 transition-transform duration-200
+                  `}>
+                    <Icon className="h-6 w-6 sm:h-7 sm:w-7 text-white" />
                   </div>
-                  <p className="text-sm text-gray-600 mb-4">
-                    {item.content}
-                  </p>
-                  <Button 
-                    className={`w-full text-white ${item.bgColor} hover:opacity-90 transition-all`}
-                    onClick={item.action}
-                  >
-                    <IconComponent className="h-4 w-4 mr-2" />
-                    <span>{item.title}</span>
-                  </Button>
+                  
+                  {/* Content */}
+                  <div className="space-y-1 sm:space-y-2">
+                    <ResponsiveText variant="h4" className="text-gray-900 group-hover:text-blue-600">
+                      {item.title}
+                    </ResponsiveText>
+                    <ResponsiveText variant="caption" className="text-gray-500">
+                      {item.description}
+                    </ResponsiveText>
+                  </div>
                 </div>
-              </Card>
-            </div>
+              </TouchFriendlyButton>
+            </MobileOptimizedCard>
           );
         })}
-      </div>
+      </ResponsiveGrid>
     </div>
   );
 }
