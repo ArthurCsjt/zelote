@@ -1,6 +1,6 @@
 
 import React from 'react';
-import QRCode from 'qrcode.react';
+import { QRCodeSVG } from 'qrcode.react';
 
 interface QRCodeGeneratorProps {
   value: string;
@@ -10,7 +10,7 @@ interface QRCodeGeneratorProps {
 const QRCodeGenerator: React.FC<QRCodeGeneratorProps> = ({ value, size = 200 }) => {
   return (
     <div className="flex flex-col items-center space-y-4">
-      <QRCode 
+      <QRCodeSVG 
         value={value} 
         size={size}
         level="M"
