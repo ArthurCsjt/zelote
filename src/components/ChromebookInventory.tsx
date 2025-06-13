@@ -22,21 +22,17 @@ import {
 import { Textarea } from "./ui/textarea";
 import { Label } from "./ui/label";
 import { toast } from "./ui/use-toast";
-import { Search, ArrowLeft } from "lucide-react";
+import { Search, ArrowLeft, Filter, Edit3, QrCode, CheckCircle, AlertCircle, XCircle, Wrench, Eye, X, Trash2, Save } from "lucide-react";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "./ui/pagination";
 import { ScrollArea } from "./ui/scroll-area";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { 
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "./ui/popover";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "./ui/dropdown-menu";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
 
 // Interface for Chromebook data structure
 interface ChromebookData {
@@ -48,6 +44,7 @@ interface ChromebookData {
   patrimonyNumber?: string;
   observations?: string;
   isProvisioned: boolean;
+  status: 'disponivel' | 'emprestado' | 'manutencao' | 'inativo';
 }
 
 interface ChromebookInventoryProps {
@@ -62,10 +59,18 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
   const [chromebooks, setChromebooks] = useState<ChromebookData[]>([]);
   // State for search term
   const [searchTerm, setSearchTerm] = useState("");
+  // State for status filter
+  const [statusFilter, setStatusFilter] = useState<string>('all');
   // State for edit dialog
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  // State for delete dialog
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  // State for QR Code dialog
+  const [showQRCode, setShowQRCode] = useState<string | null>(null);
   // State for the Chromebook being edited
   const [editingChromebook, setEditingChromebook] = useState<ChromebookData | null>(null);
+  // State for the Chromebook being deleted
+  const [chromebookToDelete, setChromebookToDelete] = useState<ChromebookData | null>(null);
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
@@ -75,7 +80,17 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
     const savedChromebooks = localStorage.getItem("chromebooks");
     if (savedChromebooks) {
       try {
-        setChromebooks(JSON.parse(savedChromebooks));
+        const parsed = JSON.parse(savedChromebooks);
+        // Add status field if it doesn't exist
+        const chromebooksWithStatus = parsed.map((cb: any) => ({
+          ...cb,
+          status: cb.status || 'disponivel',
+          manufacturer: cb.manufacturer || 'Não informado',
+          model: cb.model || cb.modelo || 'Não informado',
+          series: cb.series || cb.serie || 'Não informado',
+          patrimonyNumber: cb.patrimonyNumber || cb.patrimonio || cb.id,
+        }));
+        setChromebooks(chromebooksWithStatus);
       } catch (error) {
         console.error("Error parsing chromebooks from localStorage:", error);
         toast({
@@ -87,12 +102,25 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
     }
   }, []);
 
-  // Filter Chromebooks based on search term
-  const filteredChromebooks = chromebooks.filter((chromebook) =>
-    Object.values(chromebook).some((value) =>
-      String(value).toLowerCase().includes(searchTerm.toLowerCase())
-    )
-  );
+  // Save chromebooks to localStorage whenever the state changes
+  useEffect(() => {
+    if (chromebooks.length > 0) {
+      localStorage.setItem("chromebooks", JSON.stringify(chromebooks));
+    }
+  }, [chromebooks]);
+
+  // Filter Chromebooks based on search term and status
+  const filteredChromebooks = chromebooks.filter((chromebook) => {
+    const matchesSearch = 
+      String(chromebook.patrimonyNumber || chromebook.id).toLowerCase().includes(searchTerm.toLowerCase()) ||
+      chromebook.model.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      chromebook.series.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      chromebook.manufacturer.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesStatus = statusFilter === 'all' || chromebook.status === statusFilter;
+    
+    return matchesSearch && matchesStatus;
+  });
 
   // Calculate pagination
   const totalPages = Math.ceil(filteredChromebooks.length / itemsPerPage);
@@ -101,6 +129,44 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
     startIndex,
     startIndex + itemsPerPage
   );
+
+  // Get status information for display
+  const getStatusInfo = (status: string) => {
+    switch (status) {
+      case 'disponivel':
+        return { color: 'text-green-600 bg-green-50', icon: CheckCircle, label: 'Disponível' };
+      case 'emprestado':
+        return { color: 'text-purple-600 bg-purple-50', icon: AlertCircle, label: 'Emprestado' };
+      case 'manutencao':
+        return { color: 'text-orange-600 bg-orange-50', icon: Wrench, label: 'Manutenção' };
+      case 'inativo':
+        return { color: 'text-gray-600 bg-gray-50', icon: XCircle, label: 'Inativo' };
+      default:
+        return { color: 'text-gray-600 bg-gray-50', icon: XCircle, label: 'Desconhecido' };
+    }
+  };
+
+  // Handle status change
+  const handleStatusChange = (chromebookId: string, newStatus: string) => {
+    if (newStatus === 'emprestado') {
+      toast({
+        title: "Atenção",
+        description: "Para emprestar um Chromebook, use a seção de Empréstimos",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    const updatedChromebooks = chromebooks.map((item) =>
+      item.id === chromebookId ? { ...item, status: newStatus as ChromebookData['status'] } : item
+    );
+    
+    setChromebooks(updatedChromebooks);
+    toast({
+      title: "Status atualizado",
+      description: `Status do Chromebook alterado para ${newStatus}`,
+    });
+  };
 
   // Handle edit click
   const handleEditClick = (chromebook: ChromebookData) => {
@@ -130,6 +196,16 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
     });
   };
 
+  // Handle status change in edit dialog
+  const handleEditStatusChange = (value: string) => {
+    if (!editingChromebook) return;
+
+    setEditingChromebook({
+      ...editingChromebook,
+      status: value as ChromebookData['status'],
+    });
+  };
+
   // Handle save edit
   const handleSaveEdit = () => {
     if (!editingChromebook) return;
@@ -150,11 +226,7 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
       item.id === editingChromebook.id ? editingChromebook : item
     );
 
-    // Save to state and localStorage
     setChromebooks(updatedChromebooks);
-    localStorage.setItem("chromebooks", JSON.stringify(updatedChromebooks));
-
-    // Close dialog and show success message
     setIsEditDialogOpen(false);
     setEditingChromebook(null);
     toast({
@@ -163,17 +235,24 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
     });
   };
 
-  // Handle delete
-  const handleDelete = (id: string) => {
-    if (confirm(`Tem certeza que deseja excluir o Chromebook ${id}?`)) {
-      const updatedChromebooks = chromebooks.filter((item) => item.id !== id);
-      setChromebooks(updatedChromebooks);
-      localStorage.setItem("chromebooks", JSON.stringify(updatedChromebooks));
-      toast({
-        title: "Sucesso",
-        description: `Chromebook ${id} excluído com sucesso`,
-      });
-    }
+  // Handle delete click
+  const handleDeleteClick = (chromebook: ChromebookData) => {
+    setChromebookToDelete(chromebook);
+    setIsDeleteDialogOpen(true);
+  };
+
+  // Handle delete confirmation
+  const handleConfirmDelete = () => {
+    if (!chromebookToDelete) return;
+
+    const updatedChromebooks = chromebooks.filter((item) => item.id !== chromebookToDelete.id);
+    setChromebooks(updatedChromebooks);
+    setIsDeleteDialogOpen(false);
+    setChromebookToDelete(null);
+    toast({
+      title: "Sucesso",
+      description: `Chromebook ${chromebookToDelete.id} excluído com sucesso`,
+    });
   };
 
   // Handle back button click
@@ -186,13 +265,18 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
   return (
     <div className="max-w-6xl mx-auto p-6 bg-white rounded-lg shadow-sm border border-gray-100">
       <div className="flex flex-col sm:flex-row justify-between items-start mb-6">
-        <h2 className="text-2xl font-semibold text-gray-800 mb-4 sm:mb-0">
-          Inventário de Chromebooks
-        </h2>
+        <div>
+          <h2 className="text-2xl font-semibold text-gray-800 mb-2">
+            Inventário de Chromebooks
+          </h2>
+          <p className="text-gray-600">
+            Gerencie Chromebooks e visualize o status dos dispositivos cadastrados
+          </p>
+        </div>
         
         {/* Botão voltar */}
         <Button 
-          variant="back" 
+          variant="outline" 
           onClick={handleBackClick} 
           className="flex items-center gap-1 hover:bg-blue-50"
         >
@@ -206,14 +290,57 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
           <Input
-            placeholder="Buscar Chromebook..."
+            placeholder="Buscar por patrimônio, modelo, série ou fabricante..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10"
           />
         </div>
+        
+        <div className="relative">
+          <Filter className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-[180px] pl-10">
+              <SelectValue placeholder="Filtrar por status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos os Status</SelectItem>
+              <SelectItem value="disponivel">Disponível</SelectItem>
+              <SelectItem value="emprestado">Emprestado</SelectItem>
+              <SelectItem value="manutencao">Manutenção</SelectItem>
+              <SelectItem value="inativo">Inativo</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        
         <div className="text-sm text-gray-500 flex items-center">
           Total: {filteredChromebooks.length} Chromebooks
+        </div>
+      </div>
+
+      {/* Statistics */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div className="bg-white p-4 rounded-lg shadow-sm border text-center">
+          <p className="text-2xl font-bold text-gray-900">{chromebooks.length}</p>
+          <p className="text-sm text-gray-600">Total</p>
+        </div>
+        <div className="bg-white p-4 rounded-lg shadow-sm border text-center">
+          <p className="text-2xl font-bold text-green-600">
+            {chromebooks.filter(c => c.status === 'disponivel').length}
+          </p>
+          <p className="text-sm text-gray-600">Disponíveis</p>
+        </div>
+        <div className="bg-white p-4 rounded-lg shadow-sm border text-center">
+          <p className="text-2xl font-bold text-purple-600">
+            {chromebooks.filter(c => c.status === 'emprestado').length}
+          </p>
+          <p className="text-sm text-gray-600">Emprestados</p>
+        </div>
+        <div className="bg-white p-4 rounded-lg shadow-sm border text-center">
+          <p className="text-2xl font-bold text-orange-600">
+            {chromebooks.filter(c => c.status === 'manutencao').length}
+          </p>
+          <p className="text-sm text-gray-600">Manutenção</p>
         </div>
       </div>
 
@@ -222,64 +349,89 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>ID</TableHead>
+              <TableHead>Patrimônio</TableHead>
               <TableHead>Fabricante</TableHead>
               <TableHead>Modelo</TableHead>
               <TableHead className="hidden md:table-cell">Status</TableHead>
-              <TableHead className="hidden lg:table-cell">Patrimônio</TableHead>
+              <TableHead className="hidden lg:table-cell">Série</TableHead>
               <TableHead>Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {paginatedChromebooks.length > 0 ? (
-              paginatedChromebooks.map((chromebook) => (
-                <TableRow key={chromebook.id}>
-                  <TableCell className="font-medium">{chromebook.id}</TableCell>
-                  <TableCell>{chromebook.manufacturer}</TableCell>
-                  <TableCell>{chromebook.model}</TableCell>
-                  <TableCell className="hidden md:table-cell">
-                    <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        chromebook.isProvisioned
-                          ? "bg-green-100 text-green-800"
-                          : "bg-yellow-100 text-yellow-800"
-                      }`}
-                    >
-                      {chromebook.isProvisioned
-                        ? "Provisionado"
-                        : "Não Provisionado"}
-                    </span>
-                  </TableCell>
-                  <TableCell className="hidden lg:table-cell">
-                    {chromebook.patrimonyNumber || "—"}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex space-x-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleEditClick(chromebook)}
-                      >
-                        Editar
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => handleDelete(chromebook.id)}
-                      >
-                        Excluir
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
+              paginatedChromebooks.map((chromebook) => {
+                const statusInfo = getStatusInfo(chromebook.status);
+                const StatusIcon = statusInfo.icon;
+                
+                return (
+                  <TableRow key={chromebook.id}>
+                    <TableCell className="font-medium">
+                      {chromebook.patrimonyNumber || chromebook.id}
+                    </TableCell>
+                    <TableCell>{chromebook.manufacturer}</TableCell>
+                    <TableCell>{chromebook.model}</TableCell>
+                    <TableCell className="hidden md:table-cell">
+                      <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${statusInfo.color}`}>
+                        <StatusIcon className="w-3 h-3" />
+                        {statusInfo.label}
+                      </div>
+                    </TableCell>
+                    <TableCell className="hidden lg:table-cell">
+                      {chromebook.series}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center space-x-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setShowQRCode(chromebook.patrimonyNumber || chromebook.id)}
+                          title="Ver QR Code"
+                        >
+                          <QrCode className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleEditClick(chromebook)}
+                          title="Editar"
+                        >
+                          <Edit3 className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeleteClick(chromebook)}
+                          title="Excluir"
+                          className="text-red-600 hover:text-red-800"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                        <Select 
+                          value={chromebook.status} 
+                          onValueChange={(value) => handleStatusChange(chromebook.id, value)}
+                        >
+                          <SelectTrigger className="w-[120px] h-8 text-xs">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="disponivel">Disponível</SelectItem>
+                            <SelectItem value="emprestado">Emprestado</SelectItem>
+                            <SelectItem value="manutencao">Manutenção</SelectItem>
+                            <SelectItem value="inativo">Inativo</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                );
+              })
             ) : (
               <TableRow>
                 <TableCell
                   colSpan={6}
                   className="h-32 text-center text-gray-500"
                 >
-                  {searchTerm
+                  {searchTerm || statusFilter !== 'all'
                     ? "Nenhum resultado encontrado. Tente uma busca diferente."
                     : "Nenhum Chromebook cadastrado ainda."}
                 </TableCell>
@@ -327,7 +479,7 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
         </Pagination>
       )}
 
-      {/* Improved Edit Dialog with better mobile support */}
+      {/* Edit Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent 
           className="sm:max-w-lg px-4 py-4 h-auto max-h-[90vh] overflow-hidden"
@@ -413,6 +565,21 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
                   <p className="text-xs text-gray-500">Campo opcional</p>
                 </div>
 
+                <div className="space-y-2">
+                  <Label>Status</Label>
+                  <Select value={editingChromebook.status} onValueChange={handleEditStatusChange}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="disponivel">Disponível</SelectItem>
+                      <SelectItem value="emprestado">Emprestado</SelectItem>
+                      <SelectItem value="manutencao">Manutenção</SelectItem>
+                      <SelectItem value="inativo">Inativo</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
                 <div className="flex items-start space-x-3 pt-2">
                   <Checkbox
                     id="isProvisioned"
@@ -462,13 +629,68 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
               Cancelar
             </Button>
             <Button 
-              variant="back" 
               onClick={handleSaveEdit}
               className={isMobile ? 'w-full' : ''}
             >
+              <Save className="w-4 h-4 mr-2" />
               Salvar Alterações
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Confirmar Exclusão</DialogTitle>
+            <DialogDescription>
+              Tem certeza que deseja excluir o Chromebook <strong>{chromebookToDelete?.patrimonyNumber || chromebookToDelete?.id}</strong>?
+              Esta ação não pode ser desfeita.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsDeleteDialogOpen(false);
+                setChromebookToDelete(null);
+              }}
+            >
+              Cancelar
+            </Button>
+            <Button 
+              variant="destructive"
+              onClick={handleConfirmDelete}
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Excluir
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* QR Code Dialog */}
+      <Dialog open={!!showQRCode} onOpenChange={() => setShowQRCode(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <QrCode className="w-5 h-5 text-blue-600" />
+              QR Code - {showQRCode}
+            </DialogTitle>
+            <DialogDescription>
+              Use este QR Code para empréstimos e devoluções rápidas
+            </DialogDescription>
+          </DialogHeader>
+          <div className="text-center py-4">
+            {/* QR Code would be generated here */}
+            <div className="w-48 h-48 bg-gray-100 mx-auto rounded-lg flex items-center justify-center">
+              <QrCode className="w-24 h-24 text-gray-400" />
+            </div>
+            <p className="mt-4 text-sm text-gray-600">
+              Código: {showQRCode}
+            </p>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
