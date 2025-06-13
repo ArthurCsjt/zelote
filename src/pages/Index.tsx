@@ -1,4 +1,5 @@
-import { useState, useCallback, useEffect, useMemo } from "react";
+
+import { useState, useCallback, useEffect } from "react";
 import { useMobile } from "@/hooks/use-mobile";
 import { LoanForm } from "@/components/LoanForm";
 import { ActiveLoans, Loan, ReturnDataType } from "@/components/ActiveLoans";
@@ -11,7 +12,6 @@ import { Button } from "@/components/ui/button";
 import { LoanHistory } from "@/components/LoanHistory";
 import { MobileFriendlyDashboard } from "@/components/MobileFriendlyDashboard";
 import { ChromebookInventory } from "@/components/ChromebookInventory";
-import { UserManagement } from "@/components/UserManagement";
 import { ArrowLeft, X } from "lucide-react";
 import { Dashboard } from "@/components/Dashboard";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -22,6 +22,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
+  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   Sheet,
@@ -33,7 +34,6 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { TouchFriendlyButton } from "@/components/TouchFriendlyButton";
 
 const Index = () => {
   const { isMobile, isReady } = useMobile();
@@ -49,20 +49,8 @@ const Index = () => {
     type: 'individual',
     userType: 'aluno'
   });
-  const [currentView, setCurrentView] = useState<'menu' | 'loan' | 'registration' | 'dashboard' | 'inventory' | 'user-management'>('menu');
+  const [currentView, setCurrentView] = useState<'menu' | 'loan' | 'registration' | 'dashboard' | 'inventory'>('menu');
   const [openNavSheet, setOpenNavSheet] = useState(false);
-
-  // Loading state enquanto detecta o dispositivo
-  if (!isReady) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-white">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Carregando aplicação...</p>
-        </div>
-      </div>
-    );
-  }
 
   // Ensure smooth scrolling to top when changing views
   useEffect(() => {
@@ -70,8 +58,8 @@ const Index = () => {
     console.log('View changed to:', currentView, 'isMobile:', isMobile);
   }, [currentView, isMobile]);
 
-  // Método de navegação otimizado com useCallback
-  const handleNavigation = useCallback((route: 'registration' | 'dashboard' | 'loan' | 'return' | 'inventory' | 'user-management') => {
+  // Método de navegação simplificado
+  const handleNavigation = useCallback((route: 'registration' | 'dashboard' | 'loan' | 'return' | 'inventory') => {
     try {
       if (route === 'return') {
         setOpenReturnDialog(true);
@@ -97,7 +85,7 @@ const Index = () => {
     }
   }, []);
 
-  // Função otimizada para voltar ao menu
+  // Função simplificada para voltar ao menu
   const handleBackToMenu = useCallback(() => {
     console.log('Voltando ao menu via função handleBackToMenu');
     setCurrentView('menu');
@@ -105,7 +93,7 @@ const Index = () => {
     setOpenLoanDialog(false);
   }, []);
 
-  const handleNewLoan = useCallback((formData: {
+  const handleNewLoan = (formData: {
     studentName: string;
     ra?: string;
     email: string;
@@ -152,53 +140,9 @@ const Index = () => {
         variant: "destructive",
       });
     }
-  }, [loans]);
+  };
 
-  const handleReturn = useCallback((loanId: string, returnData: ReturnDataType) => {
-    try {
-      const loanToReturn = loans.find((loan) => loan.id === loanId);
-      if (!loanToReturn) {
-        console.warn(`Empréstimo com ID ${loanId} não encontrado`);
-        return;
-      }
-
-      const returnedLoan: Loan = {
-        ...loanToReturn,
-        returnRecord: {
-          returnedBy: {
-            name: returnData.name,
-            ra: returnData.ra,
-            email: returnData.email,
-            type: returnData.userType
-          },
-          returnTime: new Date(),
-          returnType: returnData.type
-        }
-      };
-
-      setHistory(prevHistory => [returnedLoan, ...prevHistory]);
-      setLoans(prevLoans => prevLoans.filter((loan) => loan.id !== loanId));
-
-      const returnedByDifferentPerson = returnData.email !== loanToReturn.email;
-      if (returnData.type === 'individual') {
-        toast({
-          title: "Chromebook Devolvido",
-          description: returnedByDifferentPerson
-            ? `Devolvido por ${returnData.name} (${returnData.email})`
-            : "Devolvido pelo próprio solicitante",
-        });
-      }
-    } catch (error) {
-      console.error("Erro ao processar devolução específica:", error);
-      toast({
-        title: "Erro",
-        description: "Ocorreu um erro ao processar esta devolução",
-        variant: "destructive",
-      });
-    }
-  }, [loans]);
-
-  const handleReturnClick = useCallback(() => {
+  const handleReturnClick = () => {
     try {
       if (!returnData.name || !returnData.email) {
         toast({
@@ -299,10 +243,54 @@ const Index = () => {
         variant: "destructive",
       });
     }
-  }, [returnData, chromebookId, loans, handleReturn]);
+  };
 
-  // Memoizar componentes complexos para evitar re-renders desnecessários
-  const NavigationSheet = useMemo(() => (
+  const handleReturn = (loanId: string, returnData: ReturnDataType) => {
+    try {
+      const loanToReturn = loans.find((loan) => loan.id === loanId);
+      if (!loanToReturn) {
+        console.warn(`Empréstimo com ID ${loanId} não encontrado`);
+        return;
+      }
+
+      const returnedLoan: Loan = {
+        ...loanToReturn,
+        returnRecord: {
+          returnedBy: {
+            name: returnData.name,
+            ra: returnData.ra,
+            email: returnData.email,
+            type: returnData.userType
+          },
+          returnTime: new Date(),
+          returnType: returnData.type
+        }
+      };
+
+      setHistory(prevHistory => [returnedLoan, ...prevHistory]);
+      setLoans(prevLoans => prevLoans.filter((loan) => loan.id !== loanId));
+
+      const returnedByDifferentPerson = returnData.email !== loanToReturn.email;
+      if (returnData.type === 'individual') {
+        toast({
+          title: "Chromebook Devolvido",
+          description: returnedByDifferentPerson
+            ? `Devolvido por ${returnData.name} (${returnData.email})`
+            : "Devolvido pelo próprio solicitante",
+        });
+      }
+    } catch (error) {
+      console.error("Erro ao processar devolução específica:", error);
+      toast({
+        title: "Erro",
+        description: "Ocorreu um erro ao processar esta devolução",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Componente de navegação suspenso
+  const NavigationSheet = () => (
     <Sheet open={openNavSheet} onOpenChange={setOpenNavSheet}>
       <SheetTrigger asChild>
         <Button 
@@ -321,7 +309,7 @@ const Index = () => {
           </SheetDescription>
         </SheetHeader>
         <div className="py-6 grid gap-4">
-          <Button onClick={handleBackToMenu} className="w-full">
+          <Button onClick={() => handleBackToMenu()} className="w-full">
             Menu Principal
           </Button>
           <Button onClick={() => handleNavigation('loan')} className="w-full">
@@ -339,9 +327,6 @@ const Index = () => {
           <Button onClick={() => handleNavigation('return')} className="w-full">
             Devolver Chromebook
           </Button>
-          <Button onClick={() => handleNavigation('user-management')} className="w-full">
-            Gerenciar Usuários
-          </Button>
         </div>
         <SheetFooter>
           <SheetClose asChild>
@@ -350,10 +335,10 @@ const Index = () => {
         </SheetFooter>
       </SheetContent>
     </Sheet>
-  ), [openNavSheet, handleBackToMenu, handleNavigation]);
+  );
 
-  // Memoizar diálogo de empréstimo
-  const LoanDialog = useMemo(() => (
+  // Diálogo de Empréstimo com ScrollArea para permitir rolagem
+  const LoanDialog = () => (
     <Dialog open={openLoanDialog} onOpenChange={setOpenLoanDialog}>
       <DialogContent className="max-w-6xl max-h-[90vh] flex flex-col">
         <DialogHeader>
@@ -378,16 +363,16 @@ const Index = () => {
         </ScrollArea>
         
         <DialogFooter className="mt-4">
-          <Button variant="outline" onClick={() => setOpenLoanDialog(false)}>
+          <Button variant="back" onClick={() => setOpenLoanDialog(false)}>
             <ArrowLeft className="mr-1" />
             Voltar
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  ), [openLoanDialog, handleNewLoan, loans, handleReturn, history]);
+  );
 
-  const renderCurrentView = useCallback(() => {
+  const renderCurrentView = () => {
     console.log('Renderizando view:', currentView, 'isMobile:', isMobile, 'isReady:', isReady);
     
     // Wait for mobile detection to be ready
@@ -395,105 +380,61 @@ const Index = () => {
       return <div className="flex items-center justify-center min-h-[50vh]">Carregando...</div>;
     }
     
-    try {
-      switch (currentView) {
-        case 'registration':
-          return (
-            <div className="animate-in fade-in duration-300">
-              <ChromebookRegistration onBack={handleBackToMenu} />
-            </div>
-          );
-        case 'dashboard':
-          if (isMobile) {
-            console.log('Renderizando dashboard mobile');
-            return (
-              <div className="animate-in fade-in duration-300">
-                <MobileFriendlyDashboard 
-                  activeLoans={loans}
-                  history={history}
-                  onBack={handleBackToMenu}
-                />
-              </div>
-            );
-          } else {
-            return (
-              <div className="animate-in fade-in duration-300">
-                <Dashboard 
-                  activeLoans={loans}
-                  history={history}
-                  onBack={handleBackToMenu}
-                />
-              </div>
-            );
-          }
-        case 'inventory':
-          return (
-            <div className="animate-in fade-in duration-300">
-              <ChromebookInventory onBack={handleBackToMenu} />
-            </div>
-          );
-        case 'user-management':
-          return (
-            <div className="animate-in fade-in duration-300">
-              <UserManagement onBack={handleBackToMenu} />
-            </div>
-          );
-        case 'loan':
-          return (
-            <div className="space-y-6 animate-in fade-in duration-300">
-              <MainMenu onNavigate={handleNavigation} />
-            </div>
-          );
-        default:
-          return <MainMenu onNavigate={handleNavigation} />;
-      }
-    } catch (error) {
-      console.error('Erro ao renderizar view:', error);
-      return (
-        <div className="flex items-center justify-center min-h-[50vh]">
-          <div className="text-center">
-            <p className="text-red-600 mb-4">Erro ao carregar a tela</p>
-            <Button onClick={() => setCurrentView('menu')}>
-              Voltar ao Menu
-            </Button>
+    switch (currentView) {
+      case 'registration':
+        return (
+          <div className="animate-in fade-in duration-300">
+            <ChromebookRegistration onBack={handleBackToMenu} />
           </div>
-        </div>
-      );
+        );
+      case 'dashboard':
+        if (isMobile) {
+          console.log('Renderizando dashboard mobile');
+          return (
+            <div className="animate-in fade-in duration-300">
+              <MobileFriendlyDashboard 
+                activeLoans={loans}
+                history={history}
+                onBack={handleBackToMenu}
+              />
+            </div>
+          );
+        } else {
+          return (
+            <div className="animate-in fade-in duration-300">
+              <Dashboard 
+                activeLoans={loans}
+                history={history}
+                onBack={handleBackToMenu}
+              />
+            </div>
+          );
+        }
+      case 'inventory':
+        return (
+          <div className="animate-in fade-in duration-300">
+            <ChromebookInventory onBack={handleBackToMenu} />
+          </div>
+        );
+      case 'loan':
+        // Não renderizamos mais o conteúdo aqui, pois agora está no diálogo
+        return (
+          <div className="space-y-6 animate-in fade-in duration-300">
+            <MainMenu onNavigate={handleNavigation} />
+          </div>
+        );
+      default:
+        return <MainMenu onNavigate={handleNavigation} />;
     }
-  }, [currentView, isMobile, isReady, loans, history, handleBackToMenu, handleNavigation]);
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="w-full">
-        <Header onMenuClick={() => setOpenNavSheet(true)} />
-        
-        {/* Mobile Layout with responsive padding */}
-        <div className="px-2 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 md:py-8 pb-20 sm:pb-8">
-          <div className="max-w-7xl mx-auto">
-            {renderCurrentView()}
-          </div>
-        </div>
-        
-        {/* Mobile Navigation */}
-        {isMobile && (
-          <div className="md:hidden">
-            <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-2 py-2 z-40">
-              <div className="flex justify-around items-center max-w-md mx-auto">
-                <TouchFriendlyButton
-                  variant="ghost"
-                  size="sm"
-                  className="flex flex-col items-center justify-center min-h-[48px] min-w-[48px]"
-                  onClick={() => setCurrentView('menu')}
-                >
-                  <ArrowLeft className="h-4 w-4 mb-1" />
-                  <span className="text-xs">Menu</span>
-                </TouchFriendlyButton>
-              </div>
-            </div>
-          </div>
-        )}
-        
-        {NavigationSheet}
+    <div className="min-h-screen bg-white p-4">
+      <div className="max-w-6xl mx-auto">
+        <Header />
+        {renderCurrentView()}
+        {/* Sempre renderize o Sheet de navegação, mas só aparece quando aberto */}
+        <NavigationSheet />
         <ReturnDialog
           open={openReturnDialog}
           onOpenChange={setOpenReturnDialog}
@@ -503,7 +444,8 @@ const Index = () => {
           onReturnDataChange={setReturnData}
           onConfirm={handleReturnClick}
         />
-        {LoanDialog}
+        {/* Adicione o diálogo de empréstimo */}
+        <LoanDialog />
       </div>
     </div>
   );

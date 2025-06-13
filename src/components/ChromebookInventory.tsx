@@ -1,242 +1,476 @@
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "./ui/button";
-import { toast } from "@/hooks/use-toast";
-import { ArrowLeft, Plus } from "lucide-react";
-import { ExpandableChromebookCard } from "./ExpandableChromebookCard";
-import { ChromebookFilters } from "./ChromebookFilters";
-import { ChromebookStats } from "./ChromebookStats";
-import { AddChromebookDialog } from "./AddChromebookDialog";
+import { Input } from "./ui/input";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "./ui/table";
+import { Checkbox } from "./ui/checkbox";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle,
+  DialogDescription,
+  DialogFooter
+} from "./ui/dialog";
+import { Textarea } from "./ui/textarea";
+import { Label } from "./ui/label";
+import { toast } from "./ui/use-toast";
+import { Search, ArrowLeft } from "lucide-react";
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "./ui/pagination";
+import { ScrollArea } from "./ui/scroll-area";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { 
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "./ui/popover";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
 
-interface Chromebook {
+// Interface for Chromebook data structure
+interface ChromebookData {
   id: string;
-  brand: string;
+  manufacturer: string;
   model: string;
-  serialNumber: string;
-  patrimony: string;
-  status: 'disponivel' | 'emprestado' | 'manutencao' | 'danificado';
-  location?: string;
-  acquisitionDate?: string;
-  notes?: string;
+  series: string;
   manufacturingYear?: string;
-  isProvisioned?: boolean;
+  patrimonyNumber?: string;
+  observations?: string;
+  isProvisioned: boolean;
 }
 
-export function ChromebookInventory({ onBack }: { onBack: () => void }) {
-  console.log('ChromebookInventory component mounted');
+interface ChromebookInventoryProps {
+  onBack?: () => void;
+}
+
+export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
+  // Check if on mobile device
+  const isMobile = useIsMobile();
   
-  const [chromebooks, setChromebooks] = useState<Chromebook[]>([]);
+  // State for storing all Chromebooks
+  const [chromebooks, setChromebooks] = useState<ChromebookData[]>([]);
+  // State for search term
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  // State for edit dialog
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  // State for the Chromebook being edited
+  const [editingChromebook, setEditingChromebook] = useState<ChromebookData | null>(null);
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
-  // Carregar dados do localStorage
+  // Load Chromebooks from localStorage on component mount
   useEffect(() => {
-    console.log('Loading chromebooks from localStorage');
-    
-    try {
-      const savedChromebooks = localStorage.getItem('chromebooks');
-      if (savedChromebooks) {
-        const parsed = JSON.parse(savedChromebooks);
-        console.log('Loaded chromebooks:', parsed.length);
-        setChromebooks(parsed);
-      } else {
-        console.log('No saved chromebooks found');
+    const savedChromebooks = localStorage.getItem("chromebooks");
+    if (savedChromebooks) {
+      try {
+        setChromebooks(JSON.parse(savedChromebooks));
+      } catch (error) {
+        console.error("Error parsing chromebooks from localStorage:", error);
+        toast({
+          title: "Erro",
+          description: "Não foi possível carregar os Chromebooks salvos",
+          variant: "destructive",
+        });
       }
-    } catch (error) {
-      console.error('Error loading chromebooks from localStorage:', error);
-      toast({
-        title: "Erro",
-        description: "Erro ao carregar dados salvos",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
     }
   }, []);
 
-  // Filtrar chromebooks
-  const filteredChromebooks = useMemo(() => {
-    console.log('Filtering chromebooks, search:', searchTerm, 'status:', statusFilter);
-    
-    let filtered = chromebooks;
+  // Filter Chromebooks based on search term
+  const filteredChromebooks = chromebooks.filter((chromebook) =>
+    Object.values(chromebook).some((value) =>
+      String(value).toLowerCase().includes(searchTerm.toLowerCase())
+    )
+  );
 
-    if (searchTerm.trim()) {
-      const searchLower = searchTerm.toLowerCase();
-      filtered = filtered.filter(chromebook =>
-        chromebook.id.toLowerCase().includes(searchLower) ||
-        chromebook.brand.toLowerCase().includes(searchLower) ||
-        chromebook.model.toLowerCase().includes(searchLower) ||
-        chromebook.serialNumber.toLowerCase().includes(searchLower) ||
-        chromebook.patrimony.toLowerCase().includes(searchLower)
-      );
-    }
+  // Calculate pagination
+  const totalPages = Math.ceil(filteredChromebooks.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedChromebooks = filteredChromebooks.slice(
+    startIndex,
+    startIndex + itemsPerPage
+  );
 
-    if (statusFilter !== "all") {
-      filtered = filtered.filter(chromebook => chromebook.status === statusFilter);
-    }
+  // Handle edit click
+  const handleEditClick = (chromebook: ChromebookData) => {
+    setEditingChromebook({ ...chromebook });
+    setIsEditDialogOpen(true);
+  };
 
-    console.log('Filtered chromebooks count:', filtered.length);
-    return filtered;
-  }, [chromebooks, searchTerm, statusFilter]);
+  // Handle edit form change
+  const handleEditChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    if (!editingChromebook) return;
 
-  // Salvar no localStorage
-  const saveToLocalStorage = useCallback((data: Chromebook[]) => {
-    try {
-      localStorage.setItem('chromebooks', JSON.stringify(data));
-      console.log('Saved chromebooks to localStorage:', data.length);
-    } catch (error) {
-      console.error('Error saving to localStorage:', error);
+    setEditingChromebook({
+      ...editingChromebook,
+      [e.target.id]: e.target.value,
+    });
+  };
+
+  // Handle provisioning status change
+  const handleProvisioningChange = (checked: boolean) => {
+    if (!editingChromebook) return;
+
+    setEditingChromebook({
+      ...editingChromebook,
+      isProvisioned: checked,
+    });
+  };
+
+  // Handle save edit
+  const handleSaveEdit = () => {
+    if (!editingChromebook) return;
+
+    // Validate required fields
+    if (!editingChromebook.id || !editingChromebook.manufacturer || 
+        !editingChromebook.model || !editingChromebook.series) {
       toast({
-        title: "Erro",
-        description: "Erro ao salvar dados",
-        variant: "destructive",
-      });
-    }
-  }, []);
-
-  const handleAddChromebook = useCallback((chromebook: Chromebook) => {
-    console.log('Adding new chromebook:', chromebook.id);
-    
-    // Verificar se ID já existe
-    if (chromebooks.some(cb => cb.id === chromebook.id)) {
-      toast({
-        title: "Erro",
-        description: `Chromebook com ID ${chromebook.id} já existe`,
+        title: "Campos obrigatórios",
+        description: "Preencha todos os campos obrigatórios",
         variant: "destructive",
       });
       return;
     }
 
-    const updatedChromebooks = [...chromebooks, chromebook];
+    // Update Chromebook in the list
+    const updatedChromebooks = chromebooks.map((item) =>
+      item.id === editingChromebook.id ? editingChromebook : item
+    );
+
+    // Save to state and localStorage
     setChromebooks(updatedChromebooks);
-    saveToLocalStorage(updatedChromebooks);
-    setIsAddDialogOpen(false);
-    
+    localStorage.setItem("chromebooks", JSON.stringify(updatedChromebooks));
+
+    // Close dialog and show success message
+    setIsEditDialogOpen(false);
+    setEditingChromebook(null);
     toast({
       title: "Sucesso",
-      description: `Chromebook ${chromebook.id} adicionado com sucesso`,
+      description: `Chromebook ${editingChromebook.id} atualizado com sucesso`,
     });
-  }, [chromebooks, saveToLocalStorage]);
+  };
 
-  const handleDeleteChromebook = useCallback((id: string) => {
-    console.log('Deleting chromebook:', id);
-    
-    if (window.confirm(`Tem certeza que deseja excluir o Chromebook ${id}?`)) {
-      const updatedChromebooks = chromebooks.filter(cb => cb.id !== id);
+  // Handle delete
+  const handleDelete = (id: string) => {
+    if (confirm(`Tem certeza que deseja excluir o Chromebook ${id}?`)) {
+      const updatedChromebooks = chromebooks.filter((item) => item.id !== id);
       setChromebooks(updatedChromebooks);
-      saveToLocalStorage(updatedChromebooks);
-      
+      localStorage.setItem("chromebooks", JSON.stringify(updatedChromebooks));
       toast({
         title: "Sucesso",
-        description: "Chromebook removido com sucesso",
+        description: `Chromebook ${id} excluído com sucesso`,
       });
     }
-  }, [chromebooks, saveToLocalStorage]);
+  };
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Carregando inventário...</p>
-        </div>
-      </div>
-    );
-  }
+  // Handle back button click
+  const handleBackClick = () => {
+    if (onBack) {
+      onBack();
+    }
+  };
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-500">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <Button variant="outline" size="icon" onClick={onBack} className="shadow-sm">
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-1">
-              Inventário de Chromebooks
-            </h1>
-            <p className="text-gray-600">
-              Gerencie todos os Chromebooks cadastrados
-            </p>
-          </div>
-        </div>
+    <div className="max-w-6xl mx-auto p-6 bg-white rounded-lg shadow-sm border border-gray-100">
+      <div className="flex flex-col sm:flex-row justify-between items-start mb-6">
+        <h2 className="text-2xl font-semibold text-gray-800 mb-4 sm:mb-0">
+          Inventário de Chromebooks
+        </h2>
+        
+        {/* Botão voltar */}
         <Button 
-          onClick={() => setIsAddDialogOpen(true)}
-          className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-200"
+          variant="back" 
+          onClick={handleBackClick} 
+          className="flex items-center gap-1 hover:bg-blue-50"
         >
-          <Plus className="h-4 w-4 mr-2" />
-          Adicionar Chromebook
+          <ArrowLeft className="h-4 w-4" />
+          <span>Voltar ao Menu</span>
         </Button>
       </div>
 
-      {/* Filters and Search */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-        <ChromebookFilters
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          statusFilter={statusFilter}
-          onStatusFilterChange={setStatusFilter}
-        />
-      </div>
-
-      {/* Statistics */}
-      <ChromebookStats chromebooks={chromebooks} />
-
-      {/* Chromebooks List */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-gray-800">
-            Lista de Chromebooks ({filteredChromebooks.length})
-          </h2>
-          <div className="text-sm text-gray-500">
-            Clique em um card para expandir
-          </div>
+      {/* Search and filters */}
+      <div className="flex flex-col sm:flex-row gap-4 mb-6">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+          <Input
+            placeholder="Buscar Chromebook..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10"
+          />
         </div>
-        
-        {filteredChromebooks.length > 0 ? (
-          <div className="space-y-4">
-            {filteredChromebooks.map((chromebook) => (
-              <ExpandableChromebookCard
-                key={`${chromebook.id}-${chromebook.serialNumber}`}
-                chromebook={chromebook}
-                onDelete={handleDeleteChromebook}
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-16">
-            <div className="w-24 h-24 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
-              <Plus className="h-8 w-8 text-gray-400" />
-            </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
-              {searchTerm || statusFilter !== "all" ? "Nenhum Chromebook encontrado" : "Nenhum Chromebook cadastrado"}
-            </h3>
-            <p className="text-gray-500 mb-4">
-              {searchTerm || statusFilter !== "all" 
-                ? "Tente ajustar os filtros de pesquisa" 
-                : "Comece adicionando seu primeiro Chromebook"
-              }
-            </p>
-            {(!searchTerm && statusFilter === "all") && (
-              <Button onClick={() => setIsAddDialogOpen(true)}>
-                <Plus className="h-4 w-4 mr-2" />
-                Adicionar Primeiro Chromebook
-              </Button>
-            )}
-          </div>
-        )}
+        <div className="text-sm text-gray-500 flex items-center">
+          Total: {filteredChromebooks.length} Chromebooks
+        </div>
       </div>
 
-      {/* Add Dialog */}
-      <AddChromebookDialog
-        isOpen={isAddDialogOpen}
-        onClose={() => setIsAddDialogOpen(false)}
-        onAdd={handleAddChromebook}
-        existingIds={chromebooks.map(cb => cb.id)}
-      />
+      {/* Table of Chromebooks */}
+      <div className="border rounded-md">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>ID</TableHead>
+              <TableHead>Fabricante</TableHead>
+              <TableHead>Modelo</TableHead>
+              <TableHead className="hidden md:table-cell">Status</TableHead>
+              <TableHead className="hidden lg:table-cell">Patrimônio</TableHead>
+              <TableHead>Ações</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {paginatedChromebooks.length > 0 ? (
+              paginatedChromebooks.map((chromebook) => (
+                <TableRow key={chromebook.id}>
+                  <TableCell className="font-medium">{chromebook.id}</TableCell>
+                  <TableCell>{chromebook.manufacturer}</TableCell>
+                  <TableCell>{chromebook.model}</TableCell>
+                  <TableCell className="hidden md:table-cell">
+                    <span
+                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        chromebook.isProvisioned
+                          ? "bg-green-100 text-green-800"
+                          : "bg-yellow-100 text-yellow-800"
+                      }`}
+                    >
+                      {chromebook.isProvisioned
+                        ? "Provisionado"
+                        : "Não Provisionado"}
+                    </span>
+                  </TableCell>
+                  <TableCell className="hidden lg:table-cell">
+                    {chromebook.patrimonyNumber || "—"}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex space-x-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleEditClick(chromebook)}
+                      >
+                        Editar
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => handleDelete(chromebook.id)}
+                      >
+                        Excluir
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell
+                  colSpan={6}
+                  className="h-32 text-center text-gray-500"
+                >
+                  {searchTerm
+                    ? "Nenhum resultado encontrado. Tente uma busca diferente."
+                    : "Nenhum Chromebook cadastrado ainda."}
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <Pagination className="mt-6">
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+              />
+            </PaginationItem>
+
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              <PaginationItem key={page}>
+                <PaginationLink
+                  isActive={currentPage === page}
+                  onClick={() => setCurrentPage(page)}
+                >
+                  {page}
+                </PaginationLink>
+              </PaginationItem>
+            ))}
+
+            <PaginationItem>
+              <PaginationNext
+                onClick={() =>
+                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                }
+                className={
+                  currentPage === totalPages
+                    ? "pointer-events-none opacity-50"
+                    : ""
+                }
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
+      )}
+
+      {/* Improved Edit Dialog with better mobile support */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent 
+          className="sm:max-w-lg px-4 py-4 h-auto max-h-[90vh] overflow-hidden"
+          style={{
+            width: isMobile ? 'calc(100vw - 32px)' : 'auto',
+            top: isMobile ? '50%' : undefined,
+            transform: isMobile ? 'translate(-50%, -50%)' : undefined
+          }}
+        >
+          <DialogHeader>
+            <DialogTitle>Editar Chromebook</DialogTitle>
+            <DialogDescription>
+              Atualize as informações do Chromebook. Os campos marcados com *
+              são obrigatórios.
+            </DialogDescription>
+          </DialogHeader>
+
+          {editingChromebook && (
+            <div className="overflow-y-auto my-4 pr-1" style={{
+              maxHeight: isMobile ? 'calc(70vh - 180px)' : '65vh',
+              paddingBottom: '1rem'
+            }}>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="id">ID do Chromebook *</Label>
+                  <Input
+                    id="id"
+                    value={editingChromebook.id}
+                    onChange={handleEditChange}
+                    disabled
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="manufacturer">Fabricante *</Label>
+                  <Input
+                    id="manufacturer"
+                    value={editingChromebook.manufacturer}
+                    onChange={handleEditChange}
+                    placeholder="Ex: Lenovo, HP, Dell"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="model">Modelo *</Label>
+                  <Input
+                    id="model"
+                    value={editingChromebook.model}
+                    onChange={handleEditChange}
+                    placeholder="Ex: Chromebook 14e"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="series">Série *</Label>
+                  <Input
+                    id="series"
+                    value={editingChromebook.series}
+                    onChange={handleEditChange}
+                    placeholder="Digite o número de série"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="manufacturingYear">Ano de Fabricação</Label>
+                  <Input
+                    id="manufacturingYear"
+                    value={editingChromebook.manufacturingYear || ""}
+                    onChange={handleEditChange}
+                    placeholder="Ex: 2023"
+                  />
+                  <p className="text-xs text-gray-500">Campo opcional</p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="patrimonyNumber">Patrimônio</Label>
+                  <Input
+                    id="patrimonyNumber"
+                    value={editingChromebook.patrimonyNumber || ""}
+                    onChange={handleEditChange}
+                    placeholder="Digite o número do patrimônio"
+                  />
+                  <p className="text-xs text-gray-500">Campo opcional</p>
+                </div>
+
+                <div className="flex items-start space-x-3 pt-2">
+                  <Checkbox
+                    id="isProvisioned"
+                    checked={editingChromebook.isProvisioned}
+                    onCheckedChange={(checked) =>
+                      handleProvisioningChange(checked === true)
+                    }
+                  />
+                  <div className="space-y-1 leading-none">
+                    <Label
+                      htmlFor="isProvisioned"
+                      className="font-medium text-sm cursor-pointer"
+                    >
+                      Equipamento Provisionado
+                    </Label>
+                    <p className="text-xs text-gray-500">
+                      Marque se o Chromebook já está provisionado no console de
+                      administração
+                    </p>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="observations">Observações</Label>
+                  <Textarea
+                    id="observations"
+                    value={editingChromebook.observations || ""}
+                    onChange={handleEditChange}
+                    placeholder="Digite observações relevantes sobre o equipamento"
+                    className="min-h-[100px]"
+                  />
+                  <p className="text-xs text-gray-500">Campo opcional</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter className={`mt-2 pt-4 border-t ${isMobile ? 'flex-col space-y-2' : ''}`}>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsEditDialogOpen(false);
+                setEditingChromebook(null);
+              }}
+              className={isMobile ? 'w-full' : ''}
+            >
+              Cancelar
+            </Button>
+            <Button 
+              variant="back" 
+              onClick={handleSaveEdit}
+              className={isMobile ? 'w-full' : ''}
+            >
+              Salvar Alterações
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -1,3 +1,4 @@
+
 import { useState } from "react"; // Hook do React para gerenciar estado
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -384,20 +385,18 @@ export function ChromebookRegistration({ onBack }: ChromebookRegistrationProps) 
           </div>
         </div>
 
-        {/* Campo: Observações (só aparece se estiver provisionado) */}
-        {formData.isProvisioned && (
-          <div className="space-y-2">
-            <Label htmlFor="observations">Observações</Label>
-            <Textarea
-              id="observations"
-              value={formData.observations}
-              onChange={(e) => setFormData({ ...formData, observations: e.target.value })}
-              placeholder="Digite observações relevantes sobre o equipamento provisionado"
-              className="min-h-[100px]"
-            />
-            <p className="text-xs text-gray-500">Campo opcional</p>
-          </div>
-        )}
+        {/* Campo: Observações (opcional) */}
+        <div className="space-y-2">
+          <Label htmlFor="observations">Observações</Label>
+          <Textarea
+            id="observations"
+            value={formData.observations}
+            onChange={(e) => setFormData({ ...formData, observations: e.target.value })}
+            placeholder="Digite observações relevantes sobre o equipamento"
+            className="min-h-[100px]"
+          />
+          <p className="text-xs text-gray-500">Campo opcional</p>
+        </div>
 
         {/* Botão de envio do formulário */}
         <Button type="submit" className="w-full">
