@@ -488,160 +488,174 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
       {/* Edit Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent 
-          className="sm:max-w-lg px-4 py-4 h-auto max-h-[90vh] overflow-hidden"
-          style={{
-            width: isMobile ? 'calc(100vw - 32px)' : 'auto',
-            top: isMobile ? '50%' : undefined,
-            transform: isMobile ? 'translate(-50%, -50%)' : undefined
-          }}
+          className={`${isMobile ? 'w-[95vw] h-[95vh] max-w-none' : 'sm:max-w-2xl max-h-[90vh]'} flex flex-col p-0`}
         >
-          <DialogHeader>
+          <DialogHeader className="px-4 py-3 border-b shrink-0">
             <DialogTitle>Editar Chromebook</DialogTitle>
             <DialogDescription>
-              Atualize as informações do Chromebook. Os campos marcados com *
-              são obrigatórios.
+              Atualize as informações do Chromebook. Campos com * são obrigatórios.
             </DialogDescription>
           </DialogHeader>
 
           {editingChromebook && (
-            <div className="overflow-y-auto my-4 pr-1" style={{
-              maxHeight: isMobile ? 'calc(70vh - 180px)' : '65vh',
-              paddingBottom: '1rem'
-            }}>
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="id">ID do Chromebook *</Label>
-                  <Input
-                    id="id"
-                    value={editingChromebook.id}
-                    onChange={handleEditChange}
-                    disabled
-                  />
-                </div>
+            <div className="flex-1 overflow-y-auto px-4 py-2">
+              <div className={`space-y-${isMobile ? '3' : '4'}`}>
+                {/* Informações Básicas */}
+                <div className="space-y-3">
+                  <h4 className="font-medium text-sm text-gray-700 border-b pb-1">Informações Básicas</h4>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="id" className="text-xs font-medium">ID do Chromebook *</Label>
+                      <Input
+                        id="id"
+                        value={editingChromebook.id}
+                        onChange={handleEditChange}
+                        disabled
+                        className="h-9"
+                      />
+                    </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="manufacturer">Fabricante *</Label>
-                  <Input
-                    id="manufacturer"
-                    value={editingChromebook.manufacturer}
-                    onChange={handleEditChange}
-                    placeholder="Ex: Lenovo, HP, Dell"
-                  />
-                </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="patrimonyNumber" className="text-xs font-medium">Patrimônio</Label>
+                      <Input
+                        id="patrimonyNumber"
+                        value={editingChromebook.patrimonyNumber || ""}
+                        onChange={handleEditChange}
+                        placeholder="Número do patrimônio"
+                        className="h-9"
+                      />
+                    </div>
+                  </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="model">Modelo *</Label>
-                  <Input
-                    id="model"
-                    value={editingChromebook.model}
-                    onChange={handleEditChange}
-                    placeholder="Ex: Chromebook 14e"
-                  />
-                </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="manufacturer" className="text-xs font-medium">Fabricante *</Label>
+                      <Input
+                        id="manufacturer"
+                        value={editingChromebook.manufacturer}
+                        onChange={handleEditChange}
+                        placeholder="Ex: Lenovo, HP, Dell"
+                        className="h-9"
+                      />
+                    </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="series">Série *</Label>
-                  <Input
-                    id="series"
-                    value={editingChromebook.series}
-                    onChange={handleEditChange}
-                    placeholder="Digite o número de série"
-                  />
-                </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="model" className="text-xs font-medium">Modelo *</Label>
+                      <Input
+                        id="model"
+                        value={editingChromebook.model}
+                        onChange={handleEditChange}
+                        placeholder="Ex: Chromebook 14e"
+                        className="h-9"
+                      />
+                    </div>
+                  </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="manufacturingYear">Ano de Fabricação</Label>
-                  <Input
-                    id="manufacturingYear"
-                    value={editingChromebook.manufacturingYear || ""}
-                    onChange={handleEditChange}
-                    placeholder="Ex: 2023"
-                  />
-                  <p className="text-xs text-gray-500">Campo opcional</p>
-                </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="series" className="text-xs font-medium">Série *</Label>
+                      <Input
+                        id="series"
+                        value={editingChromebook.series}
+                        onChange={handleEditChange}
+                        placeholder="Número de série"
+                        className="h-9"
+                      />
+                    </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="patrimonyNumber">Patrimônio</Label>
-                  <Input
-                    id="patrimonyNumber"
-                    value={editingChromebook.patrimonyNumber || ""}
-                    onChange={handleEditChange}
-                    placeholder="Digite o número do patrimônio"
-                  />
-                  <p className="text-xs text-gray-500">Campo opcional</p>
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Status</Label>
-                  <Select value={editingChromebook.status} onValueChange={handleEditStatusChange}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="disponivel">Disponível</SelectItem>
-                      <SelectItem value="emprestado">Emprestado</SelectItem>
-                      <SelectItem value="manutencao">Manutenção</SelectItem>
-                      <SelectItem value="inativo">Inativo</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="flex items-start space-x-3 pt-2">
-                  <Checkbox
-                    id="isProvisioned"
-                    checked={editingChromebook.isProvisioned}
-                    onCheckedChange={(checked) =>
-                      handleProvisioningChange(checked === true)
-                    }
-                  />
-                  <div className="space-y-1 leading-none">
-                    <Label
-                      htmlFor="isProvisioned"
-                      className="font-medium text-sm cursor-pointer"
-                    >
-                      Equipamento Provisionado
-                    </Label>
-                    <p className="text-xs text-gray-500">
-                      Marque se o Chromebook já está provisionado no console de
-                      administração
-                    </p>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="manufacturingYear" className="text-xs font-medium">Ano de Fabricação</Label>
+                      <Input
+                        id="manufacturingYear"
+                        value={editingChromebook.manufacturingYear || ""}
+                        onChange={handleEditChange}
+                        placeholder="Ex: 2023"
+                        className="h-9"
+                      />
+                    </div>
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="observations">Observações</Label>
-                  <Textarea
-                    id="observations"
-                    value={editingChromebook.observations || ""}
-                    onChange={handleEditChange}
-                    placeholder="Digite observações relevantes sobre o equipamento"
-                    className="min-h-[100px]"
-                  />
-                  <p className="text-xs text-gray-500">Campo opcional</p>
+                {/* Status e Configurações */}
+                <div className="space-y-3">
+                  <h4 className="font-medium text-sm text-gray-700 border-b pb-1">Status e Configurações</h4>
+                  
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-medium">Status</Label>
+                    <Select value={editingChromebook.status} onValueChange={handleEditStatusChange}>
+                      <SelectTrigger className="h-9">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="disponivel">Disponível</SelectItem>
+                        <SelectItem value="emprestado">Emprestado</SelectItem>
+                        <SelectItem value="manutencao">Manutenção</SelectItem>
+                        <SelectItem value="inativo">Inativo</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="flex items-start space-x-3 pt-1">
+                    <Checkbox
+                      id="isProvisioned"
+                      checked={editingChromebook.isProvisioned}
+                      onCheckedChange={(checked) =>
+                        handleProvisioningChange(checked === true)
+                      }
+                    />
+                    <div className="space-y-1 leading-none">
+                      <Label
+                        htmlFor="isProvisioned"
+                        className="font-medium text-xs cursor-pointer"
+                      >
+                        Equipamento Provisionado
+                      </Label>
+                      <p className="text-xs text-gray-500">
+                        Marque se o Chromebook já está provisionado no console
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Observações */}
+                <div className="space-y-3">
+                  <h4 className="font-medium text-sm text-gray-700 border-b pb-1">Observações</h4>
+                  
+                  <div className="space-y-1.5">
+                    <Textarea
+                      id="observations"
+                      value={editingChromebook.observations || ""}
+                      onChange={handleEditChange}
+                      placeholder="Digite observações relevantes sobre o equipamento"
+                      className={`resize-none ${isMobile ? 'min-h-[60px]' : 'min-h-[80px]'}`}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
           )}
 
-          <DialogFooter className={`mt-2 pt-4 border-t ${isMobile ? 'flex-col space-y-2' : ''}`}>
+          {/* Fixed Footer */}
+          <div className={`px-4 py-3 border-t bg-white shrink-0 ${isMobile ? 'space-y-2' : 'flex justify-end space-x-2'}`}>
             <Button
               variant="outline"
               onClick={() => {
                 setIsEditDialogOpen(false);
                 setEditingChromebook(null);
               }}
-              className={isMobile ? 'w-full' : ''}
+              className={`${isMobile ? 'w-full' : ''} h-9`}
             >
               Cancelar
             </Button>
             <Button 
               onClick={handleSaveEdit}
-              className={isMobile ? 'w-full' : ''}
+              className={`${isMobile ? 'w-full' : ''} h-9`}
             >
               <Save className="w-4 h-4 mr-2" />
               Salvar Alterações
             </Button>
-          </DialogFooter>
+          </div>
         </DialogContent>
       </Dialog>
 
