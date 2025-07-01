@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
@@ -33,35 +34,37 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
  * Configura os provedores globais e o roteamento
  */
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <TooltipProvider>
-        {/* Componentes para exibição de notificações toast */}
-        <Toaster />
-        <Sonner />
-        
-        {/* Configuração do roteamento da aplicação */}
-        <BrowserRouter>
-          <Routes>
-            {/* Rota de login (pública) */}
-            <Route path="/login" element={<Login />} />
-            
-            {/* Rota principal (protegida) */}
-            <Route path="/" element={
-              <ProtectedRoute>
-                <Index />
-              </ProtectedRoute>
-            } />
-            
-            {/* IMPORTANTE: Adicione todas as rotas personalizadas ACIMA da rota "*" */}
-            
-            {/* Rota de fallback para URLs não encontradas */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </AuthProvider>
-  </QueryClientProvider>
+  <ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <TooltipProvider>
+          {/* Componentes para exibição de notificações toast */}
+          <Toaster />
+          <Sonner />
+          
+          {/* Configuração do roteamento da aplicação */}
+          <BrowserRouter>
+            <Routes>
+              {/* Rota de login (pública) */}
+              <Route path="/login" element={<Login />} />
+              
+              {/* Rota principal (protegida) */}
+              <Route path="/" element={
+                <ProtectedRoute>
+                  <Index />
+                </ProtectedRoute>
+              } />
+              
+              {/* IMPORTANTE: Adicione todas as rotas personalizadas ACIMA da rota "*" */}
+              
+              {/* Rota de fallback para URLs não encontradas */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </AuthProvider>
+    </QueryClientProvider>
+  </ErrorBoundary>
 );
 
 export default App;

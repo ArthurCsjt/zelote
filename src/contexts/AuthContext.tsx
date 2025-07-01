@@ -1,5 +1,4 @@
 
-import * as React from "react";
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Session, User } from "@supabase/supabase-js";
@@ -49,6 +48,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [email, setEmail] = useState<string | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  console.log('AuthProvider iniciado', { isAuthenticated, user: user?.email });
 
   // Verifica se o domínio do email é válido
   const validateEmailDomain = (email: string): boolean => {
@@ -58,41 +60,64 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   // Verifica a sessão do usuário ao iniciar e configura um listener para mudanças na autenticação
   useEffect(() => {
-    // Set up auth state listener FIRST
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setIsAuthenticated(!!session);
-      if (session?.user) {
-        setEmail(session.user.email);
-        setUsername(session.user.email?.split('@')[0] || null);
-      } else {
-        setEmail(null);
-        setUsername(null);
-      }
-    });
-
-    // THEN check for existing session
-    const initSession = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session) {
-          setSession(session);
-          setUser(session.user);
-          setIsAuthenticated(true);
+    console.log('Iniciando AuthProvider useEffect');
+    
+    try {
+      // Set up auth state listener FIRST
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+        console.log('Auth state changed:', _event, session?.user?.email);
+        setSession(session);
+        setUser(session?.user ?? null);
+        setIsAuthenticated(!!session);
+        setLoading(false);
+        
+        if (session?.user) {
           setEmail(session.user.email);
           setUsername(session.user.email?.split('@')[0] || null);
+        } else {
+          setEmail(null);
+          setUsername(null);
         }
-      } catch (error) {
-        console.error("Error initializing session:", error);
-      }
-    };
+      });
 
-    initSession();
+      // THEN check for existing session
+      const initSession = async () => {
+        try {
+          console.log('Verificando sessão existente...');
+          const { data: { session }, error } = await supabase.auth.getSession();
+          
+          if (error) {
+            console.error("Error getting session:", error);
+            setLoading(false);
+            return;
+          }
+          
+          if (session) {
+            console.log('Sessão encontrada:', session.user.email);
+            setSession(session);
+            setUser(session.user);
+            setIsAuthenticated(true);
+            setEmail(session.user.email);
+            setUsername(session.user.email?.split('@')[0] || null);
+          } else {
+            console.log('Nenhuma sessão encontrada');
+          }
+          setLoading(false);
+        } catch (error) {
+          console.error("Error initializing session:", error);
+          setLoading(false);
+        }
+      };
 
-    return () => {
-      subscription.unsubscribe();
-    };
+      initSession();
+
+      return () => {
+        subscription.unsubscribe();
+      };
+    } catch (error) {
+      console.error("Error setting up auth:", error);
+      setLoading(false);
+    }
   }, []);
 
   // Função para verificar se um email existe
@@ -179,6 +204,17 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   };
 
   // Fornece o contexto para os componentes filhos
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Carregando...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <AuthContext.Provider value={{ 
       isAuthenticated, 
