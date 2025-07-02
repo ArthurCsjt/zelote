@@ -33,10 +33,9 @@ export function MainMenu({ onNavigate }: MainMenuProps) {
       content: 'Cadastre novos dispositivos e gere QR Codes para identificação.',
       icon: <PlusCircle className="h-5 w-5" />,
       action: () => onNavigate('registration'),
-      bgColor: 'bg-gradient-to-r from-green-500 to-green-600',
+      variant: 'menu-green' as const,
       textColor: 'text-green-700',
-      hoverColor: 'hover:bg-green-700',
-      borderColor: 'border-green-500'
+      borderColor: 'border-green-200'
     },
     {
       title: 'Inventário',
@@ -44,10 +43,9 @@ export function MainMenu({ onNavigate }: MainMenuProps) {
       content: 'Visualize, edite ou altere o status dos dispositivos cadastrados.',
       icon: <Laptop className="h-5 w-5" />,
       action: () => onNavigate('inventory'),
-      bgColor: 'bg-gradient-to-r from-blue-500 to-blue-600',
+      variant: 'menu-blue' as const,
       textColor: 'text-blue-700',
-      hoverColor: 'hover:bg-blue-700',
-      borderColor: 'border-blue-500'
+      borderColor: 'border-blue-200'
     },
     {
       title: 'Empréstimo',
@@ -55,10 +53,9 @@ export function MainMenu({ onNavigate }: MainMenuProps) {
       content: 'Registre novos empréstimos de Chromebooks e veja os ativos.',
       icon: <ClipboardList className="h-5 w-5" />,
       action: () => onNavigate('loan'),
-      bgColor: 'bg-gradient-to-r from-violet-500 to-violet-600',
+      variant: 'menu-violet' as const,
       textColor: 'text-violet-700',
-      hoverColor: 'hover:bg-violet-700',
-      borderColor: 'border-violet-500'
+      borderColor: 'border-violet-200'
     },
     {
       title: 'Devolução',
@@ -66,10 +63,9 @@ export function MainMenu({ onNavigate }: MainMenuProps) {
       content: 'Registre a devolução de Chromebooks emprestados.',
       icon: <RotateCcw className="h-5 w-5" />,
       action: () => onNavigate('return'),
-      bgColor: 'bg-gradient-to-r from-amber-500 to-amber-600',
+      variant: 'menu-amber' as const,
       textColor: 'text-amber-700',
-      hoverColor: 'hover:bg-amber-700',
-      borderColor: 'border-amber-500'
+      borderColor: 'border-amber-200'
     },
     {
       title: 'Dashboard',
@@ -77,10 +73,9 @@ export function MainMenu({ onNavigate }: MainMenuProps) {
       content: 'Visualize dados e estatísticas sobre os equipamentos.',
       icon: <BarChart3 className="h-5 w-5" />,
       action: () => onNavigate('dashboard'),
-      bgColor: 'bg-gradient-to-r from-rose-500 to-rose-600',
+      variant: 'menu-rose' as const,
       textColor: 'text-rose-700',
-      hoverColor: 'hover:bg-rose-700',
-      borderColor: 'border-rose-500'
+      borderColor: 'border-rose-200'
     }
   ];
 
@@ -139,11 +134,12 @@ export function MainMenu({ onNavigate }: MainMenuProps) {
                   {item.content}
                 </p>
                 <Button 
-                  className={`w-full text-white ${item.bgColor} hover:opacity-90 transition-all`}
+                  variant={item.variant}
+                  className="w-full"
                   onClick={item.action}
                 >
                   {item.icon}
-                  <span className="ml-2">{item.title}</span>
+                  <span>{item.title}</span>
                 </Button>
               </div>
             </Card>

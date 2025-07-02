@@ -26,7 +26,12 @@ const buttonVariants = cva(
         text: "bg-transparent hover:bg-gray-100 text-gray-800 font-semibold",
         simple: "bg-transparent border-b-2 border-transparent hover:border-current text-current px-1 py-1 rounded-none transition-all",
         gradient: "text-white bg-gradient-to-r shadow-md hover:shadow-lg active:shadow-sm transition-all",
-        back: "bg-purple-600 text-white hover:bg-purple-700 shadow-sm flex items-center justify-center w-full md:w-auto",
+        back: "bg-back-button text-back-button-foreground border border-back-button-border hover:bg-back-button-hover shadow-sm flex items-center justify-center gap-2 font-medium",
+        "menu-green": "bg-menu-green text-white hover:bg-menu-green-hover shadow-md transition-all",
+        "menu-blue": "bg-menu-blue text-white hover:bg-menu-blue-hover shadow-md transition-all",
+        "menu-violet": "bg-menu-violet text-white hover:bg-menu-violet-hover shadow-md transition-all",
+        "menu-amber": "bg-menu-amber text-white hover:bg-menu-amber-hover shadow-md transition-all",
+        "menu-rose": "bg-menu-rose text-white hover:bg-menu-rose-hover shadow-md transition-all",
       },
       size: {
         default: "h-10 px-5 py-2 rounded-xl",

@@ -35,6 +35,24 @@
     --ring: 213 100% 50%;
  
     --radius: 1rem;
+
+    /* Menu Button Colors - Sistema consistente */
+    --menu-green: 142 76% 36%;
+    --menu-green-hover: 142 76% 32%;
+    --menu-blue: 213 94% 68%;
+    --menu-blue-hover: 213 94% 64%;
+    --menu-violet: 258 90% 66%;
+    --menu-violet-hover: 258 90% 62%;
+    --menu-amber: 45 93% 47%;
+    --menu-amber-hover: 45 93% 43%;
+    --menu-rose: 348 83% 47%;
+    --menu-rose-hover: 348 83% 43%;
+
+    /* Back Button - Padrão consistente */
+    --back-button: 0 0% 100%;
+    --back-button-foreground: 240 10% 3.9%;
+    --back-button-border: 214.3 31.8% 91.4%;
+    --back-button-hover: 210 40% 96.1%;
   }
 }
  

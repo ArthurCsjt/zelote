@@ -96,10 +96,9 @@ export function MobileFriendlyDashboard({ activeLoans, history, onBack }: Mobile
         <div className="flex w-full justify-between items-center">
           <h2 className="text-xl font-bold tracking-tight bg-gradient-to-r from-blue-700 to-blue-500 bg-clip-text text-transparent">Dashboard</h2>
           <Button 
-            variant="back" 
+            variant="back"
+            size="default"
             onClick={handleBackToMenu}
-            size="sm"
-            className="flex items-center gap-1"
           >
             <ArrowLeft className="h-4 w-4" />
             <span>Voltar</span>

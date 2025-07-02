@@ -277,9 +277,9 @@ export function ChromebookRegistration({ onBack }: ChromebookRegistrationProps) 
         
         {/* Botão voltar - NOVO */}
         <Button 
-          variant="outline" 
+          variant="back"
+          size="default"
           onClick={handleBackClick}
-          className="flex items-center gap-1 hover:bg-blue-50"
         >
           <ArrowLeft className="h-4 w-4" />
           <span>Voltar ao Menu</span>

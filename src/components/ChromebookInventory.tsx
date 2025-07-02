@@ -281,9 +281,9 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
         
         {/* Botão voltar */}
         <Button 
-          variant="outline" 
-          onClick={handleBackClick} 
-          className="flex items-center gap-1 hover:bg-blue-50"
+          variant="back"
+          size="default"
+          onClick={handleBackClick}
         >
           <ArrowLeft className="h-4 w-4" />
           <span>Voltar ao Menu</span>

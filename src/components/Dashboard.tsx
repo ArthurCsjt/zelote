@@ -307,9 +307,9 @@ export function Dashboard({ activeLoans, history, onBack }: DashboardProps) {
             <span className="whitespace-nowrap">Baixar Relatório</span>
           </Button>
           <Button 
-            variant="outline" 
+            variant="back"
+            size="default"
             onClick={onBack}
-            className="flex items-center gap-2 hover:bg-blue-50 px-3"
           >
             <ArrowLeft className="h-4 w-4" />
             <span className="whitespace-nowrap">Voltar ao Menu</span>

@@ -53,6 +53,34 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        // Menu Colors System
+        "menu-green": {
+          DEFAULT: "hsl(var(--menu-green))",
+          hover: "hsl(var(--menu-green-hover))",
+        },
+        "menu-blue": {
+          DEFAULT: "hsl(var(--menu-blue))",
+          hover: "hsl(var(--menu-blue-hover))",
+        },
+        "menu-violet": {
+          DEFAULT: "hsl(var(--menu-violet))",
+          hover: "hsl(var(--menu-violet-hover))",
+        },
+        "menu-amber": {
+          DEFAULT: "hsl(var(--menu-amber))",
+          hover: "hsl(var(--menu-amber-hover))",
+        },
+        "menu-rose": {
+          DEFAULT: "hsl(var(--menu-rose))",
+          hover: "hsl(var(--menu-rose-hover))",
+        },
+        // Back Button System
+        "back-button": {
+          DEFAULT: "hsl(var(--back-button))",
+          foreground: "hsl(var(--back-button-foreground))",
+          border: "hsl(var(--back-button-border))",
+          hover: "hsl(var(--back-button-hover))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
