@@ -15,6 +15,7 @@ import { ChromebookInventory } from "@/components/ChromebookInventory";
 import { ArrowLeft, X } from "lucide-react";
 import { Dashboard } from "@/components/Dashboard";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Dialog,
   DialogContent,
@@ -337,10 +338,10 @@ const Index = () => {
     </Sheet>
   );
 
-  // Diálogo de Empréstimo com ScrollArea para permitir rolagem
+  // Diálogo de Empréstimo com Tabs para melhor organização
   const LoanDialog = () => (
     <Dialog open={openLoanDialog} onOpenChange={setOpenLoanDialog}>
-      <DialogContent className="max-w-6xl max-h-[90vh] flex flex-col">
+      <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold text-gray-800">
             Empréstimo de Chromebook
@@ -348,18 +349,29 @@ const Index = () => {
         </DialogHeader>
         
         <ScrollArea className="flex-1 overflow-auto pr-4" style={{ maxHeight: "calc(90vh - 160px)" }}>
-          <div className="grid gap-6 md:grid-cols-2">
-            <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4">
-              <LoanForm onSubmit={handleNewLoan} />
-            </div>
-            <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4">
-              <ActiveLoans loans={loans} onReturn={handleReturn} />
-            </div>
-          </div>
-          
-          <div className="mt-6">
-            <LoanHistory history={history} />
-          </div>
+          <Tabs defaultValue="form" className="w-full">
+            <TabsList className="grid w-full grid-cols-3 mb-4">
+              <TabsTrigger value="form">Novo Empréstimo</TabsTrigger>
+              <TabsTrigger value="active">Empréstimos Ativos</TabsTrigger>
+              <TabsTrigger value="history">Histórico</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="form" className="mt-0">
+              <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4">
+                <LoanForm onSubmit={handleNewLoan} />
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="active" className="mt-0">
+              <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4">
+                <ActiveLoans loans={loans} onReturn={handleReturn} />
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="history" className="mt-0">
+              <LoanHistory history={history} />
+            </TabsContent>
+          </Tabs>
         </ScrollArea>
         
         <DialogFooter className="mt-4">
