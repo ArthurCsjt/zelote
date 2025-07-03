@@ -57,13 +57,19 @@ export function QRCodeModal({
       
       img.onload = () => {
         canvas.width = img.width;
-        canvas.height = img.height;
+        canvas.height = img.height + 40;
         
         // White background
         ctx.fillStyle = "#FFFFFF";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         
         ctx.drawImage(img, 0, 0);
+        
+        // Add ID text below QR code
+        ctx.fillStyle = "#000000";
+        ctx.font = "14px Arial";
+        ctx.textAlign = "center";
+        ctx.fillText(`ID: ${chromebookId}`, canvas.width / 2, img.height + 25);
         
         // Download PNG
         const link = document.createElement('a');
@@ -134,9 +140,11 @@ export function QRCodeModal({
           </head>
           <body>
             <div class="qr-container">
-              <div class="qr-title">QR Code para o Chromebook ${chromebookId}</div>
-              ${svgData}
-              <div class="qr-id">ID: ${chromebookId}</div>
+              <div class="qr-title">QR Code para o Chromebook</div>
+              <div style="display: flex; flex-direction: column; align-items: center;">
+                ${svgData}
+                <div class="qr-id">ID: ${chromebookId}</div>
+              </div>
             </div>
           </body>
         </html>
@@ -162,7 +170,7 @@ export function QRCodeModal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent 
-        className="max-w-md mx-auto bg-white/95 backdrop-blur-sm border border-gray-200 shadow-xl"
+        className="max-w-sm mx-auto bg-white/95 backdrop-blur-sm border border-gray-200 shadow-xl"
         style={{ backgroundColor: 'rgba(255, 255, 255, 0.95)' }}
       >
         <DialogHeader className="text-center">
@@ -185,12 +193,12 @@ export function QRCodeModal({
         </DialogHeader>
 
         {/* QR Code Container */}
-        <div className="flex flex-col items-center py-6">
-          <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+        <div className="flex flex-col items-center py-4">
+          <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
             <QRCodeSVG 
               id="qr-code-modal-svg"
               value={getQRCodeData()}
-              size={180}
+              size={140}
               level="H"
               includeMargin={true}
               bgColor="#FFFFFF"
@@ -203,8 +211,8 @@ export function QRCodeModal({
           </div>
           
           {/* ID Badge */}
-          <div className="mt-4">
-            <span className="bg-gray-800 text-white px-4 py-2 rounded-full text-sm font-medium">
+          <div className="mt-3">
+            <span className="bg-gray-800 text-white px-3 py-1.5 rounded-full text-xs font-medium">
               ID: {chromebookId}
             </span>
           </div>
