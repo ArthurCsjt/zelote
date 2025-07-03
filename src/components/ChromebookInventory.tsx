@@ -23,6 +23,7 @@ import { Textarea } from "./ui/textarea";
 import { Label } from "./ui/label";
 import { toast } from "./ui/use-toast";
 import { Search, ArrowLeft, Filter, Edit3, QrCode, CheckCircle, AlertCircle, XCircle, Wrench, Eye, X, Trash2, Save } from "lucide-react";
+import { QRCodeModal } from "./QRCodeModal";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "./ui/pagination";
 import { ScrollArea } from "./ui/scroll-area";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -690,29 +691,14 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
         </DialogContent>
       </Dialog>
 
-      {/* QR Code Dialog */}
-      <Dialog open={!!showQRCode} onOpenChange={() => setShowQRCode(null)}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <QrCode className="w-5 h-5 text-blue-600" />
-              QR Code - {showQRCode}
-            </DialogTitle>
-            <DialogDescription>
-              Use este QR Code para empréstimos e devoluções rápidas
-            </DialogDescription>
-          </DialogHeader>
-          <div className="text-center py-4">
-            {/* QR Code would be generated here */}
-            <div className="w-48 h-48 bg-gray-100 mx-auto rounded-lg flex items-center justify-center">
-              <QrCode className="w-24 h-24 text-gray-400" />
-            </div>
-            <p className="mt-4 text-sm text-gray-600">
-              Código: {showQRCode}
-            </p>
-          </div>
-        </DialogContent>
-      </Dialog>
+      {/* QR Code Modal */}
+      <QRCodeModal
+        open={!!showQRCode}
+        onOpenChange={(open) => setShowQRCode(open ? showQRCode : null)}
+        chromebookId={showQRCode || ""}
+        chromebookData={showQRCode ? chromebooks.find(c => (c.patrimonyNumber || c.id) === showQRCode) : undefined}
+        showSuccess={false}
+      />
     </div>
   );
 }
