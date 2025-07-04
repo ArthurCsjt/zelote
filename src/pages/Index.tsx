@@ -449,7 +449,7 @@ const Index = () => {
       case 'inventory':
         return "Inventário de Chromebooks";
       default:
-        return "Sistema de Gerenciamento";
+        return "Sistema de Gerenciamento de Chromebooks";
     }
   };
 

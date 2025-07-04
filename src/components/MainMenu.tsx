@@ -1,14 +1,12 @@
-
 import React, { useEffect, useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ClipboardList, BarChart3, PlusCircle, List, Laptop, Settings, RotateCcw } from 'lucide-react';
+import { ClipboardList, BarChart3, PlusCircle, Laptop, RotateCcw } from 'lucide-react';
 
 interface MainMenuProps {
   onNavigate: (route: 'registration' | 'dashboard' | 'loan' | 'return' | 'inventory') => void;
 }
 
-// Detect if we're on a mobile device
 const isMobileDevice = () => {
   return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
 };
@@ -18,7 +16,6 @@ export function MainMenu({ onNavigate }: MainMenuProps) {
   const isMobile = isMobileDevice();
 
   useEffect(() => {
-    // Delay animation start to improve initial load performance
     const timer = setTimeout(() => {
       setIsLoaded(true);
     }, 100);
@@ -31,117 +28,125 @@ export function MainMenu({ onNavigate }: MainMenuProps) {
       title: 'Cadastro',
       description: 'Registrar novos Chromebooks',
       content: 'Cadastre novos dispositivos e gere QR Codes para identificação.',
-      icon: <PlusCircle className="h-5 w-5" />,
+      icon: <PlusCircle className="h-6 w-6" />,
       action: () => onNavigate('registration'),
-      variant: 'menu-green' as const,
-      textColor: 'text-green-700',
-      borderColor: 'border-green-200'
+      gradient: 'from-emerald-400 to-teal-500',
+      bgGradient: 'from-emerald-50 to-teal-50',
+      iconBg: 'bg-emerald-100',
+      textColor: 'text-emerald-800'
     },
     {
       title: 'Inventário',
       description: 'Gerenciar Chromebooks',
       content: 'Visualize, edite ou altere o status dos dispositivos cadastrados.',
-      icon: <Laptop className="h-5 w-5" />,
+      icon: <Laptop className="h-6 w-6" />,
       action: () => onNavigate('inventory'),
-      variant: 'menu-blue' as const,
-      textColor: 'text-blue-700',
-      borderColor: 'border-blue-200'
+      gradient: 'from-blue-400 to-indigo-500',
+      bgGradient: 'from-blue-50 to-indigo-50',
+      iconBg: 'bg-blue-100',
+      textColor: 'text-blue-800'
     },
     {
       title: 'Empréstimo',
       description: 'Gerenciar empréstimos',
       content: 'Registre novos empréstimos de Chromebooks e veja os ativos.',
-      icon: <ClipboardList className="h-5 w-5" />,
+      icon: <ClipboardList className="h-6 w-6" />,
       action: () => onNavigate('loan'),
-      variant: 'menu-violet' as const,
-      textColor: 'text-violet-700',
-      borderColor: 'border-violet-200'
+      gradient: 'from-purple-400 to-violet-500',
+      bgGradient: 'from-purple-50 to-violet-50',
+      iconBg: 'bg-purple-100',
+      textColor: 'text-purple-800'
     },
     {
       title: 'Devolução',
       description: 'Registrar devoluções',
       content: 'Registre a devolução de Chromebooks emprestados.',
-      icon: <RotateCcw className="h-5 w-5" />,
+      icon: <RotateCcw className="h-6 w-6" />,
       action: () => onNavigate('return'),
-      variant: 'menu-amber' as const,
-      textColor: 'text-amber-700',
-      borderColor: 'border-amber-200'
+      gradient: 'from-amber-400 to-orange-500',
+      bgGradient: 'from-amber-50 to-orange-50',
+      iconBg: 'bg-amber-100',
+      textColor: 'text-amber-800'
     },
     {
       title: 'Dashboard',
       description: 'Relatórios e estatísticas',
       content: 'Visualize dados e estatísticas sobre os equipamentos.',
-      icon: <BarChart3 className="h-5 w-5" />,
+      icon: <BarChart3 className="h-6 w-6" />,
       action: () => onNavigate('dashboard'),
-      variant: 'menu-rose' as const,
-      textColor: 'text-rose-700',
-      borderColor: 'border-rose-200'
+      gradient: 'from-rose-400 to-pink-500',
+      bgGradient: 'from-rose-50 to-pink-50',
+      iconBg: 'bg-rose-100',
+      textColor: 'text-rose-800'
     }
   ];
 
-  // Simple fade-in animation that works better on mobile
   const getFadeInStyle = (index: number) => {
-    if (!isLoaded) return { opacity: 0 };
+    if (!isLoaded) return { opacity: 0, transform: 'translateY(20px)' };
     
-    // Use a simpler animation approach on mobile
-    if (isMobile) {
-      return { 
-        opacity: 1,
-        transition: `opacity 0.5s ease-out ${index * 100}ms`
-      };
-    }
-    
-    // More elaborate animation for desktop
     return { 
       opacity: 1,
       transform: 'translateY(0)',
-      transition: `opacity 0.8s ease-out ${index * 150}ms, transform 0.8s ease-out ${index * 150}ms`
+      transition: `all 0.6s cubic-bezier(0.4, 0, 0.2, 1) ${index * 150}ms`
     };
   };
 
   return (
-    <div className="space-y-8">
-      <div className="text-center py-6 px-4" style={getFadeInStyle(0)}>
-        <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-violet-600 mb-2">
-          Sistema de Gerenciamento de Chromebooks
-        </h2>
-        <p className="text-gray-600 max-w-2xl mx-auto">
-          Gerencie o cadastro, empréstimo e devolução de Chromebooks de forma simples e eficiente
-        </p>
-      </div>
+    <div className="space-y-8 relative">
+      {/* Background gradient overlay */}
+      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-blue-50/50 via-purple-50/30 to-pink-50/50 rounded-3xl blur-3xl transform scale-110" />
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-6xl mx-auto">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto relative z-10">
         {menuItems.map((item, index) => (
           <div 
             key={index} 
-            style={getFadeInStyle(index + 1)}
-            className="transition duration-300"
+            style={getFadeInStyle(index)}
+            className="group"
           >
-            <Card className={`border-2 ${item.borderColor} bg-white overflow-hidden h-full shadow-sm hover:shadow-md transition-all`}>
-              <div className="p-6">
-                <div className="flex items-center mb-4">
-                  <div className={`mr-4 p-3 rounded-full ${item.textColor.replace('text-', 'bg-').replace('-700', '-100')}`}>
-                    {item.icon}
+            <Card className="relative overflow-hidden h-full border-0 shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-2 hover:scale-[1.02] bg-white/80 backdrop-blur-xl">
+              {/* Gradient background */}
+              <div className={`absolute inset-0 bg-gradient-to-br ${item.bgGradient} opacity-60`} />
+              
+              {/* Glass effect overlay */}
+              <div className="absolute inset-0 bg-white/40 backdrop-blur-sm" />
+              
+              {/* Content */}
+              <div className="relative z-10 p-6 h-full flex flex-col">
+                {/* Icon and header */}
+                <div className="flex items-start gap-4 mb-4">
+                  <div className={`${item.iconBg} p-3 rounded-2xl shadow-lg transform group-hover:scale-110 transition-transform duration-300`}>
+                    <div className={`bg-gradient-to-r ${item.gradient} bg-clip-text text-transparent`}>
+                      {item.icon}
+                    </div>
                   </div>
-                  <div>
-                    <h3 className={`text-xl font-bold ${item.textColor}`}>
+                  <div className="flex-1">
+                    <h3 className={`text-xl font-bold ${item.textColor} mb-1`}>
                       {item.title}
                     </h3>
-                    <p className="text-sm text-gray-500">{item.description}</p>
+                    <p className="text-sm text-gray-600">{item.description}</p>
                   </div>
                 </div>
-                <p className="text-sm text-gray-600 mb-4">
+                
+                {/* Description */}
+                <p className="text-sm text-gray-700 mb-6 leading-relaxed flex-1">
                   {item.content}
                 </p>
+                
+                {/* Action button */}
                 <Button 
-                  variant={item.variant}
-                  className="w-full"
                   onClick={item.action}
+                  className={`w-full bg-gradient-to-r ${item.gradient} hover:shadow-lg transform transition-all duration-300 hover:scale-[1.02] text-white border-0 rounded-xl font-medium py-3`}
                 >
-                  {item.icon}
-                  <span>{item.title}</span>
+                  <div className="flex items-center justify-center gap-2">
+                    {item.icon}
+                    <span>{item.title}</span>
+                  </div>
                 </Button>
               </div>
+
+              {/* Floating orbs effect */}
+              <div className="absolute -top-4 -right-4 w-20 h-20 bg-gradient-to-br from-white/20 to-transparent rounded-full blur-xl" />
+              <div className="absolute -bottom-4 -left-4 w-16 h-16 bg-gradient-to-tr from-white/15 to-transparent rounded-full blur-lg" />
             </Card>
           </div>
         ))}
