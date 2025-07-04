@@ -131,9 +131,12 @@ export function ChromebookRegistration({ onBack }: ChromebookRegistrationProps) 
 
   // === RENDERIZAÇÃO DA INTERFACE (UI) ===
   return (
-    <div className="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-sm border border-gray-100">
-      <div className="flex flex-col sm:flex-row justify-between items-start mb-6">
-        <h2 className="text-2xl font-semibold text-gray-800 mb-4 sm:mb-0">
+    <div className="max-w-2xl mx-auto p-6 glass-morphism animate-fade-in relative">
+      {/* Background gradient overlay */}
+      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-blue-50/30 via-purple-50/20 to-pink-50/30 rounded-3xl blur-2xl transform scale-110" />
+      
+      <div className="flex flex-col sm:flex-row justify-between items-start mb-6 relative z-10">
+        <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4 sm:mb-0">
           Cadastro de Chromebook
         </h2>
         
@@ -142,6 +145,7 @@ export function ChromebookRegistration({ onBack }: ChromebookRegistrationProps) 
           variant="back"
           size="default"
           onClick={handleBackClick}
+          className="glass-card hover:shadow-lg transition-all duration-300 border-white/30"
         >
           <ArrowLeft className="h-4 w-4" />
           <span>Voltar ao Menu</span>
@@ -149,7 +153,7 @@ export function ChromebookRegistration({ onBack }: ChromebookRegistrationProps) 
       </div>
       
       {/* Formulário de cadastro */}
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-4 relative z-10">
         {/* Campo: ID do Chromebook */}
         <div className="space-y-2">
           <Label htmlFor="chromebookId">ID do Chromebook *</Label>
@@ -261,7 +265,10 @@ export function ChromebookRegistration({ onBack }: ChromebookRegistrationProps) 
         </div>
 
         {/* Botão de envio do formulário */}
-        <Button type="submit" className="w-full">
+        <Button 
+          type="submit" 
+          className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-0 shadow-lg hover:shadow-xl transform transition-all duration-300 hover:scale-[1.02]"
+        >
           Cadastrar Chromebook
         </Button>
 

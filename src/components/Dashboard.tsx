@@ -289,15 +289,18 @@ export function Dashboard({ activeLoans, history, onBack }: DashboardProps) {
   };
 
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-5 duration-300">
-      <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-6">
+    <div className="space-y-6 glass-morphism p-6 animate-fade-in relative">
+      {/* Background gradient overlay */}
+      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-blue-50/30 via-purple-50/20 to-pink-50/30 rounded-3xl blur-2xl transform scale-110" />
+      
+      <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-6 relative z-10">
         <div>
-          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight bg-gradient-to-r from-blue-700 to-blue-500 bg-clip-text text-transparent">
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
             Dashboard
           </h2>
           <p className="text-gray-500">Visualize estatísticas e relatórios de uso dos Chromebooks</p>
         </div>
-        <div className="flex flex-wrap gap-2 w-full sm:w-auto justify-start">
+        <div className="flex flex-wrap gap-2 w-full sm:w-auto justify-start relative z-10">
           <Button
             variant="outline"
             onClick={handleDownloadPDF}
@@ -310,6 +313,7 @@ export function Dashboard({ activeLoans, history, onBack }: DashboardProps) {
             variant="back"
             size="default"
             onClick={onBack}
+            className="glass-card hover:shadow-lg transition-all duration-300 border-white/30"
           >
             <ArrowLeft className="h-4 w-4" />
             <span className="whitespace-nowrap">Voltar ao Menu</span>
@@ -333,8 +337,8 @@ export function Dashboard({ activeLoans, history, onBack }: DashboardProps) {
           </TabsTrigger>
         </TabsList>
 
-        <div className="grid gap-4 md:grid-cols-4">
-          <Card className="stats-card stats-card-blue dashboard-card">
+        <div className="grid gap-4 md:grid-cols-4 relative z-10">
+          <Card className="glass-card border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-blue-500">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
                 Empréstimos {periodText[periodView]}
@@ -342,14 +346,14 @@ export function Dashboard({ activeLoans, history, onBack }: DashboardProps) {
               <Computer className="h-5 w-5 text-blue-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold">{filteredLoans.length}</div>
+              <div className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">{filteredLoans.length}</div>
               <p className="text-xs text-muted-foreground">
                 {filteredReturns.length} devoluções
               </p>
             </CardContent>
           </Card>
 
-          <Card className="stats-card stats-card-green dashboard-card">
+          <Card className="glass-card border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-green-500">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
                 Chromebooks Ativos
@@ -357,7 +361,7 @@ export function Dashboard({ activeLoans, history, onBack }: DashboardProps) {
               <Computer className="h-5 w-5 text-green-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold">{activeLoans.length}</div>
+              <div className="text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">{activeLoans.length}</div>
               <div className="flex items-center gap-2 mt-1">
                 <Progress value={(activeLoans.length / totalChromebooks) * 100} className="h-2" />
                 <span className="text-xs text-muted-foreground">
@@ -367,15 +371,15 @@ export function Dashboard({ activeLoans, history, onBack }: DashboardProps) {
             </CardContent>
           </Card>
 
-          <Card className="stats-card stats-card-blue dashboard-card">
+          <Card className="glass-card border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-purple-500">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
                 Tempo Médio de Uso
               </CardTitle>
-              <Clock className="h-5 w-5 text-blue-500" />
+              <Clock className="h-5 w-5 text-purple-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold">
+              <div className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-violet-600 bg-clip-text text-transparent">
                 {Math.round(averageUsageTime)} min
               </div>
               <p className="text-xs text-muted-foreground">
@@ -384,15 +388,15 @@ export function Dashboard({ activeLoans, history, onBack }: DashboardProps) {
             </CardContent>
           </Card>
 
-          <Card className="stats-card stats-card-blue dashboard-card">
+          <Card className="glass-card border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-orange-500">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
                 Taxa de Devolução
               </CardTitle>
-              <Activity className="h-5 w-5 text-blue-500" />
+              <Activity className="h-5 w-5 text-orange-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold">
+              <div className="text-3xl font-bold bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent">
                 {completionRate.toFixed(0)}%
               </div>
               <div className="flex items-center gap-2 mt-1">
@@ -700,7 +704,7 @@ export function Dashboard({ activeLoans, history, onBack }: DashboardProps) {
             {activeLoans.map((loan) => (
               <div
                 key={loan.id}
-                className="p-4 bg-blue-50 border-l-4 border-l-blue-500 rounded-lg hover:shadow-md transition-all"
+                className="p-4 glass-card border-white/30 border-l-4 border-l-blue-500 hover:shadow-lg transition-all duration-300 hover:scale-[1.01]"
               >
                 <div className="flex justify-between items-start">
                   <div>

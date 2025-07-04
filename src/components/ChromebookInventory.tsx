@@ -269,10 +269,13 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-6 bg-white rounded-lg shadow-sm border border-gray-100">
-      <div className="flex flex-col sm:flex-row justify-between items-start mb-6">
+    <div className="max-w-6xl mx-auto p-6 glass-morphism animate-fade-in relative">
+      {/* Background gradient overlay */}
+      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-blue-50/30 via-purple-50/20 to-pink-50/30 rounded-3xl blur-2xl transform scale-110" />
+      
+      <div className="flex flex-col sm:flex-row justify-between items-start mb-6 relative z-10">
         <div>
-          <h2 className="text-2xl font-semibold text-gray-800 mb-2">
+          <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
             Inventário de Chromebooks
           </h2>
           <p className="text-gray-600">
@@ -285,6 +288,7 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
           variant="back"
           size="default"
           onClick={handleBackClick}
+          className="glass-card hover:shadow-lg transition-all duration-300 border-white/30"
         >
           <ArrowLeft className="h-4 w-4" />
           <span>Voltar ao Menu</span>
@@ -325,25 +329,25 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
       </div>
 
       {/* Statistics */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white p-4 rounded-lg shadow-sm border text-center">
-          <p className="text-2xl font-bold text-gray-900">{chromebooks.length}</p>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 relative z-10">
+        <div className="glass-card p-4 text-center transform hover:scale-105 transition-all duration-300 hover:shadow-lg">
+          <p className="text-2xl font-bold bg-gradient-to-r from-gray-600 to-gray-800 bg-clip-text text-transparent">{chromebooks.length}</p>
           <p className="text-sm text-gray-600">Total</p>
         </div>
-        <div className="bg-white p-4 rounded-lg shadow-sm border text-center">
-          <p className="text-2xl font-bold text-green-600">
+        <div className="glass-card p-4 text-center transform hover:scale-105 transition-all duration-300 hover:shadow-lg">
+          <p className="text-2xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
             {chromebooks.filter(c => c.status === 'disponivel').length}
           </p>
           <p className="text-sm text-gray-600">Disponíveis</p>
         </div>
-        <div className="bg-white p-4 rounded-lg shadow-sm border text-center">
-          <p className="text-2xl font-bold text-purple-600">
+        <div className="glass-card p-4 text-center transform hover:scale-105 transition-all duration-300 hover:shadow-lg">
+          <p className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-violet-600 bg-clip-text text-transparent">
             {chromebooks.filter(c => c.status === 'emprestado').length}
           </p>
           <p className="text-sm text-gray-600">Emprestados</p>
         </div>
-        <div className="bg-white p-4 rounded-lg shadow-sm border text-center">
-          <p className="text-2xl font-bold text-orange-600">
+        <div className="glass-card p-4 text-center transform hover:scale-105 transition-all duration-300 hover:shadow-lg">
+          <p className="text-2xl font-bold bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent">
             {chromebooks.filter(c => c.status === 'manutencao').length}
           </p>
           <p className="text-sm text-gray-600">Manutenção</p>
@@ -351,7 +355,7 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
       </div>
 
       {/* Table of Chromebooks */}
-      <div className="border rounded-md">
+      <div className="glass-card border-white/30 rounded-2xl overflow-hidden relative z-10">
         <Table>
           <TableHeader>
             <TableRow>

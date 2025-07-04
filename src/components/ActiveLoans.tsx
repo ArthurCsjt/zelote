@@ -128,11 +128,14 @@ export function ActiveLoans({ loans, onReturn }: ActiveLoansProps) {
 
   // === RENDERIZAÇÃO DA INTERFACE (UI) ===
   return (
-    <div>
-      <h2 className="text-xl font-semibold text-gray-800 mb-4">
+    <div className="glass-morphism p-6 animate-fade-in relative">
+      {/* Background gradient overlay */}
+      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-green-50/30 via-blue-50/20 to-purple-50/30 rounded-3xl blur-2xl transform scale-110" />
+      
+      <h2 className="text-xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent mb-4 relative z-10">
         Empréstimos Ativos
       </h2>
-      <div className="space-y-3">
+      <div className="space-y-3 relative z-10">
         {loans.length === 0 ? (
           // Mensagem exibida quando não há empréstimos ativos
           <p className="text-center text-gray-500 py-4">
@@ -143,7 +146,7 @@ export function ActiveLoans({ loans, onReturn }: ActiveLoansProps) {
           loans.map((loan) => (
             <div
               key={loan.id}
-              className="bg-gray-50 border border-gray-100 rounded-lg p-3"
+              className="glass-card p-4 hover:shadow-lg transition-all duration-300 hover:scale-[1.01] border-white/30"
             >
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
@@ -182,7 +185,7 @@ export function ActiveLoans({ loans, onReturn }: ActiveLoansProps) {
                 <Button
                   variant="outline"
                   onClick={() => handleReturnClick(loan.id)}
-                  className="ml-4 border-gray-200 hover:bg-gray-100"
+                  className="ml-4 glass-card border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105"
                 >
                   Devolver
                 </Button>

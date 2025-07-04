@@ -67,45 +67,91 @@
   }
 }
 
-/* Enhanced glass card effect */
+/* Enhanced glass card effect - iPhone style */
 .glass-card {
-  background: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 4px 30px 0 rgba(0, 0, 0, 0.06), 
+              0 1px 0 0 rgba(255, 255, 255, 0.3) inset,
+              0 -1px 0 0 rgba(0, 0, 0, 0.05) inset;
   border-radius: 16px;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
 }
 
-/* Improved glass morphism for containers */
+.glass-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+}
+
+.glass-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 40px 0 rgba(0, 0, 0, 0.1),
+              0 1px 0 0 rgba(255, 255, 255, 0.4) inset,
+              0 -1px 0 0 rgba(0, 0, 0, 0.05) inset;
+}
+
+/* Improved glass morphism for containers - iPhone style */
 .glass-morphism {
-  background: rgba(255, 255, 255, 0.65);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 8px 40px 0 rgba(0, 0, 0, 0.08),
+              0 2px 0 0 rgba(255, 255, 255, 0.3) inset,
+              0 -2px 0 0 rgba(0, 0, 0, 0.05) inset;
   border-radius: 24px;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.glass-morphism::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.7), transparent);
 }
 
 .glass-morphism:hover {
-  box-shadow: 0 10px 40px 0 rgba(0, 0, 0, 0.1);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 50px 0 rgba(0, 0, 0, 0.12),
+              0 2px 0 0 rgba(255, 255, 255, 0.4) inset,
+              0 -2px 0 0 rgba(0, 0, 0, 0.05) inset;
 }
 
-/* Animation classes */
+/* Enhanced Animation classes - iPhone style */
 .slide-enter {
-  animation: slideIn 0.3s ease-out;
+  animation: slideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .fade-enter {
-  animation: fadeIn 0.5s ease-out;
+  animation: fadeIn 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.animate-fade-in {
+  animation: fadeInSmooth 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(15px);
   }
   to {
     opacity: 1;
@@ -113,9 +159,31 @@
   }
 }
 
+@keyframes fadeInSmooth {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
 @keyframes slideIn {
   from {
-    transform: translateX(-10px);
+    transform: translateX(-15px);
     opacity: 0;
   }
   to {
@@ -124,16 +192,47 @@
   }
 }
 
-/* Improved dashboard card styling */
+/* iPhone-style bounce animation for interactions */
+@keyframes bounceIn {
+  0% {
+    transform: scale(0.95);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.animate-bounce-in {
+  animation: bounceIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Enhanced dashboard card styling - iPhone style */
 .dashboard-card {
-  transition: all 0.3s ease;
-  border-radius: 12px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 16px;
   overflow: hidden;
+  position: relative;
+}
+
+.dashboard-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), transparent);
+  pointer-events: none;
+  border-radius: inherit;
 }
 
 .dashboard-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 12px 28px -5px rgba(0, 0, 0, 0.08);
+  transform: translateY(-6px) scale(1.01);
+  box-shadow: 0 15px 35px -8px rgba(0, 0, 0, 0.12),
+              0 5px 15px -5px rgba(0, 0, 0, 0.08);
 }
 
 /* Stats cards with more Apple-like minimal styling */
