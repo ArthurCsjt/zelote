@@ -6,7 +6,7 @@ import { ActiveLoans, Loan, ReturnDataType } from "@/components/ActiveLoans";
 import { toast } from "@/hooks/use-toast";
 import { ChromebookRegistration } from "@/components/ChromebookRegistration";
 import { MainMenu } from "@/components/MainMenu";
-import { Header } from "@/components/Header";
+import Layout from "@/components/Layout";
 import { ReturnDialog } from "@/components/ReturnDialog";
 import { Button } from "@/components/ui/button";
 import { LoanHistory } from "@/components/LoanHistory";
@@ -440,26 +440,54 @@ const Index = () => {
     }
   };
 
+  const getViewTitle = () => {
+    switch (currentView) {
+      case 'registration':
+        return "Cadastro de Chromebook";
+      case 'dashboard':
+        return "Dashboard";
+      case 'inventory':
+        return "Inventário de Chromebooks";
+      default:
+        return "Sistema de Gerenciamento";
+    }
+  };
+
+  const getViewSubtitle = () => {
+    switch (currentView) {
+      case 'registration':
+        return "Cadastre novos dispositivos e gere QR Codes para identificação";
+      case 'dashboard':
+        return "Visualize dados e estatísticas sobre os equipamentos";
+      case 'inventory':
+        return "Visualize, edite ou altere o status dos dispositivos cadastrados";
+      default:
+        return "Gerencie o cadastro, empréstimo e devolução de Chromebooks de forma simples e eficiente";
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-white p-4">
-      <div className="max-w-6xl mx-auto">
-        <Header />
-        {renderCurrentView()}
-        {/* Sempre renderize o Sheet de navegação, mas só aparece quando aberto */}
-        <NavigationSheet />
-        <ReturnDialog
-          open={openReturnDialog}
-          onOpenChange={setOpenReturnDialog}
-          chromebookId={chromebookId}
-          onChromebookIdChange={setChromebookId}
-          returnData={returnData}
-          onReturnDataChange={setReturnData}
-          onConfirm={handleReturnClick}
-        />
-        {/* Adicione o diálogo de empréstimo */}
-        <LoanDialog />
-      </div>
-    </div>
+    <Layout 
+      title={getViewTitle()}
+      subtitle={getViewSubtitle()}
+      showBackButton={currentView !== 'menu'}
+      onBack={handleBackToMenu}
+    >
+      {renderCurrentView()}
+      {/* Sempre renderize o Sheet de navegação, mas só aparece quando aberto */}
+      <NavigationSheet />
+      <ReturnDialog
+        open={openReturnDialog}
+        onOpenChange={setOpenReturnDialog}
+        chromebookId={chromebookId}
+        onChromebookIdChange={setChromebookId}
+        returnData={returnData}
+        onReturnDataChange={setReturnData}
+        onConfirm={handleReturnClick}
+      />
+      {/* Adicione o diálogo de empréstimo */}
+      <LoanDialog />
+    </Layout>
   );
 };
 
