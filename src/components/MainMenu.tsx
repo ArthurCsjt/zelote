@@ -94,7 +94,7 @@ export function MainMenu({ onNavigate }: MainMenuProps) {
   return (
     <div className="space-y-8 relative">
       {/* Background gradient overlay */}
-      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-blue-50/50 via-purple-50/30 to-pink-50/50 rounded-3xl blur-3xl transform scale-110" />
+      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-card/50 via-background to-card/50 rounded-3xl blur-3xl transform scale-110" />
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto relative z-10">
         {menuItems.map((item, index) => (
@@ -103,12 +103,12 @@ export function MainMenu({ onNavigate }: MainMenuProps) {
             style={getFadeInStyle(index)}
             className="group"
           >
-            <Card className="relative overflow-hidden h-full border-0 shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-2 hover:scale-[1.02] bg-white/80 backdrop-blur-xl">
+            <Card className="relative overflow-hidden h-full border-0 shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-2 hover:scale-[1.02] bg-card/80 backdrop-blur-xl">
               {/* Gradient background */}
               <div className={`absolute inset-0 bg-gradient-to-br ${item.bgGradient} opacity-60`} />
               
               {/* Glass effect overlay */}
-              <div className="absolute inset-0 bg-white/40 backdrop-blur-sm" />
+              <div className="absolute inset-0 bg-card/40 backdrop-blur-sm" />
               
               {/* Content */}
               <div className="relative z-10 p-6 h-full flex flex-col">
@@ -123,12 +123,12 @@ export function MainMenu({ onNavigate }: MainMenuProps) {
                     <h3 className={`text-xl font-bold ${item.textColor} mb-1`}>
                       {item.title}
                     </h3>
-                    <p className="text-sm text-gray-600">{item.description}</p>
+                    <p className="text-sm text-muted-foreground">{item.description}</p>
                   </div>
                 </div>
                 
                 {/* Description */}
-                <p className="text-sm text-gray-700 mb-6 leading-relaxed flex-1">
+                <p className="text-sm text-muted-foreground mb-6 leading-relaxed flex-1">
                   {item.content}
                 </p>
                 
@@ -147,8 +147,8 @@ export function MainMenu({ onNavigate }: MainMenuProps) {
               </div>
 
               {/* Floating orbs effect */}
-              <div className="absolute -top-4 -right-4 w-20 h-20 bg-gradient-to-br from-white/20 to-transparent rounded-full blur-xl" />
-              <div className="absolute -bottom-4 -left-4 w-16 h-16 bg-gradient-to-tr from-white/15 to-transparent rounded-full blur-lg" />
+              <div className="absolute -top-4 -right-4 w-20 h-20 bg-gradient-to-br from-card/20 to-transparent rounded-full blur-xl" />
+              <div className="absolute -bottom-4 -left-4 w-16 h-16 bg-gradient-to-tr from-card/15 to-transparent rounded-full blur-lg" />
             </Card>
           </div>
         ))}

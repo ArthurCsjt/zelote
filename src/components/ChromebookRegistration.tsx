@@ -133,7 +133,7 @@ export function ChromebookRegistration({ onBack }: ChromebookRegistrationProps) 
   return (
     <div className="max-w-2xl mx-auto p-6 glass-morphism animate-fade-in relative">
       {/* Background gradient overlay */}
-      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-blue-50/30 via-purple-50/20 to-pink-50/30 rounded-3xl blur-2xl transform scale-110" />
+      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-card/30 via-background/20 to-card/30 rounded-3xl blur-2xl transform scale-110" />
       
       <div className="mb-6 relative z-10">
         <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent text-center">
@@ -200,7 +200,7 @@ export function ChromebookRegistration({ onBack }: ChromebookRegistrationProps) 
             onChange={(e) => setFormData({ ...formData, manufacturingYear: e.target.value })}
             placeholder="Ex: 2023"
           />
-          <p className="text-xs text-gray-500">Campo opcional</p>
+          <p className="text-xs text-muted-foreground">Campo opcional</p>
         </div>
 
         {/* Campo: Número do Patrimônio (Opcional) */}
@@ -212,7 +212,7 @@ export function ChromebookRegistration({ onBack }: ChromebookRegistrationProps) 
             onChange={(e) => setFormData({ ...formData, patrimonyNumber: e.target.value })}
             placeholder="Digite o número do patrimônio"
           />
-          <p className="text-xs text-gray-500">Campo opcional</p>
+          <p className="text-xs text-muted-foreground">Campo opcional</p>
         </div>
 
         {/* Campo: Status de Provisionamento */}
@@ -234,7 +234,7 @@ export function ChromebookRegistration({ onBack }: ChromebookRegistrationProps) 
             >
               Equipamento Provisionado
             </Label>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-muted-foreground">
               Marque se o Chromebook já está provisionado no console de administração
             </p>
           </div>
@@ -250,7 +250,7 @@ export function ChromebookRegistration({ onBack }: ChromebookRegistrationProps) 
             placeholder="Digite observações relevantes sobre o equipamento"
             className="min-h-[100px]"
           />
-          <p className="text-xs text-gray-500">Campo opcional</p>
+          <p className="text-xs text-muted-foreground">Campo opcional</p>
         </div>
 
         {/* Botão de envio do formulário */}

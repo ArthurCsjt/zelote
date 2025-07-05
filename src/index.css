@@ -92,8 +92,11 @@
   }
   body {
     @apply bg-background text-foreground;
-    background: #f5f5f7; /* Apple-style light gray background */
     font-family: -apple-system, BlinkMacSystemFont, "San Francisco", "Helvetica Neue", sans-serif;
+  }
+  
+  body.dark {
+    background: hsl(var(--background));
   }
 }
 

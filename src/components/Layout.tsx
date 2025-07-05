@@ -72,7 +72,7 @@ const Layout: React.FC<LayoutProps> = ({ children, title, subtitle, showBackButt
   };
 
   return (
-    <div className={`min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 ${isStandalone ? 'safe-area-top safe-area-bottom safe-area-left safe-area-right' : ''}`}>
+    <div className={`min-h-screen bg-background text-foreground ${isStandalone ? 'safe-area-top safe-area-bottom safe-area-left safe-area-right' : ''}`}>
       {/* Status Bar Overlay for iOS in standalone mode */}
       {isStandalone && (
         <div className="status-bar-overlay" />
@@ -103,46 +103,46 @@ const Layout: React.FC<LayoutProps> = ({ children, title, subtitle, showBackButt
       )}
 
       {/* Header */}
-      <header className={`bg-white/80 backdrop-blur-xl shadow-sm border-b border-gray-200/50 sticky top-0 z-40 ${isStandalone ? 'safe-area-top' : ''}`}>
+      <header className={`bg-card/80 backdrop-blur-xl shadow-sm border-b border-border sticky top-0 z-40 ${isStandalone ? 'safe-area-top' : ''}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center gap-4">
               {showBackButton && (
                 <button
                   onClick={onBack}
-                  className="p-2 rounded-full hover:bg-gray-100 transition-colors duration-200 touch-manipulation"
+                  className="p-2 rounded-full hover:bg-accent transition-colors duration-200 touch-manipulation"
                 >
-                  <ArrowLeft className="w-5 h-5 text-gray-600" />
+                  <ArrowLeft className="w-5 h-5 text-muted-foreground" />
                 </button>
               )}
               <div>
                 <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                   Zelote
                 </h1>
-                <p className="text-sm text-gray-600 hidden sm:block">Controle de empréstimos e devoluções</p>
+                <p className="text-sm text-muted-foreground hidden sm:block">Controle de empréstimos e devoluções</p>
               </div>
             </div>
             
             <div className="flex items-center space-x-4">
               <button
                 onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200 touch-manipulation"
+                className="p-2 rounded-full hover:bg-accent transition-colors duration-200 touch-manipulation"
               >
                 {theme === 'dark' ? (
-                  <Sun className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+                  <Sun className="w-5 h-5 text-muted-foreground" />
                 ) : (
-                  <Moon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+                  <Moon className="w-5 h-5 text-muted-foreground" />
                 )}
               </button>
-              <div className="hidden md:flex items-center space-x-2 text-sm bg-gray-50 dark:bg-gray-800 rounded-full px-3 py-1.5">
-                <User className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                <span className="text-gray-700 dark:text-gray-300 selectable-text">
+              <div className="hidden md:flex items-center space-x-2 text-sm bg-accent rounded-full px-3 py-1.5">
+                <User className="w-4 h-4 text-muted-foreground" />
+                <span className="text-foreground selectable-text">
                   {user?.email?.substring(0, 20)}...
                 </span>
               </div>
               <button 
                 onClick={logout}
-                className="flex items-center space-x-1 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors duration-200 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full px-3 py-1.5 touch-manipulation"
+                className="flex items-center space-x-1 text-sm text-muted-foreground hover:text-foreground transition-colors duration-200 bg-accent hover:bg-accent/80 rounded-full px-3 py-1.5 touch-manipulation"
               >
                 <LogOut className="w-4 h-4" />
                 <span className="hidden sm:inline">Sair</span>
@@ -159,7 +159,7 @@ const Layout: React.FC<LayoutProps> = ({ children, title, subtitle, showBackButt
             {title}
           </h2>
           {subtitle && (
-            <p className="text-center text-gray-600 max-w-2xl mx-auto text-sm sm:text-base px-4 selectable-text">
+            <p className="text-center text-muted-foreground max-w-2xl mx-auto text-sm sm:text-base px-4 selectable-text">
               {subtitle}
             </p>
           )}
