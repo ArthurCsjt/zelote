@@ -135,21 +135,10 @@ export function ChromebookRegistration({ onBack }: ChromebookRegistrationProps) 
       {/* Background gradient overlay */}
       <div className="absolute inset-0 -z-10 bg-gradient-to-br from-blue-50/30 via-purple-50/20 to-pink-50/30 rounded-3xl blur-2xl transform scale-110" />
       
-      <div className="flex flex-col sm:flex-row justify-between items-start mb-6 relative z-10">
-        <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4 sm:mb-0">
+      <div className="mb-6 relative z-10">
+        <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent text-center">
           Cadastro de Chromebook
         </h2>
-        
-        {/* Botão voltar - NOVO */}
-        <Button 
-          variant="back"
-          size="default"
-          onClick={handleBackClick}
-          className="glass-card hover:shadow-lg transition-all duration-300 border-white/30"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          <span>Voltar ao Menu</span>
-        </Button>
       </div>
       
       {/* Formulário de cadastro */}

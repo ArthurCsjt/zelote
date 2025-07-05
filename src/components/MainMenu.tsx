@@ -138,7 +138,9 @@ export function MainMenu({ onNavigate }: MainMenuProps) {
                   className={`w-full bg-gradient-to-r ${item.gradient} hover:shadow-lg transform transition-all duration-300 hover:scale-[1.02] text-white border-0 rounded-xl font-medium py-3`}
                 >
                   <div className="flex items-center justify-center gap-2">
-                    {item.icon}
+                    <div className="flex items-center justify-center">
+                      {item.icon}
+                    </div>
                     <span>{item.title}</span>
                   </div>
                 </Button>
