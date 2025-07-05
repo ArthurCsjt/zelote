@@ -350,10 +350,10 @@ const Index = () => {
         
         <ScrollArea className="flex-1 overflow-auto pr-4" style={{ maxHeight: "calc(90vh - 160px)" }}>
           <Tabs defaultValue="form" className="w-full">
-            <TabsList className="grid w-full grid-cols-3 mb-4">
-              <TabsTrigger value="form">Novo Empréstimo</TabsTrigger>
-              <TabsTrigger value="active">Empréstimos Ativos</TabsTrigger>
-              <TabsTrigger value="history">Histórico</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-3 mb-4 h-auto p-1">
+              <TabsTrigger value="form" className="text-xs sm:text-sm px-2 py-2">Novo Empréstimo</TabsTrigger>
+              <TabsTrigger value="active" className="text-xs sm:text-sm px-2 py-2">Empréstimos Ativos</TabsTrigger>
+              <TabsTrigger value="history" className="text-xs sm:text-sm px-2 py-2">Histórico</TabsTrigger>
             </TabsList>
             
             <TabsContent value="form" className="mt-0">

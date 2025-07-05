@@ -30,10 +30,9 @@ export function MainMenu({ onNavigate }: MainMenuProps) {
       content: 'Cadastre novos dispositivos e gere QR Codes para identificação.',
       icon: <PlusCircle className="h-6 w-6" />,
       action: () => onNavigate('registration'),
-      gradient: 'from-emerald-400 to-teal-500',
-      bgGradient: 'from-emerald-50 to-teal-50',
-      iconBg: 'bg-emerald-100',
-      textColor: 'text-emerald-800'
+      bgColor: 'bg-green-500',
+      buttonColor: 'bg-green-600 hover:bg-green-700',
+      cardBg: 'bg-green-50/80 dark:bg-green-950/30'
     },
     {
       title: 'Inventário',
@@ -41,10 +40,9 @@ export function MainMenu({ onNavigate }: MainMenuProps) {
       content: 'Visualize, edite ou altere o status dos dispositivos cadastrados.',
       icon: <Laptop className="h-6 w-6" />,
       action: () => onNavigate('inventory'),
-      gradient: 'from-blue-400 to-indigo-500',
-      bgGradient: 'from-blue-50 to-indigo-50',
-      iconBg: 'bg-blue-100',
-      textColor: 'text-blue-800'
+      bgColor: 'bg-blue-500',
+      buttonColor: 'bg-blue-600 hover:bg-blue-700',
+      cardBg: 'bg-blue-50/80 dark:bg-blue-950/30'
     },
     {
       title: 'Empréstimo',
@@ -52,10 +50,9 @@ export function MainMenu({ onNavigate }: MainMenuProps) {
       content: 'Registre novos empréstimos de Chromebooks e veja os ativos.',
       icon: <ClipboardList className="h-6 w-6" />,
       action: () => onNavigate('loan'),
-      gradient: 'from-purple-400 to-violet-500',
-      bgGradient: 'from-purple-50 to-violet-50',
-      iconBg: 'bg-purple-100',
-      textColor: 'text-purple-800'
+      bgColor: 'bg-purple-500',
+      buttonColor: 'bg-purple-600 hover:bg-purple-700',
+      cardBg: 'bg-purple-50/80 dark:bg-purple-950/30'
     },
     {
       title: 'Devolução',
@@ -63,10 +60,9 @@ export function MainMenu({ onNavigate }: MainMenuProps) {
       content: 'Registre a devolução de Chromebooks emprestados.',
       icon: <RotateCcw className="h-6 w-6" />,
       action: () => onNavigate('return'),
-      gradient: 'from-amber-400 to-orange-500',
-      bgGradient: 'from-amber-50 to-orange-50',
-      iconBg: 'bg-amber-100',
-      textColor: 'text-amber-800'
+      bgColor: 'bg-orange-500',
+      buttonColor: 'bg-orange-600 hover:bg-orange-700',
+      cardBg: 'bg-orange-50/80 dark:bg-orange-950/30'
     },
     {
       title: 'Dashboard',
@@ -74,10 +70,9 @@ export function MainMenu({ onNavigate }: MainMenuProps) {
       content: 'Visualize dados e estatísticas sobre os equipamentos.',
       icon: <BarChart3 className="h-6 w-6" />,
       action: () => onNavigate('dashboard'),
-      gradient: 'from-rose-400 to-pink-500',
-      bgGradient: 'from-rose-50 to-pink-50',
-      iconBg: 'bg-rose-100',
-      textColor: 'text-rose-800'
+      bgColor: 'bg-red-500',
+      buttonColor: 'bg-red-600 hover:bg-red-700',
+      cardBg: 'bg-red-50/80 dark:bg-red-950/30'
     }
   ];
 
@@ -96,59 +91,51 @@ export function MainMenu({ onNavigate }: MainMenuProps) {
       {/* Background gradient overlay */}
       <div className="absolute inset-0 -z-10 bg-gradient-to-br from-card/50 via-background to-card/50 rounded-3xl blur-3xl transform scale-110" />
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto relative z-10">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-6xl mx-auto relative z-10">
         {menuItems.map((item, index) => (
           <div 
             key={index} 
             style={getFadeInStyle(index)}
             className="group"
           >
-            <Card className="relative overflow-hidden h-full border-0 shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-2 hover:scale-[1.02] bg-card/80 backdrop-blur-xl">
-              {/* Gradient background */}
-              <div className={`absolute inset-0 bg-gradient-to-br ${item.bgGradient} opacity-60`} />
-              
-              {/* Glass effect overlay */}
-              <div className="absolute inset-0 bg-card/40 backdrop-blur-sm" />
-              
+            <Card className={`relative overflow-hidden h-full border border-white/20 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 hover:scale-[1.02] ${item.cardBg} backdrop-blur-xl`}>
               {/* Content */}
-              <div className="relative z-10 p-6 h-full flex flex-col">
-                {/* Icon and header */}
-                <div className="flex items-start gap-4 mb-4">
-                  <div className={`${item.iconBg} p-3 rounded-2xl shadow-lg transform group-hover:scale-110 transition-transform duration-300`}>
-                    <div className={`bg-gradient-to-r ${item.gradient} bg-clip-text text-transparent`}>
+              <div className="relative z-10 p-6 h-full flex flex-col text-center">
+                {/* Icon */}
+                <div className="flex justify-center mb-4">
+                  <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-lg">
+                    <div className="text-gray-700 dark:text-gray-200">
                       {item.icon}
                     </div>
                   </div>
-                  <div className="flex-1">
-                    <h3 className={`text-xl font-bold ${item.textColor} mb-1`}>
-                      {item.title}
-                    </h3>
-                    <p className="text-sm text-muted-foreground">{item.description}</p>
-                  </div>
                 </div>
                 
+                {/* Title */}
+                <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-2">
+                  {item.title}
+                </h3>
+                
+                {/* Subtitle */}
+                <p className="text-sm text-gray-600 dark:text-gray-300 font-medium mb-3">
+                  {item.description}
+                </p>
+                
                 {/* Description */}
-                <p className="text-sm text-muted-foreground mb-6 leading-relaxed flex-1">
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-6 leading-relaxed flex-1">
                   {item.content}
                 </p>
                 
                 {/* Action button */}
                 <Button 
                   onClick={item.action}
-                  className={`w-full bg-gradient-to-r ${item.gradient} hover:shadow-lg transform transition-all duration-300 hover:scale-[1.02] text-white border-0 rounded-xl font-medium py-3`}
+                  className={`w-full ${item.buttonColor} text-white font-medium py-3 px-4 rounded-xl shadow-lg hover:shadow-xl transform transition-all duration-300 hover:scale-[1.02] border-0`}
                 >
                   <div className="flex items-center justify-center gap-2">
-                    <div className="flex items-center justify-center">
-                      {item.icon}
-                    </div>
+                    {item.icon}
                     <span>{item.title}</span>
                   </div>
                 </Button>
               </div>
-
-              {/* Floating orbs effect */}
-              <div className="absolute -top-4 -right-4 w-20 h-20 bg-gradient-to-br from-card/20 to-transparent rounded-full blur-xl" />
-              <div className="absolute -bottom-4 -left-4 w-16 h-16 bg-gradient-to-tr from-card/15 to-transparent rounded-full blur-lg" />
             </Card>
           </div>
         ))}
