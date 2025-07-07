@@ -135,11 +135,6 @@ export function ChromebookRegistration({ onBack }: ChromebookRegistrationProps) 
       {/* Background gradient overlay */}
       <div className="absolute inset-0 -z-10 bg-gradient-to-br from-card/30 via-background/20 to-card/30 rounded-3xl blur-2xl transform scale-110" />
       
-      <div className="mb-6 relative z-10">
-        <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent text-center">
-          Cadastro de Chromebook
-        </h2>
-      </div>
       
       {/* Formulário de cadastro */}
       <form onSubmit={handleSubmit} className="space-y-4 relative z-10">

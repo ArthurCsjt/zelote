@@ -273,16 +273,6 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
       {/* Background gradient overlay */}
       <div className="absolute inset-0 -z-10 bg-gradient-to-br from-blue-50/30 via-purple-50/20 to-pink-50/30 rounded-3xl blur-2xl transform scale-110" />
       
-      <div className="flex flex-col sm:flex-row justify-between items-start mb-6 relative z-10">
-        <div>
-          <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
-            Inventário de Chromebooks
-          </h2>
-          <p className="text-gray-600">
-            Gerencie dispositivos cadastrados
-          </p>
-        </div>
-      </div>
 
       {/* Search and filters */}
       <div className="flex flex-col sm:flex-row gap-4 mb-6">

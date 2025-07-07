@@ -714,15 +714,6 @@ export function Dashboard({ activeLoans, history, onBack }: DashboardProps) {
           </div>
         </CardContent>
       </Card>
-      
-      <div className="fixed bottom-4 right-4 sm:hidden">
-        <Button
-          onClick={onBack}
-          className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg rounded-full h-12 w-12 flex items-center justify-center"
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </Button>
-      </div>
     </div>
   );
 }
