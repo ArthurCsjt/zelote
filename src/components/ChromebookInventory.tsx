@@ -279,20 +279,9 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
             Inventário de Chromebooks
           </h2>
           <p className="text-gray-600">
-            Gerencie Chromebooks e visualize o status dos dispositivos cadastrados
+            Gerencie dispositivos cadastrados
           </p>
         </div>
-        
-        {/* Botão voltar */}
-        <Button 
-          variant="back"
-          size="default"
-          onClick={handleBackClick}
-          className="glass-card hover:shadow-lg transition-all duration-300 border-white/30"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          <span>Voltar ao Menu</span>
-        </Button>
       </div>
 
       {/* Search and filters */}

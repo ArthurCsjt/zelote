@@ -298,7 +298,7 @@ export function Dashboard({ activeLoans, history, onBack }: DashboardProps) {
           <h2 className="text-2xl sm:text-3xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
             Dashboard
           </h2>
-          <p className="text-gray-500">Visualize estatísticas e relatórios de uso dos Chromebooks</p>
+          <p className="text-gray-500">Visualize estatísticas e relatórios</p>
         </div>
         <div className="flex flex-wrap gap-2 w-full sm:w-auto justify-start relative z-10">
           <Button
@@ -308,15 +308,6 @@ export function Dashboard({ activeLoans, history, onBack }: DashboardProps) {
           >
             <Download className="h-4 w-4" />
             <span className="whitespace-nowrap">Baixar Relatório</span>
-          </Button>
-          <Button 
-            variant="back"
-            size="default"
-            onClick={onBack}
-            className="glass-card hover:shadow-lg transition-all duration-300 border-white/30"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            <span className="whitespace-nowrap">Voltar ao Menu</span>
           </Button>
         </div>
       </div>

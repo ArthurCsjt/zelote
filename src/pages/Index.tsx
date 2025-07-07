@@ -456,11 +456,11 @@ const Index = () => {
   const getViewSubtitle = () => {
     switch (currentView) {
       case 'registration':
-        return "Cadastre novos dispositivos e gere QR Codes para identificação";
+        return "Cadastre novos dispositivos e gere QR Codes";
       case 'dashboard':
-        return "Visualize dados e estatísticas sobre os equipamentos";
+        return "Visualize estatísticas e relatórios";
       case 'inventory':
-        return "Visualize, edite ou altere o status dos dispositivos cadastrados";
+        return "Gerencie dispositivos cadastrados";
       default:
         return "Gerencie o cadastro, empréstimo e devolução de Chromebooks de forma simples e eficiente";
     }
