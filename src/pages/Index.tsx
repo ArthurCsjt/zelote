@@ -303,12 +303,6 @@ const Index = () => {
         </Button>
       </SheetTrigger>
       <SheetContent className="sm:max-w-md">
-        <SheetHeader>
-          <SheetTitle>Menu de Navegação</SheetTitle>
-          <SheetDescription>
-            Escolha para onde deseja navegar
-          </SheetDescription>
-        </SheetHeader>
         <div className="py-6 grid gap-4">
           <Button onClick={() => handleBackToMenu()} className="w-full">
             Menu Principal

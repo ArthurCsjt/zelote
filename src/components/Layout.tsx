@@ -78,29 +78,6 @@ const Layout: React.FC<LayoutProps> = ({ children, title, subtitle, showBackButt
         <div className="status-bar-overlay" />
       )}
 
-      {/* PWA Install Banner - only show in browser mode */}
-      {showInstallBanner && !isStandalone && (
-        <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-3 text-center relative animate-slide-up">
-          <div className="flex items-center justify-center gap-3">
-            <Download className="w-5 h-5" />
-            <span className="text-sm font-medium">
-              📱 Instale o Zelote para acesso rápido
-            </span>
-            <button
-              onClick={() => setShowInstallBanner(false)}
-              className="bg-white text-blue-600 px-3 py-1 rounded text-sm font-medium hover:bg-gray-100 transition-colors"
-            >
-              Instalar
-            </button>
-            <button
-              onClick={handleInstallBannerDismiss}
-              className="text-white hover:text-gray-200 ml-2"
-            >
-              ✕
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* Header */}
       <header className={`bg-card/80 backdrop-blur-xl shadow-sm border-b border-border sticky top-0 z-40 ${isStandalone ? 'safe-area-top' : ''}`}>
