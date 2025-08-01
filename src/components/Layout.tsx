@@ -80,7 +80,7 @@ const Layout: React.FC<LayoutProps> = ({ children, title, subtitle, showBackButt
 
 
       {/* Header */}
-      <header className={`bg-card/95 backdrop-blur-xl shadow-sm border-b border-border sticky top-0 z-50 ${isStandalone ? 'safe-area-top' : ''}`}>
+      <header className={`bg-card/95 backdrop-blur-xl shadow-sm border-b border-border fixed top-0 left-0 right-0 z-50 ${isStandalone ? 'safe-area-top' : ''}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center gap-4">
@@ -96,7 +96,10 @@ const Layout: React.FC<LayoutProps> = ({ children, title, subtitle, showBackButt
                 <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                   Zelote
                 </h1>
-                <p className="text-sm text-muted-foreground hidden sm:block">Controle de empréstimos e devoluções</p>
+                <div className="flex items-center gap-2">
+                  <p className="text-sm text-muted-foreground hidden sm:block">Controle de empréstimos e devoluções</p>
+                  <span className="text-xs text-muted-foreground/60 hidden sm:block">v1.0.0</span>
+                </div>
               </div>
             </div>
             
@@ -130,7 +133,7 @@ const Layout: React.FC<LayoutProps> = ({ children, title, subtitle, showBackButt
       </header>
 
       {/* Main Content */}
-      <main className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 no-bounce ${isStandalone ? 'ios-bottom-safe' : ''}`}>
+      <main className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 no-bounce pt-20 ${isStandalone ? 'ios-bottom-safe' : ''}`}>
         <div className="mb-6 sm:mb-8">
           <h2 className="text-2xl sm:text-3xl font-bold text-center bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
             {title}
