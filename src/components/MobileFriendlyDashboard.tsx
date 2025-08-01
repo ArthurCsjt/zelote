@@ -13,11 +13,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "./ui/progress";
 import { Computer, ArrowLeft, Calendar, BarChart, Clock, Activity } from "lucide-react";
 import { format, startOfDay, isToday, isWithinInterval, subDays, differenceInMinutes } from "date-fns";
-import { Loan } from "./ActiveLoans";
+import type { LoanHistoryItem } from "@/types/database";
 
 interface MobileFriendlyDashboardProps {
-  activeLoans: Loan[];
-  history: Loan[];
+  activeLoans: LoanHistoryItem[];
+  history: LoanHistoryItem[];
   onBack: () => void;
 }
 

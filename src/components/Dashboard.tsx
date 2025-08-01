@@ -14,7 +14,7 @@ import {
 } from "recharts";
 import { format, startOfDay, isToday, isWithinInterval, subDays, differenceInMinutes, 
   subMonths, subWeeks, startOfWeek, startOfMonth, endOfMonth, endOfWeek, addDays } from "date-fns";
-import { Loan } from "./ActiveLoans";
+import type { LoanHistoryItem } from "@/types/database";
 import { Badge } from "./ui/badge";
 import { Progress } from "./ui/progress";
 import { ChartContainer, ChartTooltipContent, ChartLegendContent } from "./ui/chart";
@@ -37,8 +37,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MobileFriendlyDashboard } from "./MobileFriendlyDashboard";
 
 interface DashboardProps {
-  activeLoans: Loan[];
-  history: Loan[];
+  activeLoans: LoanHistoryItem[];
+  history: LoanHistoryItem[];
   onBack: () => void;
 }
 
@@ -66,14 +66,15 @@ export function Dashboard({ activeLoans, history, onBack }: DashboardProps) {
         // Dados por hora do dia atual
         filteredData = Array.from({ length: 24 }, (_, i) => {
           const hour = i;
-          const hourLoans = history.filter(loan => {
-            return isToday(loan.timestamp) && loan.timestamp.getHours() === hour;
+      const hourLoans = history.filter(loan => {
+        const loanDate = new Date(loan.loan_date);
+        return isToday(loanDate) && loanDate.getHours() === hour;
           });
           
           return {
             hora: `${hour}h`,
-            empréstimos: hourLoans.length,
-            devoluções: hourLoans.filter(loan => loan.returnRecord).length,
+        empréstimos: hourLoans.length,
+        devoluções: hourLoans.filter(loan => loan.status === 'devolvido').length,
           };
         });
         break;
@@ -167,7 +168,7 @@ export function Dashboard({ activeLoans, history, onBack }: DashboardProps) {
   }, 0) / (filteredReturns.length || 1);
 
   const loansByUserType = filteredLoans.reduce((acc, loan) => {
-    const userType = loan.userType || 'aluno';
+    const userType = loan.user_type || 'aluno';
     acc[userType] = (acc[userType] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
