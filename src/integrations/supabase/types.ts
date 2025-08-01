@@ -10,10 +10,123 @@ export type Database = {
   // Allows to automatically instanciate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "12.2.3 (519615d)"
+    PostgrestVersion: "12.2.12 (cd3cf9e)"
   }
   public: {
     Tables: {
+      chromebooks: {
+        Row: {
+          chromebook_id: string
+          condition: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          location: string | null
+          model: string
+          patrimony_number: string | null
+          serial_number: string | null
+          status: Database["public"]["Enums"]["chromebook_status"]
+          updated_at: string
+        }
+        Insert: {
+          chromebook_id: string
+          condition?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          location?: string | null
+          model: string
+          patrimony_number?: string | null
+          serial_number?: string | null
+          status?: Database["public"]["Enums"]["chromebook_status"]
+          updated_at?: string
+        }
+        Update: {
+          chromebook_id?: string
+          condition?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          location?: string | null
+          model?: string
+          patrimony_number?: string | null
+          serial_number?: string | null
+          status?: Database["public"]["Enums"]["chromebook_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chromebooks_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      loans: {
+        Row: {
+          chromebook_id: string
+          created_at: string
+          created_by: string | null
+          expected_return_date: string | null
+          id: string
+          loan_date: string
+          loan_type: Database["public"]["Enums"]["loan_type"]
+          purpose: string
+          student_email: string
+          student_name: string
+          student_ra: string | null
+          updated_at: string
+          user_type: Database["public"]["Enums"]["user_type"]
+        }
+        Insert: {
+          chromebook_id: string
+          created_at?: string
+          created_by?: string | null
+          expected_return_date?: string | null
+          id?: string
+          loan_date?: string
+          loan_type?: Database["public"]["Enums"]["loan_type"]
+          purpose: string
+          student_email: string
+          student_name: string
+          student_ra?: string | null
+          updated_at?: string
+          user_type?: Database["public"]["Enums"]["user_type"]
+        }
+        Update: {
+          chromebook_id?: string
+          created_at?: string
+          created_by?: string | null
+          expected_return_date?: string | null
+          id?: string
+          loan_date?: string
+          loan_type?: Database["public"]["Enums"]["loan_type"]
+          purpose?: string
+          student_email?: string
+          student_name?: string
+          student_ra?: string | null
+          updated_at?: string
+          user_type?: Database["public"]["Enums"]["user_type"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loans_chromebook_id_fkey"
+            columns: ["chromebook_id"]
+            isOneToOne: false
+            referencedRelation: "chromebooks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "loans_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
@@ -44,9 +157,91 @@ export type Database = {
         }
         Relationships: []
       }
+      returns: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          loan_id: string
+          notes: string | null
+          return_date: string
+          returned_by_email: string
+          returned_by_name: string
+          returned_by_ra: string | null
+          returned_by_type: Database["public"]["Enums"]["user_type"]
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          loan_id: string
+          notes?: string | null
+          return_date?: string
+          returned_by_email: string
+          returned_by_name: string
+          returned_by_ra?: string | null
+          returned_by_type?: Database["public"]["Enums"]["user_type"]
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          loan_id?: string
+          notes?: string | null
+          return_date?: string
+          returned_by_email?: string
+          returned_by_name?: string
+          returned_by_ra?: string | null
+          returned_by_type?: Database["public"]["Enums"]["user_type"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "returns_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "returns_loan_id_fkey"
+            columns: ["loan_id"]
+            isOneToOne: false
+            referencedRelation: "loan_history"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "returns_loan_id_fkey"
+            columns: ["loan_id"]
+            isOneToOne: false
+            referencedRelation: "loans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
-      [_ in never]: never
+      loan_history: {
+        Row: {
+          chromebook_id: string | null
+          chromebook_model: string | null
+          expected_return_date: string | null
+          id: string | null
+          loan_date: string | null
+          loan_type: Database["public"]["Enums"]["loan_type"] | null
+          purpose: string | null
+          return_date: string | null
+          return_notes: string | null
+          returned_by_email: string | null
+          returned_by_name: string | null
+          returned_by_type: Database["public"]["Enums"]["user_type"] | null
+          status: string | null
+          student_email: string | null
+          student_name: string | null
+          student_ra: string | null
+          user_type: Database["public"]["Enums"]["user_type"] | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       has_role: {
@@ -62,7 +257,10 @@ export type Database = {
       }
     }
     Enums: {
+      chromebook_status: "disponivel" | "emprestado" | "manutencao" | "fora_uso"
+      loan_type: "individual" | "lote"
       user_role: "super_admin" | "admin" | "user"
+      user_type: "aluno" | "professor" | "funcionario"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -190,7 +388,10 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      chromebook_status: ["disponivel", "emprestado", "manutencao", "fora_uso"],
+      loan_type: ["individual", "lote"],
       user_role: ["super_admin", "admin", "user"],
+      user_type: ["aluno", "professor", "funcionario"],
     },
   },
 } as const
