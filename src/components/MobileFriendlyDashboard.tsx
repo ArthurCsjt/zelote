@@ -41,11 +41,11 @@ export function MobileFriendlyDashboard({ activeLoans, history, onBack }: Mobile
     
     switch(periodView) {
       case 'daily':
-        filteredLoans = history.filter(loan => isToday(loan.timestamp));
+        filteredLoans = history.filter(loan => isToday(new Date(loan.loan_date)));
         break;
       case 'weekly':
         filteredLoans = history.filter(loan => 
-          isWithinInterval(loan.timestamp, {
+          isWithinInterval(new Date(loan.loan_date), {
             start: subDays(currentDate, 7),
             end: currentDate
           })
@@ -53,7 +53,7 @@ export function MobileFriendlyDashboard({ activeLoans, history, onBack }: Mobile
         break;
       case 'monthly':
         filteredLoans = history.filter(loan => 
-          isWithinInterval(loan.timestamp, {
+          isWithinInterval(new Date(loan.loan_date), {
             start: new Date(currentDate.getFullYear(), currentDate.getMonth(), 1),
             end: currentDate
           })
@@ -64,7 +64,7 @@ export function MobileFriendlyDashboard({ activeLoans, history, onBack }: Mobile
   };
 
   const periodLoans = getPeriodLoans();
-  const periodReturns = periodLoans.filter(loan => loan.returnRecord);
+  const periodReturns = periodLoans.filter(loan => loan.return_date);
   
   // Cálculo da taxa de devolução
   const completionRate = periodLoans.length > 0 
@@ -73,10 +73,10 @@ export function MobileFriendlyDashboard({ activeLoans, history, onBack }: Mobile
   
   // Cálculo do tempo médio de uso
   const averageUsageTime = periodReturns.reduce((acc, loan) => {
-    if (loan.returnRecord) {
+    if (loan.return_date) {
       const duration = differenceInMinutes(
-        loan.returnRecord.returnTime, 
-        loan.timestamp
+        new Date(loan.return_date), 
+        new Date(loan.loan_date)
       );
       return acc + duration;
     }
@@ -195,15 +195,15 @@ export function MobileFriendlyDashboard({ activeLoans, history, onBack }: Mobile
             >
               <div className="flex justify-between items-start">
                 <div>
-                  <p className="font-medium text-sm">{loan.studentName}</p>
-                  <p className="text-xs text-gray-600">ID: {loan.chromebookId}</p>
+                  <p className="font-medium text-sm">{loan.student_name}</p>
+                  <p className="text-xs text-gray-600">ID: {loan.chromebook_id}</p>
                 </div>
                 <Badge variant="secondary" className="bg-blue-100 text-blue-700 text-xs">
                   Pendente
                 </Badge>
               </div>
               <p className="text-xs text-gray-600 mt-1">
-                Retirada: {format(loan.timestamp, "dd/MM HH:mm")}
+                Retirada: {format(new Date(loan.loan_date), "dd/MM HH:mm")}
               </p>
             </div>
           ))}

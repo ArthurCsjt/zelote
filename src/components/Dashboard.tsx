@@ -84,7 +84,7 @@ export function Dashboard({ activeLoans, history, onBack }: DashboardProps) {
         filteredData = Array.from({ length: 7 }, (_, i) => {
           const date = subDays(currentDate, 6 - i);
           const dailyLoans = history.filter(loan => 
-            isWithinInterval(loan.timestamp, {
+            isWithinInterval(new Date(loan.loan_date), {
               start: startOfDay(date),
               end: new Date(date.setHours(23, 59, 59, 999))
             })
@@ -93,7 +93,7 @@ export function Dashboard({ activeLoans, history, onBack }: DashboardProps) {
           return {
             date: format(date, "dd/MM"),
             empréstimos: dailyLoans.length,
-            devoluções: dailyLoans.filter(loan => loan.returnRecord).length,
+            devoluções: dailyLoans.filter(loan => loan.return_date).length,
           };
         });
         break;
@@ -103,7 +103,7 @@ export function Dashboard({ activeLoans, history, onBack }: DashboardProps) {
         filteredData = Array.from({ length: 30 }, (_, i) => {
           const date = subDays(currentDate, 29 - i);
           const dailyLoans = history.filter(loan => 
-            isWithinInterval(loan.timestamp, {
+            isWithinInterval(new Date(loan.loan_date), {
               start: startOfDay(date),
               end: new Date(date.setHours(23, 59, 59, 999))
             })
@@ -112,7 +112,7 @@ export function Dashboard({ activeLoans, history, onBack }: DashboardProps) {
           return {
             date: format(date, "dd/MM"),
             empréstimos: dailyLoans.length,
-            devoluções: dailyLoans.filter(loan => loan.returnRecord).length,
+            devoluções: dailyLoans.filter(loan => loan.return_date).length,
           };
         });
         break;
@@ -144,12 +144,12 @@ export function Dashboard({ activeLoans, history, onBack }: DashboardProps) {
     }
 
     return history.filter(loan => 
-      isWithinInterval(loan.timestamp, { start: startDate, end: endDate })
+      isWithinInterval(new Date(loan.loan_date), { start: startDate, end: endDate })
     );
   };
 
   const filteredLoans = getFilteredLoans();
-  const filteredReturns = filteredLoans.filter(loan => loan.returnRecord);
+  const filteredReturns = filteredLoans.filter(loan => loan.return_date);
   
   // Estatísticas
   const completionRate = filteredLoans.length > 0 
@@ -157,10 +157,10 @@ export function Dashboard({ activeLoans, history, onBack }: DashboardProps) {
     : 0;
 
   const averageUsageTime = filteredReturns.reduce((acc, loan) => {
-    if (loan.returnRecord) {
+    if (loan.return_date) {
       const duration = differenceInMinutes(
-        loan.returnRecord.returnTime, 
-        loan.timestamp
+        new Date(loan.return_date), 
+        new Date(loan.loan_date)
       );
       return acc + duration;
     }
@@ -178,20 +178,20 @@ export function Dashboard({ activeLoans, history, onBack }: DashboardProps) {
     value: count
   }));
 
-  const completedLoans = filteredLoans.filter(loan => loan.returnRecord);
+  const completedLoans = filteredLoans.filter(loan => loan.return_date);
   const averageLoanDurations = completedLoans.reduce((acc, loan) => {
-    if (loan.returnRecord) {
+    if (loan.return_date) {
       const durationMinutes = differenceInMinutes(
-        loan.returnRecord.returnTime, 
-        loan.timestamp
+        new Date(loan.return_date), 
+        new Date(loan.loan_date)
       );
       
-      if (!acc[loan.userType || 'aluno']) {
-        acc[loan.userType || 'aluno'] = { total: 0, count: 0 };
+      if (!acc[loan.user_type || 'aluno']) {
+        acc[loan.user_type || 'aluno'] = { total: 0, count: 0 };
       }
       
-      acc[loan.userType || 'aluno'].total += durationMinutes;
-      acc[loan.userType || 'aluno'].count += 1;
+      acc[loan.user_type || 'aluno'].total += durationMinutes;
+      acc[loan.user_type || 'aluno'].count += 1;
     }
     return acc;
   }, {} as Record<string, { total: number, count: number }>);
@@ -261,8 +261,8 @@ export function Dashboard({ activeLoans, history, onBack }: DashboardProps) {
         pdf.addPage();
         yPosition = 20;
       }
-      pdf.text(`• ${loan.studentName} - ID: ${loan.chromebookId}`, 25, yPosition);
-      pdf.text(`  Retirada: ${format(loan.timestamp, "dd/MM/yyyy 'às' HH:mm")}`, 25, yPosition + 5);
+      pdf.text(`• ${loan.student_name} - ID: ${loan.chromebook_id}`, 25, yPosition);
+      pdf.text(`  Retirada: ${format(new Date(loan.loan_date), "dd/MM/yyyy 'às' HH:mm")}`, 25, yPosition + 5);
       yPosition += 15;
     });
 
@@ -632,8 +632,8 @@ export function Dashboard({ activeLoans, history, onBack }: DashboardProps) {
               <CardContent>
                 <div className="space-y-4">
                   {Object.entries(loansByUserType).map(([type, count]) => {
-                    const userTypeLoans = history.filter(loan => loan.userType === type);
-                    const userTypeReturns = userTypeLoans.filter(loan => loan.returnRecord);
+                    const userTypeLoans = history.filter(loan => loan.user_type === type);
+                    const userTypeReturns = userTypeLoans.filter(loan => loan.return_date);
                     const returnRate = userTypeLoans.length > 0 
                       ? (userTypeReturns.length / userTypeLoans.length) * 100 
                       : 0;
@@ -700,15 +700,15 @@ export function Dashboard({ activeLoans, history, onBack }: DashboardProps) {
               >
                 <div className="flex justify-between items-start">
                   <div>
-                    <p className="font-medium">{loan.studentName}</p>
-                    <p className="text-sm text-gray-600">ID: {loan.chromebookId}</p>
+                    <p className="font-medium">{loan.student_name}</p>
+                    <p className="text-sm text-gray-600">ID: {loan.chromebook_id}</p>
                   </div>
                   <Badge variant="secondary" className="bg-blue-100 text-blue-700">
                     Pendente
                   </Badge>
                 </div>
                 <p className="text-sm text-gray-600 mt-1">
-                  Retirada: {format(loan.timestamp, "dd/MM/yyyy 'às' HH:mm")}
+                  Retirada: {format(new Date(loan.loan_date), "dd/MM/yyyy 'às' HH:mm")}
                 </p>
               </div>
             ))}
