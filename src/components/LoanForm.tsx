@@ -5,8 +5,15 @@ import { toast } from "./ui/use-toast";
 import { Label } from "./ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { Badge } from "./ui/badge";
-import { Computer, Plus, QrCode } from "lucide-react";
+import { Checkbox } from "./ui/checkbox";
+import { Computer, Plus, QrCode, Calendar, Clock } from "lucide-react";
 import { QRCodeReader } from "./QRCodeReader";
+import { format } from "date-fns";
+import { formatInTimeZone, toZonedTime } from "date-fns-tz";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import { Calendar as CalendarComponent } from "./ui/calendar";
+import { cn } from "@/lib/utils";
+import { validateLoanFormData, sanitizeQRCodeData } from "@/utils/security";
 
 // Define a interface dos dados do formulário de empréstimo
 interface LoanFormData {
@@ -17,6 +24,7 @@ interface LoanFormData {
   purpose: string;        // Finalidade do empréstimo
   userType: 'aluno' | 'professor' | 'funcionario';  // Tipo de usuário
   loanType: 'individual' | 'lote';                 // Tipo de empréstimo
+  expectedReturnDate?: Date;  // Data e hora de devolução esperada
 }
 
 // Define a interface das props do componente
@@ -41,6 +49,12 @@ export function LoanForm({ onSubmit }: LoanFormProps) {
     userType: 'aluno',
     loanType: 'individual'
   });
+
+  // Estado para controlar se deve definir prazo de devolução
+  const [hasReturnDeadline, setHasReturnDeadline] = useState(false);
+  
+  // Estado para o seletor de data
+  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
 
   // Lista de dispositivos para empréstimo em lote
   const [batchDevices, setBatchDevices] = useState<string[]>([]);
@@ -77,55 +91,46 @@ export function LoanForm({ onSubmit }: LoanFormProps) {
    * @param data - String contendo os dados do QR Code
    */
   const handleQRCodeScan = (data: string) => {
-    try {
-      // Tenta interpretar como JSON
-      const jsonData = JSON.parse(data);
-      
-      if (jsonData.id) {
-        if (formData.loanType === 'individual') {
-          // Para empréstimo individual, atualiza o campo chromebookId
-          setFormData(prev => ({ ...prev, chromebookId: jsonData.id }));
+    const sanitizedId = sanitizeQRCodeData(data);
+    
+    if (sanitizedId) {
+      if (formData.loanType === 'individual') {
+        setFormData(prev => ({ ...prev, chromebookId: sanitizedId }));
+        toast({
+          title: "QR Code lido com sucesso",
+          description: `ID do Chromebook: ${sanitizedId}`,
+        });
+      } else {
+        if (!batchDevices.includes(sanitizedId)) {
+          setBatchDevices(prev => [...prev, sanitizedId]);
           toast({
-            title: "QR Code lido com sucesso",
-            description: `ID do Chromebook: ${jsonData.id}`,
+            title: "Dispositivo adicionado ao lote",
+            description: `ID do Chromebook: ${sanitizedId}`,
           });
         } else {
-          // Para empréstimo em lote, adiciona à lista se não existir
-          if (!batchDevices.includes(jsonData.id)) {
-            setBatchDevices(prev => [...prev, jsonData.id]);
-            toast({
-              title: "Dispositivo adicionado ao lote",
-              description: `ID do Chromebook: ${jsonData.id}`,
-            });
-          } else {
-            toast({
-              title: "Dispositivo já adicionado",
-              description: `O Chromebook ${jsonData.id} já está na lista`,
-              variant: "destructive",
-            });
-          }
+          toast({
+            title: "Dispositivo já adicionado",
+            description: `O Chromebook ${sanitizedId} já está na lista`,
+            variant: "destructive",
+          });
         }
-      }
-    } catch (error) {
-      // Se não for JSON, usa diretamente como ID
-      const id = data.trim();
-      if (id) {
-        if (formData.loanType === 'individual') {
-          setFormData(prev => ({ ...prev, chromebookId: id }));
-        } else if (!batchDevices.includes(id)) {
-          setBatchDevices(prev => [...prev, id]);
-        }
-        
-        toast({
-          title: "QR Code lido",
-          description: `ID extraído: ${id}`,
-        });
       }
     }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();  // Previne o comportamento padrão do formulário
+    e.preventDefault();
+    
+    // Validar e sanitizar dados do formulário
+    const validation = validateLoanFormData(formData);
+    if (!validation.isValid) {
+      toast({
+        title: "Erro de Validação",
+        description: validation.errors.join(', '),
+        variant: "destructive",
+      });
+      return;
+    }
     
     if (formData.loanType === 'lote') {
       // === EMPRÉSTIMO EM LOTE ===
@@ -179,6 +184,7 @@ export function LoanForm({ onSubmit }: LoanFormProps) {
           userType: 'aluno',
           loanType: 'individual'
         });
+        setHasReturnDeadline(false);
         
         // Exibe mensagem de sucesso
         toast({
@@ -213,6 +219,7 @@ export function LoanForm({ onSubmit }: LoanFormProps) {
         userType: 'aluno',
         loanType: 'individual'
       });
+      setHasReturnDeadline(false);
       
       // Exibe mensagem de sucesso
       toast({
@@ -468,6 +475,131 @@ export function LoanForm({ onSubmit }: LoanFormProps) {
             }
             className="border-gray-200"
           />
+        </div>
+
+        {/* Opção para definir prazo de devolução */}
+        <div className="space-y-4 p-4 bg-gray-50/50 rounded-xl border border-gray-200">
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="returnDeadline"
+              checked={hasReturnDeadline}
+              onCheckedChange={(checked) => {
+                setHasReturnDeadline(checked as boolean);
+                if (!checked) {
+                  setFormData({ ...formData, expectedReturnDate: undefined });
+                }
+              }}
+              className="border-gray-300"
+            />
+            <Label htmlFor="returnDeadline" className="text-gray-700 font-medium cursor-pointer">
+              Definir prazo de devolução
+            </Label>
+          </div>
+
+          {hasReturnDeadline && (
+            <div className="space-y-3 pl-6 border-l-2 border-primary/20">
+              <div className="space-y-2">
+                <Label className="text-gray-700 text-sm font-medium">
+                  Data e Hora de Devolução
+                </Label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {/* Seletor de Data */}
+                  <Popover open={isDatePickerOpen} onOpenChange={setIsDatePickerOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "justify-start text-left font-normal border-gray-200",
+                          !formData.expectedReturnDate && "text-muted-foreground"
+                        )}
+                      >
+                        <Calendar className="mr-2 h-4 w-4" />
+                        {formData.expectedReturnDate ? (
+                          format(formData.expectedReturnDate, "dd/MM/yyyy")
+                        ) : (
+                          <span>Selecionar data</span>
+                        )}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <CalendarComponent
+                        mode="single"
+                        selected={formData.expectedReturnDate}
+                        onSelect={(date) => {
+                          if (date) {
+                            const currentTime = formData.expectedReturnDate || new Date();
+                            const newDateTime = new Date(date);
+                            newDateTime.setHours(currentTime.getHours());
+                            newDateTime.setMinutes(currentTime.getMinutes());
+                            setFormData({ ...formData, expectedReturnDate: newDateTime });
+                          }
+                          setIsDatePickerOpen(false);
+                        }}
+                        disabled={(date) => date < new Date()}
+                        initialFocus
+                        className="pointer-events-auto"
+                      />
+                    </PopoverContent>
+                  </Popover>
+
+                  {/* Seletor de Hora */}
+                  <div className="space-y-1">
+                    <div className="flex gap-2">
+                      <div className="flex-1">
+                        <Input
+                          type="number"
+                          placeholder="Hora"
+                          min="0"
+                          max="23"
+                          value={formData.expectedReturnDate ? formData.expectedReturnDate.getHours() : ''}
+                          onChange={(e) => {
+                            const hours = parseInt(e.target.value) || 0;
+                            if (hours >= 0 && hours <= 23) {
+                              const newDate = formData.expectedReturnDate ? 
+                                new Date(formData.expectedReturnDate) : 
+                                new Date();
+                              newDate.setHours(hours);
+                              setFormData({ ...formData, expectedReturnDate: newDate });
+                            }
+                          }}
+                          className="border-gray-200 text-center"
+                        />
+                      </div>
+                      <span className="flex items-center text-gray-500">:</span>
+                      <div className="flex-1">
+                        <Input
+                          type="number"
+                          placeholder="Min"
+                          min="0"
+                          max="59"
+                          value={formData.expectedReturnDate ? formData.expectedReturnDate.getMinutes() : ''}
+                          onChange={(e) => {
+                            const minutes = parseInt(e.target.value) || 0;
+                            if (minutes >= 0 && minutes <= 59) {
+                              const newDate = formData.expectedReturnDate ? 
+                                new Date(formData.expectedReturnDate) : 
+                                new Date();
+                              newDate.setMinutes(minutes);
+                              setFormData({ ...formData, expectedReturnDate: newDate });
+                            }
+                          }}
+                          className="border-gray-200 text-center"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex items-center text-xs text-gray-500 mt-1">
+                      <Clock className="h-3 w-3 mr-1" />
+                      {formData.expectedReturnDate && (
+                        <span>
+                          Prazo: {format(formData.expectedReturnDate, "dd/MM/yyyy 'às' HH:mm")}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
         
         {/* Botão de envio do formulário */}

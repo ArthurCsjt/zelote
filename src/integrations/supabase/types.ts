@@ -244,6 +244,30 @@ export type Database = {
       }
     }
     Functions: {
+      get_overdue_loans: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          loan_id: string
+          chromebook_id: string
+          student_name: string
+          student_email: string
+          loan_date: string
+          expected_return_date: string
+          days_overdue: number
+        }[]
+      }
+      get_upcoming_due_loans: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          loan_id: string
+          chromebook_id: string
+          student_name: string
+          student_email: string
+          loan_date: string
+          expected_return_date: string
+          days_until_due: number
+        }[]
+      }
       has_role: {
         Args: {
           _user_id: string

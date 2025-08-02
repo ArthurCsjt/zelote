@@ -159,6 +159,7 @@ export const useDatabase = () => {
           purpose: data.purpose,
           user_type: data.userType,
           loan_type: data.loanType,
+          expected_return_date: data.expectedReturnDate?.toISOString(),
           created_by: user.id
         })
         .select()

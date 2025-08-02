@@ -1,5 +1,5 @@
 
-import { Toaster } from "@/components/ui/toaster";
+import { MobileToaster } from "@/components/ui/mobile-toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -39,7 +39,7 @@ const App = () => (
       <AuthProvider>
         <TooltipProvider>
           {/* Componentes para exibição de notificações toast */}
-          <Toaster />
+          <MobileToaster />
           <Sonner />
           
           {/* Configuração do roteamento da aplicação */}
