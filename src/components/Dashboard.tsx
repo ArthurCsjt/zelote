@@ -463,30 +463,61 @@ export function Dashboard({ activeLoans, history, onBack }: DashboardProps) {
               </CardContent>
             </Card>
           </div>
-        </TabsContent>
 
-        <TabsContent value="weekly" className="space-y-4 mt-6">
-          <div className="grid gap-4 md:grid-cols-2">
+          {/* Novos gráficos de pizza para análise detalhada */}
+          <div className="grid gap-4 md:grid-cols-3 mt-4">
             <Card className="glass-card dashboard-card">
               <CardHeader className="flex flex-row items-center justify-between">
                 <div>
-                  <CardTitle>Movimentações na Semana</CardTitle>
+                  <CardTitle className="text-lg">Uso por Tipo de Usuário</CardTitle>
                   <CardDescription>
-                    Últimos 7 dias
+                    Distribuição dos empréstimos hoje
                   </CardDescription>
                 </div>
-                <BarChartIcon className="h-5 w-5 text-muted-foreground" />
+                <Users className="h-5 w-5 text-muted-foreground" />
               </CardHeader>
-              <CardContent className="h-[300px]">
+              <CardContent className="h-[250px]">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={periodData}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                    <XAxis dataKey="date" />
-                    <YAxis />
+                  <PieChart>
+                    <Pie
+                      data={userTypeData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={40}
+                      outerRadius={70}
+                      fill="#8884d8"
+                      paddingAngle={5}
+                      dataKey="value"
+                      label={({name, value}) => `${name}: ${value}`}
+                    >
+                      {userTypeData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={['#3B82F6', '#10B981', '#F59E0B'][index % 3]} />
+                      ))}
+                    </Pie>
                     <Tooltip />
-                    <Legend />
-                    <Bar dataKey="empréstimos" fill="#2563EB" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="devoluções" fill="#22C55E" radius={[4, 4, 0, 0]} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+
+            <Card className="glass-card dashboard-card">
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle className="text-lg">Tempo de Uso Médio</CardTitle>
+                  <CardDescription>
+                    Por tipo de usuário (minutos)
+                  </CardDescription>
+                </div>
+                <Clock className="h-5 w-5 text-muted-foreground" />
+              </CardHeader>
+              <CardContent className="h-[250px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={durationData} layout="horizontal">
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis type="number" />
+                    <YAxis dataKey="name" type="category" width={80} />
+                    <Tooltip />
+                    <Bar dataKey="minutos" fill="#8B5CF6" radius={[0, 4, 4, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </CardContent>
@@ -495,24 +526,193 @@ export function Dashboard({ activeLoans, history, onBack }: DashboardProps) {
             <Card className="glass-card dashboard-card">
               <CardHeader className="flex flex-row items-center justify-between">
                 <div>
-                  <CardTitle>Tendência de Uso</CardTitle>
+                  <CardTitle className="text-lg">Estatísticas Rápidas</CardTitle>
                   <CardDescription>
-                    Padrão semanal
+                    Resumo do período
                   </CardDescription>
                 </div>
-                <ChartLine className="h-5 w-5 text-muted-foreground" />
+                <Activity className="h-5 w-5 text-muted-foreground" />
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium">Alunos</span>
+                    <Badge variant="secondary" className="bg-blue-100 text-blue-700">
+                      {loansByUserType.aluno || 0} empréstimos
+                    </Badge>
+                  </div>
+                  <Progress value={((loansByUserType.aluno || 0) / filteredLoans.length) * 100} className="h-2" />
+                </div>
+                
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium">Professores</span>
+                    <Badge variant="secondary" className="bg-green-100 text-green-700">
+                      {loansByUserType.professor || 0} empréstimos
+                    </Badge>
+                  </div>
+                  <Progress value={((loansByUserType.professor || 0) / filteredLoans.length) * 100} className="h-2" />
+                </div>
+                
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium">Funcionários</span>
+                    <Badge variant="secondary" className="bg-orange-100 text-orange-700">
+                      {loansByUserType.funcionario || 0} empréstimos
+                    </Badge>
+                  </div>
+                  <Progress value={((loansByUserType.funcionario || 0) / filteredLoans.length) * 100} className="h-2" />
+                </div>
+                
+                <div className="pt-2 border-t">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-bold">Chromebooks Disponíveis</span>
+                    <Badge variant="outline" className="border-green-200 text-green-700">
+                      {availableChromebooks} de {totalChromebooks}
+                    </Badge>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="weekly" className="space-y-4 mt-6">
+          <div className="grid gap-4 md:grid-cols-2">
+            <Card className="glass-card dashboard-card">
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle>Atividade Semanal</CardTitle>
+                  <CardDescription>
+                    Últimos 7 dias
+                  </CardDescription>
+                </div>
+                <BarChartIcon className="h-5 w-5 text-muted-foreground" />
               </CardHeader>
               <CardContent className="h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <ComposedChart data={periodData}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                    <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="date" />
                     <YAxis />
                     <Tooltip />
                     <Legend />
-                    <Area type="monotone" dataKey="empréstimos" fill="#2563EB" fillOpacity={0.2} stroke="#2563EB" />
-                    <Line type="monotone" dataKey="devoluções" stroke="#22C55E" />
+                    <Area
+                      type="monotone"
+                      dataKey="empréstimos"
+                      fill="#2563EB"
+                      stroke="#2563EB"
+                      fillOpacity={0.3}
+                    />
+                    <Bar dataKey="devoluções" fill="#22C55E" radius={[4, 4, 0, 0]} />
                   </ComposedChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+
+            <Card className="glass-card dashboard-card">
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle>Uso por Tipo de Usuário</CardTitle>
+                  <CardDescription>
+                    Esta semana
+                  </CardDescription>
+                </div>
+                <Users className="h-5 w-5 text-muted-foreground" />
+              </CardHeader>
+              <CardContent className="h-[300px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={userTypeData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={60}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      paddingAngle={5}
+                      dataKey="value"
+                      label
+                    >
+                      {userTypeData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={['#3B82F6', '#10B981', '#F59E0B'][index % 3]} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                    <Legend />
+                  </PieChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Gráficos adicionais para visão semanal */}
+          <div className="grid gap-4 md:grid-cols-2 mt-4">
+            <Card className="glass-card dashboard-card">
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle>Distribuição de Horários</CardTitle>
+                  <CardDescription>
+                    Preferências de horário esta semana
+                  </CardDescription>
+                </div>
+                <Clock className="h-5 w-5 text-muted-foreground" />
+              </CardHeader>
+              <CardContent className="h-[300px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={[
+                        { name: "Manhã (8h-12h)", value: filteredLoans.filter(loan => {
+                          const hour = new Date(loan.loan_date).getHours();
+                          return hour >= 8 && hour < 12;
+                        }).length },
+                        { name: "Tarde (12h-17h)", value: filteredLoans.filter(loan => {
+                          const hour = new Date(loan.loan_date).getHours();
+                          return hour >= 12 && hour < 17;
+                        }).length },
+                        { name: "Noite (17h-22h)", value: filteredLoans.filter(loan => {
+                          const hour = new Date(loan.loan_date).getHours();
+                          return hour >= 17 && hour < 22;
+                        }).length }
+                      ]}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={40}
+                      outerRadius={80}
+                      paddingAngle={5}
+                      dataKey="value"
+                      label={({name, value}) => value > 0 ? `${name}: ${value}` : ''}
+                    >
+                      {[0, 1, 2].map((index) => (
+                        <Cell key={`cell-${index}`} fill={['#06B6D4', '#8B5CF6', '#F59E0B'][index]} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+
+            <Card className="glass-card dashboard-card">
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle>Tempo de Uso por Tipo</CardTitle>
+                  <CardDescription>
+                    Duração média em minutos
+                  </CardDescription>
+                </div>
+                <BarChartIcon className="h-5 w-5 text-muted-foreground" />
+              </CardHeader>
+              <CardContent className="h-[300px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={durationData}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip />
+                    <Bar dataKey="minutos" fill="#8B5CF6" radius={[4, 4, 0, 0]} />
+                  </BarChart>
                 </ResponsiveContainer>
               </CardContent>
             </Card>
@@ -524,7 +724,7 @@ export function Dashboard({ activeLoans, history, onBack }: DashboardProps) {
             <Card className="glass-card dashboard-card">
               <CardHeader className="flex flex-row items-center justify-between">
                 <div>
-                  <CardTitle>Visão Mensal</CardTitle>
+                  <CardTitle>Tendência Mensal</CardTitle>
                   <CardDescription>
                     Últimos 30 dias
                   </CardDescription>
@@ -534,13 +734,27 @@ export function Dashboard({ activeLoans, history, onBack }: DashboardProps) {
               <CardContent className="h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={periodData}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                    <XAxis dataKey="date" tickFormatter={(value, index) => index % 5 === 0 ? value : ''} />
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="date" />
                     <YAxis />
                     <Tooltip />
                     <Legend />
-                    <Area type="monotone" dataKey="empréstimos" stackId="1" stroke="#2563EB" fill="#2563EB" fillOpacity={0.5} />
-                    <Area type="monotone" dataKey="devoluções" stackId="2" stroke="#22C55E" fill="#22C55E" fillOpacity={0.5} />
+                    <Area
+                      type="monotone"
+                      dataKey="empréstimos"
+                      stackId="1"
+                      stroke="#2563EB"
+                      fill="#2563EB"
+                      fillOpacity={0.8}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="devoluções"
+                      stackId="1"
+                      stroke="#22C55E"
+                      fill="#22C55E"
+                      fillOpacity={0.8}
+                    />
                   </AreaChart>
                 </ResponsiveContainer>
               </CardContent>
@@ -549,132 +763,153 @@ export function Dashboard({ activeLoans, history, onBack }: DashboardProps) {
             <Card className="glass-card dashboard-card">
               <CardHeader className="flex flex-row items-center justify-between">
                 <div>
-                  <CardTitle>Distribuição por Usuários</CardTitle>
+                  <CardTitle>Duração Média de Uso</CardTitle>
                   <CardDescription>
-                    Perfil de empréstimos
+                    Por tipo de usuário este mês
                   </CardDescription>
                 </div>
-                <Users className="h-5 w-5 text-muted-foreground" />
+                <Clock className="h-5 w-5 text-muted-foreground" />
               </CardHeader>
               <CardContent className="h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={userTypeData}
-                      cx="50%"
-                      cy="50%"
-                      outerRadius={80}
-                      fill="#8884d8"
-                      dataKey="value"
-                      label
-                    >
-                      {userTypeData.map((entry, index) => (
-                        <Cell 
-                          key={`cell-${index}`} 
-                          fill={['#2563EB', '#3B82F6', '#60A5FA'][index % 3]} 
-                        />
-                      ))}
-                    </Pie>
+                  <BarChart data={durationData} layout="horizontal">
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis type="number" />
+                    <YAxis dataKey="name" type="category" width={80} />
                     <Tooltip />
-                    <Legend />
-                  </PieChart>
+                    <Bar dataKey="minutos" fill="#8B5CF6" radius={[0, 4, 4, 0]} />
+                  </BarChart>
                 </ResponsiveContainer>
               </CardContent>
             </Card>
           </div>
-        </TabsContent>
 
-        <TabsContent value="usuarios" className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2">
+          {/* Análise mensal mais detalhada */}
+          <div className="grid gap-4 md:grid-cols-3 mt-4">
             <Card className="glass-card dashboard-card">
               <CardHeader className="flex flex-row items-center justify-between">
                 <div>
-                  <CardTitle>Empréstimos por Tipo de Usuário</CardTitle>
+                  <CardTitle className="text-lg">Uso Mensal por Usuário</CardTitle>
                   <CardDescription>
-                    Distribuição total
+                    Distribuição completa
                   </CardDescription>
                 </div>
-                <Users className="h-5 w-5 text-muted-foreground" />
+                <PieChartIcon className="h-5 w-5 text-muted-foreground" />
               </CardHeader>
-              <CardContent className="h-[300px]">
+              <CardContent className="h-[250px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
                       data={userTypeData}
                       cx="50%"
                       cy="50%"
-                      outerRadius={80}
-                      fill="#8884d8"
+                      innerRadius={30}
+                      outerRadius={70}
+                      paddingAngle={5}
                       dataKey="value"
-                      label
+                      label={({name, percent}) => `${name}: ${(percent * 100).toFixed(0)}%`}
                     >
                       {userTypeData.map((entry, index) => (
-                        <Cell 
-                          key={`cell-${index}`} 
-                          fill={['#2563EB', '#3B82F6', '#60A5FA'][index % 3]} 
-                        />
+                        <Cell key={`cell-${index}`} fill={['#3B82F6', '#10B981', '#F59E0B'][index % 3]} />
                       ))}
                     </Pie>
                     <Tooltip />
-                    <Legend />
                   </PieChart>
                 </ResponsiveContainer>
               </CardContent>
             </Card>
 
             <Card className="glass-card dashboard-card">
-              <CardHeader>
-                <CardTitle>Estatísticas por Tipo de Usuário</CardTitle>
-                <CardDescription>
-                  Resumo geral
-                </CardDescription>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle className="text-lg">Performance Mensal</CardTitle>
+                  <CardDescription>
+                    Taxa de devolução e uso
+                  </CardDescription>
+                </div>
+                <Activity className="h-5 w-5 text-muted-foreground" />
               </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {Object.entries(loansByUserType).map(([type, count]) => {
-                    const userTypeLoans = history.filter(loan => loan.user_type === type);
-                    const userTypeReturns = userTypeLoans.filter(loan => loan.return_date);
-                    const returnRate = userTypeLoans.length > 0 
-                      ? (userTypeReturns.length / userTypeLoans.length) * 100 
-                      : 0;
-                    
-                    return (
-                      <div key={type} className="bg-blue-50 p-4 rounded-lg">
-                        <div className="flex justify-between items-center mb-2">
-                          <h3 className="font-medium capitalize">{type}</h3>
-                          <span className="text-sm bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
-                            {count} empréstimos
-                          </span>
-                        </div>
-                        <div className="grid grid-cols-2 gap-2 text-sm">
-                          <div>
-                            <p className="text-gray-500">Taxa de Devolução</p>
-                            <p className="font-medium">{returnRate.toFixed(0)}%</p>
-                          </div>
-                          <div>
-                            <p className="text-gray-500">Tempo Médio</p>
-                            <p className="font-medium">
-                              {averageLoanDurations[type] 
-                                ? `${Math.round(averageLoanDurations[type].total / averageLoanDurations[type].count)} min` 
-                                : 'N/A'}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
+              <CardContent className="h-[250px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={[
+                        { name: "Devolvidos", value: filteredReturns.length },
+                        { name: "Pendentes", value: filteredLoans.length - filteredReturns.length },
+                        { name: "Ativos", value: activeLoans.length }
+                      ]}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={30}
+                      outerRadius={70}
+                      paddingAngle={5}
+                      dataKey="value"
+                      label={({name, value}) => `${name}: ${value}`}
+                    >
+                      {[0, 1, 2].map((index) => (
+                        <Cell key={`cell-${index}`} fill={['#22C55E', '#F59E0B', '#EF4444'][index]} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
 
-                  {Object.keys(loansByUserType).length === 0 && (
-                    <div className="text-center py-8 text-gray-500">
-                      <Users className="h-10 w-10 mx-auto mb-2 text-gray-300" />
-                      <p>Nenhum dado de usuário disponível</p>
+            <Card className="glass-card dashboard-card">
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle className="text-lg">Resumo Executivo</CardTitle>
+                  <CardDescription>
+                    Métricas principais
+                  </CardDescription>
+                </div>
+                <BarChartIcon className="h-5 w-5 text-muted-foreground" />
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium">Utilização Total</span>
+                    <Badge variant="secondary" className="bg-blue-100 text-blue-700">
+                      {((activeLoans.length / totalChromebooks) * 100).toFixed(0)}%
+                    </Badge>
+                  </div>
+                  
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium">Maior Uso</span>
+                    <Badge variant="secondary" className="bg-green-100 text-green-700">
+                      {Object.entries(loansByUserType).sort(([,a], [,b]) => b - a)[0]?.[0] || 'N/A'}
+                    </Badge>
+                  </div>
+                  
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium">Tempo Médio Total</span>
+                    <Badge variant="secondary" className="bg-purple-100 text-purple-700">
+                      {Math.round(averageUsageTime)} min
+                    </Badge>
+                  </div>
+                  
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium">Taxa Devolução</span>
+                    <Badge variant="secondary" className="bg-orange-100 text-orange-700">
+                      {completionRate.toFixed(0)}%
+                    </Badge>
+                  </div>
+                  
+                  <div className="pt-2 border-t">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-bold">Status Geral</span>
+                      <Badge variant={completionRate > 80 ? "default" : "destructive"}>
+                        {completionRate > 80 ? "Excelente" : completionRate > 60 ? "Bom" : "Atenção"}
+                      </Badge>
                     </div>
-                  )}
+                  </div>
                 </div>
               </CardContent>
             </Card>
           </div>
         </TabsContent>
+
       </Tabs>
       
       <Card className="glass-card dashboard-card mt-6">

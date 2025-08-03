@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "./ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "./ui/progress";
-import { Computer, ArrowLeft, Calendar, BarChart, Clock, Activity } from "lucide-react";
+import { Computer, ArrowLeft, Calendar, BarChart, Clock, Activity, Users } from "lucide-react";
 import { format, startOfDay, isToday, isWithinInterval, subDays, differenceInMinutes } from "date-fns";
 import type { LoanHistoryItem } from "@/types/database";
 
@@ -173,6 +173,71 @@ export function MobileFriendlyDashboard({ activeLoans, history, onBack }: Mobile
         </div>
       </Tabs>
 
+      {/* Gráficos de pizza para mobile */}
+      <div className="grid gap-3 grid-cols-2 mb-4 relative z-10">
+        <Card className="glass-card border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-indigo-500">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 pt-3">
+            <CardTitle className="text-xs font-medium">
+              Uso por Usuário
+            </CardTitle>
+            <Users className="h-4 w-4 text-indigo-500" />
+          </CardHeader>
+          <CardContent className="py-2">
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-xs">Alunos</span>
+                <Badge variant="secondary" className="bg-blue-100 text-blue-700 text-xs px-1">
+                  {periodLoans.filter(l => l.user_type === 'aluno').length}
+                </Badge>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-xs">Professores</span>
+                <Badge variant="secondary" className="bg-green-100 text-green-700 text-xs px-1">
+                  {periodLoans.filter(l => l.user_type === 'professor').length}
+                </Badge>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-xs">Funcionários</span>
+                <Badge variant="secondary" className="bg-orange-100 text-orange-700 text-xs px-1">
+                  {periodLoans.filter(l => l.user_type === 'funcionario').length}
+                </Badge>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="glass-card border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-emerald-500">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 pt-3">
+            <CardTitle className="text-xs font-medium">
+              Status Geral
+            </CardTitle>
+            <Activity className="h-4 w-4 text-emerald-500" />
+          </CardHeader>
+          <CardContent className="py-2">
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-xs">Disponíveis</span>
+                <Badge variant="secondary" className="bg-green-100 text-green-700 text-xs px-1">
+                  {availableChromebooks}
+                </Badge>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-xs">Em Uso</span>
+                <Badge variant="secondary" className="bg-blue-100 text-blue-700 text-xs px-1">
+                  {activeLoans.length}
+                </Badge>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-xs">Utilização</span>
+                <Badge variant="secondary" className="bg-purple-100 text-purple-700 text-xs px-1">
+                  {((activeLoans.length / totalChromebooks) * 100).toFixed(0)}%
+                </Badge>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
       <Card className="glass-card border-white/30 overflow-hidden border-t-4 border-t-blue-500 relative z-10 hover:shadow-lg transition-all duration-300">
         <CardHeader className="py-2 bg-gradient-to-r from-blue-50/50 to-white/50 backdrop-blur-xl">
           <CardTitle className="text-sm bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Empréstimos Ativos</CardTitle>
@@ -197,6 +262,18 @@ export function MobileFriendlyDashboard({ activeLoans, history, onBack }: Mobile
                 <div>
                   <p className="font-medium text-sm">{loan.student_name}</p>
                   <p className="text-xs text-gray-600">ID: {loan.chromebook_id}</p>
+                  <div className="flex items-center gap-1 mt-1">
+                    <Badge 
+                      variant="outline" 
+                      className={`text-xs px-1 ${
+                        loan.user_type === 'aluno' ? 'border-blue-200 text-blue-700' :
+                        loan.user_type === 'professor' ? 'border-green-200 text-green-700' :
+                        'border-orange-200 text-orange-700'
+                      }`}
+                    >
+                      {loan.user_type?.charAt(0).toUpperCase() + loan.user_type?.slice(1)}
+                    </Badge>
+                  </div>
                 </div>
                 <Badge variant="secondary" className="bg-blue-100 text-blue-700 text-xs">
                   Pendente
