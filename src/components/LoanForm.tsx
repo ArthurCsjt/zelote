@@ -300,16 +300,17 @@ export function LoanForm({ onSubmit }: LoanFormProps) {
               </Badge>
             </div>
             
-            <div className="space-y-2">
+            <div className="space-y-3">
               {/* Campo para adicionar dispositivos */}
-              <div className="flex flex-col gap-2">
-                <div className="relative w-full flex gap-2">
+              <div className="space-y-2">
+                {/* Input para ID do dispositivo */}
+                <div className="w-full">
                   <Input
                     id="batchInput"
                     value={currentBatchInput}
                     onChange={(e) => setCurrentBatchInput(e.target.value)}
                     placeholder="Digite o ID do dispositivo"
-                    className="border-gray-200 pr-16 flex-1"
+                    className="border-gray-200 w-full"
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
                         e.preventDefault();
@@ -317,22 +318,25 @@ export function LoanForm({ onSubmit }: LoanFormProps) {
                       }
                     }}
                   />
-                  {/* Botão flutuante para adicionar dispositivo */}
+                </div>
+                
+                {/* Botões para adicionar e QR Code */}
+                <div className="flex gap-2 w-full">
                   <Button 
                     type="button"
-                    variant="ghost"
+                    variant="outline"
                     onClick={addDeviceToBatch}
-                    className="absolute right-1 top-1 h-8 px-2 text-green-600 hover:text-green-700 hover:bg-green-50"
+                    className="flex-1 text-green-600 hover:text-green-700 hover:bg-green-50 border-green-200"
                   >
-                    <Plus className="h-4 w-4 mr-1" />
-                    <span className="text-xs">Adicionar</span>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Adicionar
                   </Button>
                   
                   {/* Botão de QR Code para modo lote */}
                   <Button 
                     type="button" 
                     variant="outline" 
-                    className="border-gray-200 bg-white hover:bg-gray-50 min-w-12"
+                    className="border-gray-200 bg-white hover:bg-gray-50 px-3"
                     onClick={() => setIsQRReaderOpen(true)}
                   >
                     <QrCode className="h-5 w-5 text-gray-600" />
