@@ -45,6 +45,7 @@ interface ChromebookData {
   patrimonyNumber?: string;
   observations?: string;
   isProvisioned: boolean;
+  isFixedInClassroom?: boolean;
   status: 'disponivel' | 'emprestado' | 'manutencao' | 'inativo';
 }
 
@@ -597,6 +598,27 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
                       </Label>
                       <p className="text-xs text-gray-500">
                         Marque se o Chromebook já está provisionado no console
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start space-x-3 pt-1">
+                    <Checkbox
+                      id="isFixedInClassroom"
+                      checked={editingChromebook.isFixedInClassroom}
+                      onCheckedChange={(checked) =>
+                        setEditingChromebook(prev => prev ? { ...prev, isFixedInClassroom: checked === true } : null)
+                      }
+                    />
+                    <div className="space-y-1 leading-none">
+                      <Label
+                        htmlFor="isFixedInClassroom"
+                        className="font-medium text-xs cursor-pointer"
+                      >
+                        Fixo em Sala de Aula
+                      </Label>
+                      <p className="text-xs text-gray-500">
+                        Marque se o Chromebook fica fixo em uma sala específica
                       </p>
                     </div>
                   </div>
