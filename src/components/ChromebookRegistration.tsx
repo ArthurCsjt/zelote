@@ -29,6 +29,8 @@ interface ChromebookData {
   patrimonyNumber?: string;   // Número de patrimônio da instituição (opcional)
   observations?: string;     // Observações adicionais (opcional)
   isProvisioned: boolean;    // Status de provisionamento do dispositivo
+  isFixedInClassroom: boolean; // Equipamento fixo em sala de aula
+  classroomLocation?: string;  // Localização da sala de aula (opcional)
 }
 
 // Adicionar prop onBack para o componente
@@ -57,6 +59,8 @@ export function ChromebookRegistration({ onBack }: ChromebookRegistrationProps) 
     patrimonyNumber: "",
     observations: "",
     isProvisioned: false,
+    isFixedInClassroom: false,
+    classroomLocation: "",
   });
 
   /**
@@ -90,6 +94,16 @@ export function ChromebookRegistration({ onBack }: ChromebookRegistrationProps) 
       toast({
         title: "Erro",
         description: "Por favor, preencha todos os campos obrigatórios",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Verifica se é equipamento fixo e se foi especificada a localização
+    if (formData.isFixedInClassroom && !formData.classroomLocation?.trim()) {
+      toast({
+        title: "Erro",
+        description: "Por favor, especifique a localização da sala para equipamentos fixos",
         variant: "destructive",
       });
       return;
@@ -234,6 +248,48 @@ export function ChromebookRegistration({ onBack }: ChromebookRegistrationProps) 
             </p>
           </div>
         </div>
+
+        {/* Campo: Equipamento Fixo em Sala de Aula */}
+        <div className="flex items-start space-x-3 pt-2">
+          <Checkbox 
+            id="isFixedInClassroom"
+            checked={formData.isFixedInClassroom}
+            onCheckedChange={(checked) => 
+              setFormData({ 
+                ...formData, 
+                isFixedInClassroom: checked === true
+              })
+            }
+          />
+          <div className="space-y-1 leading-none">
+            <Label 
+              htmlFor="isFixedInClassroom" 
+              className="font-medium text-sm cursor-pointer"
+            >
+              Equipamento Fixo em Sala de Aula
+            </Label>
+            <p className="text-xs text-muted-foreground">
+              Marque se o Chromebook é reservado para uso fixo em uma sala específica
+            </p>
+          </div>
+        </div>
+
+        {/* Campo: Localização da Sala (condicional) */}
+        {formData.isFixedInClassroom && (
+          <div className="space-y-2 ml-7">
+            <Label htmlFor="classroomLocation">Localização da Sala *</Label>
+            <Input
+              id="classroomLocation"
+              value={formData.classroomLocation}
+              onChange={(e) => setFormData({ ...formData, classroomLocation: e.target.value })}
+              placeholder="Ex: Sala 101, Laboratório de Informática A"
+              required={formData.isFixedInClassroom}
+            />
+            <p className="text-xs text-muted-foreground">
+              Especifique qual sala de aula onde o equipamento ficará fixo
+            </p>
+          </div>
+        )}
 
         {/* Campo: Observações (opcional) */}
         <div className="space-y-2">
