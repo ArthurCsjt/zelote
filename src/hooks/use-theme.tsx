@@ -3,33 +3,24 @@ import { useEffect, useState } from 'react';
 type Theme = 'light' | 'dark' | 'system';
 
 export function useTheme() {
-  const [theme, setTheme] = useState<Theme>(() => {
-    if (typeof window !== 'undefined') {
-      return (localStorage.getItem('theme') as Theme) || 'system';
-    }
-    return 'system';
-  });
+  const [theme, setTheme] = useState<Theme>('light');
 
   useEffect(() => {
+    if (typeof window === 'undefined') return;
     const root = window.document.documentElement;
-    
     root.classList.remove('light', 'dark');
-    
-    if (theme === 'system') {
-      const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-      root.classList.add(systemTheme);
-    } else {
-      root.classList.add(theme);
-    }
-  }, [theme]);
+    root.classList.add('light');
+  }, []);
 
-  const setThemeValue = (newTheme: Theme) => {
-    localStorage.setItem('theme', newTheme);
-    setTheme(newTheme);
+  const setThemeValue = (_newTheme: Theme) => {
+    try {
+      localStorage.setItem('theme', 'light');
+    } catch {}
+    setTheme('light');
   };
 
   return {
-    theme,
+    theme: 'light' as Theme,
     setTheme: setThemeValue,
   };
 }
