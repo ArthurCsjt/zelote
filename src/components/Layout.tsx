@@ -2,7 +2,6 @@ import React from 'react';
 import { User, LogOut, ArrowLeft, Download, Moon, Sun } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/hooks/use-theme';
-
 interface LayoutProps {
   children: React.ReactNode;
   title: string;
@@ -10,44 +9,48 @@ interface LayoutProps {
   showBackButton?: boolean;
   onBack?: () => void;
 }
-
-const Layout: React.FC<LayoutProps> = ({ children, title, subtitle, showBackButton, onBack }) => {
-  const { user, logout } = useAuth();
-  const { theme, setTheme } = useTheme();
+const Layout: React.FC<LayoutProps> = ({
+  children,
+  title,
+  subtitle,
+  showBackButton,
+  onBack
+}) => {
+  const {
+    user,
+    logout
+  } = useAuth();
+  const {
+    theme,
+    setTheme
+  } = useTheme();
   const [showInstallBanner, setShowInstallBanner] = React.useState(false);
   const [isStandalone, setIsStandalone] = React.useState(false);
-
   React.useEffect(() => {
     // Check if app is running in standalone mode
     const checkStandalone = () => {
       const isStandaloneMode = window.matchMedia('(display-mode: standalone)').matches;
       const isInWebAppiOS = (window.navigator as any).standalone === true;
       const isInstalled = isStandaloneMode || isInWebAppiOS;
-      
       setIsStandalone(isInstalled);
-      
       if (isInstalled) {
         document.body.classList.add('standalone-mode');
       } else {
         document.body.classList.remove('standalone-mode');
       }
-      
       return isInstalled;
     };
-
     const isInstalled = checkStandalone();
 
     // Check if user has dismissed the banner recently
     const dismissedTime = localStorage.getItem('pwa-banner-dismissed');
-    const shouldShowBanner = !isInstalled && (!dismissedTime || 
-      (Date.now() - parseInt(dismissedTime)) > 24 * 60 * 60 * 1000); // 24 hours
+    const shouldShowBanner = !isInstalled && (!dismissedTime || Date.now() - parseInt(dismissedTime) > 24 * 60 * 60 * 1000); // 24 hours
 
     if (shouldShowBanner) {
       // Show banner after a short delay
       const timer = setTimeout(() => {
         setShowInstallBanner(true);
       }, 2000);
-
       return () => clearTimeout(timer);
     }
 
@@ -61,22 +64,16 @@ const Layout: React.FC<LayoutProps> = ({ children, title, subtitle, showBackButt
         document.body.classList.remove('standalone-mode');
       }
     };
-
     displayModeQuery.addEventListener('change', handleDisplayModeChange);
     return () => displayModeQuery.removeEventListener('change', handleDisplayModeChange);
   }, []);
-
   const handleInstallBannerDismiss = () => {
     setShowInstallBanner(false);
     localStorage.setItem('pwa-banner-dismissed', Date.now().toString());
   };
-
-  return (
-    <div className={`min-h-screen bg-background text-foreground ${isStandalone ? 'safe-area-top safe-area-bottom safe-area-left safe-area-right' : ''}`}>
+  return <div className={`min-h-screen bg-background text-foreground ${isStandalone ? 'safe-area-top safe-area-bottom safe-area-left safe-area-right' : ''}`}>
       {/* Status Bar Overlay for iOS in standalone mode */}
-      {isStandalone && (
-        <div className="status-bar-overlay" />
-      )}
+      {isStandalone && <div className="status-bar-overlay" />}
 
 
       {/* Header */}
@@ -84,14 +81,9 @@ const Layout: React.FC<LayoutProps> = ({ children, title, subtitle, showBackButt
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center gap-4">
-              {showBackButton && (
-                <button
-                  onClick={onBack}
-                  className="p-2 rounded-full hover:bg-accent transition-colors duration-200 touch-manipulation"
-                >
+              {showBackButton && <button onClick={onBack} className="p-2 rounded-full hover:bg-accent transition-colors duration-200 touch-manipulation">
                   <ArrowLeft className="w-5 h-5 text-muted-foreground" />
-                </button>
-              )}
+                </button>}
               <div>
                 <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                   Zelote
@@ -104,26 +96,14 @@ const Layout: React.FC<LayoutProps> = ({ children, title, subtitle, showBackButt
             </div>
             
             <div className="flex items-center space-x-4">
-              <button
-                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                className="p-2 rounded-full hover:bg-accent transition-colors duration-200 touch-manipulation"
-              >
-                {theme === 'dark' ? (
-                  <Sun className="w-5 h-5 text-muted-foreground" />
-                ) : (
-                  <Moon className="w-5 h-5 text-muted-foreground" />
-                )}
-              </button>
+              
               <div className="hidden md:flex items-center space-x-2 text-sm bg-accent rounded-full px-3 py-1.5">
                 <User className="w-4 h-4 text-muted-foreground" />
                 <span className="text-foreground selectable-text">
                   {user?.email?.substring(0, 20)}...
                 </span>
               </div>
-              <button 
-                onClick={logout}
-                className="flex items-center space-x-1 text-sm text-muted-foreground hover:text-foreground transition-colors duration-200 bg-accent hover:bg-accent/80 rounded-full px-3 py-1.5 touch-manipulation"
-              >
+              <button onClick={logout} className="flex items-center space-x-1 text-sm text-muted-foreground hover:text-foreground transition-colors duration-200 bg-accent hover:bg-accent/80 rounded-full px-3 py-1.5 touch-manipulation">
                 <LogOut className="w-4 h-4" />
                 <span className="hidden sm:inline">Sair</span>
               </button>
@@ -138,21 +118,15 @@ const Layout: React.FC<LayoutProps> = ({ children, title, subtitle, showBackButt
           <h2 className="text-2xl sm:text-3xl font-bold text-center bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
             {title}
           </h2>
-          {subtitle && (
-            <p className="text-center text-muted-foreground max-w-2xl mx-auto text-sm sm:text-base px-4 selectable-text">
+          {subtitle && <p className="text-center text-muted-foreground max-w-2xl mx-auto text-sm sm:text-base px-4 selectable-text">
               {subtitle}
-            </p>
-          )}
+            </p>}
         </div>
         {children}
       </main>
 
       {/* Bottom safe area for standalone mode */}
-      {isStandalone && (
-        <div className="safe-area-bottom" />
-      )}
-    </div>
-  );
+      {isStandalone && <div className="safe-area-bottom" />}
+    </div>;
 };
-
 export default Layout;
