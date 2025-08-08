@@ -1,7 +1,9 @@
 import React from 'react';
-import { User, LogOut, ArrowLeft, Download, Moon, Sun } from 'lucide-react';
+import { User, LogOut, ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/hooks/use-theme';
+import { useNavigate } from 'react-router-dom';
+import { useProfileRole } from '@/hooks/use-profile-role';
 interface LayoutProps {
   children: React.ReactNode;
   title: string;
@@ -24,6 +26,8 @@ const Layout: React.FC<LayoutProps> = ({
     theme,
     setTheme
   } = useTheme();
+  const navigate = useNavigate();
+  const { isSuperAdmin } = useProfileRole();
   const [showInstallBanner, setShowInstallBanner] = React.useState(false);
   const [isStandalone, setIsStandalone] = React.useState(false);
   React.useEffect(() => {
@@ -103,6 +107,11 @@ const Layout: React.FC<LayoutProps> = ({
                   {user?.email?.substring(0, 20)}...
                 </span>
               </div>
+              {isSuperAdmin && (
+                <button onClick={() => navigate('/settings')} className="flex items-center space-x-1 text-sm text-muted-foreground hover:text-foreground transition-colors duration-200 bg-accent hover:bg-accent/80 rounded-full px-3 py-1.5 touch-manipulation">
+                  <span>Configurações</span>
+                </button>
+              )}
               <button onClick={logout} className="flex items-center space-x-1 text-sm text-muted-foreground hover:text-foreground transition-colors duration-200 bg-accent hover:bg-accent/80 rounded-full px-3 py-1.5 touch-manipulation">
                 <LogOut className="w-4 h-4" />
                 <span className="hidden sm:inline">Sair</span>

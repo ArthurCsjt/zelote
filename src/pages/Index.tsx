@@ -316,27 +316,15 @@ const Index = () => {
           </div>
         );
       case 'dashboard':
-        if (isMobile) {
-          return (
-            <div className="animate-in fade-in duration-300">
-              <MobileFriendlyDashboard 
-                activeLoans={activeLoans} 
-                history={loanHistory} 
-                onBack={handleBackToMenu} 
-              />
-            </div>
-          );
-        } else {
-          return (
-            <div className="animate-in fade-in duration-300">
-              <Dashboard 
-                activeLoans={activeLoans} 
-                history={loanHistory} 
-                onBack={handleBackToMenu} 
-              />
-            </div>
-          );
-        }
+        return (
+          <div className="animate-in fade-in duration-300">
+            <Dashboard 
+              activeLoans={activeLoans} 
+              history={loanHistory} 
+              onBack={handleBackToMenu} 
+            />
+          </div>
+        );
       case 'inventory':
         return (
           <div className="animate-in fade-in duration-300">

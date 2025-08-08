@@ -10,6 +10,7 @@ import { QRCodeReader } from "./QRCodeReader";
 import { toast } from "./ui/use-toast";
 import { Textarea } from "./ui/textarea";
 import { Computer, Plus, QrCode } from "lucide-react";
+import { Checkbox } from "./ui/checkbox";
 
 // Define a interface de props do componente
 interface ReturnDialogProps {
@@ -57,6 +58,10 @@ export function ReturnDialog({
   
   // Valor atual do campo de entrada para adicionar dispositivos ao lote
   const [currentBatchInput, setCurrentBatchInput] = useState("");
+  // Confirmação de verificação do estado do equipamento
+  const [confirmChecked, setConfirmChecked] = useState(false);
+  // Avaliação simples da condição do equipamento
+  const [condition, setCondition] = useState<'otima' | 'boa' | 'regular' | 'avaria' | 'indefinida'>('indefinida');
 
   // === FUNÇÕES DE MANIPULAÇÃO (HANDLERS) ===
 
@@ -389,6 +394,36 @@ export function ReturnDialog({
             </div>
           </div>
 
+          {/* Aviso e avaliação de estado do equipamento */}
+          <div className="mt-2 p-3 rounded-md border bg-amber-50 border-amber-200">
+            <p className="text-sm font-medium text-amber-800 mb-2">
+              Antes de confirmar, verifique o estado do equipamento.
+            </p>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="condition" className="text-gray-700">Condição do equipamento</Label>
+                <Select value={condition} onValueChange={(v: any) => setCondition(v)}>
+                  <SelectTrigger className="bg-white border-gray-200">
+                    <SelectValue placeholder="Selecione a condição" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="indefinida">Não avaliado</SelectItem>
+                    <SelectItem value="otima">Ótima</SelectItem>
+                    <SelectItem value="boa">Boa</SelectItem>
+                    <SelectItem value="regular">Regular</SelectItem>
+                    <SelectItem value="avaria">Com avaria</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-start gap-2 mt-1">
+                <Checkbox id="confirmChecked" checked={confirmChecked} onCheckedChange={(v) => setConfirmChecked(!!v)} />
+                <Label htmlFor="confirmChecked" className="text-sm text-gray-700 leading-5">
+                  Confirmo que verifiquei o estado do equipamento no momento da devolução.
+                </Label>
+              </div>
+            </div>
+          </div>
+
           {/* Botões de ação no rodapé do diálogo */}
           <DialogFooter className="mt-6 flex-row gap-2">
             <Button 
@@ -401,7 +436,7 @@ export function ReturnDialog({
             <Button 
               onClick={handleConfirm}
               className="flex-1 bg-blue-600 hover:bg-blue-700"
-              disabled={returnData.type === 'lote' && batchDevices.length === 0}
+              disabled={!confirmChecked || (returnData.type === 'lote' && batchDevices.length === 0)}
             >
               {returnData.type === 'lote' 
                 ? `Confirmar Devolução de ${batchDevices.length} Dispositivos` 

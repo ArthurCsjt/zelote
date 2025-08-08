@@ -63,6 +63,8 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
   const [searchTerm, setSearchTerm] = useState("");
   // State for status filter
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  // State for fixed-in-classroom filter
+  const [fixedFilter, setFixedFilter] = useState<string>('all');
   // State for edit dialog
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   // State for delete dialog
@@ -120,8 +122,9 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
       chromebook.manufacturer.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesStatus = statusFilter === 'all' || chromebook.status === statusFilter;
+    const matchesFixed = fixedFilter === 'all' || (fixedFilter === 'fixo' ? !!chromebook.isFixedInClassroom : !chromebook.isFixedInClassroom);
     
-    return matchesSearch && matchesStatus;
+    return matchesSearch && matchesStatus && matchesFixed;
   });
 
   // Calculate pagination
@@ -303,6 +306,20 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
           </Select>
         </div>
         
+        <div className="relative">
+          <Filter className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+          <Select value={fixedFilter} onValueChange={setFixedFilter}>
+            <SelectTrigger className="w-[200px] pl-10">
+              <SelectValue placeholder="Filtrar por fixo" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos</SelectItem>
+              <SelectItem value="fixo">Apenas Fixos</SelectItem>
+              <SelectItem value="movel">Apenas Móveis</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        
         <div className="text-sm text-gray-500 flex items-center">
           Total: {filteredChromebooks.length} Chromebooks
         </div>
@@ -359,7 +376,14 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
                       {chromebook.patrimonyNumber || chromebook.id}
                     </TableCell>
                     <TableCell>{chromebook.manufacturer}</TableCell>
-                    <TableCell>{chromebook.model}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        {chromebook.model}
+                        {chromebook.isFixedInClassroom && (
+                          <span className="text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">Fixo</span>
+                        )}
+                      </div>
+                    </TableCell>
                     <TableCell className="hidden md:table-cell">
                       <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${statusInfo.color}`}>
                         <StatusIcon className="w-3 h-3" />
