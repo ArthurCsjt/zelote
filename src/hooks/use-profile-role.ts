@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
-export type ProfileRole = 'super_admin' | 'admin' | 'user' | null;
+export type ProfileRole = 'admin' | 'user' | 'super_admin' | null;
 
 export function useProfileRole() {
   const { user } = useAuth();
@@ -44,9 +44,11 @@ export function useProfileRole() {
     };
   }, [user?.id]);
 
+  const isAdmin = role === 'admin' || role === 'super_admin';
+
   return {
     role,
-    isSuperAdmin: role === 'super_admin',
+    isAdmin,
     loading,
   };
 }

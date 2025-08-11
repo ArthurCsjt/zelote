@@ -1,6 +1,6 @@
 // Tipos do banco de dados centralizados
 export type UserType = 'aluno' | 'professor' | 'funcionario';
-export type ChromebookStatus = 'disponivel' | 'emprestado' | 'manutencao' | 'fora_uso';
+export type ChromebookStatus = 'disponivel' | 'emprestado' | 'fixo';
 export type LoanType = 'individual' | 'lote';
 
 export interface Chromebook {
@@ -12,6 +12,7 @@ export interface Chromebook {
   status: ChromebookStatus;
   condition?: string;
   location?: string;
+  classroom?: string;
   created_at: string;
   updated_at: string;
   created_by?: string;
@@ -98,6 +99,7 @@ export interface ChromebookData {
   status: ChromebookStatus;
   condition?: string;
   location?: string;
+  classroom?: string;
   createdAt?: string;
   updatedAt?: string;
   createdBy?: string;

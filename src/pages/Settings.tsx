@@ -1,25 +1,25 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Layout from '@/components/Layout';
 import { useProfileRole } from '@/hooks/use-profile-role';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { UserManagement } from './parts/UserManagement';
 
 const Settings = () => {
-  const { isSuperAdmin, loading } = useProfileRole();
+  const { isAdmin, loading } = useProfileRole();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!loading && !isSuperAdmin) {
+    if (!loading && !isAdmin) {
       navigate('/', { replace: true });
     }
-  }, [isSuperAdmin, loading, navigate]);
+  }, [isAdmin, loading, navigate]);
 
   return (
     <Layout title="Configurações" subtitle="Gerencie configurações administrativas" showBackButton onBack={() => navigate(-1)}>
       <div className="max-w-5xl mx-auto grid gap-6 animate-fade-in">
-        {!isSuperAdmin ? (
+        {!isAdmin ? (
           <Alert>
             <AlertDescription>
               Você não tem permissão para acessar esta página.
@@ -27,18 +27,7 @@ const Settings = () => {
           </Alert>
         ) : (
           <>
-            <Card className="glass-card">
-              <CardHeader>
-                <CardTitle>Gerenciamento de Usuários</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <p className="text-sm text-muted-foreground">
-                  Apenas o super administrador pode criar usuários e definir perfis de acesso.
-                </p>
-                <Badge variant="secondary">Em breve</Badge>
-              </CardContent>
-            </Card>
-
+            <UserManagement />
             <Card className="glass-card">
               <CardHeader>
                 <CardTitle>Preferências do Sistema</CardTitle>

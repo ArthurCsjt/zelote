@@ -35,6 +35,7 @@ export const useDatabase = () => {
           status: data.status,
           condition: data.condition,
           location: data.location,
+          classroom: data.classroom,
           created_by: user.id
         })
         .select()
@@ -87,7 +88,8 @@ export const useDatabase = () => {
           patrimony_number: data.patrimonyNumber,
           status: data.status,
           condition: data.condition,
-          location: data.location
+          location: data.location,
+          classroom: data.classroom
         })
         .eq('id', id);
 

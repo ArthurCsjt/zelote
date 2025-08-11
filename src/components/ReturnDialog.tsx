@@ -58,10 +58,8 @@ export function ReturnDialog({
   
   // Valor atual do campo de entrada para adicionar dispositivos ao lote
   const [currentBatchInput, setCurrentBatchInput] = useState("");
-  // Confirmação de verificação do estado do equipamento
+// Confirmação de verificação do estado do equipamento
   const [confirmChecked, setConfirmChecked] = useState(false);
-  // Avaliação simples da condição do equipamento
-  const [condition, setCondition] = useState<'otima' | 'boa' | 'regular' | 'avaria' | 'indefinida'>('indefinida');
 
   // === FUNÇÕES DE MANIPULAÇÃO (HANDLERS) ===
 
@@ -149,7 +147,7 @@ export function ReturnDialog({
     <>
       {/* Diálogo principal de devolução */}
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-xl font-semibold text-gray-800">
               Devolução de Chromebook
@@ -394,33 +392,13 @@ export function ReturnDialog({
             </div>
           </div>
 
-          {/* Aviso e avaliação de estado do equipamento */}
+{/* Confirmação */}
           <div className="mt-2 p-3 rounded-md border bg-amber-50 border-amber-200">
-            <p className="text-sm font-medium text-amber-800 mb-2">
-              Antes de confirmar, verifique o estado do equipamento.
-            </p>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="condition" className="text-gray-700">Condição do equipamento</Label>
-                <Select value={condition} onValueChange={(v: any) => setCondition(v)}>
-                  <SelectTrigger className="bg-white border-gray-200">
-                    <SelectValue placeholder="Selecione a condição" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="indefinida">Não avaliado</SelectItem>
-                    <SelectItem value="otima">Ótima</SelectItem>
-                    <SelectItem value="boa">Boa</SelectItem>
-                    <SelectItem value="regular">Regular</SelectItem>
-                    <SelectItem value="avaria">Com avaria</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex items-start gap-2 mt-1">
-                <Checkbox id="confirmChecked" checked={confirmChecked} onCheckedChange={(v) => setConfirmChecked(!!v)} />
-                <Label htmlFor="confirmChecked" className="text-sm text-gray-700 leading-5">
-                  Confirmo que verifiquei o estado do equipamento no momento da devolução.
-                </Label>
-              </div>
+            <div className="flex items-start gap-2">
+              <Checkbox id="confirmChecked" checked={confirmChecked} onCheckedChange={(v) => setConfirmChecked(!!v)} />
+              <Label htmlFor="confirmChecked" className="text-sm text-gray-700 leading-5">
+                Confirmo que verifiquei o estado do equipamento no momento da devolução.
+              </Label>
             </div>
           </div>
 

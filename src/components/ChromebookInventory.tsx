@@ -22,7 +22,7 @@ import {
 import { Textarea } from "./ui/textarea";
 import { Label } from "./ui/label";
 import { toast } from "./ui/use-toast";
-import { Search, ArrowLeft, Filter, Edit3, QrCode, CheckCircle, AlertCircle, XCircle, Wrench, Eye, X, Trash2, Save } from "lucide-react";
+import { Search, ArrowLeft, Filter, Edit3, QrCode, CheckCircle, AlertCircle, XCircle, MapPin, Eye, X, Trash2, Save } from "lucide-react";
 import { QRCodeModal } from "./QRCodeModal";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "./ui/pagination";
 import { ScrollArea } from "./ui/scroll-area";
@@ -34,6 +34,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
+import { useProfileRole } from "@/hooks/use-profile-role";
 
 // Interface for Chromebook data structure
 interface ChromebookData {
@@ -45,9 +46,10 @@ interface ChromebookData {
   patrimonyNumber?: string;
   observations?: string;
   isProvisioned: boolean;
-  isFixedInClassroom?: boolean;
-  status: 'disponivel' | 'emprestado' | 'manutencao' | 'inativo';
+  status: 'disponivel' | 'emprestado' | 'fixo' | 'inativo';
+  classroom?: string;
 }
+
 
 interface ChromebookInventoryProps {
   onBack?: () => void;
@@ -56,6 +58,7 @@ interface ChromebookInventoryProps {
 export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
   // Check if on mobile device
   const isMobile = useIsMobile();
+  const { isAdmin } = useProfileRole();
   
   // State for storing all Chromebooks
   const [chromebooks, setChromebooks] = useState<ChromebookData[]>([]);
@@ -79,32 +82,36 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  // Load Chromebooks from localStorage on component mount
-  useEffect(() => {
-    const savedChromebooks = localStorage.getItem("chromebooks");
-    if (savedChromebooks) {
-      try {
-        const parsed = JSON.parse(savedChromebooks);
-        // Add status field if it doesn't exist
-        const chromebooksWithStatus = parsed.map((cb: any) => ({
+// Load Chromebooks from localStorage on component mount
+useEffect(() => {
+  const savedChromebooks = localStorage.getItem("chromebooks");
+  if (savedChromebooks) {
+    try {
+      const parsed = JSON.parse(savedChromebooks);
+      // Normalize data
+      const chromebooksWithStatus = parsed.map((cb: any) => {
+        const normalizedStatus = cb.status === 'manutencao' ? 'fixo' : (cb.status || 'disponivel');
+        return {
           ...cb,
-          status: cb.status || 'disponivel',
+          status: normalizedStatus,
           manufacturer: cb.manufacturer || 'Não informado',
           model: cb.model || cb.modelo || 'Não informado',
           series: cb.series || cb.serie || 'Não informado',
           patrimonyNumber: cb.patrimonyNumber || cb.patrimonio || cb.id,
-        }));
-        setChromebooks(chromebooksWithStatus);
-      } catch (error) {
-        console.error("Error parsing chromebooks from localStorage:", error);
-        toast({
-          title: "Erro",
-          description: "Não foi possível carregar os Chromebooks salvos",
-          variant: "destructive",
-        });
-      }
+          classroom: cb.classroom || cb.sala || undefined,
+        } as ChromebookData;
+      });
+      setChromebooks(chromebooksWithStatus);
+    } catch (error) {
+      console.error("Error parsing chromebooks from localStorage:", error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível carregar os Chromebooks salvos",
+        variant: "destructive",
+      });
     }
-  }, []);
+  }
+}, []);
 
   // Save chromebooks to localStorage whenever the state changes
   useEffect(() => {
@@ -121,10 +128,10 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
       chromebook.series.toLowerCase().includes(searchTerm.toLowerCase()) ||
       chromebook.manufacturer.toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesStatus = statusFilter === 'all' || chromebook.status === statusFilter;
-    const matchesFixed = fixedFilter === 'all' || (fixedFilter === 'fixo' ? !!chromebook.isFixedInClassroom : !chromebook.isFixedInClassroom);
-    
-    return matchesSearch && matchesStatus && matchesFixed;
+const matchesStatus = statusFilter === 'all' || chromebook.status === statusFilter;
+const matchesFixed = fixedFilter === 'all' || (fixedFilter === 'fixo' ? chromebook.status === 'fixo' : chromebook.status !== 'fixo');
+
+return matchesSearch && matchesStatus && matchesFixed;
   });
 
   // Calculate pagination
@@ -142,41 +149,47 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
 
   // Get status information for display
   const getStatusInfo = (status: string) => {
-    switch (status) {
-      case 'disponivel':
-        return { color: 'text-green-600 bg-green-50', icon: CheckCircle, label: 'Disponível' };
-      case 'emprestado':
-        return { color: 'text-purple-600 bg-purple-50', icon: AlertCircle, label: 'Emprestado' };
-      case 'manutencao':
-        return { color: 'text-orange-600 bg-orange-50', icon: Wrench, label: 'Manutenção' };
-      case 'inativo':
-        return { color: 'text-gray-600 bg-gray-50', icon: XCircle, label: 'Inativo' };
-      default:
-        return { color: 'text-gray-600 bg-gray-50', icon: XCircle, label: 'Desconhecido' };
-    }
+switch (status) {
+  case 'disponivel':
+    return { color: 'text-green-600 bg-green-50', icon: CheckCircle, label: 'Disponível' };
+  case 'emprestado':
+    return { color: 'text-purple-600 bg-purple-50', icon: AlertCircle, label: 'Emprestado' };
+  case 'fixo':
+    return { color: 'text-blue-700 bg-blue-50', icon: MapPin, label: 'Fixo' };
+  case 'inativo':
+    return { color: 'text-gray-600 bg-gray-50', icon: XCircle, label: 'Inativo' };
+  default:
+    return { color: 'text-gray-600 bg-gray-50', icon: XCircle, label: 'Desconhecido' };
+}
   };
 
-  // Handle status change
-  const handleStatusChange = (chromebookId: string, newStatus: string) => {
-    if (newStatus === 'emprestado') {
-      toast({
-        title: "Atenção",
-        description: "Para emprestar um Chromebook, use a seção de Empréstimos",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    const updatedChromebooks = chromebooks.map((item) =>
-      item.id === chromebookId ? { ...item, status: newStatus as ChromebookData['status'] } : item
-    );
-    
-    setChromebooks(updatedChromebooks);
+// Handle status change
+const handleStatusChange = (chromebookId: string, newStatus: string) => {
+  if (newStatus === 'emprestado') {
     toast({
-      title: "Status atualizado",
-      description: `Status do Chromebook alterado para ${getStatusInfo(newStatus).label}`,
+      title: "Atenção",
+      description: "Para emprestar um Chromebook, use a seção de Empréstimos",
+      variant: "destructive",
     });
-  };
+    return;
+  }
+
+  // Only admins can set FIXO
+  if (newStatus === 'fixo' && !isAdmin) {
+    toast({ title: 'Permissão negada', description: 'Apenas administradores podem marcar como Fixo.', variant: 'destructive' });
+    return;
+  }
+  
+  const updatedChromebooks = chromebooks.map((item) =>
+    item.id === chromebookId ? { ...item, status: newStatus as ChromebookData['status'] } : item
+  );
+  
+  setChromebooks(updatedChromebooks);
+  toast({
+    title: "Status atualizado",
+    description: `Status do Chromebook alterado para ${getStatusInfo(newStatus).label}`,
+  });
+};
 
   // Handle edit click
   const handleEditClick = (chromebook: ChromebookData) => {
@@ -296,13 +309,13 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
             <SelectTrigger className="w-[180px] pl-10">
               <SelectValue placeholder="Filtrar por status" />
             </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos os Status</SelectItem>
-              <SelectItem value="disponivel">Disponível</SelectItem>
-              <SelectItem value="emprestado">Emprestado</SelectItem>
-              <SelectItem value="manutencao">Manutenção</SelectItem>
-              <SelectItem value="inativo">Inativo</SelectItem>
-            </SelectContent>
+<SelectContent>
+  <SelectItem value="all">Todos os Status</SelectItem>
+  <SelectItem value="disponivel">Disponível</SelectItem>
+  <SelectItem value="emprestado">Emprestado</SelectItem>
+  <SelectItem value="fixo">Fixo</SelectItem>
+  <SelectItem value="inativo">Inativo</SelectItem>
+</SelectContent>
           </Select>
         </div>
         
@@ -343,12 +356,12 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
           </p>
           <p className="text-sm text-gray-600">Emprestados</p>
         </div>
-        <div className="glass-card p-4 text-center transform hover:scale-105 transition-all duration-300 hover:shadow-lg">
-          <p className="text-2xl font-bold bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent">
-            {chromebooks.filter(c => c.status === 'manutencao').length}
-          </p>
-          <p className="text-sm text-gray-600">Manutenção</p>
-        </div>
+<div className="glass-card p-4 text-center transform hover:scale-105 transition-all duration-300 hover:shadow-lg">
+  <p className="text-2xl font-bold bg-gradient-to-r from-blue-700 to-blue-500 bg-clip-text text-transparent">
+    {chromebooks.filter(c => c.status === 'fixo').length}
+  </p>
+  <p className="text-sm text-gray-600">Fixos</p>
+</div>
       </div>
 
       {/* Table of Chromebooks */}
@@ -379,16 +392,19 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
                     <TableCell>
                       <div className="flex items-center gap-2">
                         {chromebook.model}
-                        {chromebook.isFixedInClassroom && (
-                          <span className="text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">Fixo</span>
-                        )}
+{chromebook.status === 'fixo' && (
+  <span className="text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">Fixo</span>
+)}
                       </div>
                     </TableCell>
                     <TableCell className="hidden md:table-cell">
-                      <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${statusInfo.color}`}>
-                        <StatusIcon className="w-3 h-3" />
-                        {statusInfo.label}
-                      </div>
+<div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${statusInfo.color}`}>
+  <StatusIcon className="w-3 h-3" />
+  {statusInfo.label}
+  {chromebook.status === 'fixo' && chromebook.classroom && (
+    <span className="ml-1 text-[10px] text-blue-700">({chromebook.classroom})</span>
+  )}
+</div>
                     </TableCell>
                     <TableCell className="hidden lg:table-cell">
                       {chromebook.series}
@@ -428,10 +444,10 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="disponivel">Disponível</SelectItem>
-                            <SelectItem value="emprestado">Emprestado</SelectItem>
-                            <SelectItem value="manutencao">Manutenção</SelectItem>
-                            <SelectItem value="inativo">Inativo</SelectItem>
+<SelectItem value="disponivel">Disponível</SelectItem>
+<SelectItem value="emprestado">Emprestado</SelectItem>
+<SelectItem value="fixo">Fixo</SelectItem>
+<SelectItem value="inativo">Inativo</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -590,20 +606,20 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
                 <div className="space-y-3">
                   <h4 className="font-medium text-sm text-gray-700 border-b pb-1">Status e Configurações</h4>
                   
-                  <div className="space-y-1.5">
-                    <Label className="text-xs font-medium">Status</Label>
-                    <Select value={editingChromebook.status} onValueChange={handleEditStatusChange}>
-                      <SelectTrigger className="h-9">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="disponivel">Disponível</SelectItem>
-                        <SelectItem value="emprestado">Emprestado</SelectItem>
-                        <SelectItem value="manutencao">Manutenção</SelectItem>
-                        <SelectItem value="inativo">Inativo</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+<div className="space-y-1.5">
+  <Label className="text-xs font-medium">Status</Label>
+  <Select value={editingChromebook.status} onValueChange={handleEditStatusChange}>
+    <SelectTrigger className="h-9">
+      <SelectValue />
+    </SelectTrigger>
+    <SelectContent>
+      <SelectItem value="disponivel">Disponível</SelectItem>
+      <SelectItem value="emprestado">Emprestado</SelectItem>
+      <SelectItem value="fixo" disabled={!isAdmin}>Fixo</SelectItem>
+      <SelectItem value="inativo">Inativo</SelectItem>
+    </SelectContent>
+  </Select>
+</div>
 
                   <div className="flex items-start space-x-3 pt-1">
                     <Checkbox
@@ -626,26 +642,16 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
                     </div>
                   </div>
 
-                  <div className="flex items-start space-x-3 pt-1">
-                    <Checkbox
-                      id="isFixedInClassroom"
-                      checked={editingChromebook.isFixedInClassroom}
-                      onCheckedChange={(checked) =>
-                        setEditingChromebook(prev => prev ? { ...prev, isFixedInClassroom: checked === true } : null)
-                      }
-                    />
-                    <div className="space-y-1 leading-none">
-                      <Label
-                        htmlFor="isFixedInClassroom"
-                        className="font-medium text-xs cursor-pointer"
-                      >
-                        Fixo em Sala de Aula
-                      </Label>
-                      <p className="text-xs text-gray-500">
-                        Marque se o Chromebook fica fixo em uma sala específica
-                      </p>
-                    </div>
-                  </div>
+<div className="space-y-1.5">
+  <Label htmlFor="classroom" className="text-xs font-medium">Sala de Aula</Label>
+  <Input
+    id="classroom"
+    value={editingChromebook.classroom || ''}
+    onChange={handleEditChange}
+    placeholder="Ex.: Sala 21"
+    className="h-9"
+  />
+</div>
                 </div>
 
                 {/* Observações */}
