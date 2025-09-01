@@ -129,14 +129,14 @@ export function QRCodeModal({
               }
               .qr-container {
                 text-align: center;
-                padding: 10px;
+                padding: 7px;
                 border: 2px dashed #666;
-                margin: 10px;
+                margin: 7px;
                 position: relative;
               }
               .qr-id {
                 font-size: 14px;
-                margin-top: 5px;
+                margin-top: 2px;
                 color: black;
                 font-weight: bold;
               }
