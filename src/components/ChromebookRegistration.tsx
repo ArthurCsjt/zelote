@@ -331,7 +331,13 @@ export function ChromebookRegistration({ onBack }: ChromebookRegistrationProps) 
         open={showQRCode}
         onOpenChange={setShowQRCode}
         chromebookId={formData.id}
-        chromebookData={formData}
+        chromebookData={{
+          id: formData.id,
+          chromebook_id: formData.id,
+          model: formData.model,
+          serial_number: formData.series,
+          patrimony_number: formData.patrimonyNumber,
+        }}
         showSuccess={true}
       />
     </div>

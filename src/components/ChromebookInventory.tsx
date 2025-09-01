@@ -35,19 +35,23 @@ import {
   SelectValue,
 } from "./ui/select";
 import { useProfileRole } from "@/hooks/use-profile-role";
+import { supabase } from "@/integrations/supabase/client";
+import type { Chromebook } from "@/types/database";
 
-// Interface for Chromebook data structure
+// Interface for Chromebook data structure (matching database)
 interface ChromebookData {
   id: string;
-  manufacturer: string;
+  chromebook_id: string;
   model: string;
-  series: string;
-  manufacturingYear?: string;
-  patrimonyNumber?: string;
-  observations?: string;
-  isProvisioned: boolean;
-  status: 'disponivel' | 'emprestado' | 'fixo' | 'inativo';
+  serial_number?: string;
+  patrimony_number?: string;
+  status: 'disponivel' | 'emprestado' | 'fixo';
+  condition?: string;
+  location?: string;
   classroom?: string;
+  created_at: string;
+  updated_at: string;
+  created_by?: string;
 }
 
 
@@ -82,52 +86,88 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-// Load Chromebooks from localStorage on component mount
+// Load Chromebooks from Supabase on component mount
 useEffect(() => {
-  const savedChromebooks = localStorage.getItem("chromebooks");
-  if (savedChromebooks) {
+  const fetchChromebooks = async () => {
     try {
-      const parsed = JSON.parse(savedChromebooks);
-      // Normalize data
-      const chromebooksWithStatus = parsed.map((cb: any) => {
-        const normalizedStatus = cb.status === 'manutencao' ? 'fixo' : (cb.status || 'disponivel');
-        return {
-          ...cb,
-          status: normalizedStatus,
-          manufacturer: cb.manufacturer || 'Não informado',
-          model: cb.model || cb.modelo || 'Não informado',
-          series: cb.series || cb.serie || 'Não informado',
-          patrimonyNumber: cb.patrimonyNumber || cb.patrimonio || cb.id,
-          classroom: cb.classroom || cb.sala || undefined,
-        } as ChromebookData;
-      });
-      setChromebooks(chromebooksWithStatus);
+      const { data, error } = await supabase
+        .from('chromebooks')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error("Error fetching chromebooks:", error);
+        toast({
+          title: "Erro",
+          description: "Não foi possível carregar os Chromebooks do banco de dados",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Normalize data to handle database type differences
+      const normalizedData = (data || []).map(item => ({
+        ...item,
+        status: item.status === 'manutencao' ? 'fixo' : item.status,
+      })) as ChromebookData[];
+      setChromebooks(normalizedData);
     } catch (error) {
-      console.error("Error parsing chromebooks from localStorage:", error);
+      console.error("Error fetching chromebooks:", error);
       toast({
         title: "Erro",
-        description: "Não foi possível carregar os Chromebooks salvos",
+        description: "Erro inesperado ao carregar os Chromebooks",
         variant: "destructive",
       });
     }
-  }
+  };
+
+  fetchChromebooks();
 }, []);
 
-  // Save chromebooks to localStorage whenever the state changes
-  useEffect(() => {
-    if (chromebooks.length > 0) {
-      localStorage.setItem("chromebooks", JSON.stringify(chromebooks));
-    }
-  }, [chromebooks]);
+// Real-time synchronization
+useEffect(() => {
+  const channel = supabase
+    .channel('chromebooks-changes')
+    .on(
+      'postgres_changes',
+      {
+        event: '*',
+        schema: 'public',
+        table: 'chromebooks'
+      },
+      (payload) => {
+        console.log('Realtime change received:', payload);
+        
+        if (payload.eventType === 'INSERT') {
+          setChromebooks(prev => [payload.new as ChromebookData, ...prev]);
+        } else if (payload.eventType === 'UPDATE') {
+          setChromebooks(prev => 
+            prev.map(cb => 
+              cb.id === payload.new.id ? payload.new as ChromebookData : cb
+            )
+          );
+        } else if (payload.eventType === 'DELETE') {
+          setChromebooks(prev => 
+            prev.filter(cb => cb.id !== payload.old.id)
+          );
+        }
+      }
+    )
+    .subscribe();
+
+  return () => {
+    supabase.removeChannel(channel);
+  };
+}, []);
 
   // Filter Chromebooks based on search term and status
   const filteredChromebooks = chromebooks.filter((chromebook) => {
     const matchesSearch = 
-      chromebook.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      String(chromebook.patrimonyNumber || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      chromebook.chromebook_id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      String(chromebook.patrimony_number || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
       chromebook.model.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      chromebook.series.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      chromebook.manufacturer.toLowerCase().includes(searchTerm.toLowerCase());
+      String(chromebook.serial_number || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      String(chromebook.location || '').toLowerCase().includes(searchTerm.toLowerCase());
     
 const matchesStatus = statusFilter === 'all' || chromebook.status === statusFilter;
 const matchesFixed = fixedFilter === 'all' || (fixedFilter === 'fixo' ? chromebook.status === 'fixo' : chromebook.status !== 'fixo');
@@ -165,7 +205,7 @@ switch (status) {
   };
 
 // Handle status change
-const handleStatusChange = (chromebookId: string, newStatus: string) => {
+const handleStatusChange = async (chromebookId: string, newStatus: string) => {
   if (newStatus === 'emprestado') {
     toast({
       title: "Atenção",
@@ -180,16 +220,35 @@ const handleStatusChange = (chromebookId: string, newStatus: string) => {
     toast({ title: 'Permissão negada', description: 'Apenas administradores podem marcar como Fixo.', variant: 'destructive' });
     return;
   }
-  
-  const updatedChromebooks = chromebooks.map((item) =>
-    item.id === chromebookId ? { ...item, status: newStatus as ChromebookData['status'] } : item
-  );
-  
-  setChromebooks(updatedChromebooks);
-  toast({
-    title: "Status atualizado",
-    description: `Status do Chromebook alterado para ${getStatusInfo(newStatus).label}`,
-  });
+
+  try {
+    const { error } = await supabase
+      .from('chromebooks')
+      .update({ status: newStatus as any })
+      .eq('id', chromebookId);
+
+    if (error) {
+      console.error("Error updating chromebook status:", error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível atualizar o status do Chromebook",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    toast({
+      title: "Status atualizado",
+      description: `Status do Chromebook alterado para ${getStatusInfo(newStatus).label}`,
+    });
+  } catch (error) {
+    console.error("Error updating chromebook status:", error);
+    toast({
+      title: "Erro",
+      description: "Erro inesperado ao atualizar o status",
+      variant: "destructive",
+    });
+  }
 };
 
   // Handle edit click
@@ -210,13 +269,13 @@ const handleStatusChange = (chromebookId: string, newStatus: string) => {
     });
   };
 
-  // Handle provisioning status change
-  const handleProvisioningChange = (checked: boolean) => {
+  // Handle condition change
+  const handleConditionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     if (!editingChromebook) return;
 
     setEditingChromebook({
       ...editingChromebook,
-      isProvisioned: checked,
+      condition: e.target.value,
     });
   };
 
@@ -231,12 +290,11 @@ const handleStatusChange = (chromebookId: string, newStatus: string) => {
   };
 
   // Handle save edit
-  const handleSaveEdit = () => {
+  const handleSaveEdit = async () => {
     if (!editingChromebook) return;
 
     // Validate required fields
-    if (!editingChromebook.id || !editingChromebook.manufacturer || 
-        !editingChromebook.model || !editingChromebook.series) {
+    if (!editingChromebook.chromebook_id || !editingChromebook.model) {
       toast({
         title: "Campos obrigatórios",
         description: "Preencha todos os campos obrigatórios",
@@ -245,18 +303,45 @@ const handleStatusChange = (chromebookId: string, newStatus: string) => {
       return;
     }
 
-    // Update Chromebook in the list
-    const updatedChromebooks = chromebooks.map((item) =>
-      item.id === editingChromebook.id ? editingChromebook : item
-    );
+    try {
+      const { error } = await supabase
+        .from('chromebooks')
+        .update({
+          chromebook_id: editingChromebook.chromebook_id,
+          model: editingChromebook.model,
+          serial_number: editingChromebook.serial_number,
+          patrimony_number: editingChromebook.patrimony_number,
+          status: editingChromebook.status as any,
+          condition: editingChromebook.condition,
+          location: editingChromebook.location,
+          classroom: editingChromebook.classroom,
+        })
+        .eq('id', editingChromebook.id);
 
-    setChromebooks(updatedChromebooks);
-    setIsEditDialogOpen(false);
-    setEditingChromebook(null);
-    toast({
-      title: "Sucesso",
-      description: `Chromebook ${editingChromebook.patrimonyNumber || editingChromebook.id} atualizado com sucesso`,
-    });
+      if (error) {
+        console.error("Error updating chromebook:", error);
+        toast({
+          title: "Erro",
+          description: "Não foi possível atualizar o Chromebook",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setIsEditDialogOpen(false);
+      setEditingChromebook(null);
+      toast({
+        title: "Sucesso",
+        description: `Chromebook ${editingChromebook.patrimony_number || editingChromebook.chromebook_id} atualizado com sucesso`,
+      });
+    } catch (error) {
+      console.error("Error updating chromebook:", error);
+      toast({
+        title: "Erro",
+        description: "Erro inesperado ao atualizar o Chromebook",
+        variant: "destructive",
+      });
+    }
   };
 
   // Handle delete click
@@ -266,17 +351,39 @@ const handleStatusChange = (chromebookId: string, newStatus: string) => {
   };
 
   // Handle delete confirmation
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = async () => {
     if (!chromebookToDelete) return;
 
-    const updatedChromebooks = chromebooks.filter((item) => item.id !== chromebookToDelete.id);
-    setChromebooks(updatedChromebooks);
-    setIsDeleteDialogOpen(false);
-    setChromebookToDelete(null);
-    toast({
-      title: "Sucesso",
-      description: `Chromebook ${chromebookToDelete.patrimonyNumber || chromebookToDelete.id} excluído com sucesso`,
-    });
+    try {
+      const { error } = await supabase
+        .from('chromebooks')
+        .delete()
+        .eq('id', chromebookToDelete.id);
+
+      if (error) {
+        console.error("Error deleting chromebook:", error);
+        toast({
+          title: "Erro",
+          description: "Não foi possível excluir o Chromebook",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setIsDeleteDialogOpen(false);
+      setChromebookToDelete(null);
+      toast({
+        title: "Sucesso",
+        description: `Chromebook ${chromebookToDelete.patrimony_number || chromebookToDelete.chromebook_id} excluído com sucesso`,
+      });
+    } catch (error) {
+      console.error("Error deleting chromebook:", error);
+      toast({
+        title: "Erro",
+        description: "Erro inesperado ao excluir o Chromebook",
+        variant: "destructive",
+      });
+    }
   };
 
   // Handle back button click
@@ -297,7 +404,7 @@ const handleStatusChange = (chromebookId: string, newStatus: string) => {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
           <Input
-            placeholder="Buscar por ID, patrimônio, modelo, série ou fabricante..."
+            placeholder="Buscar por ID, patrimônio, modelo, série ou localização..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10"
@@ -372,10 +479,10 @@ const handleStatusChange = (chromebookId: string, newStatus: string) => {
             <TableRow>
               <TableHead>ID</TableHead>
               <TableHead>Patrimônio</TableHead>
-              <TableHead>Fabricante</TableHead>
               <TableHead>Modelo</TableHead>
               <TableHead className="hidden md:table-cell">Status</TableHead>
               <TableHead className="hidden lg:table-cell">Série</TableHead>
+              <TableHead className="hidden lg:table-cell">Localização</TableHead>
               <TableHead>Ações</TableHead>
             </TableRow>
           </TableHeader>
@@ -388,12 +495,11 @@ const handleStatusChange = (chromebookId: string, newStatus: string) => {
                 return (
                   <TableRow key={chromebook.id}>
                     <TableCell className="font-medium text-xs">
-                      {chromebook.id}
+                      {chromebook.chromebook_id}
                     </TableCell>
                     <TableCell className="font-medium">
-                      {chromebook.patrimonyNumber || chromebook.id}
+                      {chromebook.patrimony_number || chromebook.chromebook_id}
                     </TableCell>
-                    <TableCell>{chromebook.manufacturer}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
                         {chromebook.model}
@@ -412,14 +518,17 @@ const handleStatusChange = (chromebookId: string, newStatus: string) => {
 </div>
                     </TableCell>
                     <TableCell className="hidden lg:table-cell">
-                      {chromebook.series}
+                      {chromebook.serial_number}
+                    </TableCell>
+                    <TableCell className="hidden lg:table-cell">
+                      {chromebook.location || chromebook.classroom || '-'}
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center space-x-2">
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => setShowQRCode(chromebook.patrimonyNumber || chromebook.id)}
+                          onClick={() => setShowQRCode(chromebook.patrimony_number || chromebook.chromebook_id)}
                           title="Ver QR Code"
                         >
                           <QrCode className="h-4 w-4" />
@@ -463,7 +572,7 @@ const handleStatusChange = (chromebookId: string, newStatus: string) => {
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={7}
+                  colSpan={8}
                   className="h-32 text-center text-gray-500"
                 >
                   {searchTerm || statusFilter !== 'all'
@@ -535,76 +644,62 @@ const handleStatusChange = (chromebookId: string, newStatus: string) => {
                   <h4 className="font-medium text-sm text-gray-700 border-b pb-1">Informações Básicas</h4>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <div className="space-y-1.5">
-                      <Label htmlFor="id" className="text-xs font-medium">ID do Chromebook *</Label>
-                      <Input
-                        id="id"
-                        value={editingChromebook.id}
-                        onChange={handleEditChange}
-                        disabled
-                        className="h-9"
-                      />
-                    </div>
+                     <div className="space-y-1.5">
+                       <Label htmlFor="chromebook_id" className="text-xs font-medium">ID do Chromebook *</Label>
+                       <Input
+                         id="chromebook_id"
+                         value={editingChromebook.chromebook_id}
+                         onChange={handleEditChange}
+                         className="h-9"
+                       />
+                     </div>
 
-                    <div className="space-y-1.5">
-                      <Label htmlFor="patrimonyNumber" className="text-xs font-medium">Patrimônio</Label>
-                      <Input
-                        id="patrimonyNumber"
-                        value={editingChromebook.patrimonyNumber || ""}
-                        onChange={handleEditChange}
-                        placeholder="Número do patrimônio"
-                        className="h-9"
-                      />
-                    </div>
+                     <div className="space-y-1.5">
+                       <Label htmlFor="patrimony_number" className="text-xs font-medium">Patrimônio</Label>
+                       <Input
+                         id="patrimony_number"
+                         value={editingChromebook.patrimony_number || ""}
+                         onChange={handleEditChange}
+                         placeholder="Número do patrimônio"
+                         className="h-9"
+                       />
+                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <div className="space-y-1.5">
-                      <Label htmlFor="manufacturer" className="text-xs font-medium">Fabricante *</Label>
-                      <Input
-                        id="manufacturer"
-                        value={editingChromebook.manufacturer}
-                        onChange={handleEditChange}
-                        placeholder="Ex: Lenovo, HP, Dell"
-                        className="h-9"
-                      />
-                    </div>
+                   <div className="space-y-1.5">
+                     <Label htmlFor="model" className="text-xs font-medium">Modelo *</Label>
+                     <Input
+                       id="model"
+                       value={editingChromebook.model}
+                       onChange={handleEditChange}
+                       placeholder="Ex: Chromebook 14e"
+                       className="h-9"
+                     />
+                   </div>
 
-                    <div className="space-y-1.5">
-                      <Label htmlFor="model" className="text-xs font-medium">Modelo *</Label>
-                      <Input
-                        id="model"
-                        value={editingChromebook.model}
-                        onChange={handleEditChange}
-                        placeholder="Ex: Chromebook 14e"
-                        className="h-9"
-                      />
-                    </div>
-                  </div>
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                     <div className="space-y-1.5">
+                       <Label htmlFor="serial_number" className="text-xs font-medium">Número de Série</Label>
+                       <Input
+                         id="serial_number"
+                         value={editingChromebook.serial_number || ""}
+                         onChange={handleEditChange}
+                         placeholder="Número de série"
+                         className="h-9"
+                       />
+                     </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <div className="space-y-1.5">
-                      <Label htmlFor="series" className="text-xs font-medium">Série *</Label>
-                      <Input
-                        id="series"
-                        value={editingChromebook.series}
-                        onChange={handleEditChange}
-                        placeholder="Número de série"
-                        className="h-9"
-                      />
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <Label htmlFor="manufacturingYear" className="text-xs font-medium">Ano de Fabricação</Label>
-                      <Input
-                        id="manufacturingYear"
-                        value={editingChromebook.manufacturingYear || ""}
-                        onChange={handleEditChange}
-                        placeholder="Ex: 2023"
-                        className="h-9"
-                      />
-                    </div>
-                  </div>
+                     <div className="space-y-1.5">
+                       <Label htmlFor="location" className="text-xs font-medium">Localização</Label>
+                       <Input
+                         id="location"
+                         value={editingChromebook.location || ""}
+                         onChange={handleEditChange}
+                         placeholder="Ex: Sala de informática"
+                         className="h-9"
+                       />
+                     </div>
+                   </div>
                 </div>
 
                 {/* Status e Configurações */}
@@ -626,26 +721,6 @@ const handleStatusChange = (chromebookId: string, newStatus: string) => {
   </Select>
 </div>
 
-                  <div className="flex items-start space-x-3 pt-1">
-                    <Checkbox
-                      id="isProvisioned"
-                      checked={editingChromebook.isProvisioned}
-                      onCheckedChange={(checked) =>
-                        handleProvisioningChange(checked === true)
-                      }
-                    />
-                    <div className="space-y-1 leading-none">
-                      <Label
-                        htmlFor="isProvisioned"
-                        className="font-medium text-xs cursor-pointer"
-                      >
-                        Equipamento Provisionado
-                      </Label>
-                      <p className="text-xs text-gray-500">
-                        Marque se o Chromebook já está provisionado no console
-                      </p>
-                    </div>
-                  </div>
 
 <div className="space-y-1.5">
   <Label htmlFor="classroom" className="text-xs font-medium">Sala de Aula</Label>
@@ -659,20 +734,20 @@ const handleStatusChange = (chromebookId: string, newStatus: string) => {
 </div>
                 </div>
 
-                {/* Observações */}
-                <div className="space-y-3">
-                  <h4 className="font-medium text-sm text-gray-700 border-b pb-1">Observações</h4>
-                  
-                  <div className="space-y-1.5">
-                    <Textarea
-                      id="observations"
-                      value={editingChromebook.observations || ""}
-                      onChange={handleEditChange}
-                      placeholder="Digite observações relevantes sobre o equipamento"
-                      className={`resize-none ${isMobile ? 'min-h-[60px]' : 'min-h-[80px]'}`}
-                    />
-                  </div>
-                </div>
+                 {/* Observações */}
+                 <div className="space-y-3">
+                   <h4 className="font-medium text-sm text-gray-700 border-b pb-1">Condição/Observações</h4>
+                   
+                   <div className="space-y-1.5">
+                     <Textarea
+                       id="condition"
+                       value={editingChromebook.condition || ""}
+                       onChange={handleConditionChange}
+                       placeholder="Digite observações sobre a condição do equipamento"
+                       className={`resize-none ${isMobile ? 'min-h-[60px]' : 'min-h-[80px]'}`}
+                     />
+                   </div>
+                 </div>
               </div>
             </div>
           )}
@@ -706,7 +781,7 @@ const handleStatusChange = (chromebookId: string, newStatus: string) => {
           <DialogHeader>
             <DialogTitle>Confirmar Exclusão</DialogTitle>
             <DialogDescription>
-              Tem certeza que deseja excluir o Chromebook <strong>{chromebookToDelete?.patrimonyNumber || chromebookToDelete?.id}</strong>?
+              Tem certeza que deseja excluir o Chromebook <strong>{chromebookToDelete?.patrimony_number || chromebookToDelete?.chromebook_id}</strong>?
               Esta ação não pode ser desfeita.
             </DialogDescription>
           </DialogHeader>
@@ -736,7 +811,7 @@ const handleStatusChange = (chromebookId: string, newStatus: string) => {
         open={!!showQRCode}
         onOpenChange={(open) => setShowQRCode(open ? showQRCode : null)}
         chromebookId={showQRCode || ""}
-        chromebookData={showQRCode ? chromebooks.find(c => (c.patrimonyNumber || c.id) === showQRCode) : undefined}
+        chromebookData={showQRCode ? chromebooks.find(c => (c.patrimony_number || c.chromebook_id) === showQRCode) : undefined}
         showSuccess={false}
       />
     </div>

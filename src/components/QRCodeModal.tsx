@@ -11,9 +11,10 @@ interface QRCodeModalProps {
   chromebookId: string;
   chromebookData?: {
     id: string;
+    chromebook_id: string;
     model: string;
-    series: string;
-    patrimonyNumber?: string;
+    serial_number?: string;
+    patrimony_number?: string;
   };
   showSuccess?: boolean;
 }
@@ -30,10 +31,10 @@ export function QRCodeModal({
   const getQRCodeData = () => {
     if (chromebookData) {
       const essentialData = {
-        id: chromebookData.id,
+        id: chromebookData.chromebook_id,
         model: chromebookData.model,
-        series: chromebookData.series,
-        ...(chromebookData.patrimonyNumber ? { pat: chromebookData.patrimonyNumber } : {})
+        ...(chromebookData.serial_number ? { serial: chromebookData.serial_number } : {}),
+        ...(chromebookData.patrimony_number ? { pat: chromebookData.patrimony_number } : {})
       };
       return JSON.stringify(essentialData);
     }
