@@ -32,7 +32,7 @@ export const useDatabase = () => {
           model: data.model,
           serial_number: data.serialNumber,
           patrimony_number: data.patrimonyNumber,
-          status: data.status,
+          status: data.status as any,
           condition: data.condition,
           location: data.location,
           classroom: data.classroom,
@@ -44,7 +44,7 @@ export const useDatabase = () => {
       if (error) throw error;
       
       toast({ title: "Sucesso", description: "Chromebook cadastrado com sucesso" });
-      return result;
+      return result as Chromebook;
     } catch (error: any) {
       toast({ title: "Erro", description: error.message, variant: "destructive" });
       return null;
@@ -62,7 +62,7 @@ export const useDatabase = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data || [];
+      return (data || []) as Chromebook[];
     } catch (error: any) {
       toast({ title: "Erro", description: error.message, variant: "destructive" });
       return [];
@@ -86,7 +86,7 @@ export const useDatabase = () => {
           model: data.model,
           serial_number: data.serialNumber,
           patrimony_number: data.patrimonyNumber,
-          status: data.status,
+          status: data.status as any,
           condition: data.condition,
           location: data.location,
           classroom: data.classroom
@@ -194,7 +194,7 @@ export const useDatabase = () => {
       if (error) throw error;
       return (data || []).map(item => ({
         ...item,
-        status: item.status as 'ativo' | 'devolvido'
+        status: item.status as 'ativo' | 'devolvido' | 'atrasado'
       }));
     } catch (error: any) {
       toast({ title: "Erro", description: error.message, variant: "destructive" });
@@ -215,7 +215,7 @@ export const useDatabase = () => {
       if (error) throw error;
       return (data || []).map(item => ({
         ...item,
-        status: item.status as 'ativo' | 'devolvido'
+        status: item.status as 'ativo' | 'devolvido' | 'atrasado'
       }));
     } catch (error: any) {
       toast({ title: "Erro", description: error.message, variant: "destructive" });

@@ -155,13 +155,25 @@ export function ChromebookRegistration({ onBack }: ChromebookRegistrationProps) 
         {/* Campo: ID do Chromebook */}
         <div className="space-y-2">
           <Label htmlFor="chromebookId">ID do Chromebook *</Label>
-          <Input
-            id="chromebookId"
-            value={formData.id}
-            onChange={(e) => setFormData({ ...formData, id: e.target.value })}
-            placeholder="Digite o ID único do Chromebook"
-            required
-          />
+          <div className="relative">
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-mono text-sm pointer-events-none">
+              CHR
+            </div>
+            <Input
+              id="chromebookId"
+              value={formData.id.replace(/^CHR/, '')}
+              onChange={(e) => {
+                const value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+                setFormData({ ...formData, id: `CHR${value}` });
+              }}
+              placeholder="001"
+              className="pl-12 font-mono"
+              required
+            />
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Digite apenas o código após CHR (ex: 001, A01, etc.)
+          </p>
         </div>
 
         {/* Campo: Fabricante */}

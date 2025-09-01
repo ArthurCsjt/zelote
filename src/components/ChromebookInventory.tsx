@@ -123,7 +123,8 @@ useEffect(() => {
   // Filter Chromebooks based on search term and status
   const filteredChromebooks = chromebooks.filter((chromebook) => {
     const matchesSearch = 
-      String(chromebook.patrimonyNumber || chromebook.id).toLowerCase().includes(searchTerm.toLowerCase()) ||
+      chromebook.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      String(chromebook.patrimonyNumber || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
       chromebook.model.toLowerCase().includes(searchTerm.toLowerCase()) ||
       chromebook.series.toLowerCase().includes(searchTerm.toLowerCase()) ||
       chromebook.manufacturer.toLowerCase().includes(searchTerm.toLowerCase());
@@ -296,7 +297,7 @@ const handleStatusChange = (chromebookId: string, newStatus: string) => {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
           <Input
-            placeholder="Buscar por patrimônio, modelo, série ou fabricante..."
+            placeholder="Buscar por ID, patrimônio, modelo, série ou fabricante..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10"

@@ -27,7 +27,7 @@ const Layout: React.FC<LayoutProps> = ({
     setTheme
   } = useTheme();
   const navigate = useNavigate();
-  const { isSuperAdmin } = useProfileRole();
+  const { isAdmin } = useProfileRole();
   const [showInstallBanner, setShowInstallBanner] = React.useState(false);
   const [isStandalone, setIsStandalone] = React.useState(false);
   React.useEffect(() => {
@@ -107,7 +107,7 @@ const Layout: React.FC<LayoutProps> = ({
                   {user?.email?.substring(0, 20)}...
                 </span>
               </div>
-              {isSuperAdmin && (
+              {isAdmin && (
                 <button onClick={() => navigate('/settings')} className="flex items-center space-x-1 text-sm text-muted-foreground hover:text-foreground transition-colors duration-200 bg-accent hover:bg-accent/80 rounded-full px-3 py-1.5 touch-manipulation">
                   <span>Configurações</span>
                 </button>

@@ -56,20 +56,28 @@ export function QRCodeModal({
       const img = new Image();
       
       img.onload = () => {
-        canvas.width = img.width;
-        canvas.height = img.height + 40;
+        const padding = 20; // 0.5cm aproximadamente
+        canvas.width = img.width + (padding * 2);
+        canvas.height = img.height + 60 + (padding * 2);
         
         // White background
         ctx.fillStyle = "#FFFFFF";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         
-        ctx.drawImage(img, 0, 0);
+        // Draw dashed border for cutting guide
+        ctx.strokeStyle = "#666666";
+        ctx.setLineDash([5, 5]);
+        ctx.lineWidth = 1;
+        ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
         
-        // Add ID text below QR code
+        // Draw QR code with padding
+        ctx.drawImage(img, padding, padding);
+        
+        // Add ID text below QR code with closer spacing
         ctx.fillStyle = "#000000";
-        ctx.font = "14px Arial";
+        ctx.font = "16px Arial";
         ctx.textAlign = "center";
-        ctx.fillText(`ID: ${chromebookId}`, canvas.width / 2, img.height + 25);
+        ctx.fillText(`ID: ${chromebookId}`, canvas.width / 2, img.height + padding + 25);
         
         // Download PNG
         const link = document.createElement('a');
@@ -121,15 +129,19 @@ export function QRCodeModal({
               }
               .qr-container {
                 text-align: center;
+                padding: 20px;
+                border: 2px dashed #666;
+                margin: 10px;
+                position: relative;
               }
               .qr-title {
                 font-size: 18px;
                 font-weight: bold;
-                margin-bottom: 10px;
+                margin-bottom: 15px;
               }
               .qr-id {
-                font-size: 14px;
-                margin-top: 10px;
+                font-size: 16px;
+                margin-top: 8px;
                 background: #3b82f6;
                 color: white;
                 padding: 8px 16px;
