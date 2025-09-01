@@ -129,30 +129,21 @@ export function QRCodeModal({
               }
               .qr-container {
                 text-align: center;
-                padding: 20px;
+                padding: 10px;
                 border: 2px dashed #666;
                 margin: 10px;
                 position: relative;
               }
-              .qr-title {
-                font-size: 18px;
-                font-weight: bold;
-                margin-bottom: 15px;
-              }
               .qr-id {
-                font-size: 16px;
-                margin-top: 8px;
-                background: #3b82f6;
-                color: white;
-                padding: 8px 16px;
-                border-radius: 20px;
-                display: inline-block;
+                font-size: 14px;
+                margin-top: 5px;
+                color: black;
+                font-weight: bold;
               }
             </style>
           </head>
           <body>
             <div class="qr-container">
-              <div class="qr-title">QR Code para o Chromebook</div>
               <div style="display: flex; flex-direction: column; align-items: center;">
                 ${svgData}
                 <div class="qr-id">ID: ${chromebookId}</div>

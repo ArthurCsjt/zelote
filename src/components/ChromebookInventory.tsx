@@ -370,6 +370,7 @@ const handleStatusChange = (chromebookId: string, newStatus: string) => {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead>ID</TableHead>
               <TableHead>Patrimônio</TableHead>
               <TableHead>Fabricante</TableHead>
               <TableHead>Modelo</TableHead>
@@ -386,6 +387,9 @@ const handleStatusChange = (chromebookId: string, newStatus: string) => {
                 
                 return (
                   <TableRow key={chromebook.id}>
+                    <TableCell className="font-medium text-xs">
+                      {chromebook.id}
+                    </TableCell>
                     <TableCell className="font-medium">
                       {chromebook.patrimonyNumber || chromebook.id}
                     </TableCell>
@@ -459,7 +463,7 @@ const handleStatusChange = (chromebookId: string, newStatus: string) => {
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={6}
+                  colSpan={7}
                   className="h-32 text-center text-gray-500"
                 >
                   {searchTerm || statusFilter !== 'all'
