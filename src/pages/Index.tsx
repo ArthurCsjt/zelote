@@ -263,13 +263,13 @@ const Index = () => {
             
             <TabsContent value="form" className="mt-0">
               <div className="bg-background rounded-lg border p-4">
-                <LoanForm onSubmit={handleNewLoan} />
+                <LoanForm />
               </div>
             </TabsContent>
             
             <TabsContent value="active" className="mt-0">
               <div className="bg-background rounded-lg border p-4">
-                <ActiveLoans loans={activeLoans} onRefresh={loadData} />
+                <ActiveLoans />
               </div>
             </TabsContent>
             
@@ -319,8 +319,6 @@ const Index = () => {
         return (
           <div className="animate-in fade-in duration-300">
             <Dashboard 
-              activeLoans={activeLoans} 
-              history={loanHistory} 
               onBack={handleBackToMenu} 
             />
           </div>

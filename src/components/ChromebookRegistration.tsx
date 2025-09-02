@@ -8,6 +8,7 @@ import { toast } from "./ui/use-toast";
 import { Checkbox } from "./ui/checkbox";
 import { ArrowLeft } from "lucide-react";
 import { QRCodeModal } from "./QRCodeModal";
+import { useDatabase } from '@/hooks/useDatabase';
 import {
   Select,
   SelectContent,
@@ -45,6 +46,8 @@ interface ChromebookRegistrationProps {
  */
 export function ChromebookRegistration({ onBack }: ChromebookRegistrationProps) {
   // === ESTADOS (STATES) ===
+  
+  const { createChromebook, loading } = useDatabase();
   
   /**
    * Estado para armazenar os dados do formulário de cadastro
@@ -85,7 +88,7 @@ export function ChromebookRegistration({ onBack }: ChromebookRegistrationProps) 
    * Valida os dados e gera o QR Code
    * @param e - Evento do formulário
    */
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault(); // Previne o comportamento padrão do formulário (recarregar a página)
 
     // Verifica se todos os campos obrigatórios foram preenchidos
@@ -109,37 +112,28 @@ export function ChromebookRegistration({ onBack }: ChromebookRegistrationProps) 
       return;
     }
 
-    // Salvar o Chromebook no localStorage
-    try {
-      // Obter Chromebooks existentes
-      const existingChromebooksJSON = localStorage.getItem("chromebooks");
-      const existingChromebooks: ChromebookData[] = existingChromebooksJSON 
-        ? JSON.parse(existingChromebooksJSON) 
-        : [];
-      
-      // Verificar se já existe um Chromebook com o mesmo ID
-      if (existingChromebooks.some(device => device.id === formData.id)) {
-        toast({
-          title: "ID Duplicado",
-          description: "Já existe um Chromebook cadastrado com este ID",
-          variant: "destructive",
-        });
-        return;
-      }
-      
-      // Adicionar o novo Chromebook
-      const updatedChromebooks = [...existingChromebooks, formData];
-      localStorage.setItem("chromebooks", JSON.stringify(updatedChromebooks));
-    } catch (error) {
-      console.error("Erro ao salvar no localStorage:", error);
-    }
+    // Criar dados formatados para o Supabase
+    const chromebookData = {
+      chromebookId: formData.id,
+      model: formData.model,
+      serialNumber: formData.series,
+      patrimonyNumber: formData.patrimonyNumber || null,
+      condition: 'novo',
+      location: formData.isFixedInClassroom ? formData.classroomLocation : null,
+      status: 'disponivel' as const,
+    };
 
-    // Se tudo estiver ok, mostra o QR Code e exibe mensagem de sucesso
-    setShowQRCode(true);
-    toast({
-      title: "Sucesso",
-      description: "Chromebook cadastrado com sucesso",
-    });
+    // Salvar o Chromebook no Supabase
+    const newChromebook = await createChromebook(chromebookData);
+    
+    if (newChromebook) {
+      // Se tudo estiver ok, mostra o QR Code e exibe mensagem de sucesso
+      setShowQRCode(true);
+      toast({
+        title: "Sucesso",
+        description: "Chromebook cadastrado com sucesso",
+      });
+    }
   };
 
 
@@ -319,9 +313,10 @@ export function ChromebookRegistration({ onBack }: ChromebookRegistrationProps) 
         {/* Botão de envio do formulário */}
         <Button 
           type="submit" 
-          className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-0 shadow-lg hover:shadow-xl transform transition-all duration-300 hover:scale-[1.02]"
+          disabled={loading}
+          className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-0 shadow-lg hover:shadow-xl transform transition-all duration-300 hover:scale-[1.02] disabled:opacity-50"
         >
-          Cadastrar Chromebook
+          {loading ? "Cadastrando..." : "Cadastrar Chromebook"}
         </Button>
 
       </form>

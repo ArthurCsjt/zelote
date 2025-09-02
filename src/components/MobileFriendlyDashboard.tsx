@@ -1,5 +1,6 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useDatabase } from '@/hooks/useDatabase';
 import {
   Card,
   CardContent,
@@ -16,20 +17,41 @@ import { format, startOfDay, isToday, isWithinInterval, subDays, differenceInMin
 import type { LoanHistoryItem } from "@/types/database";
 
 interface MobileFriendlyDashboardProps {
-  activeLoans: LoanHistoryItem[];
-  history: LoanHistoryItem[];
-  onBack: () => void;
+  onBack?: () => void;
 }
 
-export function MobileFriendlyDashboard({ activeLoans, history, onBack }: MobileFriendlyDashboardProps) {
-  const totalChromebooks = 50;
+export function MobileFriendlyDashboard({ onBack }: MobileFriendlyDashboardProps) {
+  const { getLoanHistory, getChromebooks } = useDatabase();
+  const [activeLoans, setActiveLoans] = useState<LoanHistoryItem[]>([]);
+  const [history, setHistory] = useState<LoanHistoryItem[]>([]);
+  const [chromebooks, setChromebooks] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const totalChromebooks = chromebooks.length;
   const availableChromebooks = totalChromebooks - activeLoans.length;
   const [periodView, setPeriodView] = useState<'daily' | 'weekly' | 'monthly'>('daily');
 
-  const handleBackToMenu = () => {
-    console.log('Botão voltar pressionado - Utilizando callback onBack');
-    onBack();
-  };
+  // Buscar dados iniciais
+  const fetchDashboardData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [historyData, chromebooksData] = await Promise.all([
+        getLoanHistory(),
+        getChromebooks()
+      ]);
+      
+      setHistory(historyData);
+      setChromebooks(chromebooksData);
+      setActiveLoans(historyData.filter(loan => !loan.return_date));
+    } catch (error) {
+      console.error('Erro ao buscar dados do dashboard:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [getLoanHistory, getChromebooks]);
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, [fetchDashboardData]);
 
   // Cálculos para estatísticas
   const today = startOfDay(new Date());

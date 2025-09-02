@@ -14,6 +14,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Calendar as CalendarComponent } from "./ui/calendar";
 import { cn } from "@/lib/utils";
 import { validateLoanFormData, sanitizeQRCodeData } from "@/utils/security";
+import { useDatabase } from '@/hooks/useDatabase';
 
 // Define a interface dos dados do formulário de empréstimo
 interface LoanFormData {
@@ -29,15 +30,17 @@ interface LoanFormData {
 
 // Define a interface das props do componente
 interface LoanFormProps {
-  onSubmit: (data: LoanFormData) => void;  // Função chamada ao enviar o formulário
+  onBack?: () => void;  // Função para voltar ao menu
 }
 
 /**
  * Componente de formulário para realizar novos empréstimos de Chromebooks
  * Permite empréstimos individuais ou em lote para alunos, professores ou funcionários
  */
-export function LoanForm({ onSubmit }: LoanFormProps) {
+export function LoanForm({ onBack }: LoanFormProps) {
   // === ESTADOS (STATES) ===
+  
+  const { createLoan, loading } = useDatabase();
   
   // Estado para armazenar os dados do formulário
   const [formData, setFormData] = useState<LoanFormData>({
@@ -118,7 +121,7 @@ export function LoanForm({ onSubmit }: LoanFormProps) {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // Validar e sanitizar dados do formulário
@@ -148,27 +151,25 @@ export function LoanForm({ onSubmit }: LoanFormProps) {
       // Processa cada dispositivo individualmente
       let processedCount = 0;
       
-      batchDevices.forEach(deviceId => {
+      for (const deviceId of batchDevices) {
         // Cria um objeto de empréstimo para cada dispositivo
         const loanData = {
-          ...formData,
-          chromebookId: deviceId
+          studentName: formData.studentName,
+          ra: formData.ra || '',
+          email: formData.email,
+          chromebookId: deviceId,
+          purpose: formData.purpose,
+          userType: formData.userType,
+          loanType: formData.loanType,
+          expectedReturnDate: hasReturnDeadline && formData.expectedReturnDate ? formData.expectedReturnDate : undefined,
         };
         
-        // Verifica campos obrigatórios
-        if (!loanData.studentName || !loanData.email || !loanData.purpose) {
-          toast({
-            title: "Erro",
-            description: "Por favor, preencha todos os campos obrigatórios",
-            variant: "destructive",
-          });
-          return;
+        // Chama a função do hook para processar o empréstimo
+        const result = await createLoan(loanData);
+        if (result) {
+          processedCount++;
         }
-        
-        // Chama a função de callback para processar o empréstimo
-        onSubmit(loanData);
-        processedCount++;
-      });
+      }
       
       // Se processou algum dispositivo, limpa o formulário e exibe mensagem de sucesso
       if (processedCount > 0) {
@@ -206,26 +207,40 @@ export function LoanForm({ onSubmit }: LoanFormProps) {
         return;
       }
       
-      // Chama a função de callback para processar o empréstimo
-      onSubmit(formData);
+        // Prepara dados para o Supabase - usar interface correta
+        const loanData = {
+          studentName: formData.studentName,
+          ra: formData.ra || '',
+          email: formData.email,
+          chromebookId: formData.chromebookId,
+          purpose: formData.purpose,
+          userType: formData.userType,
+          loanType: formData.loanType,
+          expectedReturnDate: hasReturnDeadline && formData.expectedReturnDate ? formData.expectedReturnDate : undefined,
+        };
       
-      // Limpa o formulário
-      setFormData({ 
-        studentName: "", 
-        ra: "", 
-        email: "", 
-        chromebookId: "", 
-        purpose: "", 
-        userType: 'aluno',
-        loanType: 'individual'
-      });
-      setHasReturnDeadline(false);
+      // Chama a função do hook para processar o empréstimo
+      const result = await createLoan(loanData);
       
-      // Exibe mensagem de sucesso
-      toast({
-        title: "Sucesso",
-        description: "Chromebook emprestado com sucesso",
-      });
+      if (result) {
+        // Limpa o formulário
+        setFormData({ 
+          studentName: "", 
+          ra: "", 
+          email: "", 
+          chromebookId: "", 
+          purpose: "", 
+          userType: 'aluno',
+          loanType: 'individual'
+        });
+        setHasReturnDeadline(false);
+        
+        // Exibe mensagem de sucesso
+        toast({
+          title: "Sucesso",
+          description: "Chromebook emprestado com sucesso",
+        });
+      }
     }
   };
 

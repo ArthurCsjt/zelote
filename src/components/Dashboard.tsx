@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   Card,
   CardContent,
@@ -35,19 +35,49 @@ import jsPDF from "jspdf";
 import { useToast } from "./ui/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MobileFriendlyDashboard } from "./MobileFriendlyDashboard";
+import { useDatabase } from '@/hooks/useDatabase';
+import { useOverdueLoans } from '@/hooks/useOverdueLoans';
 
 interface DashboardProps {
-  activeLoans: LoanHistoryItem[];
-  history: LoanHistoryItem[];
-  onBack: () => void;
+  onBack?: () => void;
 }
 
-export function Dashboard({ activeLoans, history, onBack }: DashboardProps) {
+export function Dashboard({ onBack }: DashboardProps) {
+  const { getLoanHistory, getChromebooks } = useDatabase();
+  const { overdueLoans, upcomingDueLoans } = useOverdueLoans();
+  const [activeLoans, setActiveLoans] = useState<LoanHistoryItem[]>([]);
+  const [history, setHistory] = useState<LoanHistoryItem[]>([]);
+  const [chromebooks, setChromebooks] = useState<any[]>([]);
   const { toast } = useToast();
   const [periodView, setPeriodView] = useState<'daily' | 'weekly' | 'monthly'>('daily');
   const [periodData, setPeriodData] = useState<any[]>([]);
-  const totalChromebooks = 50;
+  const [loading, setLoading] = useState(false);
+  
+  const totalChromebooks = chromebooks.length;
   const availableChromebooks = totalChromebooks - activeLoans.length;
+
+  // Buscar dados iniciais
+  const fetchDashboardData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [historyData, chromebooksData] = await Promise.all([
+        getLoanHistory(),
+        getChromebooks()
+      ]);
+      
+      setHistory(historyData);
+      setChromebooks(chromebooksData);
+      setActiveLoans(historyData.filter(loan => !loan.return_date));
+    } catch (error) {
+      console.error('Erro ao buscar dados do dashboard:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [getLoanHistory, getChromebooks]);
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, [fetchDashboardData]);
 
   const pieData = [
     { name: "Em Uso", value: activeLoans.length },

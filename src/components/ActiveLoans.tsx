@@ -1,23 +1,24 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import { Card, CardContent } from "./ui/card";
 import { format } from "date-fns";
-import { CheckCircle, Clock, User, Monitor, Target, AlertTriangle, RefreshCw } from "lucide-react";
-import { Separator } from "./ui/separator";
+import { CheckCircle, Clock, User, Monitor, Target, AlertTriangle, RefreshCw, Computer } from "lucide-react";
 import { ReturnDialog } from "./ReturnDialog";
 import { useDatabase } from "@/hooks/useDatabase";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import type { LoanHistoryItem, ReturnFormData } from "@/types/database";
 import { OverdueAlertsPanel } from "./OverdueAlertsPanel";
 
 interface ActiveLoansProps {
-  loans: LoanHistoryItem[];
-  onRefresh: () => void;
+  onBack?: () => void;
 }
 
-export function ActiveLoans({ loans, onRefresh }: ActiveLoansProps) {
-  const { returnChromebookById, loading } = useDatabase();
+export function ActiveLoans({ onBack }: ActiveLoansProps) {
+  const { getActiveLoans, returnChromebookById } = useDatabase();
+  const [activeLoans, setActiveLoans] = useState<LoanHistoryItem[]>([]);
+  const [loading, setLoading] = useState(false);
   const [openReturnDialog, setOpenReturnDialog] = useState(false);
   const [selectedLoan, setSelectedLoan] = useState<LoanHistoryItem | null>(null);
   const [returnData, setReturnData] = useState<ReturnFormData>({
@@ -28,6 +29,48 @@ export function ActiveLoans({ loans, onRefresh }: ActiveLoansProps) {
     userType: 'aluno'
   });
 
+  // Buscar dados iniciais
+  const fetchActiveLoans = useCallback(async () => {
+    setLoading(true);
+    try {
+      const loans = await getActiveLoans();
+      setActiveLoans(loans);
+    } catch (error) {
+      console.error('Erro ao buscar empréstimos ativos:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [getActiveLoans]);
+
+  useEffect(() => {
+    fetchActiveLoans();
+  }, [fetchActiveLoans]);
+
+  // Atualização em tempo real
+  useEffect(() => {
+    const loansChannel = supabase
+      .channel('active-loans-changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'loans' },
+        () => {
+          fetchActiveLoans();
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'returns' },
+        () => {
+          fetchActiveLoans();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(loansChannel);
+    };
+  }, [fetchActiveLoans]);
+
   const handleReturnClick = (loan: LoanHistoryItem) => {
     setSelectedLoan(loan);
     setOpenReturnDialog(true);
@@ -36,28 +79,33 @@ export function ActiveLoans({ loans, onRefresh }: ActiveLoansProps) {
   const handleReturn = async () => {
     if (!selectedLoan) return;
 
-    if (!returnData.name || !returnData.email) {
+    try {
+      const success = await returnChromebookById(selectedLoan.chromebook_id || '', returnData);
+      
+      if (success) {
+        setOpenReturnDialog(false);
+        setSelectedLoan(null);
+        setReturnData({
+          name: '',
+          email: '',
+          ra: '',
+          type: 'individual',
+          userType: 'aluno'
+        });
+        
+        // Atualiza a lista automaticamente via realtime
+        toast({
+          title: "Sucesso",
+          description: "Chromebook devolvido com sucesso",
+        });
+      }
+    } catch (error) {
+      console.error('Erro ao devolver Chromebook:', error);
       toast({
         title: "Erro",
-        description: "Por favor, preencha os campos obrigatórios",
+        description: "Falha ao processar devolução",
         variant: "destructive",
       });
-      return;
-    }
-
-    const success = await returnChromebookById(selectedLoan.chromebook_id, returnData);
-    
-    if (success) {
-      setOpenReturnDialog(false);
-      setReturnData({
-        name: "",
-        ra: "",
-        email: "",
-        type: 'individual',
-        userType: 'aluno'
-      });
-      setSelectedLoan(null);
-      onRefresh();
     }
   };
 
@@ -77,41 +125,41 @@ export function ActiveLoans({ loans, onRefresh }: ActiveLoansProps) {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 glass-morphism p-6 animate-fade-in relative">
+      {/* Background gradient overlay */}
+      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-card/30 via-background/20 to-card/30 rounded-3xl blur-2xl transform scale-110" />
+      
       {/* Painel de Alertas de Atraso */}
       <OverdueAlertsPanel />
 
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <CheckCircle className="h-5 w-5 text-primary" />
-          <h2 className="text-xl font-semibold">Empréstimos Ativos</h2>
-          <Badge variant="secondary">{loans.length}</Badge>
-        </div>
-        <Button
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          Empréstimos Ativos ({activeLoans.length})
+        </h2>
+        <Button 
+          onClick={fetchActiveLoans}
           variant="outline"
-          size="sm"
-          onClick={onRefresh}
           disabled={loading}
-          className="gap-2"
+          className="bg-white hover:bg-gray-50"
         >
-          <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+          <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
           Atualizar
         </Button>
       </div>
 
-      {loans.length === 0 ? (
-        <Card>
-          <CardContent className="py-8">
-            <div className="text-center text-muted-foreground">
-              <Monitor className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p className="text-lg font-medium mb-2">Nenhum empréstimo ativo</p>
-              <p className="text-sm">Todos os Chromebooks foram devolvidos</p>
-            </div>
-          </CardContent>
-        </Card>
+      {loading ? (
+        <div className="text-center py-12">
+          <RefreshCw className="h-16 w-16 mx-auto mb-4 text-gray-300 animate-spin" />
+          <p className="text-gray-500 text-lg">Carregando empréstimos...</p>
+        </div>
+      ) : activeLoans.length === 0 ? (
+        <div className="text-center py-12">
+          <Computer className="h-16 w-16 mx-auto mb-4 text-gray-300" />
+          <p className="text-gray-500 text-lg">Nenhum empréstimo ativo</p>
+        </div>
       ) : (
-        <div className="grid gap-4">
-          {loans.map((loan) => {
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {activeLoans.map((loan) => {
             const overdueStatus = isOverdue(loan);
             const dueSoonStatus = isDueSoon(loan);
             
@@ -167,50 +215,51 @@ export function ActiveLoans({ loans, onRefresh }: ActiveLoansProps) {
                         )}
                       </div>
 
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2 text-sm">
-                        <Target className="h-4 w-4 text-muted-foreground" />
-                        <span className="font-medium">Finalidade:</span>
-                        <span>{loan.purpose}</span>
-                      </div>
-                      
-                      <div className="flex items-center gap-2 text-sm">
-                        <Clock className="h-4 w-4 text-muted-foreground" />
-                        <span className="font-medium">Emprestado em:</span>
-                        <span>{format(new Date(loan.loan_date), "dd/MM/yyyy 'às' HH:mm")}</span>
-                      </div>
-
-                      {/* Mostrar data de devolução esperada se existir */}
-                      {loan.expected_return_date && (
-                        <div className={`flex items-center gap-2 text-sm ${
-                          overdueStatus ? 'text-red-600' : dueSoonStatus ? 'text-amber-600' : ''
-                        }`}>
-                          <AlertTriangle className={`h-4 w-4 ${
-                            overdueStatus ? 'text-red-500' : dueSoonStatus ? 'text-amber-500' : 'text-muted-foreground'
-                          }`} />
-                          <span className="font-medium">
-                            {overdueStatus ? 'Deveria ter sido devolvido em:' : 'Prazo de devolução:'}
-                          </span>
-                          <span className="font-medium">
-                            {format(new Date(loan.expected_return_date), "dd/MM/yyyy 'às' HH:mm")}
-                          </span>
-                        </div>
-                      )}
-
-                      {loan.chromebook_model && (
+                      <div className="space-y-2">
                         <div className="flex items-center gap-2 text-sm">
-                          <Monitor className="h-4 w-4 text-muted-foreground" />
-                          <span className="font-medium">Modelo:</span>
-                          <span>{loan.chromebook_model}</span>
+                          <Target className="h-4 w-4 text-muted-foreground" />
+                          <span className="font-medium">Finalidade:</span>
+                          <span>{loan.purpose}</span>
                         </div>
-                      )}
+                        
+                        <div className="flex items-center gap-2 text-sm">
+                          <Clock className="h-4 w-4 text-muted-foreground" />
+                          <span className="font-medium">Emprestado em:</span>
+                          <span>{format(new Date(loan.loan_date), "dd/MM/yyyy 'às' HH:mm")}</span>
+                        </div>
+
+                        {/* Mostrar data de devolução esperada se existir */}
+                        {loan.expected_return_date && (
+                          <div className={`flex items-center gap-2 text-sm ${
+                            overdueStatus ? 'text-red-600' : dueSoonStatus ? 'text-amber-600' : ''
+                          }`}>
+                            <AlertTriangle className={`h-4 w-4 ${
+                              overdueStatus ? 'text-red-500' : dueSoonStatus ? 'text-amber-500' : 'text-muted-foreground'
+                            }`} />
+                            <span className="font-medium">
+                              {overdueStatus ? 'Deveria ter sido devolvido em:' : 'Prazo de devolução:'}
+                            </span>
+                            <span className="font-medium">
+                              {format(new Date(loan.expected_return_date), "dd/MM/yyyy 'às' HH:mm")}
+                            </span>
+                          </div>
+                        )}
+
+                        {loan.chromebook_model && (
+                          <div className="flex items-center gap-2 text-sm">
+                            <Monitor className="h-4 w-4 text-muted-foreground" />
+                            <span className="font-medium">Modelo:</span>
+                            <span>{loan.chromebook_model}</span>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
 
                   <Button
                     onClick={() => handleReturnClick(loan)}
                     disabled={loading}
-                    className={`ml-4 ${
+                    className={`w-full mt-4 ${
                       overdueStatus ? 'bg-red-600 hover:bg-red-700' : 
                       dueSoonStatus ? 'bg-amber-600 hover:bg-amber-700' : ''
                     }`}
@@ -218,9 +267,8 @@ export function ActiveLoans({ loans, onRefresh }: ActiveLoansProps) {
                     <CheckCircle className="h-4 w-4 mr-2" />
                     {overdueStatus ? 'Devolver (Atrasado)' : 'Devolver'}
                   </Button>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
             );
           })}
         </div>
