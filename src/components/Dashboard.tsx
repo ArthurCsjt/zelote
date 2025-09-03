@@ -37,6 +37,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MobileFriendlyDashboard } from "./MobileFriendlyDashboard";
 import { useDatabase } from '@/hooks/useDatabase';
 import { useOverdueLoans } from '@/hooks/useOverdueLoans';
+import IntelligentReportsTab from './IntelligentReportsTab';
 
 interface DashboardProps {
   onBack?: () => void;
