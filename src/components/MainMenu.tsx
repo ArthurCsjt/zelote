@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ClipboardList, BarChart3, PlusCircle, Laptop, RotateCcw } from 'lucide-react';
+import { ClipboardList, BarChart3, PlusCircle, Laptop, RotateCcw, Brain } from 'lucide-react';
 
 interface MainMenuProps {
-  onNavigate: (route: 'registration' | 'dashboard' | 'loan' | 'return' | 'inventory') => void;
+  onNavigate: (route: 'registration' | 'dashboard' | 'loan' | 'return' | 'inventory' | 'intelligent-reports') => void;
 }
 
 const isMobileDevice = () => {
@@ -53,6 +53,12 @@ export function MainMenu({ onNavigate }: MainMenuProps) {
       icon: <BarChart3 className="h-5 w-5" />,
       action: () => onNavigate('dashboard'),
       bgColor: 'bg-red-500',
+    },
+    {
+      title: 'Relatórios com IA',
+      icon: <Brain className="h-5 w-5" />,
+      action: () => onNavigate('intelligent-reports'),
+      bgColor: 'bg-cyan-500',
     }
   ];
 

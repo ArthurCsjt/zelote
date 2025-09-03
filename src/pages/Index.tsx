@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { LoanHistory } from "@/components/LoanHistory";
 import { MobileFriendlyDashboard } from "@/components/MobileFriendlyDashboard";
 import { ChromebookInventory } from "@/components/ChromebookInventory";
+import IntelligentReports from "@/components/IntelligentReports";
 import { ArrowLeft } from "lucide-react";
 import { Dashboard } from "@/components/Dashboard";
 import { ScrollArea } from "@/components/ui/scroll-area";

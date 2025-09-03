@@ -244,6 +244,10 @@ export type Database = {
       }
     }
     Functions: {
+      execute_sql: {
+        Args: { query: string }
+        Returns: Json
+      }
       get_overdue_loans: {
         Args: Record<PropertyKey, never>
         Returns: {
