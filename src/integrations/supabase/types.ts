@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.12 (cd3cf9e)"
@@ -247,31 +247,31 @@ export type Database = {
       get_overdue_loans: {
         Args: Record<PropertyKey, never>
         Returns: {
-          loan_id: string
           chromebook_id: string
-          student_name: string
-          student_email: string
-          loan_date: string
-          expected_return_date: string
           days_overdue: number
+          expected_return_date: string
+          loan_date: string
+          loan_id: string
+          student_email: string
+          student_name: string
         }[]
       }
       get_upcoming_due_loans: {
         Args: Record<PropertyKey, never>
         Returns: {
-          loan_id: string
           chromebook_id: string
-          student_name: string
-          student_email: string
-          loan_date: string
-          expected_return_date: string
           days_until_due: number
+          expected_return_date: string
+          loan_date: string
+          loan_id: string
+          student_email: string
+          student_name: string
         }[]
       }
       has_role: {
         Args: {
-          _user_id: string
           _role: Database["public"]["Enums"]["user_role"]
+          _user_id: string
         }
         Returns: boolean
       }
