@@ -105,11 +105,8 @@ useEffect(() => {
         return;
       }
 
-      // Normalize data to handle database type differences
-      const normalizedData = (data || []).map(item => ({
-        ...item,
-        status: item.status === 'manutencao' ? 'fixo' : item.status,
-      })) as ChromebookData[];
+      // Normalize data if needed (keep status as-is)
+      const normalizedData = (data || []) as ChromebookData[];
       setChromebooks(normalizedData);
     } catch (error) {
       console.error("Error fetching chromebooks:", error);
