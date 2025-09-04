@@ -22,7 +22,7 @@ import {
 import { Textarea } from "./ui/textarea";
 import { Label } from "./ui/label";
 import { toast } from "./ui/use-toast";
-import { Search, ArrowLeft, Filter, Edit3, QrCode, CheckCircle, AlertCircle, XCircle, MapPin, Eye, X, Trash2, Save } from "lucide-react";
+import { Search, ArrowLeft, Filter, Edit3, QrCode, CheckCircle, AlertCircle, XCircle, MapPin, Eye, X, Trash2, Save, AlertTriangle, Clock } from "lucide-react";
 import { QRCodeModal } from "./QRCodeModal";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "./ui/pagination";
 import { ScrollArea } from "./ui/scroll-area";
@@ -45,7 +45,7 @@ interface ChromebookData {
   model: string;
   serial_number?: string;
   patrimony_number?: string;
-  status: 'disponivel' | 'emprestado' | 'fixo';
+  status: 'disponivel' | 'emprestado' | 'fixo' | 'manutencao';
   condition?: string;
   location?: string;
   classroom?: string;
@@ -70,8 +70,8 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
   const [searchTerm, setSearchTerm] = useState("");
   // State for status filter
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  // State for fixed-in-classroom filter
-  const [fixedFilter, setFixedFilter] = useState<string>('all');
+  // State for location filter
+  const [locationFilter, setLocationFilter] = useState<string>('all');
   // State for edit dialog
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   // State for delete dialog
@@ -169,10 +169,12 @@ useEffect(() => {
       String(chromebook.serial_number || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
       String(chromebook.location || '').toLowerCase().includes(searchTerm.toLowerCase());
     
-const matchesStatus = statusFilter === 'all' || chromebook.status === statusFilter;
-const matchesFixed = fixedFilter === 'all' || (fixedFilter === 'fixo' ? chromebook.status === 'fixo' : chromebook.status !== 'fixo');
+    const matchesStatus = statusFilter === 'all' || chromebook.status === statusFilter;
+    const matchesLocation = locationFilter === 'all' || 
+      (chromebook.location && chromebook.location.toLowerCase().includes(locationFilter.toLowerCase())) ||
+      (chromebook.classroom && chromebook.classroom.toLowerCase().includes(locationFilter.toLowerCase()));
 
-return matchesSearch && matchesStatus && matchesFixed;
+    return matchesSearch && matchesStatus && matchesLocation;
   });
 
   // Calculate pagination
@@ -190,18 +192,18 @@ return matchesSearch && matchesStatus && matchesFixed;
 
   // Get status information for display
   const getStatusInfo = (status: string) => {
-switch (status) {
-  case 'disponivel':
-    return { color: 'text-green-600 bg-green-50', icon: CheckCircle, label: 'Disponível' };
-  case 'emprestado':
-    return { color: 'text-purple-600 bg-purple-50', icon: AlertCircle, label: 'Emprestado' };
-  case 'fixo':
-    return { color: 'text-blue-700 bg-blue-50', icon: MapPin, label: 'Fixo' };
-  case 'inativo':
-    return { color: 'text-gray-600 bg-gray-50', icon: XCircle, label: 'Inativo' };
-  default:
-    return { color: 'text-gray-600 bg-gray-50', icon: XCircle, label: 'Desconhecido' };
-}
+    switch (status) {
+      case 'disponivel':
+        return { color: 'text-green-600 bg-green-50', icon: CheckCircle, label: 'Disponível' };
+      case 'emprestado':
+        return { color: 'text-yellow-600 bg-yellow-50', icon: Clock, label: 'Emprestado' };
+      case 'fixo':
+        return { color: 'text-blue-600 bg-blue-50', icon: MapPin, label: 'Fixo' };
+      case 'manutencao':
+        return { color: 'text-red-600 bg-red-50', icon: AlertTriangle, label: 'Manutenção' };
+      default:
+        return { color: 'text-gray-600 bg-gray-50', icon: XCircle, label: 'Desconhecido' };
+    }
   };
 
 // Handle status change
@@ -417,26 +419,27 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
             <SelectTrigger className="w-[180px] pl-10">
               <SelectValue placeholder="Filtrar por status" />
             </SelectTrigger>
-<SelectContent>
-  <SelectItem value="all">Todos os Status</SelectItem>
-  <SelectItem value="disponivel">Disponível</SelectItem>
-  <SelectItem value="emprestado">Emprestado</SelectItem>
-  <SelectItem value="fixo">Fixo</SelectItem>
-  <SelectItem value="inativo">Inativo</SelectItem>
-</SelectContent>
+            <SelectContent>
+              <SelectItem value="all">Todos os Status</SelectItem>
+              <SelectItem value="disponivel">Disponível</SelectItem>
+              <SelectItem value="emprestado">Emprestado</SelectItem>
+              <SelectItem value="fixo">Fixo</SelectItem>
+              <SelectItem value="manutencao">Manutenção</SelectItem>
+            </SelectContent>
           </Select>
         </div>
         
         <div className="relative">
           <Filter className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-          <Select value={fixedFilter} onValueChange={setFixedFilter}>
+          <Select value={locationFilter} onValueChange={setLocationFilter}>
             <SelectTrigger className="w-[200px] pl-10">
-              <SelectValue placeholder="Filtrar por fixo" />
+              <SelectValue placeholder="Filtrar por localização" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Todos</SelectItem>
-              <SelectItem value="fixo">Apenas Fixos</SelectItem>
-              <SelectItem value="movel">Apenas Móveis</SelectItem>
+              <SelectItem value="all">Todas Localizações</SelectItem>
+              {[...new Set(chromebooks.map(c => c.location || c.classroom).filter(Boolean))].map(location => (
+                <SelectItem key={location} value={location!}>{location}</SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
@@ -557,12 +560,12 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
                           <SelectTrigger className="w-[120px] h-8 text-xs">
                             <SelectValue />
                           </SelectTrigger>
-                          <SelectContent>
-<SelectItem value="disponivel">Disponível</SelectItem>
-<SelectItem value="emprestado">Emprestado</SelectItem>
-<SelectItem value="fixo">Fixo</SelectItem>
-<SelectItem value="inativo">Inativo</SelectItem>
-                          </SelectContent>
+                           <SelectContent>
+                             <SelectItem value="disponivel">Disponível</SelectItem>
+                             <SelectItem value="emprestado">Emprestado</SelectItem>
+                             <SelectItem value="fixo">Fixo</SelectItem>
+                             <SelectItem value="manutencao">Manutenção</SelectItem>
+                           </SelectContent>
                         </Select>
                       </div>
                     </TableCell>
@@ -716,7 +719,7 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
       <SelectItem value="disponivel">Disponível</SelectItem>
       <SelectItem value="emprestado">Emprestado</SelectItem>
       <SelectItem value="fixo" disabled={!isAdmin}>Fixo</SelectItem>
-      <SelectItem value="inativo">Inativo</SelectItem>
+      <SelectItem value="manutencao">Manutenção</SelectItem>
     </SelectContent>
   </Select>
 </div>

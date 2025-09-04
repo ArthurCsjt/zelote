@@ -29,7 +29,8 @@ import {
   Calendar,
   CalendarRange, 
   Activity,
-  ChartLine
+  ChartLine,
+  Brain
 } from "lucide-react";
 import jsPDF from "jspdf";
 import { useToast } from "./ui/use-toast";
@@ -345,7 +346,7 @@ export function Dashboard({ onBack }: DashboardProps) {
       </div>
 
       <Tabs defaultValue="daily" className="w-full" onValueChange={(v) => setPeriodView(v as 'daily' | 'weekly' | 'monthly')}>
-        <TabsList className="grid w-full sm:w-auto grid-cols-3 max-w-md mb-4">
+        <TabsList className="grid w-full sm:w-auto grid-cols-4 max-w-xl mb-4">
           <TabsTrigger value="daily" className="flex items-center gap-1">
             <Calendar className="h-4 w-4" />
             <span>Diário</span>
@@ -357,6 +358,10 @@ export function Dashboard({ onBack }: DashboardProps) {
           <TabsTrigger value="monthly" className="flex items-center gap-1">
             <ChartLine className="h-4 w-4" />
             <span>Mensal</span>
+          </TabsTrigger>
+          <TabsTrigger value="ia" className="flex items-center gap-1">
+            <Brain className="h-4 w-4" />
+            <span>Relatórios IA</span>
           </TabsTrigger>
         </TabsList>
 
@@ -941,6 +946,9 @@ export function Dashboard({ onBack }: DashboardProps) {
           </div>
         </TabsContent>
 
+        <TabsContent value="ia" className="space-y-4 mt-6">
+          <IntelligentReportsTab />
+        </TabsContent>
       </Tabs>
       
       <Card className="glass-card dashboard-card mt-6">

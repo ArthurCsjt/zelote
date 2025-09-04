@@ -17,6 +17,7 @@ export type Database = {
       chromebooks: {
         Row: {
           chromebook_id: string
+          classroom: string | null
           condition: string | null
           created_at: string
           created_by: string | null
@@ -30,6 +31,7 @@ export type Database = {
         }
         Insert: {
           chromebook_id: string
+          classroom?: string | null
           condition?: string | null
           created_at?: string
           created_by?: string | null
@@ -43,6 +45,7 @@ export type Database = {
         }
         Update: {
           chromebook_id?: string
+          classroom?: string | null
           condition?: string | null
           created_at?: string
           created_by?: string | null
@@ -285,7 +288,12 @@ export type Database = {
       }
     }
     Enums: {
-      chromebook_status: "disponivel" | "emprestado" | "manutencao" | "fora_uso"
+      chromebook_status:
+        | "disponivel"
+        | "emprestado"
+        | "manutencao"
+        | "fora_uso"
+        | "fixo"
       loan_type: "individual" | "lote"
       user_role: "super_admin" | "admin" | "user"
       user_type: "aluno" | "professor" | "funcionario"
@@ -416,7 +424,13 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      chromebook_status: ["disponivel", "emprestado", "manutencao", "fora_uso"],
+      chromebook_status: [
+        "disponivel",
+        "emprestado",
+        "manutencao",
+        "fora_uso",
+        "fixo",
+      ],
       loan_type: ["individual", "lote"],
       user_role: ["super_admin", "admin", "user"],
       user_type: ["aluno", "professor", "funcionario"],
