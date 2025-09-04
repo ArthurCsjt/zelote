@@ -53,12 +53,6 @@ export function MainMenu({ onNavigate }: MainMenuProps) {
       icon: <BarChart3 className="h-5 w-5" />,
       action: () => onNavigate('dashboard'),
       bgColor: 'bg-red-500',
-    },
-    {
-      title: 'Relatórios com IA',
-      icon: <Brain className="h-5 w-5" />,
-      action: () => onNavigate('intelligent-reports'),
-      bgColor: 'bg-cyan-500',
     }
   ];
 

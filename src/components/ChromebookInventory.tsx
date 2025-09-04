@@ -239,6 +239,13 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
       return;
     }
 
+    // Update local state immediately
+    setChromebooks(prev => 
+      prev.map(cb => 
+        cb.id === chromebookId ? {...cb, status: newStatus as any} : cb
+      )
+    );
+
     toast({
       title: "Status atualizado",
       description: `Status do Chromebook alterado para ${getStatusInfo(newStatus).label}`,
@@ -306,7 +313,7 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
     }
 
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('chromebooks')
         .update({
           chromebook_id: editingChromebook.chromebook_id,
@@ -329,6 +336,13 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
         });
         return;
       }
+
+      // Update local state immediately
+      setChromebooks(prev => 
+        prev.map(cb => 
+          cb.id === editingChromebook.id ? {...editingChromebook} : cb
+        )
+      );
 
       setIsEditDialogOpen(false);
       setEditingChromebook(null);
