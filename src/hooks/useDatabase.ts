@@ -12,6 +12,24 @@ import type {
   ChromebookData 
 } from '@/types/database';
 
+// Types for new entities
+interface StudentData {
+  nome_completo: string;
+  ra: string;
+  email: string;
+  turma: string;
+}
+
+interface TeacherData {
+  nome_completo: string;
+  email: string;
+}
+
+interface StaffData {
+  nome_completo: string;
+  email: string;
+}
+
 export const useDatabase = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
@@ -287,6 +305,115 @@ export const useDatabase = () => {
     }
   }, [createReturn]);
 
+  // Student operations
+  const createStudent = useCallback(async (data: StudentData): Promise<any> => {
+    if (!user) {
+      toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
+      return null;
+    }
+
+    setLoading(true);
+    try {
+      const { data: result, error } = await supabase
+        .from('alunos')
+        .insert({
+          nome_completo: data.nome_completo,
+          ra: data.ra,
+          email: data.email,
+          turma: data.turma
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return result;
+    } catch (error: any) {
+      console.error('Erro ao criar aluno:', error);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
+
+  // Teacher operations
+  const createTeacher = useCallback(async (data: TeacherData): Promise<any> => {
+    if (!user) {
+      toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
+      return null;
+    }
+
+    setLoading(true);
+    try {
+      const { data: result, error } = await supabase
+        .from('professores')
+        .insert({
+          nome_completo: data.nome_completo,
+          email: data.email
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return result;
+    } catch (error: any) {
+      console.error('Erro ao criar professor:', error);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
+
+  // Staff operations
+  const createStaff = useCallback(async (data: StaffData): Promise<any> => {
+    if (!user) {
+      toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
+      return null;
+    }
+
+    setLoading(true);
+    try {
+      const { data: result, error } = await supabase
+        .from('funcionarios')
+        .insert({
+          nome_completo: data.nome_completo,
+          email: data.email
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return result;
+    } catch (error: any) {
+      console.error('Erro ao criar funcionário:', error);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
+
+  // Bulk operations
+  const bulkInsertStudents = useCallback(async (students: StudentData[]): Promise<boolean> => {
+    if (!user) {
+      toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
+      return false;
+    }
+
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from('alunos')
+        .insert(students);
+
+      if (error) throw error;
+      return true;
+    } catch (error: any) {
+      console.error('Erro ao importar alunos:', error);
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
+
   return {
     loading,
     // Chromebook operations
@@ -300,6 +427,13 @@ export const useDatabase = () => {
     getLoanHistory,
     // Return operations
     createReturn,
-    returnChromebookById
+    returnChromebookById,
+    // Student operations
+    createStudent,
+    bulkInsertStudents,
+    // Teacher operations
+    createTeacher,
+    // Staff operations
+    createStaff
   };
 };

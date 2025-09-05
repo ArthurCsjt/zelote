@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      alunos: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          nome_completo: string
+          ra: string
+          turma: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          nome_completo: string
+          ra: string
+          turma: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          nome_completo?: string
+          ra?: string
+          turma?: string
+        }
+        Relationships: []
+      }
       chromebooks: {
         Row: {
           chromebook_id: string
@@ -66,6 +93,27 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      funcionarios: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          nome_completo: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          nome_completo: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          nome_completo?: string
+        }
+        Relationships: []
       }
       loans: {
         Row: {
@@ -129,6 +177,27 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      professores: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          nome_completo: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          nome_completo: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          nome_completo?: string
+        }
+        Relationships: []
       }
       profiles: {
         Row: {

@@ -4,7 +4,7 @@ import { useDatabase } from "@/hooks/useDatabase";
 import { toast } from "@/hooks/use-toast";
 import { LoanForm } from "@/components/LoanForm";
 import { ActiveLoans } from "@/components/ActiveLoans";
-import { ChromebookRegistration } from "@/components/ChromebookRegistration";
+import { RegistrationHub } from "@/components/RegistrationHub";
 import { MainMenu } from "@/components/MainMenu";
 import Layout from "@/components/Layout";
 import { ReturnDialog } from "@/components/ReturnDialog";
@@ -313,7 +313,7 @@ const Index = () => {
       case 'registration':
         return (
           <div className="animate-in fade-in duration-300">
-            <ChromebookRegistration onBack={handleBackToMenu} />
+            <RegistrationHub onBack={handleBackToMenu} />
           </div>
         );
       case 'dashboard':
