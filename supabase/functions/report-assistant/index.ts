@@ -44,7 +44,7 @@ serve(async (req) => {
     - model (text, modelo do chromebook)
     - serial_number (text, opcional)
     - patrimony_number (text, opcional)
-    - status (enum: 'disponivel', 'emprestado', 'fixo')
+    - status (enum: 'disponivel', 'emprestado', 'manutencao', 'fixo')
     - condition (text, opcional)
     - location (text, opcional)
     - created_at (timestamp)
