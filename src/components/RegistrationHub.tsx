@@ -21,11 +21,8 @@ export function RegistrationHub({ onBack }: RegistrationHubProps) {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto p-4 max-w-4xl">
-        <div className="mb-6">
+        <div className="mb-6 text-center">
           <h1 className="text-3xl font-bold text-foreground">Hub de Cadastros</h1>
-          <p className="text-muted-foreground">
-            Gerencie e cadastre todas as entidades do sistema
-          </p>
         </div>
 
         <Tabs defaultValue="chromebooks" className="w-full">

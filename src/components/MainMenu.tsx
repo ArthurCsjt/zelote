@@ -25,19 +25,19 @@ export function MainMenu({ onNavigate }: MainMenuProps) {
 
   const menuItems = [
     {
-      title: 'Cadastro',
+      title: 'Hub de Cadastros',
       icon: <PlusCircle className="h-5 w-5" />,
       action: () => onNavigate('registration'),
       bgColor: 'bg-green-500',
     },
     {
-      title: 'Inventário',
+      title: 'Hub de Inventário',
       icon: <Laptop className="h-5 w-5" />,
       action: () => onNavigate('inventory'),
       bgColor: 'bg-blue-500',
     },
     {
-      title: 'Empréstimo',
+      title: 'Empréstimos de Chromebook',
       icon: <ClipboardList className="h-5 w-5" />,
       action: () => onNavigate('loan'),
       bgColor: 'bg-purple-500',

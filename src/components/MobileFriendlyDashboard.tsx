@@ -118,16 +118,16 @@ export function MobileFriendlyDashboard({ onBack }: MobileFriendlyDashboardProps
       <div className="absolute inset-0 -z-10 bg-gradient-to-br from-purple-50/30 via-blue-50/20 to-pink-50/30 rounded-3xl blur-2xl transform scale-110" />
       
       <div className="flex flex-col justify-between items-start gap-4 mb-4 relative z-10">
-        <div className="flex w-full justify-between items-center">
+        <div className="flex w-full justify-center items-center">
           <h2 className="text-xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Dashboard</h2>
         </div>
       </div>
 
       <Tabs defaultValue="daily" className="w-full" onValueChange={(v) => setPeriodView(v as 'daily' | 'weekly' | 'monthly')}>
-        <TabsList className="grid grid-cols-3 mb-4">
-          <TabsTrigger value="daily" className="text-xs">Diário</TabsTrigger>
-          <TabsTrigger value="weekly" className="text-xs">Semanal</TabsTrigger>
-          <TabsTrigger value="monthly" className="text-xs">Mensal</TabsTrigger>
+        <TabsList className="grid grid-cols-3 mb-4 w-full">
+          <TabsTrigger value="daily" className="text-xs px-2 py-1.5">Diário</TabsTrigger>
+          <TabsTrigger value="weekly" className="text-xs px-2 py-1.5">Semanal</TabsTrigger>
+          <TabsTrigger value="monthly" className="text-xs px-2 py-1.5">Mensal</TabsTrigger>
         </TabsList>
         
         <div className="grid gap-3 grid-cols-2 mb-3 relative z-10">

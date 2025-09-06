@@ -11,11 +11,8 @@ export function InventoryHub({ onBack }: InventoryHubProps) {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto p-4 max-w-7xl">
-        <div className="mb-6">
+        <div className="mb-6 text-center">
           <h1 className="text-3xl font-bold text-foreground">Hub de Inventário</h1>
-          <p className="text-muted-foreground">
-            Gerencie equipamentos e usuários do sistema
-          </p>
         </div>
 
         <Tabs defaultValue="equipments" className="w-full">
