@@ -11,7 +11,7 @@ import { ReturnDialog } from "@/components/ReturnDialog";
 import { Button } from "@/components/ui/button";
 import { LoanHistory } from "@/components/LoanHistory";
 import { MobileFriendlyDashboard } from "@/components/MobileFriendlyDashboard";
-import { ChromebookInventory } from "@/components/ChromebookInventory";
+import { InventoryHub } from "@/components/InventoryHub";
 import IntelligentReports from "@/components/IntelligentReports";
 import { ArrowLeft } from "lucide-react";
 import { Dashboard } from "@/components/Dashboard";
@@ -327,7 +327,7 @@ const Index = () => {
       case 'inventory':
         return (
           <div className="animate-in fade-in duration-300">
-            <ChromebookInventory onBack={handleBackToMenu} />
+            <InventoryHub onBack={handleBackToMenu} />
           </div>
         );
       default:

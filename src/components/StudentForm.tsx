@@ -114,7 +114,7 @@ export function StudentForm() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Cadastro Individual de Aluno</CardTitle>
+        <CardTitle>Cadastro Individual</CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">

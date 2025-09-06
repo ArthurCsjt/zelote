@@ -414,6 +414,40 @@ export const useDatabase = () => {
     }
   }, [user]);
 
+  // Delete all students
+  const deleteAllStudents = useCallback(async (): Promise<boolean> => {
+    if (!user) {
+      toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
+      return false;
+    }
+
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from('alunos')
+        .delete()
+        .neq('id', '00000000-0000-0000-0000-000000000000'); // Delete all records
+
+      if (error) throw error;
+      
+      toast({ 
+        title: "Sucesso", 
+        description: "Todos os alunos foram excluídos com sucesso." 
+      });
+      return true;
+    } catch (error: any) {
+      console.error('Erro ao excluir alunos:', error);
+      toast({ 
+        title: "Erro", 
+        description: "Erro ao excluir os alunos do sistema.", 
+        variant: "destructive" 
+      });
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
+
   return {
     loading,
     // Chromebook operations
@@ -431,6 +465,7 @@ export const useDatabase = () => {
     // Student operations
     createStudent,
     bulkInsertStudents,
+    deleteAllStudents,
     // Teacher operations
     createTeacher,
     // Staff operations
