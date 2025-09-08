@@ -285,7 +285,7 @@ export function Dashboard({
           
         </div>
         <div className="flex flex-wrap gap-2 w-full sm:w-auto justify-start relative z-10">
-          <Button variant="outline" onClick={handleDownloadPDF} className="flex items-center gap-2 hover:bg-blue-50 px-3">
+          <Button variant="outline" onClick={handleDownloadPDF} className="flex items-center gap-2 hover:bg-blue-50 px-3 text-xs text-justify">
             <Download className="h-4 w-4" />
             <span className="whitespace-nowrap">Baixar Relatório</span>
           </Button>
