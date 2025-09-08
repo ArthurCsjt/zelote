@@ -279,7 +279,7 @@ export function Dashboard({
       
       <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-6 relative z-10">
         <div>
-          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-stone-950">
+          <h2 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-stone-950 sm:text-2xl">
             Dashboard
           </h2>
           <p className="text-gray-500">Visualize estatísticas e relatórios</p>
