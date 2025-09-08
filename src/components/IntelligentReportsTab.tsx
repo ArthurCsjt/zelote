@@ -101,7 +101,7 @@ const IntelligentReportsTab: React.FC = () => {
 
       <Card className="glass-card">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-lg text-blue-950">
             <TrendingUp className="h-5 w-5" />
             Gerar Relatório
           </CardTitle>

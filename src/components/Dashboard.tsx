@@ -306,9 +306,9 @@ export function Dashboard({
             <ChartLine className="h-4 w-4" />
             <span>Mensal</span>
           </TabsTrigger>
-          <TabsTrigger value="ia" className="flex items-center gap-1">
+          <TabsTrigger value="ia" className="flex items-center gap-1 font-thin bg-blue-600 hover:bg-blue-500 text-base">
             <Brain className="h-4 w-4" />
-            <span>Relatórios IA</span>
+            <span className="text-blue-50">Relatórios IA</span>
           </TabsTrigger>
         </TabsList>
 
