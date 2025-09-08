@@ -27,7 +27,9 @@ const Layout: React.FC<LayoutProps> = ({
     setTheme
   } = useTheme();
   const navigate = useNavigate();
-  const { isAdmin } = useProfileRole();
+  const {
+    isAdmin
+  } = useProfileRole();
   const [showInstallBanner, setShowInstallBanner] = React.useState(false);
   const [isStandalone, setIsStandalone] = React.useState(false);
   React.useEffect(() => {
@@ -107,11 +109,9 @@ const Layout: React.FC<LayoutProps> = ({
                   {user?.email?.substring(0, 20)}...
                 </span>
               </div>
-              {isAdmin && (
-                <button onClick={() => navigate('/settings')} className="flex items-center space-x-1 text-sm text-muted-foreground hover:text-foreground transition-colors duration-200 bg-accent hover:bg-accent/80 rounded-full px-3 py-1.5 touch-manipulation">
+              {isAdmin && <button onClick={() => navigate('/settings')} className="flex items-center space-x-1 text-sm text-muted-foreground hover:text-foreground transition-colors duration-200 bg-accent hover:bg-accent/80 rounded-full px-3 py-1.5 touch-manipulation">
                   <span>Configurações</span>
-                </button>
-              )}
+                </button>}
               <button onClick={logout} className="flex items-center space-x-1 text-sm text-muted-foreground hover:text-foreground transition-colors duration-200 bg-accent hover:bg-accent/80 rounded-full px-3 py-1.5 touch-manipulation">
                 <LogOut className="w-4 h-4" />
                 <span className="hidden sm:inline">Sair</span>
@@ -127,9 +127,7 @@ const Layout: React.FC<LayoutProps> = ({
           <h2 className="text-2xl sm:text-3xl font-bold text-center bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
             {title}
           </h2>
-          {subtitle && <p className="text-center text-muted-foreground max-w-2xl mx-auto text-sm sm:text-base px-4 selectable-text">
-              {subtitle}
-            </p>}
+          {subtitle}
         </div>
         {children}
       </main>
