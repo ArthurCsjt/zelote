@@ -308,7 +308,7 @@ export function Dashboard({
           </TabsTrigger>
           <TabsTrigger value="ia" className="flex items-center gap-1 font-thin text-base bg-black text-slate-50">
             <Brain className="h-4 w-4 rounded-sm" />
-            <span className="text-lg font-medium text-center text-blue-100">Relatórios IA</span>
+            <span className="text-lg font-medium text-center text-slate-950">Relatórios IA</span>
           </TabsTrigger>
         </TabsList>
 
