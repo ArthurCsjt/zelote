@@ -299,14 +299,14 @@ export function Dashboard({
             <span className="text-black">Diário</span>
           </TabsTrigger>
           <TabsTrigger value="weekly" className="flex items-center gap-1">
-            <CalendarRange className="h-4 w-4" />
+            <CalendarRange className="h-4 w-4 bg-inherit" />
             <span className="text-black text-lg">Semanal</span>
           </TabsTrigger>
           <TabsTrigger value="monthly" className="flex items-center gap-1">
             <ChartLine className="h-4 w-4" />
             <span className="text-black text-lg">Mensal</span>
           </TabsTrigger>
-          <TabsTrigger value="ia" className="flex items-center gap-1 text-base bg-blue-500 hover:bg-blue-400 text-zinc-950 font-extralight">
+          <TabsTrigger value="ia" className="flex items-center gap-1 text-base text-zinc-950 font-extralight bg-blue-400 hover:bg-blue-300">
             <Brain className="h-4 w-4 rounded-sm" />
             <span className="text-lg font-medium text-center text-slate-950">Relatórios IA</span>
           </TabsTrigger>
