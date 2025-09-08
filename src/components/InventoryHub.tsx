@@ -2,17 +2,16 @@ import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { ChromebookInventory } from './ChromebookInventory';
 import { UserInventory } from './UserInventory';
-
 interface InventoryHubProps {
   onBack?: () => void;
 }
-
-export function InventoryHub({ onBack }: InventoryHubProps) {
-  return (
-    <div className="min-h-screen bg-background">
+export function InventoryHub({
+  onBack
+}: InventoryHubProps) {
+  return <div className="min-h-screen bg-background">
       <div className="container mx-auto p-4 max-w-7xl">
         <div className="mb-6 text-center">
-          <h1 className="text-3xl font-bold text-foreground">Hub de Inventário</h1>
+          <h1 className="text-3xl font-bold text-foreground py-[2px]">Hub de Inventário</h1>
         </div>
 
         <Tabs defaultValue="equipments" className="w-full">
@@ -30,6 +29,5 @@ export function InventoryHub({ onBack }: InventoryHubProps) {
           </TabsContent>
         </Tabs>
       </div>
-    </div>
-  );
+    </div>;
 }
