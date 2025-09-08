@@ -279,7 +279,7 @@ export function Dashboard({
       
       <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-6 relative z-10">
         <div>
-          <h2 className="text-2xl tracking-tight bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text sm:text-lg font-bold mx-px text-blue-700 text-right">
+          <h2 className="text-2xl tracking-tight bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text sm:text-lg font-bold mx-px text-blue-700 text-right px-[20px]">
             Dashboard
           </h2>
           
