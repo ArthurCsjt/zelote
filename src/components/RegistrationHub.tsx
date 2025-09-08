@@ -6,23 +6,21 @@ import { ChromebookRegistration } from './ChromebookRegistration';
 import { StudentRegistration } from './StudentRegistration';
 import { TeacherRegistration } from './TeacherRegistration';
 import { StaffRegistration } from './StaffRegistration';
-
 interface RegistrationHubProps {
   onBack?: () => void;
 }
-
-export function RegistrationHub({ onBack }: RegistrationHubProps) {
+export function RegistrationHub({
+  onBack
+}: RegistrationHubProps) {
   const handleBackClick = () => {
     if (onBack) {
       onBack();
     }
   };
-
-  return (
-    <div className="min-h-screen bg-background">
+  return <div className="min-h-screen bg-background">
       <div className="container mx-auto p-4 max-w-4xl">
         <div className="mb-6 text-center">
-          <h1 className="text-3xl font-bold text-foreground">Hub de Cadastros</h1>
+          <h1 className="font-bold text-foreground text-2xl py-[25px]">Hub de Cadastros</h1>
         </div>
 
         <Tabs defaultValue="chromebooks" className="w-full">
@@ -50,6 +48,5 @@ export function RegistrationHub({ onBack }: RegistrationHubProps) {
           </TabsContent>
         </Tabs>
       </div>
-    </div>
-  );
+    </div>;
 }
