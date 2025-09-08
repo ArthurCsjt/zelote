@@ -282,7 +282,7 @@ export function Dashboard({
           <h2 className="text-2xl tracking-tight bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text sm:text-2xl text-justify font-bold text-gray-900">
             Dashboard
           </h2>
-          <p className="text-gray-500">Visualize estatísticas e relatórios</p>
+          <p className="text-gray-500 text-sm text-center">Visualize estatísticas e relatórios</p>
         </div>
         <div className="flex flex-wrap gap-2 w-full sm:w-auto justify-start relative z-10">
           <Button variant="outline" onClick={handleDownloadPDF} className="flex items-center gap-2 hover:bg-blue-50 px-3">
