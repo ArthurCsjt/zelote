@@ -273,7 +273,7 @@ export function Dashboard({
       });
     }
   };
-  return <div className="space-y-6 glass-morphism p-6 animate-fade-in relative">
+  return <div className="space-y-6 glass-morphism p-6 animate-fade-in relative px-[22px] py-[22px]">
       {/* Background gradient overlay */}
       <div className="absolute inset-0 -z-10 bg-gradient-to-br from-blue-50/30 via-purple-50/20 to-pink-50/30 rounded-3xl blur-2xl transform scale-110 bg-blue-400" />
       
