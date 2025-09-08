@@ -56,7 +56,7 @@ export function MainMenu({
       transition: `all 0.6s cubic-bezier(0.4, 0, 0.2, 1) ${index * 150}ms`
     };
   };
-  return <div className="space-y-8 relative py-[20px]">
+  return <div className="space-y-8 relative py-[30px]">
       {/* Background gradient overlay */}
       <div className="absolute inset-0 -z-10 bg-gradient-to-br from-card/50 via-background to-card/50 rounded-3xl blur-3xl transform scale-110" />
       
