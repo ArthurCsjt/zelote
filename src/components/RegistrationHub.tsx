@@ -20,7 +20,7 @@ export function RegistrationHub({
   return <div className="min-h-screen bg-background">
       <div className="container mx-auto p-4 max-w-4xl">
         <div className="mb-6 text-center">
-          <h1 className="py-[30px] font-semibold text-2xl text-zinc-800 text-center">Hub de Cadastros</h1>
+          <h1 className="py-[30px] text-center text-slate-950 text-xl font-bold">Hub de Cadastros</h1>
         </div>
 
         <Tabs defaultValue="chromebooks" className="w-full">
