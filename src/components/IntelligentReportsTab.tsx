@@ -92,7 +92,7 @@ const IntelligentReportsTab: React.FC = () => {
       <div className="text-center space-y-2">
         <div className="flex items-center justify-center gap-2">
           <Brain className="h-6 w-6 text-primary" />
-          <h3 className="text-xl font-bold text-zinc-950">Relatórios Inteligentes</h3>
+          <h3 className="font-bold text-zinc-950 text-2xl">Relatórios Inteligentes</h3>
         </div>
         <p className="text-muted-foreground">
           Faça uma pergunta sobre os dados de empréstimos e inventário em linguagem natural
@@ -101,7 +101,7 @@ const IntelligentReportsTab: React.FC = () => {
 
       <Card className="glass-card">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-lg text-blue-950">
+          <CardTitle className="flex items-center gap-2 text-blue-950 text-xl">
             <TrendingUp className="h-5 w-5" />
             Gerar Relatório
           </CardTitle>

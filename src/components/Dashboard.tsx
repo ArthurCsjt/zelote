@@ -279,7 +279,7 @@ export function Dashboard({
       
       <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-6 relative z-10">
         <div>
-          <h2 className="text-2xl tracking-tight bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text mx-px text-right px-[30px] text-slate-950 font-bold sm:text-lg">
+          <h2 className="text-2xl tracking-tight bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text mx-px text-right px-[30px] font-bold sm:text-lg text-blue-700">
             Dashboard
           </h2>
           
@@ -306,7 +306,7 @@ export function Dashboard({
             <ChartLine className="h-4 w-4" />
             <span className="text-black text-lg">Mensal</span>
           </TabsTrigger>
-          <TabsTrigger value="ia" className="flex items-center gap-1 font-thin text-base bg-black text-slate-50">
+          <TabsTrigger value="ia" className="flex items-center gap-1 text-base bg-blue-500 hover:bg-blue-400 text-zinc-950 font-extralight">
             <Brain className="h-4 w-4 rounded-sm" />
             <span className="text-lg font-medium text-center text-slate-950">Relatórios IA</span>
           </TabsTrigger>
