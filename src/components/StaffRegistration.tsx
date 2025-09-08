@@ -98,7 +98,7 @@ export function StaffRegistration() {
   return <div className="space-y-6">
       <div className="flex items-center gap-3">
         <Users className="h-6 w-6 text-primary" />
-        <h2 className="text-2xl font-semibold">Cadastro de Funcionários</h2>
+        <h2 className="font-semibold text-xl text-blue-600 text-center">Cadastro de Funcionários</h2>
       </div>
 
       <Card>
