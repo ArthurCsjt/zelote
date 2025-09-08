@@ -11,7 +11,7 @@ export function InventoryHub({
   return <div className="min-h-screen bg-background">
       <div className="container mx-auto p-4 max-w-7xl">
         <div className="mb-6 text-center">
-          <h1 className="text-3xl text-foreground py-[2px] font-bold my-[8px]">Hub de Inventário</h1>
+          <h1 className="text-foreground py-[2px] font-bold text-2xl my-[13px]">Hub de Inventário</h1>
         </div>
 
         <Tabs defaultValue="equipments" className="w-full">
