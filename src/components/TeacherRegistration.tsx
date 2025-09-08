@@ -98,7 +98,7 @@ export function TeacherRegistration() {
   return <div className="space-y-6">
       <div className="flex items-center gap-3">
         <GraduationCap className="h-6 w-6 text-primary" />
-        <h2 className="text-2xl font-semibold">Cadastro de Professores</h2>
+        <h2 className="font-semibold text-xl text-blue-600 text-center">Cadastro de Professores</h2>
       </div>
 
       <Card>
