@@ -78,7 +78,7 @@ export function ChromebookRegistration() {
   return <div className="space-y-6">
       <div className="flex items-center gap-3">
         <Laptop className="h-6 w-6 text-primary" />
-        <h2 className="text-2xl font-semibold">Cadastro de Chromebooks</h2>
+        <h2 className="text-xl font-semibold text-center text-blue-600">Cadastro de Chromebooks</h2>
       </div>
 
       <Card>
