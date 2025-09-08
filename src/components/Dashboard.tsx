@@ -295,20 +295,20 @@ export function Dashboard({
       <Tabs defaultValue="daily" className="w-full" onValueChange={v => setPeriodView(v as 'daily' | 'weekly' | 'monthly')}>
         <TabsList className="grid w-full sm:w-auto grid-cols-4 max-w-xl mb-4 bg-blue-100">
           <TabsTrigger value="daily" className="flex items-center gap-1 text-lg text-slate-950">
-            <Calendar className="h-4 w-4" />
+            <Calendar className="h-4 w-4 bg-slate-100" />
             <span className="text-black">Diário</span>
           </TabsTrigger>
           <TabsTrigger value="weekly" className="flex items-center gap-1">
             <CalendarRange className="h-4 w-4" />
-            <span className="text-black">Semanal</span>
+            <span className="text-black text-lg">Semanal</span>
           </TabsTrigger>
           <TabsTrigger value="monthly" className="flex items-center gap-1">
             <ChartLine className="h-4 w-4" />
-            <span className="text-black">Mensal</span>
+            <span className="text-black text-lg">Mensal</span>
           </TabsTrigger>
-          <TabsTrigger value="ia" className="flex items-center gap-1 font-thin bg-blue-600 hover:bg-blue-500 text-base">
-            <Brain className="h-4 w-4" />
-            <span className="font-extralight text-slate-950 text-base">Relatórios IA</span>
+          <TabsTrigger value="ia" className="flex items-center gap-1 font-thin text-base bg-black text-slate-50">
+            <Brain className="h-4 w-4 rounded-sm" />
+            <span className="text-lg font-medium text-center text-blue-100">Relatórios IA</span>
           </TabsTrigger>
         </TabsList>
 
