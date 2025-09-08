@@ -279,7 +279,7 @@ export function Dashboard({
       
       <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-6 relative z-10">
         <div>
-          <h2 className="text-2xl tracking-tight bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text sm:text-lg font-bold mx-px text-right text-blue-950 px-[30px]">
+          <h2 className="text-2xl tracking-tight bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text mx-px text-right px-[30px] text-slate-950 font-bold sm:text-lg">
             Dashboard
           </h2>
           
@@ -293,22 +293,22 @@ export function Dashboard({
       </div>
 
       <Tabs defaultValue="daily" className="w-full" onValueChange={v => setPeriodView(v as 'daily' | 'weekly' | 'monthly')}>
-        <TabsList className="grid w-full sm:w-auto grid-cols-4 max-w-xl mb-4">
-          <TabsTrigger value="daily" className="flex items-center gap-1">
+        <TabsList className="grid w-full sm:w-auto grid-cols-4 max-w-xl mb-4 bg-blue-100">
+          <TabsTrigger value="daily" className="flex items-center gap-1 text-lg text-slate-950">
             <Calendar className="h-4 w-4" />
-            <span>Diário</span>
+            <span className="text-black">Diário</span>
           </TabsTrigger>
           <TabsTrigger value="weekly" className="flex items-center gap-1">
             <CalendarRange className="h-4 w-4" />
-            <span>Semanal</span>
+            <span className="text-black">Semanal</span>
           </TabsTrigger>
           <TabsTrigger value="monthly" className="flex items-center gap-1">
             <ChartLine className="h-4 w-4" />
-            <span>Mensal</span>
+            <span className="text-black">Mensal</span>
           </TabsTrigger>
           <TabsTrigger value="ia" className="flex items-center gap-1 font-thin bg-blue-600 hover:bg-blue-500 text-base">
             <Brain className="h-4 w-4" />
-            <span className="text-blue-50">Relatórios IA</span>
+            <span className="font-extralight text-slate-950 text-base">Relatórios IA</span>
           </TabsTrigger>
         </TabsList>
 

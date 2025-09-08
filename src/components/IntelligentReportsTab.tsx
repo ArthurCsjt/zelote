@@ -92,7 +92,7 @@ const IntelligentReportsTab: React.FC = () => {
       <div className="text-center space-y-2">
         <div className="flex items-center justify-center gap-2">
           <Brain className="h-6 w-6 text-primary" />
-          <h3 className="text-xl font-bold text-blue-100">Relatórios Inteligentes</h3>
+          <h3 className="text-xl font-bold text-zinc-950">Relatórios Inteligentes</h3>
         </div>
         <p className="text-muted-foreground">
           Faça uma pergunta sobre os dados de empréstimos e inventário em linguagem natural
@@ -114,7 +114,7 @@ const IntelligentReportsTab: React.FC = () => {
             <label htmlFor="question" className="text-sm font-medium">
               Sua Pergunta
             </label>
-            <Textarea id="question" placeholder="Ex: Quantos chromebooks estão emprestados para alunos do ensino médio?" value={question} onChange={e => setQuestion(e.target.value)} rows={3} className="resize-none" />
+            <Textarea id="question" placeholder="Ex: Quantos chromebooks estão emprestados para alunos do ensino médio?" value={question} onChange={e => setQuestion(e.target.value)} rows={3} className="resize-none bg-zinc-100" />
           </div>
 
           <div className="space-y-2">
