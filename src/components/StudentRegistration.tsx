@@ -4,13 +4,11 @@ import { Button } from './ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { StudentForm } from './StudentForm';
 import { StudentCSVImport } from './StudentCSVImport';
-
 export function StudentRegistration() {
-  return (
-    <div className="space-y-6">
+  return <div className="space-y-6">
       <div className="flex items-center gap-3">
         <Users className="h-6 w-6 text-primary" />
-        <h2 className="text-2xl font-semibold">Cadastro de Alunos</h2>
+        <h2 className="font-semibold text-xl text-blue-600 text-center">Cadastro de Alunos</h2>
       </div>
 
       <Tabs defaultValue="individual" className="w-full">
@@ -33,6 +31,5 @@ export function StudentRegistration() {
           <StudentCSVImport />
         </TabsContent>
       </Tabs>
-    </div>
-  );
+    </div>;
 }
