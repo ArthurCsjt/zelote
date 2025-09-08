@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -19,24 +18,30 @@ const Login = () => {
   // Estado para controlar a aba ativa (login, registro ou recuperação de senha)
   const [activeTab, setActiveTab] = useState("login");
   const [isLoading, setIsLoading] = useState(false);
-  
+
   // === LOGIN ===
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
-  
+
   // === REGISTRO ===
   const [registerEmail, setRegisterEmail] = useState("");
   const [registerPassword, setRegisterPassword] = useState("");
   const [registerConfirmPassword, setRegisterConfirmPassword] = useState("");
-  
+
   // === RECUPERAÇÃO DE SENHA ===
   const [recoveryEmail, setRecoveryEmail] = useState("");
-  
+
   // Hook para navegação entre rotas
   const navigate = useNavigate();
-  
+
   // Hook para acessar o contexto de autenticação
-  const { login, register, resetPassword, verifyEmail, loginWithGoogle } = useAuth();
+  const {
+    login,
+    register,
+    resetPassword,
+    verifyEmail,
+    loginWithGoogle
+  } = useAuth();
 
   /**
    * Função que processa o envio do formulário de login
@@ -45,13 +50,13 @@ const Login = () => {
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    
+
     // Verificação básica dos campos
     if (!loginEmail || !loginPassword) {
       toast({
         title: "Erro de login",
         description: "Por favor, preencha todos os campos",
-        variant: "destructive",
+        variant: "destructive"
       });
       setIsLoading(false);
       return;
@@ -63,7 +68,7 @@ const Login = () => {
       toast({
         title: "Erro de login",
         description: "O email deve ter o domínio @colegiosaojudas.com.br",
-        variant: "destructive",
+        variant: "destructive"
       });
       setIsLoading(false);
       return;
@@ -71,21 +76,19 @@ const Login = () => {
 
     // Tenta fazer login
     const result = await login(loginEmail, loginPassword);
-    
     if (result.success) {
       toast({
         title: "Login bem-sucedido",
-        description: "Bem-vindo ao sistema de controle de empréstimos e devoluções",
+        description: "Bem-vindo ao sistema de controle de empréstimos e devoluções"
       });
       navigate("/");
     } else {
       toast({
         title: "Erro de login",
         description: result.error || "Email ou senha incorretos",
-        variant: "destructive",
+        variant: "destructive"
       });
     }
-    
     setIsLoading(false);
   };
 
@@ -101,7 +104,7 @@ const Login = () => {
       toast({
         title: "Erro de login",
         description: "Não foi possível fazer login com o Google",
-        variant: "destructive",
+        variant: "destructive"
       });
       setIsLoading(false);
     }
@@ -114,13 +117,13 @@ const Login = () => {
   const handleRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    
+
     // Verificação básica dos campos
     if (!registerEmail || !registerPassword || !registerConfirmPassword) {
       toast({
         title: "Erro de registro",
         description: "Por favor, preencha todos os campos",
-        variant: "destructive",
+        variant: "destructive"
       });
       setIsLoading(false);
       return;
@@ -132,7 +135,7 @@ const Login = () => {
       toast({
         title: "Erro de registro",
         description: "O email deve ter o domínio @colegiosaojudas.com.br",
-        variant: "destructive",
+        variant: "destructive"
       });
       setIsLoading(false);
       return;
@@ -143,7 +146,7 @@ const Login = () => {
       toast({
         title: "Erro de registro",
         description: "As senhas não coincidem",
-        variant: "destructive",
+        variant: "destructive"
       });
       setIsLoading(false);
       return;
@@ -151,13 +154,12 @@ const Login = () => {
 
     // Tenta registrar o usuário
     const result = await register(registerEmail, registerPassword);
-    
     if (result.success) {
       toast({
         title: "Registro bem-sucedido",
-        description: "Sua conta foi criada. Verifique seu email para confirmar o cadastro.",
+        description: "Sua conta foi criada. Verifique seu email para confirmar o cadastro."
       });
-      
+
       // Limpa os campos e volta para a aba de login
       setRegisterEmail("");
       setRegisterPassword("");
@@ -167,10 +169,9 @@ const Login = () => {
       toast({
         title: "Erro de registro",
         description: result.error || "Este email já está registrado ou é inválido",
-        variant: "destructive",
+        variant: "destructive"
       });
     }
-    
     setIsLoading(false);
   };
 
@@ -181,13 +182,13 @@ const Login = () => {
   const handleRecoverySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    
+
     // Verificação básica dos campos
     if (!recoveryEmail) {
       toast({
         title: "Erro de recuperação",
         description: "Por favor, informe seu email",
-        variant: "destructive",
+        variant: "destructive"
       });
       setIsLoading(false);
       return;
@@ -198,7 +199,7 @@ const Login = () => {
       toast({
         title: "Erro de recuperação",
         description: "Este email não está registrado no sistema ou não tem o domínio correto",
-        variant: "destructive",
+        variant: "destructive"
       });
       setIsLoading(false);
       return;
@@ -206,13 +207,12 @@ const Login = () => {
 
     // Tenta redefinir a senha
     const result = await resetPassword(recoveryEmail, "");
-    
     if (result.success) {
       toast({
         title: "Recuperação iniciada",
-        description: "Enviamos um email com instruções para redefinir sua senha.",
+        description: "Enviamos um email com instruções para redefinir sua senha."
       });
-      
+
       // Limpa os campos e volta para a aba de login
       setRecoveryEmail("");
       setActiveTab("login");
@@ -220,15 +220,12 @@ const Login = () => {
       toast({
         title: "Erro de recuperação",
         description: result.error || "Não foi possível iniciar a recuperação de senha",
-        variant: "destructive",
+        variant: "destructive"
       });
     }
-    
     setIsLoading(false);
   };
-
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#D3E4FD] to-[#F0F7FF] p-4">
+  return <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#D3E4FD] to-[#F0F7FF] p-4">
       <div className="w-full max-w-md">
         <Card className="w-full shadow-xl glass-card border-0 overflow-hidden">
           <CardHeader className="space-y-1 text-center pb-6 bg-gradient-to-r from-blue-500/10 to-blue-600/10">
@@ -265,15 +262,7 @@ const Login = () => {
                       Email Institucional
                     </Label>
                     <div className="relative">
-                      <Input
-                        id="login-email"
-                        type="email"
-                        placeholder="seu.email@colegiosaojudas.com.br"
-                        value={loginEmail}
-                        onChange={(e) => setLoginEmail(e.target.value)}
-                        className="bg-white/70 border-gray-200 focus:border-blue-300 transition-all pl-3"
-                        disabled={isLoading}
-                      />
+                      <Input id="login-email" type="email" placeholder="seu.email@colegiosaojudas.com.br" value={loginEmail} onChange={e => setLoginEmail(e.target.value)} className="bg-white/70 border-gray-200 focus:border-blue-300 transition-all pl-3" disabled={isLoading} />
                     </div>
                     <p className="text-xs text-gray-500 italic">
                       Use seu email institucional com o domínio @colegiosaojudas.com.br
@@ -286,25 +275,13 @@ const Login = () => {
                       Senha
                     </Label>
                     <div className="relative">
-                      <Input
-                        id="login-password"
-                        type="password"
-                        placeholder="Digite sua senha"
-                        value={loginPassword}
-                        onChange={(e) => setLoginPassword(e.target.value)}
-                        className="bg-white/70 border-gray-200 focus:border-blue-300 transition-all pl-3"
-                        disabled={isLoading}
-                      />
+                      <Input id="login-password" type="password" placeholder="Digite sua senha" value={loginPassword} onChange={e => setLoginPassword(e.target.value)} className="bg-white/70 border-gray-200 focus:border-blue-300 transition-all pl-3" disabled={isLoading} />
                     </div>
                   </div>
                 </CardContent>
                 
                 <CardFooter className="flex flex-col space-y-4 pb-6">
-                  <Button 
-                    type="submit" 
-                    className="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 transition-all shadow-md"
-                    disabled={isLoading}
-                  >
+                  <Button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 transition-all shadow-md" disabled={isLoading}>
                     {isLoading ? "Entrando..." : "Entrar"}
                   </Button>
                   
@@ -317,29 +294,9 @@ const Login = () => {
                     </div>
                   </div>
                   
-                  <Button 
-                    type="button"
-                    variant="outline" 
-                    className="w-full border-gray-300 hover:bg-gray-50 text-gray-700 flex items-center justify-center gap-2"
-                    onClick={handleGoogleLogin}
-                    disabled={isLoading}
-                  >
-                    <svg width="18" height="18" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
-                      <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-                      <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-                      <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
-                      <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-                    </svg>
-                    Entrar com Google
-                  </Button>
                   
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    className="text-sm text-gray-600 hover:text-blue-700 mt-2"
-                    onClick={() => setActiveTab("recovery")}
-                    disabled={isLoading}
-                  >
+                  
+                  <Button type="button" variant="ghost" className="text-sm text-gray-600 hover:text-blue-700 mt-2" onClick={() => setActiveTab("recovery")} disabled={isLoading}>
                     <KeySquare className="h-3.5 w-3.5 mr-1" />
                     Esqueceu sua senha?
                   </Button>
@@ -357,15 +314,7 @@ const Login = () => {
                       Email Institucional
                     </Label>
                     <div className="relative">
-                      <Input
-                        id="register-email"
-                        type="email"
-                        placeholder="seu.email@colegiosaojudas.com.br"
-                        value={registerEmail}
-                        onChange={(e) => setRegisterEmail(e.target.value)}
-                        className="bg-white/70 border-gray-200 focus:border-blue-300 transition-all pl-3"
-                        disabled={isLoading}
-                      />
+                      <Input id="register-email" type="email" placeholder="seu.email@colegiosaojudas.com.br" value={registerEmail} onChange={e => setRegisterEmail(e.target.value)} className="bg-white/70 border-gray-200 focus:border-blue-300 transition-all pl-3" disabled={isLoading} />
                     </div>
                     <p className="text-xs text-gray-500 italic">
                       Use seu email institucional com o domínio @colegiosaojudas.com.br
@@ -378,15 +327,7 @@ const Login = () => {
                       Senha
                     </Label>
                     <div className="relative">
-                      <Input
-                        id="register-password"
-                        type="password"
-                        placeholder="Crie uma senha forte"
-                        value={registerPassword}
-                        onChange={(e) => setRegisterPassword(e.target.value)}
-                        className="bg-white/70 border-gray-200 focus:border-blue-300 transition-all pl-3"
-                        disabled={isLoading}
-                      />
+                      <Input id="register-password" type="password" placeholder="Crie uma senha forte" value={registerPassword} onChange={e => setRegisterPassword(e.target.value)} className="bg-white/70 border-gray-200 focus:border-blue-300 transition-all pl-3" disabled={isLoading} />
                     </div>
                   </div>
                   
@@ -396,25 +337,13 @@ const Login = () => {
                       Confirmar Senha
                     </Label>
                     <div className="relative">
-                      <Input
-                        id="register-confirm-password"
-                        type="password"
-                        placeholder="Confirme sua senha"
-                        value={registerConfirmPassword}
-                        onChange={(e) => setRegisterConfirmPassword(e.target.value)}
-                        className="bg-white/70 border-gray-200 focus:border-blue-300 transition-all pl-3"
-                        disabled={isLoading}
-                      />
+                      <Input id="register-confirm-password" type="password" placeholder="Confirme sua senha" value={registerConfirmPassword} onChange={e => setRegisterConfirmPassword(e.target.value)} className="bg-white/70 border-gray-200 focus:border-blue-300 transition-all pl-3" disabled={isLoading} />
                     </div>
                   </div>
                 </CardContent>
                 
                 <CardFooter className="pb-6">
-                  <Button 
-                    type="submit" 
-                    className="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 transition-all shadow-md"
-                    disabled={isLoading}
-                  >
+                  <Button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 transition-all shadow-md" disabled={isLoading}>
                     {isLoading ? "Cadastrando..." : "Cadastrar"}
                   </Button>
                 </CardFooter>
@@ -426,13 +355,7 @@ const Login = () => {
               <form onSubmit={handleRecoverySubmit}>
                 <CardContent className="space-y-4 pt-6">
                   <div className="flex items-center mb-4">
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      className="text-gray-600 p-0 h-auto"
-                      onClick={() => setActiveTab("login")}
-                      disabled={isLoading}
-                    >
+                    <Button type="button" variant="ghost" className="text-gray-600 p-0 h-auto" onClick={() => setActiveTab("login")} disabled={isLoading}>
                       <ArrowLeft className="h-4 w-4 mr-2" />
                       Voltar ao login
                     </Button>
@@ -452,25 +375,13 @@ const Login = () => {
                       Email Institucional
                     </Label>
                     <div className="relative">
-                      <Input
-                        id="recovery-email"
-                        type="email"
-                        placeholder="seu.email@colegiosaojudas.com.br"
-                        value={recoveryEmail}
-                        onChange={(e) => setRecoveryEmail(e.target.value)}
-                        className="bg-white/70 border-gray-200 focus:border-blue-300 transition-all pl-3"
-                        disabled={isLoading}
-                      />
+                      <Input id="recovery-email" type="email" placeholder="seu.email@colegiosaojudas.com.br" value={recoveryEmail} onChange={e => setRecoveryEmail(e.target.value)} className="bg-white/70 border-gray-200 focus:border-blue-300 transition-all pl-3" disabled={isLoading} />
                     </div>
                   </div>
                 </CardContent>
                 
                 <CardFooter className="pb-6">
-                  <Button 
-                    type="submit"
-                    className="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 transition-all shadow-md"
-                    disabled={isLoading}
-                  >
+                  <Button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 transition-all shadow-md" disabled={isLoading}>
                     {isLoading ? "Enviando..." : "Recuperar Senha"}
                   </Button>
                 </CardFooter>
@@ -479,8 +390,6 @@ const Login = () => {
           </Tabs>
         </Card>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default Login;
