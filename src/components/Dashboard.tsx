@@ -306,7 +306,7 @@ export function Dashboard({
             <ChartLine className="h-4 w-4" />
             <span className="text-black text-lg">Mensal</span>
           </TabsTrigger>
-          <TabsTrigger value="ia" className="flex items-center gap-1 text-base text-zinc-950 font-extralight bg-blue-400 hover:bg-blue-300">
+          <TabsTrigger value="ia" className="flex items-center gap-1 text-base font-extralight bg-blue-300 hover:bg-blue-200 text-blue-800">
             <Brain className="h-4 w-4 rounded-sm" />
             <span className="text-lg font-medium text-center text-slate-950">Relatórios IA</span>
           </TabsTrigger>
