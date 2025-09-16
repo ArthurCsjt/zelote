@@ -101,7 +101,7 @@ const IntelligentReportsTab: React.FC = () => {
 
       <Card className="glass-card">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-blue-950 text-xl">
+          <CardTitle className="flex items-center gap-2 text-xl text-zinc-950">
             <TrendingUp className="h-5 w-5" />
             Gerar Relatório
           </CardTitle>
@@ -111,7 +111,7 @@ const IntelligentReportsTab: React.FC = () => {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <label htmlFor="question" className="text-sm font-medium">
+            <label htmlFor="question" className="text-sm font-medium rounded-md bg-zinc-50">
               Sua Pergunta
             </label>
             <Textarea id="question" placeholder="Ex: Quantos chromebooks estão emprestados para alunos do ensino médio?" value={question} onChange={e => setQuestion(e.target.value)} rows={3} className="resize-none bg-zinc-100" />

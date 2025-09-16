@@ -275,7 +275,7 @@ export function Dashboard({
   };
   return <div className="space-y-6 glass-morphism p-6 animate-fade-in relative px-[22px] py-[40px] bg-slate-300 rounded-md">
       {/* Background gradient overlay */}
-      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-blue-50/30 via-purple-50/20 to-pink-50/30 blur-2xl transform scale-110 py-[25px] rounded-3xl bg-neutral-200" />
+      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-blue-50/30 via-purple-50/20 to-pink-50/30 blur-2xl transform scale-110 py-[25px] rounded-3xl bg-[#000a0e]/0" />
       
       <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-6 relative z-10">
         <div>
@@ -293,22 +293,22 @@ export function Dashboard({
       </div>
 
       <Tabs defaultValue="daily" className="w-full" onValueChange={v => setPeriodView(v as 'daily' | 'weekly' | 'monthly')}>
-        <TabsList className="grid w-full sm:w-auto grid-cols-4 max-w-xl mb-4 bg-blue-100">
+        <TabsList className="grid w-full sm:w-auto grid-cols-4 max-w-xl mb-4 bg-slate-100">
           <TabsTrigger value="daily" className="flex items-center gap-1 text-lg text-slate-950">
             <Calendar className="h-4 w-4 bg-slate-100" />
             <span className="text-black">Diário</span>
           </TabsTrigger>
           <TabsTrigger value="weekly" className="flex items-center gap-1">
-            <CalendarRange className="h-4 w-4 bg-inherit" />
+            <CalendarRange className="h-4 w-4 bg-slate-50" />
             <span className="text-black text-lg">Semanal</span>
           </TabsTrigger>
           <TabsTrigger value="monthly" className="flex items-center gap-1">
-            <ChartLine className="h-4 w-4" />
+            <ChartLine className="h-4 w-4 bg-slate-50" />
             <span className="text-black text-lg">Mensal</span>
           </TabsTrigger>
-          <TabsTrigger value="ia" className="flex items-center gap-1 text-base font-extralight bg-blue-300 hover:bg-blue-200 text-blue-800">
+          <TabsTrigger value="ia" className="flex items-center gap-1 text-base font-extralight text-stone-950 bg-zinc-100">
             <Brain className="h-4 w-4 rounded-sm" />
-            <span className="text-lg font-medium text-center text-slate-950">Relatórios IA</span>
+            <span className="text-lg font-medium text-slate-950 text-center">Relatórios IA</span>
           </TabsTrigger>
         </TabsList>
 
@@ -831,36 +831,6 @@ export function Dashboard({
         </TabsContent>
       </Tabs>
       
-      <Card className="glass-card dashboard-card mt-6">
-        <CardHeader>
-          <CardTitle>Empréstimos Ativos</CardTitle>
-          <CardDescription>
-            {activeLoans.length} Chromebooks em uso
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="max-h-[300px] overflow-y-auto">
-          {activeLoans.length === 0 && <div className="text-center py-8 text-gray-500">
-              <Computer className="h-10 w-10 mx-auto mb-2 text-gray-300" />
-              <p>Nenhum empréstimo ativo no momento</p>
-            </div>}
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {activeLoans.map(loan => <div key={loan.id} className="p-4 glass-card border-white/30 border-l-4 border-l-blue-500 hover:shadow-lg transition-all duration-300 hover:scale-[1.01]">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <p className="font-medium">{loan.student_name}</p>
-                    <p className="text-sm text-gray-600">ID: {loan.chromebook_id}</p>
-                  </div>
-                  <Badge variant="secondary" className="bg-blue-100 text-blue-700">
-                    Pendente
-                  </Badge>
-                </div>
-                <p className="text-sm text-gray-600 mt-1">
-                  Retirada: {format(new Date(loan.loan_date), "dd/MM/yyyy 'às' HH:mm")}
-                </p>
-              </div>)}
-          </div>
-        </CardContent>
-      </Card>
+      
     </div>;
 }
