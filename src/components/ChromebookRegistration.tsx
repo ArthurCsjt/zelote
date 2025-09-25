@@ -9,6 +9,7 @@ import { Laptop } from "lucide-react";
 import { QRCodeModal } from "./QRCodeModal";
 import { useDatabase } from '@/hooks/useDatabase';
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+const [newChromebookData, setNewChromebookData] = useState<any>(null);
 interface ChromebookData {
   id: string;
   manufacturer: string;
@@ -39,36 +40,68 @@ export function ChromebookRegistration() {
     classroomLocation: ""
   });
   const [showQRCode, setShowQRCode] = useState(false);
-  const handleSubmit = async (e: React.FormEvent) => {
+ const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.id || !formData.manufacturer || !formData.model || !formData.series) {
+
+    // 1. Validação dos campos obrigatórios
+    if (!formData.manufacturer || !formData.model || !formData.series) {
       toast({
-        title: "Erro",
-        description: "Por favor, preencha todos os campos obrigatórios",
-        variant: "destructive"
+        title: "Erro de Validação",
+        description: "Por favor, preencha os campos Fabricante, Modelo e Série.",
+        variant: "destructive",
       });
       return;
     }
+
     if (formData.isFixedInClassroom && !formData.classroomLocation?.trim()) {
       toast({
-        title: "Erro",
-        description: "Por favor, especifique a localização da sala para equipamentos fixos",
-        variant: "destructive"
+        title: "Erro de Validação",
+        description: "Para equipamentos fixos, a localização da sala é obrigatória.",
+        variant: "destructive",
       });
       return;
     }
+
+    // 2. Monta o objeto de dados para o banco (SEM o chromebookId)
     const chromebookData = {
-      //chromebookId: formData.id,
       model: formData.model,
       serialNumber: formData.series,
       patrimonyNumber: formData.patrimonyNumber || null,
+      manufacturer: formData.manufacturer,
       condition: 'novo',
       location: formData.isFixedInClassroom ? formData.classroomLocation : null,
       status: 'disponivel' as const
     };
-    const newChromebook = await createChromebook(chromebookData);
-    if (newChromebook) {
-      setShowQRCode(true);
+
+    // 3. Envia os dados e ESPERA a resposta do banco
+    const { data: createdChromebook, error } = await createChromebook(chromebookData);
+
+    // 4. Se der erro, mostra notificação e para tudo
+    if (error) {
+      toast({
+        title: "Erro no Banco de Dados",
+        description: error.message,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // 5. Se deu CERTO, guarda os dados retornados e abre o QR Code
+    if (createdChromebook) {
+      toast({
+        title: "Sucesso!",
+        description: `Chromebook ${createdChromebook.chromebookId} cadastrado.`,
+      });
+      
+      setNewChromebookData(createdChromebook); // Guarda os dados com o ID CORRETO
+      setShowQRCode(true); // ABRE o QR Code com a informação certa
+
+      resetForm();
+      if (onRegistrationSuccess) {
+        onRegistrationSuccess();
+      }
+    }
+  };
       toast({
         title: "Sucesso",
         description: "Chromebook cadastrado com sucesso"
@@ -196,13 +229,10 @@ export function ChromebookRegistration() {
         </CardContent>
       </Card>
 
-      {/* QR Code Modal */}
-      <QRCodeModal open={showQRCode} onOpenChange={setShowQRCode} chromebookId={formData.id} chromebookData={{
-      id: formData.id,
-      chromebook_id: formData.id,
-      model: formData.model,
-      serial_number: formData.series,
-      patrimony_number: formData.patrimonyNumber
-    }} showSuccess={true} />
+  <QRCodeModal
+  isOpen={showQRCode}
+  onClose={() => setShowQRCode(false)}
+  chromebookId={newChromebookData?.chromebookId}
+/>
     </div>;
 }
