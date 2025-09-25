@@ -1,52 +1,48 @@
 import React from 'react';
-import { ArrowLeft } from 'lucide-react';
-import { Button } from './ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { ChromebookRegistration } from './ChromebookRegistration';
 import { StudentRegistration } from './StudentRegistration';
 import { TeacherRegistration } from './TeacherRegistration';
 import { StaffRegistration } from './StaffRegistration';
+
+// 1. Definimos as "instruções" que este componente vai receber de seu "chefe" (Index.tsx)
 interface RegistrationHubProps {
-  onBack?: () => void;
+  onBack: () => void;
+  onRegistrationSuccess: (newChromebook: any) => void;
 }
-export function RegistrationHub({
-  onBack
-}: RegistrationHubProps) {
-  const handleBackClick = () => {
-    if (onBack) {
-      onBack();
-    }
-  };
-  return <div className="min-h-screen bg-background">
-      <div className="container mx-auto p-4 max-w-4xl">
-        <div className="mb-6 text-center">
-          <h1 className="py-[30px] text-center text-slate-950 text-xl font-bold">Hub de Cadastros</h1>
-        </div>
 
-        <Tabs defaultValue="chromebooks" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="chromebooks">Chromebooks</TabsTrigger>
-            <TabsTrigger value="students">Alunos</TabsTrigger>
-            <TabsTrigger value="teachers">Professores</TabsTrigger>
-            <TabsTrigger value="staff">Funcionários</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="chromebooks" className="space-y-4">
-            <ChromebookRegistration />
-          </TabsContent>
-
-          <TabsContent value="students" className="space-y-4">
-            <StudentRegistration />
-          </TabsContent>
-
-          <TabsContent value="teachers" className="space-y-4">
-            <TeacherRegistration />
-          </TabsContent>
-
-          <TabsContent value="staff" className="space-y-4">
-            <StaffRegistration />
-          </TabsContent>
-        </Tabs>
+export function RegistrationHub({ onBack, onRegistrationSuccess }: RegistrationHubProps) {
+  return (
+    <div className="container mx-auto p-4 max-w-4xl">
+      <div className="mb-6 text-center">
+        <h1 className="py-[30px] text-center text-slate-950 text-xl font-bold">Hub de Cadastros</h1>
       </div>
-    </div>;
+
+      <Tabs defaultValue="chromebooks" className="w-full">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="chromebooks">Chromebooks</TabsTrigger>
+          <TabsTrigger value="students">Alunos</TabsTrigger>
+          <TabsTrigger value="teachers">Professores</TabsTrigger>
+          <TabsTrigger value="staff">Funcionários</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="chromebooks" className="space-y-4">
+          {/* 2. Aqui, passamos a instrução "onRegistrationSuccess" para o componente do formulário */}
+          <ChromebookRegistration onRegistrationSuccess={onRegistrationSuccess} />
+        </TabsContent>
+
+        <TabsContent value="students" className="space-y-4">
+          <StudentRegistration />
+        </TabsContent>
+
+        <TabsContent value="teachers" className="space-y-4">
+          <TeacherRegistration />
+        </TabsContent>
+
+        <TabsContent value="staff" className="space-y-4">
+          <StaffRegistration />
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
 }
