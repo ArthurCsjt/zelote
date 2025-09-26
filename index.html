@@ -40,8 +40,18 @@
 
   <body>
     <div id="root"></div>
-    <!-- IMPORTANT: DO NOT REMOVE THIS SCRIPT TAG OR THIS VERY COMMENT! -->
-    <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
+    <!-- Carregar gptengineer.js apenas em localhost para evitar múltiplas instâncias do React em produção -->
+    <script>
+      (function(){
+        const isLocalhost = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname);
+        if (isLocalhost) {
+          const s = document.createElement('script');
+          s.type = 'module';
+          s.src = 'https://cdn.gpteng.co/gptengineer.js';
+          document.currentScript.parentNode.insertBefore(s, document.currentScript.nextSibling);
+        }
+      })();
+    </script>
     <script type="module" src="/src/main.tsx"></script>
     
     <!-- PWA Registration Script with update notification -->
