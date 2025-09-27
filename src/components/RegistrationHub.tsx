@@ -5,10 +5,9 @@ import { StudentRegistration } from './StudentRegistration';
 import { TeacherRegistration } from './TeacherRegistration';
 import { StaffRegistration } from './StaffRegistration';
 
-// Definimos as "instruções" que este componente vai receber
 interface RegistrationHubProps {
-  onBack?: () => void;
-  onRegistrationSuccess: (newChromebook: any) => void; // A nova instrução
+  onBack: () => void;
+  onRegistrationSuccess: (newChromebook: any) => void;
 }
 
 export function RegistrationHub({ onBack, onRegistrationSuccess }: RegistrationHubProps) {
@@ -25,12 +24,17 @@ export function RegistrationHub({ onBack, onRegistrationSuccess }: RegistrationH
           <TabsTrigger value="staff">Funcionários</TabsTrigger>
         </TabsList>
         <TabsContent value="chromebooks" className="space-y-4">
-          {/* Repassando a instrução para o formulário */}
           <ChromebookRegistration onRegistrationSuccess={onRegistrationSuccess} />
         </TabsContent>
-        <TabsContent value="students"><StudentRegistration /></TabsContent>
-        <TabsContent value="teachers"><TeacherRegistration /></TabsContent>
-        <TabsContent value="staff"><StaffRegistration /></TabsContent>
+        <TabsContent value="students" className="space-y-4">
+          <StudentRegistration />
+        </TabsContent>
+        <TabsContent value="teachers" className="space-y-4">
+          <TeacherRegistration />
+        </TabsContent>
+        <TabsContent value="staff" className="space-y-4">
+          <StaffRegistration />
+        </TabsContent>
       </Tabs>
     </div>
   );
