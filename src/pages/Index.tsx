@@ -6,6 +6,7 @@ import { MainMenu } from "@/components/MainMenu";
 import { InventoryHub } from "@/components/InventoryHub";
 import { Dashboard } from "@/components/Dashboard";
 import { QRCodeModal } from "@/components/QRCodeModal";
+import { LoanForm } from "@/components/LoanForm";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import type { ReturnFormData } from "@/types/database";
 import { useDatabase } from "@/hooks/useDatabase";
@@ -15,7 +16,7 @@ const Index = () => {
   const [openReturnDialog, setOpenReturnDialog] = useState(false);
   const [chromebookId, setChromebookId] = useState("");
   const [returnData, setReturnData] = useState<ReturnFormData>({ name: "", ra: "", email: "", type: 'individual', userType: 'aluno' });
-  const [currentView, setCurrentView] = useState<'menu' | 'registration' | 'dashboard' | 'inventory'>('menu');
+  const [currentView, setCurrentView] = useState<'menu' | 'registration' | 'dashboard' | 'inventory' | 'loan'>('menu');
   
   const [showQRCodeModal, setShowQRCodeModal] = useState(false);
   const [selectedChromebookId, setSelectedChromebookId] = useState<string | null>(null);
@@ -24,7 +25,7 @@ const Index = () => {
     route: 'registration' | 'dashboard' | 'inventory' | 'loan' | 'return'
   ) => {
     if (route === 'loan') {
-      // Abertura do diálogo de empréstimo depende de estado/componente não presente aqui
+      setCurrentView('loan');
       return;
     }
     if (route === 'return') {
@@ -56,6 +57,8 @@ const Index = () => {
         return <Dashboard onBack={handleBackToMenu} />;
       case 'inventory':
         return <InventoryHub onBack={handleBackToMenu} onGenerateQrCode={handleGenerateQrCode} />;
+      case 'loan':
+        return <LoanForm onBack={handleBackToMenu} />;
       default:
         return <MainMenu onNavigate={handleNavigation} />;
     }
