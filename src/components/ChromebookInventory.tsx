@@ -316,6 +316,7 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
         .update({
           chromebook_id: editingChromebook.chromebook_id,
           model: editingChromebook.model,
+          manufacturer: editingChromebook.manufacturer,
           serial_number: editingChromebook.serial_number,
           patrimony_number: editingChromebook.patrimony_number,
           status: editingChromebook.status as any,
@@ -693,6 +694,17 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
                        value={editingChromebook.model}
                        onChange={handleEditChange}
                        placeholder="Ex: Chromebook 14e"
+                       className="h-9"
+                     />
+                   </div>
+
+                   <div className="space-y-1.5">
+                     <Label htmlFor="manufacturer" className="text-xs font-medium">Fabricante</Label>
+                     <Input
+                       id="manufacturer"
+                       value={editingChromebook.manufacturer || ""}
+                       onChange={handleEditChange}
+                       placeholder="Ex: Acer, HP, Lenovo"
                        className="h-9"
                      />
                    </div>
