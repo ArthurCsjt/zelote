@@ -5,11 +5,9 @@ import './index.css'
 import { toast } from "@/components/ui/use-toast"
 import { ToastAction } from "@/components/ui/toast"
 
-// Expor React globalmente apenas em desenvolvimento (evita conflitos em produção)
-if (import.meta.env.DEV) {
-  // @ts-ignore
-  window.React = React;
-}
+// Ensure React is available globally
+// Expose React for devtools in iframe
+window.React = React;
 
 function setupServiceWorkerUpdates() {
   if ('serviceWorker' in navigator) {
