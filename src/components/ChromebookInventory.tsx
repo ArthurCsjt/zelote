@@ -389,6 +389,7 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
         title: "Sucesso",
         description: `Chromebook ${chromebookToDelete.patrimony_number || chromebookToDelete.chromebook_id} excluído com sucesso`,
       });
+      setChromebooks(currentChromebooks => currentChromebooks.filter(cb => cb.id !== chromebookToDelete.id));
     } catch (error) {
       console.error("Error deleting chromebook:", error);
       toast({
