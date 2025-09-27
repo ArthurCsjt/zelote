@@ -20,7 +20,19 @@ const Index = () => {
   const [showQRCodeModal, setShowQRCodeModal] = useState(false);
   const [selectedChromebookId, setSelectedChromebookId] = useState<string | null>(null);
 
-  const handleNavigation = (route: 'registration' | 'dashboard' | 'inventory') => setCurrentView(route);
+  const handleNavigation = (
+    route: 'registration' | 'dashboard' | 'inventory' | 'loan' | 'return'
+  ) => {
+    if (route === 'loan') {
+      // Abertura do diálogo de empréstimo depende de estado/componente não presente aqui
+      return;
+    }
+    if (route === 'return') {
+      setOpenReturnDialog(true);
+      return;
+    }
+    setCurrentView(route);
+  };
   const handleBackToMenu = () => setCurrentView('menu');
 
   const handleGenerateQrCode = (chromebookId: string) => {
