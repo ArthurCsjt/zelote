@@ -43,6 +43,7 @@ interface ChromebookData {
   id: string;
   chromebook_id: string;
   model: string;
+  manufacturer?: string;
   serial_number?: string;
   patrimony_number?: string;
   status: 'disponivel' | 'emprestado' | 'fixo' | 'manutencao';
@@ -495,6 +496,7 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
               <TableHead>ID</TableHead>
               <TableHead>Patrimônio</TableHead>
               <TableHead>Modelo</TableHead>
+              <TableHead>Fabricante</TableHead>
               <TableHead className="hidden md:table-cell">Status</TableHead>
               <TableHead className="hidden lg:table-cell">Série</TableHead>
               <TableHead className="hidden lg:table-cell">Localização</TableHead>
@@ -522,6 +524,9 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
   <span className="text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">Fixo</span>
 )}
                       </div>
+                    </TableCell>
+                    <TableCell>
+                      {chromebook.manufacturer || '-'}
                     </TableCell>
                     <TableCell className="hidden md:table-cell">
 <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${statusInfo.color}`}>
