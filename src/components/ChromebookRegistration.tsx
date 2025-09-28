@@ -15,6 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
+import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
 
 interface FormData {
   manufacturer: string;
@@ -22,11 +23,10 @@ interface FormData {
   series: string;
   manufacturingYear: string;
   patrimonyNumber: string;
-  isProvisioned: boolean;
   isFixedInClassroom: boolean;
   classroomLocation: string;
   observations: string;
-  is_deprovisioned: boolean;
+  provisioning_status: string;
 }
 
 export function ChromebookRegistration({ onRegistrationSuccess }: { onRegistrationSuccess: (newChromebook: any) => void }) {
@@ -36,16 +36,16 @@ export function ChromebookRegistration({ onRegistrationSuccess }: { onRegistrati
   const [formData, setFormData] = useState<FormData>({
     manufacturer: "", model: "", series: "",
     manufacturingYear: "",
-    patrimonyNumber: "", isProvisioned: false, isFixedInClassroom: false,
-    classroomLocation: "", observations: "", is_deprovisioned: false,
+    patrimonyNumber: "", isFixedInClassroom: false,
+    classroomLocation: "", observations: "", provisioning_status: 'provisioned',
   });
 
   const resetForm = () => {
     setFormData({
       manufacturer: "", model: "", series: "",
       manufacturingYear: "",
-      patrimonyNumber: "", isProvisioned: false, isFixedInClassroom: false,
-      classroomLocation: "", observations: "", is_deprovisioned: false,
+      patrimonyNumber: "", isFixedInClassroom: false,
+      classroomLocation: "", observations: "", provisioning_status: 'provisioned',
     });
   };
 
@@ -63,10 +63,11 @@ export function ChromebookRegistration({ onRegistrationSuccess }: { onRegistrati
       model: formData.model, serialNumber: formData.series,
       patrimonyNumber: formData.patrimonyNumber || null,
       manufacturer: formData.manufacturer, manufacturingYear: formData.manufacturingYear || null,
-      observations: formData.observations || null, isProvisioned: formData.isProvisioned,
+      observations: formData.observations || null,
+      isProvisioned: formData.provisioning_status === 'provisioned',
+      is_deprovisioned: formData.provisioning_status === 'deprovisioned',
       condition: 'novo' as const, location: formData.isFixedInClassroom ? formData.classroomLocation : null,
       status: 'disponivel' as const,
-      is_deprovisioned: formData.is_deprovisioned,
     };
     const { data: createdChromebook, error } = await createChromebook(chromebookData);
     if (error) {
@@ -114,8 +115,22 @@ export function ChromebookRegistration({ onRegistrationSuccess }: { onRegistrati
               <div className="space-y-2"><Label htmlFor="patrimonyNumber">Patrimônio</Label><Input id="patrimonyNumber" value={formData.patrimonyNumber} onChange={(e) => handleFormChange('patrimonyNumber', e.target.value)} /></div>
             </div>
             <div className="space-y-4">
-              <div className="flex items-center space-x-2"><Checkbox id="isProvisioned" checked={formData.isProvisioned} onCheckedChange={(checked) => handleFormChange('isProvisioned', !!checked)} /><label htmlFor="isProvisioned" className="text-sm font-medium">Equipamento Provisionado</label></div>
-              <div className="flex items-center space-x-2"><Checkbox id="is_deprovisioned" checked={formData.is_deprovisioned} onCheckedChange={(checked) => handleFormChange('is_deprovisioned', !!checked)} /><label htmlFor="is_deprovisioned" className="text-sm font-medium">Equipamento Desprovisionado</label></div>
+              <RadioGroup
+                value={formData.provisioning_status}
+                onValueChange={(value) => handleFormChange('provisioning_status', value)}
+                className="space-y-2"
+              >
+                <Label>Status de Provisionamento</Label>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="provisioned" id="provisioned" />
+                  <Label htmlFor="provisioned">Equipamento Provisionado</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="deprovisioned" id="deprovisioned" />
+                  <Label htmlFor="deprovisioned">Equipamento Desprovisionado</Label>
+                </div>
+              </RadioGroup>
+
               <div className="flex items-center space-x-2"><Checkbox id="isFixedInClassroom" checked={formData.isFixedInClassroom} onCheckedChange={(checked) => handleFormChange('isFixedInClassroom', !!checked)} /><label htmlFor="isFixedInClassroom" className="text-sm font-medium">Equipamento Fixo em Sala de Aula</label></div>
               {formData.isFixedInClassroom && (
                 <div className="space-y-2"><Label htmlFor="classroomLocation">Localização da Sala *</Label><Input id="classroomLocation" value={formData.classroomLocation} onChange={(e) => handleFormChange('classroomLocation', e.target.value)} required={formData.isFixedInClassroom} /></div>
