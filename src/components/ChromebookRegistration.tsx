@@ -8,6 +8,13 @@ import { Checkbox } from "./ui/checkbox";
 import { Laptop } from "lucide-react";
 import { useDatabase } from '@/hooks/useDatabase';
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
 
 interface FormData {
   manufacturer: string;
@@ -79,7 +86,23 @@ export function ChromebookRegistration({ onRegistrationSuccess }: { onRegistrati
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2"><Label htmlFor="manufacturer">Fabricante *</Label><Input id="manufacturer" value={formData.manufacturer} onChange={(e) => handleFormChange('manufacturer', e.target.value)} required /></div>
+              <div className="space-y-2">
+                <Label htmlFor="manufacturer">Fabricante *</Label>
+                <Select
+                  value={formData.manufacturer}
+                  onValueChange={(value) => handleFormChange('manufacturer', value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione um fabricante" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Acer">Acer</SelectItem>
+                    <SelectItem value="Samsung">Samsung</SelectItem>
+                    <SelectItem value="Lenovo">Lenovo</SelectItem>
+                    <SelectItem value="Outro">Outro</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
               <div className="space-y-2"><Label htmlFor="model">Modelo *</Label><Input id="model" value={formData.model} onChange={(e) => handleFormChange('model', e.target.value)} required /></div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
