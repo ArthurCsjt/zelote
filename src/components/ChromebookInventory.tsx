@@ -493,11 +493,10 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
           <TableHeader>
             <TableRow>
               <TableHead>ID</TableHead>
-              <TableHead>Patrimônio</TableHead>
               <TableHead>Modelo</TableHead>
+              <TableHead>Fabricante</TableHead>
+              <TableHead>Série</TableHead>
               <TableHead className="hidden md:table-cell">Status</TableHead>
-              <TableHead className="hidden lg:table-cell">Série</TableHead>
-              <TableHead className="hidden lg:table-cell">Localização</TableHead>
               <TableHead>Ações</TableHead>
             </TableRow>
           </TableHeader>
@@ -512,31 +511,24 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
                     <TableCell className="font-medium text-xs">
                       {chromebook.chromebook_id}
                     </TableCell>
-                    <TableCell className="font-medium">
-                      {chromebook.patrimony_number || chromebook.chromebook_id}
-                    </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
                         {chromebook.model}
-{chromebook.status === 'fixo' && (
-  <span className="text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">Fixo</span>
-)}
+                        {chromebook.status === 'fixo' && (
+                          <span className="text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">Fixo</span>
+                        )}
                       </div>
                     </TableCell>
+                    <TableCell>{chromebook.manufacturer || 'N/A'}</TableCell>
+                    <TableCell>{chromebook.serial_number || 'N/A'}</TableCell>
                     <TableCell className="hidden md:table-cell">
-<div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${statusInfo.color}`}>
-  <StatusIcon className="w-3 h-3" />
-  {statusInfo.label}
-  {chromebook.status === 'fixo' && chromebook.classroom && (
-    <span className="ml-1 text-[10px] text-blue-700">({chromebook.classroom})</span>
-  )}
-</div>
-                    </TableCell>
-                    <TableCell className="hidden lg:table-cell">
-                      {chromebook.serial_number}
-                    </TableCell>
-                    <TableCell className="hidden lg:table-cell">
-                      {chromebook.location || chromebook.classroom || '-'}
+                      <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${statusInfo.color}`}>
+                        <StatusIcon className="w-3 h-3" />
+                        {statusInfo.label}
+                        {chromebook.status === 'fixo' && chromebook.classroom && (
+                          <span className="ml-1 text-[10px] text-blue-700">({chromebook.classroom})</span>
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center space-x-2">
