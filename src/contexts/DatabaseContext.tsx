@@ -1,0 +1,90 @@
+import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import { supabase } from '../integrations/supabase/client'; 
+import { useAuth } from './AuthContext';
+import type { LoanHistoryItem, Chromebook, ChromebookData } from '../types/database'; // Ajuste o caminho se necessário
+
+// Interface completa do que nosso contexto vai fornecer
+interface DatabaseContextType {
+  loading: boolean;
+  getChromebooks: () => Promise<Chromebook[]>;
+  updateChromebook: (id: string, data: Partial<ChromebookData>) => Promise<{ error: Error | null }>;
+  deleteChromebook: (id: string) => Promise<{ error: Error | null }>;
+  createChromebook: (data: Partial<ChromebookData>) => Promise<{ data: any | null, error: Error | null }>;
+  getActiveLoans: () => Promise<LoanHistoryItem[]>;
+  getLoanHistory: () => Promise<LoanHistoryItem[]>;
+}
+
+const DatabaseContext = createContext<DatabaseContextType | undefined>(undefined);
+
+export const DatabaseProvider = ({ children }: { children: ReactNode }) => {
+  const { user } = useAuth();
+  const [loading, setLoading] = useState(false);
+
+  // --- FUNÇÕES REAIS DO BANCO DE DADOS ---
+
+  const getChromebooks = useCallback(async (): Promise<Chromebook[]> => {
+    setLoading(true);
+    const { data, error } = await supabase.from('chromebooks').select('*').order('created_at', { ascending: false });
+    setLoading(false);
+    if (error) {
+      console.error(error);
+      return [];
+    }
+    return data as Chromebook[];
+  }, []);
+
+  const updateChromebook = useCallback(async (id: string, updateData: Partial<ChromebookData>) => {
+    setLoading(true);
+    const { error } = await supabase.from('chromebooks').update(updateData).eq('id', id);
+    setLoading(false);
+    return { error: error ? new Error(error.message) : null };
+  }, []);
+  
+  const deleteChromebook = useCallback(async (id: string) => {
+    setLoading(true);
+    const { error } = await supabase.from('chromebooks').delete().eq('id', id);
+    setLoading(false);
+    return { error: error ? new Error(error.message) : null };
+  }, []);
+  
+  const createChromebook = useCallback(async (data: Partial<ChromebookData>) => {
+    setLoading(true);
+    const { data: result, error } = await supabase.from('chromebooks').insert(data).select().single();
+    setLoading(false);
+    return { data: result, error: error ? new Error(error.message) : null };
+  }, [user]);
+
+  const getActiveLoans = useCallback(async (): Promise<LoanHistoryItem[]> => {
+    // Implemente a busca real aqui
+    return [];
+  }, []);
+
+  const getLoanHistory = useCallback(async (): Promise<LoanHistoryItem[]> => {
+    // Implemente a busca real aqui
+    return [];
+  }, []);
+
+  const value = { 
+    loading, 
+    getChromebooks, 
+    updateChromebook,
+    deleteChromebook,
+    createChromebook,
+    getActiveLoans, 
+    getLoanHistory 
+  };
+
+  return (
+    <DatabaseContext.Provider value={value}>
+      {children}
+    </DatabaseContext.Provider>
+  );
+};
+
+export const useDatabase = () => {
+  const context = useContext(DatabaseContext);
+  if (context === undefined) {
+    throw new Error('useDatabase must be used within a DatabaseProvider');
+  }
+  return context;
+};
