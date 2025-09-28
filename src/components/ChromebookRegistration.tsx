@@ -115,11 +115,11 @@ export function ChromebookRegistration({ onRegistrationSuccess }: { onRegistrati
             </div>
             <div className="space-y-4">
               <div className="flex items-center space-x-2"><Checkbox id="isProvisioned" checked={formData.isProvisioned} onCheckedChange={(checked) => handleFormChange('isProvisioned', !!checked)} /><label htmlFor="isProvisioned" className="text-sm font-medium">Equipamento Provisionado</label></div>
+              <div className="flex items-center space-x-2"><Checkbox id="is_deprovisioned" checked={formData.is_deprovisioned} onCheckedChange={(checked) => handleFormChange('is_deprovisioned', !!checked)} /><label htmlFor="is_deprovisioned" className="text-sm font-medium">Equipamento Desprovisionado</label></div>
               <div className="flex items-center space-x-2"><Checkbox id="isFixedInClassroom" checked={formData.isFixedInClassroom} onCheckedChange={(checked) => handleFormChange('isFixedInClassroom', !!checked)} /><label htmlFor="isFixedInClassroom" className="text-sm font-medium">Equipamento Fixo em Sala de Aula</label></div>
               {formData.isFixedInClassroom && (
                 <div className="space-y-2"><Label htmlFor="classroomLocation">Localização da Sala *</Label><Input id="classroomLocation" value={formData.classroomLocation} onChange={(e) => handleFormChange('classroomLocation', e.target.value)} required={formData.isFixedInClassroom} /></div>
               )}
-               <div className="flex items-center space-x-2"><Checkbox id="is_deprovisioned" checked={formData.is_deprovisioned} onCheckedChange={(checked) => handleFormChange('is_deprovisioned', !!checked)} /><label htmlFor="is_deprovisioned" className="text-sm font-medium">Equipamento Desprovisionado</label></div>
             </div>
             <div className="space-y-2"><Label htmlFor="observations">Observações</Label><Textarea id="observations" value={formData.observations} onChange={(e) => handleFormChange('observations', e.target.value)} /></div>
             <Button type="submit" disabled={loading}>{loading ? 'Cadastrando...' : 'Cadastrar Chromebook'}</Button>
