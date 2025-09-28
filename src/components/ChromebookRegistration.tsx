@@ -26,6 +26,7 @@ interface FormData {
   isFixedInClassroom: boolean;
   classroomLocation: string;
   observations: string;
+  is_deprovisioned: boolean;
 }
 
 export function ChromebookRegistration({ onRegistrationSuccess }: { onRegistrationSuccess: (newChromebook: any) => void }) {
@@ -34,17 +35,17 @@ export function ChromebookRegistration({ onRegistrationSuccess }: { onRegistrati
   
   const [formData, setFormData] = useState<FormData>({
     manufacturer: "", model: "", series: "",
-    manufacturingYear: new Date().getFullYear().toString(),
+    manufacturingYear: "",
     patrimonyNumber: "", isProvisioned: false, isFixedInClassroom: false,
-    classroomLocation: "", observations: "",
+    classroomLocation: "", observations: "", is_deprovisioned: false,
   });
 
   const resetForm = () => {
     setFormData({
       manufacturer: "", model: "", series: "",
-      manufacturingYear: new Date().getFullYear().toString(),
+      manufacturingYear: "",
       patrimonyNumber: "", isProvisioned: false, isFixedInClassroom: false,
-      classroomLocation: "", observations: "",
+      classroomLocation: "", observations: "", is_deprovisioned: false,
     });
   };
 
@@ -64,7 +65,8 @@ export function ChromebookRegistration({ onRegistrationSuccess }: { onRegistrati
       manufacturer: formData.manufacturer, manufacturingYear: formData.manufacturingYear || null,
       observations: formData.observations || null, isProvisioned: formData.isProvisioned,
       condition: 'novo' as const, location: formData.isFixedInClassroom ? formData.classroomLocation : null,
-      status: 'disponivel' as const
+      status: 'disponivel' as const,
+      is_deprovisioned: formData.is_deprovisioned,
     };
     const { data: createdChromebook, error } = await createChromebook(chromebookData);
     if (error) {
@@ -99,7 +101,6 @@ export function ChromebookRegistration({ onRegistrationSuccess }: { onRegistrati
                     <SelectItem value="Acer">Acer</SelectItem>
                     <SelectItem value="Samsung">Samsung</SelectItem>
                     <SelectItem value="Lenovo">Lenovo</SelectItem>
-                    <SelectItem value="Outro">Outro</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -118,6 +119,7 @@ export function ChromebookRegistration({ onRegistrationSuccess }: { onRegistrati
               {formData.isFixedInClassroom && (
                 <div className="space-y-2"><Label htmlFor="classroomLocation">Localização da Sala *</Label><Input id="classroomLocation" value={formData.classroomLocation} onChange={(e) => handleFormChange('classroomLocation', e.target.value)} required={formData.isFixedInClassroom} /></div>
               )}
+               <div className="flex items-center space-x-2"><Checkbox id="is_deprovisioned" checked={formData.is_deprovisioned} onCheckedChange={(checked) => handleFormChange('is_deprovisioned', !!checked)} /><label htmlFor="is_deprovisioned" className="text-sm font-medium">Equipamento Desprovisionado</label></div>
             </div>
             <div className="space-y-2"><Label htmlFor="observations">Observações</Label><Textarea id="observations" value={formData.observations} onChange={(e) => handleFormChange('observations', e.target.value)} /></div>
             <Button type="submit" disabled={loading}>{loading ? 'Cadastrando...' : 'Cadastrar Chromebook'}</Button>
