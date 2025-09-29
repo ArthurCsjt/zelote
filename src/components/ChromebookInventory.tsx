@@ -536,7 +536,7 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => setShowQRCode(chromebook.patrimony_number || chromebook.chromebook_id)}
+                          onClick={() => setShowQRCode(chromebook.id)}
                           title="Ver QR Code"
                         >
                           <QrCode className="h-4 w-4" />
@@ -831,7 +831,7 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
         open={!!showQRCode}
         onOpenChange={(open) => setShowQRCode(open ? showQRCode : null)}
         chromebookId={showQRCode || ""}
-        chromebookData={showQRCode ? chromebooks.find(c => (c.patrimony_number || c.chromebook_id) === showQRCode) : undefined}
+        chromebookData={showQRCode ? chromebooks.find(c => c.id === showQRCode) : undefined}
         showSuccess={false}
       />
     </div>
