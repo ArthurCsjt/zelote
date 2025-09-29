@@ -7,7 +7,6 @@ export interface Chromebook {
   id: string;
   chromebook_id: string;
   model: string;
-  manufacturer?: string;
   serial_number?: string;
   patrimony_number?: string;
   status: ChromebookStatus;
@@ -95,7 +94,6 @@ export interface ChromebookData {
   id?: string;
   chromebookId: string;
   model: string;
-  manufacturer?: string;
   serialNumber?: string;
   patrimonyNumber?: string;
   status: ChromebookStatus;

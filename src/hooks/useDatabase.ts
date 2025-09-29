@@ -43,43 +43,24 @@ export const useDatabase = () => {
 
     setLoading(true);
     try {
-      // Detect if DB has 'manufacturer' column by trying a lightweight select
-      let hasManufacturer = true;
-      try {
-        const { error: colErr } = await supabase.from('chromebooks').select('manufacturer').limit(1);
-        if (colErr) {
-          hasManufacturer = false;
-        }
-      } catch (e) {
-        hasManufacturer = false;
-      }
-
-      const payload: any = {
-        chromebook_id: data.chromebookId,
-        model: data.model,
-        serial_number: data.serialNumber,
-        patrimony_number: data.patrimonyNumber,
-        status: data.status as any,
-        condition: data.condition,
-        location: data.location,
-        classroom: data.classroom,
-        created_by: user.id,
-      };
-
-      if (hasManufacturer) payload.manufacturer = (data as any).manufacturer;
-      else {
-        // fallback: store manufacturer value in serial_number if provided
-        if ((data as any).manufacturer && !payload.serial_number) payload.serial_number = (data as any).manufacturer;
-      }
-
       const { data: result, error } = await supabase
         .from('chromebooks')
-        .insert(payload)
+        .insert({
+          chromebook_id: data.chromebookId,
+          model: data.model,
+          serial_number: data.serialNumber,
+          patrimony_number: data.patrimonyNumber,
+          status: data.status as any,
+          condition: data.condition,
+          location: data.location,
+          classroom: data.classroom,
+          created_by: user.id
+        })
         .select()
         .single();
 
       if (error) throw error;
-
+      
       toast({ title: "Sucesso", description: "Chromebook cadastrado com sucesso" });
       return result as Chromebook;
     } catch (error: any) {
@@ -116,34 +97,18 @@ export const useDatabase = () => {
 
     setLoading(true);
     try {
-      // Detect if DB has 'manufacturer' column
-      let hasManufacturer = true;
-      try {
-        const { error: colErr } = await supabase.from('chromebooks').select('manufacturer').limit(1);
-        if (colErr) hasManufacturer = false;
-      } catch (e) {
-        hasManufacturer = false;
-      }
-
-      const updatePayload: any = {
-        chromebook_id: data.chromebookId,
-        model: data.model,
-        serial_number: data.serialNumber,
-        patrimony_number: data.patrimonyNumber,
-        status: data.status as any,
-        condition: data.condition,
-        location: data.location,
-        classroom: data.classroom,
-      };
-
-      if (hasManufacturer) updatePayload.manufacturer = (data as any).manufacturer;
-      else {
-        if ((data as any).manufacturer && !updatePayload.serial_number) updatePayload.serial_number = (data as any).manufacturer;
-      }
-
       const { error } = await supabase
         .from('chromebooks')
-        .update(updatePayload)
+        .update({
+          chromebook_id: data.chromebookId,
+          model: data.model,
+          serial_number: data.serialNumber,
+          patrimony_number: data.patrimonyNumber,
+          status: data.status as any,
+          condition: data.condition,
+          location: data.location,
+          classroom: data.classroom
+        })
         .eq('id', id);
 
       if (error) throw error;
