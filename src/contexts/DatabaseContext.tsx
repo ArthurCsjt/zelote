@@ -49,7 +49,9 @@ export const DatabaseProvider = ({ children }: { children: ReactNode }) => {
   
   const createChromebook = useCallback(async (data: Partial<ChromebookData>) => {
     setLoading(true);
-    const { data: result, error } = await supabase.from('chromebooks').insert(data).select().single();
+    // Include manufacturer explicitly to ensure the field is sent to the database
+    const insertPayload = { ...data, manufacturer: data.manufacturer } as Partial<ChromebookData>;
+    const { data: result, error } = await supabase.from('chromebooks').insert(insertPayload).select().single();
     setLoading(false);
     return { data: result, error: error ? new Error(error.message) : null };
   }, [user]);
