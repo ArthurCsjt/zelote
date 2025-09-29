@@ -44,6 +44,7 @@ export type Database = {
       chromebooks: {
         Row: {
           chromebook_id: string
+          manufacturer: string | null
           classroom: string | null
           condition: string | null
           created_at: string
@@ -58,6 +59,7 @@ export type Database = {
         }
         Insert: {
           chromebook_id: string
+          manufacturer?: string | null
           classroom?: string | null
           condition?: string | null
           created_at?: string
@@ -72,6 +74,7 @@ export type Database = {
         }
         Update: {
           chromebook_id?: string
+          manufacturer?: string | null
           classroom?: string | null
           condition?: string | null
           created_at?: string
