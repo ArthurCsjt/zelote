@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -43,6 +42,7 @@ interface ChromebookData {
   id: string;
   chromebook_id: string;
   model: string;
+  manufacturer?: string;
   serial_number?: string;
   patrimony_number?: string;
   status: 'disponivel' | 'emprestado' | 'fixo' | 'manutencao';
@@ -315,6 +315,7 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
         .update({
           chromebook_id: editingChromebook.chromebook_id,
           model: editingChromebook.model,
+          manufacturer: editingChromebook.manufacturer,
           serial_number: editingChromebook.serial_number,
           patrimony_number: editingChromebook.patrimony_number,
           status: editingChromebook.status as any,
@@ -673,15 +674,27 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
                      </div>
                   </div>
 
-                   <div className="space-y-1.5">
-                     <Label htmlFor="model" className="text-xs font-medium">Modelo *</Label>
-                     <Input
-                       id="model"
-                       value={editingChromebook.model}
-                       onChange={handleEditChange}
-                       placeholder="Ex: Chromebook 14e"
-                       className="h-9"
-                     />
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                     <div className="space-y-1.5">
+                       <Label htmlFor="model" className="text-xs font-medium">Modelo *</Label>
+                       <Input
+                         id="model"
+                         value={editingChromebook.model}
+                         onChange={handleEditChange}
+                         placeholder="Ex: Chromebook 14e"
+                         className="h-9"
+                       />
+                     </div>
+                     <div className="space-y-1.5">
+                       <Label htmlFor="manufacturer" className="text-xs font-medium">Fabricante</Label>
+                       <Input
+                         id="manufacturer"
+                         value={editingChromebook.manufacturer || ""}
+                         onChange={handleEditChange}
+                         placeholder="Ex: Lenovo"
+                         className="h-9"
+                       />
+                     </div>
                    </div>
 
                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
