@@ -54,8 +54,8 @@ const ChromebookRegistration = () => {
             </form>
             <QRCodeModal
                 open={showQRCode}
-                onClose={() => setShowQRCode(false)}
-                chromebookId={newChromebookData?.chromebookId}
+                onOpenChange={(open) => setShowQRCode(open)}
+                chromebookId={newChromebookData?.chromebook_id ?? newChromebookData?.chromebookId ?? newChromebookData?.id}
             />
         </div>
     );

@@ -74,7 +74,7 @@ const Index = () => {
         {loading && currentView !== 'menu' ? <div className="flex justify-center items-center h-64"><LoadingSpinner/></div> : renderCurrentView()}
         <ReturnDialog open={openReturnDialog} onOpenChange={setOpenReturnDialog} chromebookId={chromebookId} onChromebookIdChange={setChromebookId} returnData={returnData} onReturnDataChange={setReturnData} onConfirm={handleReturnClick} />
       </Layout>
-      <QRCodeModal isOpen={showQRCodeModal} onClose={() => setShowQRCodeModal(false)} chromebookId={selectedChromebookId} />
+  <QRCodeModal open={showQRCodeModal} onOpenChange={(open) => setShowQRCodeModal(open)} chromebookId={selectedChromebookId ?? undefined} />
     </>
   );
 };
