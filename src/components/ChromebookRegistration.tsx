@@ -62,7 +62,8 @@ export function ChromebookRegistration({ onRegistrationSuccess }: { onRegistrati
     const chromebookData = {
       model: formData.model, serialNumber: formData.series,
       patrimonyNumber: formData.patrimonyNumber || null,
-      manufacturer: formData.manufacturer, manufacturingYear: formData.manufacturingYear || null,
+      manufacturer: formData.manufacturer,
+      manufacturingYear: formData.manufacturingYear || null,
       observations: formData.observations || null,
       isProvisioned: formData.provisioning_status === 'provisioned',
       is_deprovisioned: formData.provisioning_status === 'deprovisioned',
