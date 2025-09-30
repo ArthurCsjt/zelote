@@ -1,0 +1,51 @@
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import type { Chromebook } from "@/types/database";
+
+// Definimos as "props" que este componente espera receber.
+// Ele precisa saber se está aberto, o que fazer para fechar,
+// qual chromebook deletar e o que fazer quando o usuário confirmar.
+interface ChromebookDeleteDialogProps {
+  isOpen: boolean;
+  onOpenChange: (isOpen: boolean) => void;
+  chromebookToDelete: Chromebook | null;
+  onConfirmDelete: () => void;
+}
+
+export const ChromebookDeleteDialog = ({
+  isOpen,
+  onOpenChange,
+  chromebookToDelete,
+  onConfirmDelete,
+}: ChromebookDeleteDialogProps) => {
+  return (
+    <AlertDialog open={isOpen} onOpenChange={onOpenChange}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Você tem certeza absoluta?</AlertDialogTitle>
+          <AlertDialogDescription>
+            Essa ação não pode ser desfeita. Isso irá excluir permanentemente o Chromebook 
+            <span className="font-bold text-foreground mx-1">
+              {chromebookToDelete?.chromebook_id || ''}
+            </span>
+            do banco de dados.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogAction onClick={onConfirmDelete}>
+            Confirmar Exclusão
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+};
