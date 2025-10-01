@@ -19,33 +19,47 @@ export function QRCodeReader({ open, onOpenChange, onScan }: QRCodeReaderProps) 
       return;
     }
 
-    const scanner = new Html5Qrcode(QR_SCANNER_ELEMENT_ID);
-    scannerRef.current = scanner;
-
-    scanner.start(
-      { facingMode: "environment" }, // Pede a câmera traseira por padrão
-      {
-        fps: 10,
-        qrbox: { width: 250, height: 250 },
-      },
-      (decodedText) => {
-        toast({ title: "Sucesso", description: "QR Code lido com sucesso" });
-        onScan(decodedText);
-        onOpenChange(false);
-      },
-      (errorMessage) => {
-        // Ignora erros de "QR code not found" que acontecem a cada frame
+    // A CORREÇÃO ESTÁ AQUI:
+    // Nós só tentamos criar o scanner DEPOIS que a div existe.
+    // Usamos um setTimeout para dar ao Dialog tempo de renderizar.
+    const startScanner = () => {
+      if (scannerRef.current) {
+        return; // Evita criar múltiplos scanners
       }
-    ).catch(err => {
-      console.error("Erro ao iniciar o scanner:", err);
-      toast({ title: "Erro de Câmera", description: "Não foi possível iniciar a câmera. Verifique as permissões.", variant: "destructive" });
-      onOpenChange(false);
-    });
+      
+      const scanner = new Html5Qrcode(QR_SCANNER_ELEMENT_ID);
+      scannerRef.current = scanner;
 
-    // Função de limpeza para parar a câmera quando o modal fechar
+      scanner.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: { width: 250, height: 250 } },
+        (decodedText) => {
+          toast({ title: "Sucesso", description: "QR Code lido com sucesso" });
+          onScan(decodedText);
+          onOpenChange(false);
+        },
+        (errorMessage) => {
+          // Ignora erros de "QR code not found"
+        }
+      ).catch(err => {
+        console.error("Erro ao iniciar o scanner:", err);
+        toast({ title: "Erro de Câmera", description: "Não foi possível iniciar a câmera. Verifique as permissões.", variant: "destructive" });
+        onOpenChange(false);
+      });
+    }
+
+    // Um pequeno atraso para garantir que o elemento do DOM esteja pronto
+    const timerId = setTimeout(startScanner, 100);
+
+    // Função de limpeza
     return () => {
+      clearTimeout(timerId); // Limpa o timer
       if (scannerRef.current && scannerRef.current.isScanning) {
         scannerRef.current.stop()
+          .then(() => {
+            scannerRef.current = null;
+            console.log("Scanner parado com sucesso.");
+          })
           .catch(err => console.error("Erro ao parar o scanner.", err));
       }
     };
@@ -61,7 +75,6 @@ export function QRCodeReader({ open, onOpenChange, onScan }: QRCodeReaderProps) 
           </DialogDescription>
         </DialogHeader>
         
-        {/* Container onde a nova biblioteca vai renderizar o vídeo */}
         <div id={QR_SCANNER_ELEMENT_ID} className="w-full rounded-md overflow-hidden" />
       </DialogContent>
     </Dialog>
