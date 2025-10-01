@@ -66,4 +66,4 @@ export function QRCodeReader({ open, onOpenChange, onScan }: QRCodeReaderProps) 
       </DialogContent>
     </Dialog>
   );
-}git 
+}
