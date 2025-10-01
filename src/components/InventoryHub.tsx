@@ -4,11 +4,9 @@ import { ChromebookInventory } from './ChromebookInventory';
 import { UserInventory } from './UserInventory';
 interface InventoryHubProps {
   onBack?: () => void;
-  onGenerateQrCode?: (chromebookId: string) => void;
 }
 export function InventoryHub({
-  onBack,
-  onGenerateQrCode
+  onBack
 }: InventoryHubProps) {
   return <div className="min-h-screen bg-background">
       <div className="container mx-auto p-4 max-w-7xl">

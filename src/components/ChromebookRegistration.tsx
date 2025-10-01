@@ -8,7 +8,6 @@ import { Checkbox } from "./ui/checkbox";
 import { Laptop } from "lucide-react";
 import { useDatabase } from '@/hooks/useDatabase';
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
-import type { ChromebookData } from "@/types/database";
 import {
   Select,
   SelectContent,
@@ -60,23 +59,27 @@ export function ChromebookRegistration({ onRegistrationSuccess }: { onRegistrati
       toast({ title: "Erro de Validação", description: "Preencha os campos Fabricante, Modelo e Série.", variant: "destructive" });
       return;
     }
-    const chromebookData: ChromebookData = {
-      model: formData.model, 
-      serialNumber: formData.series,
-      patrimonyNumber: formData.patrimonyNumber || undefined,
+    const chromebookData = {
+      model: formData.model, serialNumber: formData.series,
+      patrimonyNumber: formData.patrimonyNumber || null,
       manufacturer: formData.manufacturer,
-      condition: 'novo' as const, 
-      location: formData.isFixedInClassroom ? formData.classroomLocation : undefined,
+      manufacturingYear: formData.manufacturingYear || null,
+      observations: formData.observations || null,
+      isProvisioned: formData.provisioning_status === 'provisioned',
+      is_deprovisioned: formData.provisioning_status === 'deprovisioned',
+      condition: 'novo' as const, location: formData.isFixedInClassroom ? formData.classroomLocation : null,
       status: 'disponivel' as const,
     };
-    const createdChromebook = await createChromebook(chromebookData);
-    if (!createdChromebook) {
-      toast({ title: "Erro no Banco de Dados", description: "Falha ao cadastrar chromebook", variant: "destructive" });
+    const { data: createdChromebook, error } = await createChromebook(chromebookData);
+    if (error) {
+      toast({ title: "Erro no Banco de Dados", description: error.message, variant: "destructive" });
       return;
     }
-    toast({ title: "Sucesso!", description: `Chromebook ${createdChromebook.chromebook_id} cadastrado.` });
-    resetForm();
-    onRegistrationSuccess(createdChromebook);
+    if (createdChromebook) {
+      toast({ title: "Sucesso!", description: `Chromebook ${createdChromebook.chromebook_id} cadastrado.` });
+      resetForm();
+      onRegistrationSuccess(createdChromebook);
+    }
   };
 
   return (

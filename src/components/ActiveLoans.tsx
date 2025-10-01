@@ -13,11 +13,9 @@ import { OverdueAlertsPanel } from "./OverdueAlertsPanel";
 
 interface ActiveLoansProps {
   onBack?: () => void;
-  loans?: LoanHistoryItem[];
-  onReturn?: () => Promise<void>;
 }
 
-export function ActiveLoans({ onBack, loans: loansFromProps, onReturn: onReturnFromProps }: ActiveLoansProps) {
+export function ActiveLoans({ onBack }: ActiveLoansProps) {
   const { getActiveLoans, returnChromebookById } = useDatabase();
   const [activeLoans, setActiveLoans] = useState<LoanHistoryItem[]>([]);
   const [loading, setLoading] = useState(false);

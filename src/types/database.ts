@@ -93,7 +93,7 @@ export interface LoanHistoryItem {
 // Interface para dados do Chromebook no inventário (mantendo compatibilidade)
 export interface ChromebookData {
   id?: string;
-  chromebookId?: string;
+  chromebookId: string;
   model: string;
   manufacturer?: string;
   serialNumber?: string;
