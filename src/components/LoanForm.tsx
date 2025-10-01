@@ -31,13 +31,14 @@ interface LoanFormData {
 // Define a interface das props do componente
 interface LoanFormProps {
   onBack?: () => void;  // Função para voltar ao menu
+  onSubmit?: (data: LoanFormData) => Promise<void>;
 }
 
 /**
  * Componente de formulário para realizar novos empréstimos de Chromebooks
  * Permite empréstimos individuais ou em lote para alunos, professores ou funcionários
  */
-export function LoanForm({ onBack }: LoanFormProps) {
+export function LoanForm({ onBack, onSubmit }: LoanFormProps) {
   // === ESTADOS (STATES) ===
   
   const { createLoan, loading } = useDatabase();

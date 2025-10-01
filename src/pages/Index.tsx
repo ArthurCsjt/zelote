@@ -60,8 +60,25 @@ const Index = () => {
     }
   };
   
-  const getViewTitle = () => { /* Sua lógica de títulos */ };
-  const getViewSubtitle = () => { /* Sua lógica de subtítulos */ };
+  const getViewTitle = () => {
+    switch (currentView) {
+      case 'registration': return 'Cadastro';
+      case 'dashboard': return 'Dashboard';
+      case 'inventory': return 'Inventário';
+      case 'loan': return 'Empréstimos';
+      default: return 'Menu Principal';
+    }
+  };
+  
+  const getViewSubtitle = () => {
+    switch (currentView) {
+      case 'registration': return 'Cadastrar novos equipamentos e usuários';
+      case 'dashboard': return 'Visão geral do sistema';
+      case 'inventory': return 'Gerenciar equipamentos e usuários';
+      case 'loan': return 'Gerenciar empréstimos';
+      default: return 'Selecione uma opção';
+    }
+  };
 
   return (
     <>
