@@ -52,7 +52,7 @@ const Index = () => {
       case 'dashboard':
         return <Dashboard onBack={handleBackToMenu} />;
       case 'inventory':
-        return <InventoryHub onBack={handleBackToMenu} onGenerateQrCode={handleGenerateQrCode} />;
+        return <InventoryHub onBack={handleBackToMenu} />;
       case 'loan':
         return <LoanHub onBack={handleBackToMenu} />;
       default:
@@ -60,8 +60,25 @@ const Index = () => {
     }
   };
   
-  const getViewTitle = () => { /* Sua lógica de títulos */ };
-  const getViewSubtitle = () => { /* Sua lógica de subtítulos */ };
+  const getViewTitle = (): string => {
+    switch (currentView) {
+      case 'registration': return 'Cadastro';
+      case 'dashboard': return 'Dashboard';
+      case 'inventory': return 'Inventário';
+      case 'loan': return 'Empréstimos';
+      default: return 'Menu Principal';
+    }
+  };
+  
+  const getViewSubtitle = (): string => {
+    switch (currentView) {
+      case 'registration': return 'Registre novos itens';
+      case 'dashboard': return 'Visão geral do sistema';
+      case 'inventory': return 'Gerencie seu inventário';
+      case 'loan': return 'Controle de empréstimos';
+      default: return 'Escolha uma opção';
+    }
+  };
 
   return (
     <>

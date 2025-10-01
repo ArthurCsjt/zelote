@@ -49,12 +49,28 @@ export const DatabaseProvider = ({ children }: { children: ReactNode }) => {
   
   const createChromebook = useCallback(async (data: Partial<ChromebookData>) => {
     setLoading(true);
-    // Include manufacturer explicitly to ensure the field is sent to the database
-    const insertPayload = { ...data, manufacturer: data.manufacturer } as Partial<ChromebookData>;
+    // Generate chromebook_id from patrimony_number or a unique identifier
+    const chromebookId = data.patrimonyNumber || `CB-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    
+    // Map from ChromebookData (camelCase) to database schema (snake_case)
+    const insertPayload = {
+      chromebook_id: chromebookId,
+      model: data.model,
+      manufacturer: data.manufacturer,
+      serial_number: data.serialNumber,
+      patrimony_number: data.patrimonyNumber,
+      status: data.status || 'disponivel',
+      condition: data.condition,
+      location: data.location,
+      classroom: data.classroom,
+    };
     const { data: result, error } = await supabase.from('chromebooks').insert(insertPayload).select().single();
     setLoading(false);
-    return { data: result, error: error ? new Error(error.message) : null };
-  }, [user]);
+    if (error) {
+      return { data: null, error: new Error(error.message) };
+    }
+    return { data: result, error: null };
+  }, []);
 
   const getActiveLoans = useCallback(async (): Promise<LoanHistoryItem[]> => {
     // Implemente a busca real aqui
