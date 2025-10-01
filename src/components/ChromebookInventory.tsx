@@ -1,9 +1,7 @@
-import { useChromebookInventory } from "@/hooks/inventory/useChromebookInventory";
-import { useInventoryFilters } from "@/hooks/inventory/useInventoryFilters";
-import { ChromebookDeleteDialog } from "./inventory/chromebook/ChromebookDeleteDialog";
-import { ChromebookEditDialog } from "./inventory/chromebook/ChromebookEditDialog";
-import { InventoryFilters } from "./inventory/chromebook/InventoryFilters";
-import { InventoryTable } from "./inventory/chromebook/InventoryTable";
+import { ChromebookDeleteDialog } from "@/components/inventory/chromebook/ChromebookDeleteDialog";
+import { ChromebookEditDialog } from "@/components/inventory/chromebook/ChromebookEditDialog";
+import { InventoryFilters } from "@/components/inventory/chromebook/InventoryFilters";
+import { InventoryTable } from "@/components/inventory/chromebook/InventoryTable";
 
 // As props que o componente principal recebe de fora (do InventoryHub)
 interface ChromebookInventoryProps {
