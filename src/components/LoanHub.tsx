@@ -50,11 +50,11 @@ export const LoanHub = ({ onBack }: LoanHubProps) => {
           </TabsList>
           <TabsContent value="form">
             <div className="p-4">
-              <LoanForm />
+              <LoanForm onSubmit={handleNewLoan} />
             </div>
           </TabsContent>
           <TabsContent value="active">
-            <ActiveLoans />
+            <ActiveLoans loans={activeLoans} onReturn={loadData} />
           </TabsContent>
           <TabsContent value="history">
             <LoanHistory history={loanHistory} />
