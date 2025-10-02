@@ -1,3 +1,4 @@
+import { AuditHub } from '@/components/audit/AuditHub';
 import { useState } from "react";
 import { RegistrationHub } from "@/components/RegistrationHub";
 import Layout from "@/components/Layout";
@@ -7,7 +8,7 @@ import { InventoryHub } from "@/components/InventoryHub";
 import { Dashboard } from "@/components/Dashboard";
 import { QRCodeModal } from "@/components/QRCodeModal";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
-import { LoanHub } from "@/components/LoanHub"; // Importar o novo componente
+import { LoanHub } from "@/components/LoanHub";
 import type { ReturnFormData } from "@/types/database";
 import { useDatabase } from "@/hooks/useDatabase";
 
@@ -16,13 +17,16 @@ const Index = () => {
   const [openReturnDialog, setOpenReturnDialog] = useState(false);
   const [chromebookId, setChromebookId] = useState("");
   const [returnData, setReturnData] = useState<ReturnFormData>({ name: "", ra: "", email: "", type: 'individual', userType: 'aluno' });
-  const [currentView, setCurrentView] = useState<'menu' | 'registration' | 'dashboard' | 'inventory' | 'loan'>('menu');
+  
+  // ALTERAÇÃO 1: Adicionado 'audit' à lista de telas possíveis
+  const [currentView, setCurrentView] = useState<'menu' | 'registration' | 'dashboard' | 'inventory' | 'loan' | 'audit'>('menu');
   
   const [showQRCodeModal, setShowQRCodeModal] = useState(false);
   const [selectedChromebookId, setSelectedChromebookId] = useState<string | null>(null);
 
+  // ALTERAÇÃO 2: Corrigida a definição da função e adicionado 'audit' como rota válida
   const handleNavigation = (
-    route: 'registration' | 'dashboard' | 'inventory' | 'loan' | 'return'
+    route: 'registration' | 'dashboard' | 'inventory' | 'loan' | 'return' | 'audit'
   ) => {
     if (route === 'return') {
       setOpenReturnDialog(true);
@@ -30,6 +34,7 @@ const Index = () => {
     }
     setCurrentView(route);
   };
+
   const handleBackToMenu = () => setCurrentView('menu');
 
   const handleGenerateQrCode = (chromebookId: string) => {
@@ -55,6 +60,11 @@ const Index = () => {
         return <InventoryHub onBack={handleBackToMenu} onGenerateQrCode={handleGenerateQrCode} />;
       case 'loan':
         return <LoanHub onBack={handleBackToMenu} />;
+      
+      // ALTERAÇÃO 3: Adicionado o 'case' para renderizar o AuditHub
+      case 'audit':
+        return <AuditHub />;
+        
       default:
         return <MainMenu onNavigate={handleNavigation} />;
     }
@@ -74,7 +84,7 @@ const Index = () => {
         {loading && currentView !== 'menu' ? <div className="flex justify-center items-center h-64"><LoadingSpinner/></div> : renderCurrentView()}
         <ReturnDialog open={openReturnDialog} onOpenChange={setOpenReturnDialog} chromebookId={chromebookId} onChromebookIdChange={setChromebookId} returnData={returnData} onReturnDataChange={setReturnData} onConfirm={handleReturnClick} />
       </Layout>
-  <QRCodeModal open={showQRCodeModal} onOpenChange={(open) => setShowQRCodeModal(open)} chromebookId={selectedChromebookId ?? undefined} />
+      <QRCodeModal open={showQRCodeModal} onOpenChange={(open) => setShowQRCodeModal(open)} chromebookId={selectedChromebookId ?? undefined} />
     </>
   );
 };
