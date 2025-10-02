@@ -3,18 +3,19 @@ import { useInventoryAudit } from '@/hooks/inventory/useInventoryAudit';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { QRCodeReader } from '@/components/QRCodeReader'; // Nosso leitor de QR Code!
+import { QRCodeReader } from '@/components/QRCodeReader';
 import { Loader2, QrCode, ClipboardCheck } from 'lucide-react';
 
 export const AuditScanner = () => {
-  // Pegamos toda a lógica e o estado do nosso hook
   const { activeAudit, countedItems, countItem, completeAudit, isProcessing } = useInventoryAudit();
   const [isScannerOpen, setIsScannerOpen] = useState(false);
 
-  // Esta função é chamada quando o QRCodeReader lê um código com sucesso
+  // NOSSO DETETIVE
+  console.log('[AuditScanner] Renderizando... Auditoria ativa?', activeAudit);
+
   const handleScanSuccess = (scannedData: string) => {
     countItem(scannedData, 'qr_code');
-    setIsScannerOpen(false); // Fecha o modal do scanner
+    setIsScannerOpen(false);
   };
 
   if (!activeAudit) {
@@ -45,7 +46,6 @@ export const AuditScanner = () => {
               Finalizar Contagem
             </Button>
           </div>
-
           <div>
             <h3 className="font-semibold mb-2">
               Itens Contados: {countedItems.length}
@@ -68,8 +68,6 @@ export const AuditScanner = () => {
           </div>
         </CardContent>
       </Card>
-      
-      {/* O componente do scanner fica aqui, invisível até ser ativado */}
       <QRCodeReader
         open={isScannerOpen}
         onOpenChange={setIsScannerOpen}

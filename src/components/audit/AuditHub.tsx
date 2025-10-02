@@ -16,11 +16,14 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Loader2 } from 'lucide-react';
-import { AuditScanner } from './AuditScanner'; // <-- Importamos o novo componente
+import { AuditScanner } from './AuditScanner';
 
 export const AuditHub = () => {
   const { activeAudit, startAudit, isProcessing } = useInventoryAudit();
   const [newAuditName, setNewAuditName] = useState('');
+
+  // NOSSO DETETIVE
+  console.log('[AuditHub] Renderizando... Auditoria ativa?', activeAudit);
 
   const handleStartAudit = () => {
     if (newAuditName.trim()) {
@@ -28,8 +31,6 @@ export const AuditHub = () => {
     }
   };
 
-  // Se uma auditoria estiver ativa, mostramos a tela de scanner.
-  // Senão, mostramos a tela para iniciar uma nova.
   if (activeAudit) {
     return <AuditScanner />;
   }
