@@ -14,7 +14,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Calendar as CalendarComponent } from "./ui/calendar";
 import { cn } from "@/lib/utils";
 import { validateLoanFormData, sanitizeQRCodeData } from "@/utils/security";
-import { useDatabase } from '@/hooks/useDatabase';
+import { useDatabase } from '@/contexts/DatabaseContext';
 
 // Define a interface dos dados do formulário de empréstimo
 interface LoanFormData {
@@ -31,6 +31,7 @@ interface LoanFormData {
 // Define a interface das props do componente
 interface LoanFormProps {
   onBack?: () => void;  // Função para voltar ao menu
+  onSubmit?: (data: LoanFormData) => Promise<void>;  // Função para submeter o empréstimo
 }
 
 /**

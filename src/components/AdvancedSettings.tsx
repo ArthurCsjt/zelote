@@ -13,7 +13,7 @@ import {
 } from './ui/dialog';
 import { AlertTriangle } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
-import { useDatabase } from '@/hooks/useDatabase';
+import { useDatabase } from '@/contexts/DatabaseContext';
 
 export function AdvancedSettings() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);

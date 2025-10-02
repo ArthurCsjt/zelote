@@ -5,7 +5,7 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { toast } from '@/hooks/use-toast';
-import { useDatabase } from '@/hooks/useDatabase';
+import { useDatabase } from '@/contexts/DatabaseContext';
 interface StaffFormData {
   nomeCompleto: string;
   email: string;

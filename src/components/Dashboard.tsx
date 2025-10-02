@@ -12,7 +12,7 @@ import jsPDF from "jspdf";
 import { useToast } from "./ui/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MobileFriendlyDashboard } from "./MobileFriendlyDashboard";
-import { useDatabase } from '@/hooks/useDatabase';
+import { useDatabase } from '@/contexts/DatabaseContext';
 import { useOverdueLoans } from '@/hooks/useOverdueLoans';
 import IntelligentReportsTab from './IntelligentReportsTab';
 interface DashboardProps {

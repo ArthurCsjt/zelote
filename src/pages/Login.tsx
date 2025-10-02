@@ -206,7 +206,7 @@ const Login = () => {
     }
 
     // Tenta redefinir a senha
-    const result = await resetPassword(recoveryEmail, "");
+    const result = await resetPassword(recoveryEmail);
     if (result.success) {
       toast({
         title: "Recuperação iniciada",

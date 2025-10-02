@@ -11,7 +11,7 @@ import { QRCodeModal } from "@/components/QRCodeModal";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { LoanHub } from "@/components/LoanHub";
 import type { ReturnFormData } from "@/types/database";
-import { useDatabase } from "@/hooks/useDatabase";
+import { useDatabase } from "@/contexts/DatabaseContext";
 import { useAuth } from '@/contexts/AuthContext'; // <-- Adicionamos os hooks aqui
 import { useProfileRole } from '@/hooks/use-profile-role'; // <-- Adicionamos os hooks aqui
 
@@ -37,10 +37,18 @@ const Index = () => {
 
   const handleBackToMenu = () => setCurrentView('menu');
 
-  // ... (o resto das suas funções handle... continua igual)
-  const handleGenerateQrCode = (chromebookId: string) => { /* ... */ };
-  const handleRegistrationSuccess = (newChromebook: any) => { /* ... */ };
-  const handleReturnClick = () => { /* ... */ };
+  const handleGenerateQrCode = (chromebookId: string) => {
+    setSelectedChromebookId(chromebookId);
+    setShowQRCodeModal(true);
+  };
+  
+  const handleRegistrationSuccess = (newChromebook: any) => {
+    setCurrentView('inventory');
+  };
+  
+  const handleReturnClick = () => {
+    setOpenReturnDialog(false);
+  };
 
   const renderCurrentView = () => {
     switch (currentView) {
@@ -59,8 +67,27 @@ const Index = () => {
     }
   };
   
-  const getViewTitle = () => { /* ... */ };
-  const getViewSubtitle = () => { /* ... */ };
+  const getViewTitle = (): string => {
+    switch (currentView) {
+      case 'registration': return 'Cadastros';
+      case 'dashboard': return 'Dashboard';
+      case 'inventory': return 'Inventário';
+      case 'loan': return 'Empréstimos';
+      case 'audit': return 'Auditoria';
+      default: return 'Sistema de Gerenciamento de Chromebooks';
+    }
+  };
+  
+  const getViewSubtitle = (): string => {
+    switch (currentView) {
+      case 'registration': return 'Cadastre novos dispositivos';
+      case 'dashboard': return 'Visualize estatísticas';
+      case 'inventory': return 'Gerencie dispositivos';
+      case 'loan': return 'Controle de empréstimos';
+      case 'audit': return 'Auditoria de inventário';
+      default: return '';
+    }
+  };
   
   const loading = dbLoading || roleLoading; // Combinamos os loadings
 

@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { useDatabase } from '@/hooks/useDatabase';
+import { useDatabase } from '@/contexts/DatabaseContext';
 import {
   Card,
   CardContent,

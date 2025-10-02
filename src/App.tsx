@@ -4,7 +4,9 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import { useAuth } from "./contexts/AuthContext";
+import { AuthProvider } from "./providers/AuthProvider";
+import { DatabaseProvider } from "./contexts/DatabaseContext";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
@@ -38,7 +40,8 @@ const App = () => (
   <ErrorBoundary>
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <TooltipProvider>
+        <DatabaseProvider>
+          <TooltipProvider>
           {/* Componentes para exibição de notificações toast */}
           <MobileToaster />
           <Sonner />
@@ -69,7 +72,8 @@ const App = () => (
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
-        </TooltipProvider>
+          </TooltipProvider>
+        </DatabaseProvider>
       </AuthProvider>
     </QueryClientProvider>
   </ErrorBoundary>
