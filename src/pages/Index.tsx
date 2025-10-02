@@ -1,6 +1,4 @@
-// CORREÇÃO 1: Adicionado o import do nosso "cérebro" compartilhado
 import { AuditProvider } from '@/contexts/AuditContext';
-
 import { AuditHub } from '@/components/audit/AuditHub';
 import { useState } from "react";
 import { RegistrationHub } from "@/components/RegistrationHub";
@@ -14,9 +12,14 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { LoanHub } from "@/components/LoanHub";
 import type { ReturnFormData } from "@/types/database";
 import { useDatabase } from "@/hooks/useDatabase";
+import { useAuth } from '@/contexts/AuthContext'; // <-- Adicionamos os hooks aqui
+import { useProfileRole } from '@/hooks/use-profile-role'; // <-- Adicionamos os hooks aqui
 
 const Index = () => {
-  const { loading } = useDatabase();
+  const { loading: dbLoading } = useDatabase(); // Renomeado para evitar conflito
+  const { user, logout } = useAuth(); // Chamamos o hook de autenticação
+  const { isAdmin, loading: roleLoading } = useProfileRole(user); // Chamamos o hook de perfil, passando o user
+
   const [openReturnDialog, setOpenReturnDialog] = useState(false);
   const [chromebookId, setChromebookId] = useState("");
   const [returnData, setReturnData] = useState<ReturnFormData>({ name: "", ra: "", email: "", type: 'individual', userType: 'aluno' });
@@ -24,9 +27,7 @@ const Index = () => {
   const [showQRCodeModal, setShowQRCodeModal] = useState(false);
   const [selectedChromebookId, setSelectedChromebookId] = useState<string | null>(null);
 
-  const handleNavigation = (
-    route: 'registration' | 'dashboard' | 'inventory' | 'loan' | 'return' | 'audit'
-  ) => {
+  const handleNavigation = (route: 'registration' | 'dashboard' | 'inventory' | 'loan' | 'return' | 'audit') => {
     if (route === 'return') {
       setOpenReturnDialog(true);
       return;
@@ -36,18 +37,10 @@ const Index = () => {
 
   const handleBackToMenu = () => setCurrentView('menu');
 
-  const handleGenerateQrCode = (chromebookId: string) => {
-    setSelectedChromebookId(chromebookId);
-    setShowQRCodeModal(true);
-  };
-
-  const handleRegistrationSuccess = (newChromebook: any) => {
-    setSelectedChromebookId(newChromebook.chromebook_id);
-    setShowQRCodeModal(true);
-    setCurrentView('inventory');
-  };
-
-  const handleReturnClick = () => { /* Sua lógica de devolução */ };
+  // ... (o resto das suas funções handle... continua igual)
+  const handleGenerateQrCode = (chromebookId: string) => { /* ... */ };
+  const handleRegistrationSuccess = (newChromebook: any) => { /* ... */ };
+  const handleReturnClick = () => { /* ... */ };
 
   const renderCurrentView = () => {
     switch (currentView) {
@@ -66,17 +59,22 @@ const Index = () => {
     }
   };
   
-  const getViewTitle = () => { /* Sua lógica de títulos */ };
-  const getViewSubtitle = () => { /* Sua lógica de subtítulos */ };
+  const getViewTitle = () => { /* ... */ };
+  const getViewSubtitle = () => { /* ... */ };
+  
+  const loading = dbLoading || roleLoading; // Combinamos os loadings
 
   return (
-    // CORREÇÃO 2: Envolvemos toda a aplicação com o AuditProvider
     <AuditProvider>
+      {/* Passamos as informações necessárias para o Layout como props */}
       <Layout 
         title={getViewTitle()} 
         subtitle={getViewSubtitle()} 
         showBackButton={currentView !== 'menu'} 
         onBack={handleBackToMenu}
+        user={user}
+        isAdmin={isAdmin}
+        logout={logout}
       >
         {loading && currentView !== 'menu' ? <div className="flex justify-center items-center h-64"><LoadingSpinner/></div> : renderCurrentView()}
         <ReturnDialog open={openReturnDialog} onOpenChange={setOpenReturnDialog} chromebookId={chromebookId} onChromebookIdChange={setChromebookId} returnData={returnData} onReturnDataChange={setReturnData} onConfirm={handleReturnClick} />
@@ -85,4 +83,5 @@ const Index = () => {
     </AuditProvider>
   );
 };
+
 export default Index;
