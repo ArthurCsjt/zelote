@@ -1,3 +1,6 @@
+// CORREÇÃO 1: Adicionado o import do nosso "cérebro" compartilhado
+import { AuditProvider } from '@/contexts/AuditContext';
+
 import { AuditHub } from '@/components/audit/AuditHub';
 import { useState } from "react";
 import { RegistrationHub } from "@/components/RegistrationHub";
@@ -17,14 +20,10 @@ const Index = () => {
   const [openReturnDialog, setOpenReturnDialog] = useState(false);
   const [chromebookId, setChromebookId] = useState("");
   const [returnData, setReturnData] = useState<ReturnFormData>({ name: "", ra: "", email: "", type: 'individual', userType: 'aluno' });
-  
-  // ALTERAÇÃO 1: Adicionado 'audit' à lista de telas possíveis
   const [currentView, setCurrentView] = useState<'menu' | 'registration' | 'dashboard' | 'inventory' | 'loan' | 'audit'>('menu');
-  
   const [showQRCodeModal, setShowQRCodeModal] = useState(false);
   const [selectedChromebookId, setSelectedChromebookId] = useState<string | null>(null);
 
-  // ALTERAÇÃO 2: Corrigida a definição da função e adicionado 'audit' como rota válida
   const handleNavigation = (
     route: 'registration' | 'dashboard' | 'inventory' | 'loan' | 'return' | 'audit'
   ) => {
@@ -60,11 +59,8 @@ const Index = () => {
         return <InventoryHub onBack={handleBackToMenu} onGenerateQrCode={handleGenerateQrCode} />;
       case 'loan':
         return <LoanHub onBack={handleBackToMenu} />;
-      
-      // ALTERAÇÃO 3: Adicionado o 'case' para renderizar o AuditHub
       case 'audit':
         return <AuditHub />;
-        
       default:
         return <MainMenu onNavigate={handleNavigation} />;
     }
@@ -74,7 +70,8 @@ const Index = () => {
   const getViewSubtitle = () => { /* Sua lógica de subtítulos */ };
 
   return (
-    <>
+    // CORREÇÃO 2: Envolvemos toda a aplicação com o AuditProvider
+    <AuditProvider>
       <Layout 
         title={getViewTitle()} 
         subtitle={getViewSubtitle()} 
@@ -85,7 +82,7 @@ const Index = () => {
         <ReturnDialog open={openReturnDialog} onOpenChange={setOpenReturnDialog} chromebookId={chromebookId} onChromebookIdChange={setChromebookId} returnData={returnData} onReturnDataChange={setReturnData} onConfirm={handleReturnClick} />
       </Layout>
       <QRCodeModal open={showQRCodeModal} onOpenChange={(open) => setShowQRCodeModal(open)} chromebookId={selectedChromebookId ?? undefined} />
-    </>
+    </AuditProvider>
   );
 };
 export default Index;
