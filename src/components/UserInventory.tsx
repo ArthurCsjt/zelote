@@ -34,8 +34,7 @@ interface User {
 }
 
 export function UserInventory() {
-  const { user } = useAuth();
-  const { isAdmin } = useProfileRole(user);
+  const { isAdmin } = useProfileRole();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");

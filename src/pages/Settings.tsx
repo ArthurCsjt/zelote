@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import Layout from '@/components/Layout';
 import { useProfileRole } from '@/hooks/use-profile-role';
-import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -9,8 +8,7 @@ import { UserManagement } from './parts/UserManagement';
 import { AdvancedSettings } from '@/components/AdvancedSettings';
 
 const Settings = () => {
-  const { user, logout } = useAuth();
-  const { isAdmin, loading } = useProfileRole(user);
+  const { isAdmin, loading } = useProfileRole();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -20,7 +18,7 @@ const Settings = () => {
   }, [isAdmin, loading, navigate]);
 
   return (
-    <Layout title="Configurações" subtitle="Gerencie configurações administrativas" showBackButton onBack={() => navigate(-1)} user={user} isAdmin={isAdmin} logout={logout}>
+    <Layout title="Configurações" subtitle="Gerencie configurações administrativas" showBackButton onBack={() => navigate(-1)}>
       <div className="max-w-5xl mx-auto grid gap-6 animate-fade-in">
         {!isAdmin ? (
           <Alert>

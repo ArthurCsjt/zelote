@@ -5,7 +5,7 @@ import { Card, CardContent } from "./ui/card";
 import { format } from "date-fns";
 import { CheckCircle, Clock, User, Monitor, Target, AlertTriangle, RefreshCw, Computer } from "lucide-react";
 import { ReturnDialog } from "./ReturnDialog";
-import { useDatabase } from "@/contexts/DatabaseContext";
+import { useDatabase } from "@/hooks/useDatabase";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import type { LoanHistoryItem, ReturnFormData } from "@/types/database";
@@ -13,8 +13,6 @@ import { OverdueAlertsPanel } from "./OverdueAlertsPanel";
 
 interface ActiveLoansProps {
   onBack?: () => void;
-  loans?: LoanHistoryItem[];
-  onReturn?: () => Promise<void>;
 }
 
 export function ActiveLoans({ onBack }: ActiveLoansProps) {
@@ -82,9 +80,9 @@ export function ActiveLoans({ onBack }: ActiveLoansProps) {
     if (!selectedLoan) return;
 
     try {
-      await returnChromebookById(selectedLoan.chromebook_id || '');
+      const success = await returnChromebookById(selectedLoan.chromebook_id || '', returnData);
       
-      {
+      if (success) {
         setOpenReturnDialog(false);
         setSelectedLoan(null);
         setReturnData({

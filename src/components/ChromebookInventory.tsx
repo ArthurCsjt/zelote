@@ -57,14 +57,12 @@ interface ChromebookData {
 
 interface ChromebookInventoryProps {
   onBack?: () => void;
-  onGenerateQrCode?: (chromebookId: string) => void;
 }
 
-export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInventoryProps) {
+export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
   // Check if on mobile device
   const isMobile = useIsMobile();
-  const { user } = useAuth();
-  const { isAdmin } = useProfileRole(user);
+  const { isAdmin } = useProfileRole();
   
   // State for storing all Chromebooks
   const [chromebooks, setChromebooks] = useState<ChromebookData[]>([]);

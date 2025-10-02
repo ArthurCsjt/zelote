@@ -167,9 +167,8 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Erro geral:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
     return new Response(
-      JSON.stringify({ error: 'Erro interno do servidor', details: errorMessage }),
+      JSON.stringify({ error: 'Erro interno do servidor', details: error.message }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }

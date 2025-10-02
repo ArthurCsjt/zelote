@@ -6,7 +6,7 @@ import { ActiveLoans } from "@/components/ActiveLoans";
 import { LoanHistory } from "@/components/LoanHistory";
 import { LoanForm } from "@/components/LoanForm";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useDatabase } from "@/contexts/DatabaseContext";
+import { useDatabase } from "@/hooks/useDatabase";
 import type { LoanHistoryItem, LoanFormData } from "@/types/database";
 
 interface LoanHubProps {
