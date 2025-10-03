@@ -9,9 +9,11 @@ interface DatabaseContextType {
   getChromebooks: () => Promise<Chromebook[]>;
   updateChromebook: (id: string, data: Partial<ChromebookData>) => Promise<{ error: Error | null }>;
   deleteChromebook: (id: string) => Promise<{ error: Error | null }>;
-  createChromebook: (data: Partial<ChromebookData>) => Promise<{ data: any | null, error: Error | null }>;
+  createChromebook: (data: Partial<ChromebookData>) => Promise<{ data: Chromebook | null, error: Error | null }>;
   getActiveLoans: () => Promise<LoanHistoryItem[]>;
   getLoanHistory: () => Promise<LoanHistoryItem[]>;
+  createLoan: (data: any) => Promise<any>;
+  returnChromebookById: (id: string, returnData: any) => Promise<boolean>;
 }
 
 const DatabaseContext = createContext<DatabaseContextType | undefined>(undefined);
@@ -49,12 +51,19 @@ export const DatabaseProvider = ({ children }: { children: ReactNode }) => {
   
   const createChromebook = useCallback(async (data: Partial<ChromebookData>) => {
     setLoading(true);
-    // Include manufacturer explicitly to ensure the field is sent to the database
-    const insertPayload = { ...data, manufacturer: data.manufacturer } as Partial<ChromebookData>;
+    const insertPayload: any = {
+      model: data.model,
+      serial_number: data.serialNumber,
+      patrimony_number: data.patrimonyNumber,
+      manufacturer: data.manufacturer,
+      condition: data.condition || 'novo',
+      location: data.location,
+      status: 'disponivel' as const,
+    };
     const { data: result, error } = await supabase.from('chromebooks').insert(insertPayload).select().single();
     setLoading(false);
     return { data: result, error: error ? new Error(error.message) : null };
-  }, [user]);
+  }, []);
 
   const getActiveLoans = useCallback(async (): Promise<LoanHistoryItem[]> => {
     // Implemente a busca real aqui
@@ -66,6 +75,14 @@ export const DatabaseProvider = ({ children }: { children: ReactNode }) => {
     return [];
   }, []);
 
+  const createLoan = useCallback(async (data: any) => {
+    return {};
+  }, []);
+
+  const returnChromebookById = useCallback(async (id: string, returnData: any): Promise<boolean> => {
+    return true;
+  }, []);
+
   const value = useMemo(() => ({ 
     loading, 
     getChromebooks, 
@@ -73,8 +90,10 @@ export const DatabaseProvider = ({ children }: { children: ReactNode }) => {
     deleteChromebook,
     createChromebook,
     getActiveLoans, 
-    getLoanHistory 
-  }), [loading, getChromebooks, updateChromebook, deleteChromebook, createChromebook, getActiveLoans, getLoanHistory]);
+    getLoanHistory,
+    createLoan,
+    returnChromebookById
+  }), [loading, getChromebooks, updateChromebook, deleteChromebook, createChromebook, getActiveLoans, getLoanHistory, createLoan, returnChromebookById]);
 
   return (
     <DatabaseContext.Provider value={value}>

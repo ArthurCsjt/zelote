@@ -6,7 +6,7 @@ import { Textarea } from "./ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Checkbox } from "./ui/checkbox";
 import { Laptop } from "lucide-react";
-import { useDatabase } from '@/hooks/useDatabase';
+import { useDatabase } from '@/contexts/DatabaseContext';
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import {
   Select,
@@ -70,15 +70,15 @@ export function ChromebookRegistration({ onRegistrationSuccess }: { onRegistrati
       condition: 'novo' as const, location: formData.isFixedInClassroom ? formData.classroomLocation : null,
       status: 'disponivel' as const,
     };
-    const { data: createdChromebook, error } = await createChromebook(chromebookData);
-    if (error) {
-      toast({ title: "Erro no Banco de Dados", description: error.message, variant: "destructive" });
+    const result = await createChromebook(chromebookData);
+    if (result.error) {
+      toast({ title: "Erro no Banco de Dados", description: result.error.message, variant: "destructive" });
       return;
     }
-    if (createdChromebook) {
-      toast({ title: "Sucesso!", description: `Chromebook ${createdChromebook.chromebook_id} cadastrado.` });
+    if (result.data) {
+      toast({ title: "Sucesso!", description: `Chromebook ${result.data.chromebook_id} cadastrado.` });
       resetForm();
-      onRegistrationSuccess(createdChromebook);
+      onRegistrationSuccess(result.data);
     }
   };
 

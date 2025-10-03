@@ -1,21 +1,16 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
-import type { Database } from '@/types/database'; // Importando os tipos do Supabase
-
-// Definindo os tipos para facilitar o trabalho
-type Audit = Database['public']['Tables']['inventory_audits']['Row'];
-type AuditItem = Database['public']['Tables']['audit_items']['Row'];
 
 export const useInventoryAudit = () => {
-  const [activeAudit, setActiveAudit] = useState<Audit | null>(null);
-  const [countedItems, setCountedItems] = useState<AuditItem[]>([]);
+  const [activeAudit, setActiveAudit] = useState<any | null>(null);
+  const [countedItems, setCountedItems] = useState<any[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
 
   // Função para INICIAR uma nova auditoria
   const startAudit = async (name: string) => {
     setIsProcessing(true);
-    const { data, error } = await supabase
+    const { data, error }: any = await (supabase as any)
       .from('inventory_audits')
       .insert({ audit_name: name })
       .select()
@@ -64,7 +59,7 @@ export const useInventoryAudit = () => {
     }
 
     // 3. Inserir o registro da contagem na tabela 'audit_items'
-    const { data: newAuditItem, error: insertError } = await supabase
+    const { data: newAuditItem, error: insertError }: any = await (supabase as any)
       .from('audit_items')
       .insert({
         audit_id: activeAudit.id,
@@ -91,7 +86,7 @@ export const useInventoryAudit = () => {
     if (!activeAudit) return;
 
     setIsProcessing(true);
-    const { error } = await supabase
+    const { error }: any = await (supabase as any)
       .from('inventory_audits')
       .update({
         status: 'concluida',
