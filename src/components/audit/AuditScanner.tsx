@@ -1,43 +1,73 @@
 import { useState } from 'react';
-import { useInventoryAudit } from '@/hooks/inventory/useInventoryAudit';
+import { useAudit } from '@/contexts/AuditContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { QRCodeReader } from '@/components/QRCodeReader';
-import { Loader2, QrCode, ClipboardCheck } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Loader2, QrCode, ClipboardCheck, PlusCircle } from 'lucide-react';
 
 export const AuditScanner = () => {
-  const { activeAudit, countedItems, countItem, completeAudit, isProcessing } = useInventoryAudit();
+  const { activeAudit, countedItems, countItem, completeAudit, isProcessing } = useAudit();
   const [isScannerOpen, setIsScannerOpen] = useState(false);
-
-  // NOSSO DETETIVE
-  console.log('[AuditScanner] Renderizando... Auditoria ativa?', activeAudit);
+  const [manualId, setManualId] = useState('');
 
   const handleScanSuccess = (scannedData: string) => {
     countItem(scannedData, 'qr_code');
     setIsScannerOpen(false);
   };
 
+  const handleAddManualId = () => {
+    if (manualId.trim()) {
+      countItem(manualId.trim(), 'manual');
+      setManualId('');
+    }
+  };
+
   if (!activeAudit) {
-    return <p>Erro: Nenhuma auditoria ativa encontrada.</p>;
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Carregando...</CardTitle>
+          <CardDescription>Aguardando dados da auditoria ativa.</CardDescription>
+        </CardHeader>
+      </Card>
+    );
   }
 
   return (
     <>
       <Card>
         <CardHeader>
-          <CardTitle>Contagem em Andamento</CardTitle>
+          <CardTitle>Contagem: {activeAudit.audit_name}</CardTitle>
           <CardDescription>
-            Escaneie os QR Codes dos Chromebooks. Os itens contados aparecerão na lista abaixo.
+            Digite o ID do Chromebook ou escaneie o QR Code. Os itens contados aparecerão na lista abaixo.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col sm:flex-row gap-4 mb-6">
-            <Button onClick={() => setIsScannerOpen(true)} size="lg" className="flex-1">
+          <div className="space-y-4 mb-6">
+            <div className="grid w-full items-center gap-1.5">
+              <Label htmlFor="manual-id">Adicionar ID Manualmente</Label>
+              <div className="flex space-x-2">
+                <Input
+                  id="manual-id"
+                  placeholder="Digite o ID do Chromebook"
+                  value={manualId}
+                  onChange={(e) => setManualId(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleAddManualId()}
+                  autoComplete="off"
+                />
+                <Button onClick={handleAddManualId} disabled={!manualId.trim() || isProcessing}>
+                  <PlusCircle className="mr-2 h-4 w-4" /> Adicionar
+                </Button>
+              </div>
+            </div>
+            <Button onClick={() => setIsScannerOpen(true)} size="lg" className="w-full">
               <QrCode className="mr-2 h-5 w-5" />
               Escanear Item (QR Code)
             </Button>
-            <Button onClick={completeAudit} size="lg" variant="secondary" className="flex-1" disabled={isProcessing}>
+            <Button onClick={completeAudit} size="lg" variant="secondary" className="w-full" disabled={isProcessing || countedItems.length === 0}>
               {isProcessing ? (
                 <Loader2 className="mr-2 h-5 w-5 animate-spin" />
               ) : (
@@ -54,20 +84,24 @@ export const AuditScanner = () => {
               {countedItems.length > 0 ? (
                 <ul>
                   {countedItems.map((item) => (
-                    <li key={item.id} className="text-sm p-1">
-                      Item ID: ...{String(item.chromebook_id).slice(-6)} (Contado em: {new Date(item.counted_at).toLocaleTimeString()})
+                    <li key={item.id} className="text-sm p-1.5 border-b last:border-b-0">
+                      {/* ALTERAÇÃO: Exibindo apenas o ID */}
+                      ID: {item.display_id || item.chromebook_id}
                     </li>
                   ))}
                 </ul>
               ) : (
-                <p className="text-sm text-muted-foreground text-center pt-4">
-                  Nenhum item escaneado ainda.
-                </p>
+                <div className="flex items-center justify-center h-full">
+                  <p className="text-sm text-muted-foreground text-center pt-4">
+                    Nenhum item contado ainda.
+                  </p>
+                </div>
               )}
             </ScrollArea>
           </div>
         </CardContent>
       </Card>
+      
       <QRCodeReader
         open={isScannerOpen}
         onOpenChange={setIsScannerOpen}

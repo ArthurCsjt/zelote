@@ -1,116 +1,172 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/components/ui/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
+import { toast } from '@/hooks/use-toast';
+import type { Audit, CountedItem } from '@/types/database';
+
+type DisplayCountedItem = CountedItem & { display_id?: string };
 
 export const useInventoryAudit = () => {
-  const [activeAudit, setActiveAudit] = useState<any | null>(null);
-  const [countedItems, setCountedItems] = useState<any[]>([]);
+  const { user } = useAuth();
+  const [activeAudit, setActiveAudit] = useState<Audit | null>(null);
+  const [completedAudits, setCompletedAudits] = useState<Audit[]>([]);
+  const [countedItems, setCountedItems] = useState<DisplayCountedItem[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // Função para INICIAR uma nova auditoria
+  const loadCompletedAudits = useCallback(async () => {
+    if (!user?.id) return;
+    try {
+      const { data, error } = await supabase
+        .from('inventory_audits')
+        .select('*')
+        .eq('status', 'concluida')
+        .eq('created_by', user.id)
+        .order('completed_at', { ascending: false });
+      if (error) throw error;
+      setCompletedAudits(data || []);
+    } catch (e: any) {
+      toast({ title: 'Erro ao carregar histórico', description: e.message, variant: 'destructive' });
+    }
+  }, [user]);
+
+  const loadActiveAudit = useCallback(async () => {
+    if (!user?.id) return;
+    try {
+      setIsProcessing(true);
+      const { data, error } = await supabase
+        .from('inventory_audits') 
+        .select('*')
+        .eq('status', 'em_andamento')
+        .eq('created_by', user.id)
+        .order('start_at', { ascending: false })
+        .limit(1)
+        .single();
+      if (error && error.code !== 'PGRST116') throw error;
+      setActiveAudit(data);
+      if (data) {
+        const { data: items, error: itemsError } = await supabase
+          .from('audit_items')
+          .select('*')
+          .eq('audit_id', data.id)
+          .order('counted_at', { ascending: false });
+        if (itemsError) throw itemsError;
+        
+        const itemPromises = items.map(async (item) => {
+          const { data: chromebook } = await supabase
+            .from('chromebooks')
+            .select('chromebook_id')
+            .eq('id', item.chromebook_id)
+            .single();
+          return { ...item, display_id: chromebook?.chromebook_id || 'ID não encontrado' };
+        });
+        const fullItems = await Promise.all(itemPromises);
+        setCountedItems(fullItems);
+      }
+    } catch (e: any) {
+      toast({ title: 'Erro ao carregar auditoria ativa', description: e.message, variant: 'destructive' });
+    } finally {
+      setIsProcessing(false);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    loadActiveAudit();
+    loadCompletedAudits();
+  }, [loadActiveAudit, loadCompletedAudits]);
+
   const startAudit = async (name: string) => {
-    setIsProcessing(true);
-    const { data, error }: any = await (supabase as any)
-      .from('inventory_audits')
-      .insert({ audit_name: name })
-      .select()
-      .single();
-
-    if (error) {
-      toast({ title: 'Erro', description: 'Não foi possível iniciar a auditoria.', variant: 'destructive' });
+    if (!user) return;
+    try {
+      setIsProcessing(true);
+      const { data, error } = await supabase
+        .from('inventory_audits')
+        .insert({
+          audit_name: name,
+          created_by: user.id,
+          status: 'em_andamento',
+        })
+        .select('*')
+        .single();
+      if (error) throw error;
+      setActiveAudit(data);
+      setCountedItems([]);
+      toast({ title: 'Contagem iniciada!', description: `A auditoria "${name}" começou.` });
+    } catch (e: any) {
+      toast({ title: 'Erro ao iniciar contagem', description: e.message, variant: 'destructive' });
+    } finally {
       setIsProcessing(false);
-      return;
     }
-
-    setActiveAudit(data);
-    setCountedItems([]); // Limpa a lista de itens da auditoria anterior
-    setIsProcessing(false);
-    toast({ title: 'Auditoria iniciada!', description: `Contagem '${name}' em andamento.` });
   };
 
-  // Função para CONTAR um item (via QR Code ou ID manual)
-  const countItem = async (chromebookIdentifier: string, method: 'qr_code' | 'manual_id') => {
-    if (!activeAudit) {
-      toast({ title: 'Erro', description: 'Nenhuma auditoria ativa.', variant: 'destructive' });
-      return;
-    }
-
-    setIsProcessing(true);
-
-    // 1. Encontrar o chromebook no banco de dados pelo seu ID único (não o UUID)
-    const { data: chromebook, error: findError } = await supabase
-      .from('chromebooks')
-      .select('id, chromebook_id, model')
-      .eq('chromebook_id', chromebookIdentifier)
-      .single();
-
-    if (findError || !chromebook) {
-      toast({ title: 'Não encontrado', description: `Chromebook com ID '${chromebookIdentifier}' não existe.`, variant: 'destructive' });
-      setIsProcessing(false);
-      return;
-    }
-
-    // 2. Verificar se este item já foi contado NESTA auditoria
-    const alreadyCounted = countedItems.some(item => item.chromebook_id === chromebook.id);
-    if (alreadyCounted) {
-      toast({ title: 'Atenção', description: `O item ${chromebook.chromebook_id} já foi contado.`, variant: 'default' });
-      setIsProcessing(false);
-      return;
-    }
-
-    // 3. Inserir o registro da contagem na tabela 'audit_items'
-    const { data: newAuditItem, error: insertError }: any = await (supabase as any)
-      .from('audit_items')
-      .insert({
-        audit_id: activeAudit.id,
-        chromebook_id: chromebook.id,
-        scan_method: method,
-      })
-      .select()
-      .single();
-
-    if (insertError) {
-      toast({ title: 'Erro', description: 'Não foi possível registrar a contagem.', variant: 'destructive' });
-      setIsProcessing(false);
-      return;
-    }
+  const countItem = async (identifier: string, method: 'manual' | 'qr_code') => {
+    if (!activeAudit || !user) return;
     
-    // Atualiza o estado local e dá feedback
-    setCountedItems(prev => [...prev, newAuditItem]);
-    toast({ title: 'Contado!', description: `${chromebook.chromebook_id} - ${chromebook.model}` });
-    setIsProcessing(false);
+    if (countedItems.some(item => item.display_id === identifier)) {
+      toast({
+        title: 'Item já contado',
+        description: `O Chromebook "${identifier}" já está na lista.`,
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    try {
+      setIsProcessing(true);
+      const { data: chromebook, error: findError } = await supabase
+        .from('chromebooks')
+        .select('id, chromebook_id')
+        .or(`chromebook_id.eq.${identifier},serial_number.eq.${identifier},patrimony_number.eq.${identifier}`)
+        .single();
+      if (findError || !chromebook) {
+        throw new Error(`Chromebook com identificador "${identifier}" não encontrado.`);
+      }
+
+      const { data, error } = await supabase
+        .from('audit_items')
+        .insert({
+          audit_id: activeAudit.id,
+          chromebook_id: chromebook.id,
+          counted_at: new Date().toISOString(),
+          counted_by: user.id,
+          scan_method: method,
+        })
+        .select('*')
+        .single();
+      if (error) throw error;
+      
+      const displayItem = { ...data, display_id: chromebook.chromebook_id };
+      setCountedItems(prev => [displayItem, ...prev]);
+
+      toast({ title: 'Item contado!', description: `ID: ${chromebook.chromebook_id}` });
+    } catch (e: any) {
+      toast({ title: 'Erro ao contar item', description: e.message, variant: 'destructive' });
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
-  // Função para FINALIZAR a auditoria
   const completeAudit = async () => {
     if (!activeAudit) return;
+    try {
+      setIsProcessing(true);
+      
+      const { error } = await supabase
+        .from('inventory_audits')
+        .update({ status: 'concluida', completed_at: new Date().toISOString() })
+        .eq('id', activeAudit.id);
 
-    setIsProcessing(true);
-    const { error }: any = await (supabase as any)
-      .from('inventory_audits')
-      .update({
-        status: 'concluida',
-        completed_at: new Date().toISOString(),
-      })
-      .eq('id', activeAudit.id);
+      if (error) throw error;
 
-    if (error) {
-      toast({ title: 'Erro', description: 'Não foi possível finalizar a auditoria.', variant: 'destructive' });
-    } else {
-      toast({ title: 'Auditoria Concluída!', description: 'A contagem foi finalizada com sucesso.' });
+      toast({ title: 'Contagem finalizada!', description: `A auditoria foi concluída com ${countedItems.length} itens.` });
       setActiveAudit(null);
       setCountedItems([]);
+      await loadCompletedAudits();
+    } catch (e: any) {
+      toast({ title: 'Erro ao finalizar', description: e.message, variant: 'destructive' });
+    } finally {
+      setIsProcessing(false);
     }
-    setIsProcessing(false);
   };
 
-  // O hook retorna os estados e as funções para a UI usar
-  return {
-    activeAudit,
-    countedItems,
-    isProcessing,
-    startAudit,
-    countItem,
-    completeAudit,
-  };
+  return { activeAudit, completedAudits, countedItems, startAudit, countItem, completeAudit, isProcessing };
 };
