@@ -10,6 +10,8 @@ interface LayoutProps {
   subtitle?: string;
   showBackButton?: boolean;
   onBack?: () => void;
+  isAdmin?: boolean;
+  logout?: () => void;
 }
 const Layout: React.FC<LayoutProps> = ({
   children,

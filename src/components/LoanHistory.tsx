@@ -98,7 +98,7 @@ export function LoanHistory({ history }: LoanHistoryProps) {
                             <span className="font-medium text-green-800">Empréstimo realizado</span>
                           </div>
                           <span className="text-sm text-green-700">
-                            {format(new Date(loan.loan_date), "dd/MM/yyyy 'às' HH:mm")}
+                            {loan.loan_date ? format(new Date(loan.loan_date), "dd/MM/yyyy 'às' HH:mm") : '-'}
                           </span>
                         </div>
                       </div>

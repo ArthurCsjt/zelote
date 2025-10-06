@@ -330,7 +330,7 @@ export const useDatabase = () => {
         throw new Error('Chromebook não encontrado ou não está emprestado');
       }
 
-      const result = await createReturn(activeLoan.id, data);
+      const result = await createReturn(activeLoan.id || '', data);
       return !!result;
     } catch (error: any) {
       toast({ title: "Erro", description: error.message, variant: "destructive" });

@@ -2,7 +2,7 @@ import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { ChromebookInventory } from './ChromebookInventory';
 import { UserInventory } from './UserInventory';
-interface InventoryHubProps {
+export interface InventoryHubProps {
   onBack?: () => void;
 }
 export function InventoryHub({

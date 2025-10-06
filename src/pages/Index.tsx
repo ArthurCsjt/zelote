@@ -29,12 +29,12 @@ const Index = () => {
   const [showQRCodeModal, setShowQRCodeModal] = useState(false);
   const [selectedChromebookId, setSelectedChromebookId] = useState<string | null>(null);
 
-  const handleNavigation = (route: 'registration' | 'dashboard' | 'inventory' | 'loan' | 'return' | 'audit') => {
+  const handleNavigation = (route: 'registration' | 'dashboard' | 'inventory' | 'loan' | 'return' | 'audit' | 'intelligent-reports') => {
     if (route === 'return') {
       setOpenReturnDialog(true);
       return;
     }
-    setCurrentView(route);
+    setCurrentView(route === 'intelligent-reports' ? 'dashboard' : route);
   };
 
   const handleBackToMenu = () => setCurrentView('menu');
@@ -59,7 +59,7 @@ const Index = () => {
       case 'dashboard':
         return <Dashboard onBack={handleBackToMenu} />;
       case 'inventory':
-        return <InventoryHub onBack={handleBackToMenu} onGenerateQrCode={handleGenerateQrCode} />;
+        return <InventoryHub onBack={handleBackToMenu} />;
       case 'loan':
         return <LoanHub onBack={handleBackToMenu} />;
       // case 'audit':
@@ -81,14 +81,13 @@ const Index = () => {
         subtitle={getViewSubtitle()} 
         showBackButton={currentView !== 'menu'} 
         onBack={handleBackToMenu}
-        user={user}
         isAdmin={isAdmin}
         logout={logout}
       >
         {loading && currentView !== 'menu' ? <div className="flex justify-center items-center h-64"><LoadingSpinner/></div> : renderCurrentView()}
         <ReturnDialog open={openReturnDialog} onOpenChange={setOpenReturnDialog} chromebookId={chromebookId} onChromebookIdChange={setChromebookId} returnData={returnData} onReturnDataChange={setReturnData} onConfirm={handleReturnClick} />
       </Layout>
-      <QRCodeModal open={showQRCodeModal} onOpenChange={(open) => setShowQRCodeModal(open)} chromebookId={selectedChromebookId ?? undefined} />
+      <QRCodeModal open={showQRCodeModal} onOpenChange={(open) => setShowQRCodeModal(open)} chromebookId={selectedChromebookId || ''} />
     </>
   );
 };
