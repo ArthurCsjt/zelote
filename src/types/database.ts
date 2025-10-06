@@ -135,7 +135,7 @@ export interface AuditItem {
   created_at: string;
   // Campos adicionais para melhorias
   expected_location?: string;
-  actual_location?: string;
+  // Removendo actual_location que não existe no banco atual
   condition_found?: string;
   model_found?: string;
   serial_number_found?: string;
@@ -168,7 +168,8 @@ export interface AuditReport {
 export interface AuditDiscrepancy {
   chromebook_id: string;
   expected_location?: string;
-  actual_location?: string;
+  // Localização encontrada na contagem (sem usar actual_location no schema)
+  location_found?: string;
   condition_expected?: string;
   condition_found?: string;
   notes?: string;
@@ -220,8 +221,10 @@ export interface CountedItemWithDetails {
   display_id?: string;
   model?: string;
   manufacturer?: string;
+  serial_number?: string;
   location?: string;
   expected_location?: string;
+  location_found?: string;
   condition?: string;
   condition_found?: string;
   status?: ChromebookStatus;

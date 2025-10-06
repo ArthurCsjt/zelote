@@ -54,28 +54,36 @@ export function QRCodeReader({ open, onOpenChange, onScan }: QRCodeReaderProps) 
     // Função de limpeza
     return () => {
       clearTimeout(timerId); // Limpa o timer
-      if (scannerRef.current && scannerRef.current.isScanning) {
-        scannerRef.current.stop()
+      if (scannerRef.current && (scannerRef.current as any).isScanning) {
+        scannerRef.current
+          .stop()
           .then(() => {
             scannerRef.current = null;
             console.log("Scanner parado com sucesso.");
           })
           .catch(err => console.error("Erro ao parar o scanner.", err));
+      } else if (scannerRef.current) {
+        // Se não estiver escaneando, apenas limpe a referência
+        scannerRef.current = null;
       }
     };
   }, [open, onScan, onOpenChange]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-sm sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Escaneie o QR Code</DialogTitle>
-          <DialogDescription>
-            Posicione o QR Code na área da câmera
-          </DialogDescription>
-        </DialogHeader>
-        
-        <div id={QR_SCANNER_ELEMENT_ID} className="w-full rounded-md overflow-hidden" />
+      <DialogContent className="max-w-[95vw] sm:max-w-[800px] md:max-w-[900px] overflow-auto select-text">
+        <div className="min-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Escaneie o QR Code</DialogTitle>
+            <DialogDescription>
+              Posicione o QR Code na área da câmera
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="w-full overflow-auto">
+            <div id={QR_SCANNER_ELEMENT_ID} className="w-full rounded-md overflow-hidden" />
+          </div>
+        </div>
       </DialogContent>
     </Dialog>
   );

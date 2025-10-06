@@ -61,7 +61,7 @@ export const AuditReportComponent: React.FC<AuditReportProps> = ({ report, onExp
 
         discrepancies.locationMismatches.forEach(item => {
           doc.setFontSize(10);
-          doc.text(`${item.chromebook_id} - Esperado: ${item.expected_location} | Encontrado: ${item.actual_location}`, 25, yPos);
+          doc.text(`${item.chromebook_id} - Esperado: ${item.expected_location} | Encontrado: ${item.location_found ?? 'N/D'}` , 25, yPos);
           yPos += 8;
         });
       }
@@ -242,7 +242,7 @@ export const AuditReportComponent: React.FC<AuditReportProps> = ({ report, onExp
                     <div key={index} className="p-3 bg-orange-50 border border-orange-200 rounded-lg">
                       <div className="font-medium">{item.chromebook_id}</div>
                       <div className="text-sm text-muted-foreground">
-                        Esperado: {item.expected_location} | Encontrado: {item.actual_location}
+                        Esperado: {item.expected_location} | Encontrado: {item.location_found ?? 'N/D'}
                       </div>
                     </div>
                   ))}

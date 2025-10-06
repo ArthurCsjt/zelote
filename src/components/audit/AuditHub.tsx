@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, Plus, History, FileText } from 'lucide-react';
+import { Loader2, Plus, History, FileText, Trash2 } from 'lucide-react';
 import { AuditScanner } from './AuditScanner';
 import { AuditStats } from './AuditStats';
 import { AuditFiltersComponent } from './AuditFilters';
@@ -31,6 +31,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+ 
 
 export const AuditHub = () => {
   const {
@@ -44,10 +45,19 @@ export const AuditHub = () => {
     setFilters,
     startAudit,
     generateReport,
-    calculateStats
+    calculateStats,
+    deleteAudit,
+    reloadAudits
   } = useAudit();
   const [newAuditName, setNewAuditName] = useState('');
   const [activeTab, setActiveTab] = useState('current');
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    if (value === 'history') {
+      reloadAudits();
+    }
+  };
 
   const handleStartAudit = () => {
     if (newAuditName.trim()) {
@@ -65,7 +75,7 @@ export const AuditHub = () => {
 
   return (
     <div className="space-y-6">
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="current">Auditoria Atual</TabsTrigger>
           <TabsTrigger value="history">Histórico</TabsTrigger>
@@ -122,6 +132,56 @@ export const AuditHub = () => {
             </CardContent>
           </Card>
 
+          {/* Auditorias já realizadas (resumo) */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <History className="h-5 w-5" />
+                Auditorias já realizadas
+              </CardTitle>
+              <CardDescription>
+                Visualize rapidamente as últimas auditorias concluídas.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {completedAudits && completedAudits.length > 0 ? (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Nome</TableHead>
+                      <TableHead className="text-right">Finalizada</TableHead>
+                      <TableHead className="text-right">Itens</TableHead>
+                      <TableHead className="text-right">Conclusão</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {completedAudits.slice(0, 5).map((audit) => (
+                      <TableRow key={audit.id}>
+                        <TableCell className="font-medium">{audit.audit_name}</TableCell>
+                        <TableCell className="text-right">
+                          {audit.completed_at
+                            ? format(new Date(audit.completed_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })
+                            : 'N/A'}
+                        </TableCell>
+                        <TableCell className="text-right">{audit.total_counted ?? 'N/A'}</TableCell>
+                        <TableCell className="text-right">
+                          {audit.total_expected && audit.total_counted
+                            ? `${((audit.total_counted / audit.total_expected) * 100).toFixed(1)}%`
+                            : 'N/A'}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              ) : (
+                <p className="text-sm text-muted-foreground">Nenhuma auditoria concluída para exibir.</p>
+              )}
+              <div className="mt-4 flex justify-end">
+                <Button variant="secondary" onClick={() => setActiveTab('history')}>Ver histórico completo</Button>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Dashboard de Estatísticas (quando não há auditoria ativa) */}
           {countedItems.length > 0 && (
             <>
@@ -165,6 +225,7 @@ export const AuditHub = () => {
                       <TableHead className="text-right">Data de Finalização</TableHead>
                       <TableHead className="text-right">Itens Contados</TableHead>
                       <TableHead className="text-right">Taxa de Conclusão</TableHead>
+                      <TableHead className="text-right">Ações</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -183,6 +244,29 @@ export const AuditHub = () => {
                           {audit.total_expected && audit.total_counted
                             ? `${((audit.total_counted / audit.total_expected) * 100).toFixed(1)}%`
                             : 'N/A'}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700">
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Excluir Auditoria</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Esta ação removerá a auditoria "{audit.audit_name}" e todos os itens relacionados. Deseja continuar?
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => deleteAudit(audit.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                                  Excluir
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
                         </TableCell>
                       </TableRow>
                     ))}

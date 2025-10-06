@@ -77,19 +77,21 @@ const Layout: React.FC<LayoutProps> = ({
     setShowInstallBanner(false);
     localStorage.setItem('pwa-banner-dismissed', Date.now().toString());
   };
-  return <div className={`min-h-screen bg-background text-foreground ${isStandalone ? 'safe-area-top safe-area-bottom safe-area-left safe-area-right' : ''}`}>
+  return (
+    <div className={`min-h-screen bg-background text-foreground ${isStandalone ? 'safe-area-top safe-area-bottom safe-area-left safe-area-right' : ''}`}>
       {/* Status Bar Overlay for iOS in standalone mode */}
       {isStandalone && <div className="status-bar-overlay" />}
-
 
       {/* Header */}
       <header className={`bg-card/95 backdrop-blur-xl shadow-sm border-b border-border fixed top-0 left-0 right-0 z-50 ${isStandalone ? 'safe-area-top' : ''}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center gap-4">
-              {showBackButton && <button onClick={onBack} className="p-2 rounded-full hover:bg-accent transition-colors duration-200 touch-manipulation text-inherit">
+              {showBackButton && (
+                <button onClick={onBack} className="p-2 rounded-full hover:bg-accent transition-colors duration-200 touch-manipulation text-inherit">
                   <ArrowLeft className="w-5 h-5 text-muted-foreground rounded-none bg-inherit" />
-                </button>}
+                </button>
+              )}
               <div>
                 <h1 className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent text-2xl font-bold text-left">
                   Zelote
@@ -100,18 +102,19 @@ const Layout: React.FC<LayoutProps> = ({
                 </div>
               </div>
             </div>
-            
+
             <div className="flex items-center space-x-4">
-              
               <div className="hidden md:flex items-center space-x-2 text-sm bg-accent rounded-full px-3 py-1.5">
                 <User className="w-4 h-4 text-muted-foreground" />
                 <span className="text-foreground selectable-text">
                   {user?.email?.substring(0, 20)}...
                 </span>
               </div>
-              {isAdmin && <button onClick={() => navigate('/settings')} className="flex items-center space-x-1 text-sm text-muted-foreground hover:text-foreground transition-colors duration-200 bg-accent hover:bg-accent/80 rounded-full px-3 py-1.5 touch-manipulation">
+              {isAdmin && (
+                <button onClick={() => navigate('/settings')} className="flex items-center space-x-1 text-sm text-muted-foreground hover:text-foreground transition-colors duration-200 bg-accent hover:bg-accent/80 rounded-full px-3 py-1.5 touch-manipulation">
                   <span>Configurações</span>
-                </button>}
+                </button>
+              )}
               <button onClick={logout} className="flex items-center space-x-1 text-sm text-muted-foreground hover:text-foreground transition-colors duration-200 bg-accent hover:bg-accent/80 rounded-full px-3 py-1.5 touch-manipulation">
                 <LogOut className="w-4 h-4" />
                 <span className="hidden sm:inline">Sair</span>
@@ -122,13 +125,14 @@ const Layout: React.FC<LayoutProps> = ({
       </header>
 
       {/* Main Content */}
-      <main className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 no-bounce pt-20 ${isStandalone ? 'ios-bottom-safe' : ''}`}>
-        
+      <main className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 no-bounce pt-24 md:pt-28 ${isStandalone ? 'ios-bottom-safe' : ''}`}>
         {children}
       </main>
 
       {/* Bottom safe area for standalone mode */}
-      {isStandalone && <div className="safe-area-bottom" />}
-    </div>;
+      {isStandalone && <div className="safe-area-bottom h-16 md:h-24" />}
+    </div>
+  );
 };
+
 export default Layout;

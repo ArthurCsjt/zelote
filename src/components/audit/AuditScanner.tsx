@@ -6,7 +6,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { QRCodeReader } from '@/components/QRCodeReader';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, QrCode, ClipboardCheck, PlusCircle, Trash2, MapPin, Clock, CheckCircle, AlertCircle } from 'lucide-react';
+import { Loader2, QrCode, ClipboardCheck, PlusCircle, Trash2, Clock, CheckCircle, AlertCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import {
   Table,
@@ -31,7 +31,7 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 export const AuditScanner = () => {
-  const { activeAudit, countedItems, filteredItems, countItem, completeAudit, removeItem, isProcessing } = useAudit();
+  const { activeAudit, countedItems, filteredItems, countItem, completeAudit, removeItem, isProcessing, totalExpected, inventoryStats } = useAudit();
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [manualId, setManualId] = useState('');
   const [itemToRemove, setItemToRemove] = useState<string | null>(null);
@@ -128,20 +128,56 @@ export const AuditScanner = () => {
           </div>
 
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="font-semibold">
-                Itens Contados: {filteredItems.length}
-                {filteredItems.length !== countedItems.length && (
-                  <span className="text-sm text-muted-foreground ml-2">
-                    (filtrados de {countedItems.length})
-                  </span>
-                )}
-              </h3>
-              {countedItems.length > 0 && (
-                <Badge variant="outline">
-                  {Math.round((countedItems.length / Math.max(countedItems.length, 1)) * 100)}% concluído
-                </Badge>
-              )}
+            {/* Grid de cards de métricas, padrão do menu inventário */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+              <Card className="shadow-sm">
+                <CardContent className="py-4">
+                  <div className="text-2xl font-semibold text-foreground">{inventoryStats?.total ?? totalExpected}</div>
+                  <div className="text-xs text-muted-foreground mt-1">Total</div>
+                </CardContent>
+              </Card>
+
+              <Card className="shadow-sm">
+                <CardContent className="py-4">
+                  <div className="text-2xl font-semibold text-emerald-600">{inventoryStats?.disponiveis ?? '-'}</div>
+                  <div className="text-xs text-muted-foreground mt-1">Disponíveis</div>
+                </CardContent>
+              </Card>
+
+              <Card className="shadow-sm">
+                <CardContent className="py-4">
+                  <div className="text-2xl font-semibold text-violet-600">{inventoryStats?.emprestados ?? '-'}</div>
+                  <div className="text-xs text-muted-foreground mt-1">Emprestados</div>
+                </CardContent>
+              </Card>
+
+              <Card className="shadow-sm">
+                <CardContent className="py-4">
+                  <div className="text-2xl font-semibold text-blue-600">{inventoryStats?.fixos ?? '-'}</div>
+                  <div className="text-xs text-muted-foreground mt-1">Fixos</div>
+                </CardContent>
+              </Card>
+
+              <Card className="shadow-sm">
+                <CardContent className="py-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-2xl font-semibold">{countedItems.length}</div>
+                      <div className="text-xs text-muted-foreground mt-1">Contados</div>
+                    </div>
+                    <Badge variant="outline">
+                      {(inventoryStats?.total ?? totalExpected) > 0
+                        ? Math.round((countedItems.length / (inventoryStats?.total ?? totalExpected)) * 100)
+                        : 0}%
+                    </Badge>
+                  </div>
+                  {filteredItems.length !== countedItems.length && (
+                    <div className="text-[10px] text-muted-foreground mt-1">
+                      Filtrados: {filteredItems.length} de {countedItems.length}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
             </div>
 
             <ScrollArea className="h-96 w-full rounded-md border">
@@ -151,7 +187,8 @@ export const AuditScanner = () => {
                     <TableRow>
                       <TableHead>ID</TableHead>
                       <TableHead>Modelo</TableHead>
-                      <TableHead>Localização</TableHead>
+                      <TableHead>Fabricante</TableHead>
+                      <TableHead>Nº de Série</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Método</TableHead>
                       <TableHead>Horário</TableHead>
@@ -170,12 +207,8 @@ export const AuditScanner = () => {
                           </div>
                         </TableCell>
                         <TableCell>{item.model || 'N/A'}</TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-1">
-                            <MapPin className="h-3 w-3" />
-                            {item.location || 'Não informado'}
-                          </div>
-                        </TableCell>
+                        <TableCell>{item.manufacturer || 'N/A'}</TableCell>
+                        <TableCell>{item.serial_number || 'N/A'}</TableCell>
                         <TableCell>
                           <Badge variant={getStatusBadge(item.status)}>
                             {item.status || 'N/A'}
