@@ -225,29 +225,29 @@ const Login = () => {
     }
     setIsLoading(false);
   };
-  return <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#D3E4FD] to-[#F0F7FF] p-4">
+  return <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-primary/10 p-4">
       <div className="w-full max-w-md">
-        <Card className="w-full shadow-xl glass-card border-0 overflow-hidden">
-          <CardHeader className="space-y-1 text-center pb-6 bg-gradient-to-r from-blue-500/10 to-blue-600/10">
-            <div className="flex justify-center mb-4">
-              <div className="p-3 rounded-full bg-blue-100 shadow-md">
-                <Computer className="h-10 w-10 text-blue-600" />
+        <Card className="w-full shadow-2xl border border-border/50 overflow-hidden backdrop-blur-sm bg-card/95">
+          <CardHeader className="space-y-3 text-center pb-8 pt-10">
+            <div className="flex justify-center mb-2">
+              <div className="p-4 rounded-2xl bg-primary/10 shadow-sm ring-1 ring-primary/20">
+                <Computer className="h-12 w-12 text-primary" />
               </div>
             </div>
-            <CardTitle className="text-2xl font-bold text-blue-800">Zelote</CardTitle>
-            <CardDescription className="text-gray-600">
-              Acesse o sistema para gerenciar empréstimos e devoluções
+            <CardTitle className="text-3xl font-semibold tracking-tight text-foreground">Zelote</CardTitle>
+            <CardDescription className="text-muted-foreground text-base">
+              Sistema de gerenciamento de empréstimos
             </CardDescription>
           </CardHeader>
           
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid grid-cols-2 w-[90%] mx-auto bg-gray-100/60 mt-4">
-              <TabsTrigger value="login" className="data-[state=active]:bg-white data-[state=active]:text-blue-700 flex items-center gap-1">
-                <User className="h-3.5 w-3.5" />
+            <TabsList className="grid grid-cols-2 w-full mx-auto bg-muted/50 h-12">
+              <TabsTrigger value="login" className="data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm flex items-center gap-2 font-medium">
+                <User className="h-4 w-4" />
                 <span>Login</span>
               </TabsTrigger>
-              <TabsTrigger value="register" className="data-[state=active]:bg-white data-[state=active]:text-blue-700 flex items-center gap-1">
-                <UserPlus className="h-3.5 w-3.5" />
+              <TabsTrigger value="register" className="data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm flex items-center gap-2 font-medium">
+                <UserPlus className="h-4 w-4" />
                 <span>Cadastro</span>
               </TabsTrigger>
             </TabsList>
@@ -255,49 +255,69 @@ const Login = () => {
             {/* Aba de Login */}
             <TabsContent value="login" className="mt-0 fade-enter">
               <form onSubmit={handleLoginSubmit}>
-                <CardContent className="space-y-4 pt-6">
+                <CardContent className="space-y-5 pt-8 px-6">
                   <div className="space-y-2">
-                    <Label htmlFor="login-email" className="text-gray-700 flex items-center gap-1.5">
-                      <Mail className="h-4 w-4" />
+                    <Label htmlFor="login-email" className="text-foreground font-medium flex items-center gap-2">
+                      <Mail className="h-4 w-4 text-primary" />
                       Email Institucional
                     </Label>
-                    <div className="relative">
-                      <Input id="login-email" type="email" placeholder="seu.email@colegiosaojudas.com.br" value={loginEmail} onChange={e => setLoginEmail(e.target.value)} className="bg-white/70 border-gray-200 focus:border-blue-300 transition-all pl-3" disabled={isLoading} />
-                    </div>
-                    <p className="text-xs text-gray-500 italic">
-                      Use seu email institucional com o domínio @colegiosaojudas.com.br
+                    <Input 
+                      id="login-email" 
+                      type="email" 
+                      placeholder="seu.email@colegiosaojudas.com.br" 
+                      value={loginEmail} 
+                      onChange={e => setLoginEmail(e.target.value)} 
+                      className="h-11 bg-background border-input focus:ring-2 focus:ring-primary/20 transition-all" 
+                      disabled={isLoading} 
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Use seu email institucional
                     </p>
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="login-password" className="text-gray-700 flex items-center gap-1.5">
-                      <Lock className="h-4 w-4" />
+                    <Label htmlFor="login-password" className="text-foreground font-medium flex items-center gap-2">
+                      <Lock className="h-4 w-4 text-primary" />
                       Senha
                     </Label>
-                    <div className="relative">
-                      <Input id="login-password" type="password" placeholder="Digite sua senha" value={loginPassword} onChange={e => setLoginPassword(e.target.value)} className="bg-white/70 border-gray-200 focus:border-blue-300 transition-all pl-3" disabled={isLoading} />
-                    </div>
+                    <Input 
+                      id="login-password" 
+                      type="password" 
+                      placeholder="Digite sua senha" 
+                      value={loginPassword} 
+                      onChange={e => setLoginPassword(e.target.value)} 
+                      className="h-11 bg-background border-input focus:ring-2 focus:ring-primary/20 transition-all" 
+                      disabled={isLoading} 
+                    />
                   </div>
                 </CardContent>
                 
-                <CardFooter className="flex flex-col space-y-4 pb-6">
-                  <Button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 transition-all shadow-md" disabled={isLoading}>
+                <CardFooter className="flex flex-col space-y-4 pb-8 px-6">
+                  <Button 
+                    type="submit" 
+                    className="w-full h-11 bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm font-medium" 
+                    disabled={isLoading}
+                  >
                     {isLoading ? "Entrando..." : "Entrar"}
                   </Button>
                   
-                  <div className="relative w-full text-center my-2">
+                  <div className="relative w-full text-center my-3">
                     <div className="absolute inset-0 flex items-center">
-                      <div className="w-full border-t border-gray-300"></div>
+                      <div className="w-full border-t border-border"></div>
                     </div>
                     <div className="relative flex justify-center">
-                      <span className="bg-white px-2 text-sm text-gray-500">ou</span>
+                      <span className="bg-card px-3 text-sm text-muted-foreground">ou</span>
                     </div>
                   </div>
                   
-                  
-                  
-                  <Button type="button" variant="ghost" className="text-sm text-gray-600 hover:text-blue-700 mt-2" onClick={() => setActiveTab("recovery")} disabled={isLoading}>
-                    <KeySquare className="h-3.5 w-3.5 mr-1" />
+                  <Button 
+                    type="button" 
+                    variant="ghost" 
+                    className="text-sm text-muted-foreground hover:text-primary hover:bg-primary/5" 
+                    onClick={() => setActiveTab("recovery")} 
+                    disabled={isLoading}
+                  >
+                    <KeySquare className="h-4 w-4 mr-2" />
                     Esqueceu sua senha?
                   </Button>
                 </CardFooter>
@@ -307,43 +327,65 @@ const Login = () => {
             {/* Aba de Registro */}
             <TabsContent value="register" className="mt-0 fade-enter">
               <form onSubmit={handleRegisterSubmit}>
-                <CardContent className="space-y-4 pt-6">
+                <CardContent className="space-y-5 pt-8 px-6">
                   <div className="space-y-2">
-                    <Label htmlFor="register-email" className="text-gray-700 flex items-center gap-1.5">
-                      <Mail className="h-4 w-4" />
+                    <Label htmlFor="register-email" className="text-foreground font-medium flex items-center gap-2">
+                      <Mail className="h-4 w-4 text-primary" />
                       Email Institucional
                     </Label>
-                    <div className="relative">
-                      <Input id="register-email" type="email" placeholder="seu.email@colegiosaojudas.com.br" value={registerEmail} onChange={e => setRegisterEmail(e.target.value)} className="bg-white/70 border-gray-200 focus:border-blue-300 transition-all pl-3" disabled={isLoading} />
-                    </div>
-                    <p className="text-xs text-gray-500 italic">
-                      Use seu email institucional com o domínio @colegiosaojudas.com.br
+                    <Input 
+                      id="register-email" 
+                      type="email" 
+                      placeholder="seu.email@colegiosaojudas.com.br" 
+                      value={registerEmail} 
+                      onChange={e => setRegisterEmail(e.target.value)} 
+                      className="h-11 bg-background border-input focus:ring-2 focus:ring-primary/20 transition-all" 
+                      disabled={isLoading} 
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Use seu email institucional
                     </p>
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="register-password" className="text-gray-700 flex items-center gap-1.5">
-                      <Lock className="h-4 w-4" />
+                    <Label htmlFor="register-password" className="text-foreground font-medium flex items-center gap-2">
+                      <Lock className="h-4 w-4 text-primary" />
                       Senha
                     </Label>
-                    <div className="relative">
-                      <Input id="register-password" type="password" placeholder="Crie uma senha forte" value={registerPassword} onChange={e => setRegisterPassword(e.target.value)} className="bg-white/70 border-gray-200 focus:border-blue-300 transition-all pl-3" disabled={isLoading} />
-                    </div>
+                    <Input 
+                      id="register-password" 
+                      type="password" 
+                      placeholder="Crie uma senha forte" 
+                      value={registerPassword} 
+                      onChange={e => setRegisterPassword(e.target.value)} 
+                      className="h-11 bg-background border-input focus:ring-2 focus:ring-primary/20 transition-all" 
+                      disabled={isLoading} 
+                    />
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="register-confirm-password" className="text-gray-700 flex items-center gap-1.5">
-                      <KeyRound className="h-4 w-4" />
+                    <Label htmlFor="register-confirm-password" className="text-foreground font-medium flex items-center gap-2">
+                      <KeyRound className="h-4 w-4 text-primary" />
                       Confirmar Senha
                     </Label>
-                    <div className="relative">
-                      <Input id="register-confirm-password" type="password" placeholder="Confirme sua senha" value={registerConfirmPassword} onChange={e => setRegisterConfirmPassword(e.target.value)} className="bg-white/70 border-gray-200 focus:border-blue-300 transition-all pl-3" disabled={isLoading} />
-                    </div>
+                    <Input 
+                      id="register-confirm-password" 
+                      type="password" 
+                      placeholder="Confirme sua senha" 
+                      value={registerConfirmPassword} 
+                      onChange={e => setRegisterConfirmPassword(e.target.value)} 
+                      className="h-11 bg-background border-input focus:ring-2 focus:ring-primary/20 transition-all" 
+                      disabled={isLoading} 
+                    />
                   </div>
                 </CardContent>
                 
-                <CardFooter className="pb-6">
-                  <Button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 transition-all shadow-md" disabled={isLoading}>
+                <CardFooter className="pb-8 px-6">
+                  <Button 
+                    type="submit" 
+                    className="w-full h-11 bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm font-medium" 
+                    disabled={isLoading}
+                  >
                     {isLoading ? "Cadastrando..." : "Cadastrar"}
                   </Button>
                 </CardFooter>
@@ -353,35 +395,51 @@ const Login = () => {
             {/* Aba de Recuperação de Senha */}
             <TabsContent value="recovery" className="mt-0 fade-enter">
               <form onSubmit={handleRecoverySubmit}>
-                <CardContent className="space-y-4 pt-6">
-                  <div className="flex items-center mb-4">
-                    <Button type="button" variant="ghost" className="text-gray-600 p-0 h-auto" onClick={() => setActiveTab("login")} disabled={isLoading}>
+                <CardContent className="space-y-5 pt-8 px-6">
+                  <div className="flex items-center mb-2">
+                    <Button 
+                      type="button" 
+                      variant="ghost" 
+                      className="text-muted-foreground hover:text-primary p-0 h-auto -ml-2" 
+                      onClick={() => setActiveTab("login")} 
+                      disabled={isLoading}
+                    >
                       <ArrowLeft className="h-4 w-4 mr-2" />
                       Voltar ao login
                     </Button>
                   </div>
                   
-                  <div className="text-center mb-4">
-                    <div className="mx-auto w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mb-2">
-                      <LockKeyhole className="h-6 w-6 text-blue-600" />
+                  <div className="text-center mb-6">
+                    <div className="mx-auto w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-3 ring-1 ring-primary/20">
+                      <LockKeyhole className="h-7 w-7 text-primary" />
                     </div>
-                    <h3 className="text-lg font-semibold text-gray-800">Recuperação de Senha</h3>
-                    <p className="text-sm text-gray-600">Informe seu email para redefinir sua senha</p>
+                    <h3 className="text-xl font-semibold text-foreground">Recuperação de Senha</h3>
+                    <p className="text-sm text-muted-foreground mt-1">Informe seu email para redefinir sua senha</p>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="recovery-email" className="text-gray-700 flex items-center gap-1.5">
-                      <Mail className="h-4 w-4" />
+                    <Label htmlFor="recovery-email" className="text-foreground font-medium flex items-center gap-2">
+                      <Mail className="h-4 w-4 text-primary" />
                       Email Institucional
                     </Label>
-                    <div className="relative">
-                      <Input id="recovery-email" type="email" placeholder="seu.email@colegiosaojudas.com.br" value={recoveryEmail} onChange={e => setRecoveryEmail(e.target.value)} className="bg-white/70 border-gray-200 focus:border-blue-300 transition-all pl-3" disabled={isLoading} />
-                    </div>
+                    <Input 
+                      id="recovery-email" 
+                      type="email" 
+                      placeholder="seu.email@colegiosaojudas.com.br" 
+                      value={recoveryEmail} 
+                      onChange={e => setRecoveryEmail(e.target.value)} 
+                      className="h-11 bg-background border-input focus:ring-2 focus:ring-primary/20 transition-all" 
+                      disabled={isLoading} 
+                    />
                   </div>
                 </CardContent>
                 
-                <CardFooter className="pb-6">
-                  <Button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 transition-all shadow-md" disabled={isLoading}>
+                <CardFooter className="pb-8 px-6">
+                  <Button 
+                    type="submit" 
+                    className="w-full h-11 bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm font-medium" 
+                    disabled={isLoading}
+                  >
                     {isLoading ? "Enviando..." : "Recuperar Senha"}
                   </Button>
                 </CardFooter>
