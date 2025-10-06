@@ -98,6 +98,7 @@ export interface ChromebookData {
   model: string;
   manufacturer?: string;
   serialNumber?: string;
+  classroom?: string;
   patrimonyNumber?: string;
   status?: ChromebookStatus;
   condition?: string;

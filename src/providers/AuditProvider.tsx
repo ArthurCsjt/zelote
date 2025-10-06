@@ -1,11 +1,10 @@
 import { ReactNode } from 'react';
 import { AuditContext } from '@/contexts/AuditContext';
-import { useInventoryAudit } from '@/hooks/inventory/useInventoryAudit_clean';
 
 export const AuditProvider = ({ children }: { children: ReactNode }) => {
-  const auditStateAndFunctions = useInventoryAudit();
+  const value = {};
   return (
-    <AuditContext.Provider value={auditStateAndFunctions}>
+    <AuditContext.Provider value={value}>
       {children}
     </AuditContext.Provider>
   );
