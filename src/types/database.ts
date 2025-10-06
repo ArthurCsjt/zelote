@@ -102,13 +102,12 @@ export interface ChromebookData {
   status?: ChromebookStatus;
   condition?: string;
   location?: string;
-  classroom?: string;
   createdAt?: string;
   updatedAt?: string;
   createdBy?: string;
 }
 
-// Tipos de auditoria
+// Tipos de auditoria expandidos com melhorias
 export interface InventoryAudit {
   id: string;
   audit_name: string;
@@ -118,8 +117,11 @@ export interface InventoryAudit {
   created_by?: string;
   created_at: string;
   notes?: string;
+  total_expected?: number;
+  total_counted?: number;
 }
 
+// Item de auditoria com informações expandidas
 export interface AuditItem {
   id: string;
   audit_id: string;
@@ -131,6 +133,103 @@ export interface AuditItem {
   location_confirmed?: boolean;
   notes?: string;
   created_at: string;
+  // Campos adicionais para melhorias
+  expected_location?: string;
+  actual_location?: string;
+  condition_found?: string;
+  model_found?: string;
+  serial_number_found?: string;
+}
+
+// Interface para relatório de auditoria
+export interface AuditReport {
+  summary: {
+    totalCounted: number;
+    totalExpected: number;
+    completionRate: string;
+    duration: string;
+    itemsPerHour: number;
+    averageTimePerItem: string;
+  };
+  discrepancies: {
+    missing: AuditDiscrepancy[];
+    extra: AuditDiscrepancy[];
+    locationMismatches: AuditDiscrepancy[];
+    conditionIssues: AuditDiscrepancy[];
+  };
+  statistics: {
+    byLocation: LocationStats[];
+    byMethod: MethodStats;
+    byCondition: ConditionStats[];
+    byTime: TimeStats[];
+  };
+}
+
+export interface AuditDiscrepancy {
+  chromebook_id: string;
+  expected_location?: string;
+  actual_location?: string;
+  condition_expected?: string;
+  condition_found?: string;
+  notes?: string;
+}
+
+export interface LocationStats {
+  location: string;
+  counted: number;
+  expected: number;
+  discrepancy: number;
+}
+
+export interface MethodStats {
+  qr_code: number;
+  manual: number;
+  percentage_qr: number;
+  percentage_manual: number;
+}
+
+export interface ConditionStats {
+  condition: string;
+  count: number;
+  percentage: number;
+}
+
+export interface TimeStats {
+  hour: string;
+  count: number;
+  cumulative: number;
+}
+
+// Filtros para auditoria
+export interface AuditFilters {
+  location?: string;
+  status?: string;
+  scanMethod?: 'qr_code' | 'manual_id' | 'all';
+  dateRange?: {
+    start: Date;
+    end: Date;
+  };
+  search?: string;
+}
+
+// Tipos expandidos para contagem
+export interface CountedItemWithDetails {
+  id: string;
+  audit_id: string;
+  chromebook_id: string;
+  display_id?: string;
+  model?: string;
+  manufacturer?: string;
+  location?: string;
+  expected_location?: string;
+  condition?: string;
+  condition_found?: string;
+  status?: ChromebookStatus;
+  counted_at: string;
+  counted_by?: string;
+  scan_method: 'qr_code' | 'manual_id';
+  location_confirmed?: boolean;
+  notes?: string;
 }
 
 // Tipo Database para compatibilidade com o Supabase
