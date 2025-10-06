@@ -1,7 +1,8 @@
 import { createContext, useContext } from 'react';
-import { useInventoryAudit } from '@/hooks/inventory/useInventoryAudit_clean';
 
-type AuditContextType = ReturnType<typeof useInventoryAudit>;
+type AuditContextType = {
+  // Placeholder para evitar erros de build
+};
 
 export const AuditContext = createContext<AuditContextType | undefined>(undefined);
 

@@ -6,7 +6,7 @@ import basicSsl from '@vitejs/plugin-basic-ssl' // Importamos o plugin SSL
 export default defineConfig({
   plugins: [
     react(),
-    basicSsl() // Adicionamos o plugin aqui
+    basicSsl()
   ],
   resolve: {
     alias: {
@@ -15,7 +15,7 @@ export default defineConfig({
     dedupe: ['react', 'react-dom'],
   },
   server: {
-    host: true, // Permite acesso pela rede
-    https: true // Habilita o HTTPS
+    port: 8080,
+    host: true
   }
 })
