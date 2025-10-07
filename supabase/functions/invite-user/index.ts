@@ -1,49 +1,66 @@
-// @ts-nocheck
-// Supabase Edge Function: invite-user
-// Requires environment variables set in Edge Functions settings:
-// - SUPABASE_URL
-// - SUPABASE_SERVICE_ROLE_KEY
-// This function invites a user by email and assigns a role in public.profiles.
+// supabase/functions/invite-user/index.ts
 
-import { serve } from "https://deno.land/std@0.223.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { serve } from 'https://deno.land/std/http/server.ts'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+
+// Cabeçalhos de permissão (CORS) que serão adicionados em todas as respostas
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*', // Em produção, mude '*' para o domínio do seu site (ex: 'https://zelote.app')
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
 
 serve(async (req) => {
-  if (req.method !== 'POST') {
-    return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405 });
+  // O navegador sempre envia uma requisição 'OPTIONS' primeiro (preflight)
+  // para verificar as permissões. Devemos responder a ela com 'ok'.
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders })
   }
 
   try {
-    const { email, role } = await req.json();
-    if (!email || !role || !['admin','user'].includes(role)) {
-      return new Response(JSON.stringify({ error: 'Invalid payload' }), { status: 400 });
+    // Cria um cliente Admin do Supabase para ter superpoderes
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    )
+
+    // Pega o email e a role enviados pelo frontend
+    const { email, role } = await req.json()
+
+    // LÓGICA DE SEGURANÇA: Verifica se quem está chamando a função é um admin
+    // Pega o token do usuário que fez a chamada
+    const userToken = req.headers.get('Authorization')!.replace('Bearer ', '')
+    // Cria um cliente com as permissões desse usuário
+    const supabaseUser = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_ANON_KEY')!, {
+      global: { headers: { Authorization: `Bearer ${userToken}` } }
+    });
+    const { data: { user } } = await supabaseUser.auth.getUser();
+    if (!user) throw new Error("Usuário não autenticado.");
+
+    // Verifica a 'role' do usuário no banco de dados
+    const { data: profile, error: profileError } = await supabaseAdmin.from('profiles').select('role').eq('id', user.id).single();
+    if (profileError || profile?.role !== 'admin') {
+      throw new Error("Acesso negado: Apenas administradores podem convidar usuários.");
     }
+    // FIM DA LÓGICA DE SEGURANÇA
 
-    const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
-    const SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-    if (!SUPABASE_URL || !SERVICE_ROLE_KEY) {
-      return new Response(JSON.stringify({ error: 'Missing service configuration' }), { status: 500 });
-    }
+    // Se a segurança passou, envia o convite usando o cliente Admin
+    const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
+      data: { role: role }, // Adiciona a 'role' nos metadados do usuário
+    });
 
-    const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
+    if (inviteError) throw inviteError;
 
-    // Invite user by email
-    const { data: inviteRes, error: inviteErr } = await supabase.auth.admin.inviteUserByEmail(email);
-    if (inviteErr || !inviteRes?.user) {
-      throw inviteErr || new Error('Invite failed');
-    }
+    // Retorna uma resposta de sucesso, incluindo os cabeçalhos CORS
+    return new Response(JSON.stringify(inviteData), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 200,
+    })
 
-    const userId = inviteRes.user.id;
-
-    // Upsert profile with role
-    const { error: upsertErr } = await supabase
-      .from('profiles')
-      .upsert({ id: userId, email, role }, { onConflict: 'id' });
-
-    if (upsertErr) throw upsertErr;
-
-    return new Response(JSON.stringify({ ok: true, userId }), { status: 200 });
-  } catch (e) {
-    return new Response(JSON.stringify({ error: e?.message || 'Unknown error' }), { status: 500 });
+  } catch (error) {
+    // Se qualquer passo acima der erro, retorna uma mensagem de erro, também com os cabeçalhos CORS
+    return new Response(JSON.stringify({ error: error.message }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 400,
+    })
   }
-});
+})
