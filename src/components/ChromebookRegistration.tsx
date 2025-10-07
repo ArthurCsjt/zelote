@@ -60,14 +60,16 @@ export function ChromebookRegistration({ onRegistrationSuccess }: { onRegistrati
       return;
     }
     const chromebookData = {
-      model: formData.model, 
-      serialNumber: formData.series,
-      patrimonyNumber: formData.patrimonyNumber || undefined,
+      model: formData.model, serialNumber: formData.series,
+      patrimonyNumber: formData.patrimonyNumber || null,
       manufacturer: formData.manufacturer,
-      condition: 'novo' as const, 
-      location: formData.isFixedInClassroom ? formData.classroomLocation : undefined,
+      manufacturingYear: formData.manufacturingYear || null,
+      observations: formData.observations || null,
+      isProvisioned: formData.provisioning_status === 'provisioned',
+      is_deprovisioned: formData.provisioning_status === 'deprovisioned',
+      condition: 'novo' as const, location: formData.isFixedInClassroom ? formData.classroomLocation : null,
       status: 'disponivel' as const,
-    } as any;
+    };
     const result = await createChromebook(chromebookData);
     if (result.error) {
       toast({ title: "Erro no Banco de Dados", description: result.error.message, variant: "destructive" });

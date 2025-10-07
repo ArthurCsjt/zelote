@@ -6,11 +6,11 @@ export interface AuthContextType {
   username: string | null;
   email: string | null;
   user: User | null;
-  login: (email: string, password: string) => Promise<{ success: boolean; error: string | null | undefined; }>;
+  login: (email: string, password: string) => Promise<{ success: boolean; error: string | null; }>;
   loginWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
-  register: (email: string, password: string) => Promise<{ success: boolean; error: string | null | undefined; }>;
-  resetPassword: (email: string) => Promise<{ success: boolean; error: string | null | undefined; }>;
+  register: (email: string, password: string) => Promise<{ success: boolean; error: string | null; }>;
+  resetPassword: (email: string) => Promise<{ success: boolean; error: string | null; }>;
   verifyEmail: (email: string) => boolean;
 }
 

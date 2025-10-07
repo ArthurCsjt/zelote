@@ -14,7 +14,20 @@ export const UserManagement = () => {
   const [inviteRole, setInviteRole] = useState<'admin' | 'user'>('user');
 
   useEffect(() => {
-    loadProfiles();
+    const load = async () => {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, email, name, role')
+        .order('created_at', { ascending: false });
+      if (error) {
+        toast({ title: 'Erro', description: error.message, variant: 'destructive' });
+      } else {
+        setProfiles((data || []) as any);
+      }
+      setLoading(false);
+    };
+    load();
   }, []);
 
   const updateRole = async (id: string, role: 'admin' | 'user') => {
@@ -29,20 +42,6 @@ export const UserManagement = () => {
     }
   };
 
-  const loadProfiles = async () => {
-    setLoading(true);
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('id, email, name, role')
-      .order('created_at', { ascending: false });
-    if (error) {
-      toast({ title: 'Erro', description: error.message, variant: 'destructive' });
-    } else {
-      setProfiles((data || []) as any);
-    }
-    setLoading(false);
-  };
-
   const invite = async () => {
     if (!inviteEmail) {
       toast({ title: 'Informe um e-mail', description: 'Digite o e-mail do usuário a convidar.', variant: 'destructive' });
@@ -53,33 +52,11 @@ export const UserManagement = () => {
       const { data, error } = await supabase.functions.invoke('invite-user', {
         body: { email: inviteEmail, role: inviteRole },
       });
-      
-      if (error) {
-        console.error('Erro ao invocar função:', error);
-        throw error;
-      }
-      
-      if (data?.error) {
-        console.error('Erro retornado pela função:', data.error);
-        throw new Error(data.error);
-      }
-      
-      toast({ 
-        title: 'Convite enviado', 
-        description: 'O usuário receberá um e-mail para completar o cadastro.' 
-      });
+      if (error) throw error;
+      toast({ title: 'Convite enviado', description: 'O usuário receberá um e-mail para completar o cadastro.' });
       setInviteEmail('');
-      
-      // Recarregar lista de perfis
-      await loadProfiles();
-      
     } catch (e: any) {
-      console.error('Erro completo:', e);
-      toast({ 
-        title: 'Erro ao enviar convite', 
-        description: e.message || 'Verifique se a SUPABASE_SERVICE_ROLE_KEY está configurada nas Edge Functions.', 
-        variant: 'destructive' 
-      });
+      toast({ title: 'Configuração necessária', description: 'Precisamos configurar a Service Role Key nas funções. Fale comigo que configuro já.', variant: 'destructive' });
     } finally {
       setLoading(false);
     }

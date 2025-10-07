@@ -8,19 +8,18 @@ import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Brain, Database, TrendingUp } from 'lucide-react';
-
 interface ReportData {
   query: string;
   data: any[];
   userQuestion: string;
 }
-
 const IntelligentReportsTab: React.FC = () => {
   const [question, setQuestion] = useState('');
   const [reportData, setReportData] = useState<ReportData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
-
+  const {
+    toast
+  } = useToast();
   const handleGenerateReport = async () => {
     if (!question.trim()) {
       toast({
@@ -30,17 +29,19 @@ const IntelligentReportsTab: React.FC = () => {
       });
       return;
     }
-
     setIsLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('report-assistant', {
-        body: { userQuestion: question }
+      const {
+        data,
+        error
+      } = await supabase.functions.invoke('report-assistant', {
+        body: {
+          userQuestion: question
+        }
       });
-
       if (error) {
         throw error;
       }
-
       setReportData(data);
       toast({
         title: "Relatório Gerado",
@@ -50,14 +51,13 @@ const IntelligentReportsTab: React.FC = () => {
       console.error('Erro ao gerar relatório:', error);
       toast({
         title: "Erro",
-        description: (error as Error).message || "Erro ao gerar relatório. Tente novamente.",
+        description: error.message || "Erro ao gerar relatório. Tente novamente.",
         variant: "destructive"
       });
     } finally {
       setIsLoading(false);
     }
   };
-
   const renderTable = (data: any[]) => {
     if (!data || data.length === 0) {
       return <Alert>
@@ -87,9 +87,7 @@ const IntelligentReportsTab: React.FC = () => {
         </Table>
       </div>;
   };
-  
   const exampleQuestions = ["Quantos chromebooks estão disponíveis?", "Quais são os empréstimos ativos no momento?", "Qual o modelo de chromebook mais emprestado?", "Quantos empréstimos foram feitos este mês?", "Quais chromebooks estão atrasados para devolução?"];
-  
   return <div className="space-y-6">
       <div className="text-center space-y-2">
         <div className="flex items-center justify-center gap-2">
@@ -167,5 +165,4 @@ const IntelligentReportsTab: React.FC = () => {
         </Card>}
     </div>;
 };
-
 export default IntelligentReportsTab;
