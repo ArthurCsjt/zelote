@@ -96,12 +96,10 @@ export function Dashboard({
           length: 7
         }, (_, i) => {
           const date = subDays(currentDate, 6 - i);
-          const dailyLoans = history.filter(loan => 
-            loan.loan_date && isWithinInterval(new Date(loan.loan_date), {
-              start: startOfDay(date),
-              end: new Date(date.setHours(23, 59, 59, 999))
-            })
-          );
+          const dailyLoans = history.filter(loan => isWithinInterval(new Date(loan.loan_date), {
+            start: startOfDay(date),
+            end: new Date(date.setHours(23, 59, 59, 999))
+          }));
           return {
             date: format(date, "dd/MM"),
             empréstimos: dailyLoans.length,
@@ -115,12 +113,10 @@ export function Dashboard({
           length: 30
         }, (_, i) => {
           const date = subDays(currentDate, 29 - i);
-          const dailyLoans = history.filter(loan => 
-            loan.loan_date && isWithinInterval(new Date(loan.loan_date), {
-              start: startOfDay(date),
-              end: new Date(date.setHours(23, 59, 59, 999))
-            })
-          );
+          const dailyLoans = history.filter(loan => isWithinInterval(new Date(loan.loan_date), {
+            start: startOfDay(date),
+            end: new Date(date.setHours(23, 59, 59, 999))
+          }));
           return {
             date: format(date, "dd/MM"),
             empréstimos: dailyLoans.length,
@@ -156,12 +152,10 @@ export function Dashboard({
       default:
         startDate = startOfDay(today);
     }
-    return history.filter(loan => 
-      loan.loan_date && isWithinInterval(new Date(loan.loan_date), {
-        start: startDate,
-        end: endDate
-      })
-    );
+    return history.filter(loan => isWithinInterval(new Date(loan.loan_date), {
+      start: startDate,
+      end: endDate
+    }));
   };
   const filteredLoans = getFilteredLoans();
   const filteredReturns = filteredLoans.filter(loan => loan.return_date);
@@ -169,7 +163,7 @@ export function Dashboard({
   // Estatísticas
   const completionRate = filteredLoans.length > 0 ? filteredReturns.length / filteredLoans.length * 100 : 0;
   const averageUsageTime = filteredReturns.reduce((acc, loan) => {
-    if (loan.return_date && loan.loan_date) {
+    if (loan.return_date) {
       const duration = differenceInMinutes(new Date(loan.return_date), new Date(loan.loan_date));
       return acc + duration;
     }
@@ -186,7 +180,7 @@ export function Dashboard({
   }));
   const completedLoans = filteredLoans.filter(loan => loan.return_date);
   const averageLoanDurations = completedLoans.reduce((acc, loan) => {
-    if (loan.return_date && loan.loan_date) {
+    if (loan.return_date) {
       const durationMinutes = differenceInMinutes(new Date(loan.return_date), new Date(loan.loan_date));
       if (!acc[loan.user_type || 'aluno']) {
         acc[loan.user_type || 'aluno'] = {
@@ -615,21 +609,18 @@ export function Dashboard({
                     <Pie data={[{
                     name: "Manhã (8h-12h)",
                     value: filteredLoans.filter(loan => {
-                      if (!loan.loan_date) return false;
                       const hour = new Date(loan.loan_date).getHours();
                       return hour >= 8 && hour < 12;
                     }).length
                   }, {
                     name: "Tarde (12h-17h)",
                     value: filteredLoans.filter(loan => {
-                      if (!loan.loan_date) return false;
                       const hour = new Date(loan.loan_date).getHours();
                       return hour >= 12 && hour < 17;
                     }).length
                   }, {
                     name: "Noite (17h-22h)",
                     value: filteredLoans.filter(loan => {
-                      if (!loan.loan_date) return false;
                       const hour = new Date(loan.loan_date).getHours();
                       return hour >= 17 && hour < 22;
                     }).length

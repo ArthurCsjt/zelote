@@ -4,7 +4,7 @@ import { useProfileRole } from '@/hooks/use-profile-role';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-// import { UserManagement } from './parts/UserManagement'; // Temporarily disabled
+import { UserManagement } from './parts/UserManagement';
 import { AdvancedSettings } from '@/components/AdvancedSettings';
 
 const Settings = () => {
@@ -28,7 +28,7 @@ const Settings = () => {
           </Alert>
         ) : (
           <>
-            {/* <UserManagement /> */}
+            <UserManagement />
             <AdvancedSettings />
             <Card className="glass-card">
               <CardHeader>

@@ -76,6 +76,7 @@ const Index = () => {
       subtitle={getViewSubtitle()} 
       showBackButton={currentView !== 'menu'} 
       onBack={handleBackToMenu}
+      logout={logout}
     >
       {loading && currentView !== 'menu' ? <div className="flex justify-center items-center h-64"><LoadingSpinner/></div> : renderCurrentView()}
       <ReturnDialog open={openReturnDialog} onOpenChange={setOpenReturnDialog} chromebookId={chromebookId} onChromebookIdChange={setChromebookId} returnData={returnData} onReturnDataChange={setReturnData} onConfirm={handleReturnClick} />

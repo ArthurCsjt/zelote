@@ -24,7 +24,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const login = async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
-    return { success: !error, error: error?.message || null };
+    return { success: !error, error: error?.message };
   };
 
   const loginWithGoogle = async () => {
@@ -37,12 +37,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const register = async (email: string, password: string) => {
     const { error } = await supabase.auth.signUp({ email, password });
-    return { success: !error, error: error?.message || null };
+    return { success: !error, error: error?.message };
   };
 
   const resetPassword = async (email: string) => {
     const { error } = await supabase.auth.resetPasswordForEmail(email);
-    return { success: !error, error: error?.message || null };
+    return { success: !error, error: error?.message };
   };
 
   const verifyEmail = (email: string) => /@colegiosaojudas\.com\.br$/i.test(email);
