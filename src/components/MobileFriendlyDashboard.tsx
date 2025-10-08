@@ -63,11 +63,11 @@ export function MobileFriendlyDashboard({ onBack }: MobileFriendlyDashboardProps
     
     switch(periodView) {
       case 'daily':
-        filteredLoans = history.filter(loan => isToday(new Date(loan.loan_date)));
+        filteredLoans = history.filter(loan => loan.loan_date && isToday(new Date(loan.loan_date)));
         break;
       case 'weekly':
         filteredLoans = history.filter(loan => 
-          isWithinInterval(new Date(loan.loan_date), {
+          loan.loan_date && isWithinInterval(new Date(loan.loan_date), {
             start: subDays(currentDate, 7),
             end: currentDate
           })
@@ -75,7 +75,7 @@ export function MobileFriendlyDashboard({ onBack }: MobileFriendlyDashboardProps
         break;
       case 'monthly':
         filteredLoans = history.filter(loan => 
-          isWithinInterval(new Date(loan.loan_date), {
+          loan.loan_date && isWithinInterval(new Date(loan.loan_date), {
             start: new Date(currentDate.getFullYear(), currentDate.getMonth(), 1),
             end: currentDate
           })
@@ -95,7 +95,7 @@ export function MobileFriendlyDashboard({ onBack }: MobileFriendlyDashboardProps
   
   // Cálculo do tempo médio de uso
   const averageUsageTime = periodReturns.reduce((acc, loan) => {
-    if (loan.return_date) {
+    if (loan.return_date && loan.loan_date) {
       const duration = differenceInMinutes(
         new Date(loan.return_date), 
         new Date(loan.loan_date)
@@ -302,7 +302,7 @@ export function MobileFriendlyDashboard({ onBack }: MobileFriendlyDashboardProps
                 </Badge>
               </div>
               <p className="text-xs text-gray-600 mt-1">
-                Retirada: {format(new Date(loan.loan_date), "dd/MM HH:mm")}
+                Retirada: {loan.loan_date ? format(new Date(loan.loan_date), "dd/MM HH:mm") : 'N/A'}
               </p>
             </div>
           ))}
