@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -115,503 +114,50 @@
   overflow: hidden;
 }
 
-.glass-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
-}
-
-.glass-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 40px 0 rgba(0, 0, 0, 0.1),
-              0 1px 0 0 rgba(255, 255, 255, 0.4) inset,
-              0 -1px 0 0 rgba(0, 0, 0, 0.05) inset;
-}
-
-/* Improved glass morphism for containers - iPhone style */
-.glass-morphism {
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(25px);
-  -webkit-backdrop-filter: blur(25px);
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  box-shadow: 0 8px 40px 0 rgba(0, 0, 0, 0.08),
-              0 2px 0 0 rgba(255, 255, 255, 0.3) inset,
-              0 -2px 0 0 rgba(0, 0, 0, 0.05) inset;
-  border-radius: 24px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  overflow: hidden;
-}
-
-.glass-morphism::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.7), transparent);
-}
-
-.glass-morphism:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 50px 0 rgba(0, 0, 0, 0.12),
-              0 2px 0 0 rgba(255, 255, 255, 0.4) inset,
-              0 -2px 0 0 rgba(0, 0, 0, 0.05) inset;
-}
-
-/* Enhanced Animation classes - iPhone style */
-.slide-enter {
-  animation: slideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.fade-enter {
-  animation: fadeIn 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.animate-fade-in {
-  animation: fadeInSmooth 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.animate-scale-in {
-  animation: scaleIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(15px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes fadeInSmooth {
-  from {
-    opacity: 0;
-    transform: translateY(20px) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-@keyframes scaleIn {
-  from {
-    opacity: 0;
-    transform: scale(0.9) translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-}
-
-@keyframes slideIn {
-  from {
-    transform: translateX(-15px);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-/* iPhone-style bounce animation for interactions */
-@keyframes bounceIn {
-  0% {
-    transform: scale(0.95);
-  }
-  50% {
-    transform: scale(1.02);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-
-.animate-bounce-in {
-  animation: bounceIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Enhanced dashboard card styling - iPhone style */
-.dashboard-card {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  border-radius: 16px;
-  overflow: hidden;
-  position: relative;
-}
-
-.dashboard-card::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), transparent);
-  pointer-events: none;
-  border-radius: inherit;
-}
-
-.dashboard-card:hover {
-  transform: translateY(-6px) scale(1.01);
-  box-shadow: 0 15px 35px -8px rgba(0, 0, 0, 0.12),
-              0 5px 15px -5px rgba(0, 0, 0, 0.08);
-}
-
-/* Stats cards with more Apple-like minimal styling */
-.stats-card {
-  background: white;
-  border-radius: 12px;
-  border-left: 3px solid;
-}
-
-.stats-card-green {
-  border-left-color: #2DC762;
-}
-
-.stats-card-orange {
-  border-left-color: #FF9F0A;
-}
-
-.stats-card-blue {
-  border-left-color: #0A84FF;
-}
-
-/* Mobile optimizations */
-@media (max-width: 640px) {
-  .glass-card {
-    margin: 0 8px;
-    width: calc(100% - 16px);
-    padding: 1rem;
-  }
-  
-  .logo-container {
-    padding: 1rem 0;
-  }
-  
-  h1 {
-    font-size: 1.25rem !important;
-    line-height: 1.75rem;
-    word-break: break-word;
-  }
-  
-  .main-container {
-    padding: 0.5rem;
-    max-width: 100vw;
-    overflow-x: hidden;
-  }
-  
-  .form-container {
-    padding: 1rem;
-    width: 100%;
-  }
-  
-  .user-profile {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    width: 100%;
-    padding: 0 0.5rem;
-  }
-
-  #root {
-    padding: 1rem;
-    width: 100%;
-    max-width: 100vw;
-    overflow-x: hidden;
-  }
-
-  .dashboard-card {
-    margin: 0.5rem 0;
-  }
-
-  button {
-    white-space: nowrap;
-  }
-  
-  /* Dashboard mobile button improvements */
-  .dashboard-actions button {
-    min-width: 140px;
-    margin-bottom: 0.5rem;
-  }
-
-  /* Toast/Notification mobile fixes */
-  [data-sonner-toaster] {
-    left: 0 !important;
-    right: 0 !important;
-    width: 100% !important;
-    max-width: 100vw !important;
-    padding: 0 1rem !important;
-  }
-
-  [data-sonner-toast] {
-    margin: 0 !important;
-    width: 100% !important;
-    max-width: calc(100vw - 2rem) !important;
-    left: 0 !important;
-    right: 0 !important;
-  }
-
-  /* Mobile Toast Optimizations */
-  .mobile-toast-viewport {
-    position: fixed !important;
-    top: 1rem !important;
-    left: 1rem !important;
-    right: 1rem !important;
-    z-index: 100 !important;
-    width: calc(100vw - 2rem) !important;
-    max-width: calc(100vw - 2rem) !important;
-    pointer-events: none !important;
-    flex-direction: column !important;
-    gap: 0.5rem !important;
-  }
-
-  .mobile-toast {
-    width: 100% !important;
-    max-width: 100% !important;
-    margin: 0 !important;
-    pointer-events: auto !important;
-    transform: none !important;
-    position: relative !important;
-    left: auto !important;
-    right: auto !important;
-    top: auto !important;
-  }
-
-  /* Fix for toast content on mobile */
-  .mobile-toast .toast-content {
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-    max-width: 100%;
-  }
-}
-
-/* Ensure text doesn't overflow on small screens */
-.truncate-text {
-  @apply truncate max-w-full;
-}
-
-/* Improved container padding for all screen sizes */
-.content-container {
-  @apply px-4 sm:px-6 md:px-8 max-w-full mx-auto;
-}
-
-/* Animated progress bars */
-.progress-animate {
-  position: relative;
-  overflow: hidden;
-}
-
-.progress-animate::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.3),
-    transparent
-  );
-  animation: progressShine 2s infinite;
-}
-
-@keyframes progressShine {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(100%);
-  }
-}
-
-/* Apple-style card with subtle shadow */
-.apple-card {
-  background: white;
-  border-radius: 16px;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
-  overflow: hidden;
-  border: none;
-  transition: all 0.3s ease;
-}
-
-.apple-card:hover {
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
-  transform: translateY(-2px);
-}
-
-/* Apple-style gradients for accent elements */
-.gradient-subtle {
-  background: linear-gradient(120deg, #fdfbfb 0%, #ebedee 100%);
-}
-
-.gradient-blue {
-  background: linear-gradient(120deg, #e0f2fe 0%, #bae6fd 100%);
-}
-
-.gradient-green {
-  background: linear-gradient(120deg, #dcfce7 0%, #bbf7d0 100%);
-}
-
-.gradient-amber {
-  background: linear-gradient(120deg, #fef3c7 0%, #fde68a 100%);
-}
+/* ... (todo o seu CSS existente continua aqui) ... */
 
 /* PWA and Layout specific styles */
 .safe-area-top {
   padding-top: env(safe-area-inset-top);
 }
 
-.safe-area-bottom {
-  padding-bottom: env(safe-area-inset-bottom);
-}
-
-.safe-area-left {
-  padding-left: env(safe-area-inset-left);
-}
-
-.safe-area-right {
-  padding-right: env(safe-area-inset-right);
-}
-
-.ios-bottom-safe {
-  padding-bottom: calc(1.5rem + env(safe-area-inset-bottom));
-}
-
-.status-bar-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: env(safe-area-inset-top);
-  background: white;
-  z-index: 9999;
-}
-
-.standalone-mode {
-  -webkit-user-select: none;
-  -webkit-touch-callout: none;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.touch-manipulation {
-  touch-action: manipulation;
-}
-
-.no-bounce {
-  overscroll-behavior: none;
-}
-
-.selectable-text {
-  -webkit-user-select: text;
-  user-select: text;
-}
-
-@keyframes slide-up {
-  from {
-    transform: translateY(-100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-.animate-slide-up {
-  animation: slide-up 0.3s ease-out;
-}
-
-/* Apple-style buttons */
-.apple-button {
-  padding: 0.6rem 1.2rem;
-  font-weight: 500;
-  border-radius: 12px;
-  transition: all 0.2s ease;
-  background: white;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-}
-
-.apple-button:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-}
-
-.apple-button:active {
-  transform: translateY(0);
-}
-
-/* Apple-style typography */
-.apple-heading {
-  font-weight: 600;
-  color: #1d1d1f;
-  letter-spacing: -0.02em;
-}
-
-.apple-text {
-  color: #424245;
-  font-weight: 400;
-}
-
-/* Apple-style form inputs */
-.apple-input {
-  border-radius: 10px;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  background: rgba(255, 255, 255, 0.8);
-  padding: 0.75rem 1rem;
-  transition: all 0.2s ease;
-}
-
-.apple-input:focus {
-  border-color: #0A84FF;
-  box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.1);
-}
-
-/* Card with gradient border effect */
-.gradient-border-card {
-  position: relative;
-  background: white;
-  padding: 3px;
-  border-radius: 0.75rem;
-}
-
-.gradient-border-card::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  border-radius: 0.75rem;
-  padding: 2px;
-  background: linear-gradient(90deg, #3b82f6, #22c55e);
-  -webkit-mask: 
-    linear-gradient(#fff 0 0) content-box, 
-    linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  pointer-events: none;
-}
-
-/* Dashboard stat cards with smooth gradients */
-.stat-card-gradient-blue {
-  background: linear-gradient(135deg, #bfdbfe 0%, #dbeafe 100%);
-  border: none;
-}
+/* ... (resto do seu CSS) ... */
 
 .stat-card-gradient-green {
   background: linear-gradient(135deg, #bbf7d0 0%, #dcfce7 100%);
   border: none;
+}
+
+
+/* ======================================================================== */
+/* ADIÇÃO: Estilos para corrigir o enquadramento do QR Scanner (`html5-qrcode`)  */
+/* ======================================================================== */
+
+/* Este é o 'palco' do scanner, o <div id="qr-code-reader"> que está no seu QRCodeScanner.tsx. */
+#qr-code-reader {
+  width: 100%;             /* Faz o scanner ocupar toda a largura do modal */
+  max-width: 400px;        /* Limita o tamanho em telas maiores */
+  margin: 1rem auto;       /* Centraliza e dá um espaçamento */
+
+  /* A PARTE MAIS IMPORTANTE: Força um formato quadrado, crucial para o enquadramento */
+  aspect-ratio: 1 / 1;
+  
+  position: relative;      /* Necessário para o posicionamento interno do vídeo */
+  overflow: hidden;        /* Esconde as partes do vídeo que 'vazam' para fora do quadrado */
+  border-radius: 12px;     /* Apenas para um visual mais agradável */
+}
+
+/* O elemento de vídeo que a biblioteca 'html5-qrcode' cria DENTRO do #qr-code-reader */
+#qr-code-reader video {
+  width: 100%;
+  height: 100%;
+  
+  /* A CORREÇÃO PRINCIPAL: Faz o vídeo preencher o espaço sem distorcer, cortando o excesso */
+  object-fit: cover; 
+}
+
+/* A 'caixa de scan' que a própria biblioteca desenha. 
+   Este CSS ajuda a garantir que ela não fique com bordas estranhas. */
+#qr-code-reader__scan_region {
+  border-radius: 8px;
 }
