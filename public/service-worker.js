@@ -30,7 +30,7 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
 
-/// Network First strategy for critical assets, Cache First for others
+// Network First strategy for critical assets, Cache First for others
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
   
