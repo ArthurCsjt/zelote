@@ -8,30 +8,30 @@ export interface Chromebook {
   id: string;
   chromebook_id: string;
   model: string;
-  manufacturer?: string;
-  serial_number?: string;
-  patrimony_number?: string;
+  manufacturer?: string | null;
+  serial_number?: string | null;
+  patrimony_number?: string | null;
   status: ChromebookStatus;
-  condition?: string;
-  location?: string;
-  classroom?: string;
+  condition?: string | null;
+  location?: string | null;
+  classroom?: string | null;
   created_at: string;
   updated_at: string;
-  created_by?: string;
+  created_by?: string | null;
 }
 
 export interface Loan {
   id: string;
   chromebook_id: string;
   student_name: string;
-  student_ra?: string;
+  student_ra?: string | null;
   student_email: string;
   purpose: string;
   user_type: UserType;
   loan_type: LoanType;
   loan_date: string;
-  expected_return_date?: string;
-  created_by?: string;
+  expected_return_date?: string | null;
+  created_by?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -40,12 +40,12 @@ export interface Return {
   id: string;
   loan_id: string;
   returned_by_name: string;
-  returned_by_ra?: string;
+  returned_by_ra?: string | null;
   returned_by_email: string;
   returned_by_type: UserType;
   return_date: string;
-  notes?: string;
-  created_by?: string;
+  notes?: string | null;
+  created_by?: string | null;
   created_at: string;
 }
 
@@ -74,20 +74,20 @@ export interface ReturnFormData {
 export interface LoanHistoryItem {
   id: string;
   student_name: string;
-  student_ra?: string;
+  student_ra?: string | null;
   student_email: string;
   purpose: string;
   user_type: UserType;
   loan_type: LoanType;
-  loan_date: string;
-  expected_return_date?: string;
-  chromebook_id: string;
-  chromebook_model: string;
-  return_date?: string;
-  returned_by_name?: string;
-  returned_by_email?: string;
-  returned_by_type?: UserType;
-  return_notes?: string;
+  loan_date: string | null;
+  expected_return_date?: string | null;
+  chromebook_id: string | null;
+  chromebook_model: string | null;
+  return_date?: string | null;
+  returned_by_name?: string | null;
+  returned_by_email?: string | null;
+  returned_by_type?: UserType | null;
+  return_notes?: string | null;
   status: 'ativo' | 'devolvido' | 'atrasado';
 }
 
@@ -96,15 +96,16 @@ export interface ChromebookData {
   id?: string;
   chromebookId?: string;
   model: string;
-  manufacturer?: string;
-  serialNumber?: string;
-  patrimonyNumber?: string;
+  manufacturer?: string | null;
+  serialNumber?: string | null;
+  patrimonyNumber?: string | null;
   status?: ChromebookStatus;
-  condition?: string;
-  location?: string;
+  condition?: string | null;
+  location?: string | null;
+  classroom?: string | null;
   createdAt?: string;
   updatedAt?: string;
-  createdBy?: string;
+  createdBy?: string | null;
 }
 
 // Tipos de auditoria expandidos com melhorias

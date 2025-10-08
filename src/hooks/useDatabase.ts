@@ -247,8 +247,10 @@ export const useDatabase = () => {
       if (error) throw error;
       return (data || []).map(item => ({
         ...item,
+        id: item.id || '',
+        chromebook_id: item.chromebook_id || '',
         status: item.status as 'ativo' | 'devolvido' | 'atrasado'
-      }));
+      })) as LoanHistoryItem[];
     } catch (error: any) {
       toast({ title: "Erro", description: error.message, variant: "destructive" });
       return [];
