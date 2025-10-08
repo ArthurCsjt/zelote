@@ -10,10 +10,6 @@
   "orientation": "portrait-primary",
   "scope": "/",
   "prefer_related_applications": false,
-  "permissions": [
-    "camera",
-    "geolocation"
-  ],
   "icons": [
     {
       "src": "/icons/icon-72x72.png",

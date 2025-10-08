@@ -51,7 +51,7 @@ const IntelligentReportsTab: React.FC = () => {
       console.error('Erro ao gerar relatório:', error);
       toast({
         title: "Erro",
-        description: (error as Error).message || "Erro ao gerar relatório. Tente novamente.",
+        description: error.message || "Erro ao gerar relatório. Tente novamente.",
         variant: "destructive"
       });
     } finally {

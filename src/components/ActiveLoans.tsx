@@ -225,7 +225,7 @@ export function ActiveLoans({ onBack }: ActiveLoansProps) {
                         <div className="flex items-center gap-2 text-sm">
                           <Clock className="h-4 w-4 text-muted-foreground" />
                           <span className="font-medium">Emprestado em:</span>
-                          <span>{loan.loan_date ? format(new Date(loan.loan_date), "dd/MM/yyyy 'às' HH:mm") : '-'}</span>
+                          <span>{format(new Date(loan.loan_date), "dd/MM/yyyy 'às' HH:mm")}</span>
                         </div>
 
                         {/* Mostrar data de devolução esperada se existir */}

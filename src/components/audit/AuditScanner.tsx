@@ -202,7 +202,7 @@ export const AuditScanner = () => {
                           <div className="flex items-center gap-2">
                             {item.display_id}
                             {item.location_confirmed === false && (
-                              <AlertCircle className="h-4 w-4 text-orange-500" />
+                              <AlertCircle className="h-4 w-4 text-orange-500" title="Localização não confirmada" />
                             )}
                           </div>
                         </TableCell>
