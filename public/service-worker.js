@@ -33,6 +33,16 @@ self.addEventListener('install', (event) => {
 /// Network First strategy for critical assets, Cache First for others
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
+  
+  // NÃO CACHEAR requisições de câmera/mídia (importante para PWA)
+  if (event.request.url.includes('getUserMedia') || 
+      event.request.url.includes('mediaDevices') ||
+      event.request.destination === 'video' ||
+      event.request.destination === 'audio') {
+    event.respondWith(fetch(event.request));
+    return;
+  }
+  
   const isCriticalAsset = url.pathname.endsWith('.js') || url.pathname.endsWith('.css') || url.pathname === '/';
   
   if (isCriticalAsset) {

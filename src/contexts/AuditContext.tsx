@@ -1,5 +1,5 @@
 import { createContext, useContext } from 'react';
-import { useInventoryAudit } from '@/hooks/inventory/useInventoryAudit_clean';
+import { useInventoryAudit } from '@/hooks/inventory/useInventoryAudit';
 
 type AuditContextType = ReturnType<typeof useInventoryAudit>;
 
