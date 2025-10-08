@@ -67,8 +67,8 @@ export function QRCodeModal({
             setResolved({
               chromebook_id: data.chromebook_id,
               model: data.model,
-              serial_number: data.serial_number,
-              patrimony_number: data.patrimony_number,
+              serial_number: data.serial_number || undefined,
+              patrimony_number: data.patrimony_number || undefined,
             });
           }
         } catch (e) {

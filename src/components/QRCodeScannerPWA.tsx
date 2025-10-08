@@ -19,8 +19,8 @@ const isPWA = () => {
 // Controla orientação da tela
 const lockOrientation = async () => {
   try {
-    if (screen.orientation && screen.orientation.lock) {
-      await screen.orientation.lock('portrait');
+    if (screen.orientation && (screen.orientation as any).lock) {
+      await (screen.orientation as any).lock('portrait');
     }
   } catch (error) {
     console.log('Não foi possível travar orientação:', error);
@@ -29,8 +29,8 @@ const lockOrientation = async () => {
 
 const unlockOrientation = () => {
   try {
-    if (screen.orientation && screen.orientation.unlock) {
-      screen.orientation.unlock();
+    if (screen.orientation && (screen.orientation as any).unlock) {
+      (screen.orientation as any).unlock();
     }
   } catch (error) {
     console.log('Não foi possível destravar orientação:', error);

@@ -79,6 +79,7 @@ export function Dashboard({
         }, (_, i) => {
           const hour = i;
           const hourLoans = history.filter(loan => {
+            if (!loan.loan_date) return false;
             const loanDate = new Date(loan.loan_date);
             return isToday(loanDate) && loanDate.getHours() === hour;
           });
@@ -250,7 +251,7 @@ export function Dashboard({
         yPosition = 20;
       }
       pdf.text(`• ${loan.student_name} - ID: ${loan.chromebook_id}`, 25, yPosition);
-      pdf.text(`  Retirada: ${format(new Date(loan.loan_date), "dd/MM/yyyy 'às' HH:mm")}`, 25, yPosition + 5);
+      pdf.text(`  Retirada: ${loan.loan_date ? format(new Date(loan.loan_date), "dd/MM/yyyy 'às' HH:mm") : 'N/A'}`, 25, yPosition + 5);
       yPosition += 15;
     });
     return pdf;

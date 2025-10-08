@@ -270,8 +270,10 @@ export const useDatabase = () => {
       if (error) throw error;
       return (data || []).map(item => ({
         ...item,
+        id: item.id || '',
+        chromebook_id: item.chromebook_id || '',
         status: item.status as 'ativo' | 'devolvido' | 'atrasado'
-      }));
+      })) as LoanHistoryItem[];
     } catch (error: any) {
       toast({ title: "Erro", description: error.message, variant: "destructive" });
       return [];
@@ -332,7 +334,7 @@ export const useDatabase = () => {
         throw new Error('Chromebook não encontrado ou não está emprestado');
       }
 
-      const result = await createReturn(activeLoan.id, data);
+      const result = await createReturn(activeLoan.id || '', data);
       return !!result;
     } catch (error: any) {
       toast({ title: "Erro", description: error.message, variant: "destructive" });
