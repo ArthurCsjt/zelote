@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useAuth } from '@/contexts/AuthContext'; // 1. IMPORTADO O HOOK DE AUTENTICAÇÃO
+import { useAuth } from '@/contexts/AuthContext';
 import { toast } from "@/hooks/use-toast";
 
 // Importando todos os componentes de UI necessários
@@ -24,15 +24,40 @@ type UserProfile = {
 };
 
 export const UserManagement = () => {
-  const { user: currentUser } = useAuth(); // 2. OBTENDO O USUÁRIO LOGADO
+  const { user: currentUser } = useAuth();
   const queryClient = useQueryClient();
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState<'admin' | 'user'>('user');
   const [userToDelete, setUserToDelete] = useState<UserProfile | null>(null);
 
-  const sendInvite = async (email: string, role: 'admin' | 'user') => { /* ... sua lógica ... */ };
-  const updateRole = async (id: string, role: 'admin' | 'user') => { /* ... sua lógica ... */ };
-  
+  const sendInvite = async (email: string, role: 'admin' | 'user') => {
+    if (!email) {
+      toast({ title: 'Informe um e-mail', description: 'O campo de e-mail não pode estar vazio.', variant: 'destructive' });
+      return;
+    }
+    try {
+      const { error } = await supabase.functions.invoke('invite-user', {
+        body: { email, role },
+      });
+      if (error) throw error;
+      toast({ title: 'Convite enviado!', description: `O convite foi enviado com sucesso para ${email}.` });
+      setInviteEmail('');
+      queryClient.invalidateQueries({ queryKey: ['all_users'] });
+    } catch (e: any) {
+      toast({ title: 'Erro no convite', description: e.message || 'Ocorreu um erro ao enviar o convite.', variant: 'destructive' });
+    }
+  };
+
+  const updateRole = async (id: string, role: 'admin' | 'user') => {
+    const { error } = await supabase.from('profiles').update({ role }).eq('id', id);
+    if (error) {
+      toast({ title: 'Erro', description: error.message, variant: 'destructive' });
+    } else {
+      toast({ title: 'Perfil atualizado', description: 'Função alterada com sucesso.' });
+      queryClient.invalidateQueries({ queryKey: ['all_users'] });
+    }
+  };
+
   const handleDeleteUserConfirm = async () => {
     if (!userToDelete) return;
     try {
@@ -84,7 +109,6 @@ export const UserManagement = () => {
           <CardDescription>Envie convites e gerencie as permissões.</CardDescription>
         </CardHeader>
         <CardContent>
-          {/* 3. FORMULÁRIO DE CONVITE RESTAURADO */}
           <div className="space-y-4">
             <div className="grid sm:grid-cols-[1fr_auto_auto] gap-3 items-end">
               <div>
@@ -114,7 +138,7 @@ export const UserManagement = () => {
           <CardTitle className="flex items-center gap-2">Convites Pendentes <Badge variant="secondary">{pendingUsers.length}</Badge></CardTitle>
         </CardHeader>
         <CardContent className="space-y-2">
-          {pendingUsers.length === 0 ? <p className="text-sm text-muted-foreground">Nenhum convite pendente.</p> : 
+          {pendingUsers.length === 0 ? <p className="text-sm text-muted-foreground">Nenhum convite pendente.</p> :
             pendingUsers.map(user => (
               <div key={user.id} className="flex items-center justify-between p-2 rounded-md hover:bg-black/5">
                 <p className="text-sm font-medium">{user.email}</p>
@@ -137,7 +161,6 @@ export const UserManagement = () => {
                 <p className="text-xs text-muted-foreground">Último acesso: {user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleDateString() : 'N/A'}</p>
               </div>
               <div className="flex items-center gap-2">
-                {/* 4. LÓGICA PARA IMPEDIR AUTOEXCLUSÃO */}
                 {currentUser && user.id !== currentUser.id ? (
                   <>
                     <Select value={user.role} onValueChange={(newRole: 'admin' | 'user') => updateRole(user.id, newRole)}>
@@ -168,9 +191,22 @@ export const UserManagement = () => {
           ))}
         </CardContent>
       </Card>
-      
+
       <AlertDialog open={!!userToDelete} onOpenChange={() => setUserToDelete(null)}>
-        {/* ... (código do AlertDialog permanece o mesmo) ... */}
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Você tem certeza absoluta?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação não pode ser desfeita. Isso excluirá permanentemente a conta do usuário <span className="font-bold">{userToDelete?.email}</span>.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={handleDeleteUserConfirm}>
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
       </AlertDialog>
     </div>
   );
