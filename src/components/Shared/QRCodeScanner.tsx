@@ -1,89 +1,90 @@
-// src/components/shared/QRCodeScanner.tsx
-// VERSÃO FINAL - OTIMIZAÇÃO DE CENTRALIZAÇÃO E LAYOUT MOBILE
+import { useEffect, useRef } from 'react';
+import { Html5Qrcode } from 'html5-qrcode';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { toast } from "@/hooks/use-toast";
 
-import { useEffect, useRef, useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { X, CameraOff, Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { toast } from '@/hooks/use-toast';
+interface QRCodeScannerProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onScanSuccess: (data: string) => void;
+}
 
-// ... (declaração global e interface permanecem iguais) ...
-
-// ... (funções lockOrientation e unlockOrientation permanecem iguais) ...
+const QR_SCANNER_ELEMENT_ID = 'qr-code-scanner-mobile';
 
 export const QRCodeScanner = ({ open, onOpenChange, onScanSuccess }: QRCodeScannerProps) => {
-  // ... (todos os hooks e funções internas como stopScanner, handleClose, etc., permanecem iguais) ...
+  const scannerRef = useRef<Html5Qrcode | null>(null);
 
-  // O corpo do seu componente, com as funções, está perfeito.
-  // A única mudança é no JSX retornado.
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
 
-  if (!open) return null;
+    const startScanner = () => {
+      if (scannerRef.current) {
+        return;
+      }
+      
+      const scanner = new Html5Qrcode(QR_SCANNER_ELEMENT_ID);
+      scannerRef.current = scanner;
+
+      scanner.start(
+        { facingMode: "environment" },
+        { 
+          fps: 10, 
+          qrbox: { width: 250, height: 250 },
+          aspectRatio: 1.0
+        },
+        (decodedText) => {
+          toast({ title: "Sucesso", description: "QR Code lido com sucesso" });
+          onScanSuccess(decodedText);
+          onOpenChange(false);
+        },
+        (errorMessage) => {
+          // Ignora erros de "QR code not found"
+        }
+      ).catch(err => {
+        console.error("Erro ao iniciar o scanner:", err);
+        toast({ 
+          title: "Erro de Câmera", 
+          description: "Não foi possível iniciar a câmera. Verifique as permissões.", 
+          variant: "destructive" 
+        });
+        onOpenChange(false);
+      });
+    }
+
+    const timerId = setTimeout(startScanner, 100);
+
+    return () => {
+      clearTimeout(timerId);
+      if (scannerRef.current && (scannerRef.current as any).isScanning) {
+        scannerRef.current
+          .stop()
+          .then(() => {
+            scannerRef.current = null;
+          })
+          .catch(err => console.error("Erro ao parar o scanner.", err));
+      } else if (scannerRef.current) {
+        scannerRef.current = null;
+      }
+    };
+  }, [open, onScanSuccess, onOpenChange]);
 
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
-      {/* MODIFICAÇÃO 1: Modal em tela cheia no mobile */}
-      <DialogContent className="p-0 gap-0 w-full h-full sm:h-auto sm:max-w-md rounded-none sm:rounded-lg">
-        <DialogHeader className="p-4 border-b">
-          <DialogTitle className="flex items-center gap-2">
-            {error ? <CameraOff className="w-5 h-5 text-red-500" /> : '📷'}
-            {error ? 'Erro na Câmera' : 'Escaneie o QR Code'}
-          </DialogTitle>
-          <button onClick={handleClose} className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100">
-            <X className="h-4 w-4" />
-          </button>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="p-0 gap-0 w-full max-w-md">
+        <DialogHeader className="p-4 border-b bg-white">
+          <DialogTitle>Escaneie o QR Code</DialogTitle>
+          <DialogDescription>
+            Posicione o QR Code na área destacada
+          </DialogDescription>
         </DialogHeader>
 
-        <div className="p-4 space-y-4">
-          {!error && !isUnsupported ? (
-            <div className="w-full">
-              <div
-                className="relative bg-black rounded-lg overflow-hidden"
-                style={{ aspectRatio: '1 / 1' }}
-              >
-                {isLoading && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 z-20">
-                    <div className="text-white text-center">
-                      <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2" />
-                      <p className="text-sm">Iniciando câmera...</p>
-                    </div>
-                  </div>
-                )}
-
-                {/* MODIFICAÇÃO 2: A nova técnica de centralização do vídeo */}
-                <video
-                  ref={videoRef}
-                  autoPlay
-                  playsInline
-                  muted
-                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 min-w-full min-h-full w-auto h-auto object-cover"
-                />
-
-                <canvas ref={canvasRef} className="hidden" />
-
-                {/* Overlay e moldura (seu código já está perfeito) */}
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-                  <div
-                    className="border-4 border-white rounded-lg relative"
-                    style={{
-                      width: '250px',
-                      height: '250px',
-                      boxShadow: '0 0 0 9999px rgba(0,0,0,0.5)'
-                    }}
-                  >
-                    {/* ... (cantos verdes) ... */}
-                  </div>
-                </div>
-                
-                {/* ... (resto do seu JSX permanece igual) ... */}
-                
-              </div>
-            </div>
-          ) : (
-            // ... (seu código de erro permanece igual)
-          )}
-          
-          {/* ... (resto do seu JSX permanece igual) ... */}
+        <div className="w-full bg-black">
+          <div 
+            id={QR_SCANNER_ELEMENT_ID} 
+            className="w-full aspect-square flex items-center justify-center"
+          />
         </div>
       </DialogContent>
     </Dialog>
