@@ -1,7 +1,7 @@
 // src/components/shared/QRCodeScanner.tsx
-// VERSÃO CORRIGIDA USANDO html5-qrcode COM ASPECT RATIO
+// VERSÃO FINAL "FORÇA BRUTA" COM CSS EMBUTIDO
 
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { Html5Qrcode, Html5QrcodeScannerState } from 'html5-qrcode';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
@@ -12,63 +12,47 @@ interface QRCodeScannerProps {
   onScanSuccess: (data: string) => void;
 }
 
-const QR_SCANNER_ELEMENT_ID = 'qr-code-reader-container';
+const QR_SCANNER_ELEMENT_ID = 'qr-reader-force';
 
 export const QRCodeScanner = ({ open, onOpenChange, onScanSuccess }: QRCodeScannerProps) => {
-  const scannerRef = useRef<Html5Qrcode | null>(null);
 
   useEffect(() => {
-    if (!open) {
-      return;
-    }
+    if (!open) return;
 
-    // Garante que o scanner só seja criado uma vez
-    if (!scannerRef.current) {
-      scannerRef.current = new Html5Qrcode(QR_SCANNER_ELEMENT_ID, false);
-    }
-    const scanner = scannerRef.current;
+    const scanner = new Html5Qrcode(QR_SCANNER_ELEMENT_ID, false);
 
     const config = {
       fps: 10,
       qrbox: { width: 250, height: 250 },
-      aspectRatio: 1.0, // A CORREÇÃO PRINCIPAL!
+      aspectRatio: 1.0,
     };
 
     const handleSuccess = (decodedText: string) => {
-      // Garante que o scanner ainda está ativo para evitar múltiplas chamadas
-      if (scanner.getState() === Html5QrcodeScannerState.SCANNING) {
-        toast({ title: "Sucesso!", description: "QR Code lido." });
-        onScanSuccess(decodedText);
-        onOpenChange(false); // Fecha o modal após o sucesso
-      }
-    };
-
-    const handleError = (errorMessage: string) => {
-      // Ignora o erro comum de "QR code not found"
+      onScanSuccess(decodedText);
+      onOpenChange(false);
     };
 
     scanner.start(
-      { facingMode: "environment" }, // Usa a câmera traseira
+      { facingMode: "environment" },
       config,
       handleSuccess,
-      handleError
+      () => {} // Ignore errors
     ).catch(err => {
-      console.error("Falha ao iniciar a câmera com html5-qrcode:", err);
       toast({
         title: "Erro de Câmera",
-        description: "Não foi possível iniciar a câmera. Verifique as permissões do navegador.",
+        description: "Não foi possível iniciar a câmera. Verifique as permissões.",
         variant: "destructive"
       });
       onOpenChange(false);
     });
 
-    // Função de limpeza para parar a câmera quando o componente for desmontado ou o modal for fechado
+    // Função de limpeza
     return () => {
-      if (scanner && scanner.getState() === Html5QrcodeScannerState.SCANNING) {
+      // Verifica se o scanner está realmente ativo antes de tentar parar
+      scanner.getState() === Html5QrcodeScannerState.SCANNING &&
         scanner.stop().catch(err => {
           console.error("Falha ao parar o scanner.", err);
         });
-      }
     };
   }, [open, onScanSuccess, onOpenChange]);
 
@@ -82,9 +66,36 @@ export const QRCodeScanner = ({ open, onOpenChange, onScanSuccess }: QRCodeScann
           </DialogDescription>
         </DialogHeader>
 
-        <div className="w-full bg-black">
+        {/* CSS INJETADO DIRETAMENTE PARA MÁXIMA PRIORIDADE */}
+        <style>{`
+          #${QR_SCANNER_ELEMENT_ID} {
+            width: 100%;
+            border: none !important;
+            padding: 0 !important;
+            background-color: black;
+          }
+          #${QR_SCANNER_ELEMENT_ID}_anchor_scan_region {
+             /* Esconde o quadrado padrão da biblioteca */
+            display: none !important;
+          }
+          #${QR_SCANNER_ELEMENT_ID} video {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: cover !important; /* A REGRA MAIS IMPORTANTE */
+          }
+        `}</style>
+
+        <div className="relative w-full bg-black" style={{ aspectRatio: '1 / 1' }}>
           {/* O contêiner onde a biblioteca vai renderizar a câmera */}
-          <div id={QR_SCANNER_ELEMENT_ID} className="w-full" />
+          <div id={QR_SCANNER_ELEMENT_ID} />
+
+          {/* Nossa própria moldura customizada por cima */}
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div
+              className="w-[250px] h-[250px] border-4 border-white/80 rounded-lg"
+              style={{ boxShadow: '0 0 0 9999px rgba(0,0,0,0.5)' }}
+            />
+          </div>
         </div>
       </DialogContent>
     </Dialog>
