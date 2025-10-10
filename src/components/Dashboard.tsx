@@ -1,3 +1,10 @@
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
 import { useEffect, useState, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -15,6 +22,7 @@ import { MobileFriendlyDashboard } from "./MobileFriendlyDashboard";
 import { useDatabase } from '@/hooks/useDatabase';
 import { useOverdueLoans } from '@/hooks/useOverdueLoans';
 import IntelligentReportsTab from './IntelligentReportsTab';
+
 interface DashboardProps {
   onBack?: () => void;
 }
@@ -29,14 +37,14 @@ export function Dashboard({
     overdueLoans,
     upcomingDueLoans
   } = useOverdueLoans();
-  const [activeLoans, setActiveLoans] = useState<LoanHistoryItem[]>([]);
-  const [history, setHistory] = useState<LoanHistoryItem[]>([]);
-  const [chromebooks, setChromebooks] = useState<any[]>([]);
+  const [activeLoans, setActiveLoans] = useState < LoanHistoryItem[] > ([]);
+  const [history, setHistory] = useState < LoanHistoryItem[] > ([]);
+  const [chromebooks, setChromebooks] = useState < any[] > ([]);
   const {
     toast
   } = useToast();
-  const [periodView, setPeriodView] = useState<'daily' | 'weekly' | 'monthly'>('daily');
-  const [periodData, setPeriodData] = useState<any[]>([]);
+  const [periodView, setPeriodView] = useState < 'daily' | 'weekly' | 'monthly' | 'ia' > ('daily');
+  const [periodData, setPeriodData] = useState < any[] > ([]);
   const [loading, setLoading] = useState(false);
   const totalChromebooks = chromebooks.length;
   const availableChromebooks = totalChromebooks - activeLoans.length;
@@ -55,9 +63,11 @@ export function Dashboard({
       setLoading(false);
     }
   }, [getLoanHistory, getChromebooks]);
+
   useEffect(() => {
     fetchDashboardData();
   }, [fetchDashboardData]);
+
   const pieData = [{
     name: "Em Uso",
     value: activeLoans.length
@@ -172,7 +182,7 @@ export function Dashboard({
     const userType = loan.user_type || 'aluno';
     acc[userType] = (acc[userType] || 0) + 1;
     return acc;
-  }, {} as Record<string, number>);
+  }, {} as Record < string, number > );
   const userTypeData = Object.entries(loansByUserType).map(([type, count]) => ({
     name: type.charAt(0).toUpperCase() + type.slice(1),
     value: count
@@ -191,10 +201,10 @@ export function Dashboard({
       acc[loan.user_type || 'aluno'].count += 1;
     }
     return acc;
-  }, {} as Record<string, {
+  }, {} as Record < string, {
     total: number;
     count: number;
-  }>);
+  } > );
   const durationData = Object.entries(averageLoanDurations).map(([type, data]) => ({
     name: type.charAt(0).toUpperCase() + type.slice(1),
     minutos: Math.round(data.total / data.count)
@@ -273,116 +283,137 @@ export function Dashboard({
       });
     }
   };
-  return <div className="space-y-6 glass-morphism p-6 animate-fade-in relative px-[22px] py-[40px] bg-slate-300 rounded-md">
-      {/* Background gradient overlay */}
+
+  return <div className="space-y-8 glass-morphism p-4 sm:p-6 lg:p-8 animate-fade-in relative bg-white/95 backdrop-blur-xl rounded-2xl border border-white/20 shadow-2xl shadow-slate-200/20">
+      { /* Background gradient overlay */ }
       <div className="absolute inset-0 -z-10 bg-gradient-to-br from-blue-50/30 via-purple-50/20 to-pink-50/30 blur-2xl transform scale-110 py-[25px] rounded-3xl bg-[#000a0e]/0" />
       
-      <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-6 relative z-10">
-        <div>
-          <h2 className="text-2xl tracking-tight bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text mx-px text-right px-[30px] font-bold sm:text-lg text-blue-700">
-            Dashboard
-          </h2>
-          
+      {/* --- INÍCIO DA CORREÇÃO --- */}
+
+      {/* Cabeçalho com Dropdown na Esquerda, Título no Centro e Botão na Direita */}
+      <div className="grid grid-cols-3 items-center gap-4 relative z-10">
+        
+        {/* Coluna 1: Dropdown na Esquerda */}
+        <div className="justify-self-start">
+          <Select value={periodView} onValueChange={(value) => setPeriodView(value as any)}>
+            <SelectTrigger className="w-full sm:w-[180px] bg-white/80 border-slate-200/60 shadow-sm backdrop-blur-sm">
+              <SelectValue placeholder="Selecione o período" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="daily">
+                <div className="flex items-center gap-2"><Calendar className="h-4 w-4 text-blue-600" /><span>Diário</span></div>
+              </SelectItem>
+              <SelectItem value="weekly">
+                <div className="flex items-center gap-2"><CalendarRange className="h-4 w-4 text-green-600" /><span>Semanal</span></div>
+              </SelectItem>
+              <SelectItem value="monthly">
+                <div className="flex items-center gap-2"><ChartLine className="h-4 w-4 text-purple-600" /><span>Mensal</span></div>
+              </SelectItem>
+              <SelectItem value="ia">
+                <div className="flex items-center gap-2"><Brain className="h-4 w-4 text-indigo-600" /><span>Relatórios IA</span></div>
+              </SelectItem>
+            </SelectContent>
+          </Select>
         </div>
-        <div className="flex flex-wrap gap-2 w-full sm:w-auto justify-start relative z-10">
-          <Button variant="outline" onClick={handleDownloadPDF} className="flex items-center gap-2 hover:bg-blue-50 px-3 text-xs text-justify">
+
+        {/* Coluna 2: Título Centralizado */}
+        <h2 className="text-xl sm:text-3xl font-bold text-gray-800 text-center justify-self-center whitespace-nowrap">
+          Dashboard
+        </h2>
+
+        {/* Coluna 3: Botão na Direita */}
+        <div className="justify-self-end">
+          <Button variant="outline" onClick={handleDownloadPDF} className="flex items-center gap-2 hover:bg-blue-50">
             <Download className="h-4 w-4" />
-            <span className="whitespace-nowrap">Baixar Relatório</span>
+            <span className="hidden md:inline">Baixar Relatório</span>
           </Button>
         </div>
+
       </div>
 
-      <Tabs defaultValue="daily" className="w-full" onValueChange={v => setPeriodView(v as 'daily' | 'weekly' | 'monthly')}>
-        <TabsList className="grid w-full sm:w-auto grid-cols-4 max-w-xl mb-4 bg-slate-100">
-          <TabsTrigger value="daily" className="flex items-center gap-1 text-lg text-slate-950">
-            <Calendar className="h-4 w-4 bg-slate-100" />
-            <span className="text-black">Diário</span>
-          </TabsTrigger>
-          <TabsTrigger value="weekly" className="flex items-center gap-1">
-            <CalendarRange className="h-4 w-4 bg-slate-50" />
-            <span className="text-black text-lg">Semanal</span>
-          </TabsTrigger>
-          <TabsTrigger value="monthly" className="flex items-center gap-1">
-            <ChartLine className="h-4 w-4 bg-slate-50" />
-            <span className="text-black text-lg">Mensal</span>
-          </TabsTrigger>
-          <TabsTrigger value="ia" className="flex items-center gap-1 text-base font-extralight text-stone-950 bg-zinc-100">
-            <Brain className="h-4 w-4 rounded-sm" />
-            <span className="text-lg font-medium text-slate-950 text-center">Relatórios IA</span>
-          </TabsTrigger>
+      {/* --- FIM DA CORREÇÃO --- */}
+      
+      {/* Grid de Cards de Estatísticas */}
+      <div className="grid gap-4 md:grid-cols-4 relative z-10">
+        <Card className="glass-card border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-blue-500">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Empréstimos
+            </CardTitle>
+            <Computer className="h-5 w-5 text-blue-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">{filteredLoans.length}</div>
+            <p className="text-xs text-muted-foreground">
+              {filteredReturns.length} devoluções no período
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="glass-card border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-green-500">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Chromebooks Ativos
+            </CardTitle>
+            <Computer className="h-5 w-5 text-green-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">{activeLoans.length}</div>
+            <div className="flex items-center gap-2 mt-1">
+              <Progress value={activeLoans.length / totalChromebooks * 100} className="h-2" />
+              <span className="text-xs text-muted-foreground">
+                {(activeLoans.length / totalChromebooks * 100).toFixed(0)}%
+              </span>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="glass-card border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-purple-500">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Tempo Médio de Uso
+            </CardTitle>
+            <Clock className="h-5 w-5 text-purple-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-violet-600 bg-clip-text text-transparent">
+              {Math.round(averageUsageTime)} min
+            </div>
+            <p className="text-xs text-muted-foreground">
+              média no período
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="glass-card border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-orange-500">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Taxa de Devolução
+            </CardTitle>
+            <Activity className="h-5 w-5 text-orange-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent">
+              {completionRate.toFixed(0)}%
+            </div>
+            <div className="flex items-center gap-2 mt-1">
+              <Progress value={completionRate} className="h-2" />
+              <span className="text-xs text-muted-foreground">
+                {filteredReturns.length} de {filteredLoans.length}
+              </span>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Abas com os Gráficos */}
+      <Tabs defaultValue="daily" value={periodView} onValueChange={(v) => setPeriodView(v as any)} className="relative z-10">
+        <TabsList className="hidden">
+          <TabsTrigger value="daily">Diário</TabsTrigger>
+          <TabsTrigger value="weekly">Semanal</TabsTrigger>
+          <TabsTrigger value="monthly">Mensal</TabsTrigger>
+          <TabsTrigger value="ia">IA</TabsTrigger>
         </TabsList>
-
-        <div className="grid gap-4 md:grid-cols-4 relative z-10">
-          <Card className="glass-card border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-blue-500">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Empréstimos {periodText[periodView]}
-              </CardTitle>
-              <Computer className="h-5 w-5 text-blue-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">{filteredLoans.length}</div>
-              <p className="text-xs text-muted-foreground">
-                {filteredReturns.length} devoluções
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="glass-card border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-green-500">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Chromebooks Ativos
-              </CardTitle>
-              <Computer className="h-5 w-5 text-green-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">{activeLoans.length}</div>
-              <div className="flex items-center gap-2 mt-1">
-                <Progress value={activeLoans.length / totalChromebooks * 100} className="h-2" />
-                <span className="text-xs text-muted-foreground">
-                  {(activeLoans.length / totalChromebooks * 100).toFixed(0)}%
-                </span>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="glass-card border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-purple-500">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Tempo Médio de Uso
-              </CardTitle>
-              <Clock className="h-5 w-5 text-purple-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-violet-600 bg-clip-text text-transparent">
-                {Math.round(averageUsageTime)} min
-              </div>
-              <p className="text-xs text-muted-foreground">
-                média {periodView === 'daily' ? 'do dia' : periodView === 'weekly' ? 'da semana' : 'do mês'}
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="glass-card border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-orange-500">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Taxa de Devolução
-              </CardTitle>
-              <Activity className="h-5 w-5 text-orange-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent">
-                {completionRate.toFixed(0)}%
-              </div>
-              <div className="flex items-center gap-2 mt-1">
-                <Progress value={completionRate} className="h-2" />
-                <span className="text-xs text-muted-foreground">
-                  {filteredReturns.length} de {filteredLoans.length}
-                </span>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
 
         <TabsContent value="daily" className="space-y-4 mt-6">
           <div className="grid gap-4 md:grid-cols-2">
@@ -435,7 +466,6 @@ export function Dashboard({
             </Card>
           </div>
 
-          {/* Novos gráficos de pizza para análise detalhada */}
           <div className="grid gap-4 md:grid-cols-3 mt-4">
             <Card className="glass-card dashboard-card">
               <CardHeader className="flex flex-row items-center justify-between">
@@ -451,9 +481,9 @@ export function Dashboard({
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie data={userTypeData} cx="50%" cy="50%" innerRadius={40} outerRadius={70} fill="#8884d8" paddingAngle={5} dataKey="value" label={({
-                    name,
-                    value
-                  }) => `${name}: ${value}`}>
+                  name,
+                  value
+                }) => `${name}: ${value}`}>
                       {userTypeData.map((entry, index) => <Cell key={`cell-${index}`} fill={['#3B82F6', '#10B981', '#F59E0B'][index % 3]} />)}
                     </Pie>
                     <Tooltip />
@@ -495,7 +525,7 @@ export function Dashboard({
                 </div>
                 <Activity className="h-5 w-5 text-muted-foreground" />
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-3">
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-medium">Alunos</span>
@@ -590,7 +620,6 @@ export function Dashboard({
             </Card>
           </div>
 
-          {/* Gráficos adicionais para visão semanal */}
           <div className="grid gap-4 md:grid-cols-2 mt-4">
             <Card className="glass-card dashboard-card">
               <CardHeader className="flex flex-row items-center justify-between">
@@ -624,9 +653,9 @@ export function Dashboard({
                       return hour >= 17 && hour < 22;
                     }).length
                   }]} cx="50%" cy="50%" innerRadius={40} outerRadius={80} paddingAngle={5} dataKey="value" label={({
-                    name,
-                    value
-                  }) => value > 0 ? `${name}: ${value}` : ''}>
+                  name,
+                  value
+                }) => value > 0 ? `${name}: ${value}` : ''}>
                       {[0, 1, 2].map(index => <Cell key={`cell-${index}`} fill={['#06B6D4', '#8B5CF6', '#F59E0B'][index]} />)}
                     </Pie>
                     <Tooltip />
@@ -710,127 +739,12 @@ export function Dashboard({
               </CardContent>
             </Card>
           </div>
-
-          {/* Análise mensal mais detalhada */}
-          <div className="grid gap-4 md:grid-cols-3 mt-4">
-            <Card className="glass-card dashboard-card">
-              <CardHeader className="flex flex-row items-center justify-between">
-                <div>
-                  <CardTitle className="text-lg">Uso Mensal por Usuário</CardTitle>
-                  <CardDescription>
-                    Distribuição completa
-                  </CardDescription>
-                </div>
-                <PieChartIcon className="h-5 w-5 text-muted-foreground" />
-              </CardHeader>
-              <CardContent className="h-[250px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie data={userTypeData} cx="50%" cy="50%" innerRadius={30} outerRadius={70} paddingAngle={5} dataKey="value" label={({
-                    name,
-                    percent
-                  }) => `${name}: ${(percent * 100).toFixed(0)}%`}>
-                      {userTypeData.map((entry, index) => <Cell key={`cell-${index}`} fill={['#3B82F6', '#10B981', '#F59E0B'][index % 3]} />)}
-                    </Pie>
-                    <Tooltip />
-                  </PieChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-
-            <Card className="glass-card dashboard-card">
-              <CardHeader className="flex flex-row items-center justify-between">
-                <div>
-                  <CardTitle className="text-lg">Performance Mensal</CardTitle>
-                  <CardDescription>
-                    Taxa de devolução e uso
-                  </CardDescription>
-                </div>
-                <Activity className="h-5 w-5 text-muted-foreground" />
-              </CardHeader>
-              <CardContent className="h-[250px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie data={[{
-                    name: "Devolvidos",
-                    value: filteredReturns.length
-                  }, {
-                    name: "Pendentes",
-                    value: filteredLoans.length - filteredReturns.length
-                  }, {
-                    name: "Ativos",
-                    value: activeLoans.length
-                  }]} cx="50%" cy="50%" innerRadius={30} outerRadius={70} paddingAngle={5} dataKey="value" label={({
-                    name,
-                    value
-                  }) => `${name}: ${value}`}>
-                      {[0, 1, 2].map(index => <Cell key={`cell-${index}`} fill={['#22C55E', '#F59E0B', '#EF4444'][index]} />)}
-                    </Pie>
-                    <Tooltip />
-                  </PieChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-
-            <Card className="glass-card dashboard-card">
-              <CardHeader className="flex flex-row items-center justify-between">
-                <div>
-                  <CardTitle className="text-lg">Resumo Executivo</CardTitle>
-                  <CardDescription>
-                    Métricas principais
-                  </CardDescription>
-                </div>
-                <BarChartIcon className="h-5 w-5 text-muted-foreground" />
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium">Utilização Total</span>
-                    <Badge variant="secondary" className="bg-blue-100 text-blue-700">
-                      {(activeLoans.length / totalChromebooks * 100).toFixed(0)}%
-                    </Badge>
-                  </div>
-                  
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium">Maior Uso</span>
-                    <Badge variant="secondary" className="bg-green-100 text-green-700">
-                      {Object.entries(loansByUserType).sort(([, a], [, b]) => b - a)[0]?.[0] || 'N/A'}
-                    </Badge>
-                  </div>
-                  
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium">Tempo Médio Total</span>
-                    <Badge variant="secondary" className="bg-purple-100 text-purple-700">
-                      {Math.round(averageUsageTime)} min
-                    </Badge>
-                  </div>
-                  
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium">Taxa Devolução</span>
-                    <Badge variant="secondary" className="bg-orange-100 text-orange-700">
-                      {completionRate.toFixed(0)}%
-                    </Badge>
-                  </div>
-                  
-                  <div className="pt-2 border-t">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm font-bold">Status Geral</span>
-                      <Badge variant={completionRate > 80 ? "default" : "destructive"}>
-                        {completionRate > 80 ? "Excelente" : completionRate > 60 ? "Bom" : "Atenção"}
-                      </Badge>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
         </TabsContent>
 
         <TabsContent value="ia" className="space-y-4 mt-6">
           <IntelligentReportsTab />
         </TabsContent>
       </Tabs>
-      
       
     </div>;
 }
