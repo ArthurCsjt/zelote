@@ -9,7 +9,6 @@ import { Checkbox } from "./ui/checkbox";
 import { Computer, Plus, QrCode, Calendar, Clock } from "lucide-react";
 import { QRCodeReader } from "./QRCodeReader";
 import { format } from "date-fns";
-import { formatInTimeZone, toZonedTime } from "date-fns-tz";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Calendar as CalendarComponent } from "./ui/calendar";
 import { cn } from "@/lib/utils";
@@ -124,7 +123,6 @@ export function LoanForm({ onBack }: LoanFormProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validar e sanitizar dados do formulário
     const validation = validateLoanFormData(formData);
     if (!validation.isValid) {
       toast({
@@ -138,7 +136,6 @@ export function LoanForm({ onBack }: LoanFormProps) {
     if (formData.loanType === 'lote') {
       // === EMPRÉSTIMO EM LOTE ===
       
-      // Verifica se há dispositivos na lista de lote
       if (batchDevices.length === 0) {
         toast({
           title: "Erro",
@@ -148,11 +145,9 @@ export function LoanForm({ onBack }: LoanFormProps) {
         return;
       }
       
-      // Processa cada dispositivo individualmente
       let processedCount = 0;
       
       for (const deviceId of batchDevices) {
-        // Cria um objeto de empréstimo para cada dispositivo
         const loanData = {
           studentName: formData.studentName,
           ra: formData.ra || '',
@@ -164,16 +159,13 @@ export function LoanForm({ onBack }: LoanFormProps) {
           expectedReturnDate: hasReturnDeadline && formData.expectedReturnDate ? formData.expectedReturnDate : undefined,
         };
         
-        // Chama a função do hook para processar o empréstimo
-        const result = await createLoan(loanData);
+        const result = await createLoan(loanData as any);
         if (result) {
           processedCount++;
         }
       }
       
-      // Se processou algum dispositivo, limpa o formulário e exibe mensagem de sucesso
       if (processedCount > 0) {
-        // Limpa o formulário e a lista de dispositivos
         setBatchDevices([]);
         setCurrentBatchInput("");
         setFormData({ 
@@ -187,7 +179,6 @@ export function LoanForm({ onBack }: LoanFormProps) {
         });
         setHasReturnDeadline(false);
         
-        // Exibe mensagem de sucesso
         toast({
           title: "Sucesso",
           description: `${processedCount} Chromebooks emprestados com sucesso`,
@@ -197,7 +188,6 @@ export function LoanForm({ onBack }: LoanFormProps) {
     } else {
       // === EMPRÉSTIMO INDIVIDUAL ===
       
-      // Verifica campos obrigatórios
       if (!formData.studentName || !formData.email || !formData.chromebookId || !formData.purpose) {
         toast({
           title: "Erro",
@@ -207,23 +197,20 @@ export function LoanForm({ onBack }: LoanFormProps) {
         return;
       }
       
-        // Prepara dados para o Supabase - usar interface correta
-        const loanData = {
-          studentName: formData.studentName,
-          ra: formData.ra || '',
-          email: formData.email,
-          chromebookId: formData.chromebookId,
-          purpose: formData.purpose,
-          userType: formData.userType,
-          loanType: formData.loanType,
-          expectedReturnDate: hasReturnDeadline && formData.expectedReturnDate ? formData.expectedReturnDate : undefined,
-        };
+      const loanData = {
+        studentName: formData.studentName,
+        ra: formData.ra || '',
+        email: formData.email,
+        chromebookId: formData.chromebookId,
+        purpose: formData.purpose,
+        userType: formData.userType,
+        loanType: formData.loanType,
+        expectedReturnDate: hasReturnDeadline && formData.expectedReturnDate ? formData.expectedReturnDate : undefined,
+      };
       
-      // Chama a função do hook para processar o empréstimo
-      const result = await createLoan(loanData);
+      const result = await createLoan(loanData as any);
       
       if (result) {
-        // Limpa o formulário
         setFormData({ 
           studentName: "", 
           ra: "", 
@@ -235,7 +222,6 @@ export function LoanForm({ onBack }: LoanFormProps) {
         });
         setHasReturnDeadline(false);
         
-        // Exibe mensagem de sucesso
         toast({
           title: "Sucesso",
           description: "Chromebook emprestado com sucesso",
@@ -247,7 +233,6 @@ export function LoanForm({ onBack }: LoanFormProps) {
   // === RENDERIZAÇÃO DA INTERFACE (UI) ===
   return (
     <div className="glass-morphism p-6 animate-fade-in relative">
-      {/* Background gradient overlay */}
       <div className="absolute inset-0 -z-10 bg-gradient-to-br from-blue-50/30 via-purple-50/20 to-pink-50/30 rounded-3xl blur-2xl transform scale-110" />
       
       <h2 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4 relative z-10">
@@ -305,7 +290,6 @@ export function LoanForm({ onBack }: LoanFormProps) {
         ) : (
           /* Interface de empréstimo em lote */
           <div className="space-y-2">
-            {/* Cabeçalho com contador de dispositivos */}
             <div className="flex justify-between items-center mb-2">
               <Label htmlFor="batchDevices" className="text-gray-700">
                 Dispositivos em Lote
@@ -316,9 +300,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
             </div>
             
             <div className="space-y-3">
-              {/* Campo para adicionar dispositivos */}
               <div className="space-y-2">
-                {/* Input para ID do dispositivo */}
                 <div className="w-full">
                   <Input
                     id="batchInput"
@@ -335,7 +317,6 @@ export function LoanForm({ onBack }: LoanFormProps) {
                   />
                 </div>
                 
-                {/* Botões para adicionar e QR Code */}
                 <div className="flex gap-2 w-full">
                   <Button 
                     type="button"
@@ -347,7 +328,6 @@ export function LoanForm({ onBack }: LoanFormProps) {
                     Adicionar
                   </Button>
                   
-                  {/* Botão de QR Code para modo lote */}
                   <Button 
                     type="button" 
                     variant="outline" 
@@ -359,18 +339,15 @@ export function LoanForm({ onBack }: LoanFormProps) {
                 </div>
               </div>
               
-              {/* Lista de dispositivos adicionados ao lote */}
               <div className="mt-2 p-2 bg-gray-50 rounded-md border border-gray-200 max-h-[150px] overflow-y-auto">
                 {batchDevices.length > 0 ? (
                   <div className="space-y-2">
-                    {/* Lista de dispositivos */}
                     {batchDevices.map((device, index) => (
                       <div key={index} className="flex justify-between items-center p-2 bg-white rounded border border-gray-100">
                         <div className="flex items-center gap-2">
                           <Computer className="h-4 w-4 text-green-500" />
                           <span className="text-sm">{device}</span>
                         </div>
-                        {/* Botão para remover dispositivo */}
                         <Button 
                           type="button"
                           variant="ghost"
@@ -383,7 +360,6 @@ export function LoanForm({ onBack }: LoanFormProps) {
                     ))}
                   </div>
                 ) : (
-                  /* Mensagem quando nenhum dispositivo foi adicionado */
                   <div className="text-center text-gray-500 py-4">
                     <Computer className="h-10 w-10 mx-auto mb-2 text-gray-300" />
                     <p className="text-sm">Nenhum dispositivo adicionado</p>
@@ -391,7 +367,6 @@ export function LoanForm({ onBack }: LoanFormProps) {
                 )}
               </div>
               
-              {/* Resumo do empréstimo em lote (visível apenas se houver dispositivos) */}
               {batchDevices.length > 0 && (
                 <div className="mt-2 p-3 bg-green-50 border border-green-100 rounded-lg">
                   <div className="flex items-center justify-between mb-2">
@@ -522,7 +497,6 @@ export function LoanForm({ onBack }: LoanFormProps) {
                   Data e Hora de Devolução
                 </Label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {/* Seletor de Data */}
                   <Popover open={isDatePickerOpen} onOpenChange={setIsDatePickerOpen}>
                     <PopoverTrigger asChild>
                       <Button
@@ -561,7 +535,6 @@ export function LoanForm({ onBack }: LoanFormProps) {
                     </PopoverContent>
                   </Popover>
 
-                  {/* Seletor de Hora */}
                   <div className="space-y-1">
                     <div className="flex gap-2">
                       <div className="flex-1">
