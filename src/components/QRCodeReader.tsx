@@ -1,7 +1,7 @@
 // src/components/QRCodeReader.tsx
 // SOLUÇÃO DEFINITIVA - Combina html5-qrcode + Correções PWA
 
-import { useEffect, useRef, useState, useCallback } from 'react'; // Adicionado useCallback
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { Html5Qrcode, Html5QrcodeScannerState } from 'html5-qrcode';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "./ui/dialog";
 import { Button } from "./ui/button";
@@ -48,23 +48,13 @@ export function QRCodeReader({ open, onOpenChange, onScan }: QRCodeReaderProps) 
   const [showManualInput, setShowManualInput] = useState(false);
   const [manualCode, setManualCode] = useState('');
 
-  // --- INÍCIO DA CORREÇÃO ---
-  
-  // Função de limpeza do scanner (versão robusta com async/await)
   const cleanupScanner = useCallback(async () => {
-    // Se a referência do scanner já foi limpa, não faz mais nada.
     if (!scannerRef.current) {
       return;
     }
-
-    console.log("Iniciando cleanup do scanner...");
-    
     try {
       const scanner = scannerRef.current;
-      // Anula a referência imediatamente para evitar que a função seja executada de novo em paralelo
       scannerRef.current = null;
-
-      // Verifica se o scanner está ativo antes de tentar pará-lo
       if (scanner.getState() === Html5QrcodeScannerState.SCANNING) {
         await scanner.stop();
         console.log("✅ Scanner parado com sucesso.");
@@ -72,22 +62,16 @@ export function QRCodeReader({ open, onOpenChange, onScan }: QRCodeReaderProps) 
     } catch (err) {
       console.error("⚠️ Erro ao parar o scanner durante o cleanup:", err);
     } finally {
-      // Esta parte sempre será executada, garantindo que tudo seja resetado.
       unlockOrientation();
       setIsLoading(false);
       setError('');
       setShowManualInput(false);
       setManualCode('');
     }
-  }, []); // useCallback para otimização, sem dependências
+  }, []);
 
-  // --- FIM DA CORREÇÃO ---
-
-
-  // Cleanup e inicialização do scanner
   useEffect(() => {
     if (!open) {
-      // Se o modal está fechando, garante que o cleanup seja chamado
       cleanupScanner();
       return;
     }
@@ -116,18 +100,17 @@ export function QRCodeReader({ open, onOpenChange, onScan }: QRCodeReaderProps) 
             useBarCodeDetectorIfSupported: true
           }
         };
-
+        
+        // --- INÍCIO DA CORREÇÃO ---
+        // Constraints da câmera tornados mais flexíveis para maior compatibilidade móvel
         const constraints = {
-          facingMode: 'environment',
-          aspectRatio: 1.0,
-          width: { ideal: 1280 },
-          height: { ideal: 720 }
+          facingMode: { ideal: 'environment' }, // Dá preferência, mas aceita outras
+          aspectRatio: { ideal: 1.0 }         // Tenta usar 1.0, mas se adapta
         };
+        // --- FIM DA CORREÇÃO ---
 
         const onScanSuccess = (decodedText: string) => {
-          // A função de cleanup é chamada aqui também para garantir parada imediata
           cleanupScanner();
-          
           toast({ 
             title: "✅ QR Code Lido", 
             description: `Código: ${decodedText}` 
@@ -143,7 +126,7 @@ export function QRCodeReader({ open, onOpenChange, onScan }: QRCodeReaderProps) 
         };
 
         await scanner.start(
-          constraints,
+          constraints as any, // Usar 'as any' para contornar tipagem rígida da lib se necessário
           config,
           onScanSuccess,
           onScanError
@@ -164,7 +147,7 @@ export function QRCodeReader({ open, onOpenChange, onScan }: QRCodeReaderProps) 
         } else if (err.name === 'NotReadableError') {
           errorMsg = 'Câmera em uso por outro aplicativo. Feche outros apps.';
         } else if (err.name === 'OverconstrainedError') {
-          errorMsg = 'Configurações de câmera não suportadas. Tente outro dispositivo.';
+          errorMsg = 'Configurações de câmera não suportadas. O dispositivo pode não ser compatível.';
         }
         setError(errorMsg);
         setShowManualInput(true);
@@ -181,11 +164,10 @@ export function QRCodeReader({ open, onOpenChange, onScan }: QRCodeReaderProps) 
 
     initScanner();
 
-    // Cleanup ao desmontar o componente
     return () => {
       cleanupScanner();
     };
-  }, [open, onScan, onOpenChange, cleanupScanner]); // Adicionado cleanupScanner às dependências
+  }, [open, onScan, onOpenChange, cleanupScanner]);
 
   const handleManualSubmit = () => {
     if (manualCode.trim()) {
@@ -199,7 +181,6 @@ export function QRCodeReader({ open, onOpenChange, onScan }: QRCodeReaderProps) 
   };
 
   const handleClose = () => {
-    // A função de fechar agora também usa o cleanup robusto
     cleanupScanner();
     onOpenChange(false);
   };
