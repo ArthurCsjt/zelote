@@ -94,7 +94,7 @@ export function QRCodeReader({ open, onOpenChange, onScan }: QRCodeReaderProps) 
         const config = {
           fps: 10,
           qrbox: { width: 250, height: 250 },
-          aspectRatio: 1.0,
+          // aspectRatio removido da config principal para maior flexibilidade
           formatsToSupport: [0],
           experimentalFeatures: {
             useBarCodeDetectorIfSupported: true
@@ -102,10 +102,12 @@ export function QRCodeReader({ open, onOpenChange, onScan }: QRCodeReaderProps) 
         };
         
         // --- INÍCIO DA CORREÇÃO ---
-        // Constraints da câmera tornados mais flexíveis para maior compatibilidade móvel
+        // Constraints de câmera mais flexíveis para máxima compatibilidade móvel
         const constraints = {
-          facingMode: { ideal: 'environment' }, // Dá preferência, mas aceita outras
-          aspectRatio: { ideal: 1.0 }         // Tenta usar 1.0, mas se adapta
+            facingMode: 'environment',
+            width: { min: 640, ideal: 1280 },
+            height: { min: 480, ideal: 720 }
+            // A propriedade 'aspectRatio' foi removida para maior flexibilidade
         };
         // --- FIM DA CORREÇÃO ---
 
@@ -126,7 +128,7 @@ export function QRCodeReader({ open, onOpenChange, onScan }: QRCodeReaderProps) 
         };
 
         await scanner.start(
-          constraints as any, // Usar 'as any' para contornar tipagem rígida da lib se necessário
+          constraints as any, 
           config,
           onScanSuccess,
           onScanError
@@ -139,7 +141,7 @@ export function QRCodeReader({ open, onOpenChange, onScan }: QRCodeReaderProps) 
         console.error('❌ Erro ao iniciar scanner:', err);
         setIsLoading(false);
 
-        let errorMsg = 'Erro ao acessar a câmera';
+        let errorMsg = 'Erro ao acessar a câmera. Verifique as permissões.';
         if (err.name === 'NotAllowedError' || err.message?.includes('Permission')) {
           errorMsg = 'Permissão de câmera negada. Ative nas configurações do navegador.';
         } else if (err.name === 'NotFoundError') {
@@ -147,7 +149,7 @@ export function QRCodeReader({ open, onOpenChange, onScan }: QRCodeReaderProps) 
         } else if (err.name === 'NotReadableError') {
           errorMsg = 'Câmera em uso por outro aplicativo. Feche outros apps.';
         } else if (err.name === 'OverconstrainedError') {
-          errorMsg = 'Configurações de câmera não suportadas. O dispositivo pode não ser compatível.';
+          errorMsg = 'O dispositivo não suporta as configurações de câmera solicitadas.';
         }
         setError(errorMsg);
         setShowManualInput(true);
