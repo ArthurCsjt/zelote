@@ -15,7 +15,7 @@ export default defineConfig({
     dedupe: ['react', 'react-dom'],
   },
   server: {
-    host: true, // Permite acesso pela rede
-    // A linha 'https: true' foi removida daqui
+    host: true,   // Permite acesso pela rede
+    https: true,  // <-- CORREÇÃO: Ativa o HTTPS para o servidor de desenvolvimento
   }
 })
