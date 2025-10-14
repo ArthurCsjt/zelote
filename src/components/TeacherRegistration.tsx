@@ -108,7 +108,7 @@ export function TeacherRegistration() {
       <CardHeader className="bg-purple-50/50 border-b border-purple-100">
         <div className="flex items-center gap-3">
           <GraduationCap className="h-6 w-6 text-purple-600" />
-          <CardTitle className="text-xl text-purple-800">Cadastro de Professores</CardTitle>
+          <CardTitle className="text-xl text-purple-800">Formulário de Cadastro</CardTitle>
         </div>
       </CardHeader>
       <CardContent className="pt-6">

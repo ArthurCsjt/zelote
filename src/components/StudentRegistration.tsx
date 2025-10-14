@@ -4,12 +4,11 @@ import { Button } from './ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { StudentForm } from './StudentForm';
 import { StudentCSVImport } from './StudentCSVImport';
+
 export function StudentRegistration() {
-  return <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <Users className="h-6 w-6 text-primary" />
-        <h2 className="font-semibold text-xl text-blue-600 text-center">Cadastro de Alunos</h2>
-      </div>
+  return (
+    <div className="space-y-6">
+      {/* Removido o título redundante: <div className="flex items-center gap-3">... */}
 
       <Tabs defaultValue="individual" className="w-full">
         <TabsList className="grid w-full grid-cols-2">
@@ -23,13 +22,14 @@ export function StudentRegistration() {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="individual" className="space-y-4">
+        <TabsContent value="individual" className="space-y-4 mt-4">
           <StudentForm />
         </TabsContent>
 
-        <TabsContent value="csv" className="space-y-4">
+        <TabsContent value="csv" className="space-y-4 mt-4">
           <StudentCSVImport />
         </TabsContent>
       </Tabs>
-    </div>;
+    </div>
+  );
 }

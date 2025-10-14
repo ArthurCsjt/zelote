@@ -1,9 +1,13 @@
-import React from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
+import React, { useState } from 'react';
 import { ChromebookRegistration } from './ChromebookRegistration';
 import { StudentRegistration } from './StudentRegistration';
 import { TeacherRegistration } from './TeacherRegistration';
 import { StaffRegistration } from './StaffRegistration';
+import { RegistrationMenu } from './RegistrationMenu';
+import { Button } from './ui/button';
+import { ArrowLeft } from 'lucide-react';
+
+type RegistrationView = 'menu' | 'chromebooks' | 'students' | 'teachers' | 'staff';
 
 interface RegistrationHubProps {
   onBack: () => void;
@@ -11,35 +15,61 @@ interface RegistrationHubProps {
 }
 
 export function RegistrationHub({ onBack, onRegistrationSuccess }: RegistrationHubProps) {
+  const [currentView, setCurrentView] = useState<RegistrationView>('menu');
+
+  const handleNavigate = (view: RegistrationView) => {
+    setCurrentView(view);
+  };
+
+  const renderContent = () => {
+    switch (currentView) {
+      case 'chromebooks':
+        return <ChromebookRegistration onRegistrationSuccess={onRegistrationSuccess} />;
+      case 'students':
+        return <StudentRegistration />;
+      case 'teachers':
+        return <TeacherRegistration />;
+      case 'staff':
+        return <StaffRegistration />;
+      case 'menu':
+      default:
+        return <RegistrationMenu onNavigate={handleNavigate} />;
+    }
+  };
+
+  const getTitle = () => {
+    switch (currentView) {
+      case 'chromebooks': return 'Cadastro de Chromebooks';
+      case 'students': return 'Cadastro de Alunos';
+      case 'teachers': return 'Cadastro de Professores';
+      case 'staff': return 'Cadastro de Funcionários';
+      case 'menu':
+      default: return 'Hub de Cadastros';
+    }
+  };
+
   return (
     <div className="bg-transparent">
       <div className="container mx-auto max-w-6xl">
-        <div className="mb-6 text-center">
-          <h1 className="text-foreground py-[2px] font-bold text-2xl my-[25px]">Hub de Cadastros</h1>
+        <div className="mb-6 flex justify-between items-center">
+          <div className="flex items-center gap-3">
+            {currentView !== 'menu' && (
+              <Button variant="outline" size="sm" onClick={() => setCurrentView('menu')} className="back-button">
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+            )}
+            <h1 className="text-foreground py-[2px] font-bold text-2xl">
+              {getTitle()}
+            </h1>
+          </div>
+          {currentView === 'menu' && (
+            <Button onClick={onBack} variant="outline">Voltar ao Menu Principal</Button>
+          )}
         </div>
         
-        <Tabs defaultValue="chromebooks" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4">
-            <TabsTrigger value="chromebooks">Chromebooks</TabsTrigger>
-            <TabsTrigger value="students">Alunos</TabsTrigger>
-            <TabsTrigger value="teachers">Professores</TabsTrigger>
-            <TabsTrigger value="staff">Funcionários</TabsTrigger>
-          </TabsList>
-          
-          {/* CORREÇÃO: Adicionando mt-6 para garantir espaçamento vertical */}
-          <TabsContent value="chromebooks" className="mt-6">
-            <ChromebookRegistration onRegistrationSuccess={onRegistrationSuccess} />
-          </TabsContent>
-          <TabsContent value="students" className="mt-6">
-            <StudentRegistration />
-          </TabsContent>
-          <TabsContent value="teachers" className="mt-6">
-            <TeacherRegistration />
-          </TabsContent>
-          <TabsContent value="staff" className="mt-6">
-            <StaffRegistration />
-          </TabsContent>
-        </Tabs>
+        <div className="mt-6">
+          {renderContent()}
+        </div>
       </div>
     </div>
   );

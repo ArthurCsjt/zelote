@@ -99,7 +99,7 @@ export function StaffRegistration() {
       <CardHeader className="bg-blue-50/50 border-b border-blue-100">
         <div className="flex items-center gap-3">
           <Users className="h-6 w-6 text-blue-600" />
-          <CardTitle className="text-xl text-blue-800">Cadastro de Funcionários</CardTitle>
+          <CardTitle className="text-xl text-blue-800">Formulário de Cadastro</CardTitle>
         </div>
         <CardDescription className="text-blue-700">
           Cadastre novos funcionários para que possam ser selecionados nos empréstimos.

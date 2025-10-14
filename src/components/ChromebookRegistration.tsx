@@ -83,9 +83,12 @@ export function ChromebookRegistration({ onRegistrationSuccess }: { onRegistrati
   };
 
   return (
-    <Card>
+    <Card className="glass-card">
       <CardHeader>
-        <div className="flex items-center gap-3"><Laptop className="h-6 w-6 text-primary" /><CardTitle>Cadastro de Chromebook</CardTitle></div>
+        <CardTitle className="flex items-center gap-3 text-lg text-primary">
+          <Laptop className="h-5 w-5" />
+          Detalhes do Equipamento
+        </CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
