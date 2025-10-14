@@ -12,7 +12,7 @@ interface RegistrationHubProps {
 
 export function RegistrationHub({ onBack, onRegistrationSuccess }: RegistrationHubProps) {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50/50 via-slate-50 to-purple-50/50 p-4 sm:p-6 lg:p-8">
+    <div className="bg-transparent">
       <div className="container mx-auto max-w-6xl">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-800 mb-2">Hub de Cadastros</h1>
@@ -21,11 +21,11 @@ export function RegistrationHub({ onBack, onRegistrationSuccess }: RegistrationH
         
         <Tabs defaultValue="chromebooks" className="w-full">
           <div className="mb-8 flex justify-center">
-            <TabsList className="grid grid-cols-2 sm:grid-cols-4 max-w-[800px] gap-2 bg-white/80 backdrop-blur-sm border border-slate-200 rounded-xl p-1 shadow-lg">
-              <TabsTrigger value="chromebooks" className="bg-slate-100 hover:bg-blue-100 rounded-lg p-2 transition-colors">Chromebooks</TabsTrigger>
-              <TabsTrigger value="students" className="bg-slate-100 hover:bg-green-100 rounded-lg p-2 transition-colors">Alunos</TabsTrigger>
-              <TabsTrigger value="teachers" className="bg-slate-100 hover:bg-purple-100 rounded-lg p-2 transition-colors">Professores</TabsTrigger>
-              <TabsTrigger value="staff" className="bg-slate-100 hover:bg-orange-100 rounded-lg p-2 transition-colors">Funcionários</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 gap-2 bg-white/80 backdrop-blur-sm border border-slate-200 rounded-xl p-1 shadow-lg max-w-full md:max-w-4xl">
+              <TabsTrigger value="chromebooks" className="bg-slate-100 hover:bg-blue-100 rounded-lg p-2 transition-colors data-[state=active]:bg-blue-500 data-[state=active]:text-white">Chromebooks</TabsTrigger>
+              <TabsTrigger value="students" className="bg-slate-100 hover:bg-green-100 rounded-lg p-2 transition-colors data-[state=active]:bg-green-500 data-[state=active]:text-white">Alunos</TabsTrigger>
+              <TabsTrigger value="teachers" className="bg-slate-100 hover:bg-purple-100 rounded-lg p-2 transition-colors data-[state=active]:bg-purple-500 data-[state=active]:text-white">Professores</TabsTrigger>
+              <TabsTrigger value="staff" className="bg-slate-100 hover:bg-orange-100 rounded-lg p-2 transition-colors data-[state=active]:bg-orange-500 data-[state=active]:text-white">Funcionários</TabsTrigger>
             </TabsList>
           </div>
           
