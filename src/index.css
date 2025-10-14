@@ -1,0 +1,163 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+ 
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+ 
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+ 
+    /* Apple-inspired blue */
+    --primary: 213 100% 50%; 
+    --primary-foreground: 0 0% 100%;
+ 
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+ 
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+ 
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+ 
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 213 100% 50%;
+ 
+    --radius: 1rem;
+
+    /* Menu Button Colors - Sistema consistente */
+    --menu-green: 142 76% 36%;
+    --menu-green-hover: 142 76% 32%;
+    --menu-blue: 213 94% 68%;
+    --menu-blue-hover: 213 94% 64%;
+    --menu-violet: 258 90% 66%;
+    --menu-violet-hover: 258 90% 62%;
+    --menu-amber: 45 93% 47%;
+    --menu-amber-hover: 45 93% 43%;
+    --menu-rose: 348 83% 47%;
+    --menu-rose-hover: 348 83% 43%;
+  }
+
+  .dark {
+    --background: 240 10% 8%;
+    --foreground: 0 0% 95%;
+
+    --card: 240 10% 12%;
+    --card-foreground: 0 0% 95%;
+
+    --popover: 240 10% 12%;
+    --popover-foreground: 0 0% 95%;
+
+    --primary: 213 100% 50%;
+    --primary-foreground: 0 0% 98%;
+
+    --secondary: 240 5% 20%;
+    --secondary-foreground: 0 0% 95%;
+
+    --muted: 240 5% 18%;
+    --muted-foreground: 240 5% 70%;
+
+    --accent: 240 5% 20%;
+    --accent-foreground: 0 0% 95%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 240 5% 25%;
+    --input: 240 5% 18%;
+    --ring: 213 100% 50%;
+
+    /* Back Button - Padrão consistente */
+    --back-button: 0 0% 100%;
+    --back-button-foreground: 240 10% 3.9%;
+    --back-button-border: 214.3 31.8% 91.4%;
+    --back-button-hover: 210 40% 96.1%;
+  }
+}
+ 
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: -apple-system, BlinkMacSystemFont, "San Francisco", "Helvetica Neue", sans-serif;
+  }
+  
+  body.dark {
+    background: hsl(var(--background));
+  }
+}
+
+/* Enhanced glass card effect - iPhone style */
+.glass-card {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 4px 30px 0 rgba(0, 0, 0, 0.06), 
+              0 1px 0 0 rgba(255, 255, 255, 0.3) inset,
+              0 -1px 0 0 rgba(0, 0, 0, 0.05) inset;
+  border-radius: 16px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+/* ... (todo o seu CSS existente continua aqui) ... */
+
+/* PWA and Layout specific styles */
+.safe-area-top {
+  padding-top: env(safe-area-inset-top);
+}
+
+/* ... (resto do seu CSS) ... */
+
+.stat-card-gradient-green {
+  background: linear-gradient(135deg, #bbf7d0 0%, #dcfce7 100%);
+  border: none;
+}
+
+
+/* ======================================================================== */
+/* ADIÇÃO: Estilos para corrigir o enquadramento do QR Scanner (`html5-qrcode`)  */
+/* ======================================================================== */
+
+/* Este é o 'palco' do scanner, o <div id="qr-code-reader"> que está no seu QRCodeScanner.tsx. */
+#qr-code-reader {
+  width: 100%;             /* Faz o scanner ocupar toda a largura do modal */
+  max-width: 400px;        /* Limita o tamanho em telas maiores */
+  margin: 1rem auto;       /* Centraliza e dá um espaçamento */
+
+  /* A PARTE MAIS IMPORTANTE: Força um formato quadrado, crucial para o enquadramento */
+  aspect-ratio: 1 / 1;
+  
+  position: relative;      /* Necessário para o posicionamento interno do vídeo */
+  overflow: hidden;        /* Esconde as partes do vídeo que 'vazam' para fora do quadrado */
+  border-radius: 12px;     /* Apenas para um visual mais agradável */
+}
+
+/* O elemento de vídeo que a biblioteca 'html5-qrcode' cria DENTRO do #qr-code-reader */
+#qr-code-reader video {
+  width: 100%;
+  height: 100%;
+  
+  /* A CORREÇÃO PRINCIPAL: Faz o vídeo preencher o espaço sem distorcer, cortando o excesso */
+  object-fit: cover; 
+}
+
+/* A 'caixa de scan' que a própria biblioteca desenha. 
+   Este CSS ajuda a garantir que ela não fique com bordas estranhas. */
+#qr-code-reader__scan_region {
+  border-radius: 8px;
+}

@@ -1,0 +1,123 @@
+
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+/* Mobile-friendly adjustments */
+@media (max-width: 768px) {
+  #root {
+    padding: 1rem;
+  }
+}
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+
+.logo:hover {
+  filter: drop-shadow(0 0 2em rgba(10, 132, 255, 0.6));
+}
+
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em rgba(10, 132, 255, 0.6));
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 2em;
+  border-radius: 16px;
+  background: white;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+.read-the-docs {
+  color: rgba(60, 60, 67, 0.6);
+  font-size: 0.9em;
+}
+
+/* PWA-specific styles */
+body {
+  overscroll-behavior-y: contain; /* Prevents pull-to-refresh */
+  -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+  -webkit-tap-highlight-color: transparent; /* Remove tap highlight on iOS */
+}
+
+/* Disable text selection for better mobile experience */
+.no-select {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Add iOS-style safe area insets */
+@supports (padding: max(0px)) {
+  body {
+    padding-left: max(2rem, env(safe-area-inset-left));
+    padding-right: max(2rem, env(safe-area-inset-right));
+    padding-bottom: max(2rem, env(safe-area-inset-bottom));
+    padding-top: max(2rem, env(safe-area-inset-top));
+  }
+}
+
+/* Back button styles */
+.back-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #9b87f5;
+  color: white;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  margin-bottom: 16px;
+}
+
+.back-button:hover {
+  background-color: #7E69AB;
+  transform: translateY(-1px);
+}
+
+.back-button:active {
+  transform: translateY(0);
+}
+
+/* Consistent positioning for back buttons */
+.back-button-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+/* For mobile screens, make back buttons more prominent */
+@media (max-width: 768px) {
+  .back-button {
+    padding: 10px 20px;
+    font-size: 16px;
+  }
+}

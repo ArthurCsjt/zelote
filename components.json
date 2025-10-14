@@ -1,0 +1,52 @@
+{
+  "$schema": "https://ui.shadcn.com/schema.json",
+  "style": "default",
+  "rsc": false,
+  "tsx": true,
+  "tailwind": {
+    "config": "tailwind.config.ts",
+    "css": "src/index.css",
+    "baseColor": "slate",
+    "cssVariables": true,
+    "prefix": ""
+  },
+  "aliases": {
+    "components": "@/components",
+    "utils": "@/lib/utils",
+    "ui": "@/components/ui",
+    "lib": "@/lib",
+    "hooks": "@/hooks"
+  }
+}
+/* ======================================================================== */
+/* Estilos para corrigir o enquadramento do QR Scanner (`html5-qrcode`)  */
+/* ======================================================================== */
+
+/* Este é o 'palco' do scanner, o <div id="qr-code-reader"> que está no seu QRCodeScanner.tsx. */
+#qr-code-reader {
+  width: 100%;             /* Faz o scanner ocupar toda a largura do modal */
+  max-width: 400px;        /* Limita o tamanho em telas maiores */
+  margin: 1rem auto;       /* Centraliza e dá um espaçamento */
+
+  /* A PARTE MAIS IMPORTANTE: Força um formato quadrado, crucial para o enquadramento */
+  aspect-ratio: 1 / 1;
+  
+  position: relative;      /* Necessário para o posicionamento interno do vídeo */
+  overflow: hidden;        /* Esconde as partes do vídeo que 'vazam' para fora do quadrado */
+  border-radius: 12px;     /* Apenas para um visual mais agradável */
+}
+
+/* O elemento de vídeo que a biblioteca 'html5-qrcode' cria DENTRO do #qr-code-reader */
+#qr-code-reader video {
+  width: 100%;
+  height: 100%;
+  
+  /* A CORREÇÃO PRINCIPAL: Faz o vídeo preencher o espaço sem distorcer, cortando o excesso */
+  object-fit: cover; 
+}
+
+/* A 'caixa de scan' que a própria biblioteca desenha. 
+   Este CSS ajuda a garantir que ela não fique com bordas estranhas. */
+#qr-code-reader__scan_region {
+  border-radius: 8px;
+}
