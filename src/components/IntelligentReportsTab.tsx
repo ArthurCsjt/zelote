@@ -39,15 +39,27 @@ const IntelligentReportsTab: React.FC = () => {
           userQuestion: question
         }
       });
+      
       if (error) {
-        throw error;
+        // Tenta extrair a mensagem de erro detalhada da resposta da função Edge
+        let errorMessage = error.message;
+        try {
+          // Se o erro for um objeto JSON retornado pela função Edge
+          const errorBody = JSON.parse(error.message);
+          errorMessage = errorBody.error || error.message;
+        } catch {
+          // Se não for JSON, usa a mensagem padrão
+        }
+        
+        throw new Error(errorMessage);
       }
+      
       setReportData(data);
       toast({
         title: "Relatório Gerado",
         description: "Relatório criado com sucesso!"
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao gerar relatório:', error);
       toast({
         title: "Erro",
