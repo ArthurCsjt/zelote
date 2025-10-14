@@ -1,5 +1,3 @@
-CHR012) na entrada manual e no lote do diálogo de devolução.">
-
 import React, { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "./ui/dialog";
 import { Input } from "./ui/input";
