@@ -1,17 +1,16 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Laptop, Users, GraduationCap, Briefcase, ArrowLeft } from 'lucide-react';
+import { Laptop, Users, GraduationCap, Briefcase } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-interface RegistrationMenuProps {
+interface RegistrationCardMenuProps {
   onNavigate: (view: 'chromebooks' | 'students' | 'teachers' | 'staff') => void;
+  currentView: 'chromebooks' | 'students' | 'teachers' | 'staff';
 }
 
 const menuItems = [
   {
     title: 'Chromebooks',
-    description: 'Adicionar novos equipamentos ao inventário.',
     icon: Laptop,
     view: 'chromebooks',
     color: 'text-green-600',
@@ -19,7 +18,6 @@ const menuItems = [
   },
   {
     title: 'Alunos',
-    description: 'Cadastrar alunos individualmente ou via CSV.',
     icon: Users,
     view: 'students',
     color: 'text-blue-600',
@@ -27,7 +25,6 @@ const menuItems = [
   },
   {
     title: 'Professores',
-    description: 'Cadastrar professores para empréstimos.',
     icon: GraduationCap,
     view: 'teachers',
     color: 'text-purple-600',
@@ -35,7 +32,6 @@ const menuItems = [
   },
   {
     title: 'Funcionários',
-    description: 'Cadastrar funcionários para empréstimos.',
     icon: Briefcase,
     view: 'staff',
     color: 'text-orange-600',
@@ -43,29 +39,28 @@ const menuItems = [
   },
 ];
 
-export function RegistrationMenu({ onNavigate }: RegistrationMenuProps) {
+export function RegistrationCardMenu({ onNavigate, currentView }: RegistrationCardMenuProps) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div className="grid grid-cols-2 gap-4">
       {menuItems.map((item) => {
         const Icon = item.icon;
+        const isActive = item.view === currentView;
+        
         return (
           <Card
             key={item.view}
             className={cn(
-              "cursor-pointer hover:shadow-lg transition-all duration-300 transform hover:scale-[1.01] border-l-4",
+              "cursor-pointer transition-all duration-200 hover:shadow-lg",
               item.bgColor,
-              item.color.replace('text-', 'border-')
+              isActive ? `border-2 ${item.color.replace('text-', 'border-')}` : 'border-gray-200'
             )}
             onClick={() => onNavigate(item.view as any)}
           >
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-lg font-semibold text-gray-800">
+            <CardContent className="p-4 flex flex-col items-center justify-center text-center">
+              <Icon className={cn("h-6 w-6 mb-1", item.color)} />
+              <CardTitle className="text-sm font-semibold text-gray-800">
                 {item.title}
               </CardTitle>
-              <Icon className={cn("h-6 w-6", item.color)} />
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">{item.description}</p>
             </CardContent>
           </Card>
         );

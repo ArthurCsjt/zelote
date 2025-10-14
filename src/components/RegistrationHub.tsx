@@ -3,11 +3,11 @@ import { ChromebookRegistration } from './ChromebookRegistration';
 import { StudentRegistration } from './StudentRegistration';
 import { TeacherRegistration } from './TeacherRegistration';
 import { StaffRegistration } from './StaffRegistration';
-import { RegistrationMenu } from './RegistrationMenu';
+import { RegistrationCardMenu } from './RegistrationCardMenu'; // Renomeado
 import { Button } from './ui/button';
 import { ArrowLeft } from 'lucide-react';
 
-type RegistrationView = 'menu' | 'chromebooks' | 'students' | 'teachers' | 'staff';
+type RegistrationView = 'chromebooks' | 'students' | 'teachers' | 'staff';
 
 interface RegistrationHubProps {
   onBack: () => void;
@@ -15,13 +15,14 @@ interface RegistrationHubProps {
 }
 
 export function RegistrationHub({ onBack, onRegistrationSuccess }: RegistrationHubProps) {
-  const [currentView, setCurrentView] = useState<RegistrationView>('menu');
+  // Estado inicial agora é 'chromebooks'
+  const [currentView, setCurrentView] = useState<RegistrationView>('chromebooks');
 
   const handleNavigate = (view: RegistrationView) => {
     setCurrentView(view);
   };
 
-  const renderContent = () => {
+  const renderForm = () => {
     switch (currentView) {
       case 'chromebooks':
         return <ChromebookRegistration onRegistrationSuccess={onRegistrationSuccess} />;
@@ -31,9 +32,8 @@ export function RegistrationHub({ onBack, onRegistrationSuccess }: RegistrationH
         return <TeacherRegistration />;
       case 'staff':
         return <StaffRegistration />;
-      case 'menu':
       default:
-        return <RegistrationMenu onNavigate={handleNavigate} />;
+        return null;
     }
   };
 
@@ -43,32 +43,36 @@ export function RegistrationHub({ onBack, onRegistrationSuccess }: RegistrationH
       case 'students': return 'Cadastro de Alunos';
       case 'teachers': return 'Cadastro de Professores';
       case 'staff': return 'Cadastro de Funcionários';
-      case 'menu':
-      default: return 'Hub de Cadastros';
     }
   };
 
   return (
     <div className="bg-transparent">
       <div className="container mx-auto max-w-6xl">
+        
+        {/* Cabeçalho com botão de voltar ao menu principal */}
         <div className="mb-6 flex justify-between items-center">
           <div className="flex items-center gap-3">
-            {currentView !== 'menu' && (
-              <Button variant="outline" size="sm" onClick={() => setCurrentView('menu')} className="back-button">
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
-            )}
             <h1 className="text-foreground py-[2px] font-bold text-2xl">
-              {getTitle()}
+              Hub de Cadastros
             </h1>
           </div>
-          {currentView === 'menu' && (
-            <Button onClick={onBack} variant="outline">Voltar ao Menu Principal</Button>
-          )}
+          <Button onClick={onBack} variant="outline">Voltar ao Menu Principal</Button>
         </div>
         
+        {/* Menu de Cards 2x2 */}
+        <div className="mb-6">
+          <RegistrationCardMenu onNavigate={handleNavigate} currentView={currentView} />
+        </div>
+
+        {/* Título do Formulário Selecionado */}
+        <h2 className="text-xl font-bold text-gray-800 mb-4 mt-8 border-b pb-2">
+          {getTitle()}
+        </h2>
+        
+        {/* Formulário Selecionado */}
         <div className="mt-6">
-          {renderContent()}
+          {renderForm()}
         </div>
       </div>
     </div>

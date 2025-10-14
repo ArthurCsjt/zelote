@@ -58,6 +58,8 @@ const Index = () => {
   const renderCurrentView = () => {
     switch (currentView) {
       case 'registration':
+        // O RegistrationHub agora gerencia a navegação interna, mas o botão 'Voltar'
+        // no cabeçalho do Hub leva de volta ao menu principal.
         return <RegistrationHub onBack={handleBackToMenu} onRegistrationSuccess={handleRegistrationSuccess} />;
       case 'dashboard':
         return <Dashboard onBack={handleBackToMenu} />;
