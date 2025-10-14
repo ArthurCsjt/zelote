@@ -6,7 +6,7 @@ import { Label } from "./ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { Badge } from "./ui/badge";
 import { Checkbox } from "./ui/checkbox";
-import { Computer, Plus, QrCode, Calendar, Clock } from "lucide-react";
+import { Computer, Plus, QrCode, Calendar, Clock, Loader2 } from "lucide-react";
 import { QRCodeReader } from "./QRCodeReader";
 import { format } from "date-fns";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
@@ -316,28 +316,30 @@ export function LoanForm({ onBack }: LoanFormProps) {
               ID do Chromebook
             </Label>
             <div className="flex gap-2">
-              <Input
-                id="chromebookId"
-                placeholder="Digite o ID do Chromebook (ex: 12 ou CHR012)"
-                value={formData.chromebookId}
-                onChange={(e) => handleChromebookIdChange(e.target.value)}
-                className="border-gray-200 flex-1"
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    handleValidateIndividualId();
-                  }
-                }}
-              />
-              <Button 
-                type="button" 
-                variant="outline" 
-                className="border-gray-200 bg-white hover:bg-gray-50 px-3"
-                onClick={handleValidateIndividualId}
-                title="Validar ID"
-              >
-                <Plus className="h-5 w-5 text-gray-600" />
-              </Button>
+              <div className="relative flex-1">
+                <Input
+                  id="chromebookId"
+                  placeholder="Digite o ID do Chromebook (ex: 12 ou CHR012)"
+                  value={formData.chromebookId}
+                  onChange={(e) => handleChromebookIdChange(e.target.value)}
+                  className="border-gray-200 w-full pr-10" // Adicionado pr-10 para o botão +
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleValidateIndividualId();
+                    }
+                  }}
+                />
+                <Button 
+                  type="button" 
+                  variant="ghost" 
+                  onClick={handleValidateIndividualId}
+                  className="absolute right-1 top-1 h-8 px-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                  title="Validar ID"
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
               <Button 
                 type="button" 
                 variant="outline" 
