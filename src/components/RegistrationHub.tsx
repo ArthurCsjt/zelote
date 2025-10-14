@@ -26,16 +26,17 @@ export function RegistrationHub({ onBack, onRegistrationSuccess }: RegistrationH
             <TabsTrigger value="staff">Funcionários</TabsTrigger>
           </TabsList>
           
-          <TabsContent value="chromebooks" className="space-y-4 mt-4">
+          {/* CORREÇÃO: Adicionando mt-6 para garantir espaçamento vertical */}
+          <TabsContent value="chromebooks" className="mt-6">
             <ChromebookRegistration onRegistrationSuccess={onRegistrationSuccess} />
           </TabsContent>
-          <TabsContent value="students" className="space-y-4 mt-4">
+          <TabsContent value="students" className="mt-6">
             <StudentRegistration />
           </TabsContent>
-          <TabsContent value="teachers" className="space-y-4 mt-4">
+          <TabsContent value="teachers" className="mt-6">
             <TeacherRegistration />
           </TabsContent>
-          <TabsContent value="staff" className="space-y-4 mt-4">
+          <TabsContent value="staff" className="mt-6">
             <StaffRegistration />
           </TabsContent>
         </Tabs>
