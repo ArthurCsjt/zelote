@@ -1,6 +1,6 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { serve } from "https://deno.land/std@0.223.0/http/server.ts"; // Versão mais recente
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.43.0'; // Versão mais recente
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -14,7 +14,8 @@ serve(async (req) => {
   }
 
   try {
-    const { userQuestion } = await req.json();
+    const body = await req.json();
+    const { userQuestion } = body;
 
     if (!userQuestion) {
       return new Response(
@@ -112,9 +113,10 @@ serve(async (req) => {
     if (!geminiResponse.ok) {
       const errorText = await geminiResponse.text();
       console.error('Erro da API do Gemini:', errorText);
+      // Retorna 502 Bad Gateway para indicar falha na comunicação com o serviço externo
       return new Response(
-        JSON.stringify({ error: 'Erro ao comunicar com a API do Gemini' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ error: 'Erro ao comunicar com a API do Gemini', details: errorText }),
+        { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -122,8 +124,9 @@ serve(async (req) => {
     const generatedSQL = geminiData.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
 
     if (!generatedSQL) {
+      // Se a IA não retornar SQL, pode ser um erro 500
       return new Response(
-        JSON.stringify({ error: 'Não foi possível gerar uma consulta SQL' }),
+        JSON.stringify({ error: 'Não foi possível gerar uma consulta SQL. Tente reformular a pergunta.' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -143,6 +146,7 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     
+    // Usamos o Service Role Key para garantir que a função RPC 'execute_sql' possa ser chamada
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // Executar a consulta usando a função RPC
@@ -150,6 +154,7 @@ serve(async (req) => {
 
     if (error) {
       console.error('Erro ao executar SQL:', error);
+      // Retorna 500 Internal Server Error se a execução do SQL falhar
       return new Response(
         JSON.stringify({ error: 'Erro ao executar a consulta no banco de dados', details: error.message }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -167,6 +172,7 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Erro geral:', error);
+    // Retorna 500 para erros internos não capturados
     return new Response(
       JSON.stringify({ error: 'Erro interno do servidor', details: error instanceof Error ? error.message : 'Unknown error' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
