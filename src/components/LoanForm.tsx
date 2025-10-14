@@ -134,6 +134,31 @@ export function LoanForm({ onBack }: LoanFormProps) {
     setFormData({ ...formData, chromebookId: value });
   };
 
+  /**
+   * Ação para o botão '+' no modo individual.
+   * Apenas normaliza e valida o ID digitado, dando feedback.
+   */
+  const handleValidateIndividualId = () => {
+    const normalizedId = normalizeChromebookId(formData.chromebookId);
+    
+    if (!normalizedId) {
+      toast({
+        title: "Erro",
+        description: "O ID do Chromebook não pode estar vazio.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Atualiza o estado com o ID normalizado para consistência
+    setFormData(prev => ({ ...prev, chromebookId: normalizedId }));
+
+    toast({
+      title: "ID Verificado",
+      description: `ID normalizado: ${normalizedId}. Pronto para empréstimo.`,
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -297,12 +322,28 @@ export function LoanForm({ onBack }: LoanFormProps) {
                 value={formData.chromebookId}
                 onChange={(e) => handleChromebookIdChange(e.target.value)}
                 className="border-gray-200 flex-1"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleValidateIndividualId();
+                  }
+                }}
               />
               <Button 
                 type="button" 
                 variant="outline" 
-                className="border-gray-200 bg-white hover:bg-gray-50"
+                className="border-gray-200 bg-white hover:bg-gray-50 px-3"
+                onClick={handleValidateIndividualId}
+                title="Validar ID"
+              >
+                <Plus className="h-5 w-5 text-gray-600" />
+              </Button>
+              <Button 
+                type="button" 
+                variant="outline" 
+                className="border-gray-200 bg-white hover:bg-gray-50 px-3"
                 onClick={() => setIsQRReaderOpen(true)}
+                title="Escanear QR Code"
               >
                 <QrCode className="h-5 w-5 text-gray-600" />
               </Button>
@@ -619,8 +660,14 @@ export function LoanForm({ onBack }: LoanFormProps) {
         <Button 
           type="submit" 
           className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-0 shadow-lg hover:shadow-xl transform transition-all duration-300 hover:scale-[1.02]"
+          disabled={loading}
         >
-          {formData.loanType === 'lote' 
+          {loading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Processando...
+            </>
+          ) : formData.loanType === 'lote' 
             ? `Emprestar ${batchDevices.length} Chromebooks` 
             : "Emprestar Chromebook"}
         </Button>
