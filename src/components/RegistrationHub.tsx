@@ -29,18 +29,21 @@ export function RegistrationHub({ onBack, onRegistrationSuccess }: RegistrationH
             </TabsList>
           </div>
           
-          <TabsContent value="chromebooks" className="space-y-4">
-            <ChromebookRegistration onRegistrationSuccess={onRegistrationSuccess} />
-          </TabsContent>
-          <TabsContent value="students" className="space-y-4">
-            <StudentRegistration />
-          </TabsContent>
-          <TabsContent value="teachers" className="space-y-4">
-            <TeacherRegistration />
-          </TabsContent>
-          <TabsContent value="staff" className="space-y-4">
-            <StaffRegistration />
-          </TabsContent>
+          {/* Adicionando um espaçamento extra aqui para garantir que o conteúdo não se sobreponha */}
+          <div className="mt-8"> 
+            <TabsContent value="chromebooks" className="space-y-4">
+              <ChromebookRegistration onRegistrationSuccess={onRegistrationSuccess} />
+            </TabsContent>
+            <TabsContent value="students" className="space-y-4">
+              <StudentRegistration />
+            </TabsContent>
+            <TabsContent value="teachers" className="space-y-4">
+              <TeacherRegistration />
+            </TabsContent>
+            <TabsContent value="staff" className="space-y-4">
+              <StaffRegistration />
+            </TabsContent>
+          </div>
         </Tabs>
       </div>
     </div>
