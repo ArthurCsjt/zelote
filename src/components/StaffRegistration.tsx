@@ -3,7 +3,7 @@ import { Users, Loader2 } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from './ui/card';
+import { Card, CardContent } from './ui/card'; // Removido CardHeader, CardTitle, CardDescription
 import { toast } from '@/hooks/use-toast';
 import { useDatabase } from '@/hooks/useDatabase';
 
@@ -96,12 +96,7 @@ export function StaffRegistration() {
 
   return (
     <Card className="glass-card border-blue-200/50 shadow-lg">
-      <CardHeader className="bg-blue-50/50 border-b border-blue-100">
-        <div className="flex items-center gap-3">
-          <Users className="h-6 w-6 text-blue-600" />
-          <CardTitle className="text-xl text-blue-800">Cadastro de Funcionário</CardTitle>
-        </div>
-      </CardHeader>
+      {/* CardHeader removido */}
       <CardContent className="pt-6">
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

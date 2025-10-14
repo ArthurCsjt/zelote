@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { Card, CardContent } from './ui/card'; // Removido CardHeader, CardTitle
 import { toast } from '@/hooks/use-toast';
 import { useDatabase } from '@/hooks/useDatabase';
 interface StudentFormData {
@@ -103,9 +103,7 @@ export function StudentForm() {
   };
   const isFormValid = formData.nomeCompleto && formData.ra && formData.email && formData.turma && !emailError;
   return <Card>
-      <CardHeader>
-        
-      </CardHeader>
+      {/* CardHeader removido */}
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

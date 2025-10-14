@@ -7,7 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Checkbox } from "./ui/checkbox";
 import { Laptop } from "lucide-react";
 import { useDatabase } from '@/contexts/DatabaseContext';
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import { Card, CardContent } from "./ui/card"; // Removido CardHeader, CardTitle
 import {
   Select,
   SelectContent,
@@ -84,12 +84,7 @@ export function ChromebookRegistration({ onRegistrationSuccess }: { onRegistrati
 
   return (
     <Card className="glass-card">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-3 text-lg text-primary">
-          <Laptop className="h-5 w-5" />
-          Detalhes do Equipamento
-        </CardTitle>
-      </CardHeader>
+      {/* CardHeader removido */}
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

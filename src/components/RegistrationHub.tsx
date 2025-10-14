@@ -3,7 +3,7 @@ import { ChromebookRegistration } from './ChromebookRegistration';
 import { StudentRegistration } from './StudentRegistration';
 import { TeacherRegistration } from './TeacherRegistration';
 import { StaffRegistration } from './StaffRegistration';
-import { RegistrationCardMenu } from './RegistrationCardMenu'; // Renomeado
+import { RegistrationCardMenu } from './RegistrationCardMenu';
 import { Button } from './ui/button';
 import { ArrowLeft } from 'lucide-react';
 
@@ -15,7 +15,6 @@ interface RegistrationHubProps {
 }
 
 export function RegistrationHub({ onBack, onRegistrationSuccess }: RegistrationHubProps) {
-  // Estado inicial agora é 'chromebooks'
   const [currentView, setCurrentView] = useState<RegistrationView>('chromebooks');
 
   const handleNavigate = (view: RegistrationView) => {
@@ -50,14 +49,12 @@ export function RegistrationHub({ onBack, onRegistrationSuccess }: RegistrationH
     <div className="bg-transparent">
       <div className="container mx-auto max-w-6xl">
         
-        {/* Cabeçalho com botão de voltar ao menu principal */}
+        {/* Cabeçalho simplificado */}
         <div className="mb-6 flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <h1 className="text-foreground py-[2px] font-bold text-2xl">
-              Hub de Cadastros
-            </h1>
-          </div>
-          <Button onClick={onBack} variant="outline">Voltar ao Menu Principal</Button>
+          <h1 className="text-foreground py-[2px] font-bold text-2xl">
+            Hub de Cadastros
+          </h1>
+          {/* Botão 'Voltar ao Menu Principal' removido */}
         </div>
         
         {/* Menu de Cards 2x2 */}
@@ -65,7 +62,7 @@ export function RegistrationHub({ onBack, onRegistrationSuccess }: RegistrationH
           <RegistrationCardMenu onNavigate={handleNavigate} currentView={currentView} />
         </div>
 
-        {/* Título do Formulário Selecionado */}
+        {/* Título do Formulário Selecionado (mantido para contexto) */}
         <h2 className="text-xl font-bold text-gray-800 mb-4 mt-8 border-b pb-2">
           {getTitle()}
         </h2>

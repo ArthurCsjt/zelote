@@ -3,7 +3,7 @@ import { GraduationCap, Loader2 } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { Card, CardContent } from './ui/card'; // Removido CardHeader, CardTitle
 import { toast } from '@/hooks/use-toast';
 import { useDatabase } from '@/hooks/useDatabase';
 
@@ -105,12 +105,7 @@ export function TeacherRegistration() {
 
   return (
     <Card className="glass-card border-purple-200/50 shadow-lg">
-      <CardHeader className="bg-purple-50/50 border-b border-purple-100">
-        <div className="flex items-center gap-3">
-          <GraduationCap className="h-6 w-6 text-purple-600" />
-          <CardTitle className="text-xl text-purple-800">Cadastro de Professor</CardTitle>
-        </div>
-      </CardHeader>
+      {/* CardHeader removido */}
       <CardContent className="pt-6">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
