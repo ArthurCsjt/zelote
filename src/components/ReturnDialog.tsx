@@ -1,3 +1,4 @@
+CHR012) na entrada manual e no lote do diálogo de devolução.">
 
 import React, { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "./ui/dialog";
@@ -11,6 +12,7 @@ import { toast } from "./ui/use-toast";
 import { Textarea } from "./ui/textarea";
 import { Computer, Plus, QrCode } from "lucide-react";
 import { Checkbox } from "./ui/checkbox";
+import { sanitizeQRCodeData, normalizeChromebookId } from "@/utils/security"; // Importando a função de normalização
 
 // Define a interface de props do componente
 interface ReturnDialogProps {
@@ -68,29 +70,33 @@ export function ReturnDialog({
    * @param result - String com o resultado da leitura do QR Code
    */
   const handleQRCodeScan = (result: string) => {
-    try {
-      // Tenta converter o resultado para um objeto JSON
-      const data = JSON.parse(result);
-      
-      // Se o objeto contém um ID, adiciona à lista ou atualiza o campo
-      if (data.id) {
-        if (returnData.type === 'lote') {
-          // Para devolução em lote, adiciona à lista se não existir
-          if (!batchDevices.includes(data.id)) {
-            setBatchDevices([...batchDevices, data.id]);
-          }
+    // sanitizeQRCodeData já inclui a normalização
+    const sanitizedId = sanitizeQRCodeData(result);
+    
+    if (sanitizedId) {
+      if (returnData.type === 'lote') {
+        // Para devolução em lote, adiciona à lista se não existir
+        if (!batchDevices.includes(sanitizedId)) {
+          setBatchDevices([...batchDevices, sanitizedId]);
+          toast({
+            title: "Dispositivo adicionado ao lote",
+            description: `ID do Chromebook: ${sanitizedId}`,
+          });
         } else {
-          // Para devolução individual, atualiza o campo de ID
-          onChromebookIdChange(data.id);
+          toast({
+            title: "Dispositivo já adicionado",
+            description: `O Chromebook ${sanitizedId} já está na lista`,
+            variant: "destructive",
+          });
         }
+      } else {
+        // Para devolução individual, atualiza o campo de ID
+        onChromebookIdChange(sanitizedId);
+        toast({
+          title: "QR Code lido com sucesso",
+          description: `ID do Chromebook: ${sanitizedId}`,
+        });
       }
-    } catch (error) {
-      // Se houver erro ao processar o QR Code, exibe uma mensagem
-      toast({
-        title: "Erro",
-        description: "QR Code inválido",
-        variant: "destructive",
-      });
     }
     // Fecha o scanner após processar
     setShowScanner(false);
@@ -101,9 +107,17 @@ export function ReturnDialog({
    * Verifica se o dispositivo já existe na lista antes de adicionar
    */
   const addDeviceToBatch = () => {
-    if (currentBatchInput.trim() && !batchDevices.includes(currentBatchInput.trim())) {
-      setBatchDevices([...batchDevices, currentBatchInput.trim()]);
+    const normalizedInput = normalizeChromebookId(currentBatchInput);
+    
+    if (normalizedInput && !batchDevices.includes(normalizedInput)) {
+      setBatchDevices([...batchDevices, normalizedInput]);
       setCurrentBatchInput(""); // Limpa o campo após adicionar
+    } else if (normalizedInput) {
+      toast({
+        title: "Dispositivo já adicionado",
+        description: `O Chromebook ${normalizedInput} já está na lista`,
+        variant: "destructive",
+      });
     }
   };
 
@@ -136,6 +150,19 @@ export function ReturnDialog({
         });
         return;
       }
+    } else {
+      // === DEVOLUÇÃO INDIVIDUAL ===
+      // Normaliza o ID antes de enviar para a função principal
+      const normalizedId = normalizeChromebookId(chromebookId);
+      if (!normalizedId) {
+        toast({
+          title: "Erro",
+          description: "O ID do Chromebook é obrigatório.",
+          variant: "destructive",
+        });
+        return;
+      }
+      onChromebookIdChange(normalizedId);
     }
     
     // Chama a função de callback para confirmar a devolução
@@ -194,7 +221,7 @@ export function ReturnDialog({
                       id="chromebookId"
                       value={chromebookId}
                       onChange={(e) => onChromebookIdChange(e.target.value)}
-                      placeholder="Digite o ID do Chromebook"
+                      placeholder="Digite o ID do Chromebook (ex: 12 ou CHR012)"
                       className="bg-white border-gray-200"
                     />
                     {/* Botão para escanear QR Code */}
@@ -228,7 +255,7 @@ export function ReturnDialog({
                           id="batchInput"
                           value={currentBatchInput}
                           onChange={(e) => setCurrentBatchInput(e.target.value)}
-                          placeholder="Digite o ID do dispositivo"
+                          placeholder="Digite o ID do dispositivo (ex: 12 ou CHR012)"
                           className="bg-white border-gray-200 pr-16"
                           onKeyDown={(e) => {
                             if (e.key === 'Enter') {

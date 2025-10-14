@@ -1,3 +1,4 @@
+CHR012).">
 import DOMPurify from 'dompurify';
 
 /**
@@ -47,6 +48,32 @@ export function isSchoolEmail(email: string): boolean {
 }
 
 /**
+ * Normaliza o ID do Chromebook para o formato padrão (ex: '12' -> 'CHR012').
+ * @param identifier O ID ou número de patrimônio/série inserido.
+ * @returns O ID normalizado ou a string original em maiúsculas.
+ */
+export function normalizeChromebookId(identifier: string): string {
+  const raw = identifier.trim();
+  if (!raw) return '';
+
+  // Verifica se é composto apenas por dígitos
+  const onlyDigits = /^\d+$/.test(raw);
+
+  if (onlyDigits) {
+    // Se for apenas dígitos, formata como CHR + preenchimento com zeros
+    return `CHR${raw.padStart(3, '0')}`;
+  }
+
+  // Se já começar com 'CHR' (case insensitive), garante que seja maiúsculo
+  if (raw.toUpperCase().startsWith('CHR')) {
+    return raw.toUpperCase();
+  }
+
+  // Caso contrário, retorna a string original em maiúsculas
+  return raw.toUpperCase();
+}
+
+/**
  * Valida ID de Chromebook (deve conter apenas letras, números e hífens)
  */
 export function isValidChromebookId(id: string): boolean {
@@ -72,14 +99,15 @@ export function sanitizeQRCodeData(data: string): string {
     // Tenta fazer parse como JSON
     const parsed = JSON.parse(data);
     if (parsed && typeof parsed === 'object' && parsed.id) {
-      return sanitizeString(parsed.id);
+      // Normaliza o ID extraído do QR Code
+      return normalizeChromebookId(sanitizeString(parsed.id));
     }
   } catch {
-    // Se não for JSON válido, sanitiza como string
-    return sanitizeString(data);
+    // Se não for JSON válido, sanitiza como string e normaliza
+    return normalizeChromebookId(sanitizeString(data));
   }
   
-  return sanitizeString(data);
+  return normalizeChromebookId(sanitizeString(data));
 }
 
 /**
@@ -127,7 +155,8 @@ export function validateLoanFormData(data: any): {
   if (!data.chromebookId || !isValidChromebookId(data.chromebookId)) {
     errors.push('ID do Chromebook inválido');
   } else {
-    sanitizedData.chromebookId = sanitizeString(data.chromebookId);
+    // Aplica normalização antes de salvar no sanitizedData
+    sanitizedData.chromebookId = normalizeChromebookId(sanitizeString(data.chromebookId));
   }
 
   // Sanitizar finalidade

@@ -1,3 +1,4 @@
+CHR012) na entrada manual e no lote.">
 import { useState } from "react";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
@@ -12,7 +13,7 @@ import { format } from "date-fns";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Calendar as CalendarComponent } from "./ui/calendar";
 import { cn } from "@/lib/utils";
-import { validateLoanFormData, sanitizeQRCodeData } from "@/utils/security";
+import { validateLoanFormData, sanitizeQRCodeData, normalizeChromebookId } from "@/utils/security";
 import { useDatabase } from '@/hooks/useDatabase';
 
 // Define a interface dos dados do formulário de empréstimo
@@ -74,9 +75,17 @@ export function LoanForm({ onBack }: LoanFormProps) {
    * Verifica se o dispositivo já existe na lista antes de adicionar
    */
   const addDeviceToBatch = () => {
-    if (currentBatchInput.trim() && !batchDevices.includes(currentBatchInput.trim())) {
-      setBatchDevices([...batchDevices, currentBatchInput.trim()]);
+    const normalizedInput = normalizeChromebookId(currentBatchInput);
+    
+    if (normalizedInput && !batchDevices.includes(normalizedInput)) {
+      setBatchDevices([...batchDevices, normalizedInput]);
       setCurrentBatchInput(""); // Limpa o campo após adicionar
+    } else if (normalizedInput) {
+      toast({
+        title: "Dispositivo já adicionado",
+        description: `O Chromebook ${normalizedInput} já está na lista`,
+        variant: "destructive",
+      });
     }
   };
 
@@ -93,7 +102,8 @@ export function LoanForm({ onBack }: LoanFormProps) {
    * @param data - String contendo os dados do QR Code
    */
   const handleQRCodeScan = (data: string) => {
-    const sanitizedId = sanitizeQRCodeData(data);
+    // sanitizeQRCodeData já inclui a normalização
+    const sanitizedId = sanitizeQRCodeData(data); 
     
     if (sanitizedId) {
       if (formData.loanType === 'individual') {
@@ -119,11 +129,25 @@ export function LoanForm({ onBack }: LoanFormProps) {
       }
     }
   };
+  
+  const handleChromebookIdChange = (value: string) => {
+    // Normaliza o ID ao digitar, mas mantém o valor original no campo para feedback visual
+    setFormData({ ...formData, chromebookId: value });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    const validation = validateLoanFormData(formData);
+    // Normaliza o ID do Chromebook antes de validar e enviar
+    const normalizedChromebookId = normalizeChromebookId(formData.chromebookId);
+    
+    const dataToValidate = {
+      ...formData,
+      chromebookId: normalizedChromebookId,
+    };
+    
+    const validation = validateLoanFormData(dataToValidate);
+    
     if (!validation.isValid) {
       toast({
         title: "Erro de Validação",
@@ -152,7 +176,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
           studentName: formData.studentName,
           ra: formData.ra || '',
           email: formData.email,
-          chromebookId: deviceId,
+          chromebookId: deviceId, // Já normalizado na adição ao lote
           purpose: formData.purpose,
           userType: formData.userType,
           loanType: formData.loanType,
@@ -188,7 +212,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
     } else {
       // === EMPRÉSTIMO INDIVIDUAL ===
       
-      if (!formData.studentName || !formData.email || !formData.chromebookId || !formData.purpose) {
+      if (!dataToValidate.studentName || !dataToValidate.email || !dataToValidate.chromebookId || !dataToValidate.purpose) {
         toast({
           title: "Erro",
           description: "Por favor, preencha todos os campos obrigatórios",
@@ -198,13 +222,13 @@ export function LoanForm({ onBack }: LoanFormProps) {
       }
       
       const loanData = {
-        studentName: formData.studentName,
-        ra: formData.ra || '',
-        email: formData.email,
-        chromebookId: formData.chromebookId,
-        purpose: formData.purpose,
-        userType: formData.userType,
-        loanType: formData.loanType,
+        studentName: dataToValidate.studentName,
+        ra: dataToValidate.ra || '',
+        email: dataToValidate.email,
+        chromebookId: dataToValidate.chromebookId, // Normalizado
+        purpose: dataToValidate.purpose,
+        userType: dataToValidate.userType,
+        loanType: dataToValidate.loanType,
         expectedReturnDate: hasReturnDeadline && formData.expectedReturnDate ? formData.expectedReturnDate : undefined,
       };
       
@@ -270,11 +294,9 @@ export function LoanForm({ onBack }: LoanFormProps) {
             <div className="flex gap-2">
               <Input
                 id="chromebookId"
-                placeholder="Digite o ID do Chromebook"
+                placeholder="Digite o ID do Chromebook (ex: 12 ou CHR012)"
                 value={formData.chromebookId}
-                onChange={(e) =>
-                  setFormData({ ...formData, chromebookId: e.target.value })
-                }
+                onChange={(e) => handleChromebookIdChange(e.target.value)}
                 className="border-gray-200 flex-1"
               />
               <Button 
@@ -306,7 +328,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
                     id="batchInput"
                     value={currentBatchInput}
                     onChange={(e) => setCurrentBatchInput(e.target.value)}
-                    placeholder="Digite o ID do dispositivo"
+                    placeholder="Digite o ID do dispositivo (ex: 12 ou CHR012)"
                     className="border-gray-200 w-full"
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
