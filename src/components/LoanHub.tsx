@@ -1,11 +1,9 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ActiveLoans } from "@/components/ActiveLoans";
 import { LoanHistory } from "@/components/LoanHistory";
 import { LoanForm } from "@/components/LoanForm";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { useDatabase } from "@/hooks/useDatabase";
 import type { LoanHistoryItem, LoanFormData } from "@/types/database";
 
@@ -41,26 +39,25 @@ export const LoanHub = ({ onBack }: LoanHubProps) => {
         <h1 className="text-2xl font-bold">Empréstimos de Chromebook</h1>
         <Button onClick={onBack} variant="outline">Voltar ao Menu</Button>
       </div>
-      <ScrollArea className="flex-grow">
-        <Tabs defaultValue="form" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="form">Novo Empréstimo</TabsTrigger>
-            <TabsTrigger value="active">Empréstimos Ativos</TabsTrigger>
-            <TabsTrigger value="history">Histórico</TabsTrigger>
-          </TabsList>
-          <TabsContent value="form">
-            <div className="p-4">
-              <LoanForm />
-            </div>
-          </TabsContent>
-          <TabsContent value="active">
-            <ActiveLoans />
-          </TabsContent>
-          <TabsContent value="history">
-            <LoanHistory history={loanHistory} />
-          </TabsContent>
-        </Tabs>
-      </ScrollArea>
+      
+      <Tabs defaultValue="form" className="w-full">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="form">Novo Empréstimo</TabsTrigger>
+          <TabsTrigger value="active">Empréstimos Ativos</TabsTrigger>
+          <TabsTrigger value="history">Histórico</TabsTrigger>
+        </TabsList>
+        <TabsContent value="form">
+          <div className="p-4">
+            <LoanForm />
+          </div>
+        </TabsContent>
+        <TabsContent value="active">
+          <ActiveLoans />
+        </TabsContent>
+        <TabsContent value="history">
+          <LoanHistory history={loanHistory} />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
