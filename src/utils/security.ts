@@ -1,4 +1,3 @@
-CHR012).">
 import DOMPurify from 'dompurify';
 
 /**
