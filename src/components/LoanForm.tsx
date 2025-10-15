@@ -498,78 +498,82 @@ export function LoanForm({ onBack }: LoanFormProps) {
         </div>
 
         {/* Campos de Usuário (Preenchidos automaticamente ou editáveis se não houver seleção) */}
-        <div className="space-y-2">
-          <Label htmlFor="userType" className="text-gray-700">
-            Tipo de Solicitante
-          </Label>
-          <Select
-            value={formData.userType}
-            onValueChange={(value: 'aluno' | 'professor' | 'funcionario') =>
-              setFormData({ ...formData, userType: value })
-            }
-            disabled={!!selectedUser} // Desabilita se o usuário foi selecionado via autocomplete
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Selecione o tipo de solicitante" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="aluno">Aluno</SelectItem>
-              <SelectItem value="professor">Professor</SelectItem>
-              <SelectItem value="funcionario">Funcionário</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        {!selectedUser && (
+          <>
+            <div className="space-y-2">
+              <Label htmlFor="userType" className="text-gray-700">
+                Tipo de Solicitante
+              </Label>
+              <Select
+                value={formData.userType}
+                onValueChange={(value: 'aluno' | 'professor' | 'funcionario') =>
+                  setFormData({ ...formData, userType: value })
+                }
+                disabled={!!selectedUser} // Desabilita se o usuário foi selecionado via autocomplete
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o tipo de solicitante" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="aluno">Aluno</SelectItem>
+                  <SelectItem value="professor">Professor</SelectItem>
+                  <SelectItem value="funcionario">Funcionário</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-        {/* Campo de nome do solicitante */}
-        <div className="space-y-2">
-          <Label htmlFor="studentName" className="text-gray-700">
-            Nome do Solicitante
-          </Label>
-          <Input
-            id="studentName"
-            placeholder="Digite o nome do solicitante"
-            value={formData.studentName}
-            onChange={(e) =>
-              setFormData({ ...formData, studentName: e.target.value })
-            }
-            className="border-gray-200"
-            disabled={!!selectedUser} // Desabilita se o usuário foi selecionado via autocomplete
-          />
-        </div>
+            {/* Campo de nome do solicitante */}
+            <div className="space-y-2">
+              <Label htmlFor="studentName" className="text-gray-700">
+                Nome do Solicitante
+              </Label>
+              <Input
+                id="studentName"
+                placeholder="Digite o nome do solicitante"
+                value={formData.studentName}
+                onChange={(e) =>
+                  setFormData({ ...formData, studentName: e.target.value })
+                }
+                className="border-gray-200"
+                disabled={!!selectedUser} // Desabilita se o usuário foi selecionado via autocomplete
+              />
+            </div>
 
-        {/* Campo de RA (apenas para alunos) */}
-        {formData.userType === 'aluno' && (
-          <div className="space-y-2">
-            <Label htmlFor="ra" className="text-gray-700">
-              RA do Aluno (opcional)
-            </Label>
-            <Input
-              id="ra"
-              placeholder="Digite o RA"
-              value={formData.ra}
-              onChange={(e) => setFormData({ ...formData, ra: e.target.value })}
-              className="border-gray-200"
-              disabled={!!selectedUser} // Desabilita se o usuário foi selecionado via autocomplete
-            />
-          </div>
+            {/* Campo de RA (apenas para alunos) */}
+            {formData.userType === 'aluno' && (
+              <div className="space-y-2">
+                <Label htmlFor="ra" className="text-gray-700">
+                  RA do Aluno (opcional)
+                </Label>
+                <Input
+                  id="ra"
+                  placeholder="Digite o RA"
+                  value={formData.ra}
+                  onChange={(e) => setFormData({ ...formData, ra: e.target.value })}
+                  className="border-gray-200"
+                  disabled={!!selectedUser} // Desabilita se o usuário foi selecionado via autocomplete
+                />
+              </div>
+            )}
+
+            {/* Campo de email */}
+            <div className="space-y-2">
+              <Label htmlFor="email" className="text-gray-700">
+                Email
+              </Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="Digite o email"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                className="border-gray-200"
+                required
+                disabled={!!selectedUser} // Desabilita se o usuário foi selecionado via autocomplete
+              />
+            </div>
+          </>
         )}
-
-        {/* Campo de email */}
-        <div className="space-y-2">
-          <Label htmlFor="email" className="text-gray-700">
-            Email
-          </Label>
-          <Input
-            id="email"
-            type="email"
-            placeholder="Digite o email"
-            value={formData.email}
-            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-            className="border-gray-200"
-            required
-            disabled={!!selectedUser} // Desabilita se o usuário foi selecionado via autocomplete
-          />
-        </div>
 
         {/* Campo de finalidade do empréstimo */}
         <div className="space-y-2">
