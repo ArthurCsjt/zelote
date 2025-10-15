@@ -175,7 +175,7 @@ export function ReturnDialog({
     <>
       {/* Diálogo principal de devolução */}
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold text-gray-800 flex items-center gap-2">
               <RotateCcw className="h-6 w-6 text-blue-600" />
