@@ -124,7 +124,7 @@ const Layout: React.FC<LayoutProps> = ({
                 </button>
               )}
               
-              {/* Botão de Notificações (Sino) - MOVIDO PARA AQUI */}
+              {/* Botão de Notificações (Sino) */}
               <Popover>
                 <PopoverTrigger asChild>
                   <Button variant="ghost" size="icon" className="relative h-9 w-9">
@@ -138,11 +138,7 @@ const Layout: React.FC<LayoutProps> = ({
                 </PopoverContent>
               </Popover>
               
-              {/* Botão Sair */}
-              <button onClick={logout} className="flex items-center space-x-1 text-sm text-muted-foreground hover:text-foreground transition-colors duration-200 bg-accent hover:bg-accent/80 rounded-full px-3 py-1.5 touch-manipulation">
-                <LogOut className="w-4 h-4" />
-                <span className="hidden sm:inline">Sair</span>
-              </button>
+              {/* Botão Sair REMOVIDO */}
             </div>
           </div>
         </div>
