@@ -199,7 +199,7 @@ useEffect(() => {
       case 'manutencao':
         return { color: 'text-red-600 bg-red-50', icon: AlertTriangle, label: 'Manutenção' };
       case 'fora_uso':
-        return { color: 'text-gray-600 bg-gray-200', icon: XCircle, label: 'Fora de Uso' };
+        return { color: 'text-gray-600 bg-gray-200', icon: XCircle, label: 'Inativo' }; // Alterado para Inativo
       default:
         return { color: 'text-gray-600 bg-gray-50', icon: XCircle, label: 'Desconhecido' };
     }
@@ -218,7 +218,7 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
 
   // Only admins can set FIXO or FORA_USO
   if ((newStatus === 'fixo' || newStatus === 'fora_uso') && !isAdmin) {
-    toast({ title: 'Permissão negada', description: 'Apenas administradores podem marcar como Fixo ou Fora de Uso.', variant: 'destructive' });
+    toast({ title: 'Permissão negada', description: 'Apenas administradores podem marcar como Fixo ou Inativo.', variant: 'destructive' });
     return;
   }
 
@@ -410,6 +410,12 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
     }
   };
 
+  // Estatísticas atualizadas
+  const totalInativo = chromebooks.filter(c => c.status === 'fora_uso').length;
+  const totalFixo = chromebooks.filter(c => c.status === 'fixo').length;
+  const totalMovel = chromebooks.length - totalFixo - totalInativo;
+
+
   return (
     <div className="max-w-6xl mx-auto p-6 glass-morphism animate-fade-in relative">
       {/* Background gradient overlay */}
@@ -440,7 +446,7 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
               <SelectItem value="emprestado">Emprestado</SelectItem>
               <SelectItem value="fixo">Fixo</SelectItem>
               <SelectItem value="manutencao">Manutenção</SelectItem>
-              <SelectItem value="fora_uso">Fora de Uso</SelectItem>
+              <SelectItem value="fora_uso">Inativo</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -483,13 +489,30 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
           </p>
           <p className="text-sm text-gray-600">Emprestados</p>
         </div>
-<div className="glass-card p-4 text-center transform hover:scale-105 transition-all duration-300 hover:shadow-lg">
-  <p className="text-2xl font-bold bg-gradient-to-r from-blue-700 to-blue-500 bg-clip-text text-transparent">
-    {chromebooks.filter(c => c.status === 'fixo').length}
-  </p>
-  <p className="text-sm text-gray-600">Fixos</p>
-</div>
+        <div className="glass-card p-4 text-center transform hover:scale-105 transition-all duration-300 hover:shadow-lg">
+          <p className="text-2xl font-bold bg-gradient-to-r from-red-700 to-red-500 bg-clip-text text-transparent">
+            {totalInativo}
+          </p>
+          <p className="text-sm text-gray-600">Inativos</p>
+        </div>
       </div>
+      
+      {/* Statistics - Fixo vs Móvel */}
+      <div className="grid grid-cols-2 gap-4 mb-6 relative z-10">
+        <div className="glass-card p-4 text-center transform hover:scale-105 transition-all duration-300 hover:shadow-lg">
+          <p className="text-2xl font-bold bg-gradient-to-r from-blue-700 to-blue-500 bg-clip-text text-transparent">
+            {totalFixo}
+          </p>
+          <p className="text-sm text-gray-600">Fixos</p>
+        </div>
+        <div className="glass-card p-4 text-center transform hover:scale-105 transition-all duration-300 hover:shadow-lg">
+          <p className="text-2xl font-bold bg-gradient-to-r from-orange-700 to-amber-500 bg-clip-text text-transparent">
+            {totalMovel}
+          </p>
+          <p className="text-sm text-gray-600">Móveis (Não Fixos/Inativos)</p>
+        </div>
+      </div>
+
 
       {/* Table of Chromebooks */}
       <div className="glass-card border-white/30 rounded-2xl overflow-hidden relative z-10">
@@ -510,6 +533,19 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
                 const statusInfo = getStatusInfo(chromebook.status);
                 const StatusIcon = statusInfo.icon;
                 
+                // Lógica para exibir "Móvel" ou "Fixo"
+                const mobilityStatus = chromebook.status === 'fixo' 
+                  ? 'Fixo' 
+                  : chromebook.status === 'fora_uso' 
+                    ? 'Inativo' 
+                    : 'Móvel';
+                
+                const mobilityColor = mobilityStatus === 'Fixo' 
+                  ? 'bg-blue-50 text-blue-700 border-blue-200' 
+                  : mobilityStatus === 'Inativo' 
+                    ? 'bg-gray-200 text-gray-700 border-gray-300'
+                    : 'bg-orange-50 text-orange-700 border-orange-200';
+
                 return (
                   <TableRow key={chromebook.id}>
                     <TableCell className="font-medium text-xs">
@@ -519,9 +555,9 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
                     <TableCell>
                       <div className="flex items-center gap-2">
                         {chromebook.model}
-                        {chromebook.status === 'fixo' && (
-                          <span className="text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">Fixo</span>
-                        )}
+                        <span className={`text-xs px-2 py-0.5 rounded-full border ${mobilityColor}`}>
+                          {mobilityStatus}
+                        </span>
                       </div>
                     </TableCell>
                     <TableCell>{chromebook.serial_number || 'N/A'}</TableCell>
@@ -573,7 +609,7 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
                              <SelectItem value="emprestado">Emprestado</SelectItem>
                              <SelectItem value="fixo">Fixo</SelectItem>
                              <SelectItem value="manutencao">Manutenção</SelectItem>
-                             <SelectItem value="fora_uso">Fora de Uso</SelectItem>
+                             <SelectItem value="fora_uso">Inativo</SelectItem>
                            </SelectContent>
                         </Select>
                       </div>
@@ -741,7 +777,7 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
       <SelectItem value="emprestado">Emprestado</SelectItem>
       <SelectItem value="fixo" disabled={!isAdmin}>Fixo</SelectItem>
       <SelectItem value="manutencao">Manutenção</SelectItem>
-      <SelectItem value="fora_uso" disabled={!isAdmin}>Fora de Uso</SelectItem>
+      <SelectItem value="fora_uso" disabled={!isAdmin}>Inativo</SelectItem>
     </SelectContent>
   </Select>
 </div>
