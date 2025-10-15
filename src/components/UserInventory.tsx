@@ -46,7 +46,8 @@ interface User {
 export function UserInventory() {
   const { isAdmin } = useProfileRole();
   const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [isLoadingData, setIsLoadingData] = useState(true); // Carregamento inicial
+  const [isDeleting, setIsDeleting] = useState(false); // Carregamento de exclusão
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [classFilter, setClassFilter] = useState<string>('all');
@@ -57,7 +58,7 @@ export function UserInventory() {
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
 
   const fetchUsers = useCallback(async () => {
-    setLoading(true);
+    setIsLoadingData(true);
     try {
       // Fetch students
       const { data: alunos, error: alunosError } = await supabase
@@ -123,7 +124,7 @@ export function UserInventory() {
         variant: "destructive",
       });
     } finally {
-      setLoading(false);
+      setIsLoadingData(false);
     }
   }, []);
 
@@ -166,7 +167,7 @@ export function UserInventory() {
   const handleConfirmDelete = async () => {
     if (!userToDelete) return;
 
-    setLoading(true);
+    setIsDeleting(true);
     const tableName = userToDelete.tipo === 'Aluno' ? 'alunos' : 
                      userToDelete.tipo === 'Professor' ? 'professores' : 
                      'funcionarios';
@@ -197,11 +198,11 @@ export function UserInventory() {
     } finally {
       setUserToDelete(null);
       setIsDeleteDialogOpen(false);
-      setLoading(false);
+      setIsDeleting(false);
     }
   };
 
-  if (loading && users.length === 0) {
+  if (isLoadingData && users.length === 0) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
@@ -360,7 +361,7 @@ export function UserInventory() {
                         size="sm"
                         onClick={() => handleDeleteClick(user)}
                         className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-                        disabled={loading}
+                        disabled={isDeleting} // Usando o estado de exclusão
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -389,14 +390,14 @@ export function UserInventory() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogCancel disabled={isDeleting}>Cancelar</AlertDialogCancel>
             <AlertDialogAction 
               onClick={handleConfirmDelete}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              disabled={loading}
+              disabled={isDeleting}
             >
-              {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Trash2 className="h-4 w-4 mr-2" />}
-              {loading ? 'Excluindo...' : 'Excluir'}
+              {isDeleting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Trash2 className="h-4 w-4 mr-2" />}
+              {isDeleting ? 'Excluindo...' : 'Excluir'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
