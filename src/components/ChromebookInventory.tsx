@@ -481,8 +481,6 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
                   isActive={currentPage === page}
                   onClick={() => setCurrentPage(page)}
                   className="cursor-pointer"
-                >
-                  {page}
                 </PaginationLink>
               </PaginationItem>
             ))}
@@ -506,8 +504,8 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
       {/* Edit Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent 
-          // Usando classes responsivas para o modal de edição
-          className="w-[95vw] h-[95vh] max-w-none sm:w-full sm:max-w-3xl sm:max-h-[90vh] flex flex-col p-0"
+          // ALTERAÇÃO AQUI: Aumentando max-w para 5xl
+          className="w-[95vw] h-[95vh] max-w-none sm:w-full sm:max-w-5xl sm:max-h-[90vh] flex flex-col p-0"
         >
           <DialogHeader className="px-6 py-4 border-b shrink-0">
             <DialogTitle className="text-xl font-bold flex items-center gap-2">
