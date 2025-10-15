@@ -115,7 +115,7 @@ export function useAuditCalculations(
     };
   }, [countedItems, allChromebooks, totalExpected]);
 
-  const generateReport = useCallback((): AuditReport => {
+  const calculateActiveReport = useCallback((): AuditReport => {
     const stats = calculateStats();
     const { totalCounted, completionRate, locationStats, methodStats, conditionStats, timeStats } = stats;
 
@@ -172,6 +172,6 @@ export function useAuditCalculations(
   return {
     missingItems,
     calculateStats,
-    generateReport,
+    generateReport: calculateActiveReport, // Exportado com o nome original para compatibilidade
   };
 }

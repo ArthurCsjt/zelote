@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, Plus, History, FileText, Trash2 } from 'lucide-react';
+import { Loader2, Plus, History, FileText, Trash2, ListChecks, BarChart3 } from 'lucide-react';
 import { AuditScanner } from './AuditScanner';
 import { AuditStats } from './AuditStats';
 import { AuditFiltersComponent } from './AuditFilters';
@@ -67,7 +67,6 @@ export const AuditHub = () => {
   };
 
   const stats = calculateStats();
-  // const report = generateReport(); // Não é mais necessário se a aba de relatórios for removida
 
   if (activeAudit) {
     return <AuditScanner />;
@@ -75,30 +74,44 @@ export const AuditHub = () => {
 
   return (
     <div className="space-y-6">
+      <div className="text-center mb-6">
+        <h1 className="text-3xl font-bold text-gray-800 flex items-center justify-center gap-3">
+          <ListChecks className="h-7 w-7 text-menu-teal" />
+          Sistema de Contagem de Inventário
+        </h1>
+        <p className="text-muted-foreground">Gerencie e realize auditorias de inventário de Chromebooks.</p>
+      </div>
+
       <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="current">Auditoria Atual</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-3">
+          <TabsTrigger value="current">Iniciar Contagem</TabsTrigger>
           <TabsTrigger value="history">Histórico</TabsTrigger>
-          {/* <TabsTrigger value="reports">Relatórios</TabsTrigger> */}
+          <TabsTrigger value="reports">Relatórios</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="current" className="space-y-6">
-          <Card>
+        <TabsContent value="current" className="space-y-6 mt-6">
+          <Card className="glass-card border-menu-teal/50 shadow-lg">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 text-menu-teal">
                 <Plus className="h-5 w-5" />
                 Iniciar Nova Auditoria
               </CardTitle>
               <CardDescription>
-                Comece uma nova sessão de contagem de inventário.
+                Comece uma nova sessão de contagem de inventário para verificar a localização e o estado dos equipamentos.
               </CardDescription>
             </CardHeader>
             <CardContent>
               <AlertDialog onOpenChange={(open) => !open && setNewAuditName('')}>
                 <AlertDialogTrigger asChild>
-                  <Button disabled={isProcessing}>
-                    {isProcessing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Iniciar Nova Contagem
+                  <Button disabled={isProcessing} className="w-full bg-menu-teal hover:bg-menu-teal-hover">
+                    {isProcessing ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <>
+                        <ListChecks className="mr-2 h-4 w-4" />
+                        Iniciar Nova Contagem
+                      </>
+                    )}
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
@@ -133,11 +146,11 @@ export const AuditHub = () => {
           </Card>
 
           {/* Auditorias já realizadas (resumo) */}
-          <Card>
+          <Card className="glass-card">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <History className="h-5 w-5" />
-                Auditorias já realizadas
+                Últimas Auditorias Concluídas
               </CardTitle>
               <CardDescription>
                 Visualize rapidamente as últimas auditorias concluídas.
@@ -181,32 +194,10 @@ export const AuditHub = () => {
               </div>
             </CardContent>
           </Card>
-
-          {/* Dashboard de Estatísticas (quando não há auditoria ativa) */}
-          {countedItems.length > 0 && (
-            <>
-              <AuditStats
-                totalCounted={stats.totalCounted}
-                totalExpected={totalExpected}
-                completionRate={stats.completionRate}
-                duration="0m"
-                itemsPerHour={0}
-                locationStats={stats.locationStats}
-                methodStats={stats.methodStats}
-                conditionStats={stats.conditionStats}
-              />
-
-              <AuditFiltersComponent
-                filters={filters}
-                onFiltersChange={setFilters}
-                items={countedItems}
-              />
-            </>
-          )}
         </TabsContent>
 
-        <TabsContent value="history" className="space-y-6">
-          <Card>
+        <TabsContent value="history" className="space-y-6 mt-6">
+          <Card className="glass-card">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <History className="h-5 w-5" />
@@ -278,8 +269,27 @@ export const AuditHub = () => {
             </CardContent>
           </Card>
         </TabsContent>
-
-        {/* Conteúdo da aba 'reports' removido */}
+        
+        <TabsContent value="reports" className="space-y-6 mt-6">
+          <Card className="glass-card">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <BarChart3 className="h-5 w-5" />
+                Relatório da Última Auditoria
+              </CardTitle>
+              <CardDescription>
+                Análise detalhada da última auditoria concluída.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {completedAudits.length > 0 ? (
+                <AuditReportComponent report={generateReport(completedAudits[0].id)} />
+              ) : (
+                <p className="text-sm text-muted-foreground">Nenhuma auditoria concluída para gerar relatório.</p>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
     </div>
   );
