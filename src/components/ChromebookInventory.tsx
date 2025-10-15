@@ -35,23 +35,14 @@ import {
 } from "./ui/select";
 import { useProfileRole } from "@/hooks/use-profile-role";
 import { supabase } from "@/integrations/supabase/client";
-import type { Chromebook } from "@/types/database";
+import { useDatabase } from "@/hooks/useDatabase"; // Importando useDatabase
+import type { Chromebook, ChromebookData } from "@/types/database";
 
 // Interface for Chromebook data structure (matching database)
-interface ChromebookData {
-  id: string;
-  chromebook_id: string;
-  model: string;
-  manufacturer?: string;
-  serial_number?: string;
-  patrimony_number?: string;
-  status: 'disponivel' | 'emprestado' | 'fixo' | 'manutencao' | 'fora_uso';
-  condition?: string;
-  location?: string;
+interface ChromebookDataExtended extends Chromebook {
+  // Adicionando campos que podem ser usados no formulário de edição
   classroom?: string;
-  created_at: string;
-  updated_at: string;
-  created_by?: string;
+  manufacturer?: string;
 }
 
 
@@ -63,9 +54,10 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
   // Check if on mobile device
   const isMobile = useIsMobile();
   const { isAdmin } = useProfileRole();
+  const { getChromebooks, updateChromebook, deleteChromebook } = useDatabase(); // Usando useDatabase
   
   // State for storing all Chromebooks
-  const [chromebooks, setChromebooks] = useState<ChromebookData[]>([]);
+  const [chromebooks, setChromebooks] = useState<ChromebookDataExtended[]>([]);
   // State for search term
   const [searchTerm, setSearchTerm] = useState("");
   // State for status filter
@@ -77,9 +69,9 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
   // State for QR Code dialog
   const [showQRCode, setShowQRCode] = useState<string | null>(null);
   // State for the Chromebook being edited
-  const [editingChromebook, setEditingChromebook] = useState<ChromebookData | null>(null);
+  const [editingChromebook, setEditingChromebook] = useState<ChromebookDataExtended | null>(null);
   // State for the Chromebook being deleted
-  const [chromebookToDelete, setChromebookToDelete] = useState<ChromebookData | null>(null);
+  const [chromebookToDelete, setChromebookToDelete] = useState<ChromebookDataExtended | null>(null);
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
@@ -87,37 +79,12 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
 // Load Chromebooks from Supabase on component mount
 useEffect(() => {
   const fetchChromebooks = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('chromebooks')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error("Error fetching chromebooks:", error);
-        toast({
-          title: "Erro",
-          description: "Não foi possível carregar os Chromebooks do banco de dados",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      // Normalize data if needed (keep status as-is)
-      const normalizedData = (data || []) as ChromebookData[];
-      setChromebooks(normalizedData);
-    } catch (error) {
-      console.error("Error fetching chromebooks:", error);
-      toast({
-        title: "Erro",
-        description: "Erro inesperado ao carregar os Chromebooks",
-        variant: "destructive",
-      });
-    }
+    const data = await getChromebooks();
+    setChromebooks(data as ChromebookDataExtended[]);
   };
 
   fetchChromebooks();
-}, []);
+}, [getChromebooks]);
 
 // Real-time synchronization
 useEffect(() => {
@@ -134,11 +101,11 @@ useEffect(() => {
         console.log('Realtime change received:', payload);
         
         if (payload.eventType === 'INSERT') {
-          setChromebooks(prev => [payload.new as ChromebookData, ...prev]);
+          setChromebooks(prev => [payload.new as ChromebookDataExtended, ...prev]);
         } else if (payload.eventType === 'UPDATE') {
           setChromebooks(prev => 
             prev.map(cb => 
-              cb.id === payload.new.id ? payload.new as ChromebookData : cb
+              cb.id === payload.new.id ? payload.new as ChromebookDataExtended : cb
             )
           );
         } else if (payload.eventType === 'DELETE') {
@@ -221,45 +188,22 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
     return;
   }
 
-  try {
-    const { error } = await supabase
-      .from('chromebooks')
-      .update({ status: newStatus as any })
-      .eq('id', chromebookId);
+  // Usar a função centralizada do useDatabase
+  const success = await updateChromebook(chromebookId, { status: newStatus as any });
 
-    if (error) {
-      console.error("Error updating chromebook status:", error);
-      toast({
-        title: "Erro",
-        description: "Não foi possível atualizar o status do Chromebook",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Update local state immediately
-    setChromebooks(prev => 
-      prev.map(cb => 
-        cb.id === chromebookId ? {...cb, status: newStatus as any} : cb
-      )
-    );
-
+  if (success) {
+    // A atualização do estado local será tratada pelo Real-time, mas podemos fazer uma atualização otimista
+    // para feedback imediato, embora o Real-time garanta a consistência.
+    // Vamos confiar no Real-time para evitar duplicação de lógica de estado.
     toast({
       title: "Status atualizado",
       description: `Status do Chromebook alterado para ${getStatusInfo(newStatus).label}`,
-    });
-  } catch (error) {
-    console.error("Error updating chromebook status:", error);
-    toast({
-      title: "Erro",
-      description: "Erro inesperado ao atualizar o status",
-      variant: "destructive",
     });
   }
 };
 
   // Handle edit click
-  const handleEditClick = (chromebook: ChromebookData) => {
+  const handleEditClick = (chromebook: ChromebookDataExtended) => {
     setEditingChromebook({ ...chromebook });
     setIsEditDialogOpen(true);
   };
@@ -292,7 +236,7 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
 
     setEditingChromebook({
       ...editingChromebook,
-      status: value as ChromebookData['status'],
+      status: value as ChromebookDataExtended['status'],
     });
   };
 
@@ -310,57 +254,30 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
       return;
     }
 
-    try {
-      const { data, error } = await supabase
-        .from('chromebooks')
-        .update({
-          chromebook_id: editingChromebook.chromebook_id,
-          model: editingChromebook.model,
-          manufacturer: editingChromebook.manufacturer,
-          serial_number: editingChromebook.serial_number,
-          patrimony_number: editingChromebook.patrimony_number,
-          status: editingChromebook.status as any,
-          condition: editingChromebook.condition,
-          location: editingChromebook.location,
-          classroom: editingChromebook.classroom,
-        })
-        .eq('id', editingChromebook.id);
+    const updatePayload: Partial<ChromebookData> = {
+      chromebookId: editingChromebook.chromebook_id,
+      model: editingChromebook.model,
+      manufacturer: editingChromebook.manufacturer,
+      serialNumber: editingChromebook.serial_number,
+      patrimonyNumber: editingChromebook.patrimony_number,
+      status: editingChromebook.status,
+      condition: editingChromebook.condition,
+      location: editingChromebook.location,
+      classroom: editingChromebook.classroom,
+    };
 
-      if (error) {
-        console.error("Error updating chromebook:", error);
-        toast({
-          title: "Erro",
-          description: "Não foi possível atualizar o Chromebook",
-          variant: "destructive",
-        });
-        return;
-      }
+    // Usar a função centralizada do useDatabase
+    const success = await updateChromebook(editingChromebook.id, updatePayload);
 
-      // Update local state immediately
-      setChromebooks(prev => 
-        prev.map(cb => 
-          cb.id === editingChromebook.id ? {...editingChromebook} : cb
-        )
-      );
-
+    if (success) {
       setIsEditDialogOpen(false);
       setEditingChromebook(null);
-      toast({
-        title: "Sucesso",
-        description: `Chromebook ${editingChromebook.patrimony_number || editingChromebook.chromebook_id} atualizado com sucesso`,
-      });
-    } catch (error) {
-      console.error("Error updating chromebook:", error);
-      toast({
-        title: "Erro",
-        description: "Erro inesperado ao atualizar o Chromebook",
-        variant: "destructive",
-      });
+      // O Real-time cuidará da atualização do estado local
     }
   };
 
   // Handle delete click
-  const handleDeleteClick = (chromebook: ChromebookData) => {
+  const handleDeleteClick = (chromebook: ChromebookDataExtended) => {
     setChromebookToDelete(chromebook);
     setIsDeleteDialogOpen(true);
   };
@@ -369,36 +286,13 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
   const handleConfirmDelete = async () => {
     if (!chromebookToDelete) return;
 
-    try {
-      const { error } = await supabase
-        .from('chromebooks')
-        .delete()
-        .eq('id', chromebookToDelete.id);
+    // Usar a função centralizada do useDatabase
+    const success = await deleteChromebook(chromebookToDelete.id);
 
-      if (error) {
-        console.error("Error deleting chromebook:", error);
-        toast({
-          title: "Erro",
-          description: "Não foi possível excluir o Chromebook",
-          variant: "destructive",
-        });
-        return;
-      }
-
+    if (success) {
       setIsDeleteDialogOpen(false);
       setChromebookToDelete(null);
-      toast({
-        title: "Sucesso",
-        description: `Chromebook ${chromebookToDelete.patrimony_number || chromebookToDelete.chromebook_id} excluído com sucesso`,
-      });
-      setChromebooks(currentChromebooks => currentChromebooks.filter(cb => cb.id !== chromebookToDelete.id));
-    } catch (error) {
-      console.error("Error deleting chromebook:", error);
-      toast({
-        title: "Erro",
-        description: "Erro inesperado ao excluir o Chromebook",
-        variant: "destructive",
-      });
+      // O Real-time cuidará da atualização do estado local
     }
   };
 
