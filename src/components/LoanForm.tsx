@@ -414,117 +414,62 @@ export function LoanForm({ onBack }: LoanFormProps) {
                       </div>
                     )}
                   </div>
-                </div>
-              )}
-            </Card>
-
-            {/* Coluna Direita - Informações do Solicitante */}
-            <Card className="p-4 space-y-4 bg-white border-gray-100 shadow-md">
-              <CardTitle className="text-lg flex items-center gap-2 text-purple-700">
-                <User className="h-5 w-5" /> Informações do Solicitante
-              </CardTitle>
-              
-              {/* Seletor de Usuário com Autocompletar */}
-              <div className="space-y-2">
-                <Label htmlFor="userSearch" className="text-gray-700">
-                  Buscar Solicitante (Nome, RA ou Email)
-                </Label>
-                <UserAutocomplete
-                  selectedUser={selectedUser}
-                  onSelect={handleUserSelect}
-                  onClear={handleUserClear}
-                  disabled={loading}
-                />
-              </div>
-
-              {/* Campos de Usuário (Exibidos apenas se NENHUM usuário estiver selecionado) */}
-              {!selectedUser && (
-                <>
-                  <div className="space-y-2">
-                    <Label htmlFor="userType" className="text-gray-700">
-                      Tipo de Solicitante
-                    </Label>
-                    <Select
-                      value={formData.userType}
-                      onValueChange={(value: 'aluno' | 'professor' | 'funcionario') =>
-                        setFormData({ ...formData, userType: value })
-                      }
-                    >
-                      <SelectTrigger className="bg-white border-gray-200">
-                        <SelectValue placeholder="Selecione o tipo de solicitante" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="aluno">Aluno</SelectItem>
-                        <SelectItem value="professor">Professor</SelectItem>
-                        <SelectItem value="funcionario">Funcionário</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="studentName" className="text-gray-700">
-                      Nome do Solicitante
-                    </Label>
-                    <Input
-                      id="studentName"
-                      placeholder="Digite o nome do solicitante"
-                      value={formData.studentName}
-                      onChange={(e) =>
-                        setFormData({ ...formData, studentName: e.target.value })
-                      }
-                      className="border-gray-200 bg-white"
-                    />
-                  </div>
-
-                  {formData.userType === 'aluno' && (
-                    <div className="space-y-2">
-                      <Label htmlFor="ra" className="text-gray-700">
-                        RA do Aluno (opcional)
-                      </Label>
-                      <Input
-                        id="ra"
-                        placeholder="Digite o RA"
-                        value={formData.ra}
-                        onChange={(e) => setFormData({ ...formData, ra: e.target.value })}
-                        className="border-gray-200 bg-white"
-                      />
+                  
+                  {batchDevices.length > 0 && (
+                    <div className="mt-2 p-3 bg-green-50 border border-green-100 rounded-lg">
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="font-semibold text-green-700">Resumo do Empréstimo</h4>
+                        <Badge className="bg-green-100 text-green-700 border-green-200">
+                          Em Lote
+                        </Badge>
+                      </div>
+                      <div className="flex items-center justify-center bg-white p-3 rounded-md mb-2 border border-green-100">
+                        <span className="text-2xl font-bold text-green-700 mr-2">{batchDevices.length}</span>
+                        <span className="text-green-600">dispositivos para empréstimo</span>
+                      </div>
                     </div>
                   )}
-
-                  <div className="space-y-2">
-                    <Label htmlFor="email" className="text-gray-700">
-                      Email
-                    </Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="Digite o email"
-                      value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      className="border-gray-200 bg-white"
-                      required
-                    />
-                  </div>
-                </>
-              )}
-              
-              {/* Campo de finalidade do empréstimo (sempre visível) */}
-              <div className="space-y-2 pt-2">
-                <Label htmlFor="purpose" className="text-gray-700">
-                  Finalidade
-                </Label>
-                <Input
-                  id="purpose"
-                  placeholder="Ex: Aula de Matemática"
-                  value={formData.purpose}
-                  onChange={(e) =>
-                    setFormData({ ...formData, purpose: e.target.value })
-                  }
-                  className="border-gray-200 bg-white"
-                />
+                </div>
               </div>
-            </Card>
-          </div>
+            )}
+          </Card>
+
+          {/* Coluna Direita - Informações do Solicitante */}
+          <Card className="p-4 space-y-4 bg-white border-gray-100 shadow-md">
+            <CardTitle className="text-lg flex items-center gap-2 text-purple-700">
+              <User className="h-5 w-5" /> Informações do Solicitante
+            </CardTitle>
+            
+            {/* Seletor de Usuário com Autocompletar */}
+            <div className="space-y-2">
+              <Label htmlFor="userSearch" className="text-gray-700">
+                Buscar Solicitante (Nome, RA ou Email)
+              </Label>
+              <UserAutocomplete
+                selectedUser={selectedUser}
+                onSelect={handleUserSelect}
+                onClear={handleUserClear}
+                disabled={loading}
+              />
+            </div>
+
+            {/* Campo de finalidade do empréstimo (sempre visível) */}
+            <div className="space-y-2 pt-2">
+              <Label htmlFor="purpose" className="text-gray-700">
+                Finalidade
+              </Label>
+              <Input
+                id="purpose"
+                placeholder="Ex: Aula de Matemática"
+                value={formData.purpose}
+                onChange={(e) =>
+                  setFormData({ ...formData, purpose: e.target.value })
+                }
+                className="border-gray-200 bg-white"
+              />
+            </div>
+          </Card>
+        </div>
 
         {/* Opção para definir prazo de devolução (abaixo das colunas) */}
         <div className="space-y-4 p-4 bg-gray-50/50 rounded-xl border border-gray-200">
