@@ -6,7 +6,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useUserSearch, UserSearchResult } from '@/hooks/useUserSearch';
 import { Badge } from './ui/badge';
-import { Card } from './ui/card'; // Importação adicionada
+import { Card } from './ui/card';
 
 interface UserAutocompleteProps {
   selectedUser: UserSearchResult | null;
