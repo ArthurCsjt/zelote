@@ -63,7 +63,7 @@ export function MainMenu({
       title: 'Sistema de Contagem',
       icon: <ListChecks className="h-5 w-5" />,
       action: () => onNavigate('audit'),
-      bgColor: 'bg-teal-500' // Mantendo teal para o novo sistema
+      bgColor: 'bg-menu-teal' // Usando a nova variável de cor
     }
   ];
 
@@ -88,7 +88,7 @@ export function MainMenu({
             <Button
               onClick={item.action}
               // Usando a cor do sistema de menu e a classe hover correspondente
-              className={`w-full h-16 ${item.bgColor} hover:${item.bgColor.replace('bg-', 'bg-').replace('DEFAULT', 'hover')} text-white font-medium rounded-xl shadow-lg hover:shadow-xl transform transition-all duration-300 hover:scale-[1.02] border-0 flex flex-col items-center justify-center gap-1`}
+              className={`w-full h-16 ${item.bgColor} hover:${item.bgColor.replace('bg-menu-', 'bg-menu-').replace('DEFAULT', 'hover')} text-white font-medium rounded-xl shadow-lg hover:shadow-xl transform transition-all duration-300 hover:scale-[1.02] border-0 flex flex-col items-center justify-center gap-1`}
             >
               {item.icon}
               <span className="text-xs">{item.title}</span>

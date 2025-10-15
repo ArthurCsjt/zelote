@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -73,6 +72,10 @@ export default {
         "menu-rose": {
           DEFAULT: "hsl(var(--menu-rose))",
           hover: "hsl(var(--menu-rose-hover))",
+        },
+        "menu-teal": {
+          DEFAULT: "hsl(var(--menu-teal))",
+          hover: "hsl(var(--menu-teal-hover))",
         },
         // Back Button System
         "back-button": {

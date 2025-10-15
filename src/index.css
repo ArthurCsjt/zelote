@@ -46,6 +46,8 @@
     --menu-amber-hover: 45 93% 43%;
     --menu-rose: 348 83% 47%;
     --menu-rose-hover: 348 83% 43%;
+    --menu-teal: 174 70% 40%; /* Nova cor para Sistema de Contagem */
+    --menu-teal-hover: 174 70% 35%;
   }
 
   .dark {
@@ -76,6 +78,20 @@
     --border: 240 5% 25%;
     --input: 240 5% 18%;
     --ring: 213 100% 50%;
+
+    /* Menu Button Colors - Dark Mode */
+    --menu-green: 142 76% 36%;
+    --menu-green-hover: 142 76% 32%;
+    --menu-blue: 213 94% 68%;
+    --menu-blue-hover: 213 94% 64%;
+    --menu-violet: 258 90% 66%;
+    --menu-violet-hover: 258 90% 62%;
+    --menu-amber: 45 93% 47%;
+    --menu-amber-hover: 45 93% 43%;
+    --menu-rose: 348 83% 47%;
+    --menu-rose-hover: 348 83% 43%;
+    --menu-teal: 174 70% 40%; /* Nova cor para Sistema de Contagem */
+    --menu-teal-hover: 174 70% 35%;
 
     /* Back Button - Padrão consistente */
     --back-button: 0 0% 100%;
