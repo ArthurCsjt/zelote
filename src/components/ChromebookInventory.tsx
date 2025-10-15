@@ -481,6 +481,8 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
                   isActive={currentPage === page}
                   onClick={() => setCurrentPage(page)}
                   className="cursor-pointer"
+                >
+                  {page}
                 </PaginationLink>
               </PaginationItem>
             ))}
