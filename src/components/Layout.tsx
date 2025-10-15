@@ -1,9 +1,13 @@
 import React from 'react';
-import { User, LogOut, ArrowLeft } from 'lucide-react';
+import { User, LogOut, ArrowLeft, Bell } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/hooks/use-theme';
 import { useNavigate } from 'react-router-dom';
 import { useProfileRole } from '@/hooks/use-profile-role';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Button } from '@/components/ui/button';
+import { ActivityFeed } from './ActivityFeed'; // Importando o novo componente
+
 interface LayoutProps {
   children: React.ReactNode;
   title: string;
@@ -104,6 +108,20 @@ const Layout: React.FC<LayoutProps> = ({
             </div>
 
             <div className="flex items-center space-x-4">
+              {/* Botão de Notificações (Sino) */}
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="ghost" size="icon" className="relative h-9 w-9">
+                    <Bell className="h-5 w-5 text-gray-600" />
+                    {/* Exemplo de badge de notificação (pode ser ligado a um estado real) */}
+                    <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="p-0 w-auto" align="end">
+                  <ActivityFeed />
+                </PopoverContent>
+              </Popover>
+              
               <div className="hidden md:flex items-center space-x-2 text-sm bg-accent rounded-full px-3 py-1.5">
                 <User className="w-4 h-4 text-muted-foreground" />
                 <span className="text-foreground selectable-text">
