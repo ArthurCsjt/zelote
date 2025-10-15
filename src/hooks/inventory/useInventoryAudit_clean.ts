@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/Auth/AuthContext';
+import { useAuth } from '@/contexts/AuthContext'; // CORRIGIDO: Removido o subdiretório 'Auth'
 import { toast } from '@/hooks/use-toast';
 import type {
   InventoryAudit,
