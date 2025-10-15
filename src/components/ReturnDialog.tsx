@@ -8,9 +8,10 @@ import { Badge } from "./ui/badge";
 import { QRCodeReader } from "./QRCodeReader";
 import { toast } from "./ui/use-toast";
 import { Textarea } from "./ui/textarea";
-import { Computer, Plus, QrCode } from "lucide-react";
+import { Computer, Plus, QrCode, User, AlertTriangle, CheckCircle } from "lucide-react";
 import { Checkbox } from "./ui/checkbox";
 import { sanitizeQRCodeData, normalizeChromebookId } from "@/utils/security"; // Importando a função de normalização
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card"; // Importando Card para melhor agrupamento
 
 // Define a interface de props do componente
 interface ReturnDialogProps {
@@ -172,16 +173,22 @@ export function ReturnDialog({
     <>
       {/* Diálogo principal de devolução */}
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-xl font-semibold text-gray-800">
-              Devolução de Chromebook
+            <DialogTitle className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+              <RotateCcw className="h-6 w-6 text-blue-600" />
+              Registrar Devolução
             </DialogTitle>
           </DialogHeader>
           
           <div className="grid md:grid-cols-2 gap-6">
-            {/* Coluna Esquerda - Formulário de Devolução */}
-            <div className="space-y-4">
+            
+            {/* Coluna Esquerda - Dispositivo/Lote */}
+            <Card className="p-4 space-y-4 bg-blue-50/50 border-blue-100 shadow-inner">
+              <CardTitle className="text-lg flex items-center gap-2 text-blue-700">
+                <Computer className="h-5 w-5" /> Detalhes do Equipamento
+              </CardTitle>
+              
               {/* Seletor de tipo de devolução (individual ou lote) */}
               <div className="space-y-2">
                 <Label htmlFor="returnType" className="text-gray-700">
@@ -191,9 +198,10 @@ export function ReturnDialog({
                   value={returnData.type}
                   onValueChange={(value: 'individual' | 'lote') => {
                     onReturnDataChange({ ...returnData, type: value });
-                    // Limpa o ID do chromebook ao trocar o tipo de devolução
                     if (value === 'individual') {
-                      onChromebookIdChange("");
+                      setBatchDevices([]); // Limpa lote ao mudar para individual
+                    } else {
+                      onChromebookIdChange(""); // Limpa ID individual ao mudar para lote
                     }
                   }}
                 >
@@ -227,8 +235,9 @@ export function ReturnDialog({
                       type="button"
                       variant="outline"
                       onClick={() => setShowScanner(true)}
+                      className="bg-white hover:bg-gray-50"
                     >
-                      Escanear QR
+                      <QrCode className="h-4 w-4" />
                     </Button>
                   </div>
                 </div>
@@ -240,63 +249,58 @@ export function ReturnDialog({
                     <Label htmlFor="batchDevices" className="text-gray-700">
                       Dispositivos em Lote
                     </Label>
-                    <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                    <Badge variant="secondary" className="bg-blue-100 text-blue-700 border-blue-200">
                       {batchDevices.length} dispositivos
                     </Badge>
                   </div>
                   
                   <div className="space-y-2">
                     {/* Campo para adicionar dispositivos */}
-                    <div className="flex flex-col gap-2">
-                      <div className="relative w-full">
-                        <Input
-                          id="batchInput"
-                          value={currentBatchInput}
-                          onChange={(e) => setCurrentBatchInput(e.target.value)}
-                          placeholder="Digite o ID do dispositivo (ex: 12 ou CHR012)"
-                          className="bg-white border-gray-200 pr-16"
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                              e.preventDefault();
-                              addDeviceToBatch();
-                            }
-                          }}
-                        />
-                        {/* Botão flutuante para adicionar dispositivo */}
-                        <Button 
-                          type="button"
-                          variant="ghost"
-                          onClick={addDeviceToBatch}
-                          className="absolute right-1 top-1 h-8 px-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                        >
-                          <Plus className="h-4 w-4 mr-1" />
-                          <span className="text-xs">Adicionar</span>
-                        </Button>
-                      </div>
-                      
-                      {/* Botão para escanear QR Code */}
+                    <div className="flex gap-2">
+                      <Input
+                        id="batchInput"
+                        value={currentBatchInput}
+                        onChange={(e) => setCurrentBatchInput(e.target.value)}
+                        placeholder="Digite o ID do dispositivo"
+                        className="bg-white border-gray-200 flex-1"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            addDeviceToBatch();
+                          }
+                        }}
+                      />
                       <Button 
                         type="button"
-                        variant="outline"
-                        onClick={() => setShowScanner(true)}
-                        className="w-full bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100 hover:text-blue-800 hover:border-blue-300"
+                        onClick={addDeviceToBatch}
+                        disabled={!currentBatchInput.trim()}
+                        className="px-3"
                       >
-                        <QrCode className="h-4 w-4 mr-2" />
-                        Escanear Código QR
+                        <Plus className="h-4 w-4" />
                       </Button>
                     </div>
+                    
+                    {/* Botão para escanear QR Code */}
+                    <Button 
+                      type="button"
+                      variant="outline"
+                      onClick={() => setShowScanner(true)}
+                      className="w-full bg-white text-blue-700 border-blue-200 hover:bg-blue-50"
+                    >
+                      <QrCode className="h-4 w-4 mr-2" />
+                      Escanear Código QR
+                    </Button>
                   </div>
                   
                   {/* Lista de dispositivos adicionados ao lote */}
-                  <div className="mt-2 p-2 bg-gray-50 rounded-md border border-gray-200 max-h-[150px] overflow-y-auto">
+                  <div className="mt-2 p-2 bg-white rounded-md border border-gray-200 max-h-[150px] overflow-y-auto">
                     {batchDevices.length > 0 ? (
                       <div className="space-y-2">
-                        {/* Lista de dispositivos */}
                         {batchDevices.map((device, index) => (
-                          <div key={index} className="flex justify-between items-center p-2 bg-white rounded border border-gray-100">
+                          <div key={index} className="flex justify-between items-center p-2 bg-gray-50 rounded border border-gray-100">
                             <div className="flex items-center gap-2">
                               <Computer className="h-4 w-4 text-blue-500" />
-                              <span className="text-sm">{device}</span>
+                              <span className="text-sm font-medium">{device}</span>
                             </div>
                             {/* Botão para remover dispositivo */}
                             <Button 
@@ -314,13 +318,20 @@ export function ReturnDialog({
                       /* Mensagem quando nenhum dispositivo foi adicionado */
                       <div className="text-center text-gray-500 py-4">
                         <Computer className="h-10 w-10 mx-auto mb-2 text-gray-300" />
-                        <p className="text-sm">Nenhum dispositivo adicionado</p>
+                        <p className="text-sm">Adicione dispositivos para devolução em lote</p>
                       </div>
                     )}
                   </div>
                 </div>
               )}
+            </Card>
 
+            {/* Coluna Direita - Informações do Usuário */}
+            <Card className="p-4 space-y-4 bg-white border-gray-100 shadow-md">
+              <CardTitle className="text-lg flex items-center gap-2 text-purple-700">
+                <User className="h-5 w-5" /> Informações do Solicitante
+              </CardTitle>
+              
               {/* Seletor de tipo de usuário */}
               <div className="space-y-2">
                 <Label htmlFor="userType" className="text-gray-700">
@@ -342,10 +353,7 @@ export function ReturnDialog({
                   </SelectContent>
                 </Select>
               </div>
-            </div>
 
-            {/* Coluna Direita - Informações do Usuário */}
-            <div className="space-y-4">
               {/* Campo de nome do solicitante */}
               <div className="space-y-2">
                 <Label htmlFor="returnerName" className="text-gray-700">
@@ -391,44 +399,25 @@ export function ReturnDialog({
                   required
                 />
               </div>
-
-              {/* Resumo da devolução em lote (visível apenas para devolução em lote) */}
-              {returnData.type === 'lote' && (
-                <div className="mt-4 p-3 bg-blue-50 border border-blue-100 rounded-lg">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-semibold text-blue-700">Resumo da Devolução</h4>
-                    <Badge className="bg-blue-100 text-blue-700 border-blue-200">
-                      Em Lote
-                    </Badge>
-                  </div>
-                  <div className="flex items-center justify-center bg-white p-3 rounded-md mb-2 border border-blue-100">
-                    <span className="text-2xl font-bold text-blue-700 mr-2">{batchDevices.length}</span>
-                    <span className="text-blue-600">dispositivos para devolução</span>
-                  </div>
-                  <div className="text-xs text-blue-600">
-                    {batchDevices.length === 0 ? (
-                      <p>Adicione dispositivos para devolução</p>
-                    ) : (
-                      <p>IDs: {batchDevices.slice(0, 3).join(", ")}{batchDevices.length > 3 ? ` e mais ${batchDevices.length - 3}...` : ""}</p>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
+            </Card>
           </div>
 
 {/* Confirmação */}
-          <div className="mt-2 p-3 rounded-md border bg-amber-50 border-amber-200">
+          <div className="mt-4 p-3 rounded-md border bg-amber-50 border-amber-200">
             <div className="flex items-start gap-2">
-              <Checkbox id="confirmChecked" checked={confirmChecked} onCheckedChange={(v) => setConfirmChecked(!!v)} />
-              <Label htmlFor="confirmChecked" className="text-sm text-gray-700 leading-5">
-                Confirmo que verifiquei o estado do equipamento no momento da devolução.
+              <Checkbox id="confirmChecked" checked={confirmChecked} onCheckedChange={(v) => setConfirmChecked(!!v)} className="mt-1" />
+              <Label htmlFor="confirmChecked" className="text-sm text-gray-700 leading-5 cursor-pointer">
+                <div className="flex items-center gap-1 font-semibold text-amber-800">
+                    <AlertTriangle className="h-4 w-4" />
+                    Verificação Obrigatória
+                </div>
+                Confirmo que verifiquei o estado físico do equipamento (danos, acessórios) no momento da devolução.
               </Label>
             </div>
           </div>
 
           {/* Botões de ação no rodapé do diálogo */}
-          <DialogFooter className="mt-6 flex-row gap-2">
+          <DialogFooter className="mt-6 flex-col sm:flex-row gap-2">
             <Button 
               variant="outline" 
               onClick={() => onOpenChange(false)}
@@ -439,10 +428,11 @@ export function ReturnDialog({
             <Button 
               onClick={handleConfirm}
               className="flex-1 bg-blue-600 hover:bg-blue-700"
-              disabled={!confirmChecked || (returnData.type === 'lote' && batchDevices.length === 0)}
+              disabled={!confirmChecked || (returnData.type === 'lote' && batchDevices.length === 0 && !chromebookId)}
             >
+              <CheckCircle className="h-4 w-4 mr-2" />
               {returnData.type === 'lote' 
-                ? `Confirmar Devolução de ${batchDevices.length} Dispositivos` 
+                ? `Confirmar Devolução de ${batchDevices.length} Dispositivo${batchDevices.length !== 1 ? 's' : ''}` 
                 : "Confirmar Devolução"}
             </Button>
           </DialogFooter>
