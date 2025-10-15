@@ -48,7 +48,8 @@ export function RegistrationHub({ onBack, onRegistrationSuccess }: RegistrationH
   return (
     <div className="space-y-6">
       
-      <div className="container mx-auto max-w-6xl p-0">
+      {/* Removida a classe 'max-w-6xl' do container */}
+      <div className="container mx-auto p-0">
         
         {/* Cabeçalho do Hub: Centralizado e Preto */}
         <div className="mb-6 text-center">
@@ -58,7 +59,7 @@ export function RegistrationHub({ onBack, onRegistrationSuccess }: RegistrationH
         </div>
         
         {/* Menu de Cards 2x2 */}
-        <div className="mb-8">
+        <div className="mb-8 max-w-4xl mx-auto"> {/* Adicionando max-w aqui para o menu de cards */}
           <RegistrationCardMenu onNavigate={handleNavigate} currentView={currentView} />
         </div>
 
@@ -68,7 +69,7 @@ export function RegistrationHub({ onBack, onRegistrationSuccess }: RegistrationH
         </h2>
         
         {/* Formulário Selecionado */}
-        <div className="mt-6">
+        <div className="mt-6 max-w-4xl mx-auto"> {/* Adicionando max-w aqui para os formulários */}
           {renderForm()}
         </div>
       </div>
