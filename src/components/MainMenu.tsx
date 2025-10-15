@@ -31,38 +31,39 @@ export function MainMenu({
       title: 'Cadastros',
       icon: <PlusCircle className="h-5 w-5" />,
       action: () => onNavigate('registration'),
-      bgColor: 'bg-green-500'
+      bgColor: 'bg-menu-green'
     },
     {
       title: 'Inventário',
       icon: <Laptop className="h-5 w-5" />,
       action: () => onNavigate('inventory'),
-      bgColor: 'bg-blue-500'
+      bgColor: 'bg-menu-blue'
     },
     {
       title: 'Empréstimos',
       icon: <ClipboardList className="h-5 w-5" />,
       action: () => onNavigate('loan'),
-      bgColor: 'bg-purple-500'
+      bgColor: 'bg-menu-violet'
     },
     {
       title: 'Devolução',
       icon: <RotateCcw className="h-5 w-5" />,
       action: () => onNavigate('return'),
-      bgColor: 'bg-orange-500'
+      bgColor: 'bg-menu-amber'
     },
     {
       title: 'Dashboard',
       icon: <BarChart3 className="h-5 w-5" />,
       action: () => onNavigate('dashboard'),
-      bgColor: 'bg-red-500'
+      // ALTERAÇÃO: Usando a cor do sistema de menu
+      bgColor: 'bg-menu-rose' 
     },
     // ALTERAÇÃO 3: Adicionado o novo objeto para o botão de contagem
     {
       title: 'Sistema de Contagem',
       icon: <ListChecks className="h-5 w-5" />,
       action: () => onNavigate('audit'),
-      bgColor: 'bg-teal-500'
+      bgColor: 'bg-teal-500' // Mantendo teal para o novo sistema
     }
   ];
 
@@ -86,7 +87,8 @@ export function MainMenu({
           <div key={index} style={getFadeInStyle(index)} className="group">
             <Button
               onClick={item.action}
-              className={`w-full h-16 ${item.bgColor} hover:opacity-80 text-white font-medium rounded-xl shadow-lg hover:shadow-xl transform transition-all duration-300 hover:scale-[1.02] border-0 flex flex-col items-center justify-center gap-1`}
+              // Usando a cor do sistema de menu e a classe hover correspondente
+              className={`w-full h-16 ${item.bgColor} hover:${item.bgColor.replace('bg-', 'bg-').replace('DEFAULT', 'hover')} text-white font-medium rounded-xl shadow-lg hover:shadow-xl transform transition-all duration-300 hover:scale-[1.02] border-0 flex flex-col items-center justify-center gap-1`}
             >
               {item.icon}
               <span className="text-xs">{item.title}</span>
