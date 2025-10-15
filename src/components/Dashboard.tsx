@@ -45,12 +45,7 @@ export function Dashboard({
   const totalChromebooks = chromebooks.length;
   const availableChromebooks = totalChromebooks - activeLoans.length;
 
-  // Se for dispositivo móvel, renderiza o componente otimizado
-  if (isMobile) {
-    return <MobileFriendlyDashboard onBack={onBack} />;
-  }
-
-  // Buscar dados iniciais
+  // Buscar dados iniciais (MOVIDO PARA CIMA)
   const fetchDashboardData = useCallback(async () => {
     setLoading(true);
     try {
@@ -65,20 +60,12 @@ export function Dashboard({
     }
   }, [getLoanHistory, getChromebooks]);
 
+  // useEffect para buscar dados (MOVIDO PARA CIMA)
   useEffect(() => {
     fetchDashboardData();
   }, [fetchDashboardData]);
 
-  const pieData = [{
-    name: "Em Uso",
-    value: activeLoans.length
-  }, {
-    name: "Disponíveis",
-    value: availableChromebooks
-  }];
-  const COLORS = ["#2563EB", "#22C55E"];
-
-  // Função para obter dados baseados no período selecionado
+  // Função para obter dados baseados no período selecionado (MOVIDO PARA CIMA)
   useEffect(() => {
     const currentDate = new Date();
     let filteredData: any[] = [];
@@ -137,6 +124,20 @@ export function Dashboard({
     }
     setPeriodData(filteredData);
   }, [periodView, history]);
+
+  // Se for dispositivo móvel, renderiza o componente otimizado
+  if (isMobile) {
+    return <MobileFriendlyDashboard onBack={onBack} />;
+  }
+
+  const pieData = [{
+    name: "Em Uso",
+    value: activeLoans.length
+  }, {
+    name: "Disponíveis",
+    value: availableChromebooks
+  }];
+  const COLORS = ["#2563EB", "#22C55E"];
 
   // Obter dados filtrados pelo período atual
   const getFilteredLoans = () => {
