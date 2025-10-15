@@ -6,7 +6,7 @@ import { Label } from "./ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { Badge } from "./ui/badge";
 import { Checkbox } from "./ui/checkbox";
-import { Computer, Plus, QrCode, Calendar, Clock, Loader2 } from "lucide-react";
+import { Computer, Plus, QrCode, Calendar, Clock, Loader2, CheckCircle, X } from "lucide-react";
 import { QRCodeReader } from "./QRCodeReader";
 import { format } from "date-fns";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
@@ -14,6 +14,8 @@ import { Calendar as CalendarComponent } from "./ui/calendar";
 import { cn } from "@/lib/utils";
 import { validateLoanFormData, sanitizeQRCodeData, normalizeChromebookId } from "@/utils/security";
 import { useDatabase } from '@/hooks/useDatabase';
+import UserAutocomplete from "./UserAutocomplete"; // Importando o novo componente
+import type { UserSearchResult } from '@/hooks/useUserSearch'; // Importando o tipo de resultado
 
 // Define a interface dos dados do formulário de empréstimo
 interface LoanFormData {
@@ -52,6 +54,9 @@ export function LoanForm({ onBack }: LoanFormProps) {
     loanType: 'individual'
   });
 
+  // Estado para o usuário selecionado via autocompletar
+  const [selectedUser, setSelectedUser] = useState<UserSearchResult | null>(null);
+
   // Estado para controlar se deve definir prazo de devolução
   const [hasReturnDeadline, setHasReturnDeadline] = useState(false);
   
@@ -68,6 +73,34 @@ export function LoanForm({ onBack }: LoanFormProps) {
   const [isQRReaderOpen, setIsQRReaderOpen] = useState(false);
 
   // === FUNÇÕES DE MANIPULAÇÃO (HANDLERS) ===
+
+  /**
+   * Lida com a seleção de um usuário no autocompletar
+   */
+  const handleUserSelect = (user: UserSearchResult) => {
+    setSelectedUser(user);
+    setFormData(prev => ({
+      ...prev,
+      studentName: user.name,
+      ra: user.ra || '',
+      email: user.email,
+      userType: user.type,
+    }));
+  };
+
+  /**
+   * Limpa o usuário selecionado
+   */
+  const handleUserClear = () => {
+    setSelectedUser(null);
+    setFormData(prev => ({
+      ...prev,
+      studentName: "",
+      ra: "",
+      email: "",
+      userType: 'aluno', // Volta para o padrão
+    }));
+  };
 
   /**
    * Adiciona um dispositivo à lista de lote
@@ -225,6 +258,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
           userType: 'aluno',
           loanType: 'individual'
         });
+        setSelectedUser(null); // Limpa o usuário selecionado
         setHasReturnDeadline(false);
         
         toast({
@@ -268,6 +302,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
           userType: 'aluno',
           loanType: 'individual'
         });
+        setSelectedUser(null); // Limpa o usuário selecionado
         setHasReturnDeadline(false);
         
         toast({
@@ -449,7 +484,20 @@ export function LoanForm({ onBack }: LoanFormProps) {
           </div>
         )}
 
-        {/* Seletor de tipo de usuário */}
+        {/* Seletor de Usuário com Autocompletar */}
+        <div className="space-y-2">
+          <Label htmlFor="userSearch" className="text-gray-700">
+            Buscar Solicitante (Nome, RA ou Email)
+          </Label>
+          <UserAutocomplete
+            selectedUser={selectedUser}
+            onSelect={handleUserSelect}
+            onClear={handleUserClear}
+            disabled={loading}
+          />
+        </div>
+
+        {/* Campos de Usuário (Preenchidos automaticamente ou editáveis se não houver seleção) */}
         <div className="space-y-2">
           <Label htmlFor="userType" className="text-gray-700">
             Tipo de Solicitante
@@ -459,6 +507,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
             onValueChange={(value: 'aluno' | 'professor' | 'funcionario') =>
               setFormData({ ...formData, userType: value })
             }
+            disabled={!!selectedUser} // Desabilita se o usuário foi selecionado via autocomplete
           >
             <SelectTrigger>
               <SelectValue placeholder="Selecione o tipo de solicitante" />
@@ -484,6 +533,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
               setFormData({ ...formData, studentName: e.target.value })
             }
             className="border-gray-200"
+            disabled={!!selectedUser} // Desabilita se o usuário foi selecionado via autocomplete
           />
         </div>
 
@@ -499,6 +549,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
               value={formData.ra}
               onChange={(e) => setFormData({ ...formData, ra: e.target.value })}
               className="border-gray-200"
+              disabled={!!selectedUser} // Desabilita se o usuário foi selecionado via autocomplete
             />
           </div>
         )}
@@ -516,6 +567,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
             className="border-gray-200"
             required
+            disabled={!!selectedUser} // Desabilita se o usuário foi selecionado via autocomplete
           />
         </div>
 
