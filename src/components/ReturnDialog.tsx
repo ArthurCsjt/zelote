@@ -14,6 +14,7 @@ import { sanitizeQRCodeData, normalizeChromebookId } from "@/utils/security"; //
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card"; // Importando Card para melhor agrupamento
 import UserAutocomplete from "./UserAutocomplete"; // Importando UserAutocomplete
 import type { UserSearchResult } from '@/hooks/useUserSearch'; // Importando tipo de resultado de busca
+import { BatchDeviceInput } from "./BatchDeviceInput"; // Importando o componente de lote
 
 // Define a interface de props do componente
 interface ReturnDialogProps {
@@ -59,9 +60,6 @@ export function ReturnDialog({
   // Lista de dispositivos para devolução em lote
   const [batchDevices, setBatchDevices] = useState<string[]>([]);
   
-  // Valor atual do campo de entrada para adicionar dispositivos ao lote
-  const [currentBatchInput, setCurrentBatchInput] = useState("");
-  
   // Confirmação de verificação do estado do equipamento
   const [confirmChecked, setConfirmChecked] = useState(false);
 
@@ -102,18 +100,28 @@ export function ReturnDialog({
     
     if (sanitizedId) {
       if (returnData.type === 'lote') {
-        // Para devolução em lote, adiciona à lista se não existir
-        if (!batchDevices.includes(sanitizedId)) {
-          setBatchDevices([...batchDevices, sanitizedId]);
+        // Para devolução em lote, a lógica de adição está no BatchDeviceInput,
+        // mas precisamos replicar a lógica de notificação aqui se o scanner for aberto
+        // diretamente pelo ReturnDialog (o que não é o caso, pois o BatchDeviceInput
+        // tem seu próprio scanner).
+        // No entanto, se o scanner for usado para devolução individual:
+        if (returnData.type === 'individual') {
+          onChromebookIdChange(sanitizedId);
           toast({
-            title: "Dispositivo adicionado ao lote",
+            title: "QR Code lido com sucesso",
             description: `ID do Chromebook: ${sanitizedId}`,
           });
         } else {
+          // Se for lote, passamos o scan para o BatchDeviceInput
+          // Como o BatchDeviceInput tem seu próprio scanner, esta função só será chamada
+          // se o scanner for aberto fora do BatchDeviceInput, o que não é o fluxo ideal.
+          // Vamos garantir que o scanner só seja aberto para o modo individual aqui.
+          // Para o modo lote, o scanner deve ser aberto pelo BatchDeviceInput.
+          // Se for individual, o scanner é aberto pelo botão ao lado do input.
+          onChromebookIdChange(sanitizedId);
           toast({
-            title: "Dispositivo já adicionado",
-            description: `O Chromebook ${sanitizedId} já está na lista`,
-            variant: "destructive",
+            title: "QR Code lido com sucesso",
+            description: `ID do Chromebook: ${sanitizedId}`,
           });
         }
       } else {
@@ -130,16 +138,11 @@ export function ReturnDialog({
   };
 
   /**
-   * Adiciona um dispositivo à lista de lote
-   * Verifica se o dispositivo já existe na lista antes de adicionar
+   * Adiciona um dispositivo à lista de lote (função mantida para compatibilidade, mas não usada diretamente)
    */
-  const addDeviceToBatch = () => {
-    // O currentBatchInput já está normalizado pelo onChange
-    const normalizedInput = currentBatchInput;
-    
+  const addDeviceToBatch = (normalizedInput: string) => {
     if (normalizedInput && !batchDevices.includes(normalizedInput)) {
       setBatchDevices([...batchDevices, normalizedInput]);
-      setCurrentBatchInput(""); // Limpa o campo após adicionar
     } else if (normalizedInput) {
       toast({
         title: "Dispositivo já adicionado",
@@ -147,14 +150,6 @@ export function ReturnDialog({
         variant: "destructive",
       });
     }
-  };
-
-  /**
-   * Remove um dispositivo da lista de lote
-   * @param deviceId - ID do dispositivo a ser removido
-   */
-  const removeDeviceFromBatch = (deviceId: string) => {
-    setBatchDevices(batchDevices.filter(id => id !== deviceId));
   };
 
   /**
@@ -311,87 +306,13 @@ export function ReturnDialog({
                   </div>
                 </div>
               ) : (
-                /* Interface de devolução em lote */
-                <div className="space-y-2">
-                  {/* Cabeçalho com contador de dispositivos */}
-                  <div className="flex justify-between items-center mb-2">
-                    <Label htmlFor="batchDevices" className="text-gray-700">
-                      Dispositivos em Lote
-                    </Label>
-                    <Badge variant="secondary" className="bg-blue-100 text-blue-700 border-blue-200">
-                      {batchDevices.length} dispositivos
-                    </Badge>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    {/* Campo para adicionar dispositivos */}
-                    <div className="flex gap-2">
-                      <Input
-                        id="batchInput"
-                        value={currentBatchInput}
-                        onChange={(e) => setCurrentBatchInput(normalizeChromebookId(e.target.value))} // APLICA NORMALIZAÇÃO AQUI
-                        placeholder="Digite o ID do dispositivo"
-                        className="bg-white border-gray-200 flex-1"
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
-                            e.preventDefault();
-                            addDeviceToBatch();
-                          }
-                        }}
-                      />
-                      <Button 
-                        type="button"
-                        onClick={addDeviceToBatch}
-                        disabled={!currentBatchInput.trim()}
-                        className="px-3"
-                      >
-                        <Plus className="h-4 w-4" />
-                      </Button>
-                    </div>
-                    
-                    {/* Botão para escanear QR Code */}
-                    <Button 
-                      type="button"
-                      variant="outline"
-                      onClick={() => setShowScanner(true)}
-                      className="w-full bg-white text-blue-700 border-blue-200 hover:bg-blue-50"
-                    >
-                      <QrCode className="h-4 w-4 mr-2" />
-                      Escanear Código QR
-                    </Button>
-                  </div>
-                  
-                  {/* Lista de dispositivos adicionados ao lote */}
-                  <div className="mt-2 p-2 bg-white rounded-md border border-gray-200 max-h-[150px] overflow-y-auto">
-                    {batchDevices.length > 0 ? (
-                      <div className="space-y-2">
-                        {batchDevices.map((device, index) => (
-                          <div key={index} className="flex justify-between items-center p-2 bg-gray-50 rounded border border-gray-100">
-                            <div className="flex items-center gap-2">
-                              <Computer className="h-4 w-4 text-blue-500" />
-                              <span className="text-sm font-medium">{device}</span>
-                            </div>
-                            {/* Botão para remover dispositivo */}
-                            <Button 
-                              type="button"
-                              variant="ghost"
-                              onClick={() => removeDeviceFromBatch(device)}
-                              className="h-7 w-7 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
-                            >
-                              &times;
-                            </Button>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      /* Mensagem quando nenhum dispositivo foi adicionado */
-                      <div className="text-center text-gray-500 py-4">
-                        <Computer className="h-10 w-10 mx-auto mb-2 text-gray-300" />
-                        <p className="text-sm">Adicione dispositivos para devolução em lote</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
+                /* Interface de devolução em lote (usando BatchDeviceInput) */
+                <BatchDeviceInput
+                  batchDevices={batchDevices}
+                  setBatchDevices={setBatchDevices}
+                  onScan={addDeviceToBatch} // Passamos a função de adicionar para o scanner interno
+                  disabled={false}
+                />
               )}
             </Card>
 
@@ -527,11 +448,14 @@ export function ReturnDialog({
       </Dialog>
 
       {/* Componente de leitura de QR Code (visível apenas quando showScanner = true) */}
-      <QRCodeReader
-        open={showScanner}
-        onOpenChange={setShowScanner}
-        onScan={handleQRCodeScan}
-      />
+      {/* Mantemos o scanner aqui apenas para o modo INDIVIDUAL, o modo LOTE usa o scanner interno do BatchDeviceInput */}
+      {returnData.type === 'individual' && (
+        <QRCodeReader
+          open={showScanner}
+          onOpenChange={setShowScanner}
+          onScan={handleQRCodeScan}
+        />
+      )}
     </>
   );
 }
