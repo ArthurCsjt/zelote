@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import { format } from "date-fns";
 import { Badge } from "./ui/badge";
 import { Card, CardContent } from "./ui/card";
-import { Clock, Monitor, User, CheckCircle, AlertTriangle, Search, Filter, X } from "lucide-react";
+import { Clock, Monitor, User, CheckCircle, AlertTriangle, Search, Filter, X, RotateCcw } from "lucide-react";
 import type { LoanHistoryItem } from "@/types/database";
 import { Input } from "./ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
@@ -49,6 +49,18 @@ export function LoanHistory({ history }: LoanHistoryProps) {
     setSearchTerm("");
     setStatusFilter("all");
     setUserTypeFilter("all");
+  };
+
+  const getStatusBadgeProps = (status: LoanHistoryItem['status']) => {
+    switch (status) {
+      case 'devolvido':
+        return { variant: "default", className: "bg-green-100 text-green-800 hover:bg-green-100" };
+      case 'atrasado':
+        return { variant: "destructive", className: "" };
+      case 'ativo':
+      default:
+        return { variant: "secondary", className: "bg-yellow-100 text-yellow-800 hover:bg-yellow-100" };
+    }
   };
 
   return (
@@ -121,8 +133,8 @@ export function LoanHistory({ history }: LoanHistoryProps) {
       ) : (
         <div className="grid gap-4">
           {filteredHistory.map((loan) => {
+            const { variant, className } = getStatusBadgeProps(loan.status);
             const isReturned = loan.status === 'devolvido';
-            const isOverdue = loan.status === 'atrasado';
             const returnedByDifferentUser = isReturned && 
               loan.returned_by_email && 
               loan.returned_by_email !== loan.student_email;
@@ -141,10 +153,10 @@ export function LoanHistory({ history }: LoanHistoryProps) {
                         </div>
                       </div>
                       <Badge 
-                        variant={isReturned ? "default" : isOverdue ? "destructive" : "secondary"}
-                        className={isReturned ? "bg-green-100 text-green-800 hover:bg-green-100" : isOverdue ? "" : "bg-yellow-100 text-yellow-800 hover:bg-yellow-100"}
+                        variant={variant}
+                        className={className}
                       >
-                        {isOverdue ? "Atrasado" : isReturned ? "Devolvido" : "Ativo"}
+                        {loan.status.charAt(0).toUpperCase() + loan.status.slice(1)}
                       </Badge>
                     </div>
 
@@ -207,7 +219,7 @@ export function LoanHistory({ history }: LoanHistoryProps) {
                               {returnedByDifferentUser ? (
                                 <AlertTriangle className="h-4 w-4 text-orange-600" />
                               ) : (
-                                <CheckCircle className="h-4 w-4 text-blue-600" />
+                                <RotateCcw className="h-4 w-4 text-blue-600" />
                               )}
                               <span className={`font-medium ${
                                 returnedByDifferentUser ? 'text-orange-800' : 'text-blue-800'
