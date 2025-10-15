@@ -5,8 +5,8 @@ import { Button } from '@/components/ui/button';
 import { ClipboardList, BarChart3, PlusCircle, Laptop, RotateCcw, Brain, ListChecks } from 'lucide-react';
 
 interface MainMenuProps {
-  // ALTERAÇÃO 2: Adicionada a rota 'audit' como uma opção válida
-  onNavigate: (route: 'registration' | 'dashboard' | 'loan' | 'return' | 'inventory' | 'intelligent-reports' | 'audit') => void;
+  // ALTERAÇÃO 2: Removida a rota 'intelligent-reports'
+  onNavigate: (route: 'registration' | 'dashboard' | 'loan' | 'return' | 'inventory' | 'audit') => void;
 }
 
 const isMobileDevice = () => {

@@ -11,12 +11,10 @@ import { Computer, Download, ArrowLeft, BarChart as BarChartIcon, PieChart as Pi
 import jsPDF from "jspdf";
 import { useToast } from "./ui/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MobileFriendlyDashboard } from "./MobileFriendlyDashboard";
 import { useDatabase } from '@/hooks/useDatabase';
 import { useOverdueLoans } from '@/hooks/useOverdueLoans';
 import IntelligentReportsTab from './IntelligentReportsTab';
-import { useIsMobile } from "@/hooks/use-mobile";
-import { LoanHistory } from "./LoanHistory"; // Importando LoanHistory
+import { LoanHistory } from "./LoanHistory";
 
 interface DashboardProps {
   onBack?: () => void;
@@ -24,20 +22,20 @@ interface DashboardProps {
 
 // Componente auxiliar para renderizar o grid de estatísticas
 const StatsGrid = ({ periodView, filteredLoans, filteredReturns, activeLoans, totalChromebooks, averageUsageTime, completionRate }: any) => {
-  if (periodView === 'history') return null;
+  if (periodView === 'history' || periodView === 'reports') return null;
 
   return (
-    <div className="grid gap-4 md:grid-cols-4 relative z-10">
+    <div className="grid gap-4 grid-cols-2 md:grid-cols-4 relative z-10">
       <Card className="glass-card border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-blue-500">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">
+          <CardTitle className="text-xs sm:text-sm font-medium">
             Empréstimos
           </CardTitle>
-          <Computer className="h-5 w-5 text-blue-500" />
+          <Computer className="h-4 w-4 sm:h-5 sm:w-5 text-blue-500" />
         </CardHeader>
         <CardContent>
-          <div className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">{filteredLoans.length}</div>
-          <p className="text-xs text-muted-foreground">
+          <div className="text-xl sm:text-3xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">{filteredLoans.length}</div>
+          <p className="text-[10px] sm:text-xs text-muted-foreground">
             {filteredReturns.length} devoluções no período
           </p>
         </CardContent>
@@ -45,16 +43,16 @@ const StatsGrid = ({ periodView, filteredLoans, filteredReturns, activeLoans, to
 
       <Card className="glass-card border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-green-500">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">
+          <CardTitle className="text-xs sm:text-sm font-medium">
             Chromebooks Ativos
           </CardTitle>
-          <Computer className="h-5 w-5 text-green-500" />
+          <Computer className="h-4 w-4 sm:h-5 sm:w-5 text-green-500" />
         </CardHeader>
         <CardContent>
-          <div className="text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">{activeLoans.length}</div>
+          <div className="text-xl sm:text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">{activeLoans.length}</div>
           <div className="flex items-center gap-2 mt-1">
-            <Progress value={activeLoans.length / totalChromebooks * 100} className="h-2" />
-            <span className="text-xs text-muted-foreground">
+            <Progress value={activeLoans.length / totalChromebooks * 100} className="h-1.5 sm:h-2" />
+            <span className="text-[10px] sm:text-xs text-muted-foreground">
               {(activeLoans.length / totalChromebooks * 100).toFixed(0)}%
             </span>
           </div>
@@ -63,16 +61,16 @@ const StatsGrid = ({ periodView, filteredLoans, filteredReturns, activeLoans, to
 
       <Card className="glass-card border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-purple-500">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">
-            Tempo Médio de Uso
+          <CardTitle className="text-xs sm:text-sm font-medium">
+            Tempo Médio
           </CardTitle>
-          <Clock className="h-5 w-5 text-purple-500" />
+          <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-purple-500" />
         </CardHeader>
         <CardContent>
-          <div className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-violet-600 bg-clip-text text-transparent">
+          <div className="text-xl sm:text-3xl font-bold bg-gradient-to-r from-purple-600 to-violet-600 bg-clip-text text-transparent">
             {Math.round(averageUsageTime)} min
           </div>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-[10px] sm:text-xs text-muted-foreground">
             média no período
           </p>
         </CardContent>
@@ -80,18 +78,18 @@ const StatsGrid = ({ periodView, filteredLoans, filteredReturns, activeLoans, to
 
       <Card className="glass-card border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-orange-500">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">
+          <CardTitle className="text-xs sm:text-sm font-medium">
             Taxa de Devolução
           </CardTitle>
-          <Activity className="h-5 w-5 text-orange-500" />
+          <Activity className="h-4 w-4 sm:h-5 sm:w-5 text-orange-500" />
         </CardHeader>
         <CardContent>
-          <div className="text-3xl font-bold bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent">
+          <div className="text-xl sm:text-3xl font-bold bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent">
             {completionRate.toFixed(0)}%
           </div>
           <div className="flex items-center gap-2 mt-1">
-            <Progress value={completionRate} className="h-2" />
-            <span className="text-xs text-muted-foreground">
+            <Progress value={completionRate} className="h-1.5 sm:h-2" />
+            <span className="text-[10px] sm:text-xs text-muted-foreground">
               {filteredReturns.length} de {filteredLoans.length}
             </span>
           </div>
@@ -105,7 +103,7 @@ const StatsGrid = ({ periodView, filteredLoans, filteredReturns, activeLoans, to
 export function Dashboard({
   onBack
 }: DashboardProps) {
-  const isMobile = useIsMobile();
+  // Removido useIsMobile
   
   const {
     getLoanHistory,
@@ -121,13 +119,13 @@ export function Dashboard({
   const {
     toast
   } = useToast();
-  const [periodView, setPeriodView] = useState < 'daily' | 'weekly' | 'monthly' | 'history' > ('daily');
+  const [periodView, setPeriodView] = useState < 'daily' | 'weekly' | 'monthly' | 'history' | 'reports' > ('daily');
   const [periodData, setPeriodData] = useState < any[] > ([]);
   const [loading, setLoading] = useState(false);
   const totalChromebooks = chromebooks.length;
   const availableChromebooks = totalChromebooks - activeLoans.length;
 
-  // Buscar dados iniciais (MOVIDO PARA CIMA)
+  // Buscar dados iniciais
   const fetchDashboardData = useCallback(async () => {
     setLoading(true);
     try {
@@ -142,12 +140,12 @@ export function Dashboard({
     }
   }, [getLoanHistory, getChromebooks]);
 
-  // useEffect para buscar dados (MOVIDO PARA CIMA)
+  // useEffect para buscar dados
   useEffect(() => {
     fetchDashboardData();
   }, [fetchDashboardData]);
 
-  // Função para obter dados baseados no período selecionado (MOVIDO PARA CIMA)
+  // Função para obter dados baseados no período selecionado
   useEffect(() => {
     const currentDate = new Date();
     let filteredData: any[] = [];
@@ -206,11 +204,6 @@ export function Dashboard({
     }
     setPeriodData(filteredData);
   }, [periodView, history]);
-
-  // Se for dispositivo móvel, renderiza o componente otimizado
-  if (isMobile) {
-    return <MobileFriendlyDashboard onBack={onBack} />;
-  }
 
   const pieData = [{
     name: "Em Uso",
@@ -298,7 +291,9 @@ export function Dashboard({
   const periodText = {
     daily: 'Hoje',
     weekly: 'Esta Semana',
-    monthly: 'Este Mês'
+    monthly: 'Este Mês',
+    history: 'Histórico Completo',
+    reports: 'Relatórios Inteligentes'
   };
 
   // Função para gerar o PDF do relatório
@@ -350,7 +345,7 @@ export function Dashboard({
     return pdf;
   };
   const handleDownloadPDF = () => {
-    if (periodView === 'history') {
+    if (periodView === 'history' || periodView === 'reports') {
       toast({
         title: "Atenção",
         description: "O download de relatórios IA ou Histórico deve ser feito na própria aba, se disponível.",
@@ -385,7 +380,7 @@ export function Dashboard({
         <h2 className="text-xl sm:text-3xl font-bold text-gray-800 whitespace-nowrap">
           Dashboard
         </h2>
-        <Button variant="outline" onClick={handleDownloadPDF} className="flex items-center gap-2 hover:bg-blue-50" disabled={periodView === 'history'}>
+        <Button variant="outline" onClick={handleDownloadPDF} className="flex items-center gap-2 hover:bg-blue-50" disabled={periodView === 'history' || periodView === 'reports'}>
           <Download className="h-4 w-4" />
           <span className="hidden md:inline">Baixar Relatório</span>
         </Button>
@@ -394,22 +389,23 @@ export function Dashboard({
       {/* Tabs for Period Selection */}
       <Tabs defaultValue="daily" value={periodView} onValueChange={(v) => setPeriodView(v as any)} className="relative z-10">
         <TabsList className="grid w-full grid-cols-4 h-10">
-          <TabsTrigger value="daily" className="flex items-center gap-1">
-            <Calendar className="h-4 w-4" />
+          <TabsTrigger value="daily" className="flex items-center gap-1 text-xs sm:text-sm">
+            <Calendar className="h-3 w-3 sm:h-4 sm:w-4" />
             Diário
           </TabsTrigger>
-          <TabsTrigger value="weekly" className="flex items-center gap-1">
-            <CalendarRange className="h-4 w-4" />
+          <TabsTrigger value="weekly" className="flex items-center gap-1 text-xs sm:text-sm">
+            <CalendarRange className="h-3 w-3 sm:h-4 sm:w-4" />
             Semanal
           </TabsTrigger>
-          <TabsTrigger value="monthly" className="flex items-center gap-1">
-            <ChartLine className="h-4 w-4" />
+          <TabsTrigger value="monthly" className="flex items-center gap-1 text-xs sm:text-sm">
+            <ChartLine className="h-3 w-3 sm:h-4 sm:w-4" />
             Mensal
           </TabsTrigger>
-          <TabsTrigger value="history" className="flex items-center gap-1">
-            <HistoryIcon className="h-4 w-4" />
+          <TabsTrigger value="history" className="flex items-center gap-1 text-xs sm:text-sm">
+            <HistoryIcon className="h-3 w-3 sm:h-4 sm:w-4" />
             Histórico
           </TabsTrigger>
+          {/* Removendo a aba de relatórios inteligentes daqui, pois ela não estava no menu principal */}
         </TabsList>
 
         {loading ? (
@@ -431,25 +427,25 @@ export function Dashboard({
             />
 
             <TabsContent value="daily" className="space-y-4 mt-6">
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
                 <Card className="glass-card dashboard-card">
                   <CardHeader className="flex flex-row items-center justify-between">
                     <div>
-                      <CardTitle>Atividade por Hora</CardTitle>
+                      <CardTitle className="text-lg">Atividade por Hora</CardTitle>
                       <CardDescription>
                         Movimentação ao longo do dia
                       </CardDescription>
                     </div>
                     <BarChartIcon className="h-5 w-5 text-muted-foreground" />
                   </CardHeader>
-                  <CardContent className="h-[300px]">
+                  <CardContent className="h-[250px] sm:h-[300px]">
                     <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={periodData}>
+                      <BarChart data={periodData} margin={{ top: 5, right: 0, left: -20, bottom: 5 }}>
                         <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                        <XAxis dataKey="hora" />
-                        <YAxis />
+                        <XAxis dataKey="hora" tick={{ fontSize: 10 }} />
+                        <YAxis tick={{ fontSize: 10 }} />
                         <Tooltip />
-                        <Legend />
+                        <Legend wrapperStyle={{ fontSize: '12px' }} />
                         <Bar dataKey="empréstimos" fill="#2563EB" radius={[4, 4, 0, 0]} />
                         <Bar dataKey="devoluções" fill="#22C55E" radius={[4, 4, 0, 0]} />
                       </BarChart>
@@ -460,28 +456,28 @@ export function Dashboard({
                 <Card className="glass-card dashboard-card">
                   <CardHeader className="flex flex-row items-center justify-between">
                     <div>
-                      <CardTitle>Status dos Chromebooks</CardTitle>
+                      <CardTitle className="text-lg">Status dos Chromebooks</CardTitle>
                       <CardDescription>
                         Total de {totalChromebooks} equipamentos
                       </CardDescription>
                     </div>
                     <PieChartIcon className="h-5 w-5 text-muted-foreground" />
                   </CardHeader>
-                  <CardContent className="h-[300px]">
+                  <CardContent className="h-[250px] sm:h-[300px] flex items-center justify-center">
                     <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie data={pieData} cx="50%" cy="50%" innerRadius={60} outerRadius={80} fill="#8884d8" paddingAngle={5} dataKey="value" label>
+                      <PieChart margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+                        <Pie data={pieData} cx="50%" cy="50%" innerRadius={40} outerRadius={70} fill="#8884d8" paddingAngle={5} dataKey="value" label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}>
                           {pieData.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index]} />)}
                         </Pie>
                         <Tooltip />
-                        <Legend />
+                        <Legend wrapperStyle={{ fontSize: '12px' }} />
                       </PieChart>
                     </ResponsiveContainer>
                   </CardContent>
                 </Card>
               </div>
 
-              <div className="grid gap-4 md:grid-cols-3 mt-4">
+              <div className="grid gap-4 grid-cols-1 md:grid-cols-3 mt-4">
                 <Card className="glass-card dashboard-card">
                   <CardHeader className="flex flex-row items-center justify-between">
                     <div>
@@ -494,7 +490,7 @@ export function Dashboard({
                   </CardHeader>
                   <CardContent className="h-[250px]">
                     <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
+                      <PieChart margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
                         <Pie data={userTypeData} cx="50%" cy="50%" innerRadius={40} outerRadius={70} fill="#8884d8" paddingAngle={5} dataKey="value" label={({
                       name,
                       value
@@ -502,6 +498,7 @@ export function Dashboard({
                           {userTypeData.map((entry, index) => <Cell key={`cell-${index}`} fill={['#3B82F6', '#10B981', '#F59E0B'][index % 3]} />)}
                         </Pie>
                         <Tooltip />
+                        <Legend wrapperStyle={{ fontSize: '12px' }} />
                       </PieChart>
                     </ResponsiveContainer>
                   </CardContent>
@@ -519,10 +516,10 @@ export function Dashboard({
                   </CardHeader>
                   <CardContent className="h-[250px]">
                     <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={durationData} layout="horizontal">
+                      <BarChart data={durationData} layout="horizontal" margin={{ top: 5, right: 0, left: 0, bottom: 5 }}>
                         <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis type="number" />
-                        <YAxis dataKey="name" type="category" width={80} />
+                        <XAxis type="number" tick={{ fontSize: 10 }} />
+                        <YAxis dataKey="name" type="category" width={80} tick={{ fontSize: 10 }} />
                         <Tooltip />
                         <Bar dataKey="minutos" fill="#8B5CF6" radius={[0, 4, 4, 0]} />
                       </BarChart>
@@ -585,25 +582,25 @@ export function Dashboard({
             </TabsContent>
 
             <TabsContent value="weekly" className="space-y-4 mt-6">
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
                 <Card className="glass-card dashboard-card">
                   <CardHeader className="flex flex-row items-center justify-between">
                     <div>
-                      <CardTitle>Atividade Semanal</CardTitle>
+                      <CardTitle className="text-lg">Atividade Semanal</CardTitle>
                       <CardDescription>
                         Últimos 7 dias
                       </CardDescription>
                     </div>
                     <BarChartIcon className="h-5 w-5 text-muted-foreground" />
                   </CardHeader>
-                  <CardContent className="h-[300px]">
+                  <CardContent className="h-[250px] sm:h-[300px]">
                     <ResponsiveContainer width="100%" height="100%">
-                      <ComposedChart data={periodData}>
+                      <ComposedChart data={periodData} margin={{ top: 5, right: 0, left: -20, bottom: 5 }}>
                         <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="date" />
-                        <YAxis />
+                        <XAxis dataKey="date" tick={{ fontSize: 10 }} />
+                        <YAxis tick={{ fontSize: 10 }} />
                         <Tooltip />
-                        <Legend />
+                        <Legend wrapperStyle={{ fontSize: '12px' }} />
                         <Area type="monotone" dataKey="empréstimos" fill="#2563EB" stroke="#2563EB" fillOpacity={0.3} />
                         <Bar dataKey="devoluções" fill="#22C55E" radius={[4, 4, 0, 0]} />
                       </ComposedChart>
@@ -614,41 +611,41 @@ export function Dashboard({
                 <Card className="glass-card dashboard-card">
                   <CardHeader className="flex flex-row items-center justify-between">
                     <div>
-                      <CardTitle>Uso por Tipo de Usuário</CardTitle>
+                      <CardTitle className="text-lg">Uso por Tipo de Usuário</CardTitle>
                       <CardDescription>
                         Esta semana
                       </CardDescription>
                     </div>
                     <Users className="h-5 w-5 text-muted-foreground" />
                   </CardHeader>
-                  <CardContent className="h-[300px]">
+                  <CardContent className="h-[250px] sm:h-[300px] flex items-center justify-center">
                     <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie data={userTypeData} cx="50%" cy="50%" innerRadius={60} outerRadius={80} fill="#8884d8" paddingAngle={5} dataKey="value" label>
+                      <PieChart margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+                        <Pie data={userTypeData} cx="50%" cy="50%" innerRadius={40} outerRadius={70} fill="#8884d8" paddingAngle={5} dataKey="value" label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}>
                           {userTypeData.map((entry, index) => <Cell key={`cell-${index}`} fill={['#3B82F6', '#10B981', '#F59E0B'][index % 3]} />)}
                         </Pie>
                         <Tooltip />
-                        <Legend />
+                        <Legend wrapperStyle={{ fontSize: '12px' }} />
                       </PieChart>
                     </ResponsiveContainer>
                   </CardContent>
                 </Card>
               </div>
 
-              <div className="grid gap-4 md:grid-cols-2 mt-4">
+              <div className="grid gap-4 grid-cols-1 md:grid-cols-2 mt-4">
                 <Card className="glass-card dashboard-card">
                   <CardHeader className="flex flex-row items-center justify-between">
                     <div>
-                      <CardTitle>Distribuição de Horários</CardTitle>
+                      <CardTitle className="text-lg">Distribuição de Horários</CardTitle>
                       <CardDescription>
                         Preferências de horário esta semana
                       </CardDescription>
                     </div>
                     <Clock className="h-5 w-5 text-muted-foreground" />
                   </CardHeader>
-                  <CardContent className="h-[300px]">
+                  <CardContent className="h-[250px] sm:h-[300px] flex items-center justify-center">
                     <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
+                      <PieChart margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
                         <Pie data={[{
                     name: "Manhã (8h-12h)",
                     value: filteredLoans.filter(loan => {
@@ -667,13 +664,14 @@ export function Dashboard({
                       const hour = new Date(loan.loan_date).getHours();
                       return hour >= 17 && hour < 22;
                     }).length
-                  }]} cx="50%" cy="50%" innerRadius={40} outerRadius={80} paddingAngle={5} dataKey="value" label={({
+                  }]} cx="50%" cy="50%" innerRadius={40} outerRadius={70} paddingAngle={5} dataKey="value" label={({
                       name,
                       value
                     }) => value > 0 ? `${name}: ${value}` : ''}>
                           {[0, 1, 2].map(index => <Cell key={`cell-${index}`} fill={['#06B6D4', '#8B5CF6', '#F59E0B'][index]} />)}
                         </Pie>
                         <Tooltip />
+                        <Legend wrapperStyle={{ fontSize: '12px' }} />
                       </PieChart>
                     </ResponsiveContainer>
                   </CardContent>
@@ -682,19 +680,19 @@ export function Dashboard({
                 <Card className="glass-card dashboard-card">
                   <CardHeader className="flex flex-row items-center justify-between">
                     <div>
-                      <CardTitle>Tempo de Uso por Tipo</CardTitle>
+                      <CardTitle className="text-lg">Tempo de Uso por Tipo</CardTitle>
                       <CardDescription>
                         Duração média em minutos
                       </CardDescription>
                     </div>
                     <BarChartIcon className="h-5 w-5 text-muted-foreground" />
                   </CardHeader>
-                  <CardContent className="h-[300px]">
+                  <CardContent className="h-[250px] sm:h-[300px]">
                     <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={durationData}>
+                      <BarChart data={durationData} layout="horizontal" margin={{ top: 5, right: 0, left: 0, bottom: 5 }}>
                         <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                        <XAxis dataKey="name" />
-                        <YAxis />
+                        <XAxis type="number" tick={{ fontSize: 10 }} />
+                        <YAxis dataKey="name" type="category" width={80} tick={{ fontSize: 10 }} />
                         <Tooltip />
                         <Bar dataKey="minutos" fill="#8B5CF6" radius={[4, 4, 0, 0]} />
                       </BarChart>
@@ -705,25 +703,25 @@ export function Dashboard({
             </TabsContent>
 
             <TabsContent value="monthly" className="space-y-4 mt-6">
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
                 <Card className="glass-card dashboard-card">
                   <CardHeader className="flex flex-row items-center justify-between">
                     <div>
-                      <CardTitle>Tendência Mensal</CardTitle>
+                      <CardTitle className="text-lg">Tendência Mensal</CardTitle>
                       <CardDescription>
                         Últimos 30 dias
                       </CardDescription>
                     </div>
                     <BarChartIcon className="h-5 w-5 text-muted-foreground" />
                   </CardHeader>
-                  <CardContent className="h-[300px]">
+                  <CardContent className="h-[250px] sm:h-[300px]">
                     <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart data={periodData}>
+                      <AreaChart data={periodData} margin={{ top: 5, right: 0, left: -20, bottom: 5 }}>
                         <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="date" />
-                        <YAxis />
+                        <XAxis dataKey="date" tick={{ fontSize: 10 }} />
+                        <YAxis tick={{ fontSize: 10 }} />
                         <Tooltip />
-                        <Legend />
+                        <Legend wrapperStyle={{ fontSize: '12px' }} />
                         <Area type="monotone" dataKey="empréstimos" stackId="1" stroke="#2563EB" fill="#2563EB" fillOpacity={0.3} />
                         <Area type="monotone" dataKey="devoluções" stackId="1" stroke="#22C55E" fill="#22C55E" fillOpacity={0.3} />
                       </AreaChart>
@@ -734,19 +732,19 @@ export function Dashboard({
                 <Card className="glass-card dashboard-card">
                   <CardHeader className="flex flex-row items-center justify-between">
                     <div>
-                      <CardTitle>Duração Média de Uso</CardTitle>
+                      <CardTitle className="text-lg">Duração Média de Uso</CardTitle>
                       <CardDescription>
                         Por tipo de usuário este mês
                       </CardDescription>
                     </div>
                     <Clock className="h-5 w-5 text-muted-foreground" />
                   </CardHeader>
-                  <CardContent className="h-[300px]">
+                  <CardContent className="h-[250px] sm:h-[300px]">
                     <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={durationData} layout="horizontal">
+                      <BarChart data={durationData} layout="horizontal" margin={{ top: 5, right: 0, left: 0, bottom: 5 }}>
                         <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis type="number" />
-                        <YAxis dataKey="name" type="category" width={80} />
+                        <XAxis type="number" tick={{ fontSize: 10 }} />
+                        <YAxis dataKey="name" type="category" width={80} tick={{ fontSize: 10 }} />
                         <Tooltip />
                         <Bar dataKey="minutos" fill="#8B5CF6" radius={[0, 4, 4, 0]} />
                       </BarChart>
@@ -756,9 +754,14 @@ export function Dashboard({
               </div>
             </TabsContent>
             
-            {/* NOVA ABA DE HISTÓRICO */}
+            {/* ABA DE HISTÓRICO */}
             <TabsContent value="history" className="space-y-4 mt-6">
               <LoanHistory history={history} />
+            </TabsContent>
+            
+            {/* ABA DE RELATÓRIOS INTELIGENTES */}
+            <TabsContent value="reports" className="space-y-4 mt-6">
+              <IntelligentReportsTab />
             </TabsContent>
           </>
         )}
