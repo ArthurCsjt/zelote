@@ -70,8 +70,6 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
   const [searchTerm, setSearchTerm] = useState("");
   // State for status filter
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  // State for location filter
-  const [locationFilter, setLocationFilter] = useState<string>('all');
   // State for edit dialog
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   // State for delete dialog
@@ -167,15 +165,12 @@ useEffect(() => {
       chromebook.model.toLowerCase().includes(lowerCaseSearch) ||
       String(chromebook.serial_number || '').toLowerCase().includes(lowerCaseSearch) ||
       String(chromebook.location || '').toLowerCase().includes(lowerCaseSearch) ||
-      String(chromebook.manufacturer || '').toLowerCase().includes(lowerCaseSearch) || // Adicionado Fabricante
-      String(chromebook.classroom || '').toLowerCase().includes(lowerCaseSearch); // Adicionado Sala de Aula
+      String(chromebook.manufacturer || '').toLowerCase().includes(lowerCaseSearch) ||
+      String(chromebook.classroom || '').toLowerCase().includes(lowerCaseSearch);
     
     const matchesStatus = statusFilter === 'all' || chromebook.status === statusFilter;
-    const matchesLocation = locationFilter === 'all' || 
-      (chromebook.location && chromebook.location.toLowerCase().includes(locationFilter.toLowerCase())) ||
-      (chromebook.classroom && chromebook.classroom.toLowerCase().includes(locationFilter.toLowerCase()));
 
-    return matchesSearch && matchesStatus && matchesLocation;
+    return matchesSearch && matchesStatus;
   });
 
   // Calculate pagination
@@ -451,21 +446,6 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
               <SelectItem value="fixo">Fixo</SelectItem>
               <SelectItem value="manutencao">Manutenção</SelectItem>
               <SelectItem value="fora_uso">Inativo</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        
-        <div className="relative">
-          <Filter className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-          <Select value={locationFilter} onValueChange={setLocationFilter}>
-            <SelectTrigger className="w-[200px] pl-10">
-              <SelectValue placeholder="Filtrar por localização" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todas Localizações</SelectItem>
-              {[...new Set(chromebooks.map(c => c.location || c.classroom).filter(Boolean))].map(location => (
-                <SelectItem key={location} value={location!}>{location}</SelectItem>
-              ))}
             </SelectContent>
           </Select>
         </div>
