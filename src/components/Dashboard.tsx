@@ -401,7 +401,10 @@ export function Dashboard({
             <ChartLine className="h-3 w-3 sm:h-4 sm:w-4" />
             Mensal
           </TabsTrigger>
-          <TabsTrigger value="history" className="flex items-center gap-1 text-xs sm:text-sm">
+          <TabsTrigger 
+            value="history" 
+            className="flex items-center gap-1 text-xs sm:text-sm data-[state=active]:bg-menu-rose data-[state=active]:text-white data-[state=active]:shadow-md hover:bg-menu-rose/80 transition-colors"
+          >
             <HistoryIcon className="h-3 w-3 sm:h-4 sm:w-4" />
             Histórico
           </TabsTrigger>
