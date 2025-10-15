@@ -7,7 +7,7 @@ import type { LoanHistoryItem } from "@/types/database";
 import { Badge } from "./ui/badge";
 import { Progress } from "./ui/progress";
 import { ChartContainer, ChartTooltipContent, ChartLegendContent } from "./ui/chart";
-import { Computer, Download, ArrowLeft, BarChart as BarChartIcon, PieChart as PieChartIcon, Clock, Users, Calendar, CalendarRange, Activity, ChartLine, Brain, Loader2 } from "lucide-react";
+import { Computer, Download, ArrowLeft, BarChart as BarChartIcon, PieChart as PieChartIcon, Clock, Users, Calendar, CalendarRange, Activity, ChartLine, Brain, Loader2, History as HistoryIcon } from "lucide-react";
 import jsPDF from "jspdf";
 import { useToast } from "./ui/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -16,6 +16,7 @@ import { useDatabase } from '@/hooks/useDatabase';
 import { useOverdueLoans } from '@/hooks/useOverdueLoans';
 import IntelligentReportsTab from './IntelligentReportsTab';
 import { useIsMobile } from "@/hooks/use-mobile";
+import { LoanHistory } from "./LoanHistory"; // Importando LoanHistory
 
 interface DashboardProps {
   onBack?: () => void;
@@ -39,7 +40,7 @@ export function Dashboard({
   const {
     toast
   } = useToast();
-  const [periodView, setPeriodView] = useState < 'daily' | 'weekly' | 'monthly' | 'ia' > ('daily');
+  const [periodView, setPeriodView] = useState < 'daily' | 'weekly' | 'monthly' | 'ia' | 'history' > ('daily');
   const [periodData, setPeriodData] = useState < any[] > ([]);
   const [loading, setLoading] = useState(false);
   const totalChromebooks = chromebooks.length;
@@ -268,10 +269,10 @@ export function Dashboard({
     return pdf;
   };
   const handleDownloadPDF = () => {
-    if (periodView === 'ia') {
+    if (periodView === 'ia' || periodView === 'history') {
       toast({
         title: "Atenção",
-        description: "O download de relatórios IA deve ser feito na própria aba.",
+        description: "O download de relatórios IA ou Histórico deve ser feito na própria aba, se disponível.",
         variant: "destructive"
       });
       return;
@@ -303,7 +304,7 @@ export function Dashboard({
         <h2 className="text-xl sm:text-3xl font-bold text-gray-800 whitespace-nowrap">
           Dashboard
         </h2>
-        <Button variant="outline" onClick={handleDownloadPDF} className="flex items-center gap-2 hover:bg-blue-50" disabled={periodView === 'ia'}>
+        <Button variant="outline" onClick={handleDownloadPDF} className="flex items-center gap-2 hover:bg-blue-50" disabled={periodView === 'ia' || periodView === 'history'}>
           <Download className="h-4 w-4" />
           <span className="hidden md:inline">Baixar Relatório</span>
         </Button>
@@ -311,7 +312,7 @@ export function Dashboard({
 
       {/* Tabs for Period Selection */}
       <Tabs defaultValue="daily" value={periodView} onValueChange={(v) => setPeriodView(v as any)} className="relative z-10">
-        <TabsList className="grid w-full grid-cols-4 h-10">
+        <TabsList className="grid w-full grid-cols-5 h-10">
           <TabsTrigger value="daily" className="flex items-center gap-1">
             <Calendar className="h-4 w-4" />
             Diário
@@ -323,6 +324,10 @@ export function Dashboard({
           <TabsTrigger value="monthly" className="flex items-center gap-1">
             <ChartLine className="h-4 w-4" />
             Mensal
+          </TabsTrigger>
+          <TabsTrigger value="history" className="flex items-center gap-1">
+            <HistoryIcon className="h-4 w-4" />
+            Histórico
           </TabsTrigger>
           <TabsTrigger value="ia" className="flex items-center gap-1 text-indigo-600 data-[state=active]:text-white">
             <Brain className="h-4 w-4" />
@@ -337,8 +342,8 @@ export function Dashboard({
           </div>
         ) : (
           <>
-            {/* Grid de Cards de Estatísticas (Visível em todas as abas exceto IA) */}
-            {periodView !== 'ia' && (
+            {/* Grid de Cards de Estatísticas (Visível em todas as abas exceto IA e Histórico) */}
+            {periodView !== 'ia' && periodView !== 'history' && (
               <div className="grid gap-4 md:grid-cols-4 relative z-10">
                 <Card className="glass-card border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-blue-500">
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -736,6 +741,11 @@ export function Dashboard({
                   </CardContent>
                 </Card>
               </div>
+            </TabsContent>
+            
+            {/* NOVA ABA DE HISTÓRICO */}
+            <TabsContent value="history" className="space-y-4 mt-6">
+              <LoanHistory history={history} />
             </TabsContent>
 
             <TabsContent value="ia" className="space-y-4 mt-6">
