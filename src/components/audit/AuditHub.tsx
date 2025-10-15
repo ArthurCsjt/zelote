@@ -67,7 +67,7 @@ export const AuditHub = () => {
   };
 
   const stats = calculateStats();
-  const report = generateReport();
+  // const report = generateReport(); // Não é mais necessário se a aba de relatórios for removida
 
   if (activeAudit) {
     return <AuditScanner />;
@@ -76,10 +76,10 @@ export const AuditHub = () => {
   return (
     <div className="space-y-6">
       <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="current">Auditoria Atual</TabsTrigger>
           <TabsTrigger value="history">Histórico</TabsTrigger>
-          <TabsTrigger value="reports">Relatórios</TabsTrigger>
+          {/* <TabsTrigger value="reports">Relatórios</TabsTrigger> */}
         </TabsList>
 
         <TabsContent value="current" className="space-y-6">
@@ -279,28 +279,7 @@ export const AuditHub = () => {
           </Card>
         </TabsContent>
 
-        <TabsContent value="reports" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <FileText className="h-5 w-5" />
-                Relatórios de Auditoria
-              </CardTitle>
-              <CardDescription>
-                Relatórios detalhados das auditorias realizadas.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <AuditReportComponent
-                report={report}
-                onExport={() => {
-                  // Implementar exportação aqui
-                  console.log('Exportar relatório:', report);
-                }}
-              />
-            </CardContent>
-          </Card>
-        </TabsContent>
+        {/* Conteúdo da aba 'reports' removido */}
       </Tabs>
     </div>
   );
