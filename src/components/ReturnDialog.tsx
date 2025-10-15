@@ -134,7 +134,8 @@ export function ReturnDialog({
    * Verifica se o dispositivo já existe na lista antes de adicionar
    */
   const addDeviceToBatch = () => {
-    const normalizedInput = normalizeChromebookId(currentBatchInput);
+    // O currentBatchInput já está normalizado pelo onChange
+    const normalizedInput = currentBatchInput;
     
     if (normalizedInput && !batchDevices.includes(normalizedInput)) {
       setBatchDevices([...batchDevices, normalizedInput]);
@@ -328,7 +329,7 @@ export function ReturnDialog({
                       <Input
                         id="batchInput"
                         value={currentBatchInput}
-                        onChange={(e) => setCurrentBatchInput(e.target.value)}
+                        onChange={(e) => setCurrentBatchInput(normalizeChromebookId(e.target.value))} // APLICA NORMALIZAÇÃO AQUI
                         placeholder="Digite o ID do dispositivo"
                         className="bg-white border-gray-200 flex-1"
                         onKeyDown={(e) => {
