@@ -2,8 +2,8 @@ import React from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
-import { toast } from "@/components/ui/use-toast"
-import { ToastAction } from "@/components/ui/toast"
+import { toast as sonnerToast, Toaster } from 'sonner' // Usando Sonner
+import { ToastAction } from "@/components/ui/toast" // Mantendo o import para o ToastAction se necessário, mas vamos usar o Sonner
 
 // Ensure React is available globally
 // Expose React for devtools in iframe
@@ -16,21 +16,18 @@ function setupServiceWorkerUpdates() {
         .register('/service-worker.js')
         .then((registration) => {
           const promptUpdate = () => {
-            toast({
-              title: 'Atualização disponível',
+            // Usando sonnerToast para o prompt de atualização
+            sonnerToast.info('Atualização disponível', {
               description: 'Reinicie para aplicar a nova versão.',
-              action: (
-                <ToastAction
-                  altText="Reiniciar agora"
-                  onClick={() => {
-                    const waiting = registration.waiting;
-                    if (waiting) waiting.postMessage({ type: 'SKIP_WAITING' });
-                  }}
-                >
-                  Reiniciar
-                </ToastAction>
-              ),
-            })
+              action: {
+                label: 'Reiniciar agora',
+                onClick: () => {
+                  const waiting = registration.waiting;
+                  if (waiting) waiting.postMessage({ type: 'SKIP_WAITING' });
+                },
+              },
+              duration: 1000000, // Manter visível até o clique
+            });
 
             let refreshing = false
             navigator.serviceWorker.addEventListener('controllerchange', () => {
@@ -68,9 +65,22 @@ function setupServiceWorkerUpdates() {
 
 createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
+    {/* Configuração do Sonner para notificações modernas */}
+    <Toaster 
+      position="top-center" 
+      richColors 
+      closeButton 
+      className="z-[9999]"
+      toastOptions={{
+        className: 'shadow-lg border-gray-200',
+        style: {
+          padding: '12px 16px',
+          borderRadius: '8px',
+        },
+      }}
+    />
     <App />
   </React.StrictMode>
 )
 
 setupServiceWorkerUpdates()
-
