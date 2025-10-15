@@ -6,6 +6,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useUserSearch, UserSearchResult } from '@/hooks/useUserSearch';
 import { Badge } from './ui/badge';
+import { Card } from './ui/card'; // Importação adicionada
 
 interface UserAutocompleteProps {
   selectedUser: UserSearchResult | null;
@@ -30,6 +31,8 @@ const UserAutocomplete: React.FC<UserAutocompleteProps> = ({ selectedUser, onSel
       case 'aluno':
         return <GraduationCap className="mr-2 h-4 w-4 text-blue-500" />;
       case 'professor':
+      case 'super_admin':
+      case 'admin':
         return <User className="mr-2 h-4 w-4 text-purple-500" />;
       case 'funcionario':
         return <Briefcase className="mr-2 h-4 w-4 text-orange-500" />;
