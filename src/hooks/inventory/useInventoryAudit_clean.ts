@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/Auth/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import type {
   InventoryAudit,
@@ -8,7 +8,7 @@ import type {
   AuditFilters,
   Chromebook,
 } from '@/types/database';
-import { useAuditCalculations } from './useAuditCalculations'; // NOVO IMPORT
+import { useAuditCalculations } from './useAuditCalculations';
 
 // Mantemos o mesmo alias usado nos componentes
 type DisplayCountedItem = CountedItemWithDetails;
@@ -89,30 +89,25 @@ export const useInventoryAudit = () => {
     try {
       setIsProcessing(true);
       
-      // 1. Buscar todos os Chromebooks e estatísticas de inventário
-      const [
-        { data: allCbData, error: allCbError },
-        { count: totalAll }, 
-        { count: disponiveis }, 
-        { count: emprestados }, 
-        { count: fixos }
-      ] = await Promise.all([
-        supabase.from<any>('chromebooks').select('*'),
-        supabase.from<any>('chromebooks').select('*', { count: 'exact', head: true }),
-        supabase.from<any>('chromebooks').select('*', { count: 'exact', head: true }).eq('status', 'disponivel'),
-        supabase.from<any>('chromebooks').select('*', { count: 'exact', head: true }).eq('status', 'emprestado'),
-        supabase.from<any>('chromebooks').select('*', { count: 'exact', head: true }).eq('status', 'fixo'),
-      ]);
+      // 1. Otimização: Buscar todos os Chromebooks em uma única chamada
+      const { data: allCbData, error: allCbError } = await supabase
+        .from<any>('chromebooks')
+        .select('*');
 
       if (allCbError) throw allCbError;
-      setAllChromebooks(allCbData || []);
-      setInventoryStats({
-        total: totalAll || 0,
-        disponiveis: disponiveis || 0,
-        emprestados: emprestados || 0,
-        fixos: fixos || 0,
-      });
-      setTotalExpected(totalAll || 0);
+      
+      const chromebooks = (allCbData || []) as Chromebook[];
+      setAllChromebooks(chromebooks);
+      setTotalExpected(chromebooks.length);
+
+      // Calcular estatísticas de inventário no cliente
+      const stats = {
+        total: chromebooks.length,
+        disponiveis: chromebooks.filter(cb => cb.status === 'disponivel').length,
+        emprestados: chromebooks.filter(cb => cb.status === 'emprestado').length,
+        fixos: chromebooks.filter(cb => cb.status === 'fixo').length,
+      };
+      setInventoryStats(stats);
 
       // 2. Buscar auditoria ativa
       const { data: auditData, error: auditError } = await supabase
@@ -137,7 +132,7 @@ export const useInventoryAudit = () => {
         if (itemsError) throw itemsError;
 
         // Mapear itens contados com detalhes do chromebook
-        const chromebookMap = new Map(allCbData?.map((cb: Chromebook) => [cb.id, cb]));
+        const chromebookMap = new Map(chromebooks.map((cb: Chromebook) => [cb.id, cb]));
 
         const fullItems = (items || []).map((item: any) => {
           const chromebook = chromebookMap.get(item.chromebook_id);
