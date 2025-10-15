@@ -494,8 +494,8 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
           <TableHeader>
             <TableRow>
               <TableHead>ID</TableHead>
-              <TableHead>Modelo</TableHead>
-              <TableHead>Fabricante</TableHead>
+              <TableHead>Fabricante</TableHead> {/* Ordem alterada */}
+              <TableHead>Modelo</TableHead> {/* Ordem alterada */}
               <TableHead>Série</TableHead>
               <TableHead className="hidden md:table-cell">Status</TableHead>
               <TableHead>Ações</TableHead>
@@ -512,7 +512,8 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
                     <TableCell className="font-medium text-xs">
                       {chromebook.chromebook_id}
                     </TableCell>
-                    <TableCell>
+                    <TableCell>{chromebook.manufacturer || 'N/A'}</TableCell> {/* Ordem alterada */}
+                    <TableCell> {/* Ordem alterada */}
                       <div className="flex items-center gap-2">
                         {chromebook.model}
                         {chromebook.status === 'fixo' && (
@@ -520,7 +521,6 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
                         )}
                       </div>
                     </TableCell>
-                    <TableCell>{chromebook.manufacturer || 'N/A'}</TableCell>
                     <TableCell>{chromebook.serial_number || 'N/A'}</TableCell>
                     <TableCell className="hidden md:table-cell">
                       <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${statusInfo.color}`}>
@@ -610,8 +610,6 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
                   isActive={currentPage === page}
                   onClick={() => setCurrentPage(page)}
                   className="cursor-pointer"
-                >
-                  {page}
                 </PaginationLink>
               </PaginationItem>
             ))}
@@ -676,22 +674,22 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
 
                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                      <div className="space-y-1.5">
-                       <Label htmlFor="model" className="text-xs font-medium">Modelo *</Label>
-                       <Input
-                         id="model"
-                         value={editingChromebook.model}
-                         onChange={handleEditChange}
-                         placeholder="Ex: Chromebook 14e"
-                         className="h-9"
-                       />
-                     </div>
-                     <div className="space-y-1.5">
                        <Label htmlFor="manufacturer" className="text-xs font-medium">Fabricante</Label>
                        <Input
                          id="manufacturer"
                          value={editingChromebook.manufacturer || ""}
                          onChange={handleEditChange}
                          placeholder="Ex: Lenovo"
+                         className="h-9"
+                       />
+                     </div>
+                     <div className="space-y-1.5">
+                       <Label htmlFor="model" className="text-xs font-medium">Modelo *</Label>
+                       <Input
+                         id="model"
+                         value={editingChromebook.model}
+                         onChange={handleEditChange}
+                         placeholder="Ex: Chromebook 14e"
                          className="h-9"
                        />
                      </div>
