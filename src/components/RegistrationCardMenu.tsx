@@ -41,7 +41,7 @@ const menuItems = [
 
 export function RegistrationCardMenu({ onNavigate, currentView }: RegistrationCardMenuProps) {
   return (
-    <div className="grid grid-cols-2 gap-4">
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
       {menuItems.map((item) => {
         const Icon = item.icon;
         const isActive = item.view === currentView;
@@ -50,7 +50,7 @@ export function RegistrationCardMenu({ onNavigate, currentView }: RegistrationCa
           <Card
             key={item.view}
             className={cn(
-              "cursor-pointer transition-all duration-200 hover:shadow-lg",
+              "cursor-pointer transition-all duration-300 hover:shadow-xl transform hover:scale-[1.02] glass-card", // Adicionado glass-card e transições
               item.bgColor,
               isActive ? `border-2 ${item.color.replace('text-', 'border-')}` : 'border-gray-200'
             )}

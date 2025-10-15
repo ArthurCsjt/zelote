@@ -46,15 +46,13 @@ export function RegistrationHub({ onBack, onRegistrationSuccess }: RegistrationH
   };
 
   return (
-    <div className="space-y-6 glass-morphism p-4 sm:p-6 lg:p-8 animate-fade-in relative">
-      {/* Background gradient overlay para o efeito glass-morphism */}
-      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-green-50/30 via-blue-50/20 to-purple-50/30 rounded-3xl blur-2xl transform scale-110" />
+    <div className="space-y-6">
       
       <div className="container mx-auto max-w-6xl p-0">
         
-        {/* Cabeçalho do Hub */}
-        <div className="mb-6 flex justify-between items-center">
-          <h1 className="text-foreground py-[2px] font-bold text-2xl bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
+        {/* Cabeçalho do Hub: Centralizado e Preto */}
+        <div className="mb-6 text-center">
+          <h1 className="text-gray-800 py-[2px] font-bold text-2xl my-[25px]">
             Hub de Cadastros
           </h1>
         </div>
