@@ -95,7 +95,7 @@ const Login = () => {
     
     if (!verifyEmail(recoveryEmail)) {
       toast({
-        title: "Erro de recuperação",
+        title: "Erro de acesso",
         description: "O email deve pertencer ao domínio institucional.",
         variant: "destructive"
       });
@@ -106,8 +106,8 @@ const Login = () => {
     const result = await resetPassword(recoveryEmail);
     if (result.success) {
       toast({
-        title: "Recuperação iniciada",
-        description: "Enviamos um email com instruções para redefinir sua senha."
+        title: "Email enviado",
+        description: "Verifique sua caixa de entrada para definir sua senha."
       });
       // Mantém o email preenchido no campo de login ao voltar
       setLoginEmail(recoveryEmail); 
@@ -115,8 +115,8 @@ const Login = () => {
       setRecoveryMode(false);
     } else {
       toast({
-        title: "Erro de recuperação",
-        description: result.error || "Não foi possível iniciar a recuperação de senha",
+        title: "Erro de envio",
+        description: result.error || "Não foi possível enviar o email. Verifique o endereço.",
         variant: "destructive"
       });
     }
@@ -179,7 +179,7 @@ const Login = () => {
 
   const renderContent = () => {
     if (isUpdatePasswordMode) {
-      // MODO DE ATUALIZAÇÃO DE SENHA (PRIMEIRO ACESSO)
+      // MODO DE ATUALIZAÇÃO DE SENHA (PRIMEIRO ACESSO / REDEFINIÇÃO)
       return (
         <form onSubmit={handleUpdatePasswordSubmit}>
           <CardHeader className="space-y-1 text-center pb-6 bg-gradient-to-r from-green-500/10 to-green-600/10">
@@ -188,9 +188,9 @@ const Login = () => {
                 <UserPlus className="h-10 w-10 text-green-600" />
               </div>
             </div>
-            <CardTitle className="text-2xl font-bold text-green-800">Primeiro Acesso</CardTitle>
+            <CardTitle className="text-2xl font-bold text-green-800">Definir Nova Senha</CardTitle>
             <CardDescription className="text-gray-600">
-              Defina sua nova senha para acessar o sistema.
+              Crie uma senha segura para acessar o sistema.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 pt-6">
@@ -223,24 +223,33 @@ const Login = () => {
     }
 
     if (isRecoveryMode) {
-      // MODO DE RECUPERAÇÃO DE SENHA
+      // MODO DE PRIMEIRO ACESSO / RECUPERAÇÃO DE SENHA
       return (
         <form onSubmit={handleRecoverySubmit}>
-          <CardContent className="space-y-4 pt-6">
-            <div className="flex items-center mb-4">
-              <Button type="button" variant="ghost" className="text-gray-600 p-0 h-auto" onClick={handleToggleRecoveryMode} disabled={isLoading}>
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Voltar ao login
-              </Button>
+          <CardHeader className="space-y-1 text-center pb-6 bg-gradient-to-r from-blue-500/10 to-blue-600/10">
+            <div className="flex justify-center mb-4">
+              <div className="p-3 rounded-full bg-blue-100 shadow-md">
+                <KeySquare className="h-10 w-10 text-blue-600" />
+              </div>
             </div>
+            <CardTitle className="text-2xl font-bold text-blue-800">Primeiro Acesso / Recuperação</CardTitle>
+            <CardDescription className="text-gray-600">
+              Digite seu e-mail institucional para receber o link de acesso.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4 pt-6">
             <div className="space-y-2">
               <Label htmlFor="recovery-email" className="text-gray-700 flex items-center gap-1.5"><Mail className="h-4 w-4" />Email Institucional</Label>
               <Input id="recovery-email" type="email" placeholder="seu.email@colegiosaojudas.com.br" value={recoveryEmail} onChange={e => setRecoveryEmail(e.target.value)} className="bg-white/70" disabled={isLoading} />
             </div>
           </CardContent>
-          <CardFooter className="pb-6">
+          <CardFooter className="flex flex-col space-y-4 pb-6">
             <Button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-blue-500" disabled={isLoading}>
-              {isLoading ? "Enviando..." : "Recuperar Senha"}
+              {isLoading ? "Enviando..." : "Enviar Link de Acesso"}
+            </Button>
+            <Button type="button" variant="ghost" className="text-sm text-gray-600" onClick={handleToggleRecoveryMode} disabled={isLoading}>
+              <ArrowLeft className="h-3.5 w-3.5 mr-1" />
+              Voltar ao login
             </Button>
           </CardFooter>
         </form>
@@ -271,18 +280,8 @@ const Login = () => {
           </Button>
           <Button type="button" variant="ghost" className="text-sm text-gray-600" onClick={handleToggleRecoveryMode} disabled={isLoading}>
             <KeySquare className="h-3.5 w-3.5 mr-1" />
-            Esqueceu sua senha?
+            Primeiro Acesso / Recuperar Senha
           </Button>
-          
-          {/* NOVO: Ajuda para Convidados */}
-          <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg w-full text-left">
-            <div className="flex items-start gap-2">
-              <AlertCircle className="h-4 w-4 text-blue-600 mt-0.5 shrink-0" />
-              <p className="text-xs text-gray-700">
-                <strong>Primeiro Acesso?</strong> Se você foi convidado, use o link enviado para o seu e-mail institucional para definir sua senha antes de tentar fazer login.
-              </p>
-            </div>
-          </div>
         </CardFooter>
       </form>
     );
