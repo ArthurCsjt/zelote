@@ -21,6 +21,87 @@ import { LoanHistory } from "./LoanHistory"; // Importando LoanHistory
 interface DashboardProps {
   onBack?: () => void;
 }
+
+// Componente auxiliar para renderizar o grid de estatísticas
+const StatsGrid = ({ periodView, filteredLoans, filteredReturns, activeLoans, totalChromebooks, averageUsageTime, completionRate }: any) => {
+  if (periodView === 'history') return null;
+
+  return (
+    <div className="grid gap-4 md:grid-cols-4 relative z-10">
+      <Card className="glass-card border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-blue-500">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">
+            Empréstimos
+          </CardTitle>
+          <Computer className="h-5 w-5 text-blue-500" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">{filteredLoans.length}</div>
+          <p className="text-xs text-muted-foreground">
+            {filteredReturns.length} devoluções no período
+          </p>
+        </CardContent>
+      </Card>
+
+      <Card className="glass-card border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-green-500">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">
+            Chromebooks Ativos
+          </CardTitle>
+          <Computer className="h-5 w-5 text-green-500" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">{activeLoans.length}</div>
+          <div className="flex items-center gap-2 mt-1">
+            <Progress value={activeLoans.length / totalChromebooks * 100} className="h-2" />
+            <span className="text-xs text-muted-foreground">
+              {(activeLoans.length / totalChromebooks * 100).toFixed(0)}%
+            </span>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="glass-card border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-purple-500">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">
+            Tempo Médio de Uso
+          </CardTitle>
+          <Clock className="h-5 w-5 text-purple-500" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-violet-600 bg-clip-text text-transparent">
+            {Math.round(averageUsageTime)} min
+          </div>
+          <p className="text-xs text-muted-foreground">
+            média no período
+          </p>
+        </CardContent>
+      </Card>
+
+      <Card className="glass-card border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-orange-500">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">
+            Taxa de Devolução
+          </CardTitle>
+          <Activity className="h-5 w-5 text-orange-500" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-3xl font-bold bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent">
+            {completionRate.toFixed(0)}%
+          </div>
+          <div className="flex items-center gap-2 mt-1">
+            <Progress value={completionRate} className="h-2" />
+            <span className="text-xs text-muted-foreground">
+              {filteredReturns.length} de {filteredLoans.length}
+            </span>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+
 export function Dashboard({
   onBack
 }: DashboardProps) {
@@ -329,7 +410,6 @@ export function Dashboard({
             <HistoryIcon className="h-4 w-4" />
             Histórico
           </TabsTrigger>
-          {/* Aba IA removida temporariamente */}
         </TabsList>
 
         {loading ? (
@@ -340,79 +420,15 @@ export function Dashboard({
         ) : (
           <>
             {/* Grid de Cards de Estatísticas (Visível em todas as abas exceto Histórico) */}
-            {periodView !== 'history' && (
-              <div className="grid gap-4 md:grid-cols-4 relative z-10">
-                <Card className="glass-card border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-blue-500">
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">
-                      Empréstimos
-                    </CardTitle>
-                    <Computer className="h-5 w-5 text-blue-500" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">{filteredLoans.length}</div>
-                    <p className="text-xs text-muted-foreground">
-                      {filteredReturns.length} devoluções no período
-                    </p>
-                  </CardContent>
-                </Card>
-
-                <Card className="glass-card border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-green-500">
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">
-                      Chromebooks Ativos
-                    </CardTitle>
-                    <Computer className="h-5 w-5 text-green-500" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">{activeLoans.length}</div>
-                    <div className="flex items-center gap-2 mt-1">
-                      <Progress value={activeLoans.length / totalChromebooks * 100} className="h-2" />
-                      <span className="text-xs text-muted-foreground">
-                        {(activeLoans.length / totalChromebooks * 100).toFixed(0)}%
-                      </span>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="glass-card border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-purple-500">
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">
-                      Tempo Médio de Uso
-                    </CardTitle>
-                    <Clock className="h-5 w-5 text-purple-500" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-violet-600 bg-clip-text text-transparent">
-                      {Math.round(averageUsageTime)} min
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      média no período
-                    </p>
-                  </CardContent>
-                </Card>
-
-                <Card className="glass-card border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-orange-500">
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">
-                      Taxa de Devolução
-                    </CardTitle>
-                    <Activity className="h-5 w-5 text-orange-500" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-3xl font-bold bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent">
-                      {completionRate.toFixed(0)}%
-                    </div>
-                    <div className="flex items-center gap-2 mt-1">
-                      <Progress value={completionRate} className="h-2" />
-                      <span className="text-xs text-muted-foreground">
-                        {filteredReturns.length} de {filteredLoans.length}
-                      </span>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            )}
+            <StatsGrid 
+              periodView={periodView}
+              filteredLoans={filteredLoans}
+              filteredReturns={filteredReturns}
+              activeLoans={activeLoans}
+              totalChromebooks={totalChromebooks}
+              averageUsageTime={averageUsageTime}
+              completionRate={completionRate}
+            />
 
             <TabsContent value="daily" className="space-y-4 mt-6">
               <div className="grid gap-4 md:grid-cols-2">
@@ -566,7 +582,7 @@ export function Dashboard({
                   </CardContent>
                 </Card>
               </div>
-            )}
+            </TabsContent>
 
             <TabsContent value="weekly" className="space-y-4 mt-6">
               <div className="grid gap-4 md:grid-cols-2">
@@ -744,8 +760,6 @@ export function Dashboard({
             <TabsContent value="history" className="space-y-4 mt-6">
               <LoanHistory history={history} />
             </TabsContent>
-
-            {/* Aba IA removida temporariamente */}
           </>
         )}
       </Tabs>
