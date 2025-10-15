@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Computer, CheckCircle, Clock, AlertTriangle, MapPin, PieChart as PieChartIcon } from 'lucide-react';
+import { Computer, CheckCircle, Clock, AlertTriangle, MapPin, PieChart as PieChartIcon, XCircle } from 'lucide-react';
 import type { Chromebook } from '@/types/database';
 
 interface InventoryStatsProps {
