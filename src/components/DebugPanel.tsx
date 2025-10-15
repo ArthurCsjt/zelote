@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { PlusCircle, Database } from 'lucide-react';
+import { GlassCard } from './ui/GlassCard'; // Importando GlassCard
 
 const sampleChromebooks = [
   {
@@ -102,7 +103,7 @@ export const DebugPanel = () => {
   };
 
   return (
-    <Card className="border-orange-200 bg-orange-50">
+    <GlassCard className="border-orange-200 bg-orange-50">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-orange-800">
           <Database className="h-5 w-5" />
@@ -143,6 +144,6 @@ export const DebugPanel = () => {
           </Button>
         </div>
       </CardContent>
-    </Card>
+    </GlassCard>
   );
 };

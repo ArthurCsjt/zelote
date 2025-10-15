@@ -4,10 +4,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { StudentCSVImport } from './StudentCSVImport';
 import { AdvancedSettings } from './AdvancedSettings';
 import { Database, Upload, AlertTriangle } from 'lucide-react';
+import { GlassCard } from './ui/GlassCard'; // Importando GlassCard
 
 export function DataMaintenance() {
   return (
-    <Card className="glass-card">
+    <GlassCard>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Database className="h-5 w-5 text-primary" />
@@ -39,6 +40,6 @@ export function DataMaintenance() {
           </TabsContent>
         </Tabs>
       </CardContent>
-    </Card>
+    </GlassCard>
   );
 }

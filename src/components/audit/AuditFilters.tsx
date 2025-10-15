@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Calendar, Filter, Search, X } from 'lucide-react';
 import type { AuditFilters, CountedItemWithDetails } from '@/types/database';
+import { GlassCard } from '@/components/ui/GlassCard'; // Importando GlassCard
 
 interface AuditFiltersProps {
   filters: AuditFilters;
@@ -39,7 +40,7 @@ export const AuditFiltersComponent: React.FC<AuditFiltersProps> = ({
   const activeFiltersCount = Object.keys(filters).length;
 
   return (
-    <Card>
+    <GlassCard>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Filter className="h-5 w-5" />
@@ -138,6 +139,6 @@ export const AuditFiltersComponent: React.FC<AuditFiltersProps> = ({
           </div>
         )}
       </CardContent>
-    </Card>
+    </GlassCard>
   );
 };

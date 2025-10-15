@@ -2,6 +2,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Laptop, Users, GraduationCap, Briefcase } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { GlassCard } from './ui/GlassCard'; // Importando GlassCard
 
 interface RegistrationCardMenuProps {
   onNavigate: (view: 'chromebooks' | 'students' | 'teachers' | 'staff') => void;
@@ -47,10 +48,10 @@ export function RegistrationCardMenu({ onNavigate, currentView }: RegistrationCa
         const isActive = item.view === currentView;
         
         return (
-          <Card
+          <GlassCard
             key={item.view}
             className={cn(
-              "cursor-pointer transition-all duration-300 hover:shadow-xl transform hover:scale-[1.02] glass-card", // Adicionado glass-card e transições
+              "cursor-pointer transition-all duration-300 hover:shadow-xl transform hover:scale-[1.02]", // Removido 'glass-card' e 'hover:shadow-xl' duplicados
               item.bgColor,
               isActive ? `border-2 ${item.color.replace('text-', 'border-')}` : 'border-gray-200'
             )}
@@ -62,7 +63,7 @@ export function RegistrationCardMenu({ onNavigate, currentView }: RegistrationCa
                 {item.title}
               </CardTitle>
             </CardContent>
-          </Card>
+          </GlassCard>
         );
       })}
     </div>

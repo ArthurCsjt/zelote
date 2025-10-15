@@ -8,6 +8,7 @@ import { Alert, AlertDescription } from './ui/alert';
 import { Badge } from './ui/badge';
 import { toast } from '@/hooks/use-toast';
 import { useDatabase } from '@/hooks/useDatabase';
+import { GlassCard } from './ui/GlassCard'; // Importando GlassCard
 
 interface StudentCSVData {
   nome_completo: string;
@@ -193,7 +194,7 @@ export function StudentCSVImport() {
 
   return (
     <div className="space-y-6">
-      <Card>
+      <GlassCard>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Upload className="h-5 w-5" />
@@ -345,7 +346,7 @@ export function StudentCSVImport() {
             </div>
           )}
         </CardContent>
-      </Card>
+      </GlassCard>
     </div>
   );
 }

@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { UserManagement } from './parts/UserManagement';
 import { DataMaintenance } from '@/components/DataMaintenance'; // Importando o novo componente
+import { GlassCard } from '@/components/ui/GlassCard'; // Importando GlassCard
 
 const Settings = () => {
   const { isAdmin, loading } = useProfileRole();
@@ -30,14 +31,14 @@ const Settings = () => {
           <>
             <UserManagement />
             <DataMaintenance />
-            <Card className="glass-card">
+            <GlassCard>
               <CardHeader>
                 <CardTitle>Preferências do Sistema</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground">Modo claro ativado permanentemente.</p>
               </CardContent>
-            </Card>
+            </GlassCard>
           </>
         )}
       </div>

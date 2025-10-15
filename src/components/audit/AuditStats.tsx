@@ -4,6 +4,7 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { BarChart3, Clock, Target, TrendingUp } from 'lucide-react';
 import type { LocationStats, MethodStats, ConditionStats } from '@/types/database';
+import { GlassCard } from '@/components/ui/GlassCard'; // Importando GlassCard
 
 interface AuditStatsProps {
   totalCounted: number;
@@ -30,7 +31,7 @@ export const AuditStats: React.FC<AuditStatsProps> = ({
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-      <Card>
+      <GlassCard>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Itens Contados</CardTitle>
           <Target className="h-4 w-4 text-muted-foreground" />
@@ -41,9 +42,9 @@ export const AuditStats: React.FC<AuditStatsProps> = ({
             de {totalExpected} esperados
           </p>
         </CardContent>
-      </Card>
+      </GlassCard>
 
-      <Card>
+      <GlassCard>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Progresso</CardTitle>
           <BarChart3 className="h-4 w-4 text-muted-foreground" />
@@ -52,9 +53,9 @@ export const AuditStats: React.FC<AuditStatsProps> = ({
           <div className="text-2xl font-bold">{completionRate}</div>
           <Progress value={progressValue} className="mt-2" />
         </CardContent>
-      </Card>
+      </GlassCard>
 
-      <Card>
+      <GlassCard>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Duração</CardTitle>
           <Clock className="h-4 w-4 text-muted-foreground" />
@@ -65,9 +66,9 @@ export const AuditStats: React.FC<AuditStatsProps> = ({
             Tempo decorrido
           </p>
         </CardContent>
-      </Card>
+      </GlassCard>
 
-      <Card>
+      <GlassCard>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Eficiência</CardTitle>
           <TrendingUp className="h-4 w-4 text-muted-foreground" />
@@ -78,7 +79,7 @@ export const AuditStats: React.FC<AuditStatsProps> = ({
             itens/hora
           </p>
         </CardContent>
-      </Card>
+      </GlassCard>
     </div>
   );
 };

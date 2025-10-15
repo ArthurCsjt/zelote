@@ -37,6 +37,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useDatabase } from "@/hooks/useDatabase"; // Importando useDatabase
 import type { Chromebook, ChromebookData } from "@/types/database";
 import { InventoryStats } from "./InventoryStats"; // Importando o novo componente de estatísticas
+import { GlassCard } from "./ui/GlassCard"; // Importando GlassCard
 
 // Interface for Chromebook data structure (matching database)
 interface ChromebookDataExtended extends Chromebook {
@@ -345,7 +346,7 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
       </div>
 
       {/* Table of Chromebooks */}
-      <div className="glass-card border-white/30 rounded-2xl overflow-hidden relative z-10">
+      <GlassCard className="border-white/30 rounded-2xl overflow-hidden relative z-10 p-0">
         <Table>
           <TableHeader>
             <TableRow>
@@ -461,7 +462,7 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
             )}
           </TableBody>
         </Table>
-      </div>
+      </GlassCard>
 
       {/* Pagination */}
       {totalPages > 1 && (

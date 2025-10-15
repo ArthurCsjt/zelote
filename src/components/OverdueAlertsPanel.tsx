@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
 import { format } from "date-fns";
 import { useOverdueLoans } from "@/hooks/useOverdueLoans";
+import { GlassCard } from "./ui/GlassCard"; // Importando GlassCard
 
 export function OverdueAlertsPanel() {
   const { overdueLoans, upcomingDueLoans, loading, refresh } = useOverdueLoans();
@@ -24,7 +25,7 @@ export function OverdueAlertsPanel() {
 
   if (overdueLoans.length === 0 && upcomingDueLoans.length === 0) {
     return (
-      <Card>
+      <GlassCard>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-green-700">
             <Clock className="h-5 w-5" />
@@ -39,7 +40,7 @@ export function OverdueAlertsPanel() {
             </p>
           </div>
         </CardContent>
-      </Card>
+      </GlassCard>
     );
   }
 

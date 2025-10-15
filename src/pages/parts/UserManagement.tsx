@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { MoreHorizontal, Loader2, Trash2 } from "lucide-react";
+import { GlassCard } from '@/components/ui/GlassCard'; // Importando GlassCard
 
 type UserProfile = {
   id: string;
@@ -120,7 +121,7 @@ export const UserManagement = () => {
 
   return (
     <div className="space-y-6">
-      <Card className="glass-card">
+      <GlassCard>
         <CardHeader>
           <CardTitle>Gerenciamento de Usuários</CardTitle>
           <CardDescription>Envie convites e gerencie as permissões.</CardDescription>
@@ -148,9 +149,9 @@ export const UserManagement = () => {
             </div>
           </div>
         </CardContent>
-      </Card>
+      </GlassCard>
 
-      <Card className="glass-card">
+      <GlassCard>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">Convites Pendentes <Badge variant="secondary">{pendingUsers.length}</Badge></CardTitle>
         </CardHeader>
@@ -177,9 +178,9 @@ export const UserManagement = () => {
             ))
           }
         </CardContent>
-      </Card>
+      </GlassCard>
 
-      <Card className="glass-card">
+      <GlassCard>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">Usuários Ativos <Badge>{activeUsers.length}</Badge></CardTitle>
         </CardHeader>
@@ -220,7 +221,7 @@ export const UserManagement = () => {
             </div>
           ))}
         </CardContent>
-      </Card>
+      </GlassCard>
 
       {/* Diálogo de Confirmação para Usuários Ativos */}
       <AlertDialog open={!!userToDelete} onOpenChange={() => setUserToDelete(null)}>

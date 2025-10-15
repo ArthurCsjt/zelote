@@ -5,6 +5,8 @@ import { Label } from './ui/label';
 import { Card, CardContent } from './ui/card'; // Removido CardHeader, CardTitle
 import { toast } from '@/hooks/use-toast';
 import { useDatabase } from '@/hooks/useDatabase';
+import { GlassCard } from './ui/GlassCard'; // Importando GlassCard
+
 interface StudentFormData {
   nomeCompleto: string;
   ra: string;
@@ -102,7 +104,7 @@ export function StudentForm() {
     }
   };
   const isFormValid = formData.nomeCompleto && formData.ra && formData.email && formData.turma && !emailError;
-  return <Card>
+  return <GlassCard>
       {/* CardHeader removido */}
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -136,5 +138,5 @@ export function StudentForm() {
           </div>
         </form>
       </CardContent>
-    </Card>;
+    </GlassCard>;
 }

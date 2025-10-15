@@ -33,6 +33,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useProfileRole } from "@/hooks/use-profile-role";
 import { useDatabase } from "@/hooks/useDatabase"; // Importando useDatabase
 import { UserEditDialog } from "./UserEditDialog"; // Importando o novo diálogo
+import { GlassCard } from "./ui/GlassCard"; // Importando GlassCard
 
 interface User {
   id: string;
@@ -221,7 +222,7 @@ export function UserInventory() {
     <div className="space-y-6">
       {/* Statistics */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card className="glass-card">
+        <GlassCard>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total de Usuários</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
@@ -229,9 +230,9 @@ export function UserInventory() {
           <CardContent>
             <div className="text-2xl font-bold">{totalUsers}</div>
           </CardContent>
-        </Card>
+        </GlassCard>
 
-        <Card className="glass-card">
+        <GlassCard>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Alunos</CardTitle>
             <GraduationCap className="h-4 w-4 text-muted-foreground" />
@@ -239,9 +240,9 @@ export function UserInventory() {
           <CardContent>
             <div className="text-2xl font-bold text-green-600">{totalStudents}</div>
           </CardContent>
-        </Card>
+        </GlassCard>
 
-        <Card className="glass-card">
+        <GlassCard>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Professores</CardTitle>
             <UserCheck className="h-4 w-4 text-muted-foreground" />
@@ -249,9 +250,9 @@ export function UserInventory() {
           <CardContent>
             <div className="text-2xl font-bold text-blue-600">{totalTeachers}</div>
           </CardContent>
-        </Card>
+        </GlassCard>
 
-        <Card className="glass-card">
+        <GlassCard>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Funcionários</CardTitle>
             <Briefcase className="h-4 w-4 text-muted-foreground" />
@@ -259,7 +260,7 @@ export function UserInventory() {
           <CardContent>
             <div className="text-2xl font-bold text-purple-600">{totalStaff}</div>
           </CardContent>
-        </Card>
+        </GlassCard>
       </div>
 
       {/* Search and filters */}
@@ -312,7 +313,7 @@ export function UserInventory() {
       </div>
 
       {/* Users table */}
-      <Card className="glass-card">
+      <GlassCard>
         <Table>
           <TableHeader>
             <TableRow>
@@ -382,7 +383,7 @@ export function UserInventory() {
             <p className="text-muted-foreground">Nenhum usuário encontrado</p>
           </div>
         )}
-      </Card>
+      </GlassCard>
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>

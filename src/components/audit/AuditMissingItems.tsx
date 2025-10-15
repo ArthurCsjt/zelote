@@ -7,6 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { AlertTriangle, Search, Monitor, MapPin, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import type { Chromebook } from '@/types/database';
+import { GlassCard } from '@/components/ui/GlassCard'; // Importando GlassCard
 
 interface AuditMissingItemsProps {
   missingItems: Chromebook[];
@@ -35,7 +36,7 @@ export const AuditMissingItems: React.FC<AuditMissingItemsProps> = ({
   const missingCount = missingItems.length;
 
   return (
-    <Card className="border-orange-200 bg-orange-50/50">
+    <GlassCard className="border-orange-200 bg-orange-50/50">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-orange-800">
           <AlertTriangle className="h-5 w-5" />
@@ -111,6 +112,6 @@ export const AuditMissingItems: React.FC<AuditMissingItemsProps> = ({
           )}
         </ScrollArea>
       </CardContent>
-    </Card>
+    </GlassCard>
   );
 };

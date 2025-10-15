@@ -7,6 +7,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { useUserSearch, UserSearchResult } from '@/hooks/useUserSearch';
 import { Badge } from './ui/badge';
 import { Card } from './ui/card';
+import { GlassCard } from './ui/GlassCard'; // Importando GlassCard
 
 interface UserAutocompleteProps {
   selectedUser: UserSearchResult | null;
@@ -58,7 +59,7 @@ const UserAutocomplete: React.FC<UserAutocompleteProps> = ({ selectedUser, onSel
 
   if (selectedUser) {
     return (
-      <Card className="p-3 border-2 border-green-400 bg-green-50/50 shadow-md">
+      <GlassCard className="p-3 border-2 border-green-400 bg-green-50/50 shadow-md">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <CheckCircle className="h-5 w-5 text-green-600" />
@@ -76,7 +77,7 @@ const UserAutocomplete: React.FC<UserAutocompleteProps> = ({ selectedUser, onSel
           {selectedUser.ra && <Badge variant="outline">RA: {selectedUser.ra}</Badge>}
           {selectedUser.turma && <Badge variant="outline">Turma: {selectedUser.turma}</Badge>}
         </div>
-      </Card>
+      </GlassCard>
     );
   }
 

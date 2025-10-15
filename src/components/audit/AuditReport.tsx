@@ -14,6 +14,7 @@ import {
 import { AlertTriangle, CheckCircle, Download, TrendingUp, FileText, Printer, AlertCircle } from 'lucide-react';
 import type { AuditReport } from '@/types/database';
 import jsPDF from 'jspdf';
+import { GlassCard } from '@/components/ui/GlassCard'; // Importando GlassCard
 
 interface AuditReportProps {
   report: AuditReport | null;
@@ -171,7 +172,7 @@ export const AuditReportComponent: React.FC<AuditReportProps> = ({ report, audit
   return (
     <div className="space-y-6">
       {/* Resumo */}
-      <Card className="glass-card border-menu-teal/50">
+      <GlassCard className="border-menu-teal/50">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-menu-teal">
             <CheckCircle className="h-5 w-5" />
@@ -214,11 +215,11 @@ export const AuditReportComponent: React.FC<AuditReportProps> = ({ report, audit
             </Button>
           </div>
         </CardContent>
-      </Card>
+      </GlassCard>
 
       {/* Discrepâncias */}
       {(discrepancies.missing.length > 0 || discrepancies.locationMismatches.length > 0 || discrepancies.conditionIssues.length > 0) && (
-        <Card className="glass-card border-red-200/50">
+        <GlassCard className="border-red-200/50">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-red-600">
               <AlertTriangle className="h-5 w-5" />
@@ -289,12 +290,12 @@ export const AuditReportComponent: React.FC<AuditReportProps> = ({ report, audit
               </>
             )}
           </CardContent>
-        </Card>
+        </GlassCard>
       )}
       
       {/* Estatísticas por Localização */}
       {statistics.byLocation.length > 0 && (
-        <Card className="glass-card">
+        <GlassCard>
           <CardHeader>
             <CardTitle>Estatísticas por Localização</CardTitle>
           </CardHeader>
@@ -324,12 +325,12 @@ export const AuditReportComponent: React.FC<AuditReportProps> = ({ report, audit
               </TableBody>
             </Table>
           </CardContent>
-        </Card>
+        </GlassCard>
       )}
 
       {/* Estatísticas por Condição */}
       {statistics.byCondition.length > 0 && (
-        <Card className="glass-card">
+        <GlassCard>
           <CardHeader>
             <CardTitle>Condições dos Equipamentos</CardTitle>
           </CardHeader>
@@ -344,7 +345,7 @@ export const AuditReportComponent: React.FC<AuditReportProps> = ({ report, audit
               ))}
             </div>
           </CardContent>
-        </Card>
+        </GlassCard>
       )}
     </div>
   );

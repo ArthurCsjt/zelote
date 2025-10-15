@@ -14,6 +14,7 @@ import {
 import { AlertTriangle } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { useDatabase } from '@/hooks/useDatabase';
+import { GlassCard } from './ui/GlassCard'; // Importando GlassCard
 
 export function AdvancedSettings() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);

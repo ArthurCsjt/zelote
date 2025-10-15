@@ -7,6 +7,7 @@ import type { LoanHistoryItem } from "@/types/database";
 import { Input } from "./ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { Button } from "./ui/button";
+import { GlassCard } from "./ui/GlassCard"; // Importando GlassCard
 
 interface LoanHistoryProps {
   history: LoanHistoryItem[];
@@ -72,7 +73,7 @@ export function LoanHistory({ history }: LoanHistoryProps) {
       </div>
 
       {/* Painel de Filtros */}
-      <Card className="glass-card p-4">
+      <GlassCard className="p-4">
         <div className="flex flex-col sm:flex-row gap-3 items-center">
           {/* Busca */}
           <div className="relative flex-1 w-full">
@@ -118,7 +119,7 @@ export function LoanHistory({ history }: LoanHistoryProps) {
             </Button>
           )}
         </div>
-      </Card>
+      </GlassCard>
 
       {filteredHistory.length === 0 ? (
         <Card>

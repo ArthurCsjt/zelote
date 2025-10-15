@@ -16,6 +16,7 @@ import {
   SelectValue,
 } from "./ui/select";
 import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
+import { GlassCard } from "./ui/GlassCard"; // Importando GlassCard
 
 interface FormData {
   manufacturer: string;
@@ -83,7 +84,7 @@ export function ChromebookRegistration({ onRegistrationSuccess }: { onRegistrati
   };
 
   return (
-    <Card className="glass-card">
+    <GlassCard>
       {/* CardHeader removido */}
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -139,6 +140,6 @@ export function ChromebookRegistration({ onRegistrationSuccess }: { onRegistrati
             <Button type="submit" disabled={loading}>{loading ? 'Cadastrando...' : 'Cadastrar Chromebook'}</Button>
         </form>
       </CardContent>
-    </Card>
+    </GlassCard>
   );
 }

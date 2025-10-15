@@ -31,6 +31,8 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { GlassCard, CardFooter } from '@/components/ui/GlassCard'; // Importando GlassCard
+
  
 
 export const AuditHub = () => {
@@ -89,7 +91,7 @@ export const AuditHub = () => {
         </TabsList>
 
         <TabsContent value="current" className="space-y-6 mt-6">
-          <Card className="glass-card border-menu-teal/50 shadow-lg">
+          <GlassCard className="border-menu-teal/50 shadow-lg">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-menu-teal">
                 <Plus className="h-5 w-5" />
@@ -142,10 +144,10 @@ export const AuditHub = () => {
                 </AlertDialogContent>
               </AlertDialog>
             </CardContent>
-          </Card>
+          </GlassCard>
 
           {/* Auditorias já realizadas (resumo) */}
-          <Card className="glass-card">
+          <GlassCard>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <History className="h-5 w-5" />
@@ -189,14 +191,14 @@ export const AuditHub = () => {
                 <p className="text-sm text-muted-foreground">Nenhuma auditoria concluída para exibir.</p>
               )}
               <div className="mt-4 flex justify-end">
-                <Button variant="secondary" onClick={() => setActiveTab('history')}>Ver histórico completo</Button>
+                <Button variant="secondary" onClick={() => handleTabChange('history')}>Ver histórico completo</Button>
               </div>
             </CardContent>
-          </Card>
+          </GlassCard>
         </TabsContent>
 
         <TabsContent value="history" className="space-y-6 mt-6">
-          <Card className="glass-card">
+          <GlassCard>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <History className="h-5 w-5" />
@@ -266,7 +268,7 @@ export const AuditHub = () => {
                 <p className="text-sm text-muted-foreground">Nenhuma auditoria concluída para exibir.</p>
               )}
             </CardContent>
-          </Card>
+          </GlassCard>
         </TabsContent>
       </Tabs>
     </div>

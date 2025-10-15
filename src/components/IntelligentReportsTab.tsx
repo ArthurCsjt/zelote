@@ -8,6 +8,8 @@ import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Brain, Database, TrendingUp } from 'lucide-react';
+import { GlassCard } from './ui/GlassCard'; // Importando GlassCard
+
 interface ReportData {
   query: string;
   data: any[];
@@ -111,7 +113,7 @@ const IntelligentReportsTab: React.FC = () => {
         </p>
       </div>
 
-      <Card className="glass-card">
+      <GlassCard>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-xl text-zinc-950">
             <TrendingUp className="h-5 w-5" />
@@ -147,9 +149,9 @@ const IntelligentReportsTab: React.FC = () => {
               </> : 'Gerar Relatório'}
           </Button>
         </CardContent>
-      </Card>
+      </GlassCard>
 
-      {reportData && <Card className="glass-card">
+      {reportData && <GlassCard>
           <CardHeader>
             <CardTitle>Resultado do Relatório</CardTitle>
             <CardDescription>
@@ -174,7 +176,7 @@ const IntelligentReportsTab: React.FC = () => {
               {renderTable(reportData.data)}
             </div>
           </CardContent>
-        </Card>}
+        </GlassCard>}
     </div>;
 };
 export default IntelligentReportsTab;

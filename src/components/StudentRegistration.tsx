@@ -4,6 +4,7 @@ import { Button } from './ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { StudentForm } from './StudentForm';
 import { StudentCSVImport } from './StudentCSVImport'; // Mantido o import, mas não usado
+import { GlassCard } from './ui/GlassCard'; // Importando GlassCard
 
 export function StudentRegistration() {
   return (

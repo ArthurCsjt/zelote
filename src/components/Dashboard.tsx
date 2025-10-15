@@ -15,6 +15,7 @@ import { useDatabase } from '@/hooks/useDatabase';
 import { useOverdueLoans } from '@/hooks/useOverdueLoans';
 import IntelligentReportsTab from './IntelligentReportsTab';
 import { LoanHistory } from "./LoanHistory";
+import { GlassCard } from "./ui/GlassCard"; // Importando GlassCard
 
 interface DashboardProps {
   onBack?: () => void;
@@ -26,7 +27,7 @@ const StatsGrid = ({ periodView, filteredLoans, filteredReturns, activeLoans, to
 
   return (
     <div className="grid gap-4 grid-cols-2 md:grid-cols-4 relative z-10">
-      <Card className="glass-card border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-blue-500">
+      <GlassCard className="border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-blue-500">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-xs sm:text-sm font-medium">
             Empréstimos
@@ -39,9 +40,9 @@ const StatsGrid = ({ periodView, filteredLoans, filteredReturns, activeLoans, to
             {filteredReturns.length} devoluções no período
           </p>
         </CardContent>
-      </Card>
+      </GlassCard>
 
-      <Card className="glass-card border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-green-500">
+      <GlassCard className="border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-green-500">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-xs sm:text-sm font-medium">
             Chromebooks Ativos
@@ -57,9 +58,9 @@ const StatsGrid = ({ periodView, filteredLoans, filteredReturns, activeLoans, to
             </span>
           </div>
         </CardContent>
-      </Card>
+      </GlassCard>
 
-      <Card className="glass-card border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-purple-500">
+      <GlassCard className="border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-purple-500">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-xs sm:text-sm font-medium">
             Tempo Médio
@@ -74,9 +75,9 @@ const StatsGrid = ({ periodView, filteredLoans, filteredReturns, activeLoans, to
             média no período
           </p>
         </CardContent>
-      </Card>
+      </GlassCard>
 
-      <Card className="glass-card border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-orange-500">
+      <GlassCard className="border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-orange-500">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-xs sm:text-sm font-medium">
             Taxa de Devolução
@@ -94,7 +95,7 @@ const StatsGrid = ({ periodView, filteredLoans, filteredReturns, activeLoans, to
             </span>
           </div>
         </CardContent>
-      </Card>
+      </GlassCard>
     </div>
   );
 };
@@ -408,7 +409,6 @@ export function Dashboard({
             <HistoryIcon className="h-3 w-3 sm:h-4 sm:w-4" />
             Histórico
           </TabsTrigger>
-          {/* Removendo a aba de relatórios inteligentes daqui, pois ela não estava no menu principal */}
         </TabsList>
 
         {loading ? (
@@ -430,33 +430,33 @@ export function Dashboard({
             />
 
             <TabsContent value="daily" className="space-y-4 mt-6">
-              <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
-                <Card className="glass-card dashboard-card">
-                  <CardHeader className="flex flex-row items-center justify-between">
-                    <div>
-                      <CardTitle className="text-lg">Atividade por Hora</CardTitle>
-                      <CardDescription>
-                        Movimentação ao longo do dia
-                      </CardDescription>
-                    </div>
-                    <BarChartIcon className="h-5 w-5 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent className="h-[250px] sm:h-[300px]">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={periodData} margin={{ top: 5, right: 0, left: -20, bottom: 5 }}>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                        <XAxis dataKey="hora" tick={{ fontSize: 10 }} />
-                        <YAxis tick={{ fontSize: 10 }} />
-                        <Tooltip />
-                        <Legend wrapperStyle={{ fontSize: '12px' }} />
-                        <Bar dataKey="empréstimos" fill="#2563EB" radius={[4, 4, 0, 0]} />
-                        <Bar dataKey="devoluções" fill="#22C55E" radius={[4, 4, 0, 0]} />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </CardContent>
-                </Card>
+              <GlassCard className="dashboard-card">
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <div>
+                    <CardTitle className="text-lg">Atividade por Hora</CardTitle>
+                    <CardDescription>
+                      Movimentação ao longo do dia
+                    </CardDescription>
+                  </div>
+                  <BarChartIcon className="h-5 w-5 text-muted-foreground" />
+                </CardHeader>
+                <CardContent className="h-[250px] sm:h-[300px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={periodData} margin={{ top: 5, right: 0, left: -20, bottom: 5 }}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                      <XAxis dataKey="hora" tick={{ fontSize: 10 }} />
+                      <YAxis tick={{ fontSize: 10 }} />
+                      <Tooltip />
+                      <Legend wrapperStyle={{ fontSize: '12px' }} />
+                      <Bar dataKey="empréstimos" fill="#2563EB" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="devoluções" fill="#22C55E" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </GlassCard>
 
-                <Card className="glass-card dashboard-card">
+              <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
+                <GlassCard className="dashboard-card">
                   <CardHeader className="flex flex-row items-center justify-between">
                     <div>
                       <CardTitle className="text-lg">Status dos Chromebooks</CardTitle>
@@ -477,11 +477,9 @@ export function Dashboard({
                       </PieChart>
                     </ResponsiveContainer>
                   </CardContent>
-                </Card>
-              </div>
+                </GlassCard>
 
-              <div className="grid gap-4 grid-cols-1 md:grid-cols-3 mt-4">
-                <Card className="glass-card dashboard-card">
+                <GlassCard className="dashboard-card">
                   <CardHeader className="flex flex-row items-center justify-between">
                     <div>
                       <CardTitle className="text-lg">Uso por Tipo de Usuário</CardTitle>
@@ -505,9 +503,11 @@ export function Dashboard({
                       </PieChart>
                     </ResponsiveContainer>
                   </CardContent>
-                </Card>
+                </GlassCard>
+              </div>
 
-                <Card className="glass-card dashboard-card">
+              <div className="grid gap-4 grid-cols-1 md:grid-cols-2 mt-4">
+                <GlassCard className="dashboard-card">
                   <CardHeader className="flex flex-row items-center justify-between">
                     <div>
                       <CardTitle className="text-lg">Tempo de Uso Médio</CardTitle>
@@ -528,9 +528,9 @@ export function Dashboard({
                       </BarChart>
                     </ResponsiveContainer>
                   </CardContent>
-                </Card>
+                </GlassCard>
 
-                <Card className="glass-card dashboard-card">
+                <GlassCard className="dashboard-card">
                   <CardHeader className="flex flex-row items-center justify-between">
                     <div>
                       <CardTitle className="text-lg">Estatísticas Rápidas</CardTitle>
@@ -580,38 +580,38 @@ export function Dashboard({
                       </div>
                     </div>
                   </CardContent>
-                </Card>
+                </GlassCard>
               </div>
             </TabsContent>
 
             <TabsContent value="weekly" className="space-y-4 mt-6">
-              <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
-                <Card className="glass-card dashboard-card">
-                  <CardHeader className="flex flex-row items-center justify-between">
-                    <div>
-                      <CardTitle className="text-lg">Atividade Semanal</CardTitle>
-                      <CardDescription>
-                        Últimos 7 dias
-                      </CardDescription>
-                    </div>
-                    <BarChartIcon className="h-5 w-5 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent className="h-[250px] sm:h-[300px]">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <ComposedChart data={periodData} margin={{ top: 5, right: 0, left: -20, bottom: 5 }}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="date" tick={{ fontSize: 10 }} />
-                        <YAxis tick={{ fontSize: 10 }} />
-                        <Tooltip />
-                        <Legend wrapperStyle={{ fontSize: '12px' }} />
-                        <Area type="monotone" dataKey="empréstimos" fill="#2563EB" stroke="#2563EB" fillOpacity={0.3} />
-                        <Bar dataKey="devoluções" fill="#22C55E" radius={[4, 4, 0, 0]} />
-                      </ComposedChart>
-                    </ResponsiveContainer>
-                  </CardContent>
-                </Card>
+              <GlassCard className="dashboard-card">
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <div>
+                    <CardTitle className="text-lg">Atividade Semanal</CardTitle>
+                    <CardDescription>
+                      Últimos 7 dias
+                    </CardDescription>
+                  </div>
+                  <BarChartIcon className="h-5 w-5 text-muted-foreground" />
+                </CardHeader>
+                <CardContent className="h-[250px] sm:h-[300px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <ComposedChart data={periodData} margin={{ top: 5, right: 0, left: -20, bottom: 5 }}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="date" tick={{ fontSize: 10 }} />
+                      <YAxis tick={{ fontSize: 10 }} />
+                      <Tooltip />
+                      <Legend wrapperStyle={{ fontSize: '12px' }} />
+                      <Area type="monotone" dataKey="empréstimos" fill="#2563EB" stroke="#2563EB" fillOpacity={0.3} />
+                      <Bar dataKey="devoluções" fill="#22C55E" radius={[4, 4, 0, 0]} />
+                    </ComposedChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </GlassCard>
 
-                <Card className="glass-card dashboard-card">
+              <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
+                <GlassCard className="dashboard-card">
                   <CardHeader className="flex flex-row items-center justify-between">
                     <div>
                       <CardTitle className="text-lg">Uso por Tipo de Usuário</CardTitle>
@@ -632,11 +632,9 @@ export function Dashboard({
                       </PieChart>
                     </ResponsiveContainer>
                   </CardContent>
-                </Card>
-              </div>
+                </GlassCard>
 
-              <div className="grid gap-4 grid-cols-1 md:grid-cols-2 mt-4">
-                <Card className="glass-card dashboard-card">
+                <GlassCard className="dashboard-card">
                   <CardHeader className="flex flex-row items-center justify-between">
                     <div>
                       <CardTitle className="text-lg">Distribuição de Horários</CardTitle>
@@ -678,9 +676,9 @@ export function Dashboard({
                       </PieChart>
                     </ResponsiveContainer>
                   </CardContent>
-                </Card>
+                </GlassCard>
 
-                <Card className="glass-card dashboard-card">
+                <GlassCard className="dashboard-card">
                   <CardHeader className="flex flex-row items-center justify-between">
                     <div>
                       <CardTitle className="text-lg">Tempo de Uso por Tipo</CardTitle>
@@ -701,60 +699,58 @@ export function Dashboard({
                       </BarChart>
                     </ResponsiveContainer>
                   </CardContent>
-                </Card>
+                </GlassCard>
               </div>
             </TabsContent>
 
             <TabsContent value="monthly" className="space-y-4 mt-6">
-              <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
-                <Card className="glass-card dashboard-card">
-                  <CardHeader className="flex flex-row items-center justify-between">
-                    <div>
-                      <CardTitle className="text-lg">Tendência Mensal</CardTitle>
-                      <CardDescription>
-                        Últimos 30 dias
-                      </CardDescription>
-                    </div>
-                    <BarChartIcon className="h-5 w-5 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent className="h-[250px] sm:h-[300px]">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart data={periodData} margin={{ top: 5, right: 0, left: -20, bottom: 5 }}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="date" tick={{ fontSize: 10 }} />
-                        <YAxis tick={{ fontSize: 10 }} />
-                        <Tooltip />
-                        <Legend wrapperStyle={{ fontSize: '12px' }} />
-                        <Area type="monotone" dataKey="empréstimos" stackId="1" stroke="#2563EB" fill="#2563EB" fillOpacity={0.3} />
-                        <Area type="monotone" dataKey="devoluções" stackId="1" stroke="#22C55E" fill="#22C55E" fillOpacity={0.3} />
-                      </AreaChart>
-                    </ResponsiveContainer>
-                  </CardContent>
-                </Card>
+              <GlassCard className="dashboard-card">
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <div>
+                    <CardTitle className="text-lg">Tendência Mensal</CardTitle>
+                    <CardDescription>
+                      Últimos 30 dias
+                    </CardDescription>
+                  </div>
+                  <BarChartIcon className="h-5 w-5 text-muted-foreground" />
+                </CardHeader>
+                <CardContent className="h-[250px] sm:h-[300px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={periodData} margin={{ top: 5, right: 0, left: -20, bottom: 5 }}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="date" tick={{ fontSize: 10 }} />
+                      <YAxis tick={{ fontSize: 10 }} />
+                      <Tooltip />
+                      <Legend wrapperStyle={{ fontSize: '12px' }} />
+                      <Area type="monotone" dataKey="empréstimos" stackId="1" stroke="#2563EB" fill="#2563EB" fillOpacity={0.3} />
+                      <Area type="monotone" dataKey="devoluções" stackId="1" stroke="#22C55E" fill="#22C55E" fillOpacity={0.3} />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </GlassCard>
 
-                <Card className="glass-card dashboard-card">
-                  <CardHeader className="flex flex-row items-center justify-between">
-                    <div>
-                      <CardTitle className="text-lg">Duração Média de Uso</CardTitle>
-                      <CardDescription>
-                        Por tipo de usuário este mês
-                      </CardDescription>
-                    </div>
-                    <Clock className="h-5 w-5 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent className="h-[250px] sm:h-[300px]">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={durationData} layout="horizontal" margin={{ top: 5, right: 0, left: 0, bottom: 5 }}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis type="number" tick={{ fontSize: 10 }} />
-                        <YAxis dataKey="name" type="category" width={80} tick={{ fontSize: 10 }} />
-                        <Tooltip />
-                        <Bar dataKey="minutos" fill="#8B5CF6" radius={[0, 4, 4, 0]} />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </CardContent>
-                </Card>
-              </div>
+              <GlassCard className="dashboard-card">
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <div>
+                    <CardTitle className="text-lg">Duração Média de Uso</CardTitle>
+                    <CardDescription>
+                      Por tipo de usuário este mês
+                    </CardDescription>
+                  </div>
+                  <Clock className="h-5 w-5 text-muted-foreground" />
+                </CardHeader>
+                <CardContent className="h-[250px] sm:h-[300px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={durationData} layout="horizontal" margin={{ top: 5, right: 0, left: 0, bottom: 5 }}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis type="number" tick={{ fontSize: 10 }} />
+                      <YAxis dataKey="name" type="category" width={80} tick={{ fontSize: 10 }} />
+                      <Tooltip />
+                      <Bar dataKey="minutos" fill="#8B5CF6" radius={[0, 4, 4, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </GlassCard>
             </TabsContent>
             
             {/* ABA DE HISTÓRICO */}

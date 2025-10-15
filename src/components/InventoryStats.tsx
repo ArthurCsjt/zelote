@@ -2,6 +2,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Computer, CheckCircle, Clock, AlertTriangle, MapPin, PieChart as PieChartIcon, XCircle } from 'lucide-react';
 import type { Chromebook } from '@/types/database';
+import { GlassCard } from './ui/GlassCard'; // Importando GlassCard
 
 interface InventoryStatsProps {
   chromebooks: Chromebook[];
@@ -24,7 +25,7 @@ export function InventoryStats({ chromebooks }: InventoryStatsProps) {
   return (
     <div className="grid gap-4 grid-cols-1 mb-6">
       {/* Card de Estatísticas Principais (agora ocupa 100% da largura) */}
-      <Card className="glass-card">
+      <GlassCard>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-xl">
             <Computer className="h-5 w-5 text-primary" />
@@ -60,7 +61,7 @@ export function InventoryStats({ chromebooks }: InventoryStatsProps) {
             </div>
           </div>
         </CardContent>
-      </Card>
+      </GlassCard>
     </div>
   );
 }

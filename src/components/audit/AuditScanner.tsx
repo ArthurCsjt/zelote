@@ -30,6 +30,7 @@ import {
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { AuditMissingItems } from './AuditMissingItems'; // Importando o novo componente
+import { GlassCard } from '@/components/ui/GlassCard'; // Importando GlassCard
 
 export const AuditScanner = () => {
   const { 
@@ -100,7 +101,7 @@ export const AuditScanner = () => {
       <div className="space-y-6">
         
         {/* Painel de Contagem (mantido no topo) */}
-        <Card>
+        <GlassCard>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <CheckCircle className="h-5 w-5" />
@@ -287,7 +288,7 @@ export const AuditScanner = () => {
               </ScrollArea>
             </div>
           </CardContent>
-        </Card>
+        </GlassCard>
         
         {/* Painel de Itens Faltantes (movido para baixo) */}
         <AuditMissingItems 
