@@ -20,7 +20,7 @@ import { BatchDeviceInput } from "./BatchDeviceInput"; // Importando o component
 interface ReturnDialogProps {
   open: boolean;                                   // Controla se o diálogo está aberto
   onOpenChange: (open: boolean) => void;           // Função chamada quando o diálogo está aberto
-  chromebookId: string;                            // ID do Chromebook a ser devolvido
+  chromebookId: string;                            // ID do Chromebook a ser devolvido (apenas para individual)
   onChromebookIdChange: (id: string) => void;      // Função chamada quando o ID muda
   returnData: {                                    // Dados da pessoa que está devolvendo
     name: string;                                  // Nome do solicitante
@@ -36,7 +36,8 @@ interface ReturnDialogProps {
     type: 'individual' | 'lote';
     userType: 'aluno' | 'professor' | 'funcionario';
   }) => void;
-  onConfirm: () => void;                           // Função chamada ao confirmar a devolução
+  // Alterado o tipo de retorno para incluir a lista de IDs de lote
+  onConfirm: (ids: string[], returnData: ReturnFormData) => void;                           // Função chamada ao confirmar a devolução
 }
 
 /**
@@ -99,57 +100,15 @@ export function ReturnDialog({
     const sanitizedId = sanitizeQRCodeData(result);
     
     if (sanitizedId) {
-      if (returnData.type === 'lote') {
-        // Para devolução em lote, a lógica de adição está no BatchDeviceInput,
-        // mas precisamos replicar a lógica de notificação aqui se o scanner for aberto
-        // diretamente pelo ReturnDialog (o que não é o caso, pois o BatchDeviceInput
-        // tem seu próprio scanner).
-        // No entanto, se o scanner for usado para devolução individual:
-        if (returnData.type === 'individual') {
-          onChromebookIdChange(sanitizedId);
-          toast({
-            title: "QR Code lido com sucesso",
-            description: `ID do Chromebook: ${sanitizedId}`,
-          });
-        } else {
-          // Se for lote, passamos o scan para o BatchDeviceInput
-          // Como o BatchDeviceInput tem seu próprio scanner, esta função só será chamada
-          // se o scanner for aberto fora do BatchDeviceInput, o que não é o fluxo ideal.
-          // Vamos garantir que o scanner só seja aberto para o modo individual aqui.
-          // Para o modo lote, o scanner deve ser aberto pelo BatchDeviceInput.
-          // Se for individual, o scanner é aberto pelo botão ao lado do input.
-          onChromebookIdChange(sanitizedId);
-          toast({
-            title: "QR Code lido com sucesso",
-            description: `ID do Chromebook: ${sanitizedId}`,
-          });
-        }
-      } else {
-        // Para devolução individual, atualiza o campo de ID
-        onChromebookIdChange(sanitizedId);
-        toast({
-          title: "QR Code lido com sucesso",
-          description: `ID do Chromebook: ${sanitizedId}`,
-        });
-      }
+      // O scanner só é aberto para o modo individual neste componente
+      onChromebookIdChange(sanitizedId);
+      toast({
+        title: "QR Code lido com sucesso",
+        description: `ID do Chromebook: ${sanitizedId}`,
+      });
     }
     // Fecha o scanner após processar
     setShowScanner(false);
-  };
-
-  /**
-   * Adiciona um dispositivo à lista de lote (função mantida para compatibilidade, mas não usada diretamente)
-   */
-  const addDeviceToBatch = (normalizedInput: string) => {
-    if (normalizedInput && !batchDevices.includes(normalizedInput)) {
-      setBatchDevices([...batchDevices, normalizedInput]);
-    } else if (normalizedInput) {
-      toast({
-        title: "Dispositivo já adicionado",
-        description: `O Chromebook ${normalizedInput} já está na lista`,
-        variant: "destructive",
-      });
-    }
   };
 
   /**
@@ -179,16 +138,12 @@ export function ReturnDialog({
    * Função chamada ao clicar no botão de confirmação
    * Processa a devolução e chama a callback principal
    */
-  const handleConfirm = () => {
+  const handleConfirmClick = () => {
+    let idsToReturn: string[] = [];
+    
     if (returnData.type === 'lote') {
       // === DEVOLUÇÃO EM LOTE ===
-      
-      // Se houver dispositivos na lista, atualiza o campo de IDs
-      if (batchDevices.length > 0) {
-        // Converte a lista de dispositivos para string, separados por vírgula
-        onChromebookIdChange(batchDevices.join(','));
-      } else {
-        // Se não houver dispositivos, exibe uma mensagem de erro
+      if (batchDevices.length === 0) {
         toast({
           title: "Erro",
           description: "Adicione pelo menos um dispositivo para devolução em lote",
@@ -196,9 +151,9 @@ export function ReturnDialog({
         });
         return;
       }
+      idsToReturn = batchDevices;
     } else {
       // === DEVOLUÇÃO INDIVIDUAL ===
-      // Normaliza o ID antes de enviar para a função principal
       const normalizedId = normalizeChromebookId(chromebookId);
       if (!normalizedId) {
         toast({
@@ -208,11 +163,11 @@ export function ReturnDialog({
         });
         return;
       }
-      onChromebookIdChange(normalizedId);
+      idsToReturn = [normalizedId];
     }
     
-    // Chama a função de callback para confirmar a devolução
-    onConfirm();
+    // Chama a função de callback para confirmar a devolução, passando os IDs e os dados
+    onConfirm(idsToReturn, returnData);
   };
 
   // === RENDERIZAÇÃO DA INTERFACE (UI) ===
@@ -310,7 +265,7 @@ export function ReturnDialog({
                 <BatchDeviceInput
                   batchDevices={batchDevices}
                   setBatchDevices={setBatchDevices}
-                  onScan={addDeviceToBatch} // Passamos a função de adicionar para o scanner interno
+                  onScan={handleQRCodeScan} // Passamos a função de adicionar para o scanner interno
                   disabled={false}
                 />
               )}
@@ -434,7 +389,7 @@ export function ReturnDialog({
               Cancelar
             </Button>
             <Button 
-              onClick={handleConfirm}
+              onClick={handleConfirmClick}
               className="flex-1 bg-blue-600 hover:bg-blue-700"
               disabled={!confirmChecked || (returnData.type === 'lote' && batchDevices.length === 0 && !chromebookId)}
             >

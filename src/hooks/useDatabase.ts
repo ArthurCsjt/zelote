@@ -236,7 +236,7 @@ export const useDatabase = () => {
     }
   }, [user]);
   
-  // NOVO: Criação de empréstimos em lote
+  // Criação de empréstimos em lote
   const bulkCreateLoans = useCallback(async (loanDataList: LoanFormData[]): Promise<{ successCount: number, errorCount: number }> => {
     if (!user) {
       toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
@@ -416,6 +416,79 @@ export const useDatabase = () => {
       setLoading(false);
     }
   }, [createReturn]);
+  
+  // NOVO: Devolução em lote
+  const bulkReturnChromebooks = useCallback(async (chromebookIds: string[], data: ReturnFormData): Promise<{ successCount: number, errorCount: number }> => {
+    if (!user) {
+      toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
+      return { successCount: 0, errorCount: chromebookIds.length };
+    }
+
+    setLoading(true);
+    let successCount = 0;
+    let errorCount = 0;
+
+    // 1. Buscar IDs de empréstimos ativos para os Chromebooks fornecidos
+    const { data: activeLoans, error: loanError } = await supabase
+      .from('loan_history')
+      .select('id, chromebook_id')
+      .in('chromebook_id', chromebookIds)
+      .eq('status', 'ativo');
+
+    if (loanError) {
+      toast({ title: "Erro", description: "Falha ao buscar empréstimos ativos.", variant: "destructive" });
+      setLoading(false);
+      return { successCount: 0, errorCount: chromebookIds.length };
+    }
+    
+    const loanMap = new Map(activeLoans.map(loan => [loan.chromebook_id, loan.id]));
+    const returnsToInsert = [];
+
+    for (const chromebookId of chromebookIds) {
+      const loanId = loanMap.get(chromebookId);
+      
+      if (!loanId) {
+        errorCount++;
+        toast({ 
+          title: "Erro no Lote", 
+          description: `Chromebook ${chromebookId} não está ativo para devolução.`, 
+          variant: "destructive" 
+        });
+        continue;
+      }
+
+      returnsToInsert.push({
+        loan_id: loanId,
+        returned_by_name: data.name,
+        returned_by_ra: data.ra,
+        returned_by_email: data.email,
+        returned_by_type: data.userType,
+        created_by: user.id
+      });
+    }
+    
+    if (returnsToInsert.length > 0) {
+      const { error: insertError } = await supabase
+        .from('returns')
+        .insert(returnsToInsert);
+
+      if (insertError) {
+        console.error('Erro de inserção de devolução em lote:', insertError);
+        toast({ 
+          title: "Erro de Inserção", 
+          description: `Falha ao inserir ${returnsToInsert.length} devoluções.`, 
+          variant: "destructive" 
+        });
+        errorCount += returnsToInsert.length;
+      } else {
+        successCount = returnsToInsert.length;
+      }
+    }
+
+    setLoading(false);
+    return { successCount, errorCount: chromebookIds.length - successCount };
+  }, [user]);
+
 
   // Student operations
   const createStudent = useCallback(async (data: StudentData): Promise<any> => {
@@ -560,7 +633,7 @@ export const useDatabase = () => {
     }
   }, [user]);
   
-  // NOVO: Função unificada para exclusão de usuários (Aluno, Professor, Funcionário)
+  // Função unificada para exclusão de usuários (Aluno, Professor, Funcionário)
   const deleteUserRecord = useCallback(async (id: string, userType: UserType): Promise<boolean> => {
     if (!user) {
       toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
@@ -611,6 +684,7 @@ export const useDatabase = () => {
     // Return operations
     createReturn,
     returnChromebookById,
+    bulkReturnChromebooks, // Exportando a nova função
     // User/Registration operations
     createStudent,
     bulkInsertStudents,

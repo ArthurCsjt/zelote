@@ -15,7 +15,7 @@ interface ActiveLoansProps {
 }
 
 export function ActiveLoans({ onBack }: ActiveLoansProps) {
-  const { getActiveLoans, returnChromebookById } = useDatabase();
+  const { getActiveLoans, returnChromebookById, bulkReturnChromebooks } = useDatabase();
   const [activeLoans, setActiveLoans] = useState<LoanHistoryItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [openReturnDialog, setOpenReturnDialog] = useState(false);
@@ -27,6 +27,8 @@ export function ActiveLoans({ onBack }: ActiveLoansProps) {
     type: 'individual',
     userType: 'aluno'
   });
+  // Estado para armazenar IDs de lote do diálogo de devolução
+  const [batchReturnIds, setBatchReturnIds] = useState<string[]>([]);
 
   // Buscar dados iniciais e sob demanda
   const fetchActiveLoans = useCallback(async () => {
@@ -45,9 +47,6 @@ export function ActiveLoans({ onBack }: ActiveLoansProps) {
     fetchActiveLoans();
   }, [fetchActiveLoans]);
 
-  // A lógica de Real-time foi removida para simplificar.
-  // O usuário pode usar o botão "Atualizar" ou confiar no refetch do useOverdueLoans.
-
   const handleReturnClick = (loan: LoanHistoryItem) => {
     setSelectedLoan(loan);
     // Preenche os dados do devolvente com os dados do emprestador como padrão
@@ -61,27 +60,25 @@ export function ActiveLoans({ onBack }: ActiveLoansProps) {
     setOpenReturnDialog(true);
   };
 
-  const handleReturn = async () => {
+  const handleReturn = async (idsToReturn: string[], data: ReturnFormData) => {
     if (!selectedLoan) return;
 
     try {
-      // Se for devolução em lote, o chromebookId contém uma string de IDs separados por vírgula.
-      // A função returnChromebookById no useDatabase só aceita um ID por vez.
-      // Se for lote, precisamos iterar.
-      
-      const chromebookIds = selectedLoan.loan_type === 'lote' 
-        ? selectedLoan.chromebook_id.split(',').map(id => id.trim()).filter(Boolean)
-        : [selectedLoan.chromebook_id];
-
       let successCount = 0;
       let errorCount = 0;
 
-      for (const id of chromebookIds) {
-        const success = await returnChromebookById(id, returnData);
+      if (selectedLoan.loan_type === 'lote') {
+        // Se for lote, usamos a nova função bulkReturnChromebooks
+        const result = await bulkReturnChromebooks(idsToReturn, data);
+        successCount = result.successCount;
+        errorCount = result.errorCount;
+      } else {
+        // Se for individual, usamos a função existente
+        const success = await returnChromebookById(idsToReturn[0], data);
         if (success) {
-          successCount++;
+          successCount = 1;
         } else {
-          errorCount++;
+          errorCount = 1;
         }
       }
       
@@ -96,7 +93,7 @@ export function ActiveLoans({ onBack }: ActiveLoansProps) {
           userType: 'aluno'
         });
         
-        // Atualiza a lista manualmente após a devolução (já que removemos o realtime)
+        // Atualiza a lista manualmente após a devolução
         fetchActiveLoans(); 
 
         toast({
@@ -104,7 +101,7 @@ export function ActiveLoans({ onBack }: ActiveLoansProps) {
           description: `${successCount} Chromebook(s) devolvido(s) com sucesso.`,
         });
       } else if (errorCount > 0) {
-        // O erro individual já é toastado dentro do returnChromebookById
+        // O erro individual/lote já é toastado dentro do useDatabase
       }
     } catch (error) {
       console.error('Erro ao devolver Chromebook:', error);
