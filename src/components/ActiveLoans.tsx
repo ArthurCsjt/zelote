@@ -7,7 +7,6 @@ import { CheckCircle, Clock, User, Monitor, Target, AlertTriangle, RefreshCw, Co
 import { ReturnDialog } from "./ReturnDialog";
 import { useDatabase } from "@/hooks/useDatabase";
 import { toast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
 import type { LoanHistoryItem, ReturnFormData } from "@/types/database";
 import { OverdueAlertsPanel } from "./OverdueAlertsPanel";
 
@@ -29,7 +28,7 @@ export function ActiveLoans({ onBack }: ActiveLoansProps) {
     userType: 'aluno'
   });
 
-  // Buscar dados iniciais
+  // Buscar dados iniciais e sob demanda
   const fetchActiveLoans = useCallback(async () => {
     setLoading(true);
     try {
@@ -46,33 +45,19 @@ export function ActiveLoans({ onBack }: ActiveLoansProps) {
     fetchActiveLoans();
   }, [fetchActiveLoans]);
 
-  // Atualização em tempo real
-  useEffect(() => {
-    const loansChannel = supabase
-      .channel('active-loans-changes')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'loans' },
-        () => {
-          fetchActiveLoans();
-        }
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'returns' },
-        () => {
-          fetchActiveLoans();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(loansChannel);
-    };
-  }, [fetchActiveLoans]);
+  // A lógica de Real-time foi removida para simplificar.
+  // O usuário pode usar o botão "Atualizar" ou confiar no refetch do useOverdueLoans.
 
   const handleReturnClick = (loan: LoanHistoryItem) => {
     setSelectedLoan(loan);
+    // Preenche os dados do devolvente com os dados do emprestador como padrão
+    setReturnData({
+      name: loan.student_name,
+      email: loan.student_email,
+      ra: loan.student_ra || '',
+      type: loan.loan_type,
+      userType: loan.user_type,
+    });
     setOpenReturnDialog(true);
   };
 
@@ -80,9 +65,27 @@ export function ActiveLoans({ onBack }: ActiveLoansProps) {
     if (!selectedLoan) return;
 
     try {
-      const success = await returnChromebookById(selectedLoan.chromebook_id || '', returnData);
+      // Se for devolução em lote, o chromebookId contém uma string de IDs separados por vírgula.
+      // A função returnChromebookById no useDatabase só aceita um ID por vez.
+      // Se for lote, precisamos iterar.
       
-      if (success) {
+      const chromebookIds = selectedLoan.loan_type === 'lote' 
+        ? selectedLoan.chromebook_id.split(',').map(id => id.trim()).filter(Boolean)
+        : [selectedLoan.chromebook_id];
+
+      let successCount = 0;
+      let errorCount = 0;
+
+      for (const id of chromebookIds) {
+        const success = await returnChromebookById(id, returnData);
+        if (success) {
+          successCount++;
+        } else {
+          errorCount++;
+        }
+      }
+      
+      if (successCount > 0) {
         setOpenReturnDialog(false);
         setSelectedLoan(null);
         setReturnData({
@@ -93,11 +96,15 @@ export function ActiveLoans({ onBack }: ActiveLoansProps) {
           userType: 'aluno'
         });
         
-        // Atualiza a lista automaticamente via realtime
+        // Atualiza a lista manualmente após a devolução (já que removemos o realtime)
+        fetchActiveLoans(); 
+
         toast({
           title: "Sucesso",
-          description: "Chromebook devolvido com sucesso",
+          description: `${successCount} Chromebook(s) devolvido(s) com sucesso.`,
         });
+      } else if (errorCount > 0) {
+        // O erro individual já é toastado dentro do returnChromebookById
       }
     } catch (error) {
       console.error('Erro ao devolver Chromebook:', error);
