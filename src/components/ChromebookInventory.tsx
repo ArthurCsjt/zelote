@@ -159,12 +159,16 @@ useEffect(() => {
 
   // Filter Chromebooks based on search term and status
   const filteredChromebooks = chromebooks.filter((chromebook) => {
+    const lowerCaseSearch = searchTerm.toLowerCase();
+    
     const matchesSearch = 
-      chromebook.chromebook_id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      String(chromebook.patrimony_number || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-      chromebook.model.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      String(chromebook.serial_number || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-      String(chromebook.location || '').toLowerCase().includes(searchTerm.toLowerCase());
+      chromebook.chromebook_id.toLowerCase().includes(lowerCaseSearch) ||
+      String(chromebook.patrimony_number || '').toLowerCase().includes(lowerCaseSearch) ||
+      chromebook.model.toLowerCase().includes(lowerCaseSearch) ||
+      String(chromebook.serial_number || '').toLowerCase().includes(lowerCaseSearch) ||
+      String(chromebook.location || '').toLowerCase().includes(lowerCaseSearch) ||
+      String(chromebook.manufacturer || '').toLowerCase().includes(lowerCaseSearch) || // Adicionado Fabricante
+      String(chromebook.classroom || '').toLowerCase().includes(lowerCaseSearch); // Adicionado Sala de Aula
     
     const matchesStatus = statusFilter === 'all' || chromebook.status === statusFilter;
     const matchesLocation = locationFilter === 'all' || 
@@ -427,7 +431,7 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
           <Input
-            placeholder="Buscar por ID, patrimônio, modelo, série ou localização..."
+            placeholder="Buscar por ID, patrimônio, modelo, série, fabricante ou localização..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10"
