@@ -12,6 +12,7 @@ import type {
   ConditionStats,
   TimeStats,
   AuditDiscrepancy,
+  Chromebook, // Importado Chromebook
 } from '@/types/database';
 
 // Mantemos o mesmo alias usado nos componentes
@@ -26,6 +27,7 @@ export const useInventoryAudit = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [filters, setFilters] = useState<AuditFilters>({});
   const [totalExpected, setTotalExpected] = useState(0);
+  const [allChromebooks, setAllChromebooks] = useState<Chromebook[]>([]); // Novo estado para todos os Chromebooks
   const [inventoryStats, setInventoryStats] = useState({
     total: 0,
     disponiveis: 0,
@@ -60,6 +62,11 @@ export const useInventoryAudit = () => {
     }
     setFilteredItems(filtered);
   }, [countedItems, filters]);
+
+  // Calcula itens faltantes
+  const missingItems = allChromebooks.filter(cb => 
+    !countedItems.some(item => item.chromebook_id === cb.id)
+  );
 
   // Estatísticas
   const calculateStats = useCallback(() => {
@@ -134,7 +141,34 @@ export const useInventoryAudit = () => {
     if (!user?.id) return;
     try {
       setIsProcessing(true);
-      const { data, error } = await supabase
+      
+      // 1. Buscar todos os Chromebooks e estatísticas de inventário
+      const [
+        { data: allCbData, error: allCbError },
+        { count: totalAll }, 
+        { count: disponiveis }, 
+        { count: emprestados }, 
+        { count: fixos }
+      ] = await Promise.all([
+        supabase.from<any>('chromebooks').select('*'),
+        supabase.from<any>('chromebooks').select('*', { count: 'exact', head: true }),
+        supabase.from<any>('chromebooks').select('*', { count: 'exact', head: true }).eq('status', 'disponivel'),
+        supabase.from<any>('chromebooks').select('*', { count: 'exact', head: true }).eq('status', 'emprestado'),
+        supabase.from<any>('chromebooks').select('*', { count: 'exact', head: true }).eq('status', 'fixo'),
+      ]);
+
+      if (allCbError) throw allCbError;
+      setAllChromebooks(allCbData || []);
+      setInventoryStats({
+        total: totalAll || 0,
+        disponiveis: disponiveis || 0,
+        emprestados: emprestados || 0,
+        fixos: fixos || 0,
+      });
+      setTotalExpected(totalAll || 0);
+
+      // 2. Buscar auditoria ativa
+      const { data: auditData, error: auditError } = await supabase
         .from<any>('inventory_audits')
         .select('*')
         .eq('status', 'em_andamento')
@@ -142,24 +176,24 @@ export const useInventoryAudit = () => {
         .order('started_at', { ascending: false })
         .limit(1)
         .single();
-      if (error && (error as any).code !== 'PGRST116') throw error;
-      setActiveAudit((data || null) as InventoryAudit | null);
+        
+      if (auditError && (auditError as any).code !== 'PGRST116') throw auditError;
+      setActiveAudit((auditData || null) as InventoryAudit | null);
 
-      if (data) {
+      if (auditData) {
+        // 3. Buscar itens contados
         const { data: items, error: itemsError } = await supabase
           .from<any>('audit_items')
           .select('*')
-          .eq('audit_id', data.id)
+          .eq('audit_id', auditData.id)
           .order('counted_at', { ascending: false });
         if (itemsError) throw itemsError;
 
-        const itemPromises = (items || []).map(async (item: any) => {
-          const { data: chromebook } = await supabase
-            .from<any>('chromebooks')
-            .select('*')
-            .eq('id', item.chromebook_id)
-            .single();
+        // Mapear itens contados com detalhes do chromebook
+        const chromebookMap = new Map(allCbData?.map((cb: Chromebook) => [cb.id, cb]));
 
+        const fullItems = (items || []).map((item: any) => {
+          const chromebook = chromebookMap.get(item.chromebook_id);
           const display: DisplayCountedItem = {
             ...item,
             display_id: chromebook?.chromebook_id || 'ID não encontrado',
@@ -172,40 +206,10 @@ export const useInventoryAudit = () => {
           } as DisplayCountedItem;
           return display;
         });
-        const fullItems = await Promise.all(itemPromises);
+        
         setCountedItems(fullItems);
-
-        // Estatísticas de inventário (sempre atualizadas)
-        const [{ count: totalAll }, { count: disponiveis }, { count: emprestados }, { count: fixos }] = await Promise.all([
-          supabase.from<any>('chromebooks').select('*', { count: 'exact', head: true }),
-          supabase.from<any>('chromebooks').select('*', { count: 'exact', head: true }).eq('status', 'disponivel'),
-          supabase.from<any>('chromebooks').select('*', { count: 'exact', head: true }).eq('status', 'emprestado'),
-          supabase.from<any>('chromebooks').select('*', { count: 'exact', head: true }).eq('status', 'fixo'),
-        ]);
-        setInventoryStats({
-          total: totalAll || 0,
-          disponiveis: disponiveis || 0,
-          emprestados: emprestados || 0,
-          fixos: fixos || 0,
-        });
-        // Para taxa de conclusão, usar o total de todos
-        setTotalExpected(totalAll || 0);
       } else {
         setCountedItems([]);
-        // Atualiza stats mesmo sem auditoria ativa
-        const [{ count: totalAll }, { count: disponiveis }, { count: emprestados }, { count: fixos }] = await Promise.all([
-          supabase.from<any>('chromebooks').select('*', { count: 'exact', head: true }),
-          supabase.from<any>('chromebooks').select('*', { count: 'exact', head: true }).eq('status', 'disponivel'),
-          supabase.from<any>('chromebooks').select('*', { count: 'exact', head: true }).eq('status', 'emprestado'),
-          supabase.from<any>('chromebooks').select('*', { count: 'exact', head: true }).eq('status', 'fixo'),
-        ]);
-        setInventoryStats({
-          total: totalAll || 0,
-          disponiveis: disponiveis || 0,
-          emprestados: emprestados || 0,
-          fixos: fixos || 0,
-        });
-        setTotalExpected(totalAll || 0);
       }
     } catch (e: any) {
       toast({ title: 'Erro ao carregar auditoria ativa', description: e.message, variant: 'destructive' });
@@ -271,6 +275,8 @@ export const useInventoryAudit = () => {
 
     try {
       setIsProcessing(true);
+      
+      // 1. Encontrar o Chromebook pelo ID normalizado ou outros campos
       const { data: chromebook, error: findError } = await supabase
         .from<any>('chromebooks')
         .select('*')
@@ -285,6 +291,7 @@ export const useInventoryAudit = () => {
         .single();
       if (findError || !chromebook) throw new Error(`Chromebook com identificador "${identifier}" não encontrado.`);
 
+      // 2. Inserir o item na contagem
       const { data, error } = await supabase
         .from<any>('audit_items')
         .insert({
@@ -302,6 +309,7 @@ export const useInventoryAudit = () => {
         .single();
       if (error) throw error;
 
+      // 3. Criar o objeto de exibição
       const display: DisplayCountedItem = {
         ...data,
         display_id: chromebook.chromebook_id,
@@ -359,8 +367,13 @@ export const useInventoryAudit = () => {
     const stats = calculateStats();
     const { totalCounted, completionRate, locationStats, methodStats, conditionStats, timeStats } = stats;
 
-    const missing: AuditDiscrepancy[] = [];
-    const extra: AuditDiscrepancy[] = [];
+    const missing: AuditDiscrepancy[] = missingItems.map(item => ({
+      chromebook_id: item.chromebook_id,
+      expected_location: item.location,
+      condition_expected: item.condition,
+    }));
+    
+    const extra: AuditDiscrepancy[] = []; // Não calculamos 'extra' aqui, mas mantemos o tipo
     const locationMismatches: AuditDiscrepancy[] = [];
     const conditionIssues: AuditDiscrepancy[] = [];
 
@@ -393,7 +406,7 @@ export const useInventoryAudit = () => {
       discrepancies: { missing, extra, locationMismatches, conditionIssues },
       statistics: { byLocation: locationStats, byMethod: methodStats, byCondition: conditionStats, byTime: timeStats },
     };
-  }, [countedItems, activeAudit, totalExpected, calculateStats]);
+  }, [countedItems, activeAudit, totalExpected, calculateStats, missingItems]);
 
   // Finalizar auditoria
   const completeAudit = async () => {
@@ -480,5 +493,7 @@ export const useInventoryAudit = () => {
     reloadAudits,
     generateReport,
     calculateStats,
+    missingItems, // Exportando a lista de faltantes
+    allChromebooks, // Exportando todos os chromebooks
   };
 }
