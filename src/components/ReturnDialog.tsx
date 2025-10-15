@@ -18,7 +18,7 @@ import type { UserSearchResult } from '@/hooks/useUserSearch'; // Importando tip
 // Define a interface de props do componente
 interface ReturnDialogProps {
   open: boolean;                                   // Controla se o diálogo está aberto
-  onOpenChange: (open: boolean) => void;           // Função chamada quando o estado de abertura muda
+  onOpenChange: (open: boolean) => void;           // Função chamada quando o diálogo está aberto
   chromebookId: string;                            // ID do Chromebook a ser devolvido
   onChromebookIdChange: (id: string) => void;      // Função chamada quando o ID muda
   returnData: {                                    // Dados da pessoa que está devolvendo
@@ -157,6 +157,29 @@ export function ReturnDialog({
   };
 
   /**
+   * Normaliza e valida o ID do Chromebook no modo individual.
+   */
+  const handleValidateIndividualId = () => {
+    const normalizedId = normalizeChromebookId(chromebookId);
+    
+    if (!normalizedId) {
+      toast({
+        title: "Erro",
+        description: "O ID do Chromebook não pode estar vazio.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    onChromebookIdChange(normalizedId);
+
+    toast({
+      title: "ID Verificado",
+      description: `ID normalizado: ${normalizedId}. Pronto para devolução.`,
+    });
+  };
+
+  /**
    * Função chamada ao clicar no botão de confirmação
    * Processa a devolução e chama a callback principal
    */
@@ -251,13 +274,30 @@ export function ReturnDialog({
                     ID do Chromebook
                   </Label>
                   <div className="flex gap-2">
-                    <Input
-                      id="chromebookId"
-                      value={chromebookId}
-                      onChange={(e) => onChromebookIdChange(e.target.value)}
-                      placeholder="Digite o ID do Chromebook (ex: 12 ou CHR012)"
-                      className="bg-white border-gray-200"
-                    />
+                    <div className="relative flex-1">
+                      <Input
+                        id="chromebookId"
+                        value={chromebookId}
+                        onChange={(e) => onChromebookIdChange(e.target.value)}
+                        placeholder="Digite o ID do Chromebook (ex: 12 ou CHR012)"
+                        className="bg-white border-gray-200 pr-10"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            handleValidateIndividualId();
+                          }
+                        }}
+                      />
+                      <Button 
+                        type="button" 
+                        variant="ghost" 
+                        onClick={handleValidateIndividualId}
+                        className="absolute right-1 top-1 h-8 px-2 text-blue-600 hover:text-blue-700 hover:bg-blue-100"
+                        title="Validar ID"
+                      >
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                    </div>
                     {/* Botão para escanear QR Code */}
                     <Button 
                       type="button"
