@@ -8,7 +8,7 @@ import { Badge } from "./ui/badge";
 import { QRCodeReader } from "./QRCodeReader";
 import { toast } from "./ui/use-toast";
 import { Textarea } from "./ui/textarea";
-import { Computer, Plus, QrCode, User, AlertTriangle, CheckCircle } from "lucide-react";
+import { Computer, Plus, QrCode, User, AlertTriangle, CheckCircle, RotateCcw } from "lucide-react";
 import { Checkbox } from "./ui/checkbox";
 import { sanitizeQRCodeData, normalizeChromebookId } from "@/utils/security"; // Importando a função de normalização
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card"; // Importando Card para melhor agrupamento
