@@ -37,6 +37,7 @@ import { useProfileRole } from "@/hooks/use-profile-role";
 import { supabase } from "@/integrations/supabase/client";
 import { useDatabase } from "@/hooks/useDatabase"; // Importando useDatabase
 import type { Chromebook, ChromebookData } from "@/types/database";
+import { InventoryStats } from "./InventoryStats"; // Importando o novo componente de estatísticas
 
 // Interface for Chromebook data structure (matching database)
 interface ChromebookDataExtended extends Chromebook {
@@ -303,20 +304,16 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
     }
   };
 
-  // Estatísticas atualizadas
-  const totalInativo = chromebooks.filter(c => c.status === 'fora_uso').length;
-  const totalFixo = chromebooks.filter(c => c.status === 'fixo').length;
-  const totalMovel = chromebooks.length - totalFixo - totalInativo;
-
-
   return (
     <div className="max-w-6xl mx-auto p-6 glass-morphism animate-fade-in relative">
       {/* Background gradient overlay */}
       <div className="absolute inset-0 -z-10 bg-gradient-to-br from-blue-50/30 via-purple-50/20 to-pink-50/30 rounded-3xl blur-2xl transform scale-110" />
       
+      {/* Estatísticas e Gráfico */}
+      <InventoryStats chromebooks={chromebooks} />
 
       {/* Search and filters */}
-      <div className="flex flex-col sm:flex-row gap-4 mb-6">
+      <div className="flex flex-col sm:flex-row gap-4 mb-6 relative z-10">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
           <Input
@@ -345,36 +342,10 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
         </div>
         
         <div className="text-sm text-gray-500 flex items-center">
-          Total: {filteredChromebooks.length} Chromebooks
+          Resultados: {filteredChromebooks.length} Chromebooks
         </div>
       </div>
 
-      {/* Statistics */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 relative z-10">
-        <div className="glass-card p-4 text-center transform hover:scale-105 transition-all duration-300 hover:shadow-lg">
-          <p className="text-2xl font-bold bg-gradient-to-r from-gray-600 to-gray-800 bg-clip-text text-transparent">{chromebooks.length}</p>
-          <p className="text-sm text-gray-600">Total</p>
-        </div>
-        <div className="glass-card p-4 text-center transform hover:scale-105 transition-all duration-300 hover:shadow-lg">
-          <p className="text-2xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
-            {chromebooks.filter(c => c.status === 'disponivel').length}
-          </p>
-          <p className="text-sm text-gray-600">Disponíveis</p>
-        </div>
-        <div className="glass-card p-4 text-center transform hover:scale-105 transition-all duration-300 hover:shadow-lg">
-          <p className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-violet-600 bg-clip-text text-transparent">
-            {chromebooks.filter(c => c.status === 'emprestado').length}
-          </p>
-          <p className="text-sm text-gray-600">Emprestados</p>
-        </div>
-        <div className="glass-card p-4 text-center transform hover:scale-105 transition-all duration-300 hover:shadow-lg">
-          <p className="text-2xl font-bold bg-gradient-to-r from-red-700 to-red-500 bg-clip-text text-transparent">
-            {chromebooks.filter(c => c.status === 'manutencao').length}
-          </p>
-          <p className="text-sm text-gray-600">Manutenção</p>
-        </div>
-      </div>
-      
       {/* Table of Chromebooks */}
       <div className="glass-card border-white/30 rounded-2xl overflow-hidden relative z-10">
         <Table>
