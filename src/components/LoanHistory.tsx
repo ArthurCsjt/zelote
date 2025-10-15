@@ -1,36 +1,128 @@
+import { useState, useMemo } from "react";
 import { format } from "date-fns";
 import { Badge } from "./ui/badge";
 import { Card, CardContent } from "./ui/card";
-import { Clock, Monitor, User, CheckCircle, AlertTriangle } from "lucide-react";
+import { Clock, Monitor, User, CheckCircle, AlertTriangle, Search, Filter, X } from "lucide-react";
 import type { LoanHistoryItem } from "@/types/database";
+import { Input } from "./ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
+import { Button } from "./ui/button";
 
 interface LoanHistoryProps {
   history: LoanHistoryItem[];
 }
 
 export function LoanHistory({ history }: LoanHistoryProps) {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [userTypeFilter, setUserTypeFilter] = useState<string>("all");
+
+  const filteredHistory = useMemo(() => {
+    let filtered = history;
+    const lowerCaseSearch = searchTerm.toLowerCase();
+
+    // 1. Filtrar por termo de pesquisa
+    if (lowerCaseSearch) {
+      filtered = filtered.filter(loan => 
+        loan.student_name.toLowerCase().includes(lowerCaseSearch) ||
+        loan.student_email.toLowerCase().includes(lowerCaseSearch) ||
+        (loan.student_ra && loan.student_ra.toLowerCase().includes(lowerCaseSearch)) ||
+        (loan.chromebook_id && loan.chromebook_id.toLowerCase().includes(lowerCaseSearch)) ||
+        (loan.chromebook_model && loan.chromebook_model.toLowerCase().includes(lowerCaseSearch))
+      );
+    }
+
+    // 2. Filtrar por status
+    if (statusFilter !== "all") {
+      filtered = filtered.filter(loan => loan.status === statusFilter);
+    }
+
+    // 3. Filtrar por tipo de usuário
+    if (userTypeFilter !== "all") {
+      filtered = filtered.filter(loan => loan.user_type === userTypeFilter);
+    }
+
+    return filtered;
+  }, [history, searchTerm, statusFilter, userTypeFilter]);
+
+  const clearFilters = () => {
+    setSearchTerm("");
+    setStatusFilter("all");
+    setUserTypeFilter("all");
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-2">
         <Clock className="h-5 w-5 text-primary" />
         <h2 className="text-xl font-semibold">Histórico de Empréstimos</h2>
-        <Badge variant="secondary">{history.length}</Badge>
+        <Badge variant="secondary">{filteredHistory.length} / {history.length}</Badge>
       </div>
 
-      {history.length === 0 ? (
+      {/* Painel de Filtros */}
+      <Card className="glass-card p-4">
+        <div className="flex flex-col sm:flex-row gap-3 items-center">
+          {/* Busca */}
+          <div className="relative flex-1 w-full">
+            <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+            <Input
+              placeholder="Buscar por nome, email, RA ou ID do Chromebook..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+
+          {/* Filtro de Status */}
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-full sm:w-[180px]">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos os Status</SelectItem>
+              <SelectItem value="ativo">Ativo</SelectItem>
+              <SelectItem value="devolvido">Devolvido</SelectItem>
+              <SelectItem value="atrasado">Atrasado</SelectItem>
+            </SelectContent>
+          </Select>
+
+          {/* Filtro de Tipo de Usuário */}
+          <Select value={userTypeFilter} onValueChange={setUserTypeFilter}>
+            <SelectTrigger className="w-full sm:w-[180px]">
+              <SelectValue placeholder="Tipo de Usuário" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos os Usuários</SelectItem>
+              <SelectItem value="aluno">Aluno</SelectItem>
+              <SelectItem value="professor">Professor</SelectItem>
+              <SelectItem value="funcionario">Funcionário</SelectItem>
+            </SelectContent>
+          </Select>
+          
+          {/* Botão Limpar */}
+          {(searchTerm || statusFilter !== 'all' || userTypeFilter !== 'all') && (
+            <Button variant="outline" size="icon" onClick={clearFilters} title="Limpar Filtros">
+              <X className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
+      </Card>
+
+      {filteredHistory.length === 0 ? (
         <Card>
           <CardContent className="py-8">
             <div className="text-center text-muted-foreground">
               <Clock className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p className="text-lg font-medium mb-2">Nenhum registro no histórico</p>
-              <p className="text-sm">Ainda não há empréstimos registrados</p>
+              <p className="text-lg font-medium mb-2">Nenhum registro encontrado</p>
+              <p className="text-sm">Ajuste os filtros ou a pesquisa.</p>
             </div>
           </CardContent>
         </Card>
       ) : (
         <div className="grid gap-4">
-          {history.map((loan) => {
+          {filteredHistory.map((loan) => {
             const isReturned = loan.status === 'devolvido';
+            const isOverdue = loan.status === 'atrasado';
             const returnedByDifferentUser = isReturned && 
               loan.returned_by_email && 
               loan.returned_by_email !== loan.student_email;
@@ -49,10 +141,10 @@ export function LoanHistory({ history }: LoanHistoryProps) {
                         </div>
                       </div>
                       <Badge 
-                        variant={isReturned ? "default" : "secondary"}
-                        className={isReturned ? "bg-green-100 text-green-800 hover:bg-green-100" : ""}
+                        variant={isReturned ? "default" : isOverdue ? "destructive" : "secondary"}
+                        className={isReturned ? "bg-green-100 text-green-800 hover:bg-green-100" : isOverdue ? "" : "bg-yellow-100 text-yellow-800 hover:bg-yellow-100"}
                       >
-                        {isReturned ? "Devolvido" : "Ativo"}
+                        {isOverdue ? "Atrasado" : isReturned ? "Devolvido" : "Ativo"}
                       </Badge>
                     </div>
 
