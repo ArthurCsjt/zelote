@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { MoreHorizontal, Loader2 } from "lucide-react";
+import { MoreHorizontal, Loader2, Trash2 } from "lucide-react";
 
 type UserProfile = {
   id: string;
@@ -29,6 +29,8 @@ export const UserManagement = () => {
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState<'admin' | 'user'>('user');
   const [userToDelete, setUserToDelete] = useState<UserProfile | null>(null);
+  const [isDeletePendingOpen, setIsDeletePendingOpen] = useState(false);
+  const [pendingInviteToDelete, setPendingInviteToDelete] = useState<UserProfile | null>(null);
 
   const sendInvite = async (email: string, role: 'admin' | 'user') => {
     if (!email) {
@@ -69,6 +71,21 @@ export const UserManagement = () => {
       toast({ title: "Erro!", description: `Não foi possível excluir o usuário: ${error.message}`, variant: "destructive" });
     } finally {
       setUserToDelete(null);
+    }
+  };
+  
+  const handleDeletePendingInviteConfirm = async () => {
+    if (!pendingInviteToDelete) return;
+    try {
+      const { error } = await supabase.functions.invoke('delete-user', { body: { userId: pendingInviteToDelete.id } });
+      if (error) throw error;
+      toast({ title: "Sucesso!", description: `Convite para ${pendingInviteToDelete.email} foi cancelado.` });
+      queryClient.invalidateQueries({ queryKey: ['all_users'] });
+    } catch (error: any) {
+      toast({ title: "Erro!", description: `Não foi possível cancelar o convite: ${error.message}`, variant: "destructive" });
+    } finally {
+      setPendingInviteToDelete(null);
+      setIsDeletePendingOpen(false);
     }
   };
 
@@ -142,7 +159,20 @@ export const UserManagement = () => {
             pendingUsers.map(user => (
               <div key={user.id} className="flex items-center justify-between p-2 rounded-md hover:bg-black/5">
                 <p className="text-sm font-medium">{user.email}</p>
-                <Button variant="outline" size="sm" onClick={() => sendInvite(user.email, user.role)}>Reenviar</Button>
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" size="sm" onClick={() => sendInvite(user.email, user.role)}>Reenviar</Button>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="text-red-600 hover:text-red-800"
+                    onClick={() => {
+                      setPendingInviteToDelete(user);
+                      setIsDeletePendingOpen(true);
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             ))
           }
@@ -192,6 +222,7 @@ export const UserManagement = () => {
         </CardContent>
       </Card>
 
+      {/* Diálogo de Confirmação para Usuários Ativos */}
       <AlertDialog open={!!userToDelete} onOpenChange={() => setUserToDelete(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -204,6 +235,25 @@ export const UserManagement = () => {
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={handleDeleteUserConfirm}>
               Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      
+      {/* Diálogo de Confirmação para Convites Pendentes */}
+      <AlertDialog open={isDeletePendingOpen} onOpenChange={setIsDeletePendingOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Cancelar Convite Pendente</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja cancelar o convite enviado para <span className="font-bold">{pendingInviteToDelete?.email}</span>? O usuário não poderá mais se registrar com este link.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Manter Convite</AlertDialogCancel>
+            <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={handleDeletePendingInviteConfirm}>
+              <Trash2 className="h-4 w-4 mr-2" />
+              Cancelar Convite
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
