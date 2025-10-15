@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
@@ -6,14 +6,9 @@ import type {
   InventoryAudit,
   CountedItemWithDetails,
   AuditFilters,
-  AuditReport,
-  LocationStats,
-  MethodStats,
-  ConditionStats,
-  TimeStats,
-  AuditDiscrepancy,
-  Chromebook, // Importado Chromebook
+  Chromebook,
 } from '@/types/database';
+import { useAuditCalculations } from './useAuditCalculations'; // NOVO IMPORT
 
 // Mantemos o mesmo alias usado nos componentes
 type DisplayCountedItem = CountedItemWithDetails;
@@ -27,7 +22,7 @@ export const useInventoryAudit = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [filters, setFilters] = useState<AuditFilters>({});
   const [totalExpected, setTotalExpected] = useState(0);
-  const [allChromebooks, setAllChromebooks] = useState<Chromebook[]>([]); // Novo estado para todos os Chromebooks
+  const [allChromebooks, setAllChromebooks] = useState<Chromebook[]>([]);
   const [inventoryStats, setInventoryStats] = useState({
     total: 0,
     disponiveis: 0,
@@ -35,7 +30,15 @@ export const useInventoryAudit = () => {
     fixos: 0,
   });
 
-  // Aplica filtros
+  // NOVO: Usando o hook de cálculo
+  const { missingItems, calculateStats, generateReport } = useAuditCalculations(
+    activeAudit,
+    countedItems,
+    allChromebooks,
+    totalExpected
+  );
+
+  // Aplica filtros (Lógica de filtro permanece aqui, pois depende do estado local)
   useEffect(() => {
     let filtered = countedItems;
 
@@ -62,62 +65,6 @@ export const useInventoryAudit = () => {
     }
     setFilteredItems(filtered);
   }, [countedItems, filters]);
-
-  // Calcula itens faltantes
-  const missingItems = allChromebooks.filter(cb => 
-    !countedItems.some(item => item.chromebook_id === cb.id)
-  );
-
-  // Estatísticas
-  const calculateStats = useCallback(() => {
-    const totalCounted = countedItems.length;
-    const completionRate = totalExpected > 0 ? (totalCounted / totalExpected * 100).toFixed(1) : '0';
-
-    const byLocationMap = countedItems.reduce((acc, item) => {
-      const loc = item.location || 'Não informado';
-      acc[loc] = (acc[loc] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
-
-    const locationStats: LocationStats[] = Object.entries(byLocationMap).map(([location, counted]) => ({
-      location,
-      counted,
-      expected: 0,
-      discrepancy: 0 - counted,
-    }));
-
-    const qrCount = countedItems.filter(i => i.scan_method === 'qr_code').length;
-    const manualCount = countedItems.filter(i => i.scan_method === 'manual_id').length;
-    const methodStats: MethodStats = {
-      qr_code: qrCount,
-      manual: manualCount,
-      percentage_qr: totalCounted > 0 ? (qrCount / totalCounted * 100) : 0,
-      percentage_manual: totalCounted > 0 ? (manualCount / totalCounted * 100) : 0,
-    };
-
-    const condMap = countedItems.reduce((acc, item) => {
-      const c = item.condition_found || item.condition || 'Não informado';
-      acc[c] = (acc[c] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
-    const conditionStats: ConditionStats[] = Object.entries(condMap).map(([condition, count]) => ({
-      condition,
-      count,
-      percentage: totalCounted > 0 ? (count / totalCounted * 100) : 0,
-    }));
-
-    const timeMap = countedItems.reduce((acc, i) => {
-      const h = new Date(i.counted_at).getHours().toString().padStart(2, '0');
-      acc[h] = (acc[h] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
-    let cumulative = 0;
-    const timeStats: TimeStats[] = Object.entries(timeMap)
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([hour, count]) => ({ hour, count, cumulative: (cumulative += count) }));
-
-    return { totalCounted, completionRate: `${completionRate}%`, locationStats, methodStats, conditionStats, timeStats };
-  }, [countedItems, totalExpected]);
 
   // Carrega histórico
   const loadCompletedAudits = useCallback(async () => {
@@ -265,8 +212,8 @@ export const useInventoryAudit = () => {
     const normalized = onlyDigits
       ? `CHR${raw.padStart(3, '0')}`
       : raw.toUpperCase().startsWith('CHR')
-        ? `CHR${raw.slice(3)}`.toUpperCase()
-        : raw;
+        ? raw.toUpperCase() // Mantém o CHR maiúsculo
+        : raw; // Se não for CHR nem dígito, usa o raw
 
     if (countedItems.some(i => i.display_id === normalized || i.display_id === raw)) {
       toast({ title: 'Item já contado', description: `O Chromebook "${identifier}" já está na lista.`, variant: 'destructive' });
@@ -362,58 +309,12 @@ export const useInventoryAudit = () => {
     }
   };
 
-  // Relatório
-  const generateReport = useCallback((): AuditReport => {
-    const stats = calculateStats();
-    const { totalCounted, completionRate, locationStats, methodStats, conditionStats, timeStats } = stats;
-
-    const missing: AuditDiscrepancy[] = missingItems.map(item => ({
-      chromebook_id: item.chromebook_id,
-      expected_location: item.location,
-      condition_expected: item.condition,
-    }));
-    
-    const extra: AuditDiscrepancy[] = []; // Não calculamos 'extra' aqui, mas mantemos o tipo
-    const locationMismatches: AuditDiscrepancy[] = [];
-    const conditionIssues: AuditDiscrepancy[] = [];
-
-    countedItems.forEach(item => {
-      if (item.condition && item.condition_found && item.condition !== item.condition_found) {
-        conditionIssues.push({
-          chromebook_id: item.display_id || item.chromebook_id,
-          condition_expected: item.condition,
-          condition_found: item.condition_found,
-        });
-      }
-      if (item.expected_location && item.location_found && item.expected_location !== item.location_found) {
-        locationMismatches.push({
-          chromebook_id: item.display_id || item.chromebook_id,
-          expected_location: item.expected_location,
-          location_found: item.location_found,
-        });
-      }
-    });
-
-    return {
-      summary: {
-        totalCounted,
-        totalExpected,
-        completionRate,
-        duration: activeAudit ? calculateDuration(activeAudit.started_at) : '0m',
-        itemsPerHour: calculateItemsPerHour(totalCounted, activeAudit?.started_at),
-        averageTimePerItem: totalCounted > 0 ? `${Math.round((Date.now() - new Date(activeAudit?.started_at || 0).getTime()) / totalCounted / 1000)}s` : '0s',
-      },
-      discrepancies: { missing, extra, locationMismatches, conditionIssues },
-      statistics: { byLocation: locationStats, byMethod: methodStats, byCondition: conditionStats, byTime: timeStats },
-    };
-  }, [countedItems, activeAudit, totalExpected, calculateStats, missingItems]);
-
   // Finalizar auditoria
   const completeAudit = async () => {
     if (!activeAudit) return;
     try {
       setIsProcessing(true);
-      const report = generateReport();
+      const report = generateReport(); // Usa a função do hook de cálculo
       const { error } = await supabase
         .from<any>('inventory_audits')
         .update({
@@ -461,19 +362,6 @@ export const useInventoryAudit = () => {
     }
   };
 
-  // Auxiliares
-  function calculateDuration(startTime: string): string {
-    const duration = Date.now() - new Date(startTime).getTime();
-    const minutes = Math.floor(duration / 60000);
-    const hours = Math.floor(minutes / 60);
-    return hours > 0 ? `${hours}h ${minutes % 60}m` : `${minutes}m`;
-  }
-  function calculateItemsPerHour(count: number, startTime?: string): number {
-    if (!startTime || count === 0) return 0;
-    const durationHours = (Date.now() - new Date(startTime).getTime()) / (1000 * 60 * 60);
-    return Math.round((count / durationHours) * 10) / 10;
-  }
-
   return {
     activeAudit,
     completedAudits,
@@ -493,7 +381,7 @@ export const useInventoryAudit = () => {
     reloadAudits,
     generateReport,
     calculateStats,
-    missingItems, // Exportando a lista de faltantes
-    allChromebooks, // Exportando todos os chromebooks
+    missingItems,
+    allChromebooks,
   };
 }
