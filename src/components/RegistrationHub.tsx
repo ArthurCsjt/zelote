@@ -62,8 +62,8 @@ export function RegistrationHub({ onBack, onRegistrationSuccess }: RegistrationH
           <RegistrationCardMenu onNavigate={handleNavigate} currentView={currentView} />
         </div>
 
-        {/* Título do Formulário Selecionado */}
-        <h2 className="text-xl font-bold text-gray-800 mb-4 mt-8 border-b pb-2">
+        {/* Título do Formulário Selecionado: Centralizado e menor (text-lg) */}
+        <h2 className="text-lg font-bold text-gray-800 mb-4 mt-8 border-b pb-2 text-center">
           {getTitle()}
         </h2>
         
