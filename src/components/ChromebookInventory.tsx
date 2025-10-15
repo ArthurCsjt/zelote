@@ -494,8 +494,8 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
           <TableHeader>
             <TableRow>
               <TableHead>ID</TableHead>
-              <TableHead>Fabricante</TableHead> {/* Ordem alterada */}
-              <TableHead>Modelo</TableHead> {/* Ordem alterada */}
+              <TableHead>Fabricante</TableHead>
+              <TableHead>Modelo</TableHead>
               <TableHead>Série</TableHead>
               <TableHead className="hidden md:table-cell">Status</TableHead>
               <TableHead>Ações</TableHead>
@@ -512,8 +512,8 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
                     <TableCell className="font-medium text-xs">
                       {chromebook.chromebook_id}
                     </TableCell>
-                    <TableCell>{chromebook.manufacturer || 'N/A'}</TableCell> {/* Ordem alterada */}
-                    <TableCell> {/* Ordem alterada */}
+                    <TableCell>{chromebook.manufacturer || 'N/A'}</TableCell>
+                    <TableCell>
                       <div className="flex items-center gap-2">
                         {chromebook.model}
                         {chromebook.status === 'fixo' && (
@@ -610,6 +610,8 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
                   isActive={currentPage === page}
                   onClick={() => setCurrentPage(page)}
                   className="cursor-pointer"
+                >
+                  {page}
                 </PaginationLink>
               </PaginationItem>
             ))}
