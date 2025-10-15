@@ -25,7 +25,6 @@ import { Search, ArrowLeft, Filter, Edit3, QrCode, CheckCircle, AlertCircle, XCi
 import { QRCodeModal } from "./QRCodeModal";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "./ui/pagination";
 import { ScrollArea } from "./ui/scroll-area";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { 
   Select,
   SelectContent,
@@ -52,8 +51,7 @@ interface ChromebookInventoryProps {
 }
 
 export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
-  // Check if on mobile device
-  const isMobile = useIsMobile();
+  // Removido useIsMobile
   const { isAdmin } = useProfileRole();
   const { getChromebooks, updateChromebook, deleteChromebook } = useDatabase(); // Usando useDatabase
   
@@ -507,7 +505,8 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
       {/* Edit Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent 
-          className={`${isMobile ? 'w-[95vw] h-[95vh] max-w-none' : 'sm:max-w-3xl max-h-[90vh]'} flex flex-col p-0`}
+          // Usando classes responsivas para o modal de edição
+          className="w-[95vw] h-[95vh] max-w-none sm:w-full sm:max-w-3xl sm:max-h-[90vh] flex flex-col p-0"
         >
           <DialogHeader className="px-6 py-4 border-b shrink-0">
             <DialogTitle className="text-xl font-bold flex items-center gap-2">
@@ -659,7 +658,7 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
                     value={editingChromebook.condition || ""}
                     onChange={handleConditionChange}
                     placeholder="Digite observações sobre a condição do equipamento (ex: tela trincada, bateria fraca)"
-                    className={`resize-none ${isMobile ? 'min-h-[80px]' : 'min-h-[100px]'}`}
+                    className="resize-none min-h-[100px]"
                   />
                 </div>
               </div>
@@ -667,20 +666,20 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
           )}
 
           {/* Fixed Footer */}
-          <DialogFooter className={`px-6 py-4 border-t bg-white shrink-0 ${isMobile ? 'flex-col space-y-2' : 'flex justify-end space-x-2'}`}>
+          <DialogFooter className="px-6 py-4 border-t bg-white shrink-0 flex-col sm:flex-row gap-2 sm:justify-end">
             <Button
               variant="outline"
               onClick={() => {
                 setIsEditDialogOpen(false);
                 setEditingChromebook(null);
               }}
-              className={`${isMobile ? 'w-full' : ''} h-10`}
+              className="w-full sm:w-auto h-10"
             >
               Cancelar
             </Button>
             <Button 
               onClick={handleSaveEdit}
-              className={`${isMobile ? 'w-full' : ''} h-10`}
+              className="w-full sm:w-auto h-10"
             >
               <Save className="w-4 h-4 mr-2" />
               Salvar Alterações
