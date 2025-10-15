@@ -108,7 +108,23 @@ const Layout: React.FC<LayoutProps> = ({
             </div>
 
             <div className="flex items-center space-x-4">
-              {/* Botão de Notificações (Sino) */}
+              
+              {/* Informações do Usuário (Email) */}
+              <div className="hidden md:flex items-center space-x-2 text-sm bg-accent rounded-full px-3 py-1.5">
+                <User className="w-4 h-4 text-muted-foreground" />
+                <span className="text-foreground selectable-text">
+                  {user?.email?.substring(0, 20)}...
+                </span>
+              </div>
+              
+              {/* Botão Configurações (Se for Admin) */}
+              {isAdmin && (
+                <button onClick={() => navigate('/settings')} className="flex items-center space-x-1 text-sm text-muted-foreground hover:text-foreground transition-colors duration-200 bg-accent hover:bg-accent/80 rounded-full px-3 py-1.5 touch-manipulation">
+                  <span>Configurações</span>
+                </button>
+              )}
+              
+              {/* Botão de Notificações (Sino) - MOVIDO PARA AQUI */}
               <Popover>
                 <PopoverTrigger asChild>
                   <Button variant="ghost" size="icon" className="relative h-9 w-9">
@@ -122,17 +138,7 @@ const Layout: React.FC<LayoutProps> = ({
                 </PopoverContent>
               </Popover>
               
-              <div className="hidden md:flex items-center space-x-2 text-sm bg-accent rounded-full px-3 py-1.5">
-                <User className="w-4 h-4 text-muted-foreground" />
-                <span className="text-foreground selectable-text">
-                  {user?.email?.substring(0, 20)}...
-                </span>
-              </div>
-              {isAdmin && (
-                <button onClick={() => navigate('/settings')} className="flex items-center space-x-1 text-sm text-muted-foreground hover:text-foreground transition-colors duration-200 bg-accent hover:bg-accent/80 rounded-full px-3 py-1.5 touch-manipulation">
-                  <span>Configurações</span>
-                </button>
-              )}
+              {/* Botão Sair */}
               <button onClick={logout} className="flex items-center space-x-1 text-sm text-muted-foreground hover:text-foreground transition-colors duration-200 bg-accent hover:bg-accent/80 rounded-full px-3 py-1.5 touch-manipulation">
                 <LogOut className="w-4 h-4" />
                 <span className="hidden sm:inline">Sair</span>
