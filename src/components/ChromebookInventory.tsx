@@ -21,7 +21,7 @@ import {
 import { Textarea } from "./ui/textarea";
 import { Label } from "./ui/label";
 import { toast } from "./ui/use-toast";
-import { Search, ArrowLeft, Filter, Edit3, QrCode, CheckCircle, AlertCircle, XCircle, MapPin, Eye, X, Trash2, Save, AlertTriangle, Clock } from "lucide-react";
+import { Search, ArrowLeft, Filter, Edit3, QrCode, CheckCircle, AlertCircle, XCircle, MapPin, Eye, X, Trash2, Save, AlertTriangle, Clock, Tag, Factory, Hash, Map } from "lucide-react";
 import { QRCodeModal } from "./QRCodeModal";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "./ui/pagination";
 import { ScrollArea } from "./ui/scroll-area";
@@ -507,164 +507,185 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
       {/* Edit Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent 
-          className={`${isMobile ? 'w-[95vw] h-[95vh] max-w-none' : 'sm:max-w-2xl max-h-[90vh]'} flex flex-col p-0`}
+          className={`${isMobile ? 'w-[95vw] h-[95vh] max-w-none' : 'sm:max-w-3xl max-h-[90vh]'} flex flex-col p-0`}
         >
-          <DialogHeader className="px-4 py-3 border-b shrink-0">
-            <DialogTitle>Editar Chromebook</DialogTitle>
+          <DialogHeader className="px-6 py-4 border-b shrink-0">
+            <DialogTitle className="text-xl font-bold flex items-center gap-2">
+              <Edit3 className="h-5 w-5 text-primary" />
+              Editar Chromebook
+            </DialogTitle>
             <DialogDescription>
               Atualize as informações do Chromebook. Campos com * são obrigatórios.
             </DialogDescription>
           </DialogHeader>
 
           {editingChromebook && (
-            <div className="flex-1 overflow-y-auto px-4 py-2">
-              <div className={`space-y-${isMobile ? '3' : '4'}`}>
-                {/* Informações Básicas */}
-                <div className="space-y-3">
-                  <h4 className="font-medium text-sm text-gray-700 border-b pb-1">Informações Básicas</h4>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                     <div className="space-y-1.5">
-                       <Label htmlFor="chromebook_id" className="text-xs font-medium">ID do Chromebook *</Label>
-                       <Input
-                         id="chromebook_id"
-                         value={editingChromebook.chromebook_id}
-                         className="h-9 bg-gray-100 cursor-not-allowed"
-                         readOnly // Tornando o ID somente leitura
-                       />
-                     </div>
-
-                     <div className="space-y-1.5">
-                       <Label htmlFor="patrimony_number" className="text-xs font-medium">Patrimônio</Label>
-                       <Input
-                         id="patrimony_number"
-                         value={editingChromebook.patrimony_number || ""}
-                         onChange={handleEditChange}
-                         placeholder="Número do patrimônio"
-                         className="h-9"
-                       />
-                     </div>
+            <div className="flex-1 overflow-y-auto px-6 py-4 space-y-6">
+              
+              {/* Seção 1: Identificação e Modelo */}
+              <div className="space-y-4 p-4 border rounded-lg bg-gray-50/50">
+                <h4 className="font-semibold text-lg text-gray-800 flex items-center gap-2">
+                  <Tag className="h-4 w-4 text-blue-600" />
+                  Identificação e Modelo
+                </h4>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="chromebook_id" className="text-xs font-medium flex items-center gap-1">
+                      ID do Chromebook *
+                    </Label>
+                    <Input
+                      id="chromebook_id"
+                      value={editingChromebook.chromebook_id}
+                      className="h-10 bg-gray-200 cursor-not-allowed font-mono text-sm"
+                      readOnly
+                    />
                   </div>
 
-                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                     <div className="space-y-1.5">
-                       <Label htmlFor="manufacturer" className="text-xs font-medium">Fabricante</Label>
-                       <Input
-                         id="manufacturer"
-                         value={editingChromebook.manufacturer || ""}
-                         onChange={handleEditChange}
-                         placeholder="Ex: Lenovo"
-                         className="h-9"
-                       />
-                     </div>
-                     <div className="space-y-1.5">
-                       <Label htmlFor="model" className="text-xs font-medium">Modelo *</Label>
-                       <Input
-                         id="model"
-                         value={editingChromebook.model}
-                         onChange={handleEditChange}
-                         placeholder="Ex: Chromebook 14e"
-                         className="h-9"
-                       />
-                     </div>
-                   </div>
-
-                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                     <div className="space-y-1.5">
-                       <Label htmlFor="serial_number" className="text-xs font-medium">Número de Série</Label>
-                       <Input
-                         id="serial_number"
-                         value={editingChromebook.serial_number || ""}
-                         onChange={handleEditChange}
-                         placeholder="Número de série"
-                         className="h-9"
-                       />
-                     </div>
-
-                     <div className="space-y-1.5">
-                       <Label htmlFor="location" className="text-xs font-medium">Localização</Label>
-                       <Input
-                         id="location"
-                         value={editingChromebook.location || ""}
-                         onChange={handleEditChange}
-                         placeholder="Ex: Sala de informática"
-                         className="h-9"
-                       />
-                     </div>
-                   </div>
-                </div>
-
-                {/* Status e Configurações */}
-                <div className="space-y-3">
-                  <h4 className="font-medium text-sm text-gray-700 border-b pb-1">Status e Configurações</h4>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="patrimony_number" className="text-xs font-medium flex items-center gap-1">
+                      <Hash className="h-3 w-3" /> Patrimônio
+                    </Label>
+                    <Input
+                      id="patrimony_number"
+                      value={editingChromebook.patrimony_number || ""}
+                      onChange={handleEditChange}
+                      placeholder="Número do patrimônio"
+                      className="h-10"
+                    />
+                  </div>
                   
-<div className="space-y-1.5">
-  <Label className="text-xs font-medium">Status</Label>
-  <Select value={editingChromebook.status} onValueChange={handleEditStatusChange}>
-    <SelectTrigger className="h-9">
-      <SelectValue />
-    </SelectTrigger>
-    <SelectContent>
-      <SelectItem value="disponivel">Disponível</SelectItem>
-      <SelectItem value="emprestado" disabled>Emprestado (Apenas via Empréstimo)</SelectItem>
-      <SelectItem value="fixo" disabled={!isAdmin}>Fixo</SelectItem>
-      <SelectItem value="manutencao">Manutenção</SelectItem>
-      <SelectItem value="fora_uso" disabled={!isAdmin}>Inativo</SelectItem>
-    </SelectContent>
-  </Select>
-</div>
-
-
-<div className="space-y-1.5">
-  <Label htmlFor="classroom" className="text-xs font-medium">Sala de Aula</Label>
-  <Input
-    id="classroom"
-    value={editingChromebook.classroom || ''}
-    onChange={handleEditChange}
-    placeholder="Ex.: Sala 21"
-    className="h-9"
-  />
-</div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="serial_number" className="text-xs font-medium flex items-center gap-1">
+                      <Hash className="h-3 w-3" /> Número de Série
+                    </Label>
+                    <Input
+                      id="serial_number"
+                      value={editingChromebook.serial_number || ""}
+                      onChange={handleEditChange}
+                      placeholder="Número de série"
+                      className="h-10"
+                    />
+                  </div>
                 </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="manufacturer" className="text-xs font-medium flex items-center gap-1">
+                      <Factory className="h-3 w-3" /> Fabricante
+                    </Label>
+                    <Input
+                      id="manufacturer"
+                      value={editingChromebook.manufacturer || ""}
+                      onChange={handleEditChange}
+                      placeholder="Ex: Lenovo"
+                      className="h-10"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="model" className="text-xs font-medium">Modelo *</Label>
+                    <Input
+                      id="model"
+                      value={editingChromebook.model}
+                      onChange={handleEditChange}
+                      placeholder="Ex: Chromebook 14e"
+                      className="h-10"
+                    />
+                  </div>
+                </div>
+              </div>
 
-                 {/* Observações */}
-                 <div className="space-y-3">
-                   <h4 className="font-medium text-sm text-gray-700 border-b pb-1">Condição/Observações</h4>
-                   
-                   <div className="space-y-1.5">
-                     <Textarea
-                       id="condition"
-                       value={editingChromebook.condition || ""}
-                       onChange={handleConditionChange}
-                       placeholder="Digite observações sobre a condição do equipamento"
-                       className={`resize-none ${isMobile ? 'min-h-[60px]' : 'min-h-[80px]'}`}
-                     />
-                   </div>
-                 </div>
+              {/* Seção 2: Status e Localização */}
+              <div className="space-y-4 p-4 border rounded-lg bg-white shadow-sm">
+                <h4 className="font-semibold text-lg text-gray-800 flex items-center gap-2">
+                  <MapPin className="h-4 w-4 text-green-600" />
+                  Status e Localização
+                </h4>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-medium">Status</Label>
+                    <Select value={editingChromebook.status} onValueChange={handleEditStatusChange}>
+                      <SelectTrigger className="h-10">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="disponivel">Disponível</SelectItem>
+                        <SelectItem value="emprestado" disabled>Emprestado (Apenas via Empréstimo)</SelectItem>
+                        <SelectItem value="fixo" disabled={!isAdmin}>Fixo</SelectItem>
+                        <SelectItem value="manutencao">Manutenção</SelectItem>
+                        <SelectItem value="fora_uso" disabled={!isAdmin}>Inativo</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label htmlFor="location" className="text-xs font-medium flex items-center gap-1">
+                      <Map className="h-3 w-3" /> Localização Geral
+                    </Label>
+                    <Input
+                      id="location"
+                      value={editingChromebook.location || ""}
+                      onChange={handleEditChange}
+                      placeholder="Ex: Sala de informática"
+                      className="h-10"
+                    />
+                  </div>
+                  
+                  <div className="space-y-1.5">
+                    <Label htmlFor="classroom" className="text-xs font-medium">Sala de Aula (Fixo)</Label>
+                    <Input
+                      id="classroom"
+                      value={editingChromebook.classroom || ''}
+                      onChange={handleEditChange}
+                      placeholder="Ex.: Sala 21"
+                      className="h-10"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Seção 3: Condição/Observações */}
+              <div className="space-y-4 p-4 border rounded-lg bg-white shadow-sm">
+                <h4 className="font-semibold text-lg text-gray-800 flex items-center gap-2">
+                  <AlertTriangle className="h-4 w-4 text-orange-600" />
+                  Condição e Notas
+                </h4>
+                
+                <div className="space-y-1.5">
+                  <Label htmlFor="condition" className="text-xs font-medium">Condição/Observações</Label>
+                  <Textarea
+                    id="condition"
+                    value={editingChromebook.condition || ""}
+                    onChange={handleConditionChange}
+                    placeholder="Digite observações sobre a condição do equipamento (ex: tela trincada, bateria fraca)"
+                    className={`resize-none ${isMobile ? 'min-h-[80px]' : 'min-h-[100px]'}`}
+                  />
+                </div>
               </div>
             </div>
           )}
 
           {/* Fixed Footer */}
-          <div className={`px-4 py-3 border-t bg-white shrink-0 ${isMobile ? 'space-y-2' : 'flex justify-end space-x-2'}`}>
+          <DialogFooter className={`px-6 py-4 border-t bg-white shrink-0 ${isMobile ? 'flex-col space-y-2' : 'flex justify-end space-x-2'}`}>
             <Button
               variant="outline"
               onClick={() => {
                 setIsEditDialogOpen(false);
                 setEditingChromebook(null);
               }}
-              className={`${isMobile ? 'w-full' : ''} h-9`}
+              className={`${isMobile ? 'w-full' : ''} h-10`}
             >
               Cancelar
             </Button>
             <Button 
               onClick={handleSaveEdit}
-              className={`${isMobile ? 'w-full' : ''} h-9`}
+              className={`${isMobile ? 'w-full' : ''} h-10`}
             >
               <Save className="w-4 h-4 mr-2" />
               Salvar Alterações
             </Button>
-          </div>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 
