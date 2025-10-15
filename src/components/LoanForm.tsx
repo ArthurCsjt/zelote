@@ -6,7 +6,7 @@ import { Label } from "./ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { Badge } from "./ui/badge";
 import { Checkbox } from "./ui/checkbox";
-import { Computer, Plus, QrCode, Calendar, Clock, Loader2, CheckCircle, X } from "lucide-react";
+import { Computer, Plus, QrCode, Calendar, Clock, Loader2, CheckCircle, User } from "lucide-react";
 import { QRCodeReader } from "./QRCodeReader";
 import { format } from "date-fns";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
@@ -14,69 +14,48 @@ import { Calendar as CalendarComponent } from "./ui/calendar";
 import { cn } from "@/lib/utils";
 import { validateLoanFormData, sanitizeQRCodeData, normalizeChromebookId } from "@/utils/security";
 import { useDatabase } from '@/hooks/useDatabase';
-import UserAutocomplete from "./UserAutocomplete"; // Importando o novo componente
-import type { UserSearchResult } from '@/hooks/useUserSearch'; // Importando o tipo de resultado
+import UserAutocomplete from "./UserAutocomplete";
+import type { UserSearchResult } from '@/hooks/useUserSearch';
+import { Card, CardContent, CardTitle } from "./ui/card"; // Importando Card
 
 // Define a interface dos dados do formulário de empréstimo
 interface LoanFormData {
-  studentName: string;    // Nome do solicitante
-  ra?: string;            // RA (Registro Acadêmico), opcional
-  email: string;          // Email do solicitante
-  chromebookId: string;   // ID do Chromebook
-  purpose: string;        // Finalidade do empréstimo
-  userType: 'aluno' | 'professor' | 'funcionario';  // Tipo de usuário
-  loanType: 'individual' | 'lote';                 // Tipo de empréstimo
-  expectedReturnDate?: Date;  // Data e hora de devolução esperada
+  studentName: string;
+  ra?: string;
+  email: string;
+  chromebookId: string;
+  purpose: string;
+  userType: 'aluno' | 'professor' | 'funcionario';
+  loanType: 'individual' | 'lote';
+  expectedReturnDate?: Date;
 }
 
 // Define a interface das props do componente
 interface LoanFormProps {
-  onBack?: () => void;  // Função para voltar ao menu
+  onBack?: () => void;
 }
 
 /**
  * Componente de formulário para realizar novos empréstimos de Chromebooks
- * Permite empréstimos individuais ou em lote para alunos, professores ou funcionários
  */
 export function LoanForm({ onBack }: LoanFormProps) {
   // === ESTADOS (STATES) ===
   
   const { createLoan, loading } = useDatabase();
   
-  // Estado para armazenar os dados do formulário
   const [formData, setFormData] = useState<LoanFormData>({
-    studentName: "",
-    ra: "",
-    email: "",
-    chromebookId: "",
-    purpose: "",
-    userType: 'aluno',
-    loanType: 'individual'
+    studentName: "", ra: "", email: "", chromebookId: "", purpose: "", userType: 'aluno', loanType: 'individual'
   });
 
-  // Estado para o usuário selecionado via autocompletar
   const [selectedUser, setSelectedUser] = useState<UserSearchResult | null>(null);
-
-  // Estado para controlar se deve definir prazo de devolução
   const [hasReturnDeadline, setHasReturnDeadline] = useState(false);
-  
-  // Estado para o seletor de data
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
-
-  // Lista de dispositivos para empréstimo em lote
   const [batchDevices, setBatchDevices] = useState<string[]>([]);
-  
-  // Valor atual do campo de entrada para adicionar dispositivos ao lote
   const [currentBatchInput, setCurrentBatchInput] = useState("");
-
-  // Estado para controlar o diálogo de leitura de QR Code
   const [isQRReaderOpen, setIsQRReaderOpen] = useState(false);
 
   // === FUNÇÕES DE MANIPULAÇÃO (HANDLERS) ===
 
-  /**
-   * Lida com a seleção de um usuário no autocompletar
-   */
   const handleUserSelect = (user: UserSearchResult) => {
     setSelectedUser(user);
     setFormData(prev => ({
@@ -88,9 +67,6 @@ export function LoanForm({ onBack }: LoanFormProps) {
     }));
   };
 
-  /**
-   * Limpa o usuário selecionado
-   */
   const handleUserClear = () => {
     setSelectedUser(null);
     setFormData(prev => ({
@@ -98,20 +74,16 @@ export function LoanForm({ onBack }: LoanFormProps) {
       studentName: "",
       ra: "",
       email: "",
-      userType: 'aluno', // Volta para o padrão
+      userType: 'aluno',
     }));
   };
 
-  /**
-   * Adiciona um dispositivo à lista de lote
-   * Verifica se o dispositivo já existe na lista antes de adicionar
-   */
   const addDeviceToBatch = () => {
     const normalizedInput = normalizeChromebookId(currentBatchInput);
     
     if (normalizedInput && !batchDevices.includes(normalizedInput)) {
       setBatchDevices([...batchDevices, normalizedInput]);
-      setCurrentBatchInput(""); // Limpa o campo após adicionar
+      setCurrentBatchInput("");
     } else if (normalizedInput) {
       toast({
         title: "Dispositivo já adicionado",
@@ -121,20 +93,11 @@ export function LoanForm({ onBack }: LoanFormProps) {
     }
   };
 
-  /**
-   * Remove um dispositivo da lista de lote
-   * @param deviceId - ID do dispositivo a ser removido
-   */
   const removeDeviceFromBatch = (deviceId: string) => {
     setBatchDevices(batchDevices.filter(id => id !== deviceId));
   };
 
-  /**
-   * Processa os dados do QR Code lido
-   * @param data - String contendo os dados do QR Code
-   */
   const handleQRCodeScan = (data: string) => {
-    // sanitizeQRCodeData já inclui a normalização
     const sanitizedId = sanitizeQRCodeData(data); 
     
     if (sanitizedId) {
@@ -163,14 +126,9 @@ export function LoanForm({ onBack }: LoanFormProps) {
   };
   
   const handleChromebookIdChange = (value: string) => {
-    // Normaliza o ID ao digitar, mas mantém o valor original no campo para feedback visual
     setFormData({ ...formData, chromebookId: value });
   };
 
-  /**
-   * Ação para o botão '+' no modo individual.
-   * Apenas normaliza e valida o ID digitado, dando feedback.
-   */
   const handleValidateIndividualId = () => {
     const normalizedId = normalizeChromebookId(formData.chromebookId);
     
@@ -183,7 +141,6 @@ export function LoanForm({ onBack }: LoanFormProps) {
       return;
     }
 
-    // Atualiza o estado com o ID normalizado para consistência
     setFormData(prev => ({ ...prev, chromebookId: normalizedId }));
 
     toast({
@@ -195,7 +152,6 @@ export function LoanForm({ onBack }: LoanFormProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Normaliza o ID do Chromebook antes de validar e enviar
     const normalizedChromebookId = normalizeChromebookId(formData.chromebookId);
     
     const dataToValidate = {
@@ -215,8 +171,6 @@ export function LoanForm({ onBack }: LoanFormProps) {
     }
     
     if (formData.loanType === 'lote') {
-      // === EMPRÉSTIMO EM LOTE ===
-      
       if (batchDevices.length === 0) {
         toast({
           title: "Erro",
@@ -233,7 +187,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
           studentName: formData.studentName,
           ra: formData.ra || '',
           email: formData.email,
-          chromebookId: deviceId, // Já normalizado na adição ao lote
+          chromebookId: deviceId,
           purpose: formData.purpose,
           userType: formData.userType,
           loanType: formData.loanType,
@@ -250,15 +204,9 @@ export function LoanForm({ onBack }: LoanFormProps) {
         setBatchDevices([]);
         setCurrentBatchInput("");
         setFormData({ 
-          studentName: "", 
-          ra: "", 
-          email: "", 
-          chromebookId: "", 
-          purpose: "", 
-          userType: 'aluno',
-          loanType: 'individual'
+          studentName: "", ra: "", email: "", chromebookId: "", purpose: "", userType: 'aluno', loanType: 'individual'
         });
-        setSelectedUser(null); // Limpa o usuário selecionado
+        setSelectedUser(null);
         setHasReturnDeadline(false);
         
         toast({
@@ -268,8 +216,6 @@ export function LoanForm({ onBack }: LoanFormProps) {
       }
       
     } else {
-      // === EMPRÉSTIMO INDIVIDUAL ===
-      
       if (!dataToValidate.studentName || !dataToValidate.email || !dataToValidate.chromebookId || !dataToValidate.purpose) {
         toast({
           title: "Erro",
@@ -283,7 +229,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
         studentName: dataToValidate.studentName,
         ra: dataToValidate.ra || '',
         email: dataToValidate.email,
-        chromebookId: dataToValidate.chromebookId, // Normalizado
+        chromebookId: dataToValidate.chromebookId,
         purpose: dataToValidate.purpose,
         userType: dataToValidate.userType,
         loanType: dataToValidate.loanType,
@@ -294,15 +240,9 @@ export function LoanForm({ onBack }: LoanFormProps) {
       
       if (result) {
         setFormData({ 
-          studentName: "", 
-          ra: "", 
-          email: "", 
-          chromebookId: "", 
-          purpose: "", 
-          userType: 'aluno',
-          loanType: 'individual'
+          studentName: "", ra: "", email: "", chromebookId: "", purpose: "", userType: 'aluno', loanType: 'individual'
         });
-        setSelectedUser(null); // Limpa o usuário selecionado
+        setSelectedUser(null);
         setHasReturnDeadline(false);
         
         toast({
@@ -321,7 +261,9 @@ export function LoanForm({ onBack }: LoanFormProps) {
       <h2 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4 relative z-10">
         Novo Empréstimo
       </h2>
-      <form onSubmit={handleSubmit} className="space-y-4 relative z-10">
+      
+      <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
+        
         {/* Seletor de tipo de empréstimo (individual ou lote) */}
         <div className="space-y-2">
           <Label htmlFor="loanType" className="text-gray-700">
@@ -333,7 +275,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
               setFormData({ ...formData, loanType: value })
             }
           >
-            <SelectTrigger className="border-gray-200">
+            <SelectTrigger className="border-gray-200 bg-white">
               <SelectValue placeholder="Selecione o tipo de empréstimo" />
             </SelectTrigger>
             <SelectContent>
@@ -343,255 +285,248 @@ export function LoanForm({ onBack }: LoanFormProps) {
           </Select>
         </div>
 
-        {/* Campos específicos para cada tipo de empréstimo */}
-        {formData.loanType === 'individual' ? (
-          /* Campo de ID para empréstimo individual */
-          <div className="space-y-2">
-            <Label htmlFor="chromebookId" className="text-gray-700">
-              ID do Chromebook
-            </Label>
-            <div className="flex gap-2">
-              <div className="relative flex-1">
-                <Input
-                  id="chromebookId"
-                  placeholder="Digite o ID do Chromebook (ex: 12 ou CHR012)"
-                  value={formData.chromebookId}
-                  onChange={(e) => handleChromebookIdChange(e.target.value)}
-                  className="border-gray-200 w-full pr-10" // Adicionado pr-10 para o botão +
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      handleValidateIndividualId();
-                    }
-                  }}
-                />
-                <Button 
-                  type="button" 
-                  variant="ghost" 
-                  onClick={handleValidateIndividualId}
-                  className="absolute right-1 top-1 h-8 px-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                  title="Validar ID"
-                >
-                  <Plus className="h-4 w-4" />
-                </Button>
-              </div>
-              <Button 
-                type="button" 
-                variant="outline" 
-                className="border-gray-200 bg-white hover:bg-gray-50 px-3"
-                onClick={() => setIsQRReaderOpen(true)}
-                title="Escanear QR Code"
-              >
-                <QrCode className="h-5 w-5 text-gray-600" />
-              </Button>
-            </div>
-          </div>
-        ) : (
-          /* Interface de empréstimo em lote */
-          <div className="space-y-2">
-            <div className="flex justify-between items-center mb-2">
-              <Label htmlFor="batchDevices" className="text-gray-700">
-                Dispositivos em Lote
-              </Label>
-              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                {batchDevices.length} dispositivos
-              </Badge>
-            </div>
+        <div className="grid md:grid-cols-2 gap-6">
             
-            <div className="space-y-3">
+          {/* Coluna Esquerda - Detalhes do Equipamento/Lote */}
+          <Card className="p-4 space-y-4 bg-green-50/50 border-green-100 shadow-inner">
+            <CardTitle className="text-lg flex items-center gap-2 text-green-700">
+              <Computer className="h-5 w-5" /> Detalhes do Equipamento
+            </CardTitle>
+            
+            {formData.loanType === 'individual' ? (
+              /* Campo de ID para empréstimo individual */
               <div className="space-y-2">
-                <div className="w-full">
-                  <Input
-                    id="batchInput"
-                    value={currentBatchInput}
-                    onChange={(e) => setCurrentBatchInput(e.target.value)}
-                    placeholder="Digite o ID do dispositivo (ex: 12 ou CHR012)"
-                    className="border-gray-200 w-full"
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        addDeviceToBatch();
-                      }
-                    }}
-                  />
-                </div>
-                
-                <div className="flex gap-2 w-full">
-                  <Button 
-                    type="button"
-                    variant="outline"
-                    onClick={addDeviceToBatch}
-                    className="flex-1 text-green-600 hover:text-green-700 hover:bg-green-50 border-green-200"
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Adicionar
-                  </Button>
-                  
+                <Label htmlFor="chromebookId" className="text-gray-700">
+                  ID do Chromebook
+                </Label>
+                <div className="flex gap-2">
+                  <div className="relative flex-1">
+                    <Input
+                      id="chromebookId"
+                      placeholder="Digite o ID do Chromebook (ex: 12 ou CHR012)"
+                      value={formData.chromebookId}
+                      onChange={(e) => handleChromebookIdChange(e.target.value)}
+                      className="border-gray-200 w-full pr-10 bg-white"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleValidateIndividualId();
+                        }
+                      }}
+                    />
+                    <Button 
+                      type="button" 
+                      variant="ghost" 
+                      onClick={handleValidateIndividualId}
+                      className="absolute right-1 top-1 h-8 px-2 text-green-600 hover:text-green-700 hover:bg-green-100"
+                      title="Validar ID"
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
                   <Button 
                     type="button" 
                     variant="outline" 
                     className="border-gray-200 bg-white hover:bg-gray-50 px-3"
                     onClick={() => setIsQRReaderOpen(true)}
+                    title="Escanear QR Code"
                   >
                     <QrCode className="h-5 w-5 text-gray-600" />
                   </Button>
                 </div>
               </div>
-              
-              <div className="mt-2 p-2 bg-gray-50 rounded-md border border-gray-200 max-h-[150px] overflow-y-auto">
-                {batchDevices.length > 0 ? (
+            ) : (
+              /* Interface de empréstimo em lote */
+              <div className="space-y-2">
+                <div className="flex justify-between items-center mb-2">
+                  <Label htmlFor="batchDevices" className="text-gray-700">
+                    Dispositivos em Lote
+                  </Label>
+                  <Badge variant="outline" className="bg-green-100 text-green-700 border-green-200">
+                    {batchDevices.length} dispositivos
+                  </Badge>
+                </div>
+                
+                <div className="space-y-3">
                   <div className="space-y-2">
-                    {batchDevices.map((device, index) => (
-                      <div key={index} className="flex justify-between items-center p-2 bg-white rounded border border-gray-100">
-                        <div className="flex items-center gap-2">
-                          <Computer className="h-4 w-4 text-green-500" />
-                          <span className="text-sm">{device}</span>
-                        </div>
-                        <Button 
-                          type="button"
-                          variant="ghost"
-                          onClick={() => removeDeviceFromBatch(device)}
-                          className="h-7 w-7 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
-                        >
-                          &times;
-                        </Button>
+                    <div className="w-full">
+                      <Input
+                        id="batchInput"
+                        value={currentBatchInput}
+                        onChange={(e) => setCurrentBatchInput(e.target.value)}
+                        placeholder="Digite o ID do dispositivo (ex: 12 ou CHR012)"
+                        className="border-gray-200 w-full bg-white"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            addDeviceToBatch();
+                          }
+                        }}
+                      />
+                    </div>
+                    
+                    <div className="flex gap-2 w-full">
+                      <Button 
+                        type="button"
+                        variant="outline"
+                        onClick={addDeviceToBatch}
+                        className="flex-1 text-green-600 hover:text-green-700 hover:bg-green-100 border-green-200"
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Adicionar
+                      </Button>
+                      
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        className="border-gray-200 bg-white hover:bg-gray-50 px-3"
+                        onClick={() => setIsQRReaderOpen(true)}
+                      >
+                        <QrCode className="h-5 w-5 text-gray-600" />
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-2 p-2 bg-white rounded-md border border-gray-200 max-h-[150px] overflow-y-auto">
+                    {batchDevices.length > 0 ? (
+                      <div className="space-y-2">
+                        {batchDevices.map((device, index) => (
+                          <div key={index} className="flex justify-between items-center p-2 bg-gray-50 rounded border border-gray-100">
+                            <div className="flex items-center gap-2">
+                              <Computer className="h-4 w-4 text-green-500" />
+                              <span className="text-sm">{device}</span>
+                            </div>
+                            <Button 
+                              type="button"
+                              variant="ghost"
+                              onClick={() => removeDeviceFromBatch(device)}
+                              className="h-7 w-7 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+                            >
+                              &times;
+                            </Button>
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center text-gray-500 py-4">
-                    <Computer className="h-10 w-10 mx-auto mb-2 text-gray-300" />
-                    <p className="text-sm">Nenhum dispositivo adicionado</p>
-                  </div>
-                )}
-              </div>
-              
-              {batchDevices.length > 0 && (
-                <div className="mt-2 p-3 bg-green-50 border border-green-100 rounded-lg">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-semibold text-green-700">Resumo do Empréstimo</h4>
-                    <Badge className="bg-green-100 text-green-700 border-green-200">
-                      Em Lote
-                    </Badge>
-                  </div>
-                  <div className="flex items-center justify-center bg-white p-3 rounded-md mb-2 border border-green-100">
-                    <span className="text-2xl font-bold text-green-700 mr-2">{batchDevices.length}</span>
-                    <span className="text-green-600">dispositivos para empréstimo</span>
+                    ) : (
+                      <div className="text-center text-gray-500 py-4">
+                        <Computer className="h-10 w-10 mx-auto mb-2 text-gray-300" />
+                        <p className="text-sm">Nenhum dispositivo adicionado</p>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
-            </div>
-          </div>
-        )}
+            </Card>
 
-        {/* Seletor de Usuário com Autocompletar */}
-        <div className="space-y-2">
-          <Label htmlFor="userSearch" className="text-gray-700">
-            Buscar Solicitante (Nome, RA ou Email)
-          </Label>
-          <UserAutocomplete
-            selectedUser={selectedUser}
-            onSelect={handleUserSelect}
-            onClear={handleUserClear}
-            disabled={loading}
-          />
-        </div>
-
-        {/* Campos de Usuário (Preenchidos automaticamente ou editáveis se não houver seleção) */}
-        {!selectedUser && (
-          <>
-            <div className="space-y-2">
-              <Label htmlFor="userType" className="text-gray-700">
-                Tipo de Solicitante
-              </Label>
-              <Select
-                value={formData.userType}
-                onValueChange={(value: 'aluno' | 'professor' | 'funcionario') =>
-                  setFormData({ ...formData, userType: value })
-                }
-                disabled={!!selectedUser} // Desabilita se o usuário foi selecionado via autocomplete
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione o tipo de solicitante" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="aluno">Aluno</SelectItem>
-                  <SelectItem value="professor">Professor</SelectItem>
-                  <SelectItem value="funcionario">Funcionário</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Campo de nome do solicitante */}
-            <div className="space-y-2">
-              <Label htmlFor="studentName" className="text-gray-700">
-                Nome do Solicitante
-              </Label>
-              <Input
-                id="studentName"
-                placeholder="Digite o nome do solicitante"
-                value={formData.studentName}
-                onChange={(e) =>
-                  setFormData({ ...formData, studentName: e.target.value })
-                }
-                className="border-gray-200"
-                disabled={!!selectedUser} // Desabilita se o usuário foi selecionado via autocomplete
-              />
-            </div>
-
-            {/* Campo de RA (apenas para alunos) */}
-            {formData.userType === 'aluno' && (
+            {/* Coluna Direita - Informações do Solicitante */}
+            <Card className="p-4 space-y-4 bg-white border-gray-100 shadow-md">
+              <CardTitle className="text-lg flex items-center gap-2 text-purple-700">
+                <User className="h-5 w-5" /> Informações do Solicitante
+              </CardTitle>
+              
+              {/* Seletor de Usuário com Autocompletar */}
               <div className="space-y-2">
-                <Label htmlFor="ra" className="text-gray-700">
-                  RA do Aluno (opcional)
+                <Label htmlFor="userSearch" className="text-gray-700">
+                  Buscar Solicitante (Nome, RA ou Email)
                 </Label>
-                <Input
-                  id="ra"
-                  placeholder="Digite o RA"
-                  value={formData.ra}
-                  onChange={(e) => setFormData({ ...formData, ra: e.target.value })}
-                  className="border-gray-200"
-                  disabled={!!selectedUser} // Desabilita se o usuário foi selecionado via autocomplete
+                <UserAutocomplete
+                  selectedUser={selectedUser}
+                  onSelect={handleUserSelect}
+                  onClear={handleUserClear}
+                  disabled={loading}
                 />
               </div>
-            )}
 
-            {/* Campo de email */}
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-gray-700">
-                Email
-              </Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="Digite o email"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="border-gray-200"
-                required
-                disabled={!!selectedUser} // Desabilita se o usuário foi selecionado via autocomplete
-              />
-            </div>
-          </>
-        )}
+              {/* Campos de Usuário (Exibidos apenas se NENHUM usuário estiver selecionado) */}
+              {!selectedUser && (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="userType" className="text-gray-700">
+                      Tipo de Solicitante
+                    </Label>
+                    <Select
+                      value={formData.userType}
+                      onValueChange={(value: 'aluno' | 'professor' | 'funcionario') =>
+                        setFormData({ ...formData, userType: value })
+                      }
+                    >
+                      <SelectTrigger className="bg-white border-gray-200">
+                        <SelectValue placeholder="Selecione o tipo de solicitante" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="aluno">Aluno</SelectItem>
+                        <SelectItem value="professor">Professor</SelectItem>
+                        <SelectItem value="funcionario">Funcionário</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-        {/* Campo de finalidade do empréstimo */}
-        <div className="space-y-2">
-          <Label htmlFor="purpose" className="text-gray-700">
-            Finalidade
-          </Label>
-          <Input
-            id="purpose"
-            placeholder="Ex: Aula de Matemática"
-            value={formData.purpose}
-            onChange={(e) =>
-              setFormData({ ...formData, purpose: e.target.value })
-            }
-            className="border-gray-200"
-          />
-        </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="studentName" className="text-gray-700">
+                      Nome do Solicitante
+                    </Label>
+                    <Input
+                      id="studentName"
+                      placeholder="Digite o nome do solicitante"
+                      value={formData.studentName}
+                      onChange={(e) =>
+                        setFormData({ ...formData, studentName: e.target.value })
+                      }
+                      className="border-gray-200 bg-white"
+                    />
+                  </div>
 
-        {/* Opção para definir prazo de devolução */}
+                  {formData.userType === 'aluno' && (
+                    <div className="space-y-2">
+                      <Label htmlFor="ra" className="text-gray-700">
+                        RA do Aluno (opcional)
+                      </Label>
+                      <Input
+                        id="ra"
+                        placeholder="Digite o RA"
+                        value={formData.ra}
+                        onChange={(e) => setFormData({ ...formData, ra: e.target.value })}
+                        className="border-gray-200 bg-white"
+                      />
+                    </div>
+                  )}
+
+                  <div className="space-y-2">
+                    <Label htmlFor="email" className="text-gray-700">
+                      Email
+                    </Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="Digite o email"
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      className="border-gray-200 bg-white"
+                      required
+                    />
+                  </div>
+                </>
+              )}
+              
+              {/* Campo de finalidade do empréstimo (sempre visível) */}
+              <div className="space-y-2 pt-2">
+                <Label htmlFor="purpose" className="text-gray-700">
+                  Finalidade
+                </Label>
+                <Input
+                  id="purpose"
+                  placeholder="Ex: Aula de Matemática"
+                  value={formData.purpose}
+                  onChange={(e) =>
+                    setFormData({ ...formData, purpose: e.target.value })
+                  }
+                  className="border-gray-200 bg-white"
+                />
+              </div>
+            </Card>
+          </div>
+
+        {/* Opção para definir prazo de devolução (abaixo das colunas) */}
         <div className="space-y-4 p-4 bg-gray-50/50 rounded-xl border border-gray-200">
           <div className="flex items-center space-x-2">
             <Checkbox
@@ -622,7 +557,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
                       <Button
                         variant="outline"
                         className={cn(
-                          "justify-start text-left font-normal border-gray-200",
+                          "justify-start text-left font-normal border-gray-200 bg-white",
                           !formData.expectedReturnDate && "text-muted-foreground"
                         )}
                       >
@@ -674,7 +609,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
                               setFormData({ ...formData, expectedReturnDate: newDate });
                             }
                           }}
-                          className="border-gray-200 text-center"
+                          className="border-gray-200 text-center bg-white"
                         />
                       </div>
                       <span className="flex items-center text-gray-500">:</span>
@@ -695,7 +630,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
                               setFormData({ ...formData, expectedReturnDate: newDate });
                             }
                           }}
-                          className="border-gray-200 text-center"
+                          className="border-gray-200 text-center bg-white"
                         />
                       </div>
                     </div>
@@ -718,7 +653,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
         <Button 
           type="submit" 
           className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-0 shadow-lg hover:shadow-xl transform transition-all duration-300 hover:scale-[1.02]"
-          disabled={loading}
+          disabled={loading || (formData.loanType === 'lote' && batchDevices.length === 0)}
         >
           {loading ? (
             <>
