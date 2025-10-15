@@ -519,6 +519,31 @@ export const useDatabase = () => {
       setLoading(false);
     }
   }, [user]);
+  
+  // NOVO: Update Student
+  const updateStudent = useCallback(async (id: string, data: Partial<StudentData>): Promise<boolean> => {
+    if (!user) {
+      toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
+      return false;
+    }
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from('alunos')
+        .update(data)
+        .eq('id', id);
+
+      if (error) throw error;
+      toast({ title: "Sucesso", description: "Aluno atualizado com sucesso" });
+      return true;
+    } catch (error: any) {
+      toast({ title: "Erro", description: error.message, variant: "destructive" });
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
+
 
   // Teacher operations
   const createTeacher = useCallback(async (data: TeacherData): Promise<any> => {
@@ -547,6 +572,31 @@ export const useDatabase = () => {
       setLoading(false);
     }
   }, [user]);
+  
+  // NOVO: Update Teacher
+  const updateTeacher = useCallback(async (id: string, data: Partial<TeacherData>): Promise<boolean> => {
+    if (!user) {
+      toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
+      return false;
+    }
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from('professores')
+        .update(data)
+        .eq('id', id);
+
+      if (error) throw error;
+      toast({ title: "Sucesso", description: "Professor atualizado com sucesso" });
+      return true;
+    } catch (error: any) {
+      toast({ title: "Erro", description: error.message, variant: "destructive" });
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
+
 
   // Staff operations
   const createStaff = useCallback(async (data: StaffData): Promise<any> => {
@@ -575,6 +625,31 @@ export const useDatabase = () => {
       setLoading(false);
     }
   }, [user]);
+  
+  // NOVO: Update Staff
+  const updateStaff = useCallback(async (id: string, data: Partial<StaffData>): Promise<boolean> => {
+    if (!user) {
+      toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
+      return false;
+    }
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from('funcionarios')
+        .update(data)
+        .eq('id', id);
+
+      if (error) throw error;
+      toast({ title: "Sucesso", description: "Funcionário atualizado com sucesso" });
+      return true;
+    } catch (error: any) {
+      toast({ title: "Erro", description: error.message, variant: "destructive" });
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
+
 
   // Bulk operations
   const bulkInsertStudents = useCallback(async (students: StudentData[]): Promise<boolean> => {
@@ -687,10 +762,13 @@ export const useDatabase = () => {
     bulkReturnChromebooks, // Exportando a nova função
     // User/Registration operations
     createStudent,
+    updateStudent, // NOVO
     bulkInsertStudents,
     deleteAllStudents,
     createTeacher,
+    updateTeacher, // NOVO
     createStaff,
+    updateStaff, // NOVO
     deleteUserRecord
   };
 };

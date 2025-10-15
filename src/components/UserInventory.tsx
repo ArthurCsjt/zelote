@@ -32,6 +32,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useProfileRole } from "@/hooks/use-profile-role";
 import { useDatabase } from "@/hooks/useDatabase"; // Importando useDatabase
+import { UserEditDialog } from "./UserEditDialog"; // Importando o novo diálogo
 
 interface User {
   id: string;
@@ -55,6 +56,10 @@ export function UserInventory() {
   const [classFilter, setClassFilter] = useState<string>('all');
   const [availableClasses, setAvailableClasses] = useState<string[]>([]);
   
+  // Estados para edição
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [userToEdit, setUserToEdit] = useState<User | null>(null);
+
   // Estados para exclusão
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
@@ -155,10 +160,13 @@ export function UserInventory() {
   const totalStaff = users.filter(u => u.tipo === 'Funcionário').length;
 
   const handleEdit = (user: User) => {
-    toast({
-      title: "Funcionalidade em desenvolvimento",
-      description: "A edição de usuários será implementada em breve.",
-    });
+    setUserToEdit(user);
+    setIsEditDialogOpen(true);
+  };
+  
+  const handleEditSuccess = () => {
+    // Recarrega a lista de usuários após a edição bem-sucedida
+    fetchUsers();
   };
 
   const handleDeleteClick = (user: User) => {
@@ -398,6 +406,14 @@ export function UserInventory() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      
+      {/* Edit Dialog */}
+      <UserEditDialog
+        open={isEditDialogOpen}
+        onOpenChange={setIsEditDialogOpen}
+        user={userToEdit}
+        onSuccess={handleEditSuccess}
+      />
     </div>
   );
 }
