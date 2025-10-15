@@ -31,29 +31,47 @@ export function QRCodeReader({ open, onOpenChange, onScan }: QRCodeReaderProps) 
 
   // Iniciar e parar o scanner
   useEffect(() => {
+    let isMounted = true;
+    
     const cleanupScanner = () => {
-      if (scannerRef.current && scannerRef.current.isScanning) {
-        scannerRef.current.stop().then(() => {
-          console.log("Scanner parado.");
-        }).catch(err => {
-          console.error("Falha ao parar scanner no cleanup.", err);
-        });
+      if (scannerRef.current) {
+        // Check if scanner is running before attempting to stop
+        if (scannerRef.current.isScanning) {
+          scannerRef.current.stop().then(() => {
+            if (isMounted) {
+              console.log("Scanner parado com sucesso.");
+              scannerRef.current = null; // Clear reference after successful stop
+            }
+          }).catch(err => {
+            if (isMounted) {
+              console.error("Falha ao parar scanner no cleanup.", err);
+              // We still clear the reference even if stop fails, to prevent future attempts
+              scannerRef.current = null; 
+            }
+          });
+        } else {
+             // If not scanning, just clear the reference if it exists
+             scannerRef.current = null;
+        }
       }
     };
 
     if (open) {
+      // Only start scanning if the dialog is opening
       startScanning();
-    } else {
-      cleanupScanner();
     }
 
-    return cleanupScanner;
-  }, [open]);
+    // Cleanup function runs when component unmounts or 'open' changes to false
+    return () => {
+      isMounted = false;
+      cleanupScanner();
+    };
+  }, [open]); // Dependency array only needs 'open'
 
   const startScanning = async () => {
     setIsLoading(true);
     setError('');
-    setShowManualInput(false); // Garante que a entrada manual esteja oculta ao iniciar
+    setShowManualInput(false); 
 
     // Verificar se tem câmera disponível
     try {
@@ -85,6 +103,12 @@ export function QRCodeReader({ open, onOpenChange, onScan }: QRCodeReaderProps) 
     };
 
     const onScanSuccess = (decodedText: string) => {
+      // Stop scanning immediately upon success
+      if (scannerRef.current) {
+        scannerRef.current.stop().catch(e => console.error("Error stopping scanner after success:", e));
+        scannerRef.current = null;
+      }
+      
       onScan(decodedText);
       toast({
         title: 'QR Code lido!',
