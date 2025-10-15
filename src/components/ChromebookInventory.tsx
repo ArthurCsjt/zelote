@@ -491,29 +491,12 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
         </div>
         <div className="glass-card p-4 text-center transform hover:scale-105 transition-all duration-300 hover:shadow-lg">
           <p className="text-2xl font-bold bg-gradient-to-r from-red-700 to-red-500 bg-clip-text text-transparent">
-            {totalInativo}
+            {chromebooks.filter(c => c.status === 'manutencao').length}
           </p>
-          <p className="text-sm text-gray-600">Inativos</p>
+          <p className="text-sm text-gray-600">Manutenção</p>
         </div>
       </div>
       
-      {/* Statistics - Fixo vs Móvel */}
-      <div className="grid grid-cols-2 gap-4 mb-6 relative z-10">
-        <div className="glass-card p-4 text-center transform hover:scale-105 transition-all duration-300 hover:shadow-lg">
-          <p className="text-2xl font-bold bg-gradient-to-r from-blue-700 to-blue-500 bg-clip-text text-transparent">
-            {totalFixo}
-          </p>
-          <p className="text-sm text-gray-600">Fixos</p>
-        </div>
-        <div className="glass-card p-4 text-center transform hover:scale-105 transition-all duration-300 hover:shadow-lg">
-          <p className="text-2xl font-bold bg-gradient-to-r from-orange-700 to-amber-500 bg-clip-text text-transparent">
-            {totalMovel}
-          </p>
-          <p className="text-sm text-gray-600">Móveis (Não Fixos/Inativos)</p>
-        </div>
-      </div>
-
-
       {/* Table of Chromebooks */}
       <div className="glass-card border-white/30 rounded-2xl overflow-hidden relative z-10">
         <Table>
