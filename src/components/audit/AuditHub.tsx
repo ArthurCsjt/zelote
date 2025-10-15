@@ -83,10 +83,9 @@ export const AuditHub = () => {
       </div>
 
       <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-3">
+        <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="current">Iniciar Contagem</TabsTrigger>
           <TabsTrigger value="history">Histórico</TabsTrigger>
-          <TabsTrigger value="reports">Relatórios</TabsTrigger>
         </TabsList>
 
         <TabsContent value="current" className="space-y-6 mt-6">
@@ -265,27 +264,6 @@ export const AuditHub = () => {
                 </Table>
               ) : (
                 <p className="text-sm text-muted-foreground">Nenhuma auditoria concluída para exibir.</p>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="reports" className="space-y-6 mt-6">
-          <Card className="glass-card">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <BarChart3 className="h-5 w-5" />
-                Relatório da Última Auditoria
-              </CardTitle>
-              <CardDescription>
-                Análise detalhada da última auditoria concluída.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {completedAudits.length > 0 ? (
-                <AuditReportComponent report={generateReport(completedAudits[0].id)} />
-              ) : (
-                <p className="text-sm text-muted-foreground">Nenhuma auditoria concluída para gerar relatório.</p>
               )}
             </CardContent>
           </Card>
