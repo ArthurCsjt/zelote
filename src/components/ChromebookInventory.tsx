@@ -351,12 +351,12 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>ID</TableHead>
-              <TableHead>Fabricante</TableHead>
-              <TableHead>Modelo</TableHead>
-              <TableHead>Série</TableHead>
-              <TableHead className="hidden md:table-cell">Status</TableHead>
-              <TableHead>Ações</TableHead>
+              <TableHead className="w-[100px]">ID</TableHead>
+              <TableHead className="w-[150px]">Fabricante</TableHead>
+              <TableHead className="flex-1">Modelo</TableHead>
+              <TableHead className="w-[150px]">Série</TableHead>
+              <TableHead className="hidden md:table-cell w-[120px]">Status</TableHead>
+              <TableHead className="w-[180px] text-right">Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -402,8 +402,8 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
                         )}
                       </div>
                     </TableCell>
-                    <TableCell>
-                      <div className="flex items-center space-x-2">
+                    <TableCell className="text-right">
+                      <div className="flex items-center justify-end space-x-2">
                         <Button
                           variant="ghost"
                           size="sm"
@@ -529,8 +529,8 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
                        <Input
                          id="chromebook_id"
                          value={editingChromebook.chromebook_id}
-                         onChange={handleEditChange}
-                         className="h-9"
+                         className="h-9 bg-gray-100 cursor-not-allowed"
+                         readOnly // Tornando o ID somente leitura
                        />
                      </div>
 
@@ -606,7 +606,7 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
     </SelectTrigger>
     <SelectContent>
       <SelectItem value="disponivel">Disponível</SelectItem>
-      <SelectItem value="emprestado">Emprestado</SelectItem>
+      <SelectItem value="emprestado" disabled>Emprestado (Apenas via Empréstimo)</SelectItem>
       <SelectItem value="fixo" disabled={!isAdmin}>Fixo</SelectItem>
       <SelectItem value="manutencao">Manutenção</SelectItem>
       <SelectItem value="fora_uso" disabled={!isAdmin}>Inativo</SelectItem>
