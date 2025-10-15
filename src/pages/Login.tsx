@@ -5,24 +5,25 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/components/ui/use-toast";
-import { Computer, Lock, Mail, ArrowLeft, KeySquare, LockKeyhole, UserPlus } from "lucide-react";
+import { Computer, Lock, Mail, ArrowLeft, KeySquare, LockKeyhole, UserPlus, Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 
 const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isRecoveryMode, setRecoveryMode] = useState(false);
-  const [isUpdatePasswordMode, setUpdatePasswordMode] = useState(false); // Novo estado para primeiro acesso/redefinição
+  const [isUpdatePasswordMode, setUpdatePasswordMode] = useState(false); 
 
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
   const [recoveryEmail, setRecoveryEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false); // Novo estado para visibilidade da senha
 
   const navigate = useNavigate();
   const location = useLocation();
-  const { login, resetPassword } = useAuth();
+  const { login, resetPassword, verifyEmail } = useAuth(); // Usando verifyEmail do AuthContext
 
   // Efeito para verificar se o usuário está no fluxo de redefinição/convite
   useEffect(() => {
@@ -55,11 +56,10 @@ const Login = () => {
     e.preventDefault();
     setIsLoading(true);
 
-    const domainRegex = /@colegiosaojudas\.com\.br$/i;
-    if (!domainRegex.test(loginEmail)) {
+    if (!verifyEmail(loginEmail)) {
       toast({
         title: "Erro de login",
-        description: "O email deve ter o domínio @colegiosaojudas.com.br",
+        description: "O email deve pertencer ao domínio institucional.",
         variant: "destructive"
       });
       setIsLoading(false);
@@ -92,6 +92,16 @@ const Login = () => {
       setIsLoading(false);
       return;
     }
+    
+    if (!verifyEmail(recoveryEmail)) {
+      toast({
+        title: "Erro de recuperação",
+        description: "O email deve pertencer ao domínio institucional.",
+        variant: "destructive"
+      });
+      setIsLoading(false);
+      return;
+    }
 
     const result = await resetPassword(recoveryEmail);
     if (result.success) {
@@ -99,6 +109,8 @@ const Login = () => {
         title: "Recuperação iniciada",
         description: "Enviamos um email com instruções para redefinir sua senha."
       });
+      // Mantém o email preenchido no campo de login ao voltar
+      setLoginEmail(recoveryEmail); 
       setRecoveryEmail("");
       setRecoveryMode(false);
     } else {
@@ -148,6 +160,20 @@ const Login = () => {
       setIsLoading(false);
     }
   };
+  
+  const handleToggleRecoveryMode = () => {
+    setRecoveryMode(prev => {
+      if (prev) {
+        // Ao sair do modo de recuperação, preenche o email de login com o email de recuperação
+        setLoginEmail(recoveryEmail);
+        setRecoveryEmail('');
+      } else {
+        // Ao entrar no modo de recuperação, preenche o email de recuperação com o email de login
+        setRecoveryEmail(loginEmail);
+      }
+      return !prev;
+    });
+  };
 
   // --- Renderização Condicional ---
 
@@ -170,11 +196,21 @@ const Login = () => {
           <CardContent className="space-y-4 pt-6">
             <div className="space-y-2">
               <Label htmlFor="new-password" className="text-gray-700 flex items-center gap-1.5"><LockKeyhole className="h-4 w-4" />Nova Senha</Label>
-              <Input id="new-password" type="password" placeholder="Mínimo 6 caracteres" value={newPassword} onChange={e => setNewPassword(e.target.value)} className="bg-white/70" disabled={isLoading} required />
+              <div className="relative">
+                <Input id="new-password" type={showPassword ? "text" : "password"} placeholder="Mínimo 6 caracteres" value={newPassword} onChange={e => setNewPassword(e.target.value)} className="bg-white/70 pr-10" disabled={isLoading} required />
+                <Button type="button" variant="ghost" size="sm" className="absolute right-0 top-0 h-full px-3 hover:bg-transparent" onClick={() => setShowPassword(prev => !prev)}>
+                  {showPassword ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
+                </Button>
+              </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="confirm-password" className="text-gray-700 flex items-center gap-1.5"><LockKeyhole className="h-4 w-4" />Confirmar Senha</Label>
-              <Input id="confirm-password" type="password" placeholder="Confirme sua nova senha" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className="bg-white/70" disabled={isLoading} required />
+              <div className="relative">
+                <Input id="confirm-password" type={showPassword ? "text" : "password"} placeholder="Confirme sua nova senha" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className="bg-white/70 pr-10" disabled={isLoading} required />
+                <Button type="button" variant="ghost" size="sm" className="absolute right-0 top-0 h-full px-3 hover:bg-transparent" onClick={() => setShowPassword(prev => !prev)}>
+                  {showPassword ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
+                </Button>
+              </div>
             </div>
           </CardContent>
           <CardFooter className="pb-6">
@@ -192,7 +228,7 @@ const Login = () => {
         <form onSubmit={handleRecoverySubmit}>
           <CardContent className="space-y-4 pt-6">
             <div className="flex items-center mb-4">
-              <Button type="button" variant="ghost" className="text-gray-600 p-0 h-auto" onClick={() => setRecoveryMode(false)} disabled={isLoading}>
+              <Button type="button" variant="ghost" className="text-gray-600 p-0 h-auto" onClick={handleToggleRecoveryMode} disabled={isLoading}>
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Voltar ao login
               </Button>
@@ -221,14 +257,19 @@ const Login = () => {
           </div>
           <div className="space-y-2">
             <Label htmlFor="login-password" className="text-gray-700 flex items-center gap-1.5"><Lock className="h-4 w-4" />Senha</Label>
-            <Input id="login-password" type="password" placeholder="Digite sua senha" value={loginPassword} onChange={e => setLoginPassword(e.target.value)} className="bg-white/70" disabled={isLoading} />
+            <div className="relative">
+              <Input id="login-password" type={showPassword ? "text" : "password"} placeholder="Digite sua senha" value={loginPassword} onChange={e => setLoginPassword(e.target.value)} className="bg-white/70 pr-10" disabled={isLoading} />
+              <Button type="button" variant="ghost" size="sm" className="absolute right-0 top-0 h-full px-3 hover:bg-transparent" onClick={() => setShowPassword(prev => !prev)}>
+                {showPassword ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
+              </Button>
+            </div>
           </div>
         </CardContent>
         <CardFooter className="flex flex-col space-y-4 pb-6">
           <Button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-blue-500" disabled={isLoading}>
             {isLoading ? "Entrando..." : "Entrar"}
           </Button>
-          <Button type="button" variant="ghost" className="text-sm text-gray-600" onClick={() => setRecoveryMode(true)} disabled={isLoading}>
+          <Button type="button" variant="ghost" className="text-sm text-gray-600" onClick={handleToggleRecoveryMode} disabled={isLoading}>
             <KeySquare className="h-3.5 w-3.5 mr-1" />
             Esqueceu sua senha?
           </Button>
