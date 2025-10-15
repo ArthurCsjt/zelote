@@ -45,7 +45,7 @@ interface ChromebookData {
   manufacturer?: string;
   serial_number?: string;
   patrimony_number?: string;
-  status: 'disponivel' | 'emprestado' | 'fixo' | 'manutencao';
+  status: 'disponivel' | 'emprestado' | 'fixo' | 'manutencao' | 'fora_uso';
   condition?: string;
   location?: string;
   classroom?: string;
@@ -198,6 +198,8 @@ useEffect(() => {
         return { color: 'text-blue-600 bg-blue-50', icon: MapPin, label: 'Fixo' };
       case 'manutencao':
         return { color: 'text-red-600 bg-red-50', icon: AlertTriangle, label: 'Manutenção' };
+      case 'fora_uso':
+        return { color: 'text-gray-600 bg-gray-200', icon: XCircle, label: 'Fora de Uso' };
       default:
         return { color: 'text-gray-600 bg-gray-50', icon: XCircle, label: 'Desconhecido' };
     }
@@ -214,9 +216,9 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
     return;
   }
 
-  // Only admins can set FIXO
-  if (newStatus === 'fixo' && !isAdmin) {
-    toast({ title: 'Permissão negada', description: 'Apenas administradores podem marcar como Fixo.', variant: 'destructive' });
+  // Only admins can set FIXO or FORA_USO
+  if ((newStatus === 'fixo' || newStatus === 'fora_uso') && !isAdmin) {
+    toast({ title: 'Permissão negada', description: 'Apenas administradores podem marcar como Fixo ou Fora de Uso.', variant: 'destructive' });
     return;
   }
 
@@ -438,6 +440,7 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
               <SelectItem value="emprestado">Emprestado</SelectItem>
               <SelectItem value="fixo">Fixo</SelectItem>
               <SelectItem value="manutencao">Manutenção</SelectItem>
+              <SelectItem value="fora_uso">Fora de Uso</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -570,6 +573,7 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
                              <SelectItem value="emprestado">Emprestado</SelectItem>
                              <SelectItem value="fixo">Fixo</SelectItem>
                              <SelectItem value="manutencao">Manutenção</SelectItem>
+                             <SelectItem value="fora_uso">Fora de Uso</SelectItem>
                            </SelectContent>
                         </Select>
                       </div>
@@ -737,6 +741,7 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
       <SelectItem value="emprestado">Emprestado</SelectItem>
       <SelectItem value="fixo" disabled={!isAdmin}>Fixo</SelectItem>
       <SelectItem value="manutencao">Manutenção</SelectItem>
+      <SelectItem value="fora_uso" disabled={!isAdmin}>Fora de Uso</SelectItem>
     </SelectContent>
   </Select>
 </div>
