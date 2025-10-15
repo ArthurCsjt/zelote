@@ -17,10 +17,13 @@ export const LoanHub = ({ onBack }: LoanHubProps) => {
   const [loanHistory, setLoanHistory] = useState<LoanHistoryItem[]>([]);
 
   const loadData = useCallback(async () => {
-    const [active, history] = await Promise.all([getActiveLoans(), getLoanHistory()]);
-    setActiveLoans(active);
-    setLoanHistory(history);
-  }, [getActiveLoans, getLoanHistory]);
+    // Nota: getActiveLoans e getLoanHistory já são chamados no useDatabase, mas vamos garantir a busca aqui.
+    // O LoanHistory precisa de todos os dados, e ActiveLoans precisa apenas dos ativos.
+    // Como getLoanHistory retorna todos, vamos usá-lo como base.
+    const historyData = await getLoanHistory();
+    setLoanHistory(historyData);
+    setActiveLoans(historyData.filter(loan => !loan.return_date)); // Filtra localmente se necessário, mas o ActiveLoans usa o hook useDatabase.getActiveLoans
+  }, [getLoanHistory]);
 
   useEffect(() => {
     loadData();
@@ -48,14 +51,19 @@ export const LoanHub = ({ onBack }: LoanHubProps) => {
         </TabsList>
         <TabsContent value="form">
           <div className="p-4">
+            {/* O LoanForm já lida com a criação de empréstimos */}
             <LoanForm />
           </div>
         </TabsContent>
         <TabsContent value="active">
+          {/* ActiveLoans já busca seus próprios dados e lida com devoluções */}
           <ActiveLoans />
         </TabsContent>
         <TabsContent value="history">
-          <LoanHistory history={loanHistory} />
+          <div className="p-4">
+            {/* Passamos o histórico completo para o componente LoanHistory */}
+            <LoanHistory history={loanHistory} />
+          </div>
         </TabsContent>
       </Tabs>
     </div>
