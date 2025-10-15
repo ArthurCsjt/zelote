@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { UserManagement } from './parts/UserManagement';
-import { AdvancedSettings } from '@/components/AdvancedSettings';
+import { DataMaintenance } from '@/components/DataMaintenance'; // Importando o novo componente
 
 const Settings = () => {
   const { isAdmin, loading } = useProfileRole();
@@ -29,7 +29,7 @@ const Settings = () => {
         ) : (
           <>
             <UserManagement />
-            <AdvancedSettings />
+            <DataMaintenance />
             <Card className="glass-card">
               <CardHeader>
                 <CardTitle>Preferências do Sistema</CardTitle>
