@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/components/ui/use-toast";
-import { Computer, Lock, Mail, ArrowLeft, KeySquare, LockKeyhole, UserPlus, Eye, EyeOff } from "lucide-react";
+import { Computer, Lock, Mail, ArrowLeft, KeySquare, LockKeyhole, UserPlus, Eye, EyeOff, AlertCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -273,6 +273,16 @@ const Login = () => {
             <KeySquare className="h-3.5 w-3.5 mr-1" />
             Esqueceu sua senha?
           </Button>
+          
+          {/* NOVO: Ajuda para Convidados */}
+          <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg w-full text-left">
+            <div className="flex items-start gap-2">
+              <AlertCircle className="h-4 w-4 text-blue-600 mt-0.5 shrink-0" />
+              <p className="text-xs text-gray-700">
+                <strong>Primeiro Acesso?</strong> Se você foi convidado, use o link enviado para o seu e-mail institucional para definir sua senha antes de tentar fazer login.
+              </p>
+            </div>
+          </div>
         </CardFooter>
       </form>
     );
