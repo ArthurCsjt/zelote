@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import {
@@ -11,7 +11,7 @@ import {
 } from "./ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { toast } from "./ui/use-toast";
-import { Search, Filter, Edit3, Trash2, Users, GraduationCap, UserCheck, Briefcase } from "lucide-react";
+import { Search, Filter, Edit3, Trash2, Users, GraduationCap, UserCheck, Briefcase, Loader2 } from "lucide-react";
 import { 
   Select,
   SelectContent,
@@ -19,6 +19,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
+import { 
+  AlertDialog, 
+  AlertDialogAction, 
+  AlertDialogCancel, 
+  AlertDialogContent, 
+  AlertDialogDescription, 
+  AlertDialogFooter, 
+  AlertDialogHeader, 
+  AlertDialogTitle 
+} from "./ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfileRole } from "@/hooks/use-profile-role";
 
@@ -41,82 +51,85 @@ export function UserInventory() {
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [classFilter, setClassFilter] = useState<string>('all');
   const [availableClasses, setAvailableClasses] = useState<string[]>([]);
+  
+  // Estados para exclusão
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<User | null>(null);
 
-  // Fetch all users from different tables
-  useEffect(() => {
-    const fetchUsers = async () => {
-      setLoading(true);
-      try {
-        // Fetch students
-        const { data: alunos, error: alunosError } = await supabase
-          .from('alunos')
-          .select('*')
-          .order('created_at', { ascending: false });
+  const fetchUsers = useCallback(async () => {
+    setLoading(true);
+    try {
+      // Fetch students
+      const { data: alunos, error: alunosError } = await supabase
+        .from('alunos')
+        .select('*')
+        .order('created_at', { ascending: false });
 
-        // Fetch teachers
-        const { data: professores, error: professoresError } = await supabase
-          .from('professores')
-          .select('*')
-          .order('created_at', { ascending: false });
+      // Fetch teachers
+      const { data: professores, error: professoresError } = await supabase
+        .from('professores')
+        .select('*')
+        .order('created_at', { ascending: false });
 
-        // Fetch staff
-        const { data: funcionarios, error: funcionariosError } = await supabase
-          .from('funcionarios')
-          .select('*')
-          .order('created_at', { ascending: false });
+      // Fetch staff
+      const { data: funcionarios, error: funcionariosError } = await supabase
+        .from('funcionarios')
+        .select('*')
+        .order('created_at', { ascending: false });
 
-        if (alunosError || professoresError || funcionariosError) {
-          throw new Error('Erro ao carregar usuários');
-        }
-
-        // Combine all users
-        const allUsers: User[] = [
-          ...(alunos || []).map(aluno => ({
-            id: aluno.id,
-            nome_completo: aluno.nome_completo,
-            email: aluno.email,
-            tipo: 'Aluno' as const,
-            detalhe: aluno.ra,
-            turma: aluno.turma,
-            ra: aluno.ra,
-            created_at: aluno.created_at
-          })),
-          ...(professores || []).map(professor => ({
-            id: professor.id,
-            nome_completo: professor.nome_completo,
-            email: professor.email,
-            tipo: 'Professor' as const,
-            created_at: professor.created_at
-          })),
-          ...(funcionarios || []).map(funcionario => ({
-            id: funcionario.id,
-            nome_completo: funcionario.nome_completo,
-            email: funcionario.email,
-            tipo: 'Funcionário' as const,
-            created_at: funcionario.created_at
-          }))
-        ];
-
-        setUsers(allUsers);
-
-        // Extract unique classes for filter
-        const classes = [...new Set(alunos?.map(a => a.turma).filter(Boolean) || [])];
-        setAvailableClasses(classes);
-
-      } catch (error) {
-        console.error('Error fetching users:', error);
-        toast({
-          title: "Erro",
-          description: "Não foi possível carregar os usuários",
-          variant: "destructive",
-        });
-      } finally {
-        setLoading(false);
+      if (alunosError || professoresError || funcionariosError) {
+        throw new Error('Erro ao carregar usuários');
       }
-    };
 
-    fetchUsers();
+      // Combine all users
+      const allUsers: User[] = [
+        ...(alunos || []).map(aluno => ({
+          id: aluno.id,
+          nome_completo: aluno.nome_completo,
+          email: aluno.email,
+          tipo: 'Aluno' as const,
+          detalhe: aluno.ra,
+          turma: aluno.turma,
+          ra: aluno.ra,
+          created_at: aluno.created_at
+        })),
+        ...(professores || []).map(professor => ({
+          id: professor.id,
+          nome_completo: professor.nome_completo,
+          email: professor.email,
+          tipo: 'Professor' as const,
+          created_at: professor.created_at
+        })),
+        ...(funcionarios || []).map(funcionario => ({
+          id: funcionario.id,
+          nome_completo: funcionario.nome_completo,
+          email: funcionario.email,
+          tipo: 'Funcionário' as const,
+          created_at: funcionario.created_at
+        }))
+      ];
+
+      setUsers(allUsers);
+
+      // Extract unique classes for filter
+      const classes = [...new Set(alunos?.map(a => a.turma).filter(Boolean) || [])];
+      setAvailableClasses(classes);
+
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível carregar os usuários",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers]);
 
   // Filter users based on search and filters
   const filteredUsers = users.filter((user) => {
@@ -145,18 +158,54 @@ export function UserInventory() {
     });
   };
 
-  const handleDelete = (user: User) => {
-    toast({
-      title: "Funcionalidade em desenvolvimento", 
-      description: "A exclusão de usuários será implementada em breve.",
-    });
+  const handleDeleteClick = (user: User) => {
+    setUserToDelete(user);
+    setIsDeleteDialogOpen(true);
   };
 
-  if (loading) {
+  const handleConfirmDelete = async () => {
+    if (!userToDelete) return;
+
+    setLoading(true);
+    const tableName = userToDelete.tipo === 'Aluno' ? 'alunos' : 
+                     userToDelete.tipo === 'Professor' ? 'professores' : 
+                     'funcionarios';
+
+    try {
+      const { error } = await supabase
+        .from(tableName)
+        .delete()
+        .eq('id', userToDelete.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Sucesso",
+        description: `${userToDelete.tipo} ${userToDelete.nome_completo} excluído com sucesso.`,
+      });
+      
+      // Atualiza o estado local
+      setUsers(prev => prev.filter(u => u.id !== userToDelete.id));
+
+    } catch (error: any) {
+      console.error(`Erro ao excluir ${userToDelete.tipo}:`, error);
+      toast({
+        title: "Erro",
+        description: `Falha ao excluir ${userToDelete.tipo}: ${error.message}`,
+        variant: "destructive",
+      });
+    } finally {
+      setUserToDelete(null);
+      setIsDeleteDialogOpen(false);
+      setLoading(false);
+    }
+  };
+
+  if (loading && users.length === 0) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
+          <Loader2 className="h-8 w-8 animate-spin border-b-2 border-primary mx-auto mb-2" />
           <p className="text-sm text-muted-foreground">Carregando usuários...</p>
         </div>
       </div>
@@ -309,8 +358,9 @@ export function UserInventory() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleDelete(user)}
+                        onClick={() => handleDeleteClick(user)}
                         className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                        disabled={loading}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -328,6 +378,29 @@ export function UserInventory() {
           </div>
         )}
       </Card>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar Exclusão de {userToDelete?.tipo}</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir permanentemente o registro de <strong>{userToDelete?.nome_completo}</strong> ({userToDelete?.email})? Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleConfirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              disabled={loading}
+            >
+              {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Trash2 className="h-4 w-4 mr-2" />}
+              {loading ? 'Excluindo...' : 'Excluir'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
