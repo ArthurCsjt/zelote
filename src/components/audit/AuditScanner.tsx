@@ -98,13 +98,8 @@ export const AuditScanner = () => {
   return (
     <>
       <div className="space-y-6">
-        {/* Novo componente de Itens Faltantes */}
-        <AuditMissingItems 
-          missingItems={missingItems}
-          totalExpected={totalExpected}
-          totalCounted={countedItems.length}
-        />
-
+        
+        {/* Painel de Contagem (mantido no topo) */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -293,6 +288,13 @@ export const AuditScanner = () => {
             </div>
           </CardContent>
         </Card>
+        
+        {/* Painel de Itens Faltantes (movido para baixo) */}
+        <AuditMissingItems 
+          missingItems={missingItems}
+          totalExpected={totalExpected}
+          totalCounted={countedItems.length}
+        />
       </div>
 
       <QRCodeReader
