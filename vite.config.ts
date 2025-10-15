@@ -15,5 +15,9 @@ export default defineConfig({
   server: {
     host: true,   // Permite acesso pela rede
     // Removendo https: true
+    hmr: {
+      protocol: 'ws',
+      host: 'localhost',
+    }
   }
 })
