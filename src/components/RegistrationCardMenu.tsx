@@ -15,28 +15,28 @@ const menuItems = [
     icon: Laptop,
     view: 'chromebooks',
     color: 'text-green-600',
-    bgColor: 'bg-green-50',
+    activeBorder: 'border-green-400',
   },
   {
     title: 'Alunos',
     icon: Users,
     view: 'students',
     color: 'text-blue-600',
-    bgColor: 'bg-blue-50',
+    activeBorder: 'border-blue-400',
   },
   {
     title: 'Professores',
     icon: GraduationCap,
     view: 'teachers',
     color: 'text-purple-600',
-    bgColor: 'bg-purple-50',
+    activeBorder: 'border-purple-400',
   },
   {
     title: 'Funcionários',
     icon: Briefcase,
     view: 'staff',
     color: 'text-orange-600',
-    bgColor: 'bg-orange-50',
+    activeBorder: 'border-orange-400',
   },
 ];
 
@@ -51,9 +51,8 @@ export function RegistrationCardMenu({ onNavigate, currentView }: RegistrationCa
           <GlassCard
             key={item.view}
             className={cn(
-              "cursor-pointer transition-all duration-300 hover:shadow-xl transform hover:scale-[1.02]", // Removido 'glass-card' e 'hover:shadow-xl' duplicados
-              item.bgColor,
-              isActive ? `border-2 ${item.color.replace('text-', 'border-')}` : 'border-gray-200'
+              "cursor-pointer transition-all duration-300 hover:shadow-xl transform hover:scale-[1.02] bg-white/80",
+              isActive ? `border-2 ${item.activeBorder} shadow-lg` : 'border-gray-200'
             )}
             onClick={() => onNavigate(item.view as any)}
           >
