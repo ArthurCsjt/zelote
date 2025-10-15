@@ -235,6 +235,82 @@ export const useDatabase = () => {
       setLoading(false);
     }
   }, [user]);
+  
+  // NOVO: Criação de empréstimos em lote
+  const bulkCreateLoans = useCallback(async (loanDataList: LoanFormData[]): Promise<{ successCount: number, errorCount: number }> => {
+    if (!user) {
+      toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
+      return { successCount: 0, errorCount: loanDataList.length };
+    }
+
+    setLoading(true);
+    let successCount = 0;
+    let errorCount = 0;
+    
+    // Mapear IDs de Chromebooks para IDs internos do DB
+    const chromebookIds = loanDataList.map(d => d.chromebookId);
+    const { data: chromebooks, error: cbError } = await supabase
+      .from('chromebooks')
+      .select('id, chromebook_id, status')
+      .in('chromebook_id', chromebookIds);
+
+    if (cbError) {
+      toast({ title: "Erro", description: "Falha ao buscar Chromebooks.", variant: "destructive" });
+      setLoading(false);
+      return { successCount: 0, errorCount: loanDataList.length };
+    }
+
+    const chromebookMap = new Map(chromebooks.map(cb => [cb.chromebook_id, cb]));
+    const loansToInsert = [];
+
+    for (const data of loanDataList) {
+      const chromebook = chromebookMap.get(data.chromebookId);
+      
+      if (!chromebook || chromebook.status !== 'disponivel') {
+        errorCount++;
+        toast({ 
+          title: "Erro no Lote", 
+          description: `Chromebook ${data.chromebookId} não encontrado ou não está disponível.`, 
+          variant: "destructive" 
+        });
+        continue;
+      }
+
+      loansToInsert.push({
+        chromebook_id: chromebook.id,
+        student_name: data.studentName,
+        student_ra: data.ra,
+        student_email: data.email,
+        purpose: data.purpose,
+        user_type: data.userType,
+        loan_type: data.loanType,
+        expected_return_date: data.expectedReturnDate?.toISOString(),
+        created_by: user.id
+      });
+    }
+    
+    if (loansToInsert.length > 0) {
+      const { error: insertError } = await supabase
+        .from('loans')
+        .insert(loansToInsert);
+
+      if (insertError) {
+        console.error('Erro de inserção em lote:', insertError);
+        toast({ 
+          title: "Erro de Inserção", 
+          description: `Falha ao inserir ${loansToInsert.length} empréstimos.`, 
+          variant: "destructive" 
+        });
+        errorCount += loansToInsert.length;
+      } else {
+        successCount = loansToInsert.length;
+      }
+    }
+
+    setLoading(false);
+    return { successCount, errorCount: loanDataList.length - successCount };
+  }, [user]);
+
 
   const getActiveLoans = useCallback(async (): Promise<LoanHistoryItem[]> => {
     setLoading(true);
@@ -529,6 +605,7 @@ export const useDatabase = () => {
     deleteChromebook,
     // Loan operations
     createLoan,
+    bulkCreateLoans, // Exportando a nova função
     getActiveLoans,
     getLoanHistory,
     // Return operations
@@ -540,6 +617,6 @@ export const useDatabase = () => {
     deleteAllStudents,
     createTeacher,
     createStaff,
-    deleteUserRecord // Exportando a nova função
+    deleteUserRecord
   };
 };

@@ -42,7 +42,7 @@ interface LoanFormProps {
 export function LoanForm({ onBack }: LoanFormProps) {
   // === ESTADOS (STATES) ===
   
-  const { createLoan, loading } = useDatabase();
+  const { createLoan, bulkCreateLoans, loading } = useDatabase();
   
   const [formData, setFormData] = useState<LoanFormData>({
     studentName: "", ra: "", email: "", chromebookId: "", purpose: "", userType: 'aluno', loanType: 'individual'
@@ -131,14 +131,21 @@ export function LoanForm({ onBack }: LoanFormProps) {
     });
   };
 
+  const resetForm = () => {
+    setBatchDevices([]);
+    setFormData({ 
+      studentName: "", ra: "", email: "", chromebookId: "", purpose: "", userType: 'aluno', loanType: 'individual'
+    });
+    setSelectedUser(null);
+    setHasReturnDeadline(false);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    const normalizedChromebookId = normalizeChromebookId(formData.chromebookId);
-    
     const dataToValidate = {
       ...formData,
-      chromebookId: normalizedChromebookId,
+      chromebookId: normalizeChromebookId(formData.chromebookId),
     };
     
     const validation = validateLoanFormData(dataToValidate);
@@ -162,37 +169,30 @@ export function LoanForm({ onBack }: LoanFormProps) {
         return;
       }
       
-      let processedCount = 0;
+      const loanDataList: LoanFormData[] = batchDevices.map(deviceId => ({
+        studentName: formData.studentName,
+        ra: formData.ra || '',
+        email: formData.email,
+        chromebookId: deviceId,
+        purpose: formData.purpose,
+        userType: formData.userType,
+        loanType: formData.loanType,
+        expectedReturnDate: hasReturnDeadline && formData.expectedReturnDate ? formData.expectedReturnDate : undefined,
+      }));
       
-      for (const deviceId of batchDevices) {
-        const loanData = {
-          studentName: formData.studentName,
-          ra: formData.ra || '',
-          email: formData.email,
-          chromebookId: deviceId,
-          purpose: formData.purpose,
-          userType: formData.userType,
-          loanType: formData.loanType,
-          expectedReturnDate: hasReturnDeadline && formData.expectedReturnDate ? formData.expectedReturnDate : undefined,
-        };
-        
-        const result = await createLoan(loanData as any);
-        if (result) {
-          processedCount++;
-        }
-      }
+      const { successCount, errorCount } = await bulkCreateLoans(loanDataList);
       
-      if (processedCount > 0) {
-        setBatchDevices([]);
-        setFormData({ 
-          studentName: "", ra: "", email: "", chromebookId: "", purpose: "", userType: 'aluno', loanType: 'individual'
-        });
-        setSelectedUser(null);
-        setHasReturnDeadline(false);
-        
+      if (successCount > 0) {
+        resetForm();
         toast({
           title: "Sucesso",
-          description: `${processedCount} Chromebooks emprestados com sucesso`,
+          description: `${successCount} Chromebooks emprestados com sucesso. ${errorCount > 0 ? `(${errorCount} falha(s))` : ''}`,
+        });
+      } else if (errorCount > 0) {
+        toast({
+          title: "Erro no Lote",
+          description: "Nenhum empréstimo foi criado. Verifique os erros acima.",
+          variant: "destructive",
         });
       }
       
@@ -220,12 +220,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
       const result = await createLoan(loanData as any);
       
       if (result) {
-        setFormData({ 
-          studentName: "", ra: "", email: "", chromebookId: "", purpose: "", userType: 'aluno', loanType: 'individual'
-        });
-        setSelectedUser(null);
-        setHasReturnDeadline(false);
-        
+        resetForm();
         toast({
           title: "Sucesso",
           description: "Chromebook emprestado com sucesso",
