@@ -55,7 +55,7 @@ export function RegistrationHub({ onBack, onRegistrationSuccess }: RegistrationH
         {/* Cabeçalho do Hub */}
         <div className="mb-6 flex justify-between items-center">
           <h1 className="text-foreground py-[2px] font-bold text-2xl bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
-            Cadastros
+            Hub de Cadastros
           </h1>
         </div>
         
