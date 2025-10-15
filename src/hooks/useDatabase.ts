@@ -9,7 +9,8 @@ import type {
   LoanFormData, 
   ReturnFormData, 
   LoanHistoryItem,
-  ChromebookData 
+  ChromebookData,
+  UserType // Importando UserType
 } from '@/types/database';
 
 // Types for new entities
@@ -482,6 +483,42 @@ export const useDatabase = () => {
       setLoading(false);
     }
   }, [user]);
+  
+  // NOVO: Função unificada para exclusão de usuários (Aluno, Professor, Funcionário)
+  const deleteUserRecord = useCallback(async (id: string, userType: UserType): Promise<boolean> => {
+    if (!user) {
+      toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
+      return false;
+    }
+
+    const tableName = userType === 'aluno' ? 'alunos' : 
+                     userType === 'professor' ? 'professores' : 
+                     'funcionarios';
+
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from(tableName)
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      
+      toast({ title: "Sucesso", description: `${userType.charAt(0).toUpperCase() + userType.slice(1)} excluído com sucesso.` });
+      return true;
+    } catch (error: any) {
+      console.error(`Erro ao excluir ${userType}:`, error);
+      toast({ 
+        title: "Erro", 
+        description: `Falha ao excluir ${userType}: ${error.message}`, 
+        variant: "destructive" 
+      });
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
+
 
   return {
     loading,
@@ -497,13 +534,12 @@ export const useDatabase = () => {
     // Return operations
     createReturn,
     returnChromebookById,
-    // Student operations
+    // User/Registration operations
     createStudent,
     bulkInsertStudents,
     deleteAllStudents,
-    // Teacher operations
     createTeacher,
-    // Staff operations
-    createStaff
+    createStaff,
+    deleteUserRecord // Exportando a nova função
   };
 };

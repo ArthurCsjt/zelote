@@ -31,6 +31,7 @@ import {
 } from "./ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfileRole } from "@/hooks/use-profile-role";
+import { useDatabase } from "@/hooks/useDatabase"; // Importando useDatabase
 
 interface User {
   id: string;
@@ -45,6 +46,7 @@ interface User {
 
 export function UserInventory() {
   const { isAdmin } = useProfileRole();
+  const { deleteUserRecord } = useDatabase(); // Usando a nova função
   const [users, setUsers] = useState<User[]>([]);
   const [isLoadingData, setIsLoadingData] = useState(true); // Carregamento inicial
   const [isDeleting, setIsDeleting] = useState(false); // Carregamento de exclusão
@@ -168,33 +170,27 @@ export function UserInventory() {
     if (!userToDelete) return;
 
     setIsDeleting(true);
-    const tableName = userToDelete.tipo === 'Aluno' ? 'alunos' : 
-                     userToDelete.tipo === 'Professor' ? 'professores' : 
-                     'funcionarios';
+    
+    // Mapeia o tipo de exibição para o tipo de banco de dados
+    const userTypeMap = {
+      'Aluno': 'aluno',
+      'Professor': 'professor',
+      'Funcionário': 'funcionario'
+    };
+    
+    const dbUserType = userTypeMap[userToDelete.tipo];
 
     try {
-      const { error } = await supabase
-        .from(tableName)
-        .delete()
-        .eq('id', userToDelete.id);
+      const success = await deleteUserRecord(userToDelete.id, dbUserType as any);
 
-      if (error) throw error;
+      if (success) {
+        // Atualiza o estado local
+        setUsers(prev => prev.filter(u => u.id !== userToDelete.id));
+      }
 
-      toast({
-        title: "Sucesso",
-        description: `${userToDelete.tipo} ${userToDelete.nome_completo} excluído com sucesso.`,
-      });
-      
-      // Atualiza o estado local
-      setUsers(prev => prev.filter(u => u.id !== userToDelete.id));
-
-    } catch (error: any) {
-      console.error(`Erro ao excluir ${userToDelete.tipo}:`, error);
-      toast({
-        title: "Erro",
-        description: `Falha ao excluir ${userToDelete.tipo}: ${error.message}`,
-        variant: "destructive",
-      });
+    } catch (error) {
+      // O toast de erro já é tratado dentro do useDatabase
+      console.error('Erro ao excluir usuário:', error);
     } finally {
       setUserToDelete(null);
       setIsDeleteDialogOpen(false);
