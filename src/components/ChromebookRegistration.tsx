@@ -146,7 +146,7 @@ export function ChromebookRegistration({ onRegistrationSuccess }: { onRegistrati
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="series" className="flex items-center gap-1">
-                  <Hash className="h-3 w-3" /> Série *
+                  <Hash className="h-3 w-3" /> Número de Série *
                 </Label>
                 <Input 
                   id="series" 
@@ -160,7 +160,7 @@ export function ChromebookRegistration({ onRegistrationSuccess }: { onRegistrati
               
               <div className="space-y-2">
                 <Label htmlFor="patrimonyNumber" className="flex items-center gap-1">
-                  <Hash className="h-3 w-3" /> Patrimônio (Opcional)
+                  Patrimônio
                 </Label>
                 <Input 
                   id="patrimonyNumber" 
@@ -227,11 +227,11 @@ export function ChromebookRegistration({ onRegistrationSuccess }: { onRegistrati
               >
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="provisioned" id="provisioned" />
-                  <Label htmlFor="provisioned">Provisionado (Disponível)</Label>
+                  <Label htmlFor="provisioned">Provisionado</Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="deprovisioned" id="deprovisioned" />
-                  <Label htmlFor="deprovisioned">Desprovisionado (Fora de Uso)</Label>
+                  <Label htmlFor="deprovisioned">Desprovisionado</Label>
                 </div>
               </RadioGroup>
             </div>
@@ -264,7 +264,7 @@ export function ChromebookRegistration({ onRegistrationSuccess }: { onRegistrati
             {loading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Cadastrando...
+                Cadastrar...
               </>
             ) : (
               <>
