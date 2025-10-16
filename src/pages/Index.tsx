@@ -16,7 +16,7 @@ import { Dashboard } from "@/components/Dashboard";
 import { QRCodeModal } from "@/components/QRCodeModal";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { LoanHub } from "@/components/LoanHub";
-import type { ReturnFormData } from "@/types/database";
+import type { ReturnFormData, Chromebook } from "@/types/database"; // Importando Chromebook
 import { useDatabase } from "@/hooks/useDatabase";
 
 const Index = () => {
@@ -31,6 +31,8 @@ const Index = () => {
   const [currentView, setCurrentView] = useState<'menu' | 'registration' | 'dashboard' | 'inventory' | 'loan' | 'audit'>('menu');
   const [showQRCodeModal, setShowQRCodeModal] = useState(false);
   const [selectedChromebookId, setSelectedChromebookId] = useState<string | null>(null);
+  // NOVO ESTADO: Armazena os dados completos do Chromebook recém-criado
+  const [newChromebookData, setNewChromebookData] = useState<Chromebook | undefined>(undefined);
 
   const handleNavigation = (route: 'registration' | 'dashboard' | 'inventory' | 'loan' | 'return' | 'audit') => {
     if (route === 'return') {
@@ -44,11 +46,13 @@ const Index = () => {
 
   const handleGenerateQrCode = (chromebookId: string) => {
     setSelectedChromebookId(chromebookId);
+    setNewChromebookData(undefined); // Limpa dados de novo cadastro
     setShowQRCodeModal(true);
   };
 
-  const handleRegistrationSuccess = (newChromebook: any) => {
+  const handleRegistrationSuccess = (newChromebook: Chromebook) => {
     setSelectedChromebookId(newChromebook.chromebook_id);
+    setNewChromebookData(newChromebook); // Define os dados completos
     setShowQRCodeModal(true);
     setCurrentView('inventory');
   };
@@ -95,7 +99,12 @@ const Index = () => {
         {loading && currentView !== 'menu' ? <div className="flex justify-center items-center h-64"><LoadingSpinner/></div> : renderCurrentView()}
         <ReturnDialog open={openReturnDialog} onOpenChange={setOpenReturnDialog} chromebookId={chromebookId} onChromebookIdChange={setChromebookId} returnData={returnData} onReturnDataChange={setReturnData} onConfirm={handleReturnClick} />
       </Layout>
-      <QRCodeModal open={showQRCodeModal} onOpenChange={(open) => setShowQRCodeModal(open)} chromebookId={selectedChromebookId ?? undefined} />
+      <QRCodeModal 
+        open={showQRCodeModal} 
+        onOpenChange={(open) => setShowQRCodeModal(open)} 
+        chromebookId={selectedChromebookId ?? undefined} 
+        chromebookData={newChromebookData} // Passando os dados completos
+      />
     </AuditProvider>
   );
 };

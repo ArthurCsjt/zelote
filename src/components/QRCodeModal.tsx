@@ -34,6 +34,7 @@ export function QRCodeModal({
   const [resolving, setResolving] = useState(false);
 
   // O ID final que será exibido e usado no QR Code
+  // Prioriza resolved, depois chromebookData, e por último o chromebookId passado
   const finalDisplayId = resolved?.chromebook_id ?? chromebookData?.chromebook_id ?? chromebookId;
   const finalDbId = resolved?.id ?? chromebookData?.id ?? chromebookId; // Usado para busca se necessário
 
