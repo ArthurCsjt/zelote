@@ -232,7 +232,8 @@ export function LoanForm({ onBack }: LoanFormProps) {
 
   // === RENDERIZAÇÃO DA INTERFACE (UI) ===
   return (
-    <div className="glass-morphism p-6 animate-fade-in relative">
+    <div className="animate-fade-in relative">
+      {/* Removido o glass-morphism e o p-6 daqui */}
       <div className="absolute inset-0 -z-10 bg-gradient-to-br from-blue-50/30 via-purple-50/20 to-pink-50/30 rounded-3xl blur-2xl transform scale-110" />
       
       <h2 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4 relative z-10">
@@ -241,8 +242,6 @@ export function LoanForm({ onBack }: LoanFormProps) {
       
       <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
         
-        {/* Removido o seletor de tipo de empréstimo daqui */}
-
         <div className="grid md:grid-cols-2 gap-6">
             
           {/* Coluna Esquerda - Detalhes do Equipamento/Lote */}
@@ -251,7 +250,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
               <Computer className="h-5 w-5" /> Detalhes do Equipamento
             </CardTitle>
             
-            {/* NOVO: Seletor de tipo de empréstimo (individual ou lote) */}
+            {/* Seletor de tipo de empréstimo (individual ou lote) */}
             <div className="space-y-2">
               <Label htmlFor="loanType" className="text-gray-700">
                 Tipo de Empréstimo
@@ -271,7 +270,6 @@ export function LoanForm({ onBack }: LoanFormProps) {
                 </SelectContent>
               </Select>
             </div>
-            {/* FIM NOVO: Seletor de tipo de empréstimo */}
             
             {formData.loanType === 'individual' ? (
               /* Campo de ID para empréstimo individual */
