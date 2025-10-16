@@ -35,8 +35,6 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Chromebook, ChromebookData } from "@/types/database";
 import { InventoryStats } from "./InventoryStats";
 import { GlassCard } from "./ui/GlassCard";
-import { useChromebooks, useUpdateChromebook, useDeleteChromebook } from '@/hooks/database/useChromebooks'; // Importando hooks do RQ
-import { useQueryClient } from "@tanstack/react-query";
 
 // Interface for Chromebook data structure (matching database)
 interface ChromebookDataExtended extends Chromebook {
@@ -50,14 +48,10 @@ interface ChromebookInventoryProps {
 
 export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
   const { isAdmin } = useProfileRole();
-  const queryClient = useQueryClient();
   
-  // Usando useQuery para buscar dados
-  const { data: chromebooks = [], isLoading, refetch } = useChromebooks();
-  
-  // Usando useMutation para operações
-  const { mutateAsync: updateChromebook, isPending: isUpdating } = useUpdateChromebook();
-  const { mutateAsync: deleteChromebook, isPending: isDeleting } = useDeleteChromebook();
+  // State for data
+  const [chromebooks, setChromebooks] = useState<ChromebookDataExtended[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   
   // State for search term
   const [searchTerm, setSearchTerm] = useState("");
@@ -78,7 +72,34 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
-  // Real-time synchronization (mantido, mas agora apenas invalida o cache)
+  // Fetch Chromebooks
+  const fetchChromebooks = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('chromebooks')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setChromebooks((data || []) as ChromebookDataExtended[]);
+    } catch (error: any) {
+      console.error('Error fetching chromebooks:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível carregar o inventário: " + error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchChromebooks();
+  }, [fetchChromebooks]);
+
+  // Real-time synchronization
   useEffect(() => {
     const channel = supabase
       .channel('chromebooks-changes')
@@ -90,9 +111,8 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
           table: 'chromebooks'
         },
         (payload) => {
-          console.log('Realtime change received, invalidating cache:', payload);
-          // Invalida o cache para que o useChromebooks refetch
-          queryClient.invalidateQueries({ queryKey: ['chromebooks'] });
+          console.log('Realtime change received, refetching data:', payload);
+          fetchChromebooks();
         }
       )
       .subscribe();
@@ -100,7 +120,7 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [queryClient]);
+  }, [fetchChromebooks]);
 
   // Filter Chromebooks based on search term and status
   const filteredChromebooks = chromebooks.filter((chromebook) => {
@@ -168,10 +188,17 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
   }
 
   try {
-    await updateChromebook({ id: chromebookId, data: { status: newStatus as any } });
-    // O toast de sucesso é disparado pelo hook de mutação
-  } catch (error) {
-    // O toast de erro é disparado pelo hook de mutação
+    const { error } = await supabase
+      .from('chromebooks')
+      .update({ status: newStatus as any })
+      .eq('id', chromebookId);
+
+    if (error) throw error;
+    
+    toast({ title: "Sucesso", description: "Status atualizado com sucesso" });
+    fetchChromebooks(); // Refetch data
+  } catch (error: any) {
+    toast({ title: "Erro ao atualizar", description: error.message, variant: "destructive" });
   }
 };
 
@@ -227,11 +254,11 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
     }
 
     const updatePayload: Partial<ChromebookData> = {
-      chromebookId: editingChromebook.chromebook_id,
+      chromebook_id: editingChromebook.chromebook_id,
       model: editingChromebook.model,
       manufacturer: editingChromebook.manufacturer,
-      serialNumber: editingChromebook.serial_number,
-      patrimonyNumber: editingChromebook.patrimony_number,
+      serial_number: editingChromebook.serial_number,
+      patrimony_number: editingChromebook.patrimony_number,
       status: editingChromebook.status,
       condition: editingChromebook.condition,
       location: editingChromebook.location,
@@ -239,11 +266,19 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
     };
 
     try {
-      await updateChromebook({ id: editingChromebook.id, data: updatePayload });
+      const { error } = await supabase
+        .from('chromebooks')
+        .update(updatePayload)
+        .eq('id', editingChromebook.id);
+
+      if (error) throw error;
+      
+      toast({ title: "Sucesso", description: "Chromebook atualizado com sucesso" });
       setIsEditDialogOpen(false);
       setEditingChromebook(null);
-    } catch (error) {
-      // O erro é tratado pelo hook de mutação
+      fetchChromebooks();
+    } catch (error: any) {
+      toast({ title: "Erro ao atualizar", description: error.message, variant: "destructive" });
     }
   };
 
@@ -258,11 +293,19 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
     if (!chromebookToDelete) return;
 
     try {
-      await deleteChromebook(chromebookToDelete.id);
+      const { error } = await supabase
+        .from('chromebooks')
+        .delete()
+        .eq('id', chromebookToDelete.id);
+
+      if (error) throw error;
+      
+      toast({ title: "Sucesso", description: "Chromebook excluído com sucesso" });
       setIsDeleteDialogOpen(false);
       setChromebookToDelete(null);
-    } catch (error) {
-      // O erro é tratado pelo hook de mutação
+      fetchChromebooks();
+    } catch (error: any) {
+      toast({ title: "Erro ao excluir", description: error.message, variant: "destructive" });
     }
   };
 
@@ -340,7 +383,7 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
         {/* Botão de Atualizar */}
         <Button 
           variant="outline" 
-          onClick={() => refetch()} 
+          onClick={fetchChromebooks} 
           disabled={isLoading}
           className="w-full sm:w-auto"
         >
@@ -435,7 +478,7 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
                           size="sm"
                           onClick={() => handleEditClick(chromebook)}
                           title="Editar"
-                          disabled={isUpdating}
+                          disabled={isLoading}
                         >
                           <Edit3 className="h-4 w-4" />
                         </Button>
@@ -445,14 +488,14 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
                           onClick={() => handleDeleteClick(chromebook)}
                           title="Excluir"
                           className="text-red-600 hover:text-red-800"
-                          disabled={isDeleting}
+                          disabled={isLoading}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
                         <Select 
                           value={chromebook.status} 
                           onValueChange={(value) => handleStatusChange(chromebook.id, value)}
-                          disabled={isUpdating}
+                          disabled={isLoading}
                         >
                           <SelectTrigger className="w-[120px] h-8 text-xs">
                             <SelectValue />
@@ -718,16 +761,16 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
                 setEditingChromebook(null);
               }}
               className="w-full sm:w-auto h-10"
-              disabled={isUpdating}
+              disabled={isLoading}
             >
               Cancelar
             </Button>
             <Button 
               onClick={handleSaveEdit}
               className="w-full sm:w-auto h-10"
-              disabled={isUpdating}
+              disabled={isLoading}
             >
-              {isUpdating ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
+              {isLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
               Salvar Alterações
             </Button>
           </DialogFooter>
@@ -751,16 +794,16 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
                 setIsDeleteDialogOpen(false);
                 setChromebookToDelete(null);
               }}
-              disabled={isDeleting}
+              disabled={isLoading}
             >
               Cancelar
             </Button>
             <Button 
               variant="destructive"
               onClick={handleConfirmDelete}
-              disabled={isDeleting}
+              disabled={isLoading}
             >
-              {isDeleting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Trash2 className="w-4 h-4 mr-2" />}
+              {isLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Trash2 className="w-4 h-4 mr-2" />}
               Excluir
             </Button>
           </DialogFooter>
