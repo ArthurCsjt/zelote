@@ -7,16 +7,14 @@ import type { LoanHistoryItem } from "@/types/database";
 import { Badge } from "./ui/badge";
 import { Progress } from "./ui/progress";
 import { ChartContainer, ChartTooltipContent, ChartLegendContent } from "./ui/chart";
-import { Computer, Download, ArrowLeft, BarChart as BarChartIcon, PieChart as PieChartIcon, Clock, Users, Calendar, CalendarRange, Activity, ChartLine, Brain, Loader2, History as HistoryIcon } from "lucide-react";
+import { Computer, Download, ArrowLeft, BarChart as BarChartIcon, PieChart as PieChartIcon, Clock, Users, Calendar, CalendarRange, Activity, ChartLine, Loader2, History as HistoryIcon } from "lucide-react";
 import jsPDF from "jspdf";
 import { useToast } from "./ui/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useDatabase } from '@/hooks/useDatabase';
 import { useOverdueLoans } from '@/hooks/useOverdueLoans';
-import IntelligentReportsTab from './IntelligentReportsTab';
 import { LoanHistory } from "./LoanHistory";
 import { GlassCard } from "./ui/GlassCard"; // Importando GlassCard
-import { MovingBorderButton } from "./ui/MovingBorderButton"; // Importando o novo botão
 
 interface DashboardProps {
   onBack?: () => void;
@@ -24,7 +22,7 @@ interface DashboardProps {
 
 // Componente auxiliar para renderizar o grid de estatísticas
 const StatsGrid = ({ periodView, filteredLoans, filteredReturns, activeLoans, totalChromebooks, averageUsageTime, completionRate }: any) => {
-  if (periodView === 'history' || periodView === 'reports') return null;
+  if (periodView === 'history') return null;
 
   return (
     <div className="grid gap-4 grid-cols-2 md:grid-cols-4 relative z-10">
@@ -121,7 +119,7 @@ export function Dashboard({
   const {
     toast
   } = useToast();
-  const [periodView, setPeriodView] = useState < 'daily' | 'weekly' | 'monthly' | 'history' | 'reports' > ('daily');
+  const [periodView, setPeriodView] = useState < 'daily' | 'weekly' | 'monthly' | 'history' > ('daily');
   const [periodData, setPeriodData] = useState < any[] > ([]);
   const [loading, setLoading] = useState(false);
   const totalChromebooks = chromebooks.length;
@@ -295,7 +293,6 @@ export function Dashboard({
     weekly: 'Esta Semana',
     monthly: 'Este Mês',
     history: 'Histórico Completo',
-    reports: 'Relatórios Inteligentes'
   };
 
   // Função para gerar o PDF do relatório
@@ -347,10 +344,10 @@ export function Dashboard({
     return pdf;
   };
   const handleDownloadPDF = () => {
-    if (periodView === 'history' || periodView === 'reports') {
+    if (periodView === 'history') {
       toast({
         title: "Atenção",
-        description: "O download de relatórios IA ou Histórico deve ser feito na própria aba, se disponível.",
+        description: "O download do Histórico deve ser feito na própria aba, se disponível.",
         variant: "destructive"
       });
       return;
@@ -383,22 +380,21 @@ export function Dashboard({
           Dashboard
         </h2>
         
-        {/* Usando MovingBorderButton para o botão de download */}
-        <MovingBorderButton 
-          borderRadius="0.5rem"
-          containerClassName="w-auto h-10"
+        {/* Botão de download padrão */}
+        <Button 
+          variant="default"
           className="bg-primary hover:bg-primary/90 text-white px-4 py-2 text-sm font-medium"
           onClick={handleDownloadPDF} 
-          disabled={periodView === 'history' || periodView === 'reports'}
+          disabled={periodView === 'history'}
         >
           <Download className="h-4 w-4 mr-2" />
           <span className="hidden md:inline">Baixar Relatório</span>
-        </MovingBorderButton>
+        </Button>
       </div>
 
       {/* Tabs for Period Selection */}
       <Tabs defaultValue="daily" value={periodView} onValueChange={(v) => setPeriodView(v as any)} className="relative z-10">
-        <TabsList className="grid w-full grid-cols-5 h-10">
+        <TabsList className="grid w-full grid-cols-4 h-10">
           <TabsTrigger value="daily" className="flex items-center gap-1 text-xs sm:text-sm">
             <Calendar className="h-3 w-3 sm:h-4 sm:w-4" />
             Diário
@@ -418,13 +414,6 @@ export function Dashboard({
             <HistoryIcon className="h-3 w-3 sm:h-4 sm:w-4" />
             Histórico
           </TabsTrigger>
-          <TabsTrigger 
-            value="reports" 
-            className="flex items-center gap-1 text-xs sm:text-sm data-[state=active]:bg-menu-violet data-[state=active]:text-white data-[state=active]:shadow-md hover:bg-menu-violet/80 transition-colors"
-          >
-            <Brain className="h-3 w-3 sm:h-4 sm:w-4" />
-            Relatórios IA
-          </TabsTrigger>
         </TabsList>
 
         {loading ? (
@@ -434,7 +423,7 @@ export function Dashboard({
           </div>
         ) : (
           <>
-            {/* Grid de Cards de Estatísticas (Visível em todas as abas exceto Histórico e Relatórios) */}
+            {/* Grid de Cards de Estatísticas (Visível em todas as abas exceto Histórico) */}
             <StatsGrid 
               periodView={periodView}
               filteredLoans={filteredLoans}
@@ -583,7 +572,7 @@ export function Dashboard({
                         <Badge variant="secondary" className="bg-orange-100 text-orange-700">
                           {loansByUserType.funcionario || 0} empréstimos
                         </Badge>
-                      </div>
+                      </Badge>
                       <Progress value={(loansByUserType.funcionario || 0) / filteredLoans.length * 100} className="h-2" />
                     </div>
                     
@@ -772,11 +761,6 @@ export function Dashboard({
             {/* ABA DE HISTÓRICO */}
             <TabsContent value="history" className="space-y-4 mt-6">
               <LoanHistory history={history} />
-            </TabsContent>
-            
-            {/* ABA DE RELATÓRIOS INTELIGENTES */}
-            <TabsContent value="reports" className="space-y-4 mt-6">
-              <IntelligentReportsTab />
             </TabsContent>
           </>
         )}
