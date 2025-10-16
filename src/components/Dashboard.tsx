@@ -16,6 +16,7 @@ import { useOverdueLoans } from '@/hooks/useOverdueLoans';
 import IntelligentReportsTab from './IntelligentReportsTab';
 import { LoanHistory } from "./LoanHistory";
 import { GlassCard } from "./ui/GlassCard"; // Importando GlassCard
+import { MovingBorderButton } from "./ui/MovingBorderButton"; // Importando o novo botão
 
 interface DashboardProps {
   onBack?: () => void;
@@ -381,15 +382,23 @@ export function Dashboard({
         <h2 className="text-xl sm:text-3xl font-bold text-gray-800 whitespace-nowrap">
           Dashboard
         </h2>
-        <Button variant="outline" onClick={handleDownloadPDF} className="flex items-center gap-2 hover:bg-blue-50" disabled={periodView === 'history' || periodView === 'reports'}>
-          <Download className="h-4 w-4" />
+        
+        {/* Usando MovingBorderButton para o botão de download */}
+        <MovingBorderButton 
+          borderRadius="0.5rem"
+          containerClassName="w-auto h-10"
+          className="bg-primary hover:bg-primary/90 text-white px-4 py-2 text-sm font-medium"
+          onClick={handleDownloadPDF} 
+          disabled={periodView === 'history' || periodView === 'reports'}
+        >
+          <Download className="h-4 w-4 mr-2" />
           <span className="hidden md:inline">Baixar Relatório</span>
-        </Button>
+        </MovingBorderButton>
       </div>
 
       {/* Tabs for Period Selection */}
       <Tabs defaultValue="daily" value={periodView} onValueChange={(v) => setPeriodView(v as any)} className="relative z-10">
-        <TabsList className="grid w-full grid-cols-4 h-10">
+        <TabsList className="grid w-full grid-cols-5 h-10">
           <TabsTrigger value="daily" className="flex items-center gap-1 text-xs sm:text-sm">
             <Calendar className="h-3 w-3 sm:h-4 sm:w-4" />
             Diário
@@ -409,6 +418,13 @@ export function Dashboard({
             <HistoryIcon className="h-3 w-3 sm:h-4 sm:w-4" />
             Histórico
           </TabsTrigger>
+          <TabsTrigger 
+            value="reports" 
+            className="flex items-center gap-1 text-xs sm:text-sm data-[state=active]:bg-menu-violet data-[state=active]:text-white data-[state=active]:shadow-md hover:bg-menu-violet/80 transition-colors"
+          >
+            <Brain className="h-3 w-3 sm:h-4 sm:w-4" />
+            Relatórios IA
+          </TabsTrigger>
         </TabsList>
 
         {loading ? (
@@ -418,7 +434,7 @@ export function Dashboard({
           </div>
         ) : (
           <>
-            {/* Grid de Cards de Estatísticas (Visível em todas as abas exceto Histórico) */}
+            {/* Grid de Cards de Estatísticas (Visível em todas as abas exceto Histórico e Relatórios) */}
             <StatsGrid 
               periodView={periodView}
               filteredLoans={filteredLoans}
