@@ -65,7 +65,7 @@ export function LoanHistory({ history }: LoanHistoryProps) {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 w-full"> {/* Adicionando w-full para garantir que ocupe a largura total */}
       <div className="flex items-center gap-2">
         <Clock className="h-5 w-5 text-primary" />
         <h2 className="text-xl font-semibold">Histórico de Empréstimos</h2>
