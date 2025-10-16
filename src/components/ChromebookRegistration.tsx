@@ -27,7 +27,7 @@ interface FormData {
   isFixedInClassroom: boolean;
   classroomLocation: string; // Usado como location
   observations: string; // Usado como condition
-  provisioning_status: string;
+  provisioning_status: 'provisioned' | 'deprovisioned'; // Alterado para enum
 }
 
 export function ChromebookRegistration({ onRegistrationSuccess }: { onRegistrationSuccess: (newChromebook: any) => void }) {
@@ -51,26 +51,30 @@ export function ChromebookRegistration({ onRegistrationSuccess }: { onRegistrati
   };
 
   const handleFormChange = (field: keyof FormData, value: string | boolean) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData(prev => ({ ...prev, [field]: value as any }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    // Patrimônio não é mais obrigatório, mas Fabricante, Modelo e Série continuam
     if (!formData.manufacturer || !formData.model || !formData.series) {
       toast({ title: "Erro de Validação", description: "Preencha os campos Fabricante, Modelo e Série.", variant: "destructive" });
       return;
     }
     
+    const isDeprovisioned = formData.provisioning_status === 'deprovisioned';
+    
     const chromebookData = {
       model: formData.model, 
       serialNumber: formData.series,
-      patrimonyNumber: formData.patrimonyNumber || null,
+      patrimonyNumber: formData.patrimonyNumber || null, // Patrimônio opcional
       manufacturer: formData.manufacturer,
-      // manufacturingYear não é mapeado diretamente para o DB, mas pode ser incluído em 'condition' se necessário
       condition: formData.observations || 'novo', 
       location: formData.isFixedInClassroom ? formData.classroomLocation : null,
-      status: formData.isFixedInClassroom ? 'fixo' as const : 'disponivel' as const,
-      is_deprovisioned: formData.provisioning_status === 'deprovisioned',
+      // Se for fixo, status é 'fixo'. Se for desprovisionado, status é 'fora_uso'. Caso contrário, 'disponivel'.
+      status: formData.isFixedInClassroom ? 'fixo' as const : (isDeprovisioned ? 'fora_uso' as const : 'disponivel' as const),
+      is_deprovisioned: isDeprovisioned, // Novo campo booleano (se existir no DB)
+      classroom: formData.isFixedInClassroom ? formData.classroomLocation : null,
     };
     
     const result = await createChromebook(chromebookData);
@@ -120,11 +124,8 @@ export function ChromebookRegistration({ onRegistrationSuccess }: { onRegistrati
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="Acer">Acer</SelectItem>
-                    <SelectItem value="Samsung">Samsung</SelectItem>
                     <SelectItem value="Lenovo">Lenovo</SelectItem>
-                    <SelectItem value="Dell">Dell</SelectItem>
-                    <SelectItem value="HP">HP</SelectItem>
-                    <SelectItem value="Outro">Outro</SelectItem>
+                    <SelectItem value="Samsung">Samsung</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -159,7 +160,7 @@ export function ChromebookRegistration({ onRegistrationSuccess }: { onRegistrati
               
               <div className="space-y-2">
                 <Label htmlFor="patrimonyNumber" className="flex items-center gap-1">
-                  <Hash className="h-3 w-3" /> Patrimônio
+                  <Hash className="h-3 w-3" /> Patrimônio (Opcional)
                 </Label>
                 <Input 
                   id="patrimonyNumber" 
@@ -226,11 +227,11 @@ export function ChromebookRegistration({ onRegistrationSuccess }: { onRegistrati
               >
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="provisioned" id="provisioned" />
-                  <Label htmlFor="provisioned">Provisionado</Label>
+                  <Label htmlFor="provisioned">Provisionado (Disponível)</Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="deprovisioned" id="deprovisioned" />
-                  <Label htmlFor="deprovisioned">Desprovisionado (Inativo)</Label>
+                  <Label htmlFor="deprovisioned">Desprovisionado (Fora de Uso)</Label>
                 </div>
               </RadioGroup>
             </div>

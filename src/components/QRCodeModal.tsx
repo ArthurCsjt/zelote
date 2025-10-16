@@ -6,17 +6,19 @@ import { CheckCircle, Download, Printer, X } from "lucide-react";
 import { toast } from "./ui/use-toast";
 import { supabase } from '@/integrations/supabase/client';
 
+interface ChromebookDetails {
+  id: string; // UUID do DB
+  chromebook_id: string; // ID amigável (CHRxxx)
+  model: string;
+  serial_number?: string;
+  patrimony_number?: string;
+}
+
 interface QRCodeModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  chromebookId: string;
-  chromebookData?: {
-    id: string;
-    chromebook_id: string;
-    model: string;
-    serial_number?: string;
-    patrimony_number?: string;
-  };
+  chromebookId: string; // Pode ser o UUID ou o chromebook_id amigável
+  chromebookData?: ChromebookDetails; // Dados completos, se disponíveis
   showSuccess?: boolean;
 }
 
@@ -27,21 +29,22 @@ export function QRCodeModal({
   chromebookData,
   showSuccess = false 
 }: QRCodeModalProps) {
-  const [resolved, setResolved] = useState<{ chromebook_id?: string; model?: string; serial_number?: string; patrimony_number?: string } | null>(null);
+  // O resolved armazena os detalhes completos, preferindo o chromebook_id amigável
+  const [resolved, setResolved] = useState<ChromebookDetails | null>(null);
   const [resolving, setResolving] = useState(false);
 
-  // When only a UUID is provided (DB id), try to fetch the full chromebook to prefer chromebook_id
+  // O ID final que será exibido e usado no QR Code
+  const finalDisplayId = resolved?.chromebook_id ?? chromebookData?.chromebook_id ?? chromebookId;
+  const finalDbId = resolved?.id ?? chromebookData?.id ?? chromebookId; // Usado para busca se necessário
+
+  // Quando apenas um ID (UUID ou CHRxxx) é fornecido, tenta buscar os detalhes
   useEffect(() => {
     let mounted = true;
     const isUUID = (s: string) => /^[0-9a-fA-F-]{36}$/.test(s);
+    
     const resolve = async () => {
       if (chromebookData) {
-        setResolved({
-          chromebook_id: chromebookData.chromebook_id,
-          model: chromebookData.model,
-          serial_number: chromebookData.serial_number,
-          patrimony_number: chromebookData.patrimony_number,
-        });
+        setResolved(chromebookData);
         return;
       }
 
@@ -50,37 +53,58 @@ export function QRCodeModal({
         return;
       }
 
-      // If chromebookId looks like a UUID, fetch the record and prefer its friendly id
+      setResolving(true);
+      
+      // 1. Tenta buscar pelo UUID (id do DB)
       if (isUUID(chromebookId)) {
-        setResolving(true);
         try {
           const { data, error } = await supabase
             .from('chromebooks')
-            .select('chromebook_id, model, serial_number, patrimony_number')
+            .select('id, chromebook_id, model, serial_number, patrimony_number')
             .eq('id', chromebookId)
             .single();
           if (!mounted) return;
           if (error) {
-            // keep fallback to raw string
-            setResolved(null);
+            // Se falhar, tenta buscar pelo chromebook_id amigável
+            const { data: friendlyData } = await supabase
+              .from('chromebooks')
+              .select('id, chromebook_id, model, serial_number, patrimony_number')
+              .eq('chromebook_id', chromebookId)
+              .single();
+            if (friendlyData) {
+              setResolved(friendlyData as ChromebookDetails);
+            } else {
+              // Fallback para usar o ID bruto se nada for encontrado
+              setResolved({ id: chromebookId, chromebook_id: chromebookId, model: 'N/A' });
+            }
           } else if (data) {
-            setResolved({
-              chromebook_id: data.chromebook_id,
-              model: data.model,
-              serial_number: data.serial_number,
-              patrimony_number: data.patrimony_number,
-            });
+            setResolved(data as ChromebookDetails);
           }
         } catch (e) {
           console.error('Erro ao buscar chromebook para QR code', e);
-          setResolved(null);
-        } finally {
-          if (mounted) setResolving(false);
+          setResolved({ id: chromebookId, chromebook_id: chromebookId, model: 'N/A' });
         }
       } else {
-        // Provided string is likely already the friendly id
-        setResolved({ chromebook_id: chromebookId });
+        // 2. Se for o ID amigável (CHRxxx), tenta buscar os detalhes
+        try {
+          const { data, error } = await supabase
+            .from('chromebooks')
+            .select('id, chromebook_id, model, serial_number, patrimony_number')
+            .eq('chromebook_id', chromebookId)
+            .single();
+          if (!mounted) return;
+          if (data) {
+            setResolved(data as ChromebookDetails);
+          } else {
+            setResolved({ id: chromebookId, chromebook_id: chromebookId, model: 'N/A' });
+          }
+        } catch (e) {
+          console.error('Erro ao buscar chromebook para QR code', e);
+          setResolved({ id: chromebookId, chromebook_id: chromebookId, model: 'N/A' });
+        }
       }
+      
+      if (mounted) setResolving(false);
     };
 
     resolve();
@@ -89,14 +113,10 @@ export function QRCodeModal({
 
   // Prepare QR Code data
   const getQRCodeData = () => {
-    const source = resolved ?? (chromebookData ? {
-      chromebook_id: chromebookData.chromebook_id,
-      model: chromebookData.model,
-      serial_number: chromebookData.serial_number,
-      patrimony_number: chromebookData.patrimony_number,
-    } : null);
+    const source = resolved ?? chromebookData;
 
     if (source && source.chromebook_id) {
+      // Usamos o ID amigável (CHRxxx) no payload do QR Code
       const essentialData = {
         id: source.chromebook_id,
         model: source.model,
@@ -106,7 +126,7 @@ export function QRCodeModal({
       return JSON.stringify(essentialData);
     }
 
-    return chromebookId || '';
+    return finalDisplayId || '';
   };
 
   // Handle PNG download
@@ -146,11 +166,13 @@ export function QRCodeModal({
         ctx.fillStyle = "#000000";
         ctx.font = "16px Arial";
         ctx.textAlign = "center";
-        ctx.fillText(`ID: ${chromebookId}`, canvas.width / 2, img.height + padding + 25);
+        // CORREÇÃO: Usar finalDisplayId aqui
+        ctx.fillText(`ID: ${finalDisplayId}`, canvas.width / 2, img.height + padding + 25);
         
         // Download PNG
         const link = document.createElement('a');
-        link.download = `qrcode-chromebook-${chromebookId}.png`;
+        // CORREÇÃO: Usar finalDisplayId no nome do arquivo
+        link.download = `qrcode-chromebook-${finalDisplayId}.png`;
         link.href = canvas.toDataURL();
         link.click();
 
@@ -186,7 +208,7 @@ export function QRCodeModal({
         <!DOCTYPE html>
         <html>
           <head>
-            <title>QR Code - ${chromebookId}</title>
+            <title>QR Code - ${finalDisplayId}</title>
             <style>
               body {
                 margin: 0;
@@ -215,7 +237,7 @@ export function QRCodeModal({
             <div class="qr-container">
               <div style="display: flex; flex-direction: column; align-items: center;">
                 ${svgData}
-                <div class="qr-id">ID: ${chromebookId}</div>
+                <div class="qr-id">ID: ${finalDisplayId}</div>
               </div>
             </div>
           </body>
@@ -260,32 +282,38 @@ export function QRCodeModal({
             QR Code Gerado
           </DialogTitle>
           <DialogDescription className="text-gray-600">
-            QR Code para o Chromebook {resolved?.chromebook_id ?? chromebookData?.chromebook_id ?? chromebookId}
+            QR Code para o Chromebook {finalDisplayId}
           </DialogDescription>
         </DialogHeader>
 
         {/* QR Code Container */}
         <div className="flex flex-col items-center py-4">
           <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
-            <QRCodeSVG 
-              id="qr-code-modal-svg"
-              value={getQRCodeData()}
-              size={140}
-              level="H"
-              includeMargin={true}
-              bgColor="#FFFFFF"
-              fgColor="#000000"
-              style={{
-                display: 'block',
-                borderRadius: '8px',
-              }}
-            />
+            {resolving ? (
+              <div className="w-[140px] h-[140px] flex items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            ) : (
+              <QRCodeSVG 
+                id="qr-code-modal-svg"
+                value={getQRCodeData()}
+                size={140}
+                level="H"
+                includeMargin={true}
+                bgColor="#FFFFFF"
+                fgColor="#000000"
+                style={{
+                  display: 'block',
+                  borderRadius: '8px',
+                }}
+              />
+            )}
           </div>
           
           {/* ID Badge */}
           <div className="mt-3">
             <span className="bg-gray-800 text-white px-3 py-1.5 rounded-full text-xs font-medium">
-              ID: {resolved?.chromebook_id ?? chromebookData?.chromebook_id ?? chromebookId}
+              ID: {finalDisplayId}
             </span>
           </div>
         </div>
@@ -295,6 +323,7 @@ export function QRCodeModal({
           <Button
             onClick={handleDownloadPNG}
             className="flex-1 bg-blue-500 hover:bg-blue-600 text-white"
+            disabled={resolving}
           >
             <Download className="mr-2 h-4 w-4" />
             Baixar PNG
@@ -302,6 +331,7 @@ export function QRCodeModal({
           <Button
             onClick={handlePrint}
             className="flex-1 bg-green-500 hover:bg-green-600 text-white"
+            disabled={resolving}
           >
             <Printer className="mr-2 h-4 w-4" />
             Imprimir
