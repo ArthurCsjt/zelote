@@ -7,13 +7,15 @@ type ToastProps = {
   description?: React.ReactNode;
   variant?: 'default' | 'destructive' | 'success' | 'info';
   duration?: number;
+  id?: string | number; // Adicionando ID para controle de duplicação
 };
 
 // Função toast que mapeia para o Sonner
-function toast({ title, description, variant = 'default', duration = 4000 }: ToastProps) {
+function toast({ title, description, variant = 'default', duration = 4000, id }: ToastProps) {
   const options: any = {
     description: description,
     duration: duration,
+    id: id, // Passa o ID para o Sonner
     // Mapeamento de variantes para cores ricas do Sonner
     style: {
       backgroundColor: variant === 'destructive' ? 'hsl(0 84.2% 60.2%)' : undefined,
@@ -44,4 +46,6 @@ function useToast() {
   }
 }
 
-export { useToast, toast }
+const dismiss = sonnerToast.dismiss;
+
+export { useToast, toast, dismiss }
