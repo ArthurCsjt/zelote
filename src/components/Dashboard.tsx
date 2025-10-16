@@ -380,15 +380,15 @@ export function Dashboard({
           Dashboard
         </h2>
         
-        {/* Botão de download padrão (ajustado para ser mais simples) */}
+        {/* Botão de download: Branco (outline) e apenas ícone */}
         <Button 
-          variant="default"
-          className="bg-primary hover:bg-primary/90 text-white px-4 py-2 text-sm font-medium"
+          variant="outline" // Alterado para outline (branco)
+          size="icon" // Alterado para icon (apenas ícone)
           onClick={handleDownloadPDF} 
           disabled={periodView === 'history'}
+          className="h-10 w-10" // Definindo tamanho para ser um quadrado
         >
-          <Download className="h-4 w-4 mr-2 hidden sm:inline" />
-          Baixar Relatório
+          <Download className="h-5 w-5" /> {/* Ícone sem margem */}
         </Button>
       </div>
 
@@ -745,17 +745,17 @@ export function Dashboard({
                   <Clock className="h-5 w-5 text-muted-foreground" />
                 </CardHeader>
                 <CardContent className="h-[250px] sm:h-[300px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={durationData} layout="horizontal" margin={{ top: 5, right: 0, left: 0, bottom: 5 }}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis type="number" tick={{ fontSize: 10 }} />
-                      <YAxis dataKey="name" type="category" width={80} tick={{ fontSize: 10 }} />
-                      <Tooltip />
-                      <Bar dataKey="minutos" fill="#8B5CF6" radius={[0, 4, 4, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </GlassCard>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={durationData} layout="horizontal" margin={{ top: 5, right: 0, left: 0, bottom: 5 }}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis type="number" tick={{ fontSize: 10 }} />
+                        <YAxis dataKey="name" type="category" width={80} tick={{ fontSize: 10 }} />
+                        <Tooltip />
+                        <Bar dataKey="minutos" fill="#8B5CF6" radius={[0, 4, 4, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </GlassCard>
             </TabsContent>
             
             {/* ABA DE HISTÓRICO */}
