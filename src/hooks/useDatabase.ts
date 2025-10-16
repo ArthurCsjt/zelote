@@ -33,7 +33,24 @@ export const useDatabase = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
 
-  // --- Chromebook operations REMOVIDAS ---
+  // Função auxiliar para buscar um Chromebook por qualquer identificador
+  const findChromebook = useCallback(async (identifier: string) => {
+    const { data: chromebook, error } = await supabase
+      .from('chromebooks')
+      .select('id, chromebook_id, status')
+      .or(
+        [
+          `chromebook_id.eq.${identifier}`,
+          `serial_number.eq.${identifier}`,
+          `patrimony_number.eq.${identifier}`,
+        ].join(',')
+      )
+      .single();
+      
+    if (error && error.code !== 'PGRST116') throw error;
+    return chromebook;
+  }, []);
+
 
   // Loan operations
   const createLoan = useCallback(async (data: LoanFormData): Promise<Loan | null> => {
@@ -44,16 +61,15 @@ export const useDatabase = () => {
 
     setLoading(true);
     try {
-      // Buscar o chromebook pelo ID
-      const { data: chromebook, error: chromebookError } = await supabase
-        .from('chromebooks')
-        .select('id')
-        .eq('chromebook_id', data.chromebookId)
-        .eq('status', 'disponivel')
-        .single();
+      // Buscar o chromebook pelo ID, Serial ou Patrimônio
+      const chromebook = await findChromebook(data.chromebookId);
 
-      if (chromebookError || !chromebook) {
-        throw new Error('Chromebook não encontrado ou não está disponível');
+      if (!chromebook) {
+        throw new Error(`Chromebook com ID/Série/Patrimônio "${data.chromebookId}" não encontrado.`);
+      }
+      
+      if (chromebook.status !== 'disponivel') {
+        throw new Error(`Chromebook ${chromebook.chromebook_id} não está disponível (Status: ${chromebook.status}).`);
       }
 
       const { data: result, error } = await supabase
@@ -76,7 +92,7 @@ export const useDatabase = () => {
       
       toast({ 
         title: "Empréstimo registrado", 
-        description: `Chromebook ${data.chromebookId} emprestado para ${data.studentName}` 
+        description: `Chromebook ${chromebook.chromebook_id} emprestado para ${data.studentName}` 
       });
       return result;
     } catch (error: any) {
@@ -85,7 +101,7 @@ export const useDatabase = () => {
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [user, findChromebook]);
   
   // Criação de empréstimos em lote
   const bulkCreateLoans = useCallback(async (loanDataList: LoanFormData[]): Promise<{ successCount: number, errorCount: number }> => {
@@ -98,46 +114,53 @@ export const useDatabase = () => {
     let successCount = 0;
     let errorCount = 0;
     
-    // Mapear IDs de Chromebooks para IDs internos do DB
-    const chromebookIds = loanDataList.map(d => d.chromebookId);
-    const { data: chromebooks, error: cbError } = await supabase
-      .from('chromebooks')
-      .select('id, chromebook_id, status')
-      .in('chromebook_id', chromebookIds);
-
-    if (cbError) {
-      toast({ title: "Erro", description: "Falha ao buscar Chromebooks.", variant: "destructive" });
-      setLoading(false);
-      return { successCount: 0, errorCount: loanDataList.length };
-    }
-
-    const chromebookMap = new Map(chromebooks.map(cb => [cb.chromebook_id, cb]));
     const loansToInsert = [];
 
     for (const data of loanDataList) {
-      const chromebook = chromebookMap.get(data.chromebookId);
-      
-      if (!chromebook || chromebook.status !== 'disponivel') {
+      try {
+        // Buscar o chromebook pelo ID, Serial ou Patrimônio
+        const chromebook = await findChromebook(data.chromebookId);
+
+        if (!chromebook) {
+          errorCount++;
+          toast({ 
+            title: "Erro no Lote", 
+            description: `Chromebook ${data.chromebookId} não encontrado.`, 
+            variant: "destructive" 
+          });
+          continue;
+        }
+        
+        if (chromebook.status !== 'disponivel') {
+          errorCount++;
+          toast({ 
+            title: "Erro no Lote", 
+            description: `Chromebook ${chromebook.chromebook_id} não está disponível (Status: ${chromebook.status}).`, 
+            variant: "destructive" 
+          });
+          continue;
+        }
+
+        loansToInsert.push({
+          chromebook_id: chromebook.id,
+          student_name: data.studentName,
+          student_ra: data.ra,
+          student_email: data.email,
+          purpose: data.purpose,
+          user_type: data.userType,
+          loan_type: data.loanType,
+          expected_return_date: data.expectedReturnDate?.toISOString(),
+          created_by: user.id
+        });
+        
+      } catch (e: any) {
         errorCount++;
         toast({ 
           title: "Erro no Lote", 
-          description: `Chromebook ${data.chromebookId} não encontrado ou não está disponível.`, 
+          description: `Falha ao processar ${data.chromebookId}: ${e.message}`, 
           variant: "destructive" 
         });
-        continue;
       }
-
-      loansToInsert.push({
-        chromebook_id: chromebook.id,
-        student_name: data.studentName,
-        student_ra: data.ra,
-        student_email: data.email,
-        purpose: data.purpose,
-        user_type: data.userType,
-        loan_type: data.loanType,
-        expected_return_date: data.expectedReturnDate?.toISOString(),
-        created_by: user.id
-      });
     }
     
     if (loansToInsert.length > 0) {
@@ -160,7 +183,7 @@ export const useDatabase = () => {
 
     setLoading(false);
     return { successCount, errorCount: loanDataList.length - successCount };
-  }, [user]);
+  }, [user, findChromebook]);
 
 
   const getActiveLoans = useCallback(async (): Promise<LoanHistoryItem[]> => {
@@ -246,16 +269,23 @@ export const useDatabase = () => {
   const returnChromebookById = useCallback(async (chromebookId: string, data: ReturnFormData): Promise<boolean> => {
     setLoading(true);
     try {
-      // Buscar o empréstimo ativo
+      // Buscar o empréstimo ativo usando a função auxiliar para flexibilidade
+      const chromebook = await findChromebook(chromebookId);
+      
+      if (!chromebook) {
+        throw new Error(`Chromebook com ID/Série/Patrimônio "${chromebookId}" não encontrado.`);
+      }
+      
+      // Buscar o empréstimo ativo pelo ID interno do Chromebook
       const { data: activeLoan, error: loanError } = await supabase
         .from('loan_history')
         .select('id')
-        .eq('chromebook_id', chromebookId)
+        .eq('chromebook_id', chromebook.chromebook_id) // Usamos o chromebook_id amigável aqui, pois loan_history usa ele
         .eq('status', 'ativo')
         .single();
 
       if (loanError || !activeLoan) {
-        throw new Error('Chromebook não encontrado ou não está emprestado');
+        throw new Error(`Chromebook ${chromebook.chromebook_id} não está emprestado.`);
       }
 
       const result = await createReturn(activeLoan.id, data);
@@ -266,7 +296,7 @@ export const useDatabase = () => {
     } finally {
       setLoading(false);
     }
-  }, [createReturn]);
+  }, [createReturn, findChromebook]);
   
   // Devolução em lote
   const bulkReturnChromebooks = useCallback(async (chromebookIds: string[], data: ReturnFormData): Promise<{ successCount: number, errorCount: number }> => {
@@ -278,8 +308,10 @@ export const useDatabase = () => {
     setLoading(true);
     let successCount = 0;
     let errorCount = 0;
+    const returnsToInsert = [];
 
     // 1. Buscar IDs de empréstimos ativos para os Chromebooks fornecidos
+    // Nota: A view loan_history usa o chromebook_id (CHRxxx) e não o UUID (id)
     const { data: activeLoans, error: loanError } = await supabase
       .from('loan_history')
       .select('id, chromebook_id')
@@ -293,7 +325,6 @@ export const useDatabase = () => {
     }
     
     const loanMap = new Map(activeLoans.map(loan => [loan.chromebook_id, loan.id]));
-    const returnsToInsert = [];
 
     for (const chromebookId of chromebookIds) {
       const loanId = loanMap.get(chromebookId);
