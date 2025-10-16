@@ -141,6 +141,15 @@ export function ReturnDialog({
   const handleConfirmClick = () => {
     let idsToReturn: string[] = [];
     
+    if (!selectedUser) {
+      toast({
+        title: "Erro",
+        description: "Selecione o solicitante usando a busca automática.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     if (returnData.type === 'lote') {
       // === DEVOLUÇÃO EM LOTE ===
       if (batchDevices.length === 0) {
@@ -277,7 +286,7 @@ export function ReturnDialog({
                 <User className="h-5 w-5" /> Informações do Solicitante
               </CardTitle>
               
-              {/* NOVO: Seletor de Usuário com Autocompletar */}
+              {/* Seletor de Usuário com Autocompletar (ÚNICO CAMPO) */}
               <div className="space-y-2">
                 <Label htmlFor="userSearch" className="text-gray-700">
                   Buscar Solicitante (Nome, RA ou Email)
@@ -286,81 +295,18 @@ export function ReturnDialog({
                   selectedUser={selectedUser}
                   onSelect={handleUserSelect}
                   onClear={handleUserClear}
-                  disabled={false} // Deve estar sempre habilitado
+                  disabled={false}
                 />
               </div>
-
-              {/* Campos de Usuário (Exibidos apenas se NENHUM usuário estiver selecionado) */}
+              
+              {/* Mensagem de aviso se nenhum usuário for selecionado */}
               {!selectedUser && (
-                <>
-                  {/* Seletor de tipo de usuário */}
-                  <div className="space-y-2">
-                    <Label htmlFor="userType" className="text-gray-700">
-                      Tipo de Solicitante
-                    </Label>
-                    <Select
-                      value={returnData.userType}
-                      onValueChange={(value: 'aluno' | 'professor' | 'funcionario') =>
-                        onReturnDataChange({ ...returnData, userType: value })
-                      }
-                    >
-                      <SelectTrigger className="bg-white border-gray-200">
-                        <SelectValue placeholder="Selecione o tipo de solicitante" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="aluno">Aluno</SelectItem>
-                        <SelectItem value="professor">Professor</SelectItem>
-                        <SelectItem value="funcionario">Funcionário</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* Campo de nome do solicitante */}
-                  <div className="space-y-2">
-                    <Label htmlFor="returnerName" className="text-gray-700">
-                      Nome do Solicitante
-                    </Label>
-                    <Input
-                      id="returnerName"
-                      value={returnData.name}
-                      onChange={(e) => onReturnDataChange({ ...returnData, name: e.target.value })}
-                      placeholder="Digite o nome do solicitante"
-                      className="bg-white border-gray-200"
-                    />
-                  </div>
-
-                  {/* Campo de RA (apenas para alunos) */}
-                  {returnData.userType === 'aluno' && (
-                    <div className="space-y-2">
-                      <Label htmlFor="returnerRA" className="text-gray-700">
-                        RA do Aluno (opcional)
-                      </Label>
-                      <Input
-                        id="returnerRA"
-                        value={returnData.ra}
-                        onChange={(e) => onReturnDataChange({ ...returnData, ra: e.target.value })}
-                        placeholder="Digite o RA"
-                        className="bg-white border-gray-200"
-                      />
-                    </div>
-                  )}
-
-                  {/* Campo de email */}
-                  <div className="space-y-2">
-                    <Label htmlFor="returnerEmail" className="text-gray-700">
-                      Email
-                    </Label>
-                    <Input
-                      id="returnerEmail"
-                      type="email"
-                      value={returnData.email}
-                      onChange={(e) => onReturnDataChange({ ...returnData, email: e.target.value })}
-                      placeholder="Digite o email"
-                      className="bg-white border-gray-200"
-                      required
-                    />
-                  </div>
-                </>
+                <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+                  <p className="text-sm text-red-700 flex items-center gap-2">
+                    <AlertTriangle className="h-4 w-4" />
+                    Selecione o solicitante para prosseguir com a devolução.
+                  </p>
+                </div>
               )}
             </Card>
           </div>
@@ -391,7 +337,12 @@ export function ReturnDialog({
             <Button 
               onClick={handleConfirmClick}
               className="flex-1 bg-blue-600 hover:bg-blue-700"
-              disabled={!confirmChecked || (returnData.type === 'lote' && batchDevices.length === 0 && !chromebookId)}
+              disabled={
+                !confirmChecked || 
+                !selectedUser || // Desabilita se nenhum usuário for selecionado
+                (returnData.type === 'lote' && batchDevices.length === 0) ||
+                (returnData.type === 'individual' && !chromebookId)
+              }
             >
               <CheckCircle className="h-4 w-4 mr-2" />
               {returnData.type === 'lote' 
