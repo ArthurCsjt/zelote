@@ -152,7 +152,7 @@ export function ZeloteLayout({ children }: { children: React.ReactNode }) {
             
             <div className="mt-4 flex flex-col gap-2">
               {links.map((link, idx) => (
-                <SidebarLink key={idx} link={link} />
+                <SidebarLink key={idx} link={link} open={open} />
               ))}
             </div>
           </div>
@@ -166,6 +166,7 @@ export function ZeloteLayout({ children }: { children: React.ReactNode }) {
                 href: "/settings", // Redireciona para configurações ao clicar no perfil
                 icon: <UserCircle className="h-6 w-6 flex-shrink-0" />,
               }}
+              open={open}
             />
             
             {/* Links de Ação */}
@@ -179,6 +180,7 @@ export function ZeloteLayout({ children }: { children: React.ReactNode }) {
                     }}
                     // Adiciona o onClick se for o botão de Sair
                     onClick={link.onClick}
+                    open={open}
                 />
             ))}
           </div>
