@@ -26,21 +26,9 @@ const Settings = () => {
     navigate('/login', { replace: true });
   };
 
-  // NOVO HANDLER: Força a navegação para a raiz (menu principal)
-  const handleBackToMenu = () => {
-    navigate('/', { replace: true });
-  };
-
   return (
     <div className="max-w-5xl mx-auto p-4 sm:p-6 lg:p-8 animate-fade-in relative">
-      {/* Título da Página (para ser exibido no corpo, já que o Layout não está aqui) */}
-      <div className="mb-8 text-center">
-        <h1 className="text-3xl font-bold text-gray-800 flex items-center justify-center gap-3">
-          <SettingsIcon className="h-7 w-7 text-primary" />
-          Configurações do Sistema
-        </h1>
-        <p className="text-muted-foreground">Gerencie usuários, permissões e manutenção de dados.</p>
-      </div>
+      {/* Removido o título duplicado, pois o Layout no App.tsx já o fornece */}
       
       <div className="grid gap-6">
         
