@@ -18,6 +18,7 @@ import UserAutocomplete from "./UserAutocomplete";
 import type { UserSearchResult } from '@/hooks/useUserSearch';
 import { Card, CardContent, CardTitle } from "./ui/card";
 import { BatchDeviceInput } from "./BatchDeviceInput"; // Importando o novo componente
+import { GlassCard } from "./ui/GlassCard"; // Importando GlassCard para consistência
 
 // Define a interface dos dados do formulário de empréstimo
 interface LoanFormData {
@@ -241,7 +242,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
       <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
         
         {/* Seletor de tipo de empréstimo (individual ou lote) */}
-        <div className="space-y-2">
+        <GlassCard className="p-4 space-y-2 border-gray-200/50 shadow-sm">
           <Label htmlFor="loanType" className="text-gray-700">
             Tipo de Empréstimo
           </Label>
@@ -259,12 +260,12 @@ export function LoanForm({ onBack }: LoanFormProps) {
               <SelectItem value="lote">Em Lote</SelectItem>
             </SelectContent>
           </Select>
-        </div>
+        </GlassCard>
 
         <div className="grid md:grid-cols-2 gap-6">
             
           {/* Coluna Esquerda - Detalhes do Equipamento/Lote */}
-          <Card className="p-4 space-y-4 bg-green-50/50 border-green-100 shadow-inner">
+          <GlassCard className="p-4 space-y-4 bg-green-50/50 border-green-100 shadow-inner">
             <CardTitle className="text-lg flex items-center gap-2 text-green-700">
               <Computer className="h-5 w-5" /> Detalhes do Equipamento
             </CardTitle>
@@ -320,10 +321,10 @@ export function LoanForm({ onBack }: LoanFormProps) {
                 disabled={loading}
               />
             )}
-          </Card>
+          </GlassCard>
 
           {/* Coluna Direita - Informações do Solicitante */}
-          <Card className="p-4 space-y-4 bg-white border-gray-100 shadow-md">
+          <GlassCard className="p-4 space-y-4 bg-purple-50/50 border-purple-100 shadow-inner">
             <CardTitle className="text-lg flex items-center gap-2 text-purple-700">
               <User className="h-5 w-5" /> Informações do Solicitante
             </CardTitle>
@@ -356,7 +357,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
                 className="border-gray-200 bg-white"
               />
             </div>
-          </Card>
+          </GlassCard>
         </div>
 
         {/* Opção para definir prazo de devolução (abaixo das colunas) */}
