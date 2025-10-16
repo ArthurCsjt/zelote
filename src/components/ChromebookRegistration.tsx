@@ -99,7 +99,7 @@ export function ChromebookRegistration({ onRegistrationSuccess }: { onRegistrati
           Novo Equipamento
         </CardTitle>
         <CardDescription>
-          Preencha os detalhes para registrar um novo Chromebook no inventário.
+          Preencha os detalhes para registrar um novo Chromebook.
         </CardDescription>
       </CardHeader>
       
