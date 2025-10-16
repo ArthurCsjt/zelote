@@ -78,8 +78,27 @@ const Index = () => {
     }
   };
   
-  const getViewTitle = (): string => { /* Sua lógica de títulos */ return 'Zelote'; };
-  const getViewSubtitle = (): string => { /* Sua lógica de subtítulos */ return 'Controle de Chromebooks'; };
+  const getViewTitle = (): string => { 
+    switch (currentView) {
+      case 'registration': return 'Hub de Cadastros';
+      case 'dashboard': return 'Dashboard';
+      case 'inventory': return 'Hub de Inventário';
+      case 'loan': return 'Empréstimos';
+      case 'audit': return 'Sistema de Contagem';
+      default: return 'Zelote';
+    }
+  };
+  
+  const getViewSubtitle = (): string => { 
+    switch (currentView) {
+      case 'registration': return 'Gerencie todos os cadastros do sistema';
+      case 'dashboard': return 'Visão geral e relatórios de uso';
+      case 'inventory': return 'Gerencie equipamentos e usuários';
+      case 'loan': return 'Registre novos empréstimos e devoluções';
+      case 'audit': return 'Realize auditorias de inventário';
+      default: return 'Controle de Chromebooks';
+    }
+  };
   
   const loading = dbLoading || roleLoading;
 
