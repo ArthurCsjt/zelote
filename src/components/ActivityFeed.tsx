@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { ScrollArea } from './ui/scroll-area';
-import { Clock, Monitor, User, CheckCircle, RotateCcw, Loader2, AlertTriangle } from 'lucide-react';
+import { Clock, Monitor, User, CheckCircle, RotateCcw, Loader2, AlertTriangle, Mail } from 'lucide-react';
 import { formatDistanceToNow, format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Separator } from './ui/separator';
@@ -62,16 +62,18 @@ export function ActivityFeed() {
               {activities.map((activity, index) => {
                 const isLoan = activity.activity_type === 'Empréstimo';
                 const Icon = isLoan ? CheckCircle : RotateCcw;
-                const color = isLoan ? 'text-green-600' : 'text-blue-600';
+                const color = isLoan ? 'text-green-600 bg-green-50' : 'text-blue-600 bg-blue-50';
                 
                 return (
                   <div key={activity.activity_id} className="p-4 hover:bg-gray-50 transition-colors">
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-3">
-                        <Icon className={`h-5 w-5 ${color}`} />
+                        <div className={`p-2 rounded-full ${color}`}>
+                          <Icon className={`h-4 w-4`} />
+                        </div>
                         <div>
-                          <p className="font-medium text-sm text-gray-800">
-                            {activity.activity_type}
+                          <p className="font-semibold text-sm text-gray-800">
+                            {activity.user_name}
                           </p>
                           <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
                             <Monitor className="h-3 w-3" />
@@ -80,18 +82,21 @@ export function ActivityFeed() {
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="text-xs text-gray-500 whitespace-nowrap">
-                          {formatDistanceToNow(new Date(activity.activity_time), { addSuffix: true, locale: ptBR })}
+                        <p className={`text-xs font-medium whitespace-nowrap ${isLoan ? 'text-green-700' : 'text-blue-700'}`}>
+                          {activity.activity_type}
                         </p>
-                        <p className="text-[10px] text-gray-400">
-                          {format(new Date(activity.activity_time), 'dd/MM HH:mm')}
+                        <p className="text-[10px] text-gray-500 mt-0.5">
+                          {formatDistanceToNow(new Date(activity.activity_time), { addSuffix: true, locale: ptBR })}
                         </p>
                       </div>
                     </div>
-                    <div className="mt-2 pt-2 border-t border-gray-100">
+                    <div className="mt-2 pt-2 border-t border-gray-100 flex justify-between items-center">
                       <p className="text-xs text-gray-600 flex items-center gap-1">
-                        <User className="h-3 w-3" />
-                        {activity.user_name} ({activity.user_email})
+                        <Mail className="h-3 w-3 text-gray-400" />
+                        {activity.user_email}
+                      </p>
+                      <p className="text-[10px] text-gray-400">
+                          {format(new Date(activity.activity_time), 'dd/MM HH:mm')}
                       </p>
                     </div>
                   </div>
