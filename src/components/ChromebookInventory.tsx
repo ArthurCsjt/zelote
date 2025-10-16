@@ -390,7 +390,7 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
               <TableHead className="flex-1">Modelo</TableHead>
               <TableHead className="w-[150px]">Série</TableHead>
               <TableHead className="hidden md:table-cell w-[120px]">Status</TableHead>
-              <TableHead className="w-[180px] text-right">Ações</TableHead>
+              <TableHead className="w-[180px]">Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
