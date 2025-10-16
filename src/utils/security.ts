@@ -81,32 +81,26 @@ export function isValidChromebookId(id: string): boolean {
 }
 
 /**
- * Valida RA (Registro Acadêmico) - apenas números
- */
-export function isValidRA(ra: string): boolean {
-  const raRegex = /^\d{6,12}$/;
-  return raRegex.test(ra);
-}
-
-/**
  * Sanitiza entrada do QR Code para prevenir injeção de código
  */
 export function sanitizeQRCodeData(data: string): string {
   if (!data) return '';
   
+  let identifierToUse = data;
+
   try {
     // Tenta fazer parse como JSON
     const parsed = JSON.parse(data);
     if (parsed && typeof parsed === 'object' && parsed.id) {
-      // Normaliza o ID extraído do QR Code
-      return normalizeChromebookId(sanitizeString(parsed.id));
+      // Se for JSON e tiver 'id', usa o valor de 'id'
+      identifierToUse = parsed.id;
     }
   } catch {
-    // Se não for JSON válido, sanitiza como string e normaliza
-    return normalizeChromebookId(sanitizeString(data));
+    // Se não for JSON, usa a string bruta (identifierToUse já é 'data')
   }
   
-  return normalizeChromebookId(sanitizeString(data));
+  // Sanitiza e normaliza o identificador final
+  return normalizeChromebookId(sanitizeString(identifierToUse));
 }
 
 /**
