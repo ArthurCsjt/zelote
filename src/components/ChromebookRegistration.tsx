@@ -17,6 +17,7 @@ import {
 } from "./ui/select";
 import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
 import { GlassCard } from "./ui/GlassCard"; // Importando GlassCard
+import type { Chromebook } from "@/types/database"; // Importando Chromebook
 
 interface FormData {
   manufacturer: string;
@@ -30,7 +31,7 @@ interface FormData {
   provisioning_status: 'provisioned' | 'deprovisioned'; // Alterado para enum
 }
 
-export function ChromebookRegistration({ onRegistrationSuccess }: { onRegistrationSuccess: (newChromebook: any) => void }) {
+export function ChromebookRegistration({ onRegistrationSuccess }: { onRegistrationSuccess: (newChromebook: Chromebook) => void }) {
   const { createChromebook, loading } = useDatabase();
   const { toast } = useToast();
   
@@ -80,8 +81,9 @@ export function ChromebookRegistration({ onRegistrationSuccess }: { onRegistrati
     const result = await createChromebook(chromebookData);
     
     if (result) {
-      toast({ title: "Sucesso!", description: `Chromebook ${result.chromebook_id} cadastrado.` });
+      toast({ title: "Sucesso!", description: `Chromebook ${result.chromebook_id} cadastrado. Você foi redirecionado para o Inventário.` });
       resetForm();
+      // Chamamos o handler para navegar para o inventário
       onRegistrationSuccess(result);
     }
     // O erro é tratado dentro do useDatabase
@@ -244,12 +246,12 @@ export function ChromebookRegistration({ onRegistrationSuccess }: { onRegistrati
               Condição e Observações
             </h4>
             <div className="space-y-2">
-              <Label htmlFor="observations">Observações (Condição)</Label>
+              <Label htmlFor="observations">Condição/Observações</Label>
               <Textarea 
                 id="observations" 
                 value={formData.observations} 
                 onChange={(e) => handleFormChange('observations', e.target.value)} 
-                placeholder="Ex: Tela trincada, bateria viciada, etc."
+                placeholder="Digite observações sobre a condição do equipamento (ex: tela trincada, bateria fraca)"
                 className="resize-none min-h-[100px] bg-white"
               />
             </div>
@@ -264,7 +266,7 @@ export function ChromebookRegistration({ onRegistrationSuccess }: { onRegistrati
             {loading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Cadastrar...
+                Cadastrando...
               </>
             ) : (
               <>

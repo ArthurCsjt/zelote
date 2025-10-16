@@ -29,9 +29,9 @@ const Index = () => {
   const [chromebookId, setChromebookId] = useState("");
   const [returnData, setReturnData] = useState<ReturnFormData>({ name: "", ra: "", email: "", type: 'individual', userType: 'aluno' });
   const [currentView, setCurrentView] = useState<'menu' | 'registration' | 'dashboard' | 'inventory' | 'loan' | 'audit'>('menu');
+  // Removendo estados relacionados ao modal de QR Code após cadastro
   const [showQRCodeModal, setShowQRCodeModal] = useState(false);
   const [selectedChromebookId, setSelectedChromebookId] = useState<string | null>(null);
-  // NOVO ESTADO: Armazena os dados completos do Chromebook recém-criado
   const [newChromebookData, setNewChromebookData] = useState<Chromebook | undefined>(undefined);
 
   const handleNavigation = (route: 'registration' | 'dashboard' | 'inventory' | 'loan' | 'return' | 'audit') => {
@@ -44,16 +44,16 @@ const Index = () => {
 
   const handleBackToMenu = () => setCurrentView('menu');
 
+  // Mantemos esta função para que o InventoryHub possa chamá-la
   const handleGenerateQrCode = (chromebookId: string) => {
     setSelectedChromebookId(chromebookId);
-    setNewChromebookData(undefined); // Limpa dados de novo cadastro
+    setNewChromebookData(undefined);
     setShowQRCodeModal(true);
   };
 
+  // SIMPLIFICADO: Apenas navega para o inventário
   const handleRegistrationSuccess = (newChromebook: Chromebook) => {
-    setSelectedChromebookId(newChromebook.chromebook_id);
-    setNewChromebookData(newChromebook); // Define os dados completos
-    setShowQRCodeModal(true);
+    // O toast de sucesso já foi exibido no ChromebookRegistration
     setCurrentView('inventory');
   };
 
@@ -99,11 +99,12 @@ const Index = () => {
         {loading && currentView !== 'menu' ? <div className="flex justify-center items-center h-64"><LoadingSpinner/></div> : renderCurrentView()}
         <ReturnDialog open={openReturnDialog} onOpenChange={setOpenReturnDialog} chromebookId={chromebookId} onChromebookIdChange={setChromebookId} returnData={returnData} onReturnDataChange={setReturnData} onConfirm={handleReturnClick} />
       </Layout>
+      {/* Mantemos o QRCodeModal, mas ele só será aberto manualmente pelo InventoryHub */}
       <QRCodeModal 
         open={showQRCodeModal} 
         onOpenChange={(open) => setShowQRCodeModal(open)} 
         chromebookId={selectedChromebookId ?? undefined} 
-        chromebookData={newChromebookData} // Passando os dados completos
+        chromebookData={newChromebookData}
       />
     </AuditProvider>
   );
