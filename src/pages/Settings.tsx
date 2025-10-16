@@ -29,8 +29,18 @@ const Settings = () => {
     navigate('/login', { replace: true });
   };
 
+  // NOVO HANDLER: Força a navegação para a raiz (menu principal)
+  const handleBackToMenu = () => {
+    navigate('/', { replace: true });
+  };
+
   return (
-    <Layout title="Configurações" subtitle="Gerencie configurações administrativas" showBackButton onBack={() => navigate(-1)}>
+    <Layout 
+      title="Configurações" 
+      subtitle="Gerencie configurações administrativas" 
+      showBackButton 
+      onBack={handleBackToMenu} // Usando o novo handler
+    >
       <div className="max-w-5xl mx-auto grid gap-6 animate-fade-in">
         
         {/* Seções de Admin (visíveis apenas para Admin) */}
