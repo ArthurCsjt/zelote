@@ -82,6 +82,7 @@ export function isValidChromebookId(id: string): boolean {
 
 /**
  * Sanitiza entrada do QR Code para prevenir injeção de código
+ * Garante que, se for um JSON, apenas o campo 'id' seja extraído.
  */
 export function sanitizeQRCodeData(data: string): string {
   if (!data) return '';
@@ -93,13 +94,14 @@ export function sanitizeQRCodeData(data: string): string {
     const parsed = JSON.parse(data);
     if (parsed && typeof parsed === 'object' && parsed.id) {
       // Se for JSON e tiver 'id', usa o valor de 'id'
-      identifierToUse = parsed.id;
+      // Garante que o ID extraído seja tratado como string
+      identifierToUse = String(parsed.id);
     }
   } catch {
-    // Se não for JSON, usa a string bruta (identifierToUse já é 'data')
+    // Se falhar, identifierToUse permanece como a string bruta 'data'
   }
   
-  // Sanitiza e normaliza o identificador final
+  // Sanitiza a string (removendo HTML) e depois normaliza o formato (CHRxxx)
   return normalizeChromebookId(sanitizeString(identifierToUse));
 }
 
