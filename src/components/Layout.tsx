@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, LogOut, ArrowLeft, Bell } from 'lucide-react';
+import { User, LogOut, ArrowLeft, Bell, Settings as SettingsIcon } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/hooks/use-theme';
 import { useNavigate } from 'react-router-dom';
@@ -119,8 +119,13 @@ const Layout: React.FC<LayoutProps> = ({
               
               {/* Botão Configurações (Se for Admin) */}
               {isAdmin && (
-                <button onClick={() => navigate('/settings')} className="flex items-center space-x-1 text-sm text-muted-foreground hover:text-foreground transition-colors duration-200 bg-accent hover:bg-accent/80 rounded-full px-3 py-1.5 touch-manipulation">
-                  <span>Configurações</span>
+                <button 
+                  onClick={() => navigate('/settings')} 
+                  className="flex items-center space-x-1 text-sm text-muted-foreground hover:text-foreground transition-colors duration-200 bg-accent hover:bg-accent/80 rounded-full px-3 py-1.5 touch-manipulation"
+                  title="Configurações"
+                >
+                  <SettingsIcon className="w-5 h-5" />
+                  <span className="hidden sm:inline">Configurações</span>
                 </button>
               )}
               
