@@ -27,8 +27,7 @@ const Settings = () => {
   };
 
   return (
-    <div className="max-w-5xl mx-auto p-4 sm:p-6 lg:p-8 animate-fade-in relative">
-      {/* Removido o título duplicado, pois o Layout no App.tsx já o fornece */}
+    <div className="max-w-3xl mx-auto p-4 sm:p-6 lg:p-8 animate-fade-in relative">
       
       <div className="grid gap-6">
         
