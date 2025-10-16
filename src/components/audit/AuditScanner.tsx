@@ -131,6 +131,7 @@ export const AuditScanner = () => {
                     onClick={handleAddManualId} 
                     disabled={!manualId.trim() || isProcessing} 
                     size="sm" // Reduzindo o tamanho
+                    variant="secondary" // Alterado para secondary
                     className="h-10" // Mantendo a altura consistente com o input
                   >
                     <Plus className="mr-2 h-4 w-4" /> Adicionar
