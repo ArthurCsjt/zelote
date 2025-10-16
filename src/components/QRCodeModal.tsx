@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Button } from "./ui/button";
 import { QRCodeSVG } from 'qrcode.react';
-import { CheckCircle, Download, Printer, X } from "lucide-react";
+import { CheckCircle, Download, Printer, X, Loader2 } from "lucide-react";
 import { toast } from "./ui/use-toast";
 import { supabase } from '@/integrations/supabase/client';
 
@@ -282,7 +282,7 @@ export function QRCodeModal({
             QR Code Gerado
           </DialogTitle>
           <DialogDescription className="text-gray-600">
-            QR Code para o Chromebook {finalDisplayId}
+            QR Code para o Chromebook <span className="font-bold text-gray-800">{finalDisplayId}</span>
           </DialogDescription>
         </DialogHeader>
 
