@@ -12,9 +12,7 @@ import {
     LogOut,
     UserCircle,
     ListChecks,
-    Menu,
-    ChevronLeft,
-    ChevronRight
+    Menu
 } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -138,21 +136,10 @@ export function ZeloteLayout({ children }: { children: React.ReactNode }) {
       <Sidebar open={open} setOpen={setOpen}>
         <SidebarBody className="justify-between gap-10">
           <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
-            {/* Header da Sidebar com Toggle Button para Desktop */}
-            <div className="flex items-center justify-between h-10 mb-4">
-              {open ? <Logo /> : <LogoIcon />}
-              <button
-                onClick={() => setOpen(!open)}
-                className="hidden md:block p-1 rounded-full text-gray-500 hover:bg-gray-100 transition-colors"
-                title={open ? "Recolher Menu" : "Expandir Menu"}
-              >
-                {open ? <ChevronLeft className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
-              </button>
-            </div>
-            
-            <div className="mt-4 flex flex-col gap-2">
+            {open ? <Logo /> : <LogoIcon />}
+            <div className="mt-8 flex flex-col gap-2">
               {links.map((link, idx) => (
-                <SidebarLink key={idx} link={link} open={open} />
+                <SidebarLink key={idx} link={link} />
               ))}
             </div>
           </div>
@@ -166,7 +153,6 @@ export function ZeloteLayout({ children }: { children: React.ReactNode }) {
                 href: "/settings", // Redireciona para configurações ao clicar no perfil
                 icon: <UserCircle className="h-6 w-6 flex-shrink-0" />,
               }}
-              open={open}
             />
             
             {/* Links de Ação */}
@@ -180,7 +166,6 @@ export function ZeloteLayout({ children }: { children: React.ReactNode }) {
                     }}
                     // Adiciona o onClick se for o botão de Sair
                     onClick={link.onClick}
-                    open={open}
                 />
             ))}
           </div>

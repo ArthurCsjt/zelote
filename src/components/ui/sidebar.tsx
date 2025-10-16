@@ -36,13 +36,25 @@ export const Sidebar = ({ children, open, setOpen }: SidebarProps) => {
       {/* Sidebar Desktop/Mobile */}
       <motion.div
         initial={{ x: open ? 0 : -300 }}
-        animate={{ x: open ? 0 : 0 }}
+        animate={{ x: open ? 0 : -300 }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
         className={cn(
           "fixed inset-y-0 left-0 z-50 flex flex-col h-full w-[260px] bg-white dark:bg-neutral-900 border-r border-neutral-200 dark:border-neutral-700 shadow-xl",
-          "md:relative md:translate-x-0 md:flex-shrink-0",
-          "overflow-hidden" // Garante que o conteúdo que vaza seja cortado
+          "md:relative md:translate-x-0 md:w-auto md:flex-shrink-0",
+          "overflow-hidden"
         )}
+        onMouseEnter={() => {
+          // Abrir apenas se for desktop e estiver fechado
+          if (window.innerWidth >= 768 && !open) {
+            setOpen(true);
+          }
+        }}
+        onMouseLeave={() => {
+          // Fechar apenas se for desktop e estiver aberto
+          if (window.innerWidth >= 768 && open) {
+            setOpen(false);
+          }
+        }}
       >
         <motion.div
           className={cn(
@@ -78,11 +90,10 @@ interface SidebarLinkProps {
     href: string;
     icon: ReactNode;
   };
-  onClick?: () => void;
-  open: boolean; // Adicionando a prop 'open'
+  onClick?: () => void; // Adicionando onClick
 }
 
-export const SidebarLink = ({ link, onClick, open }: SidebarLinkProps) => {
+export const SidebarLink = ({ link, onClick }: SidebarLinkProps) => {
   const { pathname } = useLocation();
   const isActive = pathname === link.href || (link.href === '/' && pathname === '/');
 
@@ -91,9 +102,7 @@ export const SidebarLink = ({ link, onClick, open }: SidebarLinkProps) => {
       className={cn(
         "flex items-center space-x-2 py-2 px-3 rounded-lg transition-colors duration-200 cursor-pointer",
         "text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800",
-        isActive && "bg-primary/10 text-primary dark:bg-primary/20 dark:text-white",
-        // Ajuste de padding para o estado recolhido
-        !open && "justify-center px-0"
+        isActive && "bg-primary/10 text-primary dark:bg-primary/20 dark:text-white"
       )}
       onClick={onClick}
     >
@@ -105,13 +114,11 @@ export const SidebarLink = ({ link, onClick, open }: SidebarLinkProps) => {
       })}
       <motion.span
         initial={{ opacity: 0 }}
-        animate={{ opacity: open ? 1 : 0 }} // Controla a opacidade do texto
-        transition={{ duration: 0.2, ease: "easeInOut" }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.3, ease: "easeInOut" }}
         className={cn(
-          "text-sm font-medium whitespace-pre overflow-hidden",
-          isActive ? "text-primary dark:text-white" : "text-neutral-700 dark:text-neutral-200",
-          // Esconde o texto completamente quando fechado
-          !open && "w-0 h-0 p-0 m-0"
+          "text-sm font-medium whitespace-pre",
+          isActive ? "text-primary dark:text-white" : "text-neutral-700 dark:text-neutral-200"
         )}
       >
         {link.label}
@@ -119,6 +126,7 @@ export const SidebarLink = ({ link, onClick, open }: SidebarLinkProps) => {
     </div>
   );
 
+  // Se houver onClick, não envolvemos em Link
   if (onClick) {
     return content;
   }
