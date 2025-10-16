@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import {
@@ -21,7 +21,7 @@ import {
 import { Textarea } from "./ui/textarea";
 import { Label } from "./ui/label";
 import { toast } from "./ui/use-toast";
-import { Search, ArrowLeft, Filter, Edit3, QrCode, CheckCircle, AlertCircle, XCircle, MapPin, Eye, X, Trash2, Save, AlertTriangle, Clock, Tag, Factory, Hash, Map } from "lucide-react";
+import { Search, ArrowLeft, Filter, Edit3, QrCode, CheckCircle, AlertCircle, XCircle, MapPin, Eye, X, Trash2, Save, AlertTriangle, Clock, Tag, Factory, Hash, Map, ChevronLeft, ChevronRight } from "lucide-react";
 import { QRCodeModal } from "./QRCodeModal";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "./ui/pagination";
 import { ScrollArea } from "./ui/scroll-area";
@@ -72,9 +72,10 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
   const [editingChromebook, setEditingChromebook] = useState<ChromebookDataExtended | null>(null);
   // State for the Chromebook being deleted
   const [chromebookToDelete, setChromebookToDelete] = useState<ChromebookDataExtended | null>(null);
+  
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  const [itemsPerPage, setItemsPerPage] = useState(10); // Novo estado para itens por página
 
 // Load Chromebooks from Supabase on component mount
 useEffect(() => {
@@ -151,7 +152,7 @@ useEffect(() => {
   // Reset pagination when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, statusFilter]);
+  }, [searchTerm, statusFilter, itemsPerPage]);
 
   // Get status information for display
   const getStatusInfo = (status: string) => {
@@ -301,6 +302,33 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
     if (onBack) {
       onBack();
     }
+  };
+  
+  // Função para renderizar os botões de página (apenas 5 visíveis)
+  const renderPageButtons = () => {
+    const maxButtons = 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxButtons / 2));
+    let endPage = Math.min(totalPages, startPage + maxButtons - 1);
+
+    if (endPage - startPage + 1 < maxButtons) {
+      startPage = Math.max(1, endPage - maxButtons + 1);
+    }
+
+    const buttons = [];
+    for (let i = startPage; i <= endPage; i++) {
+      buttons.push(
+        <PaginationItem key={i}>
+          <PaginationLink
+            isActive={currentPage === i}
+            onClick={() => setCurrentPage(i)}
+            className="cursor-pointer"
+          >
+            {i}
+          </PaginationLink>
+        </PaginationItem>
+      );
+    }
+    return buttons;
   };
 
   return (
@@ -464,43 +492,65 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
         </Table>
       </GlassCard>
 
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <Pagination className="mt-6">
-          <PaginationContent>
-            <PaginationItem>
-              <PaginationPrevious
-                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
-              />
-            </PaginationItem>
+      {/* Pagination and Items Per Page Selector */}
+      {totalPages > 0 && (
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6">
+          {/* Items Per Page Selector */}
+          <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+            <span>Itens por página:</span>
+            <Select
+              value={String(itemsPerPage)}
+              onValueChange={(value) => {
+                setItemsPerPage(Number(value));
+                setCurrentPage(1);
+              }}
+            >
+              <SelectTrigger className="w-[80px] h-8">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="10">10</SelectItem>
+                <SelectItem value="20">20</SelectItem>
+                <SelectItem value="50">50</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-              <PaginationItem key={page}>
-                <PaginationLink
-                  isActive={currentPage === page}
-                  onClick={() => setCurrentPage(page)}
-                  className="cursor-pointer"
+          {/* Pagination Controls */}
+          <Pagination className="mx-0">
+            <PaginationContent>
+              <PaginationItem>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
                 >
-                  {page}
-                </PaginationLink>
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
               </PaginationItem>
-            ))}
 
-            <PaginationItem>
-              <PaginationNext
-                onClick={() =>
-                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-                }
-                className={
-                  currentPage === totalPages
-                    ? "pointer-events-none opacity-50"
-                    : "cursor-pointer"
-                }
-              />
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
+              {/* Renderizar botões de página */}
+              {renderPageButtons()}
+
+              <PaginationItem>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+          
+          {/* Page Info */}
+          <div className="text-sm text-muted-foreground">
+            Página {currentPage} de {totalPages}
+          </div>
+        </div>
       )}
 
       {/* Edit Dialog */}
@@ -544,7 +594,7 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
 
                   <div className="space-y-1.5">
                     <Label htmlFor="patrimony_number" className="text-xs font-medium flex items-center gap-1">
-                      <Hash className="h-3 w-3" /> Patrimônio
+                      Patrimônio
                     </Label>
                     <Input
                       id="patrimony_number"
@@ -646,7 +696,7 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
               </div>
 
               {/* Seção 3: Condição/Observações */}
-              <div className="space-y-4 p-4 border rounded-lg bg-white shadow-sm">
+              <div className="space-y-4 p-4 border rounded-lg bg-gray-50/50">
                 <h4 className="font-semibold text-lg text-gray-800 flex items-center gap-2">
                   <AlertTriangle className="h-4 w-4 text-orange-600" />
                   Condição e Notas
