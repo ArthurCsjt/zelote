@@ -1,7 +1,8 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from "react-router-dom";
 
-import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import { AuthProvider } from "./providers/AuthProvider"; // Importação corrigida
+import { useAuth } from "./contexts/AuthContext";
 import { DatabaseProvider } from './contexts/DatabaseContext'; 
 
 import { ErrorBoundary } from "./components/ErrorBoundary";
@@ -18,6 +19,7 @@ import { LoanHub } from "./components/LoanHub";
 import { AuditHub } from "./components/audit/AuditHub";
 import { AuditProvider } from "./providers/AuditProvider";
 import { ReturnDialog } from "./components/ReturnDialog"; // Mantendo o ReturnDialog para a rota /return
+import { useState } from "react"; // Adicionando useState que estava faltando
 
 const queryClient = new QueryClient();
 
@@ -90,7 +92,7 @@ const App = () => (
               <Route path="/registration" element={
                 <ProtectedRoute>
                   <LayoutWrapper>
-                    <RegistrationHub onBack={() => {}} onRegistrationSuccess={() => {}} />
+                    <RegistrationHub onRegistrationSuccess={() => {}} />
                   </LayoutWrapper>
                 </ProtectedRoute>
               } />
@@ -106,7 +108,7 @@ const App = () => (
               <Route path="/loan" element={
                 <ProtectedRoute>
                   <LayoutWrapper>
-                    <LoanHub onBack={() => {}} />
+                    <LoanHub />
                   </LayoutWrapper>
                 </ProtectedRoute>
               } />
