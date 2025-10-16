@@ -190,6 +190,8 @@ export function ZeloteLayout({ children }: { children: React.ReactNode }) {
       {/* Conteúdo Principal */}
       <div className={cn(
         "flex-1 p-4 md:p-8 overflow-y-auto transition-all duration-300",
+        // Margem dinâmica para desktop
+        open ? "md:ml-[260px]" : "md:ml-[60px]",
         // Adiciona padding esquerdo no mobile para compensar o botão de menu
         "pt-16 md:pt-4" 
       )}>
