@@ -36,25 +36,14 @@ export const Sidebar = ({ children, open, setOpen }: SidebarProps) => {
       {/* Sidebar Desktop/Mobile */}
       <motion.div
         initial={{ x: open ? 0 : -300 }}
-        animate={{ x: open ? 0 : -300 }}
+        animate={{ x: open ? 0 : 0 }} // Animação de X para 0 (sempre visível no desktop)
         transition={{ duration: 0.3, ease: "easeInOut" }}
         className={cn(
           "fixed inset-y-0 left-0 z-50 flex flex-col h-full w-[260px] bg-white dark:bg-neutral-900 border-r border-neutral-200 dark:border-neutral-700 shadow-xl",
           "md:relative md:translate-x-0 md:w-auto md:flex-shrink-0",
           "overflow-hidden"
         )}
-        onMouseEnter={() => {
-          // Abrir apenas se for desktop e estiver fechado
-          if (window.innerWidth >= 768 && !open) {
-            setOpen(true);
-          }
-        }}
-        onMouseLeave={() => {
-          // Fechar apenas se for desktop e estiver aberto
-          if (window.innerWidth >= 768 && open) {
-            setOpen(false);
-          }
-        }}
+        // REMOVIDA LÓGICA DE onMouseEnter/onMouseLeave para evitar fechamento automático
       >
         <motion.div
           className={cn(

@@ -12,7 +12,9 @@ import {
     LogOut,
     UserCircle,
     ListChecks,
-    Menu
+    Menu,
+    ChevronLeft,
+    ChevronRight
 } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -136,8 +138,19 @@ export function ZeloteLayout({ children }: { children: React.ReactNode }) {
       <Sidebar open={open} setOpen={setOpen}>
         <SidebarBody className="justify-between gap-10">
           <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
-            {open ? <Logo /> : <LogoIcon />}
-            <div className="mt-8 flex flex-col gap-2">
+            {/* Header da Sidebar com Toggle Button para Desktop */}
+            <div className="flex items-center justify-between h-10 mb-4">
+              {open ? <Logo /> : <LogoIcon />}
+              <button
+                onClick={() => setOpen(!open)}
+                className="hidden md:block p-1 rounded-full text-gray-500 hover:bg-gray-100 transition-colors"
+                title={open ? "Recolher Menu" : "Expandir Menu"}
+              >
+                {open ? <ChevronLeft className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
+              </button>
+            </div>
+            
+            <div className="mt-4 flex flex-col gap-2">
               {links.map((link, idx) => (
                 <SidebarLink key={idx} link={link} />
               ))}
