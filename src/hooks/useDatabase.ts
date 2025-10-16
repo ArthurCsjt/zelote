@@ -35,6 +35,7 @@ export const useDatabase = () => {
 
   // Função auxiliar para buscar um Chromebook por qualquer identificador
   const findChromebook = useCallback(async (identifier: string) => {
+    console.log(`[DB] Tentando encontrar Chromebook com identificador: ${identifier}`);
     const { data: chromebook, error } = await supabase
       .from('chromebooks')
       .select('id, chromebook_id, status')
@@ -47,7 +48,13 @@ export const useDatabase = () => {
       )
       .single();
       
-    if (error && error.code !== 'PGRST116') throw error;
+    if (error && error.code !== 'PGRST116') {
+      console.error(`[DB] Erro ao buscar Chromebook: ${error.message}`);
+      throw error;
+    }
+    if (!chromebook) {
+      console.log(`[DB] Chromebook ${identifier} não encontrado.`);
+    }
     return chromebook;
   }, []);
 
