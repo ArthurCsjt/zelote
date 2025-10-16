@@ -21,7 +21,7 @@ import {
 import { Textarea } from "./ui/textarea";
 import { Label } from "./ui/label";
 import { toast } from "./ui/use-toast";
-import { Search, ArrowLeft, Filter, Edit3, QrCode, CheckCircle, AlertCircle, XCircle, MapPin, Eye, X, Trash2, Save, AlertTriangle, Clock, Tag, Factory, Hash, Map, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, ArrowLeft, Filter, Edit3, QrCode, CheckCircle, AlertCircle, XCircle, MapPin, Eye, X, Trash2, Save, AlertTriangle, Clock, Tag, Factory, Hash, Map, ChevronLeft, ChevronRight, RefreshCw, Loader2 } from "lucide-react";
 import { QRCodeModal } from "./QRCodeModal";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "./ui/pagination";
 import { ScrollArea } from "./ui/scroll-area";
@@ -54,7 +54,7 @@ interface ChromebookInventoryProps {
 export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
   // Removido useIsMobile
   const { isAdmin } = useProfileRole();
-  const { getChromebooks, updateChromebook, deleteChromebook } = useDatabase(); // Usando useDatabase
+  const { getChromebooks, updateChromebook, deleteChromebook, loading: dbLoading } = useDatabase(); // Usando useDatabase
   
   // State for storing all Chromebooks
   const [chromebooks, setChromebooks] = useState<ChromebookDataExtended[]>([]);
@@ -72,20 +72,24 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
   const [editingChromebook, setEditingChromebook] = useState<ChromebookDataExtended | null>(null);
   // State for the Chromebook being deleted
   const [chromebookToDelete, setChromebookToDelete] = useState<ChromebookDataExtended | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false); // Novo estado para o botão de refresh
   
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10); // Novo estado para itens por página
 
-// Load Chromebooks from Supabase on component mount
-useEffect(() => {
-  const fetchChromebooks = async () => {
+  // Função para buscar Chromebooks
+  const fetchChromebooks = useCallback(async () => {
+    setIsRefreshing(true);
     const data = await getChromebooks();
     setChromebooks(data as ChromebookDataExtended[]);
-  };
+    setIsRefreshing(false);
+  }, [getChromebooks]);
 
+// Load Chromebooks from Supabase on component mount
+useEffect(() => {
   fetchChromebooks();
-}, [getChromebooks]);
+}, [fetchChromebooks]);
 
 // Real-time synchronization
 useEffect(() => {
@@ -101,19 +105,9 @@ useEffect(() => {
       (payload) => {
         console.log('Realtime change received:', payload);
         
-        if (payload.eventType === 'INSERT') {
-          setChromebooks(prev => [payload.new as ChromebookDataExtended, ...prev]);
-        } else if (payload.eventType === 'UPDATE') {
-          setChromebooks(prev => 
-            prev.map(cb => 
-              cb.id === payload.new.id ? payload.new as ChromebookDataExtended : cb
-            )
-          );
-        } else if (payload.eventType === 'DELETE') {
-          setChromebooks(prev => 
-            prev.filter(cb => cb.id !== payload.old.id)
-          );
-        }
+        // Força a recarga completa para garantir a consistência, já que o Realtime pode ser complexo
+        // de gerenciar inserções/updates/deletes manualmente no estado.
+        fetchChromebooks();
       }
     )
     .subscribe();
@@ -121,7 +115,7 @@ useEffect(() => {
   return () => {
     supabase.removeChannel(channel);
   };
-}, []);
+}, [fetchChromebooks]); // Depende de fetchChromebooks
 
   // Filter Chromebooks based on search term and status
   const filteredChromebooks = chromebooks.filter((chromebook) => {
@@ -193,9 +187,7 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
   const success = await updateChromebook(chromebookId, { status: newStatus as any });
 
   if (success) {
-    // A atualização do estado local será tratada pelo Real-time, mas podemos fazer uma atualização otimista
-    // para feedback imediato, embora o Real-time garanta a consistência.
-    // Vamos confiar no Real-time para evitar duplicação de lógica de estado.
+    // O Real-time cuidará da atualização do estado local
     toast({
       title: "Status atualizado",
       description: `Status do Chromebook alterado para ${getStatusInfo(newStatus).label}`,
@@ -340,8 +332,8 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
       <InventoryStats chromebooks={chromebooks} />
 
       {/* Search and filters */}
-      <div className="flex flex-col sm:flex-row gap-4 mb-6 relative z-10">
-        <div className="relative flex-1">
+      <div className="flex flex-col sm:flex-row gap-4 mb-6 relative z-10 items-center">
+        <div className="relative flex-1 w-full">
           <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
           <Input
             placeholder="Buscar por ID, patrimônio, modelo, série, fabricante ou localização..."
@@ -367,6 +359,21 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
             </SelectContent>
           </Select>
         </div>
+        
+        {/* Botão de Atualizar */}
+        <Button 
+          variant="outline" 
+          onClick={fetchChromebooks} 
+          disabled={isRefreshing}
+          className="w-full sm:w-auto"
+        >
+          {isRefreshing ? (
+            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+          ) : (
+            <RefreshCw className="h-4 w-4 mr-2" />
+          )}
+          Atualizar
+        </Button>
         
         <div className="text-sm text-gray-500 flex items-center">
           Resultados: {filteredChromebooks.length} Chromebooks
