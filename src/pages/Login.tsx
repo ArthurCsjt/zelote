@@ -11,7 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const [isRecoveryMode, setRecoveryMode] = useState(false);
+  const [isFirstAccessOrRecoveryMode, setIsFirstAccessOrRecoveryMode] = useState(false); // Renomeado
   const [isUpdatePasswordMode, setUpdatePasswordMode] = useState(false); 
 
   const [loginEmail, setLoginEmail] = useState("");
@@ -19,11 +19,11 @@ const Login = () => {
   const [recoveryEmail, setRecoveryEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false); // Novo estado para visibilidade da senha
+  const [showPassword, setShowPassword] = useState(false); 
 
   const navigate = useNavigate();
   const location = useLocation();
-  const { login, resetPassword, verifyEmail } = useAuth(); // Usando verifyEmail do AuthContext
+  const { login, resetPassword, verifyEmail } = useAuth(); 
 
   // Efeito para verificar se o usuário está no fluxo de redefinição/convite
   useEffect(() => {
@@ -112,7 +112,7 @@ const Login = () => {
       // Mantém o email preenchido no campo de login ao voltar
       setLoginEmail(recoveryEmail); 
       setRecoveryEmail("");
-      setRecoveryMode(false);
+      setIsFirstAccessOrRecoveryMode(false);
     } else {
       toast({
         title: "Erro de envio",
@@ -162,7 +162,7 @@ const Login = () => {
   };
   
   const handleToggleRecoveryMode = () => {
-    setRecoveryMode(prev => {
+    setIsFirstAccessOrRecoveryMode(prev => {
       if (prev) {
         // Ao sair do modo de recuperação, preenche o email de login com o email de recuperação
         setLoginEmail(recoveryEmail);
@@ -222,7 +222,7 @@ const Login = () => {
       );
     }
 
-    if (isRecoveryMode) {
+    if (isFirstAccessOrRecoveryMode) {
       // MODO DE PRIMEIRO ACESSO / RECUPERAÇÃO DE SENHA
       return (
         <form onSubmit={handleRecoverySubmit}>
@@ -235,6 +235,8 @@ const Login = () => {
             <CardTitle className="text-2xl font-bold text-blue-800">Primeiro Acesso / Recuperação</CardTitle>
             <CardDescription className="text-gray-600">
               Digite seu e-mail institucional para receber o link de acesso.
+              <br/>
+              (Use este modo se você foi convidado ou esqueceu sua senha.)
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 pt-6">
