@@ -81,11 +81,20 @@ export function useOverdueLoans() {
 
   // Mostrar notificações quando houver atrasos (Usando IDs fixos para atualização)
   useEffect(() => {
-    if (overdueLoans.length > 0) {
+    const overdueCount = overdueLoans.length;
+    const upcomingCount = upcomingDueLoans.length;
+    
+    const pluralize = (count: number, singular: string, plural: string) => 
+      count === 1 ? singular : plural;
+
+    if (overdueCount > 0) {
+      const loanPlural = pluralize(overdueCount, 'Empréstimo', 'Empréstimos');
+      const verbPlural = pluralize(overdueCount, 'passou', 'passaram');
+      
       toast({
         id: OVERDUE_TOAST_ID,
-        title: `⚠️ ${overdueLoans.length} Empréstimo${overdueLoans.length > 1 ? 's' : ''} em Atraso`,
-        description: `Há empréstimo${overdueLoans.length > 1 ? 's' : ''} que passou${overdueLoans.length === 1 ? 'u' : 'ram'} do prazo de devolução.`,
+        title: `⚠️ ${overdueCount} ${loanPlural} em Atraso`,
+        description: `Há ${loanPlural.toLowerCase()} que ${verbPlural} do prazo de devolução.`,
         variant: "destructive",
         duration: Infinity, // Manter visível até ser resolvido/dispensado
       });
@@ -93,11 +102,14 @@ export function useOverdueLoans() {
       dismiss(OVERDUE_TOAST_ID);
     }
 
-    if (upcomingDueLoans.length > 0) {
+    if (upcomingCount > 0) {
+      const loanPlural = pluralize(upcomingCount, 'Empréstimo', 'Empréstimos');
+      const verbPlural = pluralize(upcomingCount, 'próximo', 'próximos');
+      
       toast({
         id: UPCOMING_TOAST_ID,
-        title: `📅 ${upcomingDueLoans.length} Empréstimo${upcomingDueLoans.length > 1 ? 's' : ''} Vencendo`,
-        description: `Há empréstimo${upcomingDueLoans.length > 1 ? 's' : ''} com prazo próximo ao vencimento.`,
+        title: `📅 ${upcomingCount} ${loanPlural} Vencendo`,
+        description: `Há ${loanPlural.toLowerCase()} com prazo ${verbPlural} ao vencimento.`,
         duration: Infinity, // Manter visível
       });
     } else {
