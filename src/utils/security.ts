@@ -88,23 +88,32 @@ export function sanitizeQRCodeData(data: string): string {
   if (!data) return '';
   
   let identifierToUse = data;
+  let cleanData = data.trim();
+
+  // 1. Tenta limpar aspas externas que podem vir do scanner
+  if (cleanData.startsWith('"') && cleanData.endsWith('"')) {
+    cleanData = cleanData.substring(1, cleanData.length - 1);
+  }
 
   try {
-    // Tenta limpar aspas externas que podem vir do scanner (comum em alguns leitores)
-    let cleanData = data.trim();
-    if (cleanData.startsWith('"') && cleanData.endsWith('"')) {
-      cleanData = cleanData.substring(1, cleanData.length - 1);
-    }
-    
-    // Tenta fazer parse como JSON
+    // 2. Tenta fazer parse como JSON
     const parsed = JSON.parse(cleanData);
     if (parsed && typeof parsed === 'object' && parsed.id) {
       // Se for JSON e tiver 'id', usa o valor de 'id'
-      // Garante que o ID extraído seja tratado como string
       identifierToUse = String(parsed.id);
     }
   } catch {
-    // Se falhar, identifierToUse permanece como a string bruta 'data'
+    // 3. Se o JSON.parse falhar, tenta extrair o ID usando Regex (Solução 2)
+    // Busca por "id":"[valor]" ou 'id':'[valor]'
+    const idRegex = /["']id["']\s*:\s*["']([^"']+)["']/;
+    const match = cleanData.match(idRegex);
+    
+    if (match && match[1]) {
+      identifierToUse = match[1];
+    } else {
+      // 4. Se tudo falhar, usa a string bruta original (Solução 3)
+      identifierToUse = data;
+    }
   }
   
   // Sanitiza a string (removendo HTML) e depois normaliza o formato (CHRxxx)
