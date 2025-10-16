@@ -3,8 +3,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import { PlusCircle, Database } from 'lucide-react';
-import { GlassCard } from './ui/GlassCard'; // Importando GlassCard
+import { PlusCircle, Database, Loader2 } from 'lucide-react';
+import { GlassCard } from './ui/GlassCard';
+import { useQueryClient } from '@tanstack/react-query'; // Importando useQueryClient
 
 const sampleChromebooks = [
   {
@@ -61,6 +62,7 @@ const sampleChromebooks = [
 
 export const DebugPanel = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const queryClient = useQueryClient(); // Inicializando o query client
 
   const addSampleData = async () => {
     setIsLoading(true);
@@ -68,6 +70,7 @@ export const DebugPanel = () => {
       console.log('Adicionando dados de exemplo...');
 
       // Primeiro, vamos limpar dados existentes para evitar conflitos
+      // Nota: Esta operação não invalida o cache automaticamente, mas a inserção sim.
       await supabase.from('chromebooks').delete().neq('id', '00000000-0000-0000-0000-000000000000');
 
       // Adicionar dados de exemplo
@@ -78,17 +81,16 @@ export const DebugPanel = () => {
 
       if (error) {
         console.error('Erro ao adicionar dados:', error);
-        toast({
-          title: 'Erro ao adicionar dados',
-          description: error.message,
-          variant: 'destructive'
-        });
+        throw new Error(error.message);
       } else {
         console.log('Dados adicionados com sucesso:', data);
         toast({
           title: 'Dados de exemplo adicionados!',
           description: `Adicionados ${data?.length || 0} chromebooks para teste.`,
         });
+        
+        // Invalida o cache de chromebooks para forçar a recarga no inventário
+        queryClient.invalidateQueries({ queryKey: ['chromebooks'] });
       }
     } catch (e: any) {
       console.error('Erro inesperado:', e);
@@ -132,7 +134,7 @@ export const DebugPanel = () => {
           >
             {isLoading ? (
               <>
-                <Database className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Adicionando...
               </>
             ) : (
