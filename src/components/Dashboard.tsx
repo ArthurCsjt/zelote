@@ -380,15 +380,15 @@ export function Dashboard({
           Dashboard
         </h2>
         
-        {/* Botão de download padrão */}
+        {/* Botão de download padrão (ajustado para ser mais simples) */}
         <Button 
           variant="default"
           className="bg-primary hover:bg-primary/90 text-white px-4 py-2 text-sm font-medium"
           onClick={handleDownloadPDF} 
           disabled={periodView === 'history'}
         >
-          <Download className="h-4 w-4 mr-2" />
-          <span className="hidden md:inline">Baixar Relatório</span>
+          <Download className="h-4 w-4 mr-2 hidden sm:inline" />
+          Baixar Relatório
         </Button>
       </div>
 
