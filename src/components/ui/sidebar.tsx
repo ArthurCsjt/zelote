@@ -35,22 +35,25 @@ export const Sidebar = ({ children, open, setOpen }: SidebarProps) => {
 
       {/* Sidebar Desktop/Mobile */}
       <motion.div
-        initial={{ x: open ? 0 : -300, width: open ? 260 : 60 }}
-        animate={{ 
-          x: open ? 0 : 0, // Mantém a posição X no desktop
-          width: open ? 260 : 60 // Anima a largura
-        }}
+        initial={{ x: open ? 0 : -300 }}
+        animate={{ x: open ? 0 : 0 }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
         className={cn(
-          "fixed inset-y-0 left-0 z-50 flex flex-col h-full bg-white dark:bg-neutral-900 border-r border-neutral-200 dark:border-neutral-700 shadow-xl",
+          "fixed inset-y-0 left-0 z-50 flex flex-col h-full w-[260px] bg-white dark:bg-neutral-900 border-r border-neutral-200 dark:border-neutral-700 shadow-xl",
           "md:relative md:translate-x-0 md:flex-shrink-0",
-          "overflow-hidden"
+          "overflow-hidden" // Garante que o conteúdo que vaza seja cortado
         )}
       >
-        {/* O conteúdo interno (SidebarBody) agora se ajusta à largura animada */}
-        <div className="flex flex-col h-full w-[260px] flex-shrink-0">
+        <motion.div
+          className={cn(
+            "flex flex-col h-full",
+            open ? "w-[260px]" : "w-[60px]"
+          )}
+          animate={{ width: open ? 260 : 60 }}
+          transition={{ duration: 0.3, ease: "easeInOut" }}
+        >
           {children}
-        </div>
+        </motion.div>
       </motion.div>
     </>
   );
@@ -76,7 +79,7 @@ interface SidebarLinkProps {
     icon: ReactNode;
   };
   onClick?: () => void;
-  open: boolean;
+  open: boolean; // Adicionando a prop 'open'
 }
 
 export const SidebarLink = ({ link, onClick, open }: SidebarLinkProps) => {
