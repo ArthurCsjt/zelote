@@ -241,26 +241,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
       
       <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
         
-        {/* Seletor de tipo de empréstimo (individual ou lote) */}
-        <GlassCard className="p-4 space-y-2 border-gray-200/50 shadow-sm">
-          <Label htmlFor="loanType" className="text-gray-700">
-            Tipo de Empréstimo
-          </Label>
-          <Select
-            value={formData.loanType}
-            onValueChange={(value: 'individual' | 'lote') =>
-              setFormData({ ...formData, loanType: value })
-            }
-          >
-            <SelectTrigger className="border-gray-200 bg-white">
-              <SelectValue placeholder="Selecione o tipo de empréstimo" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="individual">Individual</SelectItem>
-              <SelectItem value="lote">Em Lote</SelectItem>
-            </SelectContent>
-          </Select>
-        </GlassCard>
+        {/* Removido o seletor de tipo de empréstimo daqui */}
 
         <div className="grid md:grid-cols-2 gap-6">
             
@@ -269,6 +250,28 @@ export function LoanForm({ onBack }: LoanFormProps) {
             <CardTitle className="text-lg flex items-center gap-2 text-green-700">
               <Computer className="h-5 w-5" /> Detalhes do Equipamento
             </CardTitle>
+            
+            {/* NOVO: Seletor de tipo de empréstimo (individual ou lote) */}
+            <div className="space-y-2">
+              <Label htmlFor="loanType" className="text-gray-700">
+                Tipo de Empréstimo
+              </Label>
+              <Select
+                value={formData.loanType}
+                onValueChange={(value: 'individual' | 'lote') =>
+                  setFormData({ ...formData, loanType: value })
+                }
+              >
+                <SelectTrigger className="border-gray-200 bg-white">
+                  <SelectValue placeholder="Selecione o tipo de empréstimo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="individual">Individual</SelectItem>
+                  <SelectItem value="lote">Em Lote</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {/* FIM NOVO: Seletor de tipo de empréstimo */}
             
             {formData.loanType === 'individual' ? (
               /* Campo de ID para empréstimo individual */
