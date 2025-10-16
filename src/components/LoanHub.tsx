@@ -47,7 +47,7 @@ export const LoanHub = ({ onBack }: LoanHubProps) => {
     <div className="flex flex-col h-full">
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold">Empréstimos de Chromebook</h1>
-        <Button onClick={onBack} variant="outline">Voltar ao Menu</Button>
+        {/* Botão 'Voltar ao Menu' removido, pois o Layout já fornece o botão de seta */}
       </div>
       
       <TabbedContent
