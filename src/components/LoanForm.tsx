@@ -294,6 +294,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
                           handleValidateIndividualId();
                         }
                       }}
+                      required // Adicionado required
                     />
                     <Button 
                       type="button" 
@@ -349,7 +350,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
             {/* Campo de finalidade do empréstimo (sempre visível) */}
             <div className="space-y-2 pt-2">
               <Label htmlFor="purpose" className="text-gray-700">
-                Finalidade
+                Finalidade *
               </Label>
               <Input
                 id="purpose"
@@ -359,6 +360,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
                   setFormData({ ...formData, purpose: e.target.value })
                 }
                 className="border-gray-200 bg-white"
+                required // Adicionado required
               />
             </div>
           </GlassCard>
