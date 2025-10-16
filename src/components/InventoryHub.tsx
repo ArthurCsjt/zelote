@@ -3,16 +3,12 @@ import { ChromebookInventory } from './ChromebookInventory';
 import { UserInventory } from './UserInventory';
 import { TabbedContent } from './TabbedContent'; // Importando o novo componente
 
-interface InventoryHubProps {
-  onBack?: () => void;
-}
-
-export function InventoryHub({ onBack }: InventoryHubProps) {
+export function InventoryHub() {
   const inventoryTabs = [
     {
       value: 'equipments',
       title: 'Equipamentos',
-      content: <ChromebookInventory onBack={onBack} />,
+      content: <ChromebookInventory />,
     },
     {
       value: 'users',

@@ -47,11 +47,7 @@ interface ChromebookDataExtended extends Chromebook {
 }
 
 
-interface ChromebookInventoryProps {
-  onBack?: () => void;
-}
-
-export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
+export function ChromebookInventory() {
   // Removido useIsMobile
   const { isAdmin } = useProfileRole();
   const { getChromebooks, updateChromebook, deleteChromebook, loading: dbLoading } = useDatabase(); // Usando useDatabase
@@ -289,13 +285,6 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
     }
   };
 
-  // Handle back button click
-  const handleBackClick = () => {
-    if (onBack) {
-      onBack();
-    }
-  };
-  
   // Função para renderizar os botões de página (apenas 5 visíveis)
   const renderPageButtons = () => {
     const maxButtons = 5;
