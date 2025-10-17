@@ -28,6 +28,7 @@ interface ReturnDialogProps {
     email: string;                                 // Email do solicitante
     type: 'individual' | 'lote';                   // Tipo de devolução
     userType: 'aluno' | 'professor' | 'funcionario'; // Tipo de usuário
+    notes?: string; // ADICIONADO
   };
   onReturnDataChange: (data: {                     // Função chamada quando os dados mudam
     name: string;
@@ -35,6 +36,7 @@ interface ReturnDialogProps {
     email: string;
     type: 'individual' | 'lote';
     userType: 'aluno' | 'professor' | 'funcionario';
+    notes?: string; // ADICIONADO
   }) => void;
   // Alterado o tipo de retorno para incluir a lista de IDs de lote
   onConfirm: (ids: string[], returnData: ReturnFormData) => void;                           // Função chamada ao confirmar a devolução
@@ -280,35 +282,56 @@ export function ReturnDialog({
               )}
             </Card>
 
-            {/* Coluna Direita - Informações do Usuário */}
-            <Card className="p-4 space-y-4 bg-white border-gray-100 shadow-md">
-              <CardTitle className="text-lg flex items-center gap-2 text-purple-700">
-                <User className="h-5 w-5" /> Informações do Solicitante
-              </CardTitle>
-              
-              {/* Seletor de Usuário com Autocompletar (ÚNICO CAMPO) */}
-              <div className="space-y-2">
-                <Label htmlFor="userSearch" className="text-gray-700">
-                  Buscar Solicitante (Nome, RA ou Email)
-                </Label>
-                <UserAutocomplete
-                  selectedUser={selectedUser}
-                  onSelect={handleUserSelect}
-                  onClear={handleUserClear}
-                  disabled={false}
-                />
-              </div>
-              
-              {/* Mensagem de aviso se nenhum usuário for selecionado */}
-              {!selectedUser && (
-                <div className="p-3 bg-red-50 border border-red-200 rounded-md">
-                  <p className="text-sm text-red-700 flex items-center gap-2">
-                    <AlertTriangle className="h-4 w-4" />
-                    Selecione o solicitante para prosseguir com a devolução.
-                  </p>
+            {/* Coluna Direita - Informações do Usuário e Observações */}
+            <div className="space-y-6">
+              <Card className="p-4 space-y-4 bg-purple-50/50 border-purple-100 shadow-inner">
+                <CardTitle className="text-lg flex items-center gap-2 text-purple-700">
+                  <User className="h-5 w-5" /> Informações do Solicitante
+                </CardTitle>
+                
+                {/* Seletor de Usuário com Autocompletar (ÚNICO CAMPO) */}
+                <div className="space-y-2">
+                  <Label htmlFor="userSearch" className="text-gray-700">
+                    Buscar Solicitante (Nome, RA ou Email)
+                  </Label>
+                  <UserAutocomplete
+                    selectedUser={selectedUser}
+                    onSelect={handleUserSelect}
+                    onClear={handleUserClear}
+                    disabled={false}
+                  />
                 </div>
-              )}
-            </Card>
+                
+                {/* Mensagem de aviso se nenhum usuário for selecionado */}
+                {!selectedUser && (
+                  <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+                    <p className="text-sm text-red-700 flex items-center gap-2">
+                      <AlertTriangle className="h-4 w-4" />
+                      Selecione o solicitante para prosseguir com a devolução.
+                    </p>
+                  </div>
+                )}
+              </Card>
+              
+              {/* Campo de Observações */}
+              <Card className="p-4 space-y-4 bg-white border-gray-100 shadow-md">
+                <CardTitle className="text-lg flex items-center gap-2 text-gray-700">
+                  <AlertTriangle className="h-5 w-5" /> Observações da Devolução
+                </CardTitle>
+                <div className="space-y-2">
+                  <Label htmlFor="notes" className="text-gray-700">
+                    Condição do equipamento ou notas sobre a devolução (Opcional)
+                  </Label>
+                  <Textarea
+                    id="notes"
+                    value={returnData.notes || ''}
+                    onChange={(e) => onReturnDataChange({ ...returnData, notes: e.target.value })}
+                    placeholder="Ex: O Chromebook foi devolvido com a tela trincada."
+                    className="bg-white border-gray-200 min-h-[80px]"
+                  />
+                </div>
+              </Card>
+            </div>
           </div>
 
 {/* Confirmação */}

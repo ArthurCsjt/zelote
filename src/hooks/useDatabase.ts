@@ -374,6 +374,7 @@ export const useDatabase = () => {
           returned_by_ra: data.ra,
           returned_by_email: data.email,
           returned_by_type: data.userType,
+          notes: data.notes, // ADICIONADO
           created_by: user.id
         })
         .select()
@@ -473,6 +474,7 @@ export const useDatabase = () => {
         returned_by_ra: data.ra,
         returned_by_email: data.email,
         returned_by_type: data.userType,
+        notes: data.notes, // ADICIONADO
         created_by: user.id
       });
     }

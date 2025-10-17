@@ -69,6 +69,7 @@ export interface ReturnFormData {
   email: string;
   type: LoanType;
   userType: UserType;
+  notes?: string; // ADICIONADO
 }
 
 // Interface combinada para histórico
