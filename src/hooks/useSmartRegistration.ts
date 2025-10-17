@@ -53,7 +53,7 @@ export function useSmartRegistration() {
     
     if (upperModel === 'XE310XBA') {
       manufacturer = 'Samsung';
-    } else if (upperModel === 'N18Q5') {
+    } else if (upperModel === 'N18Q5' || upperModel === 'N2P1') {
       manufacturer = 'Acer';
     }
     
