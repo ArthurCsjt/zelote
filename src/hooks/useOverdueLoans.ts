@@ -72,6 +72,43 @@ export function useOverdueLoans() {
     setLoading(false);
   }, [fetchOverdueLoans, fetchUpcomingDueLoans]);
 
+  // Efeito para exibir notificações quando os dados mudam
+  useEffect(() => {
+    // 1. Notificação de Atraso
+    if (overdueLoans.length > 0) {
+      const message = overdueLoans.length === 1 
+        ? `1 Chromebook está em atraso (${overdueLoans[0].chromebook_id}).`
+        : `${overdueLoans.length} Chromebooks estão em atraso.`;
+        
+      toast({
+        id: OVERDUE_TOAST_ID,
+        title: "🚨 ATENÇÃO: Empréstimos Atrasados",
+        description: message,
+        variant: 'destructive',
+        duration: 1000000, // Persistente
+      });
+    } else {
+      dismiss(OVERDUE_TOAST_ID);
+    }
+
+    // 2. Notificação de Próximo Vencimento
+    if (upcomingDueLoans.length > 0) {
+      const message = upcomingDueLoans.length === 1 
+        ? `1 Chromebook vence em breve (${upcomingDueLoans[0].chromebook_id}).`
+        : `${upcomingDueLoans.length} Chromebooks vencem nos próximos 3 dias.`;
+        
+      toast({
+        id: UPCOMING_TOAST_ID,
+        title: "⚠️ Prazo Próximo",
+        description: message,
+        variant: 'info',
+        duration: 1000000, // Persistente
+      });
+    } else {
+      dismiss(UPCOMING_TOAST_ID);
+    }
+  }, [overdueLoans, upcomingDueLoans]); // Depende dos estados de dados
+
   // Verificar automaticamente a cada 30 minutos
   useEffect(() => {
     checkAndNotifyOverdue();
@@ -87,8 +124,6 @@ export function useOverdueLoans() {
       dismiss(UPCOMING_TOAST_ID);
     };
   }, [checkAndNotifyOverdue]);
-
-  // REMOVIDO: useEffect que disparava os toasts
 
   return {
     overdueLoans,
