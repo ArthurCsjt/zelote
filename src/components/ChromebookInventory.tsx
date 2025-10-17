@@ -381,22 +381,23 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
           </Select>
         </div>
         
-        {/* Botão de Atualizar */}
+        {/* Botão de Atualizar (Alterado para ícone) */}
         <Button 
           variant="outline" 
           onClick={fetchChromebooks} 
           disabled={isLoading}
-          className="w-full sm:w-auto"
+          size="icon" // Alterado para size="icon"
+          className="w-10 h-10 sm:w-auto" // Garantindo tamanho fixo
+          title="Atualizar Inventário"
         >
           {isLoading ? (
-            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+            <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
-            <RefreshCw className="h-4 w-4 mr-2" />
+            <RefreshCw className="h-4 w-4" />
           )}
-          Atualizar
         </Button>
         
-        {/* NOVO: Botão de Backup */}
+        {/* Botão de Backup */}
         <BackupButton />
         
         <div className="text-sm text-gray-500 flex items-center">
