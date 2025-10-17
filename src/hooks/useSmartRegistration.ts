@@ -44,11 +44,20 @@ export function useSmartRegistration() {
       isDeprovisioned = true;
     }
     
+    // 1. Determinar o modelo
+    const model = data.model || 'Modelo Desconhecido';
+    
+    // 2. Lógica de detecção de fabricante
+    let manufacturer = data.manufacturer;
+    if (model.toUpperCase() === 'XE310XBA') {
+      manufacturer = 'Samsung';
+    }
+    
     // Mapeamento final para o schema do Supabase
     return {
       chromebook_id: normalizeChromebookId(data.id),
-      manufacturer: data.manufacturer,
-      model: data.model || 'Modelo Desconhecido',
+      manufacturer: manufacturer,
+      model: model,
       serial_number: data.serial, // Mapeado de 'serial'
       patrimony_number: data.patrimony, // Mapeado de 'patrimony'
       location: data.location,
