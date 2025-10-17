@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import {
@@ -11,7 +11,7 @@ import {
 } from "./ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { toast } from "./ui/use-toast";
-import { Search, Filter, Edit3, Trash2, Users, GraduationCap, UserCheck, Briefcase, Loader2 } from "lucide-react";
+import { Search, Filter, Edit3, Trash2, Users, GraduationCap, UserCheck, Briefcase, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 import { 
   Select,
   SelectContent,
@@ -29,8 +29,9 @@ import {
   AlertDialogHeader, 
   AlertDialogTitle 
 } from "./ui/alert-dialog";
-import { supabase } from "@/integrations/supabase/client";
+import { Pagination, PaginationContent, PaginationItem, PaginationLink } from "./ui/pagination";
 import { useProfileRole } from "@/hooks/use-profile-role";
+import { supabase } from "@/integrations/supabase/client";
 import { useDatabase } from "@/hooks/useDatabase"; // Importando useDatabase
 import { UserEditDialog } from "./UserEditDialog"; // Importando o novo diálogo
 import { GlassCard } from "./ui/GlassCard"; // Importando GlassCard
@@ -64,6 +65,10 @@ export function UserInventory() {
   // Estados para exclusão
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
+  
+  // Estados de Paginação
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   const fetchUsers = useCallback(async () => {
     setIsLoadingData(true);
@@ -141,18 +146,36 @@ export function UserInventory() {
   }, [fetchUsers]);
 
   // Filter users based on search and filters
-  const filteredUsers = users.filter((user) => {
-    const matchesSearch = 
-      user.nome_completo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (user.ra && user.ra.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (user.turma && user.turma.toLowerCase().includes(searchTerm.toLowerCase()));
+  const filteredUsers = useMemo(() => {
+    let filtered = users;
     
-    const matchesType = typeFilter === 'all' || user.tipo === typeFilter;
-    const matchesClass = classFilter === 'all' || user.turma === classFilter;
+    filtered = filtered.filter((user) => {
+      const matchesSearch = 
+        user.nome_completo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (user.ra && user.ra.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (user.turma && user.turma.toLowerCase().includes(searchTerm.toLowerCase()));
+      
+      const matchesType = typeFilter === 'all' || user.tipo === typeFilter;
+      const matchesClass = classFilter === 'all' || user.turma === classFilter;
 
-    return matchesSearch && matchesType && matchesClass;
-  });
+      return matchesSearch && matchesType && matchesClass;
+    });
+    
+    // Resetar página para 1 se o filtro mudar
+    setCurrentPage(1);
+
+    return filtered;
+  }, [users, searchTerm, typeFilter, classFilter]);
+  
+  // Lógica de Paginação
+  const totalItems = filteredUsers.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedUsers = filteredUsers.slice(
+    startIndex,
+    startIndex + itemsPerPage
+  );
 
   // Get statistics
   const totalUsers = users.length;
@@ -206,6 +229,34 @@ export function UserInventory() {
       setIsDeleting(false);
     }
   };
+  
+  // Função para renderizar os botões de página (apenas 5 visíveis)
+  const renderPageButtons = () => {
+    const maxButtons = 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxButtons / 2));
+    let endPage = Math.min(totalPages, startPage + maxButtons - 1);
+
+    if (endPage - startPage + 1 < maxButtons) {
+      startPage = Math.max(1, endPage - maxButtons + 1);
+    }
+
+    const buttons = [];
+    for (let i = startPage; i <= endPage; i++) {
+      buttons.push(
+        <PaginationItem key={i}>
+          <PaginationLink
+            isActive={currentPage === i}
+            onClick={() => setCurrentPage(i)}
+            className="cursor-pointer"
+          >
+            {i}
+          </PaginationLink>
+        </PaginationItem>
+      );
+    }
+    return buttons;
+  };
+
 
   if (isLoadingData && users.length === 0) {
     return (
@@ -308,7 +359,7 @@ export function UserInventory() {
         )}
         
         <div className="text-sm text-gray-500 flex items-center">
-          Resultados: {filteredUsers.length}
+          Resultados: {totalItems}
         </div>
       </div>
 
@@ -325,65 +376,128 @@ export function UserInventory() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredUsers.map((user) => (
-              <TableRow key={user.id}>
-                <TableCell className="font-medium">{user.nome_completo}</TableCell>
-                <TableCell className="text-sm text-muted-foreground">{user.email}</TableCell>
-                <TableCell>
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                    user.tipo === 'Aluno' 
-                      ? 'bg-green-100 text-green-800' 
-                      : user.tipo === 'Professor'
-                      ? 'bg-blue-100 text-blue-800'
-                      : 'bg-purple-100 text-purple-800'
-                  }`}>
-                    {user.tipo}
-                  </span>
-                </TableCell>
-                <TableCell className="text-sm">
-                  {user.tipo === 'Aluno' ? (
-                    <div>
-                      <div>RA: {user.ra}</div>
-                      <div className="text-xs text-muted-foreground">Turma: {user.turma}</div>
-                    </div>
-                  ) : (
-                    '-'
-                  )}
-                </TableCell>
-                {isAdmin && (
+            {paginatedUsers.length > 0 ? (
+              paginatedUsers.map((user) => (
+                <TableRow key={user.id}>
+                  <TableCell className="font-medium">{user.nome_completo}</TableCell>
+                  <TableCell className="text-sm text-muted-foreground">{user.email}</TableCell>
                   <TableCell>
-                    <div className="flex items-center space-x-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleEdit(user)}
-                        className="h-8 w-8 p-0"
-                      >
-                        <Edit3 className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDeleteClick(user)}
-                        className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-                        disabled={isDeleting} // Usando o estado de exclusão
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                      user.tipo === 'Aluno' 
+                        ? 'bg-green-100 text-green-800' 
+                        : user.tipo === 'Professor'
+                        ? 'bg-blue-100 text-blue-800'
+                        : 'bg-purple-100 text-purple-800'
+                    }`}>
+                      {user.tipo}
+                    </span>
                   </TableCell>
-                )}
+                  <TableCell className="text-sm">
+                    {user.tipo === 'Aluno' ? (
+                      <div>
+                        <div>RA: {user.ra}</div>
+                        <div className="text-xs text-muted-foreground">Turma: {user.turma}</div>
+                      </div>
+                    ) : (
+                      '-'
+                    )}
+                  </TableCell>
+                  {isAdmin && (
+                    <TableCell>
+                      <div className="flex items-center space-x-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleEdit(user)}
+                          className="h-8 w-8 p-0"
+                        >
+                          <Edit3 className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeleteClick(user)}
+                          className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                          disabled={isDeleting} // Usando o estado de exclusão
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  )}
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={isAdmin ? 5 : 4} className="h-32 text-center text-gray-500">
+                  Nenhum usuário encontrado
+                </TableCell>
               </TableRow>
-            ))}
+            )}
           </TableBody>
         </Table>
-        
-        {filteredUsers.length === 0 && (
-          <div className="text-center py-8">
-            <p className="text-muted-foreground">Nenhum usuário encontrado</p>
-          </div>
-        )}
       </GlassCard>
+      
+      {/* Paginação e Itens por Página */}
+      {totalPages > 0 && (
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6">
+          {/* Items Per Page Selector */}
+          <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+            <span>Itens por página:</span>
+            <Select
+              value={String(itemsPerPage)}
+              onValueChange={(value) => {
+                setItemsPerPage(Number(value));
+                setCurrentPage(1);
+              }}
+            >
+              <SelectTrigger className="w-[80px] h-8">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="10">10</SelectItem>
+                <SelectItem value="20">20</SelectItem>
+                <SelectItem value="50">50</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Pagination Controls */}
+          <Pagination className="mx-0">
+            <PaginationContent>
+              <PaginationItem>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+              </PaginationItem>
+
+              {/* Renderizar botões de página */}
+              {renderPageButtons()}
+
+              <PaginationItem>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+          
+          {/* Page Info */}
+          <div className="text-sm text-muted-foreground">
+            Página {currentPage} de {totalPages}
+          </div>
+        </div>
+      )}
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
