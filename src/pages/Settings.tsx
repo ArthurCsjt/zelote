@@ -45,14 +45,7 @@ const Settings = () => {
           <>
             <UserManagement />
             <DataMaintenance />
-            <GlassCard>
-              <CardHeader>
-                <CardTitle>Preferências do Sistema</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">Modo claro ativado permanentemente.</p>
-              </CardContent>
-            </GlassCard>
+            {/* O card de Preferências do Sistema foi removido por estar vazio. */}
           </>
         ) : (
           <GlassCard className="border-red-200/50 bg-red-50/50">
