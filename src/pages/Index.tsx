@@ -21,10 +21,10 @@ import type { ReturnFormData, Chromebook } from "@/types/database"; // Importand
 import { useDatabase } from "@/hooks/useDatabase";
 
 const Index = () => {
-  // ADIÇÃO: Chamamos os hooks de autenticação aqui, no componente "pai"
+  // Chamada de Hooks no topo (ordem consistente)
   const { user, logout } = useAuth();
   const { isAdmin, loading: roleLoading } = useProfileRole(user);
-  const { loading: dbLoading } = useDatabase();
+  const { loading: dbLoading } = useDatabase(); // Chamada do hook
 
   const [openReturnDialog, setOpenReturnDialog] = useState(false);
   const [chromebookId, setChromebookId] = useState("");
