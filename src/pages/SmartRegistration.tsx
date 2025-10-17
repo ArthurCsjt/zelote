@@ -13,6 +13,14 @@ import { sanitizeQRCodeData, normalizeChromebookId } from '@/utils/security';
 import { toast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"; // ADICIONADO
 
 interface SmartRegistrationProps {
   onBack: () => void;
