@@ -73,13 +73,13 @@ export function InventoryStats({ chromebooks }: InventoryStatsProps) {
         const Icon = item.icon;
         return (
           <GlassCard key={index} className="border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 pt-4 px-4"> {/* Aumentando padding vertical */}
               <CardTitle className="text-xs sm:text-sm font-medium">
                 {item.title}
               </CardTitle>
               <Icon className={`h-4 w-4 sm:h-5 sm:w-5 ${item.color}`} />
             </CardHeader>
-            <CardContent>
+            <CardContent className="pb-4 px-4"> {/* Aumentando padding vertical */}
               <div className={`text-xl sm:text-3xl font-bold ${item.color}`}>{item.value}</div>
               <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">
                 {item.description}
