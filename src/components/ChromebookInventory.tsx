@@ -495,16 +495,19 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
                         >
                           <Edit3 className="h-4 w-4" />
                         </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDeleteClick(chromebook)}
-                          title="Excluir"
-                          className="text-red-600 hover:text-red-800"
-                          disabled={isLoading}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                        {/* RESTRIÇÃO DE PERMISSÃO APLICADA AQUI */}
+                        {isAdmin && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDeleteClick(chromebook)}
+                            title="Excluir"
+                            className="text-red-600 hover:text-red-800"
+                            disabled={isLoading}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        )}
                         <Select 
                           value={chromebook.status} 
                           onValueChange={(value) => handleStatusChange(chromebook.id, value)}
