@@ -352,22 +352,22 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
       {/* Estatísticas e Gráfico */}
       <InventoryStats chromebooks={chromebooks} />
 
-      {/* Search and filters - REORGANIZADO PARA MOBILE */}
-      <div className="space-y-4 mb-6 relative z-10">
-        {/* Linha 1: Busca */}
-        <div className="relative flex-1 w-full">
-          <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-          <Input
-            placeholder="Buscar por ID, patrimônio, modelo, série, fabricante ou localização..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 h-10"
-          />
-        </div>
-        
-        {/* Linha 2: Filtros (Status) */}
+      {/* Search and filters - AGRUPADO EM GLASS CARD */}
+      <GlassCard className="space-y-4 mb-6 relative z-10 p-4 sm:p-6">
         <div className="flex flex-col sm:flex-row gap-4 items-center">
-          <div className="relative w-full sm:w-auto flex-1">
+          {/* Busca */}
+          <div className="relative flex-1 w-full">
+            <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+            <Input
+              placeholder="Buscar por ID, patrimônio, modelo, série, fabricante ou localização..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 h-10"
+            />
+          </div>
+          
+          {/* Filtros (Status) */}
+          <div className="relative w-full sm:w-auto flex-shrink-0">
             <Filter className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-full pl-10 h-10">
@@ -385,7 +385,7 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
           </div>
           
           {/* Botões de Ação (Atualizar e Backup) */}
-          <div className="flex gap-4 w-full sm:w-auto">
+          <div className="flex gap-4 w-full sm:w-auto flex-shrink-0">
             <Button 
               variant="outline" 
               onClick={fetchChromebooks} 
@@ -411,7 +411,7 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
         <div className="text-sm text-gray-500 pt-2">
           Resultados: {filteredChromebooks.length} Chromebooks
         </div>
-      </div>
+      </GlassCard>
 
       {/* Table of Chromebooks */}
       <GlassCard className="border-white/30 rounded-2xl overflow-hidden relative z-10 p-0">
