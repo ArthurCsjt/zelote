@@ -17,7 +17,7 @@ import {
 import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
 import { GlassCard } from "./ui/GlassCard";
 import type { Chromebook } from "@/types/database";
-import { useCreateChromebook } from '@/hooks/database/useChromebooks'; // Importando o novo hook
+import { useDatabase } from '@/hooks/useDatabase'; // Importando useDatabase
 
 interface FormData {
   manufacturer: string;
@@ -32,7 +32,7 @@ interface FormData {
 }
 
 export function ChromebookRegistration({ onRegistrationSuccess }: { onRegistrationSuccess: (newChromebook: Chromebook) => void }) {
-  const { mutateAsync: createChromebook, isPending: loading } = useCreateChromebook();
+  const { createChromebook, loading } = useDatabase(); // Usando useDatabase
   const { toast } = useToast();
   
   const [formData, setFormData] = useState<FormData>({
@@ -80,11 +80,16 @@ export function ChromebookRegistration({ onRegistrationSuccess }: { onRegistrati
     try {
       const result = await createChromebook(chromebookData as any);
       
-      // Se a mutação for bem-sucedida (o toast já foi exibido pelo hook)
-      resetForm();
-      onRegistrationSuccess(result);
+      if (result) {
+        toast({ title: "Sucesso", description: `Chromebook ${result.chromebook_id} cadastrado!` });
+        resetForm();
+        onRegistrationSuccess(result);
+      } else {
+        // O erro já é toastado dentro do useDatabase, mas garantimos um fallback
+        toast({ title: "Erro", description: "Falha ao cadastrar Chromebook.", variant: "destructive" });
+      }
     } catch (error) {
-      // O erro é tratado dentro do useCreateChromebook
+      // Erro já tratado no useDatabase
     }
   };
 

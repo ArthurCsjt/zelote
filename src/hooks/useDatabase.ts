@@ -8,8 +8,22 @@ import type {
   LoanFormData, 
   ReturnFormData, 
   LoanHistoryItem,
-  UserType // Importando UserType
+  UserType, // Importando UserType
+  Chromebook // Importando Chromebook
 } from '@/types/database';
+
+// Tipos para a criação de Chromebook
+interface ChromebookCreationData {
+  model: string;
+  serialNumber: string;
+  patrimonyNumber?: string;
+  manufacturer: string;
+  condition?: string;
+  location?: string;
+  status: 'disponivel' | 'emprestado' | 'fixo' | 'fora_uso' | 'manutencao';
+  is_deprovisioned?: boolean;
+  classroom?: string;
+}
 
 // Types for new entities
 interface StudentData {
@@ -57,6 +71,50 @@ export const useDatabase = () => {
     }
     return chromebook;
   }, []);
+
+  // Chromebook operations
+  const createChromebook = useCallback(async (data: ChromebookCreationData): Promise<Chromebook | null> => {
+    if (!user) {
+      toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
+      return null;
+    }
+
+    setLoading(true);
+    try {
+      const { data: result, error } = await supabase
+        .from('chromebooks')
+        .insert({
+          model: data.model,
+          serial_number: data.serialNumber,
+          patrimony_number: data.patrimonyNumber,
+          manufacturer: data.manufacturer,
+          condition: data.condition,
+          location: data.location,
+          status: data.status,
+          is_deprovisioned: data.is_deprovisioned,
+          classroom: data.classroom,
+          created_by: user.id,
+          // chromebook_id será gerado por trigger no DB
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      
+      // O toast de sucesso será disparado no componente de registro
+      return result as Chromebook;
+    } catch (error: any) {
+      console.error('Erro ao criar Chromebook:', error);
+      toast({ 
+        title: "Erro ao cadastrar Chromebook", 
+        description: error.message.includes('duplicate key') ? 'Número de Série ou Patrimônio já cadastrado.' : error.message, 
+        variant: "destructive" 
+      });
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
 
 
   // Loan operations
@@ -235,6 +293,25 @@ export const useDatabase = () => {
       setLoading(false);
     }
   }, []);
+  
+  const getChromebooks = useCallback(async (): Promise<Chromebook[]> => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('chromebooks')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return (data || []) as Chromebook[];
+    } catch (error: any) {
+      toast({ title: "Erro", description: error.message, variant: "destructive" });
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
 
   // Return operations
   const createReturn = useCallback(async (loanId: string, data: ReturnFormData): Promise<Return | null> => {
@@ -635,6 +712,9 @@ export const useDatabase = () => {
 
   return {
     loading,
+    // Chromebook operations
+    createChromebook,
+    getChromebooks,
     // Loan operations
     createLoan,
     bulkCreateLoans,
