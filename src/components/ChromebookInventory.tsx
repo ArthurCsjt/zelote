@@ -352,55 +352,63 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
       {/* Estatísticas e Gráfico */}
       <InventoryStats chromebooks={chromebooks} />
 
-      {/* Search and filters */}
-      <div className="flex flex-col sm:flex-row gap-4 mb-6 relative z-10 items-center">
+      {/* Search and filters - REORGANIZADO PARA MOBILE */}
+      <div className="space-y-4 mb-6 relative z-10">
+        {/* Linha 1: Busca */}
         <div className="relative flex-1 w-full">
           <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
           <Input
             placeholder="Buscar por ID, patrimônio, modelo, série, fabricante ou localização..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
+            className="pl-10 h-10"
           />
         </div>
         
-        <div className="relative">
-          <Filter className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-[180px] pl-10">
-              <SelectValue placeholder="Filtrar por status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos os Status</SelectItem>
-              <SelectItem value="disponivel">Disponível</SelectItem>
-              <SelectItem value="emprestado">Emprestado</SelectItem>
-              <SelectItem value="fixo">Fixo</SelectItem>
-              <SelectItem value="manutencao">Manutenção</SelectItem>
-              <SelectItem value="fora_uso">Inativo</SelectItem>
-            </SelectContent>
-          </Select>
+        {/* Linha 2: Filtros (Status) */}
+        <div className="flex flex-col sm:flex-row gap-4 items-center">
+          <div className="relative w-full sm:w-auto flex-1">
+            <Filter className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-full pl-10 h-10">
+                <SelectValue placeholder="Filtrar por status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos os Status</SelectItem>
+                <SelectItem value="disponivel">Disponível</SelectItem>
+                <SelectItem value="emprestado">Emprestado</SelectItem>
+                <SelectItem value="fixo">Fixo</SelectItem>
+                <SelectItem value="manutencao">Manutenção</SelectItem>
+                <SelectItem value="fora_uso">Inativo</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          {/* Botões de Ação (Atualizar e Backup) */}
+          <div className="flex gap-4 w-full sm:w-auto">
+            <Button 
+              variant="outline" 
+              onClick={fetchChromebooks} 
+              disabled={isLoading}
+              size="icon"
+              className="w-10 h-10 flex-shrink-0"
+              title="Atualizar Inventário"
+            >
+              {isLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <RefreshCw className="h-4 w-4" />
+              )}
+            </Button>
+            
+            <div className="flex-1">
+              <BackupButton />
+            </div>
+          </div>
         </div>
         
-        {/* Botão de Atualizar (Alterado para ícone) */}
-        <Button 
-          variant="outline" 
-          onClick={fetchChromebooks} 
-          disabled={isLoading}
-          size="icon" // Alterado para size="icon"
-          className="w-10 h-10 sm:w-auto" // Garantindo tamanho fixo
-          title="Atualizar Inventário"
-        >
-          {isLoading ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <RefreshCw className="h-4 w-4" />
-          )}
-        </Button>
-        
-        {/* Botão de Backup */}
-        <BackupButton />
-        
-        <div className="text-sm text-gray-500 flex items-center">
+        {/* Linha 3: Resultados (Abaixo dos filtros) */}
+        <div className="text-sm text-gray-500 pt-2">
           Resultados: {filteredChromebooks.length} Chromebooks
         </div>
       </div>
