@@ -5,13 +5,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/components/ui/use-toast";
-import { Computer, Lock, Mail, ArrowLeft, KeySquare, LockKeyhole, UserPlus, Eye, EyeOff, AlertCircle } from "lucide-react";
+import { Computer, Lock, Mail, ArrowLeft, KeySquare, LockKeyhole, UserPlus, Eye, EyeOff, AlertCircle, Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 
 const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const [isRecoveryMode, setRecoveryMode] = useState(false);
+  const [isFirstAccessOrRecoveryMode, setIsFirstAccessOrRecoveryMode] = useState(false);
   const [isUpdatePasswordMode, setUpdatePasswordMode] = useState(false); 
 
   const [loginEmail, setLoginEmail] = useState("");
@@ -19,11 +19,11 @@ const Login = () => {
   const [recoveryEmail, setRecoveryEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false); // Novo estado para visibilidade da senha
+  const [showPassword, setShowPassword] = useState(false); 
 
   const navigate = useNavigate();
   const location = useLocation();
-  const { login, resetPassword, verifyEmail } = useAuth(); // Usando verifyEmail do AuthContext
+  const { login, resetPassword, verifyEmail } = useAuth(); 
 
   // Efeito para verificar se o usuário está no fluxo de redefinição/convite
   useEffect(() => {
@@ -109,10 +109,9 @@ const Login = () => {
         title: "Email enviado",
         description: "Verifique sua caixa de entrada para definir sua senha."
       });
-      // Mantém o email preenchido no campo de login ao voltar
       setLoginEmail(recoveryEmail); 
       setRecoveryEmail("");
-      setRecoveryMode(false);
+      setIsFirstAccessOrRecoveryMode(false);
     } else {
       toast({
         title: "Erro de envio",
@@ -148,7 +147,6 @@ const Login = () => {
         description: "Sua senha foi definida. Você está logado e será redirecionado.",
       });
       
-      // Redireciona para a página principal (o AuthProvider deve pegar a sessão)
       navigate("/", { replace: true });
     } catch (error: any) {
       toast({
@@ -162,13 +160,11 @@ const Login = () => {
   };
   
   const handleToggleRecoveryMode = () => {
-    setRecoveryMode(prev => {
+    setIsFirstAccessOrRecoveryMode(prev => {
       if (prev) {
-        // Ao sair do modo de recuperação, preenche o email de login com o email de recuperação
         setLoginEmail(recoveryEmail);
         setRecoveryEmail('');
       } else {
-        // Ao entrar no modo de recuperação, preenche o email de recuperação com o email de login
         setRecoveryEmail(loginEmail);
       }
       return !prev;
@@ -177,22 +173,52 @@ const Login = () => {
 
   // --- Renderização Condicional ---
 
-  const renderContent = () => {
+  const renderHeader = () => {
+    let title = "Zelote";
+    let description = "Acesso restrito para usuários convidados";
+    let Icon = Computer;
+    let iconColor = "text-blue-600";
+    let bgColor = "from-blue-500/10 to-blue-600/10";
+
     if (isUpdatePasswordMode) {
-      // MODO DE ATUALIZAÇÃO DE SENHA (PRIMEIRO ACESSO / REDEFINIÇÃO)
+      title = "Definir Nova Senha";
+      description = "Crie uma senha segura para acessar o sistema.";
+      Icon = UserPlus;
+      iconColor = "text-green-600";
+      bgColor = "from-green-500/10 to-green-600/10";
+    } else if (isFirstAccessOrRecoveryMode) {
+      title = "Primeiro Acesso / Recuperação";
+      description = "Digite seu e-mail institucional para receber o link de acesso.";
+      Icon = KeySquare;
+      iconColor = "text-blue-600";
+      bgColor = "from-blue-500/10 to-blue-600/10";
+    }
+
+    return (
+      <CardHeader className={`space-y-1 text-center pb-6 bg-gradient-to-r ${bgColor}`}>
+        <div className="flex justify-center mb-4">
+          <div className="p-3 rounded-full bg-white shadow-lg">
+            <Icon className={`h-10 w-10 ${iconColor}`} />
+          </div>
+        </div>
+        <CardTitle className={`text-2xl font-bold ${isUpdatePasswordMode ? 'text-green-800' : 'text-blue-800'}`}>{title}</CardTitle>
+        <CardDescription className="text-gray-600">
+          {description}
+        </CardDescription>
+        {isFirstAccessOrRecoveryMode && (
+          <p className="text-xs text-gray-500 mt-1">
+            (Use este modo se você foi convidado ou esqueceu sua senha.)
+          </p>
+        )}
+      </CardHeader>
+    );
+  };
+
+  const renderFormContent = () => {
+    if (isUpdatePasswordMode) {
+      // MODO DE ATUALIZAÇÃO DE SENHA
       return (
         <form onSubmit={handleUpdatePasswordSubmit}>
-          <CardHeader className="space-y-1 text-center pb-6 bg-gradient-to-r from-green-500/10 to-green-600/10">
-            <div className="flex justify-center mb-4">
-              <div className="p-3 rounded-full bg-green-100 shadow-md">
-                <UserPlus className="h-10 w-10 text-green-600" />
-              </div>
-            </div>
-            <CardTitle className="text-2xl font-bold text-green-800">Definir Nova Senha</CardTitle>
-            <CardDescription className="text-gray-600">
-              Crie uma senha segura para acessar o sistema.
-            </CardDescription>
-          </CardHeader>
           <CardContent className="space-y-4 pt-6">
             <div className="space-y-2">
               <Label htmlFor="new-password" className="text-gray-700 flex items-center gap-1.5"><LockKeyhole className="h-4 w-4" />Nova Senha</Label>
@@ -215,28 +241,17 @@ const Login = () => {
           </CardContent>
           <CardFooter className="pb-6">
             <Button type="submit" className="w-full bg-gradient-to-r from-green-600 to-green-500" disabled={isLoading}>
-              {isLoading ? "Salvando..." : "Definir Senha e Entrar"}
+              {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Definir Senha e Entrar"}
             </Button>
           </CardFooter>
         </form>
       );
     }
 
-    if (isRecoveryMode) {
+    if (isFirstAccessOrRecoveryMode) {
       // MODO DE PRIMEIRO ACESSO / RECUPERAÇÃO DE SENHA
       return (
         <form onSubmit={handleRecoverySubmit}>
-          <CardHeader className="space-y-1 text-center pb-6 bg-gradient-to-r from-blue-500/10 to-blue-600/10">
-            <div className="flex justify-center mb-4">
-              <div className="p-3 rounded-full bg-blue-100 shadow-md">
-                <KeySquare className="h-10 w-10 text-blue-600" />
-              </div>
-            </div>
-            <CardTitle className="text-2xl font-bold text-blue-800">Primeiro Acesso / Recuperação</CardTitle>
-            <CardDescription className="text-gray-600">
-              Digite seu e-mail institucional para receber o link de acesso.
-            </CardDescription>
-          </CardHeader>
           <CardContent className="space-y-4 pt-6">
             <div className="space-y-2">
               <Label htmlFor="recovery-email" className="text-gray-700 flex items-center gap-1.5"><Mail className="h-4 w-4" />Email Institucional</Label>
@@ -245,9 +260,9 @@ const Login = () => {
           </CardContent>
           <CardFooter className="flex flex-col space-y-4 pb-6">
             <Button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-blue-500" disabled={isLoading}>
-              {isLoading ? "Enviando..." : "Enviar Link de Acesso"}
+              {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Enviar Link de Acesso"}
             </Button>
-            <Button type="button" variant="ghost" className="text-sm text-gray-600" onClick={handleToggleRecoveryMode} disabled={isLoading}>
+            <Button type="button" variant="ghost" className="text-sm text-gray-600 hover:bg-gray-100" onClick={handleToggleRecoveryMode} disabled={isLoading}>
               <ArrowLeft className="h-3.5 w-3.5 mr-1" />
               Voltar ao login
             </Button>
@@ -276,9 +291,9 @@ const Login = () => {
         </CardContent>
         <CardFooter className="flex flex-col space-y-4 pb-6">
           <Button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-blue-500" disabled={isLoading}>
-            {isLoading ? "Entrando..." : "Entrar"}
+            {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Entrar"}
           </Button>
-          <Button type="button" variant="ghost" className="text-sm text-gray-600" onClick={handleToggleRecoveryMode} disabled={isLoading}>
+          <Button type="button" variant="ghost" className="text-sm text-gray-600 hover:bg-gray-100" onClick={handleToggleRecoveryMode} disabled={isLoading}>
             <KeySquare className="h-3.5 w-3.5 mr-1" />
             Primeiro Acesso / Recuperar Senha
           </Button>
@@ -290,22 +305,10 @@ const Login = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#D3E4FD] to-[#F0F7FF] p-4">
       <Card className="w-full max-w-md shadow-xl glass-card border-0 overflow-hidden">
-        {/* O cabeçalho é renderizado apenas se não estiver no modo de atualização de senha, pois ele tem seu próprio cabeçalho */}
-        {!isUpdatePasswordMode && (
-          <CardHeader className="space-y-1 text-center pb-6 bg-gradient-to-r from-blue-500/10 to-blue-600/10">
-            <div className="flex justify-center mb-4">
-              <div className="p-3 rounded-full bg-blue-100 shadow-md">
-                <Computer className="h-10 w-10 text-blue-600" />
-              </div>
-            </div>
-            <CardTitle className="text-2xl font-bold text-blue-800">Zelote</CardTitle>
-            <CardDescription className="text-gray-600">
-              Acesso restrito para usuários convidados
-            </CardDescription>
-          </CardHeader>
-        )}
         
-        {renderContent()}
+        {renderHeader()}
+        
+        {renderFormContent()}
       </Card>
     </div>
   );

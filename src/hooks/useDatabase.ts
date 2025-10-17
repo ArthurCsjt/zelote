@@ -3,15 +3,27 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import type { 
-  Chromebook, 
   Loan, 
   Return, 
   LoanFormData, 
   ReturnFormData, 
   LoanHistoryItem,
-  ChromebookData,
-  UserType // Importando UserType
+  UserType, // Importando UserType
+  Chromebook // Importando Chromebook
 } from '@/types/database';
+
+// Tipos para a criação de Chromebook
+interface ChromebookCreationData {
+  model: string;
+  serialNumber: string;
+  patrimonyNumber?: string;
+  manufacturer: string;
+  condition?: string;
+  location?: string;
+  status: 'disponivel' | 'emprestado' | 'fixo' | 'fora_uso' | 'manutencao';
+  is_deprovisioned?: boolean;
+  classroom?: string;
+}
 
 // Types for new entities
 interface StudentData {
@@ -35,8 +47,33 @@ export const useDatabase = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
 
+  // Função auxiliar para buscar um Chromebook por qualquer identificador
+  const findChromebook = useCallback(async (identifier: string) => {
+    console.log(`[DB] Tentando encontrar Chromebook com identificador: ${identifier}`);
+    const { data: chromebook, error } = await supabase
+      .from('chromebooks')
+      .select('id, chromebook_id, status')
+      .or(
+        [
+          `chromebook_id.eq.${identifier}`,
+          `serial_number.eq.${identifier}`,
+          `patrimony_number.eq.${identifier}`,
+        ].join(',')
+      )
+      .single();
+      
+    if (error && error.code !== 'PGRST116') {
+      console.error(`[DB] Erro ao buscar Chromebook: ${error.message}`);
+      throw error;
+    }
+    if (!chromebook) {
+      console.log(`[DB] Chromebook ${identifier} não encontrado.`);
+    }
+    return chromebook;
+  }, []);
+
   // Chromebook operations
-  const createChromebook = useCallback(async (data: ChromebookData): Promise<Chromebook | null> => {
+  const createChromebook = useCallback(async (data: ChromebookCreationData): Promise<Chromebook | null> => {
     if (!user) {
       toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
       return null;
@@ -44,145 +81,41 @@ export const useDatabase = () => {
 
     setLoading(true);
     try {
-      // Detect if DB has 'manufacturer' column by trying a lightweight select
-      let hasManufacturer = true;
-      try {
-        const { error: colErr } = await supabase.from('chromebooks').select('manufacturer').limit(1);
-        if (colErr) {
-          hasManufacturer = false;
-        }
-      } catch (e) {
-        hasManufacturer = false;
-      }
-
-      const payload: any = {
-        chromebook_id: data.chromebookId,
-        model: data.model,
-        serial_number: data.serialNumber,
-        patrimony_number: data.patrimonyNumber,
-        status: data.status as any,
-        condition: data.condition,
-        location: data.location,
-        classroom: data.classroom,
-        created_by: user.id,
-      };
-
-      if (hasManufacturer) payload.manufacturer = (data as any).manufacturer;
-      else {
-        // fallback: store manufacturer value in serial_number if provided
-        if ((data as any).manufacturer && !payload.serial_number) payload.serial_number = (data as any).manufacturer;
-      }
-
       const { data: result, error } = await supabase
         .from('chromebooks')
-        .insert(payload)
+        .insert({
+          model: data.model,
+          serial_number: data.serialNumber,
+          patrimony_number: data.patrimonyNumber,
+          manufacturer: data.manufacturer,
+          condition: data.condition,
+          location: data.location,
+          status: data.status,
+          is_deprovisioned: data.is_deprovisioned,
+          classroom: data.classroom,
+          created_by: user.id,
+          // chromebook_id será gerado por trigger no DB
+        })
         .select()
         .single();
 
       if (error) throw error;
-
-      toast({ title: "Sucesso", description: "Chromebook cadastrado com sucesso" });
+      
+      // O toast de sucesso será disparado no componente de registro
       return result as Chromebook;
     } catch (error: any) {
-      toast({ title: "Erro", description: error.message, variant: "destructive" });
+      console.error('Erro ao criar Chromebook:', error);
+      toast({ 
+        title: "Erro ao cadastrar Chromebook", 
+        description: error.message.includes('duplicate key') ? 'Número de Série ou Patrimônio já cadastrado.' : error.message, 
+        variant: "destructive" 
+      });
       return null;
     } finally {
       setLoading(false);
     }
   }, [user]);
 
-  const getChromebooks = useCallback(async (): Promise<Chromebook[]> => {
-    setLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from('chromebooks')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      return (data || []) as Chromebook[];
-    } catch (error: any) {
-      toast({ title: "Erro", description: error.message, variant: "destructive" });
-      return [];
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  const updateChromebook = useCallback(async (id: string, data: Partial<ChromebookData>): Promise<boolean> => {
-    if (!user) {
-      toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
-      return false;
-    }
-
-    setLoading(true);
-    try {
-      // Detect if DB has 'manufacturer' column
-      let hasManufacturer = true;
-      try {
-        const { error: colErr } = await supabase.from('chromebooks').select('manufacturer').limit(1);
-        if (colErr) hasManufacturer = false;
-      } catch (e) {
-        hasManufacturer = false;
-      }
-
-      const updatePayload: any = {
-        chromebook_id: data.chromebookId,
-        model: data.model,
-        serial_number: data.serialNumber,
-        patrimony_number: data.patrimonyNumber,
-        status: data.status as any,
-        condition: data.condition,
-        location: data.location,
-        classroom: data.classroom,
-      };
-
-      if (hasManufacturer) updatePayload.manufacturer = (data as any).manufacturer;
-      else {
-        if ((data as any).manufacturer && !updatePayload.serial_number) updatePayload.serial_number = (data as any).manufacturer;
-      }
-
-      const { error } = await supabase
-        .from('chromebooks')
-        .update(updatePayload)
-        .eq('id', id);
-
-      if (error) throw error;
-      
-      toast({ title: "Sucesso", description: "Chromebook atualizado com sucesso" });
-      return true;
-    } catch (error: any) {
-      toast({ title: "Erro", description: error.message, variant: "destructive" });
-      return false;
-    } finally {
-      setLoading(false);
-    }
-  }, [user]);
-
-  const deleteChromebook = useCallback(async (id: string): Promise<boolean> => {
-    if (!user) {
-      toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
-      return false;
-    }
-
-    setLoading(true);
-    try {
-      const { error } = await supabase
-        .from('chromebooks')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-      
-      toast({ title: "Sucesso", description: "Chromebook excluído com sucesso" });
-      return true;
-    } catch (error: any) {
-      toast({ title: "Erro", description: error.message, variant: "destructive" });
-      return false;
-    } finally {
-      setLoading(false);
-    }
-  }, [user]);
 
   // Loan operations
   const createLoan = useCallback(async (data: LoanFormData): Promise<Loan | null> => {
@@ -193,16 +126,15 @@ export const useDatabase = () => {
 
     setLoading(true);
     try {
-      // Buscar o chromebook pelo ID
-      const { data: chromebook, error: chromebookError } = await supabase
-        .from('chromebooks')
-        .select('id')
-        .eq('chromebook_id', data.chromebookId)
-        .eq('status', 'disponivel')
-        .single();
+      // Buscar o chromebook pelo ID, Serial ou Patrimônio
+      const chromebook = await findChromebook(data.chromebookId);
 
-      if (chromebookError || !chromebook) {
-        throw new Error('Chromebook não encontrado ou não está disponível');
+      if (!chromebook) {
+        throw new Error(`Chromebook com ID/Série/Patrimônio "${data.chromebookId}" não encontrado.`);
+      }
+      
+      if (chromebook.status !== 'disponivel') {
+        throw new Error(`Chromebook ${chromebook.chromebook_id} não está disponível (Status: ${chromebook.status}).`);
       }
 
       const { data: result, error } = await supabase
@@ -225,7 +157,7 @@ export const useDatabase = () => {
       
       toast({ 
         title: "Empréstimo registrado", 
-        description: `Chromebook ${data.chromebookId} emprestado para ${data.studentName}` 
+        description: `Chromebook ${chromebook.chromebook_id} emprestado para ${data.studentName}` 
       });
       return result;
     } catch (error: any) {
@@ -234,7 +166,7 @@ export const useDatabase = () => {
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [user, findChromebook]);
   
   // Criação de empréstimos em lote
   const bulkCreateLoans = useCallback(async (loanDataList: LoanFormData[]): Promise<{ successCount: number, errorCount: number }> => {
@@ -247,46 +179,53 @@ export const useDatabase = () => {
     let successCount = 0;
     let errorCount = 0;
     
-    // Mapear IDs de Chromebooks para IDs internos do DB
-    const chromebookIds = loanDataList.map(d => d.chromebookId);
-    const { data: chromebooks, error: cbError } = await supabase
-      .from('chromebooks')
-      .select('id, chromebook_id, status')
-      .in('chromebook_id', chromebookIds);
-
-    if (cbError) {
-      toast({ title: "Erro", description: "Falha ao buscar Chromebooks.", variant: "destructive" });
-      setLoading(false);
-      return { successCount: 0, errorCount: loanDataList.length };
-    }
-
-    const chromebookMap = new Map(chromebooks.map(cb => [cb.chromebook_id, cb]));
     const loansToInsert = [];
 
     for (const data of loanDataList) {
-      const chromebook = chromebookMap.get(data.chromebookId);
-      
-      if (!chromebook || chromebook.status !== 'disponivel') {
+      try {
+        // Buscar o chromebook pelo ID, Serial ou Patrimônio
+        const chromebook = await findChromebook(data.chromebookId);
+
+        if (!chromebook) {
+          errorCount++;
+          toast({ 
+            title: "Erro no Lote", 
+            description: `Chromebook ${data.chromebookId} não encontrado.`, 
+            variant: "destructive" 
+          });
+          continue;
+        }
+        
+        if (chromebook.status !== 'disponivel') {
+          errorCount++;
+          toast({ 
+            title: "Erro no Lote", 
+            description: `Chromebook ${chromebook.chromebook_id} não está disponível (Status: ${chromebook.status}).`, 
+            variant: "destructive" 
+          });
+          continue;
+        }
+
+        loansToInsert.push({
+          chromebook_id: chromebook.id,
+          student_name: data.studentName,
+          student_ra: data.ra,
+          student_email: data.email,
+          purpose: data.purpose,
+          user_type: data.userType,
+          loan_type: data.loanType,
+          expected_return_date: data.expectedReturnDate?.toISOString(),
+          created_by: user.id
+        });
+        
+      } catch (e: any) {
         errorCount++;
         toast({ 
           title: "Erro no Lote", 
-          description: `Chromebook ${data.chromebookId} não encontrado ou não está disponível.`, 
+          description: `Falha ao processar ${data.chromebookId}: ${e.message}`, 
           variant: "destructive" 
         });
-        continue;
       }
-
-      loansToInsert.push({
-        chromebook_id: chromebook.id,
-        student_name: data.studentName,
-        student_ra: data.ra,
-        student_email: data.email,
-        purpose: data.purpose,
-        user_type: data.userType,
-        loan_type: data.loanType,
-        expected_return_date: data.expectedReturnDate?.toISOString(),
-        created_by: user.id
-      });
     }
     
     if (loansToInsert.length > 0) {
@@ -309,7 +248,7 @@ export const useDatabase = () => {
 
     setLoading(false);
     return { successCount, errorCount: loanDataList.length - successCount };
-  }, [user]);
+  }, [user, findChromebook]);
 
 
   const getActiveLoans = useCallback(async (): Promise<LoanHistoryItem[]> => {
@@ -354,6 +293,25 @@ export const useDatabase = () => {
       setLoading(false);
     }
   }, []);
+  
+  const getChromebooks = useCallback(async (): Promise<Chromebook[]> => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('chromebooks')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return (data || []) as Chromebook[];
+    } catch (error: any) {
+      toast({ title: "Erro", description: error.message, variant: "destructive" });
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
 
   // Return operations
   const createReturn = useCallback(async (loanId: string, data: ReturnFormData): Promise<Return | null> => {
@@ -395,16 +353,23 @@ export const useDatabase = () => {
   const returnChromebookById = useCallback(async (chromebookId: string, data: ReturnFormData): Promise<boolean> => {
     setLoading(true);
     try {
-      // Buscar o empréstimo ativo
+      // Buscar o empréstimo ativo usando a função auxiliar para flexibilidade
+      const chromebook = await findChromebook(chromebookId);
+      
+      if (!chromebook) {
+        throw new Error(`Chromebook com ID/Série/Patrimônio "${chromebookId}" não encontrado.`);
+      }
+      
+      // Buscar o empréstimo ativo pelo ID interno do Chromebook
       const { data: activeLoan, error: loanError } = await supabase
         .from('loan_history')
         .select('id')
-        .eq('chromebook_id', chromebookId)
+        .eq('chromebook_id', chromebook.chromebook_id) // Usamos o chromebook_id amigável aqui, pois loan_history usa ele
         .eq('status', 'ativo')
         .single();
 
       if (loanError || !activeLoan) {
-        throw new Error('Chromebook não encontrado ou não está emprestado');
+        throw new Error(`Chromebook ${chromebook.chromebook_id} não está emprestado.`);
       }
 
       const result = await createReturn(activeLoan.id, data);
@@ -415,9 +380,9 @@ export const useDatabase = () => {
     } finally {
       setLoading(false);
     }
-  }, [createReturn]);
+  }, [createReturn, findChromebook]);
   
-  // NOVO: Devolução em lote
+  // Devolução em lote
   const bulkReturnChromebooks = useCallback(async (chromebookIds: string[], data: ReturnFormData): Promise<{ successCount: number, errorCount: number }> => {
     if (!user) {
       toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
@@ -427,8 +392,10 @@ export const useDatabase = () => {
     setLoading(true);
     let successCount = 0;
     let errorCount = 0;
+    const returnsToInsert = [];
 
     // 1. Buscar IDs de empréstimos ativos para os Chromebooks fornecidos
+    // Nota: A view loan_history usa o chromebook_id (CHRxxx) e não o UUID (id)
     const { data: activeLoans, error: loanError } = await supabase
       .from('loan_history')
       .select('id, chromebook_id')
@@ -442,7 +409,6 @@ export const useDatabase = () => {
     }
     
     const loanMap = new Map(activeLoans.map(loan => [loan.chromebook_id, loan.id]));
-    const returnsToInsert = [];
 
     for (const chromebookId of chromebookIds) {
       const loanId = loanMap.get(chromebookId);
@@ -520,7 +486,7 @@ export const useDatabase = () => {
     }
   }, [user]);
   
-  // NOVO: Update Student
+  // Update Student
   const updateStudent = useCallback(async (id: string, data: Partial<StudentData>): Promise<boolean> => {
     if (!user) {
       toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
@@ -573,7 +539,7 @@ export const useDatabase = () => {
     }
   }, [user]);
   
-  // NOVO: Update Teacher
+  // Update Teacher
   const updateTeacher = useCallback(async (id: string, data: Partial<TeacherData>): Promise<boolean> => {
     if (!user) {
       toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
@@ -626,7 +592,7 @@ export const useDatabase = () => {
     }
   }, [user]);
   
-  // NOVO: Update Staff
+  // Update Staff
   const updateStaff = useCallback(async (id: string, data: Partial<StaffData>): Promise<boolean> => {
     if (!user) {
       toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
@@ -749,26 +715,24 @@ export const useDatabase = () => {
     // Chromebook operations
     createChromebook,
     getChromebooks,
-    updateChromebook,
-    deleteChromebook,
     // Loan operations
     createLoan,
-    bulkCreateLoans, // Exportando a nova função
+    bulkCreateLoans,
     getActiveLoans,
     getLoanHistory,
     // Return operations
     createReturn,
     returnChromebookById,
-    bulkReturnChromebooks, // Exportando a nova função
+    bulkReturnChromebooks,
     // User/Registration operations
     createStudent,
-    updateStudent, // NOVO
+    updateStudent,
     bulkInsertStudents,
     deleteAllStudents,
     createTeacher,
-    updateTeacher, // NOVO
+    updateTeacher,
     createStaff,
-    updateStaff, // NOVO
+    updateStaff,
     deleteUserRecord
   };
 };

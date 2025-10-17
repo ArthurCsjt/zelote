@@ -65,7 +65,7 @@ export function LoanHistory({ history }: LoanHistoryProps) {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 w-full"> {/* Adicionando w-full para garantir que ocupe a largura total */}
       <div className="flex items-center gap-2">
         <Clock className="h-5 w-5 text-primary" />
         <h2 className="text-xl font-semibold">Histórico de Empréstimos</h2>
@@ -142,15 +142,15 @@ export function LoanHistory({ history }: LoanHistoryProps) {
 
             return (
               <Card key={loan.id} className="hover:shadow-md transition-shadow">
-                <CardContent className="p-6">
-                  <div className="space-y-4">
+                <CardContent className="p-4 sm:p-6"> {/* Reduzindo padding */}
+                  <div className="space-y-3"> {/* Reduzindo espaçamento vertical */}
                     {/* Header */}
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-3">
-                        <User className="h-5 w-5 text-primary" />
+                        <User className="h-4 w-4 text-primary" /> {/* Ícone menor */}
                         <div>
-                          <h3 className="font-semibold text-lg">{loan.student_name}</h3>
-                          <p className="text-sm text-muted-foreground">{loan.student_email}</p>
+                          <h3 className="font-semibold text-base sm:text-lg">{loan.student_name}</h3> {/* Fonte ligeiramente menor */}
+                          <p className="text-xs text-muted-foreground">{loan.student_email}</p> {/* Fonte menor */}
                         </div>
                       </div>
                       <Badge 
@@ -162,7 +162,7 @@ export function LoanHistory({ history }: LoanHistoryProps) {
                     </div>
 
                     {/* Info badges */}
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap gap-1.5 text-xs"> {/* Reduzindo espaçamento e fonte */}
                       {loan.student_ra && (
                         <Badge variant="outline">
                           RA: {loan.student_ra}
@@ -188,21 +188,21 @@ export function LoanHistory({ history }: LoanHistoryProps) {
                     </div>
 
                     {/* Purpose */}
-                    <div className="text-sm">
+                    <div className="text-sm pt-1">
                       <span className="font-medium">Finalidade: </span>
                       <span>{loan.purpose}</span>
                     </div>
 
                     {/* Timeline */}
-                    <div className="space-y-3">
+                    <div className="space-y-2 pt-2"> {/* Reduzindo espaçamento vertical */}
                       {/* Empréstimo */}
                       <div className="bg-green-50 border border-green-200 rounded-lg p-3">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
                             <CheckCircle className="h-4 w-4 text-green-600" />
-                            <span className="font-medium text-green-800">Empréstimo realizado</span>
+                            <span className="font-medium text-sm text-green-800">Empréstimo realizado</span>
                           </div>
-                          <span className="text-sm text-green-700">
+                          <span className="text-xs text-green-700"> {/* Fonte menor */}
                             {format(new Date(loan.loan_date), "dd/MM/yyyy 'às' HH:mm")}
                           </span>
                         </div>
@@ -222,13 +222,13 @@ export function LoanHistory({ history }: LoanHistoryProps) {
                               ) : (
                                 <RotateCcw className="h-4 w-4 text-blue-600" />
                               )}
-                              <span className={`font-medium ${
+                              <span className={`font-medium text-sm ${
                                 returnedByDifferentUser ? 'text-orange-800' : 'text-blue-800'
                               }`}>
                                 Devolução realizada
                               </span>
                             </div>
-                            <span className={`text-sm ${
+                            <span className={`text-xs ${
                               returnedByDifferentUser ? 'text-orange-700' : 'text-blue-700'
                             }`}>
                               {format(new Date(loan.return_date), "dd/MM/yyyy 'às' HH:mm")}
@@ -237,7 +237,7 @@ export function LoanHistory({ history }: LoanHistoryProps) {
                           
                           {returnedByDifferentUser && loan.returned_by_name && (
                             <div className="mt-2 pt-2 border-t border-orange-200">
-                              <div className="text-sm text-orange-700">
+                              <div className="text-xs text-orange-700"> {/* Fonte menor */}
                                 <span className="font-medium">Devolvido por: </span>
                                 <span>{loan.returned_by_name}</span>
                                 {loan.returned_by_email && (
@@ -249,7 +249,7 @@ export function LoanHistory({ history }: LoanHistoryProps) {
 
                           {loan.return_notes && (
                             <div className="mt-2 pt-2 border-t border-gray-200">
-                              <div className="text-sm text-muted-foreground">
+                              <div className="text-xs text-muted-foreground"> {/* Fonte menor */}
                                 <span className="font-medium">Observações: </span>
                                 <span>{loan.return_notes}</span>
                               </div>

@@ -18,6 +18,8 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { LoanHub } from "@/components/LoanHub";
 import type { ReturnFormData, Chromebook } from "@/types/database"; // Importando Chromebook
 import { useDatabase } from "@/hooks/useDatabase";
+import { DebugPanel } from '@/components/DebugPanel'; // Importando DebugPanel (Chromebooks)
+// import { LoanDebugPanel } from '@/components/LoanDebugPanel'; // REMOVIDO
 
 const Index = () => {
   // ADIÇÃO: Chamamos os hooks de autenticação aqui, no componente "pai"
@@ -74,7 +76,12 @@ const Index = () => {
       case 'audit':
         return <AuditHub />;
       default:
-        return <MainMenu onNavigate={handleNavigation} />;
+        return (
+          <div className="space-y-8">
+            <MainMenu onNavigate={handleNavigation} />
+            {/* Painéis de Debug removidos */}
+          </div>
+        );
     }
   };
   

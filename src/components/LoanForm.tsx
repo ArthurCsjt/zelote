@@ -144,9 +144,12 @@ export function LoanForm({ onBack }: LoanFormProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Normaliza o ID do Chromebook antes da validação e uso
+    const normalizedChromebookId = normalizeChromebookId(formData.chromebookId);
+
     const dataToValidate = {
       ...formData,
-      chromebookId: normalizeChromebookId(formData.chromebookId),
+      chromebookId: normalizedChromebookId,
     };
     
     const validation = validateLoanFormData(dataToValidate);
@@ -174,7 +177,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
         studentName: formData.studentName,
         ra: formData.ra || '',
         email: formData.email,
-        chromebookId: deviceId,
+        chromebookId: deviceId, // IDs em batchDevices já estão normalizados pelo BatchDeviceInput
         purpose: formData.purpose,
         userType: formData.userType,
         loanType: formData.loanType,
@@ -211,7 +214,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
         studentName: dataToValidate.studentName,
         ra: dataToValidate.ra || '',
         email: dataToValidate.email,
-        chromebookId: dataToValidate.chromebookId,
+        chromebookId: normalizedChromebookId, // Usando o ID normalizado
         purpose: dataToValidate.purpose,
         userType: dataToValidate.userType,
         loanType: dataToValidate.loanType,
@@ -291,6 +294,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
                           handleValidateIndividualId();
                         }
                       }}
+                      required // Adicionado required
                     />
                     <Button 
                       type="button" 
@@ -346,7 +350,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
             {/* Campo de finalidade do empréstimo (sempre visível) */}
             <div className="space-y-2 pt-2">
               <Label htmlFor="purpose" className="text-gray-700">
-                Finalidade
+                Finalidade *
               </Label>
               <Input
                 id="purpose"
@@ -356,6 +360,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
                   setFormData({ ...formData, purpose: e.target.value })
                 }
                 className="border-gray-200 bg-white"
+                required // Adicionado required
               />
             </div>
           </GlassCard>

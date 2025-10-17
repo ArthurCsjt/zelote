@@ -1,0 +1,1 @@
+// Arquivo removido, pois o componente ChromebookInventory foi revertido para usar useState/useEffect.

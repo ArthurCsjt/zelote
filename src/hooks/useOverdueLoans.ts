@@ -63,6 +63,10 @@ export function useOverdueLoans() {
 
   const checkAndNotifyOverdue = useCallback(async () => {
     setLoading(true);
+    // Garantir que quaisquer toasts antigos sejam dispensados antes de carregar novos dados
+    dismiss(OVERDUE_TOAST_ID);
+    dismiss(UPCOMING_TOAST_ID);
+    
     await fetchOverdueLoans();
     await fetchUpcomingDueLoans();
     setLoading(false);
@@ -76,46 +80,15 @@ export function useOverdueLoans() {
       checkAndNotifyOverdue();
     }, 30 * 60 * 1000); // 30 minutos
 
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      // Limpar toasts ao desmontar ou ao parar o intervalo
+      dismiss(OVERDUE_TOAST_ID);
+      dismiss(UPCOMING_TOAST_ID);
+    };
   }, [checkAndNotifyOverdue]);
 
-  // Mostrar notificações quando houver atrasos (Usando IDs fixos para atualização)
-  useEffect(() => {
-    const overdueCount = overdueLoans.length;
-    const upcomingCount = upcomingDueLoans.length;
-    
-    const pluralize = (count: number, singular: string, plural: string) => 
-      count === 1 ? singular : plural;
-
-    if (overdueCount > 0) {
-      const loanPlural = pluralize(overdueCount, 'Empréstimo', 'Empréstimos');
-      const verbPlural = pluralize(overdueCount, 'passou', 'passaram');
-      
-      toast({
-        id: OVERDUE_TOAST_ID,
-        title: `⚠️ ${overdueCount} ${loanPlural} em Atraso`,
-        description: `Há ${loanPlural.toLowerCase()} que ${verbPlural} do prazo de devolução.`,
-        variant: "destructive",
-        duration: Infinity, // Manter visível até ser resolvido/dispensado
-      });
-    } else {
-      dismiss(OVERDUE_TOAST_ID);
-    }
-
-    if (upcomingCount > 0) {
-      const loanPlural = pluralize(upcomingCount, 'Empréstimo', 'Empréstimos');
-      const verbPlural = pluralize(upcomingCount, 'próximo', 'próximos');
-      
-      toast({
-        id: UPCOMING_TOAST_ID,
-        title: `📅 ${upcomingCount} ${loanPlural} Vencendo`,
-        description: `Há ${loanPlural.toLowerCase()} com prazo ${verbPlural} ao vencimento.`,
-        duration: Infinity, // Manter visível
-      });
-    } else {
-      dismiss(UPCOMING_TOAST_ID);
-    }
-  }, [overdueLoans.length, upcomingDueLoans.length]);
+  // REMOVIDO: useEffect que disparava os toasts
 
   return {
     overdueLoans,

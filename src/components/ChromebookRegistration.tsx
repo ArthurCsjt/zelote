@@ -6,7 +6,6 @@ import { Textarea } from "./ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Checkbox } from "./ui/checkbox";
 import { Laptop, Factory, Tag, Hash, MapPin, AlertTriangle, Loader2, CheckCircle } from "lucide-react";
-import { useDatabase } from '@/contexts/DatabaseContext';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "./ui/card";
 import {
   Select,
@@ -16,8 +15,9 @@ import {
   SelectValue,
 } from "./ui/select";
 import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
-import { GlassCard } from "./ui/GlassCard"; // Importando GlassCard
-import type { Chromebook } from "@/types/database"; // Importando Chromebook
+import { GlassCard } from "./ui/GlassCard";
+import type { Chromebook } from "@/types/database";
+import { useDatabase } from '@/hooks/useDatabase'; // Importando useDatabase
 
 interface FormData {
   manufacturer: string;
@@ -32,7 +32,7 @@ interface FormData {
 }
 
 export function ChromebookRegistration({ onRegistrationSuccess }: { onRegistrationSuccess: (newChromebook: Chromebook) => void }) {
-  const { createChromebook, loading } = useDatabase();
+  const { createChromebook, loading } = useDatabase(); // Usando useDatabase
   const { toast } = useToast();
   
   const [formData, setFormData] = useState<FormData>({
@@ -57,7 +57,7 @@ export function ChromebookRegistration({ onRegistrationSuccess }: { onRegistrati
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Patrimônio não é mais obrigatório, mas Fabricante, Modelo e Série continuam
+    
     if (!formData.manufacturer || !formData.model || !formData.series) {
       toast({ title: "Erro de Validação", description: "Preencha os campos Fabricante, Modelo e Série.", variant: "destructive" });
       return;
@@ -68,25 +68,29 @@ export function ChromebookRegistration({ onRegistrationSuccess }: { onRegistrati
     const chromebookData = {
       model: formData.model, 
       serialNumber: formData.series,
-      patrimonyNumber: formData.patrimonyNumber || null, // Patrimônio opcional
+      patrimonyNumber: formData.patrimonyNumber || undefined,
       manufacturer: formData.manufacturer,
       condition: formData.observations || 'novo', 
-      location: formData.isFixedInClassroom ? formData.classroomLocation : null,
-      // Se for fixo, status é 'fixo'. Se for desprovisionado, status é 'fora_uso'. Caso contrário, 'disponivel'.
+      location: formData.isFixedInClassroom ? formData.classroomLocation : undefined,
       status: formData.isFixedInClassroom ? 'fixo' as const : (isDeprovisioned ? 'fora_uso' as const : 'disponivel' as const),
-      is_deprovisioned: isDeprovisioned, // Novo campo booleano (se existir no DB)
-      classroom: formData.isFixedInClassroom ? formData.classroomLocation : null,
+      is_deprovisioned: isDeprovisioned,
+      classroom: formData.isFixedInClassroom ? formData.classroomLocation : undefined,
     };
     
-    const result = await createChromebook(chromebookData);
-    
-    if (result) {
-      toast({ title: "Sucesso!", description: `Chromebook ${result.chromebook_id} cadastrado. Você foi redirecionado para o Inventário.` });
-      resetForm();
-      // Chamamos o handler para navegar para o inventário
-      onRegistrationSuccess(result);
+    try {
+      const result = await createChromebook(chromebookData as any);
+      
+      if (result) {
+        toast({ title: "Sucesso", description: `Chromebook ${result.chromebook_id} cadastrado!` });
+        resetForm();
+        onRegistrationSuccess(result);
+      } else {
+        // O erro já é toastado dentro do useDatabase, mas garantimos um fallback
+        toast({ title: "Erro", description: "Falha ao cadastrar Chromebook.", variant: "destructive" });
+      }
+    } catch (error) {
+      // Erro já tratado no useDatabase
     }
-    // O erro é tratado dentro do useDatabase
   };
 
   const isFormValid = formData.manufacturer && formData.model && formData.series;
