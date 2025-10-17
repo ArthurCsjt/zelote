@@ -65,6 +65,12 @@ export function ChromebookRegistration({ onRegistrationSuccess }: { onRegistrati
     
     const isDeprovisioned = formData.provisioning_status === 'deprovisioned';
     
+    // Lógica de Status:
+    // 1. Se for fixo, status é 'fixo'.
+    // 2. Caso contrário, o status inicial é 'disponivel'.
+    // O campo is_deprovisioned é salvo separadamente.
+    const initialStatus = formData.isFixedInClassroom ? 'fixo' as const : 'disponivel' as const;
+    
     const chromebookData = {
       model: formData.model, 
       serialNumber: formData.series,
@@ -72,8 +78,8 @@ export function ChromebookRegistration({ onRegistrationSuccess }: { onRegistrati
       manufacturer: formData.manufacturer,
       condition: formData.observations || 'novo', 
       location: formData.isFixedInClassroom ? formData.classroomLocation : undefined,
-      status: formData.isFixedInClassroom ? 'fixo' as const : (isDeprovisioned ? 'fora_uso' as const : 'disponivel' as const),
-      is_deprovisioned: isDeprovisioned,
+      status: initialStatus, // Usando a lógica corrigida
+      is_deprovisioned: isDeprovisioned, // Salvando o metadado
       classroom: formData.isFixedInClassroom ? formData.classroomLocation : undefined,
     };
     
