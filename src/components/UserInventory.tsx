@@ -163,10 +163,15 @@ export function UserInventory() {
     });
     
     // Resetar página para 1 se o filtro mudar
-    setCurrentPage(1);
-
+    // NOTE: Removendo a chamada de setCurrentPage aqui para evitar loop infinito no useMemo
+    // A paginação será resetada no useEffect que monitora os filtros, se necessário.
     return filtered;
   }, [users, searchTerm, typeFilter, classFilter]);
+  
+  // Efeito para resetar a página quando os filtros mudam
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, typeFilter, classFilter]);
   
   // Lógica de Paginação
   const totalItems = filteredUsers.length;
@@ -314,54 +319,60 @@ export function UserInventory() {
         </GlassCard>
       </div>
 
-      {/* Search and filters */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-          <Input
-            placeholder="Buscar por nome, email, RA ou turma..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-        
-        <div className="relative">
-          <Filter className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-          <Select value={typeFilter} onValueChange={setTypeFilter}>
-            <SelectTrigger className="w-[180px] pl-10">
-              <SelectValue placeholder="Tipo de usuário" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos</SelectItem>
-              <SelectItem value="Aluno">Alunos</SelectItem>
-              <SelectItem value="Professor">Professores</SelectItem>
-              <SelectItem value="Funcionário">Funcionários</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        {typeFilter === 'Aluno' && (
-          <div className="relative">
+      {/* Search and filters - AGRUPADO EM GLASS CARD */}
+      <GlassCard className="space-y-4 p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row gap-4 items-center">
+          {/* Busca */}
+          <div className="relative flex-1 w-full">
+            <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+            <Input
+              placeholder="Buscar por nome, email, RA ou turma..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 h-10"
+            />
+          </div>
+          
+          {/* Filtro de Tipo */}
+          <div className="relative w-full sm:w-auto flex-shrink-0">
             <Filter className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-            <Select value={classFilter} onValueChange={setClassFilter}>
-              <SelectTrigger className="w-[180px] pl-10">
-                <SelectValue placeholder="Filtrar por turma" />
+            <Select value={typeFilter} onValueChange={setTypeFilter}>
+              <SelectTrigger className="w-full pl-10 h-10">
+                <SelectValue placeholder="Tipo de usuário" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Todas as Turmas</SelectItem>
-                {availableClasses.map(turma => (
-                  <SelectItem key={turma} value={turma}>{turma}</SelectItem>
-                ))}
+                <SelectItem value="all">Todos</SelectItem>
+                <SelectItem value="Aluno">Alunos</SelectItem>
+                <SelectItem value="Professor">Professores</SelectItem>
+                <SelectItem value="Funcionário">Funcionários</SelectItem>
               </SelectContent>
             </Select>
           </div>
-        )}
-        
-        <div className="text-sm text-gray-500 flex items-center">
-          Resultados: {totalItems}
+
+          {/* Filtro de Turma (apenas para Aluno) */}
+          {typeFilter === 'Aluno' && (
+            <div className="relative w-full sm:w-auto flex-shrink-0">
+              <Filter className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+              <Select value={classFilter} onValueChange={setClassFilter}>
+                <SelectTrigger className="w-full pl-10 h-10">
+                  <SelectValue placeholder="Filtrar por turma" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas as Turmas</SelectItem>
+                  {availableClasses.map(turma => (
+                    <SelectItem key={turma} value={turma}>{turma}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+          
+          {/* Resultados */}
+          <div className="text-sm text-gray-500 flex items-center w-full sm:w-auto justify-end sm:justify-start">
+            Resultados: {totalItems}
+          </div>
         </div>
-      </div>
+      </GlassCard>
 
       {/* Users table */}
       <GlassCard>
