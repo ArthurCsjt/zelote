@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, QrCode, Plus, CheckCircle, AlertCircle, Monitor, Factory, Hash, Clock, ListChecks } from 'lucide-react';
+import { Loader2, QrCode, Plus, CheckCircle, AlertCircle, Monitor, Factory, Hash, Clock, ListChecks, ClipboardCheck } from 'lucide-react';
 import { QRCodeReader } from '@/components/QRCodeReader';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { useSmartRegistration, RegisteredItem } from '@/hooks/useSmartRegistration';
