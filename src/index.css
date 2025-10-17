@@ -137,14 +137,6 @@
   padding-top: env(safe-area-inset-top);
 }
 
-/* ... (resto do seu CSS) ... */
-
-.stat-card-gradient-green {
-  background: linear-gradient(135deg, #bbf7d0 0%, #dcfce7 100%);
-  border: none;
-}
-
-
 /* ======================================================================== */
 /* ADIÇÃO: Estilos para corrigir o enquadramento do QR Scanner (`html5-qrcode`)  */
 /* ======================================================================== */
@@ -176,4 +168,46 @@
    Este CSS ajuda a garantir que ela não fique com bordas estranhas. */
 #qr-code-reader__scan_region {
   border-radius: 8px;
+}
+
+/* ======================================================================== */
+/* ADIÇÃO: Estilos para o botão de fechar do Sonner (Toaster) */
+/* ======================================================================== */
+
+/* Estiliza o botão de fechar (X) do Sonner */
+.sonner-toast-button {
+  /* Garante que o botão seja um círculo pequeno e visível */
+  width: 24px !important;
+  height: 24px !important;
+  min-width: 24px !important;
+  min-height: 24px !important;
+  padding: 0 !important;
+  border-radius: 50% !important;
+  
+  /* Cor de fundo e cor do ícone */
+  background-color: rgba(0, 0, 0, 0.1) !important; /* Fundo levemente escuro */
+  color: #6b7280 !important; /* Ícone cinza */
+  
+  /* Posição */
+  top: 8px !important;
+  right: 8px !important;
+  
+  /* Transição para o hover */
+  transition: all 0.2s ease-in-out !important;
+}
+
+/* Estilo de hover para o botão de fechar */
+.sonner-toast-button:hover {
+  background-color: rgba(0, 0, 0, 0.2) !important; /* Fundo mais escuro no hover */
+  color: #1f2937 !important; /* Ícone mais escuro no hover */
+}
+
+/* Ajuste para o modo destrutivo (vermelho) */
+.sonner-toast[data-styled-variant="destructive"] .sonner-toast-button {
+  background-color: rgba(255, 255, 255, 0.2) !important; /* Fundo branco transparente no toast vermelho */
+  color: white !important;
+}
+
+.sonner-toast[data-styled-variant="destructive"] .sonner-toast-button:hover {
+  background-color: rgba(255, 255, 255, 0.3) !important;
 }
