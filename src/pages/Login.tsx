@@ -68,10 +68,7 @@ const Login = () => {
 
     const result = await login(loginEmail, loginPassword);
     if (result.success) {
-      toast({
-        title: "Login bem-sucedido",
-        description: "Bem-vindo ao sistema!"
-      });
+      // REMOVIDO: toast({ title: "Login bem-sucedido", description: "Bem-vindo ao sistema!" });
       navigate("/");
     } else {
       toast({
