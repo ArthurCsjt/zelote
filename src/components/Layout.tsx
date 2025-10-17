@@ -1,12 +1,11 @@
 import React from 'react';
 import { User, LogOut, ArrowLeft, Bell, Settings as SettingsIcon } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/hooks/use-theme';
 import { useNavigate } from 'react-router-dom';
-import { useProfileRole } from '@/hooks/use-profile-role';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { ActivityFeed } from './ActivityFeed'; // Importando o novo componente
+import type { User as SupabaseUser } from '@supabase/supabase-js'; // Importando o tipo User
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -14,28 +13,31 @@ interface LayoutProps {
   subtitle?: string;
   showBackButton?: boolean;
   onBack?: () => void;
+  // Props de autenticação passadas pelo Index.tsx
+  user: SupabaseUser | null;
+  isAdmin: boolean;
+  logout: () => Promise<void>;
 }
 const Layout: React.FC<LayoutProps> = ({
   children,
   title,
   subtitle,
   showBackButton,
-  onBack
+  onBack,
+  user,
+  isAdmin,
+  logout,
 }) => {
-  const {
-    user,
-    logout
-  } = useAuth();
+  // Hooks necessários para o Layout
   const {
     theme,
     setTheme
   } = useTheme();
   const navigate = useNavigate();
-  const {
-    isAdmin
-  } = useProfileRole();
+  
   const [showInstallBanner, setShowInstallBanner] = React.useState(false);
   const [isStandalone, setIsStandalone] = React.useState(false);
+  
   React.useEffect(() => {
     // Check if app is running in standalone mode
     const checkStandalone = () => {

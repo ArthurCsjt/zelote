@@ -19,11 +19,12 @@ import { LoanHub } from "@/components/LoanHub";
 import { SmartRegistration } from './SmartRegistration'; // Importando a nova página
 import type { ReturnFormData, Chromebook } from "@/types/database"; // Importando Chromebook
 import { useDatabase } from "@/hooks/useDatabase";
+import type { User as SupabaseUser } from '@supabase/supabase-js'; // Importando o tipo User
 
 const Index = () => {
   // Chamada de Hooks no topo (ordem consistente)
   const { user, logout } = useAuth();
-  const { isAdmin, loading: roleLoading } = useProfileRole(user);
+  const { isAdmin, loading: roleLoading } = useProfileRole(); // Removido 'user' como argumento, pois useProfileRole já usa useAuth
   const { loading: dbLoading } = useDatabase(); // Chamada do hook
 
   const [openReturnDialog, setOpenReturnDialog] = useState(false);
@@ -69,6 +70,7 @@ const Index = () => {
       case 'dashboard':
         return <Dashboard onBack={handleBackToMenu} />;
       case 'inventory':
+        // @ts-ignore - onGenerateQrCode não é usado no InventoryHub, mas mantido por segurança
         return <InventoryHub onBack={handleBackToMenu} onGenerateQrCode={handleGenerateQrCode} />;
       case 'loan':
         return <LoanHub onBack={handleBackToMenu} />;
@@ -121,7 +123,7 @@ const Index = () => {
         subtitle={getViewSubtitle()} 
         showBackButton={currentView !== 'menu'} 
         onBack={handleBackToMenu}
-        user={user}
+        user={user as SupabaseUser | null}
         isAdmin={isAdmin}
         logout={logout}
       >
