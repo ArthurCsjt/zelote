@@ -1,14 +1,18 @@
 import { useState, useMemo } from "react";
-import { format } from "date-fns";
+import { format, isWithinInterval, startOfDay, endOfDay } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import { Badge } from "./ui/badge";
 import { Card, CardContent } from "./ui/card";
-import { Clock, Monitor, User, CheckCircle, AlertTriangle, Search, Filter, X, RotateCcw, ChevronLeft, ChevronRight } from "lucide-react";
+import { Clock, Monitor, User, CheckCircle, AlertTriangle, Search, Filter, X, RotateCcw, ChevronLeft, ChevronRight, Calendar } from "lucide-react";
 import type { LoanHistoryItem } from "@/types/database";
 import { Input } from "./ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { Button } from "./ui/button";
-import { GlassCard } from "./ui/GlassCard"; // Importando GlassCard
-import { Pagination, PaginationContent, PaginationItem, PaginationLink } from "./ui/pagination"; // Importando componentes de paginação
+import { GlassCard } from "./ui/GlassCard";
+import { Pagination, PaginationContent, PaginationItem, PaginationLink } from "./ui/pagination";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import { Calendar as CalendarComponent } from "./ui/calendar";
+import { cn } from "@/lib/utils";
 
 interface LoanHistoryProps {
   history: LoanHistoryItem[];
@@ -18,6 +22,7 @@ export function LoanHistory({ history }: LoanHistoryProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [userTypeFilter, setUserTypeFilter] = useState<string>("all");
+  const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date }>({});
   
   // Estados de Paginação
   const [currentPage, setCurrentPage] = useState(1);
@@ -47,6 +52,16 @@ export function LoanHistory({ history }: LoanHistoryProps) {
     if (userTypeFilter !== "all") {
       filtered = filtered.filter(loan => loan.user_type === userTypeFilter);
     }
+    
+    // 4. Filtrar por intervalo de datas (loan_date)
+    if (dateRange.from) {
+      const start = startOfDay(dateRange.from);
+      const end = dateRange.to ? endOfDay(dateRange.to) : endOfDay(new Date());
+      
+      filtered = filtered.filter(loan => 
+        isWithinInterval(new Date(loan.loan_date), { start, end })
+      );
+    }
 
     // Resetar página para 1 se o filtro mudar
     if (currentPage !== 1 && filtered.length > 0) {
@@ -54,7 +69,7 @@ export function LoanHistory({ history }: LoanHistoryProps) {
     }
 
     return filtered;
-  }, [history, searchTerm, statusFilter, userTypeFilter]);
+  }, [history, searchTerm, statusFilter, userTypeFilter, dateRange]);
   
   // Lógica de Paginação
   const totalItems = filteredHistory.length;
@@ -69,6 +84,7 @@ export function LoanHistory({ history }: LoanHistoryProps) {
     setSearchTerm("");
     setStatusFilter("all");
     setUserTypeFilter("all");
+    setDateRange({});
     setCurrentPage(1);
   };
 
@@ -111,9 +127,10 @@ export function LoanHistory({ history }: LoanHistoryProps) {
     return buttons;
   };
 
+  const isFilterActive = searchTerm || statusFilter !== 'all' || userTypeFilter !== 'all' || dateRange.from;
 
   return (
-    <div className="space-y-6 w-full"> {/* Adicionando w-full para garantir que ocupe a largura total */}
+    <div className="space-y-6 w-full">
       <div className="flex items-center gap-2">
         <Clock className="h-5 w-5 text-primary" />
         <h2 className="text-xl font-semibold">Histórico de Empréstimos</h2>
@@ -160,8 +177,46 @@ export function LoanHistory({ history }: LoanHistoryProps) {
             </SelectContent>
           </Select>
           
+          {/* Filtro de Data */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant={"outline"}
+                className={cn(
+                  "w-full sm:w-[200px] justify-start text-left font-normal",
+                  !dateRange.from && "text-muted-foreground"
+                )}
+              >
+                <Calendar className="mr-2 h-4 w-4" />
+                {dateRange.from ? (
+                  dateRange.to ? (
+                    <>
+                      {format(dateRange.from, "dd/MM/yyyy")} -{" "}
+                      {format(dateRange.to, "dd/MM/yyyy")}
+                    </>
+                  ) : (
+                    format(dateRange.from, "dd/MM/yyyy")
+                  )
+                ) : (
+                  <span>Filtrar por Data</span>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="end">
+              <CalendarComponent
+                initialFocus
+                mode="range"
+                defaultMonth={dateRange.from}
+                selected={dateRange}
+                onSelect={setDateRange}
+                numberOfMonths={2}
+                locale={ptBR}
+              />
+            </PopoverContent>
+          </Popover>
+          
           {/* Botão Limpar */}
-          {(searchTerm || statusFilter !== 'all' || userTypeFilter !== 'all') && (
+          {isFilterActive && (
             <Button variant="outline" size="icon" onClick={clearFilters} title="Limpar Filtros">
               <X className="h-4 w-4" />
             </Button>
