@@ -274,7 +274,7 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
 
       if (error) throw error;
       
-      toast({ title: "Sucesso", description: "Chromebook atualizado com sucesso" });
+      toast({ title: "Sucesso", description: "Chromebook atualizado com sucesso", variant: "success" });
       setIsEditDialogOpen(false);
       setEditingChromebook(null);
       fetchChromebooks();
@@ -301,7 +301,7 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
 
       if (error) throw error;
       
-      toast({ title: "Sucesso", description: "Chromebook excluído com sucesso" });
+      toast({ title: "Sucesso", description: "Chromebook excluído com sucesso", variant: "success" });
       setIsDeleteDialogOpen(false);
       setChromebookToDelete(null);
       fetchChromebooks();

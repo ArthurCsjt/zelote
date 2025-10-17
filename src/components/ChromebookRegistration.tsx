@@ -87,7 +87,7 @@ export function ChromebookRegistration({ onRegistrationSuccess }: { onRegistrati
       const result = await createChromebook(chromebookData as any);
       
       if (result) {
-        toast({ title: "Sucesso", description: `Chromebook ${result.chromebook_id} cadastrado!` });
+        toast({ title: "Sucesso", description: `Chromebook ${result.chromebook_id} cadastrado!`, variant: "success" });
         resetForm();
         onRegistrationSuccess(result);
       } else {

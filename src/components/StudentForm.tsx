@@ -77,7 +77,8 @@ export function StudentForm() {
       if (result) {
         toast({
           title: "Sucesso!",
-          description: "Aluno cadastrado com sucesso."
+          description: "Aluno cadastrado com sucesso.",
+          variant: "success",
         });
 
         // Reset form

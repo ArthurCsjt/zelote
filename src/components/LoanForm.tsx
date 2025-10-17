@@ -88,6 +88,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
         toast({
           title: "QR Code lido com sucesso",
           description: `ID do Chromebook: ${sanitizedId}`,
+          variant: "success",
         });
       } else {
         // Lógica de lote movida para BatchDeviceInput, mas mantemos a compatibilidade aqui
@@ -96,6 +97,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
           toast({
             title: "Dispositivo adicionado ao lote",
             description: `ID do Chromebook: ${sanitizedId}`,
+            variant: "success",
           });
         } else {
           toast({
@@ -129,6 +131,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
     toast({
       title: "ID Verificado",
       description: `ID normalizado: ${normalizedId}. Pronto para empréstimo.`,
+      variant: "info",
     });
   };
 
@@ -191,6 +194,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
         toast({
           title: "Sucesso",
           description: `${successCount} Chromebooks emprestados com sucesso. ${errorCount > 0 ? `(${errorCount} falha(s))` : ''}`,
+          variant: "success",
         });
       } else if (errorCount > 0) {
         toast({
@@ -228,6 +232,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
         toast({
           title: "Sucesso",
           description: "Chromebook emprestado com sucesso",
+          variant: "success",
         });
       }
     }

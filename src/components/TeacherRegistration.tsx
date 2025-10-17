@@ -77,7 +77,8 @@ export function TeacherRegistration() {
       if (result) {
         toast({
           title: "Sucesso!",
-          description: "Professor cadastrado com sucesso."
+          description: "Professor cadastrado com sucesso.",
+          variant: "success",
         });
 
         // Reset form

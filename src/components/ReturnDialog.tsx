@@ -107,6 +107,7 @@ export function ReturnDialog({
       toast({
         title: "QR Code lido com sucesso",
         description: `ID do Chromebook: ${sanitizedId}`,
+        variant: "success",
       });
     }
     // Fecha o scanner após processar
@@ -133,6 +134,7 @@ export function ReturnDialog({
     toast({
       title: "ID Verificado",
       description: `ID normalizado: ${normalizedId}. Pronto para devolução.`,
+      variant: "info",
     });
   };
 

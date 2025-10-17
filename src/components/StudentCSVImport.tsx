@@ -161,6 +161,7 @@ export function StudentCSVImport() {
         toast({
           title: "Sucesso!",
           description: `${validStudents.length} alunos importados com sucesso.`,
+          variant: "success",
         });
         
         // Reset state

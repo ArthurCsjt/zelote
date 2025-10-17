@@ -190,7 +190,7 @@ export const useInventoryAudit = () => {
       setActiveAudit(data as InventoryAudit);
       setCountedItems([]);
       setFilteredItems([]);
-      toast({ title: 'Contagem iniciada!', description: `A auditoria "${name}" começou.` });
+      toast({ title: 'Contagem iniciada!', description: `A auditoria "${name}" começou.`, variant: "success" });
     } catch (e: any) {
       toast({ title: 'Erro ao iniciar contagem', description: e.message, variant: 'destructive' });
     } finally {
@@ -268,7 +268,7 @@ export const useInventoryAudit = () => {
       } as DisplayCountedItem;
 
       setCountedItems(prev => [display, ...prev]);
-      toast({ title: 'Item contado!', description: `ID: ${chromebook.chromebook_id} - ${chromebook.model}`, duration: 2000 });
+      toast({ title: 'Item contado!', description: `ID: ${chromebook.chromebook_id} - ${chromebook.model}`, duration: 2000, variant: "success" });
     } catch (e: any) {
       toast({ title: 'Erro ao contar item', description: e.message, variant: 'destructive' });
     } finally {
@@ -284,7 +284,7 @@ export const useInventoryAudit = () => {
       const { error } = await supabase.from<any>('audit_items').delete().eq('id', itemId);
       if (error) throw error;
       setCountedItems(prev => prev.filter(i => i.id !== itemId));
-      toast({ title: 'Item removido', description: 'Item removido da contagem.' });
+      toast({ title: 'Item removido', description: 'Item removido da contagem.', variant: "info" });
     } catch (e: any) {
       toast({ title: 'Erro ao remover item', description: e.message, variant: 'destructive' });
     } finally {
@@ -299,7 +299,7 @@ export const useInventoryAudit = () => {
       const { error } = await supabase.from<any>('audit_items').update({ location_found: newLocation }).eq('id', itemId);
       if (error) throw error;
       setCountedItems(prev => prev.map(i => (i.id === itemId ? { ...i, location_found: newLocation } as DisplayCountedItem : i)));
-      toast({ title: 'Localização atualizada' });
+      toast({ title: 'Localização atualizada', variant: "success" });
     } catch (e: any) {
       toast({ title: 'Erro ao atualizar localização', description: e.message, variant: 'destructive' });
     }
@@ -321,7 +321,7 @@ export const useInventoryAudit = () => {
         })
         .eq('id', activeAudit.id);
       if (error) throw error;
-      toast({ title: 'Contagem finalizada!', description: `Auditoria concluída com ${report.summary.totalCounted} itens (${report.summary.completionRate} de conclusão).` });
+      toast({ title: 'Contagem finalizada!', description: `Auditoria concluída com ${report.summary.totalCounted} itens (${report.summary.completionRate} de conclusão).`, variant: "success" });
       setActiveAudit(null);
       setCountedItems([]);
       setFilteredItems([]);
@@ -350,7 +350,7 @@ export const useInventoryAudit = () => {
       setCompletedAudits(prev => prev.filter(a => a.id !== auditId));
       // Recarrega dados para garantir consistência
       await reloadAudits();
-      toast({ title: 'Auditoria excluída', description: 'A auditoria foi removida com sucesso.' });
+      toast({ title: 'Auditoria excluída', description: 'A auditoria foi removida com sucesso.', variant: "info" });
     } catch (e: any) {
       toast({ title: 'Erro ao excluir auditoria', description: e.message, variant: 'destructive' });
     } finally {

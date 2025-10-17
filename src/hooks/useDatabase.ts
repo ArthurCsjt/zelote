@@ -201,7 +201,8 @@ export const useDatabase = () => {
       
       toast({ 
         title: "Empréstimo registrado", 
-        description: `Chromebook ${chromebook.chromebook_id} emprestado para ${data.studentName}` 
+        description: `Chromebook ${chromebook.chromebook_id} emprestado para ${data.studentName}`,
+        variant: "success"
       });
       return result;
     } catch (error: any) {
@@ -384,7 +385,8 @@ export const useDatabase = () => {
       
       toast({ 
         title: "Chromebook devolvido", 
-        description: `Devolvido por ${data.name}` 
+        description: `Devolvido por ${data.name}`,
+        variant: "success"
       });
       return result;
     } catch (error: any) {
@@ -546,7 +548,7 @@ export const useDatabase = () => {
         .eq('id', id);
 
       if (error) throw error;
-      toast({ title: "Sucesso", description: "Aluno atualizado com sucesso" });
+      toast({ title: "Sucesso", description: "Aluno atualizado com sucesso", variant: "success" });
       return true;
     } catch (error: any) {
       toast({ title: "Erro", description: error.message, variant: "destructive" });
@@ -599,7 +601,7 @@ export const useDatabase = () => {
         .eq('id', id);
 
       if (error) throw error;
-      toast({ title: "Sucesso", description: "Professor atualizado com sucesso" });
+      toast({ title: "Sucesso", description: "Professor atualizado com sucesso", variant: "success" });
       return true;
     } catch (error: any) {
       toast({ title: "Erro", description: error.message, variant: "destructive" });
@@ -652,7 +654,7 @@ export const useDatabase = () => {
         .eq('id', id);
 
       if (error) throw error;
-      toast({ title: "Sucesso", description: "Funcionário atualizado com sucesso" });
+      toast({ title: "Sucesso", description: "Funcionário atualizado com sucesso", variant: "success" });
       return true;
     } catch (error: any) {
       toast({ title: "Erro", description: error.message, variant: "destructive" });
@@ -704,7 +706,8 @@ export const useDatabase = () => {
       
       toast({ 
         title: "Sucesso", 
-        description: "Todos os alunos foram excluídos com sucesso." 
+        description: "Todos os alunos foram excluídos com sucesso.",
+        variant: "success"
       });
       return true;
     } catch (error: any) {
@@ -740,7 +743,7 @@ export const useDatabase = () => {
 
       if (error) throw error;
       
-      toast({ title: "Sucesso", description: `${userType.charAt(0).toUpperCase() + userType.slice(1)} excluído com sucesso.` });
+      toast({ title: "Sucesso", description: `${userType.charAt(0).toUpperCase() + userType.slice(1)} excluído com sucesso.`, variant: "success" });
       return true;
     } catch (error: any) {
       console.error(`Erro ao excluir ${userType}:`, error);
