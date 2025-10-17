@@ -16,6 +16,7 @@ import { Dashboard } from "@/components/Dashboard";
 import { QRCodeModal } from "@/components/QRCodeModal";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { LoanHub } from "@/components/LoanHub";
+import { SmartRegistration } from './SmartRegistration'; // Importando a nova página
 import type { ReturnFormData, Chromebook } from "@/types/database"; // Importando Chromebook
 import { useDatabase } from "@/hooks/useDatabase";
 
@@ -28,13 +29,13 @@ const Index = () => {
   const [openReturnDialog, setOpenReturnDialog] = useState(false);
   const [chromebookId, setChromebookId] = useState("");
   const [returnData, setReturnData] = useState<ReturnFormData>({ name: "", ra: "", email: "", type: 'individual', userType: 'aluno' });
-  const [currentView, setCurrentView] = useState<'menu' | 'registration' | 'dashboard' | 'inventory' | 'loan' | 'audit'>('menu');
+  const [currentView, setCurrentView] = useState<'menu' | 'registration' | 'dashboard' | 'inventory' | 'loan' | 'audit' | 'smart-reg'>('menu'); // Adicionado 'smart-reg'
   // Removendo estados relacionados ao modal de QR Code após cadastro
   const [showQRCodeModal, setShowQRCodeModal] = useState(false);
   const [selectedChromebookId, setSelectedChromebookId] = useState<string | null>(null);
   const [newChromebookData, setNewChromebookData] = useState<Chromebook | undefined>(undefined);
 
-  const handleNavigation = (route: 'registration' | 'dashboard' | 'inventory' | 'loan' | 'return' | 'audit') => {
+  const handleNavigation = (route: 'registration' | 'dashboard' | 'inventory' | 'loan' | 'return' | 'audit' | 'smart-reg') => {
     if (route === 'return') {
       setOpenReturnDialog(true);
       return;
@@ -73,6 +74,8 @@ const Index = () => {
         return <LoanHub onBack={handleBackToMenu} />;
       case 'audit':
         return <AuditHub />;
+      case 'smart-reg': // NOVO: Rota para Cadastro Inteligente
+        return <SmartRegistration onBack={handleBackToMenu} />;
       default:
         return (
           <div className="space-y-8">
@@ -90,6 +93,7 @@ const Index = () => {
       case 'inventory': return 'Hub de Inventário';
       case 'loan': return 'Empréstimos';
       case 'audit': return 'Sistema de Contagem';
+      case 'smart-reg': return 'Cadastro Inteligente';
       default: return 'Zelote';
     }
   };
@@ -101,6 +105,7 @@ const Index = () => {
       case 'inventory': return 'Gerencie equipamentos e usuários';
       case 'loan': return 'Registre novos empréstimos e devoluções';
       case 'audit': return 'Realize auditorias de inventário';
+      case 'smart-reg': return 'Reconstrução de inventário via QR Code';
       default: return 'Controle de Chromebooks';
     }
   };

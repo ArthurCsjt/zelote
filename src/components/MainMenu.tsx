@@ -2,11 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 // ALTERAÇÃO 1: Adicionado o ícone 'ListChecks' para o novo botão
-import { ClipboardList, BarChart3, PlusCircle, Laptop, RotateCcw, Brain, ListChecks } from 'lucide-react';
+import { ClipboardList, BarChart3, PlusCircle, Laptop, RotateCcw, Brain, ListChecks, QrCode } from 'lucide-react'; // Adicionado QrCode
 
 interface MainMenuProps {
-  // ALTERAÇÃO 2: Removida a rota 'intelligent-reports'
-  onNavigate: (route: 'registration' | 'dashboard' | 'loan' | 'return' | 'inventory' | 'audit') => void;
+  // ALTERAÇÃO 2: Adicionada a rota 'smart-reg'
+  onNavigate: (route: 'registration' | 'dashboard' | 'loan' | 'return' | 'inventory' | 'audit' | 'smart-reg') => void;
 }
 
 const isMobileDevice = () => {
@@ -28,18 +28,6 @@ export function MainMenu({
 
   const menuItems = [
     {
-      title: 'Cadastros',
-      icon: <PlusCircle className="h-5 w-5" />,
-      action: () => onNavigate('registration'),
-      bgColor: 'bg-menu-green'
-    },
-    {
-      title: 'Inventário',
-      icon: <Laptop className="h-5 w-5" />,
-      action: () => onNavigate('inventory'),
-      bgColor: 'bg-menu-blue'
-    },
-    {
       title: 'Empréstimos',
       icon: <ClipboardList className="h-5 w-5" />,
       action: () => onNavigate('loan'),
@@ -52,18 +40,36 @@ export function MainMenu({
       bgColor: 'bg-menu-amber'
     },
     {
+      title: 'Inventário',
+      icon: <Laptop className="h-5 w-5" />,
+      action: () => onNavigate('inventory'),
+      bgColor: 'bg-menu-blue'
+    },
+    {
+      title: 'Cadastros',
+      icon: <PlusCircle className="h-5 w-5" />,
+      action: () => onNavigate('registration'),
+      bgColor: 'bg-menu-green'
+    },
+    {
       title: 'Dashboard',
       icon: <BarChart3 className="h-5 w-5" />,
       action: () => onNavigate('dashboard'),
       // ALTERAÇÃO: Usando a cor do sistema de menu
       bgColor: 'bg-menu-rose' 
     },
-    // ALTERAÇÃO 3: Adicionado o novo objeto para o botão de contagem
     {
-      title: 'Sistema de Contagem',
+      title: 'Contagem',
       icon: <ListChecks className="h-5 w-5" />,
       action: () => onNavigate('audit'),
       bgColor: 'bg-menu-teal' // Usando a nova variável de cor
+    },
+    // NOVO: Cadastro Inteligente
+    {
+      title: 'Cadastro Inteligente',
+      icon: <QrCode className="h-5 w-5" />,
+      action: () => onNavigate('smart-reg'),
+      bgColor: 'bg-purple-600' // Nova cor para destaque
     }
   ];
 

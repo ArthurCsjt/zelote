@@ -81,13 +81,13 @@ export function isValidChromebookId(id: string): boolean {
 }
 
 /**
- * Sanitiza entrada do QR Code para prevenir injeção de código
- * Garante que, se for um JSON, apenas o campo 'id' seja extraído.
+ * Sanitiza entrada do QR Code para prevenir injeção de código.
+ * Tenta retornar o objeto JSON completo se for o novo formato de cadastro inteligente.
+ * Caso contrário, retorna apenas o ID normalizado.
  */
-export function sanitizeQRCodeData(data: string): string {
+export function sanitizeQRCodeData(data: string): string | any {
   if (!data) return '';
   
-  let identifierToUse = data;
   let cleanData = data.trim();
 
   // 1. Tenta limpar aspas externas que podem vir do scanner
@@ -98,22 +98,27 @@ export function sanitizeQRCodeData(data: string): string {
   try {
     // 2. Tenta fazer parse como JSON
     const parsed = JSON.parse(cleanData);
+    
+    // Se for um objeto e tiver a chave 'id' (novo formato de cadastro inteligente)
     if (parsed && typeof parsed === 'object' && parsed.id) {
-      // Se for JSON e tiver 'id', usa o valor de 'id'
-      identifierToUse = String(parsed.id);
+      // Retorna o objeto completo para o Smart Registration Hook processar
+      return parsed;
     }
   } catch {
-    // 3. Se o JSON.parse falhar, tenta extrair o ID usando Regex (Solução 2)
-    // Busca por "id":"[valor]" ou 'id':'[valor]'
-    const idRegex = /["']id["']\s*:\s*["']([^"']+)["']/;
-    const match = cleanData.match(idRegex);
-    
-    if (match && match[1]) {
-      identifierToUse = match[1];
-    } else {
-      // 4. Se tudo falhar, usa a string bruta original (Solução 3)
-      identifierToUse = data;
-    }
+    // Se falhar o parse JSON, continua com a lógica antiga para extrair ID
+  }
+  
+  let identifierToUse = data;
+
+  // 3. Tenta extrair o ID usando Regex (para QR Codes antigos ou simples)
+  const idRegex = /["']id["']\s*:\s*["']([^"']+)["']/;
+  const match = cleanData.match(idRegex);
+  
+  if (match && match[1]) {
+    identifierToUse = match[1];
+  } else {
+    // 4. Se tudo falhar, usa a string bruta original
+    identifierToUse = data;
   }
   
   // Sanitiza a string (removendo HTML) e depois normaliza o formato (CHRxxx)
