@@ -51,7 +51,7 @@ export function useSmartRegistration() {
     let manufacturer = data.manufacturer;
     const upperModel = model.toUpperCase();
     
-    if (upperModel === 'XE310XBA') {
+    if (upperModel === 'XE310XBA' || upperModel === 'XE500C13') { // ADIÇÃO: XE500C13
       manufacturer = 'Samsung';
     } else if (upperModel === 'N18Q5' || upperModel === 'N2P1') {
       manufacturer = 'Acer';
