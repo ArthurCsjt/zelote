@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import type { UserType } from '@/types/database';
@@ -13,21 +13,30 @@ export interface UserSearchResult {
   searchable: string;
 }
 
-export function useUserSearch() {
+// O hook agora aceita um termo de pesquisa
+export function useUserSearch(searchTerm: string) {
   const [users, setUsers] = useState<UserSearchResult[]>([]);
   const [loading, setLoading] = useState(true);
+  
+  // Normaliza o termo de pesquisa para uso no Supabase (ilike)
+  const searchPattern = searchTerm ? `%${searchTerm.toLowerCase()}%` : '%%';
+  const limit = 50; // Limite de resultados para evitar sobrecarga
 
   const fetchUsers = useCallback(async () => {
     setLoading(true);
     try {
+      // Define a condição de busca para todas as tabelas
+      const searchCondition = `nome_completo.ilike.${searchPattern},email.ilike.${searchPattern}`;
+      const alunoSearchCondition = `${searchCondition},ra.ilike.${searchPattern},turma.ilike.${searchPattern}`;
+
       const [
         { data: alunos, error: alunosError },
         { data: professores, error: professoresError },
         { data: funcionarios, error: funcionariosError },
       ] = await Promise.all([
-        supabase.from('alunos').select('id, nome_completo, ra, email, turma'),
-        supabase.from('professores').select('id, nome_completo, email'),
-        supabase.from('funcionarios').select('id, nome_completo, email'),
+        supabase.from('alunos').select('id, nome_completo, ra, email, turma').or(alunoSearchCondition).limit(limit),
+        supabase.from('professores').select('id, nome_completo, email').or(searchCondition).limit(limit),
+        supabase.from('funcionarios').select('id, nome_completo, email').or(searchCondition).limit(limit),
       ]);
 
       if (alunosError || professoresError || funcionariosError) {
@@ -71,7 +80,10 @@ export function useUserSearch() {
         });
       });
 
-      setUsers(allUsers);
+      // Remove duplicatas (se houver) e limita o total
+      const uniqueUsers = Array.from(new Map(allUsers.map(user => [user.id, user])).values()).slice(0, limit);
+      
+      setUsers(uniqueUsers);
     } catch (e: any) {
       console.error('Erro no useUserSearch:', e);
       toast({
@@ -82,11 +94,16 @@ export function useUserSearch() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [searchPattern]); // Depende apenas do searchPattern
 
   useEffect(() => {
-    fetchUsers();
-  }, [fetchUsers]);
+    // Só busca se houver pelo menos 2 caracteres ou se o termo estiver vazio (para carregar a lista inicial, se necessário)
+    if (searchTerm.length >= 2 || searchTerm.length === 0) {
+        fetchUsers();
+    } else {
+        setUsers([]);
+    }
+  }, [searchTerm, fetchUsers]);
 
   return { users, loading, fetchUsers };
 }
