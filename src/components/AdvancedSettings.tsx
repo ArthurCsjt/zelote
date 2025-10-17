@@ -67,7 +67,7 @@ export function AdvancedSettings() {
       </div>
 
       <Dialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
-        <DialogContent className="sm:max-w-[425px] w-[95vw]"> {/* Adicionando w-[95vw] para mobile */}
+        <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle className="text-destructive">
               Confirmar Exclusão Permanente de Todos os Alunos

@@ -18,7 +18,6 @@ export interface Chromebook {
   created_at: string;
   updated_at: string;
   created_by?: string;
-  is_deprovisioned?: boolean; // Adicionado is_deprovisioned
 }
 
 export interface Loan {

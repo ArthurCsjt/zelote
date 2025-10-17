@@ -127,36 +127,25 @@ export const AuditScanner = () => {
                     autoComplete="off"
                     className="flex-1"
                   />
-                  <Button 
-                    onClick={handleAddManualId} 
-                    disabled={!manualId.trim() || isProcessing} 
-                    size="sm" // Reduzindo o tamanho
-                    variant="secondary" // Alterado para secondary
-                    className="h-10" // Mantendo a altura consistente com o input
-                  >
+                  <Button onClick={handleAddManualId} disabled={!manualId.trim() || isProcessing} className="min-w-[100px]">
                     <Plus className="mr-2 h-4 w-4" /> Adicionar
                   </Button>
                 </div>
               </div>
               
-              {/* Botão Escanear QR Code (Ação Primária) */}
-              <Button 
-                onClick={() => setIsScannerOpen(true)} 
-                size="lg" 
-                variant="default" // Cor Primária (Azul)
-                className="w-full"
-              >
+              {/* Botão Escanear QR Code */}
+              <Button onClick={() => setIsScannerOpen(true)} size="lg" variant="outline" className="w-full border-menu-teal text-menu-teal hover:bg-menu-teal/10">
                 <QrCode className="mr-2 h-5 w-5" />
                 Escanear Item (QR Code)
               </Button>
               
-              {/* Botão Finalizar Contagem (Ação Secundária/Final) */}
+              {/* Botão Finalizar Contagem */}
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button 
                     size="lg" 
-                    variant="secondary" // Cor Secundária (Cinza)
-                    className="w-full" 
+                    variant="secondary" 
+                    className="w-full bg-menu-teal hover:bg-menu-teal-hover text-white" 
                     disabled={isProcessing || countedItems.length === 0}
                   >
                     {isProcessing ? (

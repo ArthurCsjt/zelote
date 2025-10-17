@@ -81,43 +81,32 @@ export function isValidChromebookId(id: string): boolean {
 }
 
 /**
+ * Valida RA (Registro Acadêmico) - apenas números
+ */
+export function isValidRA(ra: string): boolean {
+  const raRegex = /^\d{6,12}$/;
+  return raRegex.test(ra);
+}
+
+/**
  * Sanitiza entrada do QR Code para prevenir injeção de código
- * Garante que, se for um JSON, apenas o campo 'id' seja extraído.
  */
 export function sanitizeQRCodeData(data: string): string {
   if (!data) return '';
   
-  let identifierToUse = data;
-  let cleanData = data.trim();
-
-  // 1. Tenta limpar aspas externas que podem vir do scanner
-  if (cleanData.startsWith('"') && cleanData.endsWith('"')) {
-    cleanData = cleanData.substring(1, cleanData.length - 1);
-  }
-
   try {
-    // 2. Tenta fazer parse como JSON
-    const parsed = JSON.parse(cleanData);
+    // Tenta fazer parse como JSON
+    const parsed = JSON.parse(data);
     if (parsed && typeof parsed === 'object' && parsed.id) {
-      // Se for JSON e tiver 'id', usa o valor de 'id'
-      identifierToUse = String(parsed.id);
+      // Normaliza o ID extraído do QR Code
+      return normalizeChromebookId(sanitizeString(parsed.id));
     }
   } catch {
-    // 3. Se o JSON.parse falhar, tenta extrair o ID usando Regex (Solução 2)
-    // Busca por "id":"[valor]" ou 'id':'[valor]'
-    const idRegex = /["']id["']\s*:\s*["']([^"']+)["']/;
-    const match = cleanData.match(idRegex);
-    
-    if (match && match[1]) {
-      identifierToUse = match[1];
-    } else {
-      // 4. Se tudo falhar, usa a string bruta original (Solução 3)
-      identifierToUse = data;
-    }
+    // Se não for JSON válido, sanitiza como string e normaliza
+    return normalizeChromebookId(sanitizeString(data));
   }
   
-  // Sanitiza a string (removendo HTML) e depois normaliza o formato (CHRxxx)
-  return normalizeChromebookId(sanitizeString(identifierToUse));
+  return normalizeChromebookId(sanitizeString(data));
 }
 
 /**
@@ -178,10 +167,11 @@ export function validateLoanFormData(data: any): {
 
   // Sanitizar RA se fornecido
   if (data.ra && data.ra.trim()) {
-    // NOTE: A função isValidRA não existe no seu código, assumindo que a validação é apenas para garantir que seja uma string simples.
-    // Se você precisar de validação de formato de RA, precisará implementar isValidRA.
-    // Por enquanto, apenas sanitiza.
-    sanitizedData.ra = sanitizeString(data.ra.trim());
+    if (!isValidRA(data.ra.trim())) {
+      errors.push('RA deve conter apenas números (6-12 dígitos)');
+    } else {
+      sanitizedData.ra = sanitizeString(data.ra.trim());
+    }
   }
 
   return {
