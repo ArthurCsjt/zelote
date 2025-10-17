@@ -2,12 +2,13 @@ import { useState, useMemo } from "react";
 import { format } from "date-fns";
 import { Badge } from "./ui/badge";
 import { Card, CardContent } from "./ui/card";
-import { Clock, Monitor, User, CheckCircle, AlertTriangle, Search, Filter, X, RotateCcw } from "lucide-react";
+import { Clock, Monitor, User, CheckCircle, AlertTriangle, Search, Filter, X, RotateCcw, ChevronLeft, ChevronRight } from "lucide-react";
 import type { LoanHistoryItem } from "@/types/database";
 import { Input } from "./ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { Button } from "./ui/button";
 import { GlassCard } from "./ui/GlassCard"; // Importando GlassCard
+import { Pagination, PaginationContent, PaginationItem, PaginationLink } from "./ui/pagination"; // Importando componentes de paginação
 
 interface LoanHistoryProps {
   history: LoanHistoryItem[];
@@ -17,6 +18,10 @@ export function LoanHistory({ history }: LoanHistoryProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [userTypeFilter, setUserTypeFilter] = useState<string>("all");
+  
+  // Estados de Paginação
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   const filteredHistory = useMemo(() => {
     let filtered = history;
@@ -43,13 +48,28 @@ export function LoanHistory({ history }: LoanHistoryProps) {
       filtered = filtered.filter(loan => loan.user_type === userTypeFilter);
     }
 
+    // Resetar página para 1 se o filtro mudar
+    if (currentPage !== 1 && filtered.length > 0) {
+        setCurrentPage(1);
+    }
+
     return filtered;
   }, [history, searchTerm, statusFilter, userTypeFilter]);
+  
+  // Lógica de Paginação
+  const totalItems = filteredHistory.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedHistory = filteredHistory.slice(
+    startIndex,
+    startIndex + itemsPerPage
+  );
 
   const clearFilters = () => {
     setSearchTerm("");
     setStatusFilter("all");
     setUserTypeFilter("all");
+    setCurrentPage(1);
   };
 
   const getStatusBadgeProps = (status: LoanHistoryItem['status']) => {
@@ -63,13 +83,41 @@ export function LoanHistory({ history }: LoanHistoryProps) {
         return { variant: "secondary", className: "bg-yellow-100 text-yellow-800 hover:bg-yellow-100" };
     }
   };
+  
+  // Função para renderizar os botões de página (apenas 5 visíveis)
+  const renderPageButtons = () => {
+    const maxButtons = 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxButtons / 2));
+    let endPage = Math.min(totalPages, startPage + maxButtons - 1);
+
+    if (endPage - startPage + 1 < maxButtons) {
+      startPage = Math.max(1, endPage - maxButtons + 1);
+    }
+
+    const buttons = [];
+    for (let i = startPage; i <= endPage; i++) {
+      buttons.push(
+        <PaginationItem key={i}>
+          <PaginationLink
+            isActive={currentPage === i}
+            onClick={() => setCurrentPage(i)}
+            className="cursor-pointer"
+          >
+            {i}
+          </PaginationLink>
+        </PaginationItem>
+      );
+    }
+    return buttons;
+  };
+
 
   return (
     <div className="space-y-6 w-full"> {/* Adicionando w-full para garantir que ocupe a largura total */}
       <div className="flex items-center gap-2">
         <Clock className="h-5 w-5 text-primary" />
         <h2 className="text-xl font-semibold">Histórico de Empréstimos</h2>
-        <Badge variant="secondary">{filteredHistory.length} / {history.length}</Badge>
+        <Badge variant="secondary">{totalItems} registros</Badge>
       </div>
 
       {/* Painel de Filtros */}
@@ -121,7 +169,7 @@ export function LoanHistory({ history }: LoanHistoryProps) {
         </div>
       </GlassCard>
 
-      {filteredHistory.length === 0 ? (
+      {paginatedHistory.length === 0 ? (
         <Card>
           <CardContent className="py-8">
             <div className="text-center text-muted-foreground">
@@ -133,7 +181,7 @@ export function LoanHistory({ history }: LoanHistoryProps) {
         </Card>
       ) : (
         <div className="grid gap-4">
-          {filteredHistory.map((loan) => {
+          {paginatedHistory.map((loan) => {
             const { variant, className } = getStatusBadgeProps(loan.status);
             const isReturned = loan.status === 'devolvido';
             const returnedByDifferentUser = isReturned && 
@@ -141,7 +189,10 @@ export function LoanHistory({ history }: LoanHistoryProps) {
               loan.returned_by_email !== loan.student_email;
 
             return (
-              <Card key={loan.id} className="hover:shadow-md transition-shadow">
+              <Card 
+                key={loan.id} 
+                className={`hover:shadow-md transition-shadow ${loan.status === 'atrasado' ? 'border-red-400 bg-red-50/50' : ''}`}
+              >
                 <CardContent className="p-4 sm:p-6"> {/* Reduzindo padding */}
                   <div className="space-y-3"> {/* Reduzindo espaçamento vertical */}
                     {/* Header */}
@@ -263,6 +314,67 @@ export function LoanHistory({ history }: LoanHistoryProps) {
               </Card>
             );
           })}
+        </div>
+      )}
+      
+      {/* Paginação */}
+      {totalPages > 1 && (
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6">
+          {/* Items Per Page Selector */}
+          <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+            <span>Itens por página:</span>
+            <Select
+              value={String(itemsPerPage)}
+              onValueChange={(value) => {
+                setItemsPerPage(Number(value));
+                setCurrentPage(1);
+              }}
+            >
+              <SelectTrigger className="w-[80px] h-8">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="10">10</SelectItem>
+                <SelectItem value="20">20</SelectItem>
+                <SelectItem value="50">50</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Pagination Controls */}
+          <Pagination className="mx-0">
+            <PaginationContent>
+              <PaginationItem>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+              </PaginationItem>
+
+              {/* Renderizar botões de página */}
+              {renderPageButtons()}
+
+              <PaginationItem>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+          
+          {/* Page Info */}
+          <div className="text-sm text-muted-foreground">
+            Página {currentPage} de {totalPages}
+          </div>
         </div>
       )}
     </div>
