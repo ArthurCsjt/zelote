@@ -18,7 +18,6 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { LoanHub } from "@/components/LoanHub";
 import type { ReturnFormData, Chromebook } from "@/types/database"; // Importando Chromebook
 import { useDatabase } from "@/hooks/useDatabase";
-// import { DebugPanel } from '@/components/DebugPanel'; // Importando DebugPanel (Chromebooks) // REMOVIDO
 
 const Index = () => {
   // ADIÇÃO: Chamamos os hooks de autenticação aqui, no componente "pai"
