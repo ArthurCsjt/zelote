@@ -45,7 +45,6 @@ const Settings = () => {
           <>
             <UserManagement />
             <DataMaintenance />
-            {/* O card de Preferências do Sistema foi removido por estar vazio. */}
           </>
         ) : (
           <GlassCard className="border-red-200/50 bg-red-50/50">
@@ -74,7 +73,7 @@ const Settings = () => {
               className="w-full"
             >
               <LogOut className="h-4 w-4 mr-2" />
-              Sair e Desconectar
+              Sair
             </Button>
           </CardContent>
         </GlassCard>
