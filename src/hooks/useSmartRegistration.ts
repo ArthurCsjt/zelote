@@ -8,14 +8,14 @@ import type { Chromebook, ChromebookStatus } from '@/types/database';
 // Interface para os dados brutos lidos do QR Code
 interface QRCodeData {
   id: string; // CHRxxx
-  fabricante?: string;
-  modelo?: string;
-  numero_serie?: string;
-  patrimonio?: string;
-  ano_fabricacao?: string;
-  status_provisionamento?: string; // 'provisionado' | 'desprovisionado'
-  localizacao?: string;
-  condicao?: string;
+  manufacturer?: string; // Alterado de 'fabricante' para 'manufacturer'
+  model?: string; // Alterado de 'modelo' para 'model'
+  serial?: string; // Alterado de 'numero_serie' para 'serial'
+  patrimony?: string; // Alterado de 'patrimonio' para 'patrimony'
+  manufacturingYear?: string;
+  provisioning_status?: string; // 'provisionado' | 'desprovisionado'
+  location?: string;
+  condition?: string;
 }
 
 // Interface para o item registrado na sessão
@@ -39,7 +39,7 @@ export function useSmartRegistration() {
     let status: ChromebookStatus = 'disponivel';
     let isDeprovisioned = false;
 
-    if (data.status_provisionamento?.toLowerCase() === 'desprovisionado') {
+    if (data.provisioning_status?.toLowerCase() === 'desprovisionado') {
       status = 'fora_uso';
       isDeprovisioned = true;
     }
@@ -47,12 +47,12 @@ export function useSmartRegistration() {
     // Mapeamento final para o schema do Supabase
     return {
       chromebook_id: normalizeChromebookId(data.id),
-      manufacturer: data.fabricante,
-      model: data.modelo || 'Modelo Desconhecido',
-      serial_number: data.numero_serie,
-      patrimony_number: data.patrimonio,
-      location: data.localizacao,
-      condition: data.condicao || 'bom',
+      manufacturer: data.manufacturer,
+      model: data.model || 'Modelo Desconhecido',
+      serial_number: data.serial, // Mapeado de 'serial'
+      patrimony_number: data.patrimony, // Mapeado de 'patrimony'
+      location: data.location,
+      condition: data.condition || 'bom',
       status: status,
       is_deprovisioned: isDeprovisioned,
       created_by: createdBy,
@@ -65,13 +65,14 @@ export function useSmartRegistration() {
       toast({ title: "Erro", description: "Usuário não autenticado.", variant: "destructive" });
       return;
     }
-    if (!data.numero_serie) {
-      toast({ title: "Erro", description: "O QR Code deve conter o 'numero_serie' para identificação única.", variant: "destructive" });
+    // CORREÇÃO: Verificar 'serial' em vez de 'numero_serie'
+    if (!data.serial) {
+      toast({ title: "Erro", description: "O QR Code deve conter o 'serial' (Número de Série) para identificação única.", variant: "destructive" });
       return;
     }
 
     setIsProcessing(true);
-    const serialNumber = data.numero_serie;
+    const serialNumber = data.serial;
 
     try {
       // 1. Verificar Duplicatas pelo Número de Série
