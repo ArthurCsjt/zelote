@@ -49,8 +49,12 @@ export function useSmartRegistration() {
     
     // 2. Lógica de detecção de fabricante
     let manufacturer = data.manufacturer;
-    if (model.toUpperCase() === 'XE310XBA') {
+    const upperModel = model.toUpperCase();
+    
+    if (upperModel === 'XE310XBA') {
       manufacturer = 'Samsung';
+    } else if (upperModel === 'N18Q5') {
+      manufacturer = 'Acer';
     }
     
     // Mapeamento final para o schema do Supabase
