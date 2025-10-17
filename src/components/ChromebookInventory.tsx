@@ -35,6 +35,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Chromebook, ChromebookData } from "@/types/database";
 import { InventoryStats } from "./InventoryStats";
 import { GlassCard } from "./ui/GlassCard";
+import { BackupButton } from "./BackupButton"; // Importando o novo componente
 
 // Interface for Chromebook data structure (matching database)
 interface ChromebookDataExtended extends Chromebook {
@@ -394,6 +395,9 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
           )}
           Atualizar
         </Button>
+        
+        {/* NOVO: Botão de Backup */}
+        <BackupButton />
         
         <div className="text-sm text-gray-500 flex items-center">
           Resultados: {filteredChromebooks.length} Chromebooks

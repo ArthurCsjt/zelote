@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
+import Papa from 'papaparse'; // Importando PapaParse
 import type { 
   Loan, 
   Return, 
@@ -115,6 +116,49 @@ export const useDatabase = () => {
       setLoading(false);
     }
   }, [user]);
+  
+  // Exportar Chromebooks para CSV
+  const exportChromebooksToCSV = useCallback(async (): Promise<string | null> => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('chromebooks')
+        .select('*')
+        .order('chromebook_id', { ascending: true });
+
+      if (error) throw error;
+      
+      if (!data || data.length === 0) return null;
+
+      // Mapear e renomear colunas para um formato mais amigável no CSV
+      const csvData = data.map(cb => ({
+        ID_Chromebook: cb.chromebook_id,
+        Modelo: cb.model,
+        Fabricante: cb.manufacturer,
+        Numero_Serie: cb.serial_number,
+        Numero_Patrimonio: cb.patrimony_number,
+        Status: cb.status,
+        Condicao: cb.condition,
+        Localizacao_Geral: cb.location,
+        Sala_Aula_Fixo: cb.classroom,
+        Desprovisionado: cb.is_deprovisioned ? 'Sim' : 'Não',
+        Criado_Em: cb.created_at,
+        Atualizado_Em: cb.updated_at,
+      }));
+
+      const csv = Papa.unparse(csvData, {
+        header: true,
+        delimiter: ';', // Usando ponto e vírgula para melhor compatibilidade com Excel em PT-BR
+      });
+      
+      return csv;
+    } catch (error: any) {
+      toast({ title: "Erro de Exportação", description: error.message, variant: "destructive" });
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
 
   // Loan operations
@@ -715,6 +759,7 @@ export const useDatabase = () => {
     // Chromebook operations
     createChromebook,
     getChromebooks,
+    exportChromebooksToCSV, // Exportando a nova função
     // Loan operations
     createLoan,
     bulkCreateLoans,
