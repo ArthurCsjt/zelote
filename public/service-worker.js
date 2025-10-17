@@ -1,5 +1,5 @@
 // Service Worker for Zelote PWA
-const CACHE_NAME = 'zelote-cache-v4'; // Incrementando a versão do cache
+const CACHE_NAME = 'zelote-cache-v5'; // Incrementando a versão do cache para forçar a atualização
 const OFFLINE_URL = '/offline.html';
 
 // Recursos essenciais para o shell do app
@@ -15,6 +15,33 @@ const urlsToCache = [
 
 // Tipos de recursos que queremos cachear agressivamente (Cache First)
 const cacheFirstTypes = ['font', 'image'];
+
+// URL base do Supabase para APIs (ajustar se necessário, mas o padrão é /rest/v1/ e /rpc/)
+const SUPABASE_API_PATH = '/rest/v1/';
+const SUPABASE_RPC_PATH = '/rpc/';
+
+// Função auxiliar para aplicar a estratégia Stale-While-Revalidate
+async function staleWhileRevalidate(request) {
+  const cache = await caches.open(CACHE_NAME);
+  const cachedResponse = await cache.match(request);
+  
+  const networkFetch = fetch(request).then(async (response) => {
+    // Se a rede for bem-sucedida, atualiza o cache
+    if (response.ok) {
+      await cache.put(request, response.clone());
+    }
+    return response;
+  }).catch(() => {
+    // Se a rede falhar, e não houver cache, retorna um erro 503
+    return new Response(JSON.stringify({ error: 'Offline: Falha ao buscar dados da API.' }), {
+      status: 503,
+      headers: { 'Content-Type': 'application/json' }
+    });
+  });
+
+  // Retorna o cache imediatamente se disponível, senão espera pela rede
+  return cachedResponse || networkFetch;
+}
 
 // Install a service worker
 self.addEventListener('install', (event) => {
@@ -74,8 +101,18 @@ self.addEventListener('fetch', (event) => {
     }
     return;
   }
+  
+  // 2. Estratégia Stale-While-Revalidate para APIs do Supabase (GET requests)
+  // Aplicamos apenas para GETs, pois POST/PUT/DELETE devem sempre ir para a rede.
+  if (request.method === 'GET' && (url.pathname.startsWith(SUPABASE_API_PATH) || url.pathname.startsWith(SUPABASE_RPC_PATH))) {
+    // Excluir chamadas de autenticação (auth) do cache de dados
+    if (!url.pathname.includes('/auth/v1/')) {
+      event.respondWith(staleWhileRevalidate(request));
+      return;
+    }
+  }
 
-  // 2. Estratégia Cache First para imagens e fontes
+  // 3. Estratégia Cache First para imagens e fontes
   if (cacheFirstTypes.includes(request.destination)) {
     event.respondWith(
       caches.match(request).then(response => {
@@ -95,8 +132,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 3. Estratégia Network First para HTML e Assets Críticos (JS/CSS)
-  // Isso garante que o usuário obtenha a versão mais recente do app shell
+  // 4. Estratégia Network First para HTML e Assets Críticos (JS/CSS)
   const isCriticalAsset = request.mode === 'navigate' || url.pathname.endsWith('.js') || url.pathname.endsWith('.css');
   
   if (isCriticalAsset) {
@@ -129,7 +165,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
   
-  // 4. Para o resto (APIs, etc.): Network First (sem cache persistente para APIs)
+  // 5. Para o resto: Network First (sem cache persistente)
   event.respondWith(fetch(request).catch(() => caches.match(request)));
 });
 
@@ -147,5 +183,3 @@ self.addEventListener('message', (event) => {
     self.skipWaiting();
   }
 });
-
-// Removida a lógica de 'CHECK_UPDATE' baseada em setInterval
