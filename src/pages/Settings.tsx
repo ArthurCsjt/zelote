@@ -62,20 +62,15 @@ const Settings = () => {
         )}
         
         {/* Botão de Sair (Visível para todos) */}
-        <GlassCard className="border-red-200/50 bg-red-50/50">
-          <CardHeader>
-            <CardTitle className="text-red-700">Sair do Sistema</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Button 
-              variant="destructive" 
-              onClick={handleLogout}
-              className="w-full"
-            >
-              <LogOut className="h-4 w-4 mr-2" />
-              Sair
-            </Button>
-          </CardContent>
+        <GlassCard className="border-red-200/50 bg-red-50/50 p-4"> {/* Ajustando padding do GlassCard */}
+          <Button 
+            variant="destructive" 
+            onClick={handleLogout}
+            className="w-full"
+          >
+            <LogOut className="h-4 w-4 mr-2" />
+            Sair
+          </Button>
         </GlassCard>
       </div>
     </div>
