@@ -91,7 +91,7 @@ export function BatchDeviceInput({ batchDevices, setBatchDevices, onScan, disabl
             <Input
               id="batchInput"
               value={currentBatchInput}
-              onChange={(e) => setCurrentBatchInput(e.target.value)} {/* REMOVIDA A NORMALIZAÇÃO AQUI */}
+              onChange={(e) => setCurrentBatchInput(e.target.value)}
               placeholder="Digite o ID do dispositivo (ex: 12 ou CHR012)"
               className="border-gray-200 w-full bg-white"
               onKeyDown={(e) => {
