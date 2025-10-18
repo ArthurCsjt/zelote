@@ -98,7 +98,7 @@ export function ReturnDialog({
    * @param result - String com o resultado da leitura do QR Code
    */
   const handleQRCodeScan = (result: string) => {
-    // sanitizeQRCodeData já inclui a normalização
+    // CORREÇÃO: Usar sanitizeQRCodeData para extrair o ID normalizado
     const sanitizedId = sanitizeQRCodeData(result);
     
     if (sanitizedId) {
@@ -278,7 +278,7 @@ export function ReturnDialog({
                 <BatchDeviceInput
                   batchDevices={batchDevices}
                   setBatchDevices={setBatchDevices}
-                  onScan={handleQRCodeScan} // Passamos a função de adicionar para o scanner interno
+                  onScan={() => {}} // Não usado, mas mantido para evitar erros de tipo se a prop existisse
                   disabled={false}
                 />
               )}

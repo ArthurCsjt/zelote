@@ -5,7 +5,7 @@ import { Label } from './ui/label';
 import { Badge } from './ui/badge';
 import { Computer, Plus, QrCode } from 'lucide-react';
 import { toast } from './ui/use-toast';
-import { normalizeChromebookId } from '@/utils/security';
+import { normalizeChromebookId, sanitizeQRCodeData } from '@/utils/security'; // Importando sanitizeQRCodeData
 import { QRCodeReader } from './QRCodeReader';
 
 interface BatchDeviceInputProps {
@@ -20,7 +20,8 @@ export function BatchDeviceInput({ batchDevices, setBatchDevices, onScan, disabl
   const [isQRReaderOpen, setIsQRReaderOpen] = useState(false);
 
   const handleQRCodeScan = (data: string) => {
-    const sanitizedId = normalizeChromebookId(data); 
+    // CORREÇÃO: Usar sanitizeQRCodeData para extrair o ID, mesmo que o payload seja JSON
+    const sanitizedId = sanitizeQRCodeData(data); 
     
     if (sanitizedId) {
       if (!batchDevices.includes(sanitizedId)) {

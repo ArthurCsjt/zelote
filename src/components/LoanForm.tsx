@@ -80,33 +80,17 @@ export function LoanForm({ onBack }: LoanFormProps) {
   };
 
   const handleQRCodeScan = (data: string) => {
+    // Usa sanitizeQRCodeData para garantir que apenas o ID normalizado seja retornado
     const sanitizedId = sanitizeQRCodeData(data); 
     
     if (sanitizedId) {
-      if (formData.loanType === 'individual') {
-        setFormData(prev => ({ ...prev, chromebookId: sanitizedId }));
-        toast({
-          title: "QR Code lido com sucesso",
-          description: `ID do Chromebook: ${sanitizedId}`,
-          variant: "success",
-        });
-      } else {
-        // Lógica de lote movida para BatchDeviceInput, mas mantemos a compatibilidade aqui
-        if (!batchDevices.includes(sanitizedId)) {
-          setBatchDevices(prev => [...prev, sanitizedId]);
-          toast({
-            title: "Dispositivo adicionado ao lote",
-            description: `ID do Chromebook: ${sanitizedId}`,
-            variant: "success",
-          });
-        } else {
-          toast({
-            title: "Dispositivo já adicionado",
-            description: `O Chromebook ${sanitizedId} já está na lista`,
-            variant: "destructive",
-          });
-        }
-      }
+      // Esta função só é chamada no modo INDIVIDUAL
+      setFormData(prev => ({ ...prev, chromebookId: sanitizedId }));
+      toast({
+        title: "QR Code lido com sucesso",
+        description: `ID do Chromebook: ${sanitizedId}`,
+        variant: "success",
+      });
     }
   };
   
@@ -327,7 +311,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
               <BatchDeviceInput
                 batchDevices={batchDevices}
                 setBatchDevices={setBatchDevices}
-                onScan={handleQRCodeScan}
+                // onScan={handleQRCodeScan} // REMOVIDO: BatchDeviceInput gerencia seu próprio scanner
                 disabled={loading}
               />
             )}
