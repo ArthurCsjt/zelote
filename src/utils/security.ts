@@ -55,12 +55,19 @@ export function normalizeChromebookId(identifier: string): string {
   const raw = identifier.trim();
   if (!raw) return '';
 
-  // Verifica se é composto apenas por dígitos
+  // Remove zeros à esquerda se for puramente numérico, mas mantém o formato original se for alfanumérico
+  const numericPart = raw.replace(/^0+/, '');
   const onlyDigits = /^\d+$/.test(raw);
 
   if (onlyDigits) {
-    // Se for apenas dígitos, formata como CHR + preenchimento com zeros
-    return `CHR${raw.padStart(3, '0')}`;
+    // Se for apenas dígitos, formata como CHR + preenchimento com zeros (mínimo 3 dígitos)
+    // Ex: '60' -> 'CHR060', '600' -> 'CHR600', '6000' -> 'CHR6000'
+    const num = parseInt(raw, 10);
+    if (isNaN(num)) return raw.toUpperCase(); // Fallback
+    
+    // Se o número for menor que 1000, preenche com zeros até 3 dígitos.
+    const paddedNum = num < 1000 ? String(num).padStart(3, '0') : String(num);
+    return `CHR${paddedNum}`;
   }
 
   // Se já começar com 'CHR' (case insensitive), garante que seja maiúsculo
