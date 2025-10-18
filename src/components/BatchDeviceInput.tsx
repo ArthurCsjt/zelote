@@ -41,12 +41,27 @@ export function BatchDeviceInput({ batchDevices, setBatchDevices, onScan, disabl
   };
 
   const addDeviceToBatch = () => {
+    // APLICAR NORMALIZAÇÃO SOMENTE AQUI
     const normalizedInput = normalizeChromebookId(currentBatchInput);
     
-    if (normalizedInput && !batchDevices.includes(normalizedInput)) {
+    if (!normalizedInput) {
+      toast({
+        title: "Erro",
+        description: "O ID do dispositivo não pode estar vazio.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!batchDevices.includes(normalizedInput)) {
       setBatchDevices([...batchDevices, normalizedInput]);
       setCurrentBatchInput("");
-    } else if (normalizedInput) {
+      toast({
+        title: "Dispositivo adicionado",
+        description: `ID: ${normalizedInput}`,
+        variant: "info",
+      });
+    } else {
       toast({
         title: "Dispositivo já adicionado",
         description: `O Chromebook ${normalizedInput} já está na lista`,
@@ -76,7 +91,7 @@ export function BatchDeviceInput({ batchDevices, setBatchDevices, onScan, disabl
             <Input
               id="batchInput"
               value={currentBatchInput}
-              onChange={(e) => setCurrentBatchInput(normalizeChromebookId(e.target.value))}
+              onChange={(e) => setCurrentBatchInput(e.target.value)} {/* REMOVIDA A NORMALIZAÇÃO AQUI */}
               placeholder="Digite o ID do dispositivo (ex: 12 ou CHR012)"
               className="border-gray-200 w-full bg-white"
               onKeyDown={(e) => {
