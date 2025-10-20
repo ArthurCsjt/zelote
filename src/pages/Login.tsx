@@ -12,21 +12,18 @@ import { supabase } from "@/integrations/supabase/client";
 const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isRecoveryMode, setRecoveryMode] = useState(false);
-  const [isRegisterMode, setRegisterMode] = useState(false);
   const [isUpdatePasswordMode, setUpdatePasswordMode] = useState(false); 
 
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
   const [recoveryEmail, setRecoveryEmail] = useState("");
-  const [registerEmail, setRegisterEmail] = useState("");
-  const [registerPassword, setRegisterPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false); 
+  const [showPassword, setShowPassword] = useState(false); // Novo estado para visibilidade da senha
 
   const navigate = useNavigate();
   const location = useLocation();
-  const { login, register, resetPassword, verifyEmail } = useAuth();
+  const { login, resetPassword, verifyEmail } = useAuth(); // Usando verifyEmail do AuthContext
 
   // Efeito para verificar se o usuário está no fluxo de redefinição/convite
   useEffect(() => {
@@ -62,7 +59,7 @@ const Login = () => {
     if (!verifyEmail(loginEmail)) {
       toast({
         title: "Erro de login",
-        description: "O email deve pertencer ao domínio institucional (@colegiosaojudas.com.br).",
+        description: "O email deve pertencer ao domínio institucional.",
         variant: "destructive"
       });
       setIsLoading(false);
@@ -85,47 +82,6 @@ const Login = () => {
     }
     setIsLoading(false);
   };
-  
-  const handleRegisterSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-
-    if (!verifyEmail(registerEmail)) {
-      toast({
-        title: "Erro de Cadastro",
-        description: "O cadastro é permitido apenas para e-mails com o domínio @colegiosaojudas.com.br.",
-        variant: "destructive"
-      });
-      setIsLoading(false);
-      return;
-    }
-    
-    if (registerPassword.length < 6) {
-      toast({ title: "Erro", description: "A senha deve ter pelo menos 6 caracteres.", variant: "destructive" });
-      setIsLoading(false);
-      return;
-    }
-
-    const result = await register(registerEmail, registerPassword);
-    
-    if (result.success) {
-      toast({
-        title: "Cadastro realizado!",
-        description: "Verifique seu e-mail para confirmar sua conta e fazer login."
-      });
-      setLoginEmail(registerEmail);
-      setRegisterEmail("");
-      setRegisterPassword("");
-      setRegisterMode(false);
-    } else {
-      toast({
-        title: "Erro de Cadastro",
-        description: result.error || "Falha ao registrar. O e-mail pode já estar em uso.",
-        variant: "destructive"
-      });
-    }
-    setIsLoading(false);
-  };
 
   const handleRecoverySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -140,7 +96,7 @@ const Login = () => {
     if (!verifyEmail(recoveryEmail)) {
       toast({
         title: "Erro de acesso",
-        description: "O email deve pertencer ao domínio institucional (@colegiosaojudas.com.br).",
+        description: "O email deve pertencer ao domínio institucional.",
         variant: "destructive"
       });
       setIsLoading(false);
@@ -166,27 +122,54 @@ const Login = () => {
     }
     setIsLoading(false);
   };
+
+  const handleUpdatePasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    if (newPassword !== confirmPassword) {
+      toast({ title: "Erro", description: "As senhas não coincidem.", variant: "destructive" });
+      setIsLoading(false);
+      return;
+    }
+    if (newPassword.length < 6) {
+      toast({ title: "Erro", description: "A senha deve ter pelo menos 6 caracteres.", variant: "destructive" });
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+
+      if (error) throw error;
+
+      toast({
+        title: "Sucesso!",
+        description: "Sua senha foi definida. Você está logado e será redirecionado.",
+      });
+      
+      // Redireciona para a página principal (o AuthProvider deve pegar a sessão)
+      navigate("/", { replace: true });
+    } catch (error: any) {
+      toast({
+        title: "Erro ao definir senha",
+        description: error.message || "Não foi possível atualizar a senha. Tente novamente.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
   
   const handleToggleRecoveryMode = () => {
     setRecoveryMode(prev => {
       if (prev) {
+        // Ao sair do modo de recuperação, preenche o email de login com o email de recuperação
         setLoginEmail(recoveryEmail);
         setRecoveryEmail('');
       } else {
+        // Ao entrar no modo de recuperação, preenche o email de recuperação com o email de login
         setRecoveryEmail(loginEmail);
-      }
-      return !prev;
-    });
-  };
-  
-  const handleToggleRegisterMode = () => {
-    setRegisterMode(prev => {
-      if (prev) {
-        setLoginEmail(registerEmail);
-        setRegisterEmail('');
-        setRegisterPassword('');
-      } else {
-        setRegisterEmail(loginEmail);
       }
       return !prev;
     });
@@ -240,7 +223,7 @@ const Login = () => {
     }
 
     if (isRecoveryMode) {
-      // MODO DE RECUPERAÇÃO DE SENHA
+      // MODO DE PRIMEIRO ACESSO / RECUPERAÇÃO DE SENHA
       return (
         <form onSubmit={handleRecoverySubmit}>
           <CardHeader className="space-y-1 text-center pb-6 bg-gradient-to-r from-blue-500/10 to-blue-600/10">
@@ -249,9 +232,9 @@ const Login = () => {
                 <KeySquare className="h-10 w-10 text-blue-600" />
               </div>
             </div>
-            <CardTitle className="text-2xl font-bold text-blue-800">Recuperação de Senha</CardTitle>
+            <CardTitle className="text-2xl font-bold text-blue-800">Primeiro Acesso / Recuperação</CardTitle>
             <CardDescription className="text-gray-600">
-              Digite seu e-mail institucional para receber o link de redefinição.
+              Digite seu e-mail institucional para receber o link de acesso.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 pt-6">
@@ -262,56 +245,9 @@ const Login = () => {
           </CardContent>
           <CardFooter className="flex flex-col space-y-4 pb-6">
             <Button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-blue-500" disabled={isLoading}>
-              {isLoading ? "Enviando..." : "Enviar Link de Redefinição"}
+              {isLoading ? "Enviando..." : "Enviar Link de Acesso"}
             </Button>
             <Button type="button" variant="ghost" className="text-sm text-gray-600" onClick={handleToggleRecoveryMode} disabled={isLoading}>
-              <ArrowLeft className="h-3.5 w-3.5 mr-1" />
-              Voltar ao login
-            </Button>
-          </CardFooter>
-        </form>
-      );
-    }
-    
-    if (isRegisterMode) {
-      // MODO DE CADASTRO (SELF-REGISTRATION)
-      return (
-        <form onSubmit={handleRegisterSubmit}>
-          <CardHeader className="space-y-1 text-center pb-6 bg-gradient-to-r from-purple-500/10 to-purple-600/10">
-            <div className="flex justify-center mb-4">
-              <div className="p-3 rounded-full bg-purple-100 shadow-md">
-                <UserPlus className="h-10 w-10 text-purple-600" />
-              </div>
-            </div>
-            <CardTitle className="text-2xl font-bold text-purple-800">Novo Cadastro</CardTitle>
-            <CardDescription className="text-gray-600">
-              Use seu e-mail institucional para criar sua conta.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4 pt-6">
-            <div className="space-y-2">
-              <Label htmlFor="register-email" className="text-gray-700 flex items-center gap-1.5"><Mail className="h-4 w-4" />Email Institucional</Label>
-              <Input id="register-email" type="email" placeholder="seu.email@colegiosaojudas.com.br" value={registerEmail} onChange={e => setRegisterEmail(e.target.value)} className="bg-white/70" disabled={isLoading} required />
-              <p className="text-xs text-muted-foreground flex items-center gap-1">
-                <AlertCircle className="h-3 w-3" />
-                Apenas e-mails @colegiosaojudas.com.br são permitidos.
-              </p>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="register-password" className="text-gray-700 flex items-center gap-1.5"><Lock className="h-4 w-4" />Senha</Label>
-              <div className="relative">
-                <Input id="register-password" type={showPassword ? "text" : "password"} placeholder="Crie uma senha segura (mín. 6 caracteres)" value={registerPassword} onChange={e => setRegisterPassword(e.target.value)} className="bg-white/70 pr-10" disabled={isLoading} required />
-                <Button type="button" variant="ghost" size="sm" className="absolute right-0 top-0 h-full px-3 hover:bg-transparent" onClick={() => setShowPassword(prev => !prev)}>
-                  {showPassword ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-          <CardFooter className="flex flex-col space-y-4 pb-6">
-            <Button type="submit" className="w-full bg-gradient-to-r from-purple-600 to-purple-500" disabled={isLoading}>
-              {isLoading ? "Cadastrando..." : "Cadastrar"}
-            </Button>
-            <Button type="button" variant="ghost" className="text-sm text-gray-600" onClick={handleToggleRegisterMode} disabled={isLoading}>
               <ArrowLeft className="h-3.5 w-3.5 mr-1" />
               Voltar ao login
             </Button>
@@ -342,16 +278,10 @@ const Login = () => {
           <Button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-blue-500" disabled={isLoading}>
             {isLoading ? "Entrando..." : "Entrar"}
           </Button>
-          <div className="flex justify-between w-full gap-4">
-            <Button type="button" variant="ghost" className="text-sm text-gray-600 flex-1" onClick={handleToggleRecoveryMode} disabled={isLoading}>
-              <KeySquare className="h-3.5 w-3.5 mr-1" />
-              Recuperar Senha
-            </Button>
-            <Button type="button" variant="ghost" className="text-sm text-gray-600 flex-1" onClick={handleToggleRegisterMode} disabled={isLoading}>
-              <UserPlus className="h-3.5 w-3.5 mr-1" />
-              Novo Cadastro
-            </Button>
-          </div>
+          <Button type="button" variant="ghost" className="text-sm text-gray-600" onClick={handleToggleRecoveryMode} disabled={isLoading}>
+            <KeySquare className="h-3.5 w-3.5 mr-1" />
+            Primeiro Acesso / Recuperar Senha
+          </Button>
         </CardFooter>
       </form>
     );
@@ -370,7 +300,7 @@ const Login = () => {
             </div>
             <CardTitle className="text-2xl font-bold text-blue-800">Zelote</CardTitle>
             <CardDescription className="text-gray-600">
-              Acesso ao sistema de controle de inventário
+              Acesso restrito para usuários convidados
             </CardDescription>
           </CardHeader>
         )}
