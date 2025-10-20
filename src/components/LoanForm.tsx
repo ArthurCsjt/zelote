@@ -19,7 +19,7 @@ import type { UserSearchResult } from '@/hooks/useUserSearch';
 import { Card, CardContent, CardTitle } from "./ui/card";
 import { BatchDeviceInput } from "./BatchDeviceInput";
 import { GlassCard } from "./ui/GlassCard";
-import ChromebookAutocomplete from "./ChromebookAutocomplete"; // NOVO IMPORT
+import ChromebookSearchInput from "./ChromebookSearchInput"; // NOVO IMPORT
 import type { ChromebookSearchResult } from '@/hooks/useChromebookSearch'; // NOVO IMPORT
 
 // Define a interface dos dados do formulário de empréstimo
@@ -113,10 +113,15 @@ export function LoanForm({ onBack }: LoanFormProps) {
         // No modo individual, precisamos buscar o item após o scan
         // Para simplificar, vamos apenas preencher o campo e forçar a seleção
         // A validação completa ocorrerá no submit.
-        setFormData(prev => ({ ...prev, chromebookId: sanitizedId }));
+        // NOTA: O ChromebookSearchInput não tem um campo de texto para preencher,
+        // mas o Autocomplete fará a busca automaticamente se o usuário digitar.
+        // Para o QR Code, o melhor é forçar a seleção se o ID for válido.
+        
+        // Como o QR Code não retorna o objeto completo, apenas o ID,
+        // vamos apenas notificar o usuário para usar a busca manual com o ID.
         toast({
           title: "QR Code lido",
-          description: `ID do Chromebook: ${sanitizedId}. Selecione na lista para confirmar.`,
+          description: `ID do Chromebook: ${sanitizedId}. Use a busca para selecionar e confirmar.`,
           variant: "info",
         });
       } else {
@@ -293,23 +298,14 @@ export function LoanForm({ onBack }: LoanFormProps) {
                 <Label htmlFor="chromebookId" className="text-gray-700">
                   ID do Chromebook *
                 </Label>
-                <ChromebookAutocomplete
+                <ChromebookSearchInput
                     selectedChromebook={selectedChromebook}
                     onSelect={handleChromebookSelect}
                     onClear={handleChromebookClear}
                     disabled={loading}
                     filterStatus="disponivel" // Apenas Chromebooks disponíveis
+                    onScanClick={() => setIsQRReaderOpen(true)}
                 />
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  className="border-gray-200 bg-white hover:bg-gray-50 px-3 w-full mt-2"
-                  onClick={() => setIsQRReaderOpen(true)}
-                  title="Escanear QR Code"
-                >
-                  <QrCode className="h-5 w-5 text-gray-600 mr-2" />
-                  Escanear QR Code
-                </Button>
               </div>
             ) : (
               /* Interface de empréstimo em lote (usando o novo componente) */

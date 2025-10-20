@@ -15,8 +15,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import UserAutocomplete from "./UserAutocomplete";
 import type { UserSearchResult } from '@/hooks/useUserSearch';
 import { BatchDeviceInput } from "./BatchDeviceInput";
-import ChromebookAutocomplete from "./ChromebookAutocomplete";
-import type { ChromebookSearchResult } from '@/hooks/useChromebookSearch';
+import ChromebookSearchInput from "./ChromebookSearchInput"; // NOVO IMPORT
+import type { ChromebookSearchResult } from '@/hooks/useChromebookSearch'; // NOVO IMPORT
 import type { ReturnFormData } from '@/types/database'; // IMPORT CORRETO
 
 // Define a interface de props do componente
@@ -47,7 +47,7 @@ export function ReturnDialog({
   const [batchDevices, setBatchDevices] = useState<string[]>([]);
   const [confirmChecked, setConfirmChecked] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserSearchResult | null>(null);
-  const [selectedChromebook, setSelectedChromebook] = useState<ChromebookSearchResult | null>(null);
+  const [selectedChromebook, setSelectedChromebook] = useState<ChromebookSearchResult | null>(null); // NOVO ESTADO
 
   // === FUNÇÕES DE MANIPULAÇÃO (HANDLERS) ===
 
@@ -188,7 +188,7 @@ export function ReturnDialog({
                   onValueChange={(value: 'individual' | 'lote') => {
                     onReturnDataChange({ ...returnData, type: value });
                     if (value === 'individual') {
-                      setBatchDevices([]); // Limpa lote ao mudar para individual
+                      setBatchDevices([]);
                     } else {
                       setSelectedChromebook(null); // Limpa ID individual ao mudar para lote
                     }
@@ -211,23 +211,14 @@ export function ReturnDialog({
                   <Label htmlFor="chromebookId" className="text-gray-700">
                     ID do Chromebook *
                   </Label>
-                  <ChromebookAutocomplete
+                  <ChromebookSearchInput
                       selectedChromebook={selectedChromebook}
                       onSelect={handleChromebookSelect}
                       onClear={handleChromebookClear}
                       disabled={false}
                       filterStatus="ativo" // Apenas Chromebooks emprestados
+                      onScanClick={() => setShowScanner(true)}
                   />
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    className="border-gray-200 bg-white hover:bg-gray-50 px-3 w-full mt-2"
-                    onClick={() => setShowScanner(true)}
-                    title="Escanear QR Code"
-                  >
-                    <QrCode className="h-5 w-5 text-gray-600 mr-2" />
-                    Escanear QR Code
-                  </Button>
                 </div>
               ) : (
                 /* Interface de devolução em lote (usando BatchDeviceInput) */

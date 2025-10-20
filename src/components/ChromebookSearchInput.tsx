@@ -1,52 +1,53 @@
-import React, { useState, useMemo } from 'react';
-import { Check, ChevronsUpDown, Search, Loader2, CheckCircle, X, Computer, AlertTriangle, Clock, MapPin } from 'lucide-react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
+import { Check, Search, Loader2, CheckCircle, X, Computer, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Input } from '@/components/ui/input';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { useChromebookSearch, ChromebookSearchResult } from '@/hooks/useChromebookSearch';
 import { Badge } from './ui/badge';
 import { GlassCard } from './ui/GlassCard';
 
-interface ChromebookAutocompleteProps {
+interface ChromebookSearchInputProps {
   selectedChromebook: ChromebookSearchResult | null;
   onSelect: (chromebook: ChromebookSearchResult) => void;
   onClear: () => void;
   disabled: boolean;
-  // Opcional: Filtro para mostrar apenas status 'disponivel'
   filterStatus?: 'disponivel' | 'ativo' | 'all';
+  onScanClick: () => void;
 }
 
-const ChromebookAutocomplete: React.FC<ChromebookAutocompleteProps> = ({ 
+const ChromebookSearchInput: React.FC<ChromebookSearchInputProps> = ({ 
   selectedChromebook, 
   onSelect, 
   onClear, 
   disabled,
-  filterStatus = 'all'
+  filterStatus = 'all',
+  onScanClick
 }) => {
-  const [open, setOpen] = useState(false);
   const { chromebooks, loading } = useChromebookSearch();
   const [searchTerm, setSearchTerm] = useState('');
+  const [isFocused, setIsFocused] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const filteredChromebooks = useMemo(() => {
+    if (!searchTerm || !isFocused) return [];
+    
     let filtered = chromebooks;
 
     // 1. Filtrar por status
     if (filterStatus === 'disponivel') {
       filtered = filtered.filter(cb => cb.status === 'disponivel');
     } else if (filterStatus === 'ativo') {
-      // Para devolução, queremos itens que estão emprestados
       filtered = filtered.filter(cb => cb.status === 'emprestado');
     }
 
     // 2. Filtrar por termo de busca
-    if (searchTerm) {
-      const lowerCaseSearch = searchTerm.toLowerCase();
-      filtered = filtered.filter(cb => cb.searchable.includes(lowerCaseSearch));
-    }
+    const lowerCaseSearch = searchTerm.toLowerCase();
+    filtered = filtered.filter(cb => cb.searchable.includes(lowerCaseSearch));
     
-    return filtered;
-  }, [chromebooks, searchTerm, filterStatus]);
+    return filtered.slice(0, 10); // Limita a 10 resultados
+  }, [chromebooks, searchTerm, filterStatus, isFocused]);
 
   const getStatusBadge = (status: ChromebookSearchResult['status']) => {
     switch (status) {
@@ -65,19 +66,12 @@ const ChromebookAutocomplete: React.FC<ChromebookAutocompleteProps> = ({
 
   const handleSelect = (chromebook: ChromebookSearchResult) => {
     onSelect(chromebook);
-    setOpen(false);
     setSearchTerm('');
+    setIsFocused(false);
+    inputRef.current?.blur();
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center p-3 bg-muted rounded-md">
-        <Loader2 className="h-4 w-4 animate-spin mr-2" />
-        Carregando inventário...
-      </div>
-    );
-  }
-
+  // Se um item estiver selecionado, exibe o card de confirmação
   if (selectedChromebook) {
     const isAvailable = selectedChromebook.status === 'disponivel';
     const isEmprestado = selectedChromebook.status === 'emprestado';
@@ -122,56 +116,72 @@ const ChromebookAutocomplete: React.FC<ChromebookAutocompleteProps> = ({
     );
   }
 
+  // Se nenhum item estiver selecionado, exibe o campo de busca
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          role="combobox"
-          aria-expanded={open}
-          className="w-full justify-between bg-white border-gray-200"
-          disabled={disabled}
-        >
-          <div className="flex items-center">
-            <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
-            {"Buscar ID, modelo ou patrimônio..."}
-          </div>
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-[350px] p-0">
-        <Command>
-          <CommandInput 
-            placeholder="Buscar Chromebook..." 
+    <div className="relative space-y-2">
+      <div className="flex gap-2">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+          <Input
+            ref={inputRef}
+            placeholder="Buscar ID, modelo ou patrimônio..."
             value={searchTerm}
-            onValueChange={setSearchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setTimeout(() => setIsFocused(false), 200)} // Pequeno delay para permitir o clique
+            className="pl-10 w-full bg-white border-gray-200"
+            disabled={disabled || loading}
           />
-          <CommandList>
-            <CommandEmpty>Nenhum Chromebook encontrado.</CommandEmpty>
-            <CommandGroup>
-              {filteredChromebooks.map((chromebook) => (
-                <CommandItem
-                  key={chromebook.id}
-                  value={chromebook.searchable}
-                  onSelect={() => handleSelect(chromebook)}
-                  className="flex items-center justify-between"
-                >
-                  <div className="flex items-center">
-                    <Computer className="mr-2 h-4 w-4 text-gray-500" />
-                    <div className="flex flex-col">
-                      <span className="font-medium text-sm">{chromebook.chromebook_id}</span>
-                      <span className="text-xs text-muted-foreground">{chromebook.model}</span>
-                    </div>
+        </div>
+        <Button 
+          type="button" 
+          variant="outline" 
+          className="border-gray-200 bg-white hover:bg-gray-50 px-3"
+          onClick={onScanClick}
+          disabled={disabled || loading}
+        >
+          <QrCode className="h-5 w-5 text-gray-600" />
+        </Button>
+      </div>
+
+      {/* Lista de Sugestões (aparece abaixo do input) */}
+      {isFocused && searchTerm && filteredChromebooks.length > 0 && (
+        <ScrollArea className="absolute z-20 w-full max-h-60 rounded-md border bg-white shadow-lg">
+          <div className="p-1">
+            {filteredChromebooks.map((chromebook) => (
+              <div
+                key={chromebook.id}
+                className="flex items-center justify-between p-2 cursor-pointer hover:bg-gray-100 rounded-md"
+                onMouseDown={() => handleSelect(chromebook)} // Usar onMouseDown para evitar que o onBlur feche antes do clique
+              >
+                <div className="flex items-center">
+                  <Computer className="mr-2 h-4 w-4 text-gray-500" />
+                  <div className="flex flex-col">
+                    <span className="font-medium text-sm">{chromebook.chromebook_id}</span>
+                    <span className="text-xs text-muted-foreground">{chromebook.model}</span>
                   </div>
-                  {getStatusBadge(chromebook.status)}
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
+                </div>
+                {getStatusBadge(chromebook.status)}
+              </div>
+            ))}
+          </div>
+        </ScrollArea>
+      )}
+      
+      {loading && (
+        <div className="flex items-center justify-center p-2 text-sm text-muted-foreground">
+          <Loader2 className="h-4 w-4 animate-spin mr-2" />
+          Buscando...
+        </div>
+      )}
+      
+      {isFocused && searchTerm && filteredChromebooks.length === 0 && !loading && (
+        <div className="p-2 text-sm text-muted-foreground text-center border rounded-md bg-white">
+          Nenhum Chromebook encontrado.
+        </div>
+      )}
+    </div>
   );
 };
 
-export default ChromebookAutocomplete;
+export default ChromebookSearchInput;
