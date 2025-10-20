@@ -2,11 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 // ALTERAÇÃO 1: Adicionado o ícone 'ListChecks' para o novo botão
-import { ClipboardList, BarChart3, PlusCircle, Laptop, RotateCcw, Brain, ListChecks } from 'lucide-react';
+import { ClipboardList, BarChart3, PlusCircle, Laptop, RotateCcw, Brain, ListChecks, QrCode } from 'lucide-react';
 
 interface MainMenuProps {
-  // ALTERAÇÃO 2: Removida a rota 'intelligent-reports'
-  onNavigate: (route: 'registration' | 'dashboard' | 'loan' | 'return' | 'inventory' | 'audit') => void;
+  // ALTERAÇÃO 2: Adicionando a nova rota 'quick-register'
+  onNavigate: (route: 'registration' | 'dashboard' | 'loan' | 'return' | 'inventory' | 'audit' | 'quick-register') => void;
 }
 
 const isMobileDevice = () => {
@@ -58,7 +58,13 @@ export function MainMenu({
       // ALTERAÇÃO: Usando a cor do sistema de menu
       bgColor: 'bg-menu-rose' 
     },
-    // ALTERAÇÃO 3: Adicionado o novo objeto para o botão de contagem
+    // NOVO BOTÃO: Re-Cadastro Rápido
+    {
+      title: 'Re-Cadastro Rápido',
+      icon: <QrCode className="h-5 w-5" />,
+      action: () => onNavigate('quick-register'),
+      bgColor: 'bg-menu-teal' 
+    },
     {
       title: 'Sistema de Contagem',
       icon: <ListChecks className="h-5 w-5" />,

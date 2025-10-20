@@ -18,6 +18,7 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { LoanHub } from "@/components/LoanHub";
 import type { ReturnFormData } from "@/types/database";
 import { useDatabase } from "@/hooks/useDatabase";
+import { QuickRegisterWrapper } from '@/components/QuickRegisterWrapper'; // NOVO IMPORT
 
 const Index = () => {
   // ADIÇÃO: Chamamos os hooks de autenticação aqui, no componente "pai"
@@ -28,11 +29,11 @@ const Index = () => {
   const [openReturnDialog, setOpenReturnDialog] = useState(false);
   const [chromebookId, setChromebookId] = useState("");
   const [returnData, setReturnData] = useState<ReturnFormData>({ name: "", ra: "", email: "", type: 'individual', userType: 'aluno' });
-  const [currentView, setCurrentView] = useState<'menu' | 'registration' | 'dashboard' | 'inventory' | 'loan' | 'audit'>('menu');
+  const [currentView, setCurrentView] = useState<'menu' | 'registration' | 'dashboard' | 'inventory' | 'loan' | 'audit' | 'quick-register'>('menu');
   const [showQRCodeModal, setShowQRCodeModal] = useState(false);
   const [selectedChromebookId, setSelectedChromebookId] = useState<string | null>(null);
 
-  const handleNavigation = (route: 'registration' | 'dashboard' | 'inventory' | 'loan' | 'return' | 'audit') => {
+  const handleNavigation = (route: 'registration' | 'dashboard' | 'inventory' | 'loan' | 'return' | 'audit' | 'quick-register') => {
     if (route === 'return') {
       setOpenReturnDialog(true);
       return;
@@ -50,7 +51,12 @@ const Index = () => {
   const handleRegistrationSuccess = (newChromebook: any) => {
     setSelectedChromebookId(newChromebook.chromebook_id);
     setShowQRCodeModal(true);
-    setCurrentView('inventory');
+    // Se o registro foi feito via QuickRegister, volta para o menu após o sucesso
+    if (currentView === 'quick-register') {
+      setCurrentView('menu');
+    } else {
+      setCurrentView('inventory');
+    }
   };
 
   const handleReturnClick = () => { /* Sua lógica de devolução */ };
@@ -69,6 +75,8 @@ const Index = () => {
         return <LoanHub onBack={handleBackToMenu} />;
       case 'audit':
         return <AuditHub />;
+      case 'quick-register':
+        return <QuickRegisterWrapper onBack={handleBackToMenu} onRegistrationSuccess={handleRegistrationSuccess} />;
       default:
         return <MainMenu onNavigate={handleNavigation} />;
     }
