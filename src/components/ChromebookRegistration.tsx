@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
@@ -18,6 +18,7 @@ import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
 import { GlassCard } from "./ui/GlassCard";
 import type { Chromebook } from "@/types/database";
 import { useDatabase } from '@/hooks/useDatabase'; // Importando useDatabase
+import { MANUFACTURERS, CHROMEBOOK_MODELS } from '@/utils/constants'; // Importando constantes
 
 interface FormData {
   manufacturer: string;
@@ -42,6 +43,12 @@ export function ChromebookRegistration({ onRegistrationSuccess }: { onRegistrati
     classroomLocation: "", observations: "", provisioning_status: 'provisioned',
   });
 
+  // Filtra modelos baseados no fabricante selecionado
+  const filteredModels = useMemo(() => {
+    if (!formData.manufacturer) return [];
+    return CHROMEBOOK_MODELS.filter(m => m.manufacturer === formData.manufacturer);
+  }, [formData.manufacturer]);
+
   const resetForm = () => {
     setFormData({
       manufacturer: "", model: "", series: "",
@@ -52,7 +59,16 @@ export function ChromebookRegistration({ onRegistrationSuccess }: { onRegistrati
   };
 
   const handleFormChange = (field: keyof FormData, value: string | boolean) => {
-    setFormData(prev => ({ ...prev, [field]: value as any }));
+    setFormData(prev => {
+      const newState = { ...prev, [field]: value as any };
+      
+      // Se o fabricante mudar, reseta o modelo
+      if (field === 'manufacturer' && prev.manufacturer !== value) {
+        newState.model = '';
+      }
+      
+      return newState;
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -135,23 +151,30 @@ export function ChromebookRegistration({ onRegistrationSuccess }: { onRegistrati
                     <SelectValue placeholder="Selecione um fabricante" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Acer">Acer</SelectItem>
-                    <SelectItem value="Lenovo">Lenovo</SelectItem>
-                    <SelectItem value="Samsung">Samsung</SelectItem>
+                    {MANUFACTURERS.map(m => (
+                      <SelectItem key={m} value={m}>{m}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
               
               <div className="space-y-2">
                 <Label htmlFor="model">Modelo *</Label>
-                <Input 
-                  id="model" 
-                  value={formData.model} 
-                  onChange={(e) => handleFormChange('model', e.target.value)} 
-                  placeholder="Ex: Chromebook 14e"
-                  required 
-                  className="bg-white"
-                />
+                <Select
+                  value={formData.model}
+                  onValueChange={(value) => handleFormChange('model', value)}
+                  required
+                  disabled={!formData.manufacturer || filteredModels.length === 0}
+                >
+                  <SelectTrigger className="bg-white">
+                    <SelectValue placeholder={formData.manufacturer ? "Selecione o modelo" : "Selecione o fabricante primeiro"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {filteredModels.map(m => (
+                      <SelectItem key={m.model} value={m.model}>{m.model}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
             

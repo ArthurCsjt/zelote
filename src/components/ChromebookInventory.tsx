@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import {
@@ -36,6 +36,7 @@ import type { Chromebook, ChromebookData } from "@/types/database";
 import { InventoryStats } from "./InventoryStats";
 import { GlassCard } from "./ui/GlassCard";
 import { BackupButton } from "./BackupButton"; // Importando o novo componente
+import { MANUFACTURERS, CHROMEBOOK_MODELS } from '@/utils/constants'; // Importando constantes
 
 // Interface for Chromebook data structure (matching database)
 interface ChromebookDataExtended extends Chromebook {
@@ -72,6 +73,12 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+
+  // Filtra modelos baseados no fabricante selecionado no diálogo de edição
+  const filteredModels = useMemo(() => {
+    if (!editingChromebook?.manufacturer) return [];
+    return CHROMEBOOK_MODELS.filter(m => m.manufacturer === editingChromebook.manufacturer);
+  }, [editingChromebook?.manufacturer]);
 
   // Fetch Chromebooks
   const fetchChromebooks = useCallback(async () => {
@@ -209,7 +216,7 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
     setIsEditDialogOpen(true);
   };
 
-  // Handle edit form change
+  // Handle edit form change (para inputs de texto)
   const handleEditChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
@@ -218,6 +225,22 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
     setEditingChromebook({
       ...editingChromebook,
       [e.target.id]: e.target.value,
+    });
+  };
+  
+  // Handle select change (para dropdowns)
+  const handleEditSelectChange = (field: keyof ChromebookDataExtended, value: string) => {
+    if (!editingChromebook) return;
+    
+    setEditingChromebook(prev => {
+      const newState = { ...prev!, [field]: value };
+      
+      // Se o fabricante mudar, reseta o modelo
+      if (field === 'manufacturer' && prev!.manufacturer !== value) {
+        newState.model = '';
+      }
+      
+      return newState as ChromebookDataExtended;
     });
   };
 
@@ -676,23 +699,36 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
                     <Label htmlFor="manufacturer" className="text-xs font-medium flex items-center gap-1">
                       <Factory className="h-3 w-3" /> Fabricante
                     </Label>
-                    <Input
-                      id="manufacturer"
-                      value={editingChromebook.manufacturer || ""}
-                      onChange={handleEditChange}
-                      placeholder="Ex: Lenovo"
-                      className="h-10"
-                    />
+                    <Select
+                      value={editingChromebook.manufacturer || ''}
+                      onValueChange={(value) => handleEditSelectChange('manufacturer', value)}
+                    >
+                      <SelectTrigger className="h-10">
+                        <SelectValue placeholder="Selecione o fabricante" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {MANUFACTURERS.map(m => (
+                          <SelectItem key={m} value={m}>{m}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div className="space-y-1.5">
                     <Label htmlFor="model" className="text-xs font-medium">Modelo *</Label>
-                    <Input
-                      id="model"
+                    <Select
                       value={editingChromebook.model}
-                      onChange={handleEditChange}
-                      placeholder="Ex: Chromebook 14e"
-                      className="h-10"
-                    />
+                      onValueChange={(value) => handleEditSelectChange('model', value)}
+                      disabled={!editingChromebook.manufacturer || filteredModels.length === 0}
+                    >
+                      <SelectTrigger className="h-10">
+                        <SelectValue placeholder={editingChromebook.manufacturer ? "Selecione o modelo" : "Selecione o fabricante primeiro"} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {filteredModels.map(m => (
+                          <SelectItem key={m.model} value={m.model}>{m.model}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
               </div>
@@ -700,7 +736,7 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
               {/* Seção 2: Status e Localização */}
               <div className="space-y-4 p-4 border rounded-lg bg-white shadow-sm">
                 <h4 className="font-semibold text-lg text-gray-800 flex items-center gap-2">
-                  <MapPin className="h-4 w-4 text-green-600" />
+                  <MapPin className="h-4 w-4 text-purple-600" />
                   Status e Localização
                 </h4>
                 
