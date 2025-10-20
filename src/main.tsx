@@ -2,7 +2,7 @@ import React from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
-import { toast as sonnerToast, Toaster } from 'sonner' // Usando Sonner
+import { toast as sonnerToast } from 'sonner' // Mantendo o import de sonnerToast para o PWA update
 import { ToastAction } from "@/components/ui/toast" // Mantendo o import para o ToastAction se necessário, mas vamos usar o Sonner
 
 // Ensure React is available globally
@@ -65,20 +65,6 @@ function setupServiceWorkerUpdates() {
 
 createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    {/* Configuração do Sonner para notificações modernas */}
-    <Toaster 
-      // Removendo 'position' para controlar via CSS
-      richColors 
-      closeButton 
-      className="z-[9999] sonner-custom-position" // Adicionando classe para controle CSS
-      toastOptions={{
-        className: 'shadow-lg border-gray-200',
-        style: {
-          padding: '12px 16px',
-          borderRadius: '8px',
-        },
-      }}
-    />
     <App />
   </React.StrictMode>
 )

@@ -137,38 +137,6 @@
   padding-top: env(safe-area-inset-top);
 }
 
-/* ======================================================================== */
-/* ADIÇÃO: Estilos para o Sonner (Toaster) - Posição Responsiva */
-/* ======================================================================== */
-
-/* Posição Padrão (Mobile First): Topo Centralizado */
-.sonner-custom-position {
-  /* Força a posição top-center no mobile */
-  top: 0 !important;
-  bottom: auto !important;
-  left: 50% !important;
-  right: auto !important;
-  transform: translateX(-50%) !important;
-  width: 100% !important;
-  max-width: 400px !important; /* Limita a largura no mobile */
-  padding: 0 10px !important; /* Padding lateral para não encostar nas bordas */
-}
-
-/* Posição para Desktop (PC): Inferior Direito */
-@media (min-width: 768px) {
-  .sonner-custom-position {
-    top: auto !important;
-    bottom: 20px !important; /* 20px do fundo */
-    right: 20px !important; /* 20px da direita */
-    left: auto !important;
-    transform: none !important; /* Remove a transformação de centralização */
-    width: auto !important;
-    max-width: 400px !important; /* Mantém a largura máxima */
-    padding: 0 !important;
-  }
-}
-
-
 /* Estilos para corrigir o enquadramento do QR Scanner (`html5-qrcode`)  */
 #qr-code-reader {
   width: 100%;             

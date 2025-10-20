@@ -6,6 +6,8 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Button } from '@/components/ui/button';
 import { ActivityFeed } from './ActivityFeed'; // Importando o novo componente
 import type { User as SupabaseUser } from '@supabase/supabase-js'; // Importando o tipo User
+import { Toaster } from 'sonner'; // Importando Toaster
+import { useIsDesktop } from '@/hooks/useIsDesktop'; // Importando o novo hook
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -34,6 +36,7 @@ const Layout: React.FC<LayoutProps> = ({
     setTheme
   } = useTheme();
   const navigate = useNavigate();
+  const isDesktop = useIsDesktop(); // Usando o hook para detectar desktop
   
   const [showInstallBanner, setShowInstallBanner] = React.useState(false);
   const [isStandalone, setIsStandalone] = React.useState(false);
@@ -85,6 +88,20 @@ const Layout: React.FC<LayoutProps> = ({
   };
   return (
     <div className={`min-h-screen bg-background text-foreground ${isStandalone ? 'safe-area-top safe-area-bottom safe-area-left safe-area-right' : ''}`}>
+      {/* Configuração do Sonner para notificações modernas */}
+      <Toaster 
+        position={isDesktop ? "bottom-right" : "top-center"} // Posição dinâmica
+        richColors 
+        closeButton 
+        toastOptions={{
+          className: 'shadow-lg border-gray-200',
+          style: {
+            padding: '12px 16px',
+            borderRadius: '8px',
+          },
+        }}
+      />
+      
       {/* Status Bar Overlay for iOS in standalone mode */}
       {isStandalone && <div className="status-bar-overlay" />}
 
