@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Check, ChevronsUpDown, User, GraduationCap, Briefcase, Search, Loader2, CheckCircle, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -7,7 +7,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { useUserSearch, UserSearchResult } from '@/hooks/useUserSearch';
 import { Badge } from './ui/badge';
 import { Card } from './ui/card';
-import { GlassCard } from './ui/GlassCard';
+import { GlassCard } from './ui/GlassCard'; // Importando GlassCard
 
 interface UserAutocompleteProps {
   selectedUser: UserSearchResult | null;
@@ -16,32 +16,16 @@ interface UserAutocompleteProps {
   disabled: boolean;
 }
 
-// Hook auxiliar para debounce
-function useDebounce(value: string, delay: number) {
-  const [debouncedValue, setDebouncedValue] = useState(value);
-
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedValue(value);
-    }, delay);
-
-    return () => {
-      clearTimeout(handler);
-    };
-  }, [value, delay]);
-
-  return debouncedValue;
-}
-
 const UserAutocomplete: React.FC<UserAutocompleteProps> = ({ selectedUser, onSelect, onClear, disabled }) => {
   const [open, setOpen] = useState(false);
+  const { users, loading } = useUserSearch();
   const [searchTerm, setSearchTerm] = useState('');
-  
-  // Aplica debounce ao termo de pesquisa
-  const debouncedSearchTerm = useDebounce(searchTerm, 300);
-  
-  // Usa o hook com o termo debounced
-  const { users, loading } = useUserSearch(debouncedSearchTerm);
+
+  const filteredUsers = useMemo(() => {
+    if (!searchTerm) return users;
+    const lowerCaseSearch = searchTerm.toLowerCase();
+    return users.filter(user => user.searchable.includes(lowerCaseSearch));
+  }, [users, searchTerm]);
 
   const getUserIcon = (type: string) => {
     switch (type) {
@@ -61,14 +45,14 @@ const UserAutocomplete: React.FC<UserAutocompleteProps> = ({ selectedUser, onSel
   const handleSelect = (user: UserSearchResult) => {
     onSelect(user);
     setOpen(false);
-    setSearchTerm(''); // Limpa o termo de pesquisa após a seleção
+    setSearchTerm('');
   };
 
-  if (loading && !selectedUser) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center p-3 bg-muted rounded-md">
         <Loader2 className="h-4 w-4 animate-spin mr-2" />
-        Buscando usuários...
+        Carregando lista de usuários...
       </div>
     );
   }
@@ -109,7 +93,7 @@ const UserAutocomplete: React.FC<UserAutocompleteProps> = ({ selectedUser, onSel
         >
           <div className="flex items-center">
             <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
-            {searchTerm || "Buscar nome, RA ou email..."}
+            {selectedUser ? selectedUser.name : "Buscar nome, RA ou email..."}
           </div>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
@@ -122,36 +106,26 @@ const UserAutocomplete: React.FC<UserAutocompleteProps> = ({ selectedUser, onSel
             onValueChange={setSearchTerm}
           />
           <CommandList>
-            {loading ? (
-                <div className="flex items-center justify-center p-4">
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    Buscando...
-                </div>
-            ) : (
-                <>
-                    <CommandEmpty>Nenhum usuário encontrado.</CommandEmpty>
-                    <CommandGroup>
-                    {users.map((user) => (
-                        <CommandItem
-                        key={user.id}
-                        // Usamos o nome para o valor do item, mas a busca é feita pelo input
-                        value={user.name} 
-                        onSelect={() => handleSelect(user)}
-                        className="flex items-center justify-between"
-                        >
-                        <div className="flex items-center">
-                            {getUserIcon(user.type)}
-                            <div className="flex flex-col">
-                            <span className="font-medium text-sm">{user.name}</span>
-                            <span className="text-xs text-muted-foreground">{user.email}</span>
-                            </div>
-                        </div>
-                        <Badge variant="secondary" className="capitalize">{user.type}</Badge>
-                        </CommandItem>
-                    ))}
-                    </CommandGroup>
-                </>
-            )}
+            <CommandEmpty>Nenhum usuário encontrado.</CommandEmpty>
+            <CommandGroup>
+              {filteredUsers.map((user) => (
+                <CommandItem
+                  key={user.id}
+                  value={user.searchable}
+                  onSelect={() => handleSelect(user)}
+                  className="flex items-center justify-between"
+                >
+                  <div className="flex items-center">
+                    {getUserIcon(user.type)}
+                    <div className="flex flex-col">
+                      <span className="font-medium text-sm">{user.name}</span>
+                      <span className="text-xs text-muted-foreground">{user.email}</span>
+                    </div>
+                  </div>
+                  <Badge variant="secondary" className="capitalize">{user.type}</Badge>
+                </CommandItem>
+              ))}
+            </CommandGroup>
           </CommandList>
         </Command>
       </PopoverContent>

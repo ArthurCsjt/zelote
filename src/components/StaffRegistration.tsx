@@ -73,7 +73,6 @@ export function StaffRegistration() {
         toast({
           title: "Sucesso!",
           description: `Funcionário ${formData.nomeCompleto} cadastrado.`,
-          variant: "success",
         });
 
         setFormData({ nomeCompleto: '', email: '' });

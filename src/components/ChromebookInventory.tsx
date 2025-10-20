@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import {
@@ -9,7 +9,8 @@ import {
   TableHeader,
   TableRow,
 } from "./ui/table";
-import {
+import { Checkbox } from "./ui/checkbox";
+import { 
   Dialog, 
   DialogContent, 
   DialogHeader, 
@@ -20,9 +21,10 @@ import {
 import { Textarea } from "./ui/textarea";
 import { Label } from "./ui/label";
 import { toast } from "./ui/use-toast";
-import { Search, Filter, Edit3, QrCode, CheckCircle, AlertCircle, XCircle, MapPin, X, Trash2, Save, AlertTriangle, Clock, Tag, Factory, Hash, Map, ChevronLeft, ChevronRight, RefreshCw, Loader2 } from "lucide-react";
+import { Search, ArrowLeft, Filter, Edit3, QrCode, CheckCircle, AlertCircle, XCircle, MapPin, Eye, X, Trash2, Save, AlertTriangle, Clock, Tag, Factory, Hash, Map } from "lucide-react";
 import { QRCodeModal } from "./QRCodeModal";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "./ui/pagination";
+import { ScrollArea } from "./ui/scroll-area";
 import { 
   Select,
   SelectContent,
@@ -32,29 +34,30 @@ import {
 } from "./ui/select";
 import { useProfileRole } from "@/hooks/use-profile-role";
 import { supabase } from "@/integrations/supabase/client";
+import { useDatabase } from "@/hooks/useDatabase"; // Importando useDatabase
 import type { Chromebook, ChromebookData } from "@/types/database";
-import { InventoryStats } from "./InventoryStats";
-import { GlassCard } from "./ui/GlassCard";
-import { BackupButton } from "./BackupButton"; // Importando o novo componente
-import { MANUFACTURERS, CHROMEBOOK_MODELS } from '@/utils/constants'; // Importando constantes
+import { InventoryStats } from "./InventoryStats"; // Importando o novo componente de estatísticas
+import { GlassCard } from "./ui/GlassCard"; // Importando GlassCard
 
 // Interface for Chromebook data structure (matching database)
 interface ChromebookDataExtended extends Chromebook {
+  // Adicionando campos que podem ser usados no formulário de edição
   classroom?: string;
   manufacturer?: string;
 }
+
 
 interface ChromebookInventoryProps {
   onBack?: () => void;
 }
 
 export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
+  // Removido useIsMobile
   const { isAdmin } = useProfileRole();
+  const { getChromebooks, updateChromebook, deleteChromebook } = useDatabase(); // Usando useDatabase
   
-  // State for data
+  // State for storing all Chromebooks
   const [chromebooks, setChromebooks] = useState<ChromebookDataExtended[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  
   // State for search term
   const [searchTerm, setSearchTerm] = useState("");
   // State for status filter
@@ -69,66 +72,55 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
   const [editingChromebook, setEditingChromebook] = useState<ChromebookDataExtended | null>(null);
   // State for the Chromebook being deleted
   const [chromebookToDelete, setChromebookToDelete] = useState<ChromebookDataExtended | null>(null);
-  
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const itemsPerPage = 10;
 
-  // Filtra modelos baseados no fabricante selecionado no diálogo de edição
-  const filteredModels = useMemo(() => {
-    if (!editingChromebook?.manufacturer) return [];
-    return CHROMEBOOK_MODELS.filter(m => m.manufacturer === editingChromebook.manufacturer);
-  }, [editingChromebook?.manufacturer]);
+// Load Chromebooks from Supabase on component mount
+useEffect(() => {
+  const fetchChromebooks = async () => {
+    const data = await getChromebooks();
+    setChromebooks(data as ChromebookDataExtended[]);
+  };
 
-  // Fetch Chromebooks
-  const fetchChromebooks = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from('chromebooks')
-        .select('*')
-        .order('created_at', { ascending: false });
+  fetchChromebooks();
+}, [getChromebooks]);
 
-      if (error) throw error;
-      setChromebooks((data || []) as ChromebookDataExtended[]);
-    } catch (error: any) {
-      console.error('Error fetching chromebooks:', error);
-      toast({
-        title: "Erro",
-        description: "Não foi possível carregar o inventário: " + error.message,
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchChromebooks();
-  }, [fetchChromebooks]);
-
-  // Real-time synchronization
-  useEffect(() => {
-    const channel = supabase
-      .channel('chromebooks-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'chromebooks'
-        },
-        (payload) => {
-          console.log('Realtime change received, refetching data:', payload);
-          fetchChromebooks();
+// Real-time synchronization
+useEffect(() => {
+  const channel = supabase
+    .channel('chromebooks-changes')
+    .on(
+      'postgres_changes',
+      {
+        event: '*',
+        schema: 'public',
+        table: 'chromebooks'
+      },
+      (payload) => {
+        console.log('Realtime change received:', payload);
+        
+        if (payload.eventType === 'INSERT') {
+          setChromebooks(prev => [payload.new as ChromebookDataExtended, ...prev]);
+        } else if (payload.eventType === 'UPDATE') {
+          setChromebooks(prev => 
+            prev.map(cb => 
+              cb.id === payload.new.id ? payload.new as ChromebookDataExtended : cb
+            )
+          );
+        } else if (payload.eventType === 'DELETE') {
+          setChromebooks(prev => 
+            prev.filter(cb => cb.id !== payload.old.id)
+          );
         }
-      )
-      .subscribe();
+      }
+    )
+    .subscribe();
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [fetchChromebooks]);
+  return () => {
+    supabase.removeChannel(channel);
+  };
+}, []);
 
   // Filter Chromebooks based on search term and status
   const filteredChromebooks = chromebooks.filter((chromebook) => {
@@ -159,7 +151,7 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
   // Reset pagination when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, statusFilter, itemsPerPage]);
+  }, [searchTerm, statusFilter]);
 
   // Get status information for display
   const getStatusInfo = (status: string) => {
@@ -173,7 +165,7 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
       case 'manutencao':
         return { color: 'text-red-600 bg-red-50', icon: AlertTriangle, label: 'Manutenção' };
       case 'fora_uso':
-        return { color: 'text-gray-600 bg-gray-200', icon: XCircle, label: 'Inativo' };
+        return { color: 'text-gray-600 bg-gray-200', icon: XCircle, label: 'Inativo' }; // Alterado para Inativo
       default:
         return { color: 'text-gray-600 bg-gray-50', icon: XCircle, label: 'Desconhecido' };
     }
@@ -190,23 +182,23 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
     return;
   }
 
+  // Only admins can set FIXO or FORA_USO
   if ((newStatus === 'fixo' || newStatus === 'fora_uso') && !isAdmin) {
     toast({ title: 'Permissão negada', description: 'Apenas administradores podem marcar como Fixo ou Inativo.', variant: 'destructive' });
     return;
   }
 
-  try {
-    const { error } = await supabase
-      .from('chromebooks')
-      .update({ status: newStatus as any })
-      .eq('id', chromebookId);
+  // Usar a função centralizada do useDatabase
+  const success = await updateChromebook(chromebookId, { status: newStatus as any });
 
-    if (error) throw error;
-    
-    toast({ title: "Sucesso", description: "Status atualizado com sucesso" });
-    fetchChromebooks(); // Refetch data
-  } catch (error: any) {
-    toast({ title: "Erro ao atualizar", description: error.message, variant: "destructive" });
+  if (success) {
+    // A atualização do estado local será tratada pelo Real-time, mas podemos fazer uma atualização otimista
+    // para feedback imediato, embora o Real-time garanta a consistência.
+    // Vamos confiar no Real-time para evitar duplicação de lógica de estado.
+    toast({
+      title: "Status atualizado",
+      description: `Status do Chromebook alterado para ${getStatusInfo(newStatus).label}`,
+    });
   }
 };
 
@@ -216,7 +208,7 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
     setIsEditDialogOpen(true);
   };
 
-  // Handle edit form change (para inputs de texto)
+  // Handle edit form change
   const handleEditChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
@@ -225,22 +217,6 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
     setEditingChromebook({
       ...editingChromebook,
       [e.target.id]: e.target.value,
-    });
-  };
-  
-  // Handle select change (para dropdowns)
-  const handleEditSelectChange = (field: keyof ChromebookDataExtended, value: string) => {
-    if (!editingChromebook) return;
-    
-    setEditingChromebook(prev => {
-      const newState = { ...prev!, [field]: value };
-      
-      // Se o fabricante mudar, reseta o modelo
-      if (field === 'manufacturer' && prev!.manufacturer !== value) {
-        newState.model = '';
-      }
-      
-      return newState as ChromebookDataExtended;
     });
   };
 
@@ -268,6 +244,7 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
   const handleSaveEdit = async () => {
     if (!editingChromebook) return;
 
+    // Validate required fields
     if (!editingChromebook.chromebook_id || !editingChromebook.model) {
       toast({
         title: "Campos obrigatórios",
@@ -278,31 +255,24 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
     }
 
     const updatePayload: Partial<ChromebookData> = {
-      chromebook_id: editingChromebook.chromebook_id,
+      chromebookId: editingChromebook.chromebook_id,
       model: editingChromebook.model,
       manufacturer: editingChromebook.manufacturer,
-      serial_number: editingChromebook.serial_number,
-      patrimony_number: editingChromebook.patrimony_number,
+      serialNumber: editingChromebook.serial_number,
+      patrimonyNumber: editingChromebook.patrimony_number,
       status: editingChromebook.status,
       condition: editingChromebook.condition,
       location: editingChromebook.location,
       classroom: editingChromebook.classroom,
     };
 
-    try {
-      const { error } = await supabase
-        .from('chromebooks')
-        .update(updatePayload)
-        .eq('id', editingChromebook.id);
+    // Usar a função centralizada do useDatabase
+    const success = await updateChromebook(editingChromebook.id, updatePayload);
 
-      if (error) throw error;
-      
-      toast({ title: "Sucesso", description: "Chromebook atualizado com sucesso", variant: "success" });
+    if (success) {
       setIsEditDialogOpen(false);
       setEditingChromebook(null);
-      fetchChromebooks();
-    } catch (error: any) {
-      toast({ title: "Erro ao atualizar", description: error.message, variant: "destructive" });
+      // O Real-time cuidará da atualização do estado local
     }
   };
 
@@ -316,20 +286,13 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
   const handleConfirmDelete = async () => {
     if (!chromebookToDelete) return;
 
-    try {
-      const { error } = await supabase
-        .from('chromebooks')
-        .delete()
-        .eq('id', chromebookToDelete.id);
+    // Usar a função centralizada do useDatabase
+    const success = await deleteChromebook(chromebookToDelete.id);
 
-      if (error) throw error;
-      
-      toast({ title: "Sucesso", description: "Chromebook excluído com sucesso", variant: "success" });
+    if (success) {
       setIsDeleteDialogOpen(false);
       setChromebookToDelete(null);
-      fetchChromebooks();
-    } catch (error: any) {
-      toast({ title: "Erro ao excluir", description: error.message, variant: "destructive" });
+      // O Real-time cuidará da atualização do estado local
     }
   };
 
@@ -339,102 +302,48 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
       onBack();
     }
   };
-  
-  // Função para renderizar os botões de página (apenas 5 visíveis)
-  const renderPageButtons = () => {
-    const maxButtons = 5;
-    let startPage = Math.max(1, currentPage - Math.floor(maxButtons / 2));
-    let endPage = Math.min(totalPages, startPage + maxButtons - 1);
-
-    if (endPage - startPage + 1 < maxButtons) {
-      startPage = Math.max(1, endPage - maxButtons + 1);
-    }
-
-    const buttons = [];
-    for (let i = startPage; i <= endPage; i++) {
-      buttons.push(
-        <PaginationItem key={i}>
-          <PaginationLink
-            isActive={currentPage === i}
-            onClick={() => setCurrentPage(i)}
-            className="cursor-pointer"
-          >
-            {i}
-          </PaginationLink>
-        </PaginationItem>
-      );
-    }
-    return buttons;
-  };
 
   return (
-    <div className="space-y-6 animate-fade-in relative">
-      {/* Background gradient overlay (Removido o container principal, mas mantendo o overlay) */}
+    <div className="max-w-6xl mx-auto p-6 glass-morphism animate-fade-in relative">
+      {/* Background gradient overlay */}
       <div className="absolute inset-0 -z-10 bg-gradient-to-br from-blue-50/30 via-purple-50/20 to-pink-50/30 rounded-3xl blur-2xl transform scale-110" />
       
       {/* Estatísticas e Gráfico */}
       <InventoryStats chromebooks={chromebooks} />
 
-      {/* Search and filters - AGRUPADO EM GLASS CARD */}
-      <GlassCard className="space-y-4 mb-6 relative z-10 p-4 sm:p-6">
-        <div className="flex flex-col sm:flex-row gap-4 items-center">
-          {/* Busca */}
-          <div className="relative flex-1 w-full">
-            <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-            <Input
-              placeholder="Buscar por ID, patrimônio, modelo, série, fabricante ou localização..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 h-10"
-            />
-          </div>
-          
-          {/* Filtros (Status) */}
-          <div className="relative w-full sm:w-auto flex-shrink-0">
-            <Filter className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full pl-10 h-10">
-                <SelectValue placeholder="Filtrar por status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos os Status</SelectItem>
-                <SelectItem value="disponivel">Disponível</SelectItem>
-                <SelectItem value="emprestado">Emprestado</SelectItem>
-                <SelectItem value="fixo">Fixo</SelectItem>
-                <SelectItem value="manutencao">Manutenção</SelectItem>
-                <SelectItem value="fora_uso">Inativo</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          
-          {/* Botões de Ação (Atualizar e Backup) */}
-          <div className="flex gap-4 w-full sm:w-auto flex-shrink-0">
-            <Button 
-              variant="outline" 
-              onClick={fetchChromebooks} 
-              disabled={isLoading}
-              size="icon"
-              className="w-10 h-10 flex-shrink-0"
-              title="Atualizar Inventário"
-            >
-              {isLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <RefreshCw className="h-4 w-4" />
-              )}
-            </Button>
-            
-            <div className="flex-1">
-              <BackupButton />
-            </div>
-          </div>
+      {/* Search and filters */}
+      <div className="flex flex-col sm:flex-row gap-4 mb-6 relative z-10">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+          <Input
+            placeholder="Buscar por ID, patrimônio, modelo, série, fabricante ou localização..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10"
+          />
         </div>
         
-        {/* Linha 3: Resultados (Abaixo dos filtros) */}
-        <div className="text-sm text-gray-500 pt-2">
+        <div className="relative">
+          <Filter className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-[180px] pl-10">
+              <SelectValue placeholder="Filtrar por status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos os Status</SelectItem>
+              <SelectItem value="disponivel">Disponível</SelectItem>
+              <SelectItem value="emprestado">Emprestado</SelectItem>
+              <SelectItem value="fixo">Fixo</SelectItem>
+              <SelectItem value="manutencao">Manutenção</SelectItem>
+              <SelectItem value="fora_uso">Inativo</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        
+        <div className="text-sm text-gray-500 flex items-center">
           Resultados: {filteredChromebooks.length} Chromebooks
         </div>
-      </GlassCard>
+      </div>
 
       {/* Table of Chromebooks */}
       <GlassCard className="border-white/30 rounded-2xl overflow-hidden relative z-10 p-0">
@@ -446,18 +355,11 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
               <TableHead className="flex-1">Modelo</TableHead>
               <TableHead className="w-[150px]">Série</TableHead>
               <TableHead className="hidden md:table-cell w-[120px]">Status</TableHead>
-              <TableHead className="w-[180px]">Ações</TableHead>
+              <TableHead className="w-[180px] text-right">Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {isLoading ? (
-              <TableRow>
-                <TableCell colSpan={8} className="h-32 text-center">
-                  <Loader2 className="h-6 w-6 animate-spin mx-auto text-primary" />
-                  <p className="text-sm text-muted-foreground mt-2">Carregando inventário...</p>
-                </TableCell>
-              </TableRow>
-            ) : paginatedChromebooks.length > 0 ? (
+            {paginatedChromebooks.length > 0 ? (
               paginatedChromebooks.map((chromebook) => {
                 const statusInfo = getStatusInfo(chromebook.status);
                 const StatusIcon = statusInfo.icon;
@@ -514,34 +416,28 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
                           size="sm"
                           onClick={() => handleEditClick(chromebook)}
                           title="Editar"
-                          disabled={isLoading}
                         >
                           <Edit3 className="h-4 w-4" />
                         </Button>
-                        {/* RESTRIÇÃO DE PERMISSÃO APLICADA AQUI */}
-                        {isAdmin && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDeleteClick(chromebook)}
-                            title="Excluir"
-                            className="text-red-600 hover:text-red-800"
-                            disabled={isLoading}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        )}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeleteClick(chromebook)}
+                          title="Excluir"
+                          className="text-red-600 hover:text-red-800"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                         <Select 
                           value={chromebook.status} 
                           onValueChange={(value) => handleStatusChange(chromebook.id, value)}
-                          disabled={isLoading}
                         >
                           <SelectTrigger className="w-[120px] h-8 text-xs">
                             <SelectValue />
                           </SelectTrigger>
                            <SelectContent>
                              <SelectItem value="disponivel">Disponível</SelectItem>
-                             <SelectItem value="emprestado" disabled>Emprestado</SelectItem>
+                             <SelectItem value="emprestado">Emprestado</SelectItem>
                              <SelectItem value="fixo">Fixo</SelectItem>
                              <SelectItem value="manutencao">Manutenção</SelectItem>
                              <SelectItem value="fora_uso">Inativo</SelectItem>
@@ -568,70 +464,49 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
         </Table>
       </GlassCard>
 
-      {/* Pagination and Items Per Page Selector */}
-      {totalPages > 0 && (
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6">
-          {/* Items Per Page Selector */}
-          <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-            <span>Itens por página:</span>
-            <Select
-              value={String(itemsPerPage)}
-              onValueChange={(value) => {
-                setItemsPerPage(Number(value));
-                setCurrentPage(1);
-              }}
-            >
-              <SelectTrigger className="w-[80px] h-8">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="10">10</SelectItem>
-                <SelectItem value="20">20</SelectItem>
-                <SelectItem value="50">50</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <Pagination className="mt-6">
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+              />
+            </PaginationItem>
 
-          {/* Pagination Controls */}
-          <Pagination className="mx-0">
-            <PaginationContent>
-              <PaginationItem>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                  disabled={currentPage === 1}
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              <PaginationItem key={page}>
+                <PaginationLink
+                  isActive={currentPage === page}
+                  onClick={() => setCurrentPage(page)}
+                  className="cursor-pointer"
                 >
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
+                  {page}
+                </PaginationLink>
               </PaginationItem>
+            ))}
 
-              {/* Renderizar botões de página */}
-              {renderPageButtons()}
-
-              <PaginationItem>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-                  disabled={currentPage === totalPages}
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
-          
-          {/* Page Info */}
-          <div className="text-sm text-muted-foreground">
-            Página {currentPage} de {totalPages}
-          </div>
-        </div>
+            <PaginationItem>
+              <PaginationNext
+                onClick={() =>
+                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                }
+                className={
+                  currentPage === totalPages
+                    ? "pointer-events-none opacity-50"
+                    : "cursor-pointer"
+                }
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
       )}
 
       {/* Edit Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent 
+          // ALTERAÇÃO AQUI: Aumentando max-w para 5xl
           className="w-[95vw] h-[95vh] max-w-none sm:w-full sm:max-w-5xl sm:max-h-[90vh] flex flex-col p-0"
         >
           <DialogHeader className="px-6 py-4 border-b shrink-0">
@@ -669,7 +544,7 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
 
                   <div className="space-y-1.5">
                     <Label htmlFor="patrimony_number" className="text-xs font-medium flex items-center gap-1">
-                      Patrimônio
+                      <Hash className="h-3 w-3" /> Patrimônio
                     </Label>
                     <Input
                       id="patrimony_number"
@@ -699,36 +574,23 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
                     <Label htmlFor="manufacturer" className="text-xs font-medium flex items-center gap-1">
                       <Factory className="h-3 w-3" /> Fabricante
                     </Label>
-                    <Select
-                      value={editingChromebook.manufacturer || ''}
-                      onValueChange={(value) => handleEditSelectChange('manufacturer', value)}
-                    >
-                      <SelectTrigger className="h-10">
-                        <SelectValue placeholder="Selecione o fabricante" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {MANUFACTURERS.map(m => (
-                          <SelectItem key={m} value={m}>{m}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <Input
+                      id="manufacturer"
+                      value={editingChromebook.manufacturer || ""}
+                      onChange={handleEditChange}
+                      placeholder="Ex: Lenovo"
+                      className="h-10"
+                    />
                   </div>
                   <div className="space-y-1.5">
                     <Label htmlFor="model" className="text-xs font-medium">Modelo *</Label>
-                    <Select
+                    <Input
+                      id="model"
                       value={editingChromebook.model}
-                      onValueChange={(value) => handleEditSelectChange('model', value)}
-                      disabled={!editingChromebook.manufacturer || filteredModels.length === 0}
-                    >
-                      <SelectTrigger className="h-10">
-                        <SelectValue placeholder={editingChromebook.manufacturer ? "Selecione o modelo" : "Selecione o fabricante primeiro"} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {filteredModels.map(m => (
-                          <SelectItem key={m.model} value={m.model}>{m.model}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                      onChange={handleEditChange}
+                      placeholder="Ex: Chromebook 14e"
+                      className="h-10"
+                    />
                   </div>
                 </div>
               </div>
@@ -736,7 +598,7 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
               {/* Seção 2: Status e Localização */}
               <div className="space-y-4 p-4 border rounded-lg bg-white shadow-sm">
                 <h4 className="font-semibold text-lg text-gray-800 flex items-center gap-2">
-                  <MapPin className="h-4 w-4 text-purple-600" />
+                  <MapPin className="h-4 w-4 text-green-600" />
                   Status e Localização
                 </h4>
                 
@@ -784,7 +646,7 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
               </div>
 
               {/* Seção 3: Condição/Observações */}
-              <div className="space-y-4 p-4 border rounded-lg bg-gray-50/50">
+              <div className="space-y-4 p-4 border rounded-lg bg-white shadow-sm">
                 <h4 className="font-semibold text-lg text-gray-800 flex items-center gap-2">
                   <AlertTriangle className="h-4 w-4 text-orange-600" />
                   Condição e Notas
@@ -813,16 +675,14 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
                 setEditingChromebook(null);
               }}
               className="w-full sm:w-auto h-10"
-              disabled={isLoading}
             >
               Cancelar
             </Button>
             <Button 
               onClick={handleSaveEdit}
               className="w-full sm:w-auto h-10"
-              disabled={isLoading}
             >
-              {isLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
+              <Save className="w-4 h-4 mr-2" />
               Salvar Alterações
             </Button>
           </DialogFooter>
@@ -846,16 +706,14 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
                 setIsDeleteDialogOpen(false);
                 setChromebookToDelete(null);
               }}
-              disabled={isLoading}
             >
               Cancelar
             </Button>
             <Button 
               variant="destructive"
               onClick={handleConfirmDelete}
-              disabled={isLoading}
             >
-              {isLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Trash2 className="w-4 h-4 mr-2" />}
+              <Trash2 className="w-4 h-4 mr-2" />
               Excluir
             </Button>
           </DialogFooter>

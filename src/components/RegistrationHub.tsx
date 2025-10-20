@@ -36,15 +36,14 @@ export function RegistrationHub({ onBack, onRegistrationSuccess }: RegistrationH
     }
   };
 
-  // Removendo a função getTitle, pois o título será removido da renderização
-  // const getTitle = () => {
-  //   switch (currentView) {
-  //     case 'chromebooks': return 'Cadastro de Chromebooks';
-  //     case 'students': return 'Cadastro de Alunos';
-  //     case 'teachers': return 'Cadastro de Professores';
-  //     case 'staff': return 'Cadastro de Funcionários';
-  //   }
-  // };
+  const getTitle = () => {
+    switch (currentView) {
+      case 'chromebooks': return 'Cadastro de Chromebooks';
+      case 'students': return 'Cadastro de Alunos';
+      case 'teachers': return 'Cadastro de Professores';
+      case 'staff': return 'Cadastro de Funcionários';
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -64,10 +63,10 @@ export function RegistrationHub({ onBack, onRegistrationSuccess }: RegistrationH
           <RegistrationCardMenu onNavigate={handleNavigate} currentView={currentView} />
         </div>
 
-        {/* Título do Formulário Selecionado REMOVIDO */}
-        {/* <h2 className="text-lg font-bold text-gray-800 mb-4 mt-8 border-b pb-2 text-center">
+        {/* Título do Formulário Selecionado: Centralizado e menor (text-lg) */}
+        <h2 className="text-lg font-bold text-gray-800 mb-4 mt-8 border-b pb-2 text-center">
           {getTitle()}
-        </h2> */}
+        </h2>
         
         {/* Formulário Selecionado */}
         <div className="mt-6 max-w-4xl mx-auto"> {/* Adicionando max-w aqui para os formulários */}

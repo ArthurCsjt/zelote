@@ -1,3 +1,3 @@
-import { useToast, toast, dismiss } from '@/hooks/use-toast.tsx';
+import { useToast, toast } from "@/hooks/use-toast";
 
-export { useToast, toast, dismiss };
+export { useToast, toast };

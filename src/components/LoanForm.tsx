@@ -18,7 +18,6 @@ import UserAutocomplete from "./UserAutocomplete";
 import type { UserSearchResult } from '@/hooks/useUserSearch';
 import { Card, CardContent, CardTitle } from "./ui/card";
 import { BatchDeviceInput } from "./BatchDeviceInput"; // Importando o novo componente
-import { GlassCard } from "./ui/GlassCard"; // Importando GlassCard para consistência
 
 // Define a interface dos dados do formulário de empréstimo
 interface LoanFormData {
@@ -80,27 +79,57 @@ export function LoanForm({ onBack }: LoanFormProps) {
   };
 
   const handleQRCodeScan = (data: string) => {
-    // Usa sanitizeQRCodeData para garantir que apenas o ID normalizado seja retornado
     const sanitizedId = sanitizeQRCodeData(data); 
     
-    if (typeof sanitizedId === 'string' && sanitizedId) {
-      // Esta função só é chamada no modo INDIVIDUAL
-      setFormData(prev => ({ ...prev, chromebookId: sanitizedId }));
-      toast({
-        title: "QR Code lido com sucesso",
-        description: `ID do Chromebook: ${sanitizedId}`,
-        variant: "success",
-      });
+    if (sanitizedId) {
+      if (formData.loanType === 'individual') {
+        setFormData(prev => ({ ...prev, chromebookId: sanitizedId }));
+        toast({
+          title: "QR Code lido com sucesso",
+          description: `ID do Chromebook: ${sanitizedId}`,
+        });
+      } else {
+        // Lógica de lote movida para BatchDeviceInput, mas mantemos a compatibilidade aqui
+        if (!batchDevices.includes(sanitizedId)) {
+          setBatchDevices(prev => [...prev, sanitizedId]);
+          toast({
+            title: "Dispositivo adicionado ao lote",
+            description: `ID do Chromebook: ${sanitizedId}`,
+          });
+        } else {
+          toast({
+            title: "Dispositivo já adicionado",
+            description: `O Chromebook ${sanitizedId} já está na lista`,
+            variant: "destructive",
+          });
+        }
+      }
     }
   };
   
   const handleChromebookIdChange = (value: string) => {
-    // Normaliza o ID no momento da mudança para manter o estado limpo
-    const normalized = normalizeChromebookId(value);
-    setFormData({ ...formData, chromebookId: normalized });
+    setFormData({ ...formData, chromebookId: value });
   };
 
-  // Removida a função handleValidateIndividualId
+  const handleValidateIndividualId = () => {
+    const normalizedId = normalizeChromebookId(formData.chromebookId);
+    
+    if (!normalizedId) {
+      toast({
+        title: "Erro",
+        description: "O ID do Chromebook não pode estar vazio.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setFormData(prev => ({ ...prev, chromebookId: normalizedId }));
+
+    toast({
+      title: "ID Verificado",
+      description: `ID normalizado: ${normalizedId}. Pronto para empréstimo.`,
+    });
+  };
 
   const resetForm = () => {
     setBatchDevices([]);
@@ -114,12 +143,9 @@ export function LoanForm({ onBack }: LoanFormProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Normaliza o ID do Chromebook antes da validação e uso
-    const normalizedChromebookId = normalizeChromebookId(formData.chromebookId);
-
     const dataToValidate = {
       ...formData,
-      chromebookId: normalizedChromebookId,
+      chromebookId: normalizeChromebookId(formData.chromebookId),
     };
     
     const validation = validateLoanFormData(dataToValidate);
@@ -147,7 +173,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
         studentName: formData.studentName,
         ra: formData.ra || '',
         email: formData.email,
-        chromebookId: deviceId, // IDs em batchDevices já estão normalizados pelo BatchDeviceInput
+        chromebookId: deviceId,
         purpose: formData.purpose,
         userType: formData.userType,
         loanType: formData.loanType,
@@ -161,7 +187,6 @@ export function LoanForm({ onBack }: LoanFormProps) {
         toast({
           title: "Sucesso",
           description: `${successCount} Chromebooks emprestados com sucesso. ${errorCount > 0 ? `(${errorCount} falha(s))` : ''}`,
-          variant: "success",
         });
       } else if (errorCount > 0) {
         toast({
@@ -185,7 +210,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
         studentName: dataToValidate.studentName,
         ra: dataToValidate.ra || '',
         email: dataToValidate.email,
-        chromebookId: normalizedChromebookId, // Usando o ID normalizado
+        chromebookId: dataToValidate.chromebookId,
         purpose: dataToValidate.purpose,
         userType: dataToValidate.userType,
         loanType: dataToValidate.loanType,
@@ -199,7 +224,6 @@ export function LoanForm({ onBack }: LoanFormProps) {
         toast({
           title: "Sucesso",
           description: "Chromebook emprestado com sucesso",
-          variant: "success",
         });
       }
     }
@@ -207,8 +231,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
 
   // === RENDERIZAÇÃO DA INTERFACE (UI) ===
   return (
-    <div className="animate-fade-in relative">
-      {/* Removido o glass-morphism e o p-6 daqui */}
+    <div className="glass-morphism p-6 animate-fade-in relative">
       <div className="absolute inset-0 -z-10 bg-gradient-to-br from-blue-50/30 via-purple-50/20 to-pink-50/30 rounded-3xl blur-2xl transform scale-110" />
       
       <h2 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4 relative z-10">
@@ -217,34 +240,34 @@ export function LoanForm({ onBack }: LoanFormProps) {
       
       <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
         
+        {/* Seletor de tipo de empréstimo (individual ou lote) */}
+        <div className="space-y-2">
+          <Label htmlFor="loanType" className="text-gray-700">
+            Tipo de Empréstimo
+          </Label>
+          <Select
+            value={formData.loanType}
+            onValueChange={(value: 'individual' | 'lote') =>
+              setFormData({ ...formData, loanType: value })
+            }
+          >
+            <SelectTrigger className="border-gray-200 bg-white">
+              <SelectValue placeholder="Selecione o tipo de empréstimo" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="individual">Individual</SelectItem>
+              <SelectItem value="lote">Em Lote</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
         <div className="grid md:grid-cols-2 gap-6">
             
           {/* Coluna Esquerda - Detalhes do Equipamento/Lote */}
-          <GlassCard className="p-4 space-y-4 bg-green-50/50 border-green-100 shadow-inner">
+          <Card className="p-4 space-y-4 bg-green-50/50 border-green-100 shadow-inner">
             <CardTitle className="text-lg flex items-center gap-2 text-green-700">
               <Computer className="h-5 w-5" /> Detalhes do Equipamento
             </CardTitle>
-            
-            {/* Seletor de tipo de empréstimo (individual ou lote) */}
-            <div className="space-y-2">
-              <Label htmlFor="loanType" className="text-gray-700">
-                Tipo de Empréstimo
-              </Label>
-              <Select
-                value={formData.loanType}
-                onValueChange={(value: 'individual' | 'lote') =>
-                  setFormData({ ...formData, loanType: value })
-                }
-              >
-                <SelectTrigger className="border-gray-200 bg-white">
-                  <SelectValue placeholder="Selecione o tipo de empréstimo" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="individual">Individual</SelectItem>
-                  <SelectItem value="lote">Em Lote</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
             
             {formData.loanType === 'individual' ? (
               /* Campo de ID para empréstimo individual */
@@ -260,9 +283,22 @@ export function LoanForm({ onBack }: LoanFormProps) {
                       value={formData.chromebookId}
                       onChange={(e) => handleChromebookIdChange(e.target.value)}
                       className="border-gray-200 w-full pr-10 bg-white"
-                      required // Adicionado required
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleValidateIndividualId();
+                        }
+                      }}
                     />
-                    {/* Botão de validação removido */}
+                    <Button 
+                      type="button" 
+                      variant="ghost" 
+                      onClick={handleValidateIndividualId}
+                      className="absolute right-1 top-1 h-8 px-2 text-green-600 hover:text-green-700 hover:bg-green-100"
+                      title="Validar ID"
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
                   </div>
                   <Button 
                     type="button" 
@@ -280,14 +316,14 @@ export function LoanForm({ onBack }: LoanFormProps) {
               <BatchDeviceInput
                 batchDevices={batchDevices}
                 setBatchDevices={setBatchDevices}
-                onScan={() => {}} // Não usado, mas mantido para evitar erros de tipo se a prop existisse
+                onScan={handleQRCodeScan}
                 disabled={loading}
               />
             )}
-          </GlassCard>
+          </Card>
 
           {/* Coluna Direita - Informações do Solicitante */}
-          <GlassCard className="p-4 space-y-4 bg-purple-50/50 border-purple-100 shadow-inner">
+          <Card className="p-4 space-y-4 bg-white border-gray-100 shadow-md">
             <CardTitle className="text-lg flex items-center gap-2 text-purple-700">
               <User className="h-5 w-5" /> Informações do Solicitante
             </CardTitle>
@@ -308,7 +344,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
             {/* Campo de finalidade do empréstimo (sempre visível) */}
             <div className="space-y-2 pt-2">
               <Label htmlFor="purpose" className="text-gray-700">
-                Finalidade *
+                Finalidade
               </Label>
               <Input
                 id="purpose"
@@ -318,10 +354,9 @@ export function LoanForm({ onBack }: LoanFormProps) {
                   setFormData({ ...formData, purpose: e.target.value })
                 }
                 className="border-gray-200 bg-white"
-                required // Adicionado required
               />
             </div>
-          </GlassCard>
+          </Card>
         </div>
 
         {/* Opção para definir prazo de devolução (abaixo das colunas) */}

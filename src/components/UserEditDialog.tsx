@@ -121,7 +121,7 @@ export function UserEditDialog({ open, onOpenChange, user, onSuccess }: UserEdit
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px] w-[95vw]"> {/* Adicionando w-[95vw] para mobile */}
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Icon className="h-5 w-5 text-primary" />

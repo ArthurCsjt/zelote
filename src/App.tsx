@@ -1,18 +1,17 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate, useNavigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import { AuthProvider } from "./providers/AuthProvider";
 import { useAuth } from "./contexts/AuthContext";
 
 // PASSO 1: IMPORTAR O PROVIDER DO BANCO DE DADOS
-// import { DatabaseProvider } from './contexts/DatabaseContext'; // REMOVIDO
+import { DatabaseProvider } from './contexts/DatabaseContext'; // Ajuste o caminho se necessário
 
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import Settings from "./pages/Settings";
-import Layout from "./components/Layout"; // Importando Layout
 
 const queryClient = new QueryClient();
 
@@ -24,29 +23,12 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
-// Componente Wrapper para a rota /settings
-const SettingsWrapper = () => {
-  const navigate = useNavigate();
-  const handleBackToMenu = () => navigate('/', { replace: true });
-  
-  return (
-    <Layout 
-      title="Configurações" 
-      subtitle="Gerencie configurações administrativas" 
-      showBackButton 
-      onBack={handleBackToMenu}
-    >
-      <Settings />
-    </Layout>
-  );
-};
-
 const App = () => (
   <ErrorBoundary>
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        {/* PASSO 2: O DATABASEPROVIDER FOI REMOVIDO */}
-        {/* <DatabaseProvider> */}
+        {/* PASSO 2: O DATABASEPROVIDER DEVE ENVOLVER TODO O RESTO DA APLICAÇÃO */}
+        <DatabaseProvider>
           {/* <TooltipProvider> */}
             {/* MobileToaster e Sonner removidos daqui */}
             
@@ -62,7 +44,7 @@ const App = () => (
                 
                 <Route path="/settings" element={
                   <ProtectedRoute>
-                    <SettingsWrapper />
+                    <Settings />
                   </ProtectedRoute>
                 } />
                 
@@ -70,7 +52,7 @@ const App = () => (
               </Routes>
             </BrowserRouter>
           {/* </TooltipProvider> */}
-        {/* </DatabaseProvider> */}
+        </DatabaseProvider>
       </AuthProvider>
     </QueryClientProvider>
   </ErrorBoundary>

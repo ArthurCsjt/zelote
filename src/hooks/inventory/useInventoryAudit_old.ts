@@ -90,7 +90,7 @@ export const useInventoryAudit = () => {
       if (error) throw error;
       setActiveAudit(data);
       setCountedItems([]);
-      toast({ title: 'Contagem iniciada!', description: `A auditoria "${name}" começou.`, variant: "success" });
+      toast({ title: 'Contagem iniciada!', description: `A auditoria "${name}" começou.` });
     } catch (e: any) {
       toast({ title: 'Erro ao iniciar contagem', description: e.message, variant: 'destructive' });
     } finally {
@@ -137,7 +137,7 @@ export const useInventoryAudit = () => {
       const displayItem = { ...data, display_id: chromebook.chromebook_id };
       setCountedItems(prev => [displayItem, ...prev]);
 
-      toast({ title: 'Item contado!', description: `ID: ${chromebook.chromebook_id}`, variant: "success" });
+      toast({ title: 'Item contado!', description: `ID: ${chromebook.chromebook_id}` });
     } catch (e: any) {
       toast({ title: 'Erro ao contar item', description: e.message, variant: 'destructive' });
     } finally {
@@ -157,7 +157,7 @@ export const useInventoryAudit = () => {
 
       if (error) throw error;
 
-      toast({ title: 'Contagem finalizada!', description: `A auditoria foi concluída com ${countedItems.length} itens.`, variant: "success" });
+      toast({ title: 'Contagem finalizada!', description: `A auditoria foi concluída com ${countedItems.length} itens.` });
       setActiveAudit(null);
       setCountedItems([]);
       await loadCompletedAudits();

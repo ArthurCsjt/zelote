@@ -6,7 +6,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { QRCodeReader } from '@/components/QRCodeReader';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, QrCode, ClipboardCheck, PlusCircle, Trash2, Clock, CheckCircle, AlertCircle, Plus } from 'lucide-react';
+import { Loader2, QrCode, ClipboardCheck, PlusCircle, Trash2, Clock, CheckCircle, AlertCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import {
   Table,
@@ -101,20 +101,18 @@ export const AuditScanner = () => {
       <div className="space-y-6">
         
         {/* Painel de Contagem (mantido no topo) */}
-        <GlassCard className="border-menu-teal/50 shadow-lg">
+        <GlassCard>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-menu-teal">
+            <CardTitle className="flex items-center gap-2">
               <CheckCircle className="h-5 w-5" />
               Contagem: {activeAudit.audit_name}
             </CardTitle>
             <CardDescription>
-              Digite o ID do Chromebook ou escaneie o QR Code.
+              Digite o ID do Chromebook ou escaneie o QR Code. Os itens contados aparecerão na lista abaixo.
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4 mb-6">
-              
-              {/* Entrada Manual e Botão Adicionar */}
               <div className="grid w-full items-center gap-1.5">
                 <Label htmlFor="manual-id">Adicionar ID Manualmente</Label>
                 <div className="flex space-x-2">
@@ -125,79 +123,26 @@ export const AuditScanner = () => {
                     onChange={(e) => setManualId(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleAddManualId()}
                     autoComplete="off"
-                    className="flex-1"
                   />
-                  <Button 
-                    onClick={handleAddManualId} 
-                    disabled={!manualId.trim() || isProcessing} 
-                    size="sm" // Reduzindo o tamanho
-                    variant="secondary" // Alterado para secondary
-                    className="h-10" // Mantendo a altura consistente com o input
-                  >
-                    <Plus className="mr-2 h-4 w-4" /> Adicionar
+                  <Button onClick={handleAddManualId} disabled={!manualId.trim() || isProcessing}>
+                    <PlusCircle className="mr-2 h-4 w-4" /> Adicionar
                   </Button>
                 </div>
               </div>
-              
-              {/* Botão Escanear QR Code (Ação Primária) */}
-              <Button 
-                onClick={() => setIsScannerOpen(true)} 
-                size="lg" 
-                variant="default" // Cor Primária (Azul)
-                className="w-full"
-              >
+              <Button onClick={() => setIsScannerOpen(true)} size="lg" className="w-full">
                 <QrCode className="mr-2 h-5 w-5" />
                 Escanear Item (QR Code)
               </Button>
-              
-              {/* Botão Finalizar Contagem (Ação Secundária/Final) */}
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button 
-                    size="lg" 
-                    variant="secondary" // Cor Secundária (Cinza)
-                    className="w-full" 
-                    disabled={isProcessing || countedItems.length === 0}
-                  >
-                    {isProcessing ? (
-                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                    ) : (
-                      <ClipboardCheck className="mr-2 h-5 w-5" />
-                    )}
-                    Finalizar Contagem ({countedItems.length} itens)
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Finalizar Auditoria?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Você está prestes a finalizar a auditoria "{activeAudit.audit_name}" com {countedItems.length} itens contados. Deseja continuar?
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                    <AlertDialogAction onClick={completeAudit}>
-                      Confirmar Finalização
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
+              <Button onClick={completeAudit} size="lg" variant="secondary" className="w-full" disabled={isProcessing || countedItems.length === 0}>
+                {isProcessing ? (
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                ) : (
+                  <ClipboardCheck className="mr-2 h-5 w-5" />
+                )}
+                Finalizar Contagem ({countedItems.length} itens)
+              </Button>
             </div>
-          </CardContent>
-        </GlassCard>
 
-        {/* Painel de Estatísticas e Lista de Itens Contados */}
-        <GlassCard>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <ClipboardCheck className="h-5 w-5" />
-              Itens Contados
-            </CardTitle>
-            <CardDescription>
-              Lista de todos os {countedItems.length} itens registrados nesta auditoria.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
             <div className="space-y-4">
               {/* Grid de cards de métricas, padrão do menu inventário */}
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">

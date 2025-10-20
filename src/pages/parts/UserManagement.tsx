@@ -43,7 +43,7 @@ export const UserManagement = () => {
         body: { email, role },
       });
       if (error) throw error;
-      toast({ title: 'Convite enviado!', description: `O convite foi enviado com sucesso para ${email}.`, variant: "success" });
+      toast({ title: 'Convite enviado!', description: `O convite foi enviado com sucesso para ${email}.` });
       setInviteEmail('');
       queryClient.invalidateQueries({ queryKey: ['all_users'] });
     } catch (e: any) {
@@ -56,7 +56,7 @@ export const UserManagement = () => {
     if (error) {
       toast({ title: 'Erro', description: error.message, variant: 'destructive' });
     } else {
-      toast({ title: 'Perfil atualizado', description: 'Função alterada com sucesso.', variant: "success" });
+      toast({ title: 'Perfil atualizado', description: 'Função alterada com sucesso.' });
       queryClient.invalidateQueries({ queryKey: ['all_users'] });
     }
   };
@@ -66,7 +66,7 @@ export const UserManagement = () => {
     try {
       const { error } = await supabase.functions.invoke('delete-user', { body: { userId: userToDelete.id } });
       if (error) throw error;
-      toast({ title: "Sucesso!", description: `Usuário ${userToDelete.email} foi excluído.`, variant: "success" });
+      toast({ title: "Sucesso!", description: `Usuário ${userToDelete.email} foi excluído.` });
       queryClient.invalidateQueries({ queryKey: ['all_users'] });
     } catch (error: any) {
       toast({ title: "Erro!", description: `Não foi possível excluir o usuário: ${error.message}`, variant: "destructive" });
@@ -80,7 +80,7 @@ export const UserManagement = () => {
     try {
       const { error } = await supabase.functions.invoke('delete-user', { body: { userId: pendingInviteToDelete.id } });
       if (error) throw error;
-      toast({ title: "Sucesso!", description: `Convite para ${pendingInviteToDelete.email} foi cancelado.`, variant: "success" });
+      toast({ title: "Sucesso!", description: `Convite para ${pendingInviteToDelete.email} foi cancelado.` });
       queryClient.invalidateQueries({ queryKey: ['all_users'] });
     } catch (error: any) {
       toast({ title: "Erro!", description: `Não foi possível cancelar o convite: ${error.message}`, variant: "destructive" });

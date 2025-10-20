@@ -22,8 +22,8 @@ export function InventoryHub({ onBack }: InventoryHubProps) {
   ];
 
   return (
-    <div className="bg-background"> {/* Removido min-h-screen */}
-      <div className="container mx-auto p-0 max-w-7xl"> {/* Removido padding p-4, mantendo o p-0 para o TabbedContent gerenciar */}
+    <div className="min-h-screen bg-background">
+      <div className="container mx-auto p-4 max-w-7xl">
         <div className="mb-6 text-center">
           <h1 className="text-foreground py-[2px] font-bold text-2xl my-[25px] text-gray-800">Hub de Inventário</h1>
         </div>

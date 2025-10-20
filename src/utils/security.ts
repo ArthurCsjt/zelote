@@ -55,19 +55,12 @@ export function normalizeChromebookId(identifier: string): string {
   const raw = identifier.trim();
   if (!raw) return '';
 
-  // Remove zeros à esquerda se for puramente numérico, mas mantém o formato original se for alfanumérico
-  const numericPart = raw.replace(/^0+/, '');
+  // Verifica se é composto apenas por dígitos
   const onlyDigits = /^\d+$/.test(raw);
 
   if (onlyDigits) {
-    // Se for apenas dígitos, formata como CHR + preenchimento com zeros (mínimo 3 dígitos)
-    // Ex: '60' -> 'CHR060', '600' -> 'CHR600', '6000' -> 'CHR6000'
-    const num = parseInt(raw, 10);
-    if (isNaN(num)) return raw.toUpperCase(); // Fallback
-    
-    // Se o número for menor que 1000, preenche com zeros até 3 dígitos.
-    const paddedNum = num < 1000 ? String(num).padStart(3, '0') : String(num);
-    return `CHR${paddedNum}`;
+    // Se for apenas dígitos, formata como CHR + preenchimento com zeros
+    return `CHR${raw.padStart(3, '0')}`;
   }
 
   // Se já começar com 'CHR' (case insensitive), garante que seja maiúsculo
@@ -88,40 +81,32 @@ export function isValidChromebookId(id: string): boolean {
 }
 
 /**
- * Sanitiza entrada do QR Code para prevenir injeção de código.
- * 
- * Se for JSON válido com 'id', retorna o objeto JSON.
- * Caso contrário, retorna a string normalizada do ID.
+ * Valida RA (Registro Acadêmico) - apenas números
  */
-export function sanitizeQRCodeData(data: string): string | Record<string, any> {
+export function isValidRA(ra: string): boolean {
+  const raRegex = /^\d{6,12}$/;
+  return raRegex.test(ra);
+}
+
+/**
+ * Sanitiza entrada do QR Code para prevenir injeção de código
+ */
+export function sanitizeQRCodeData(data: string): string {
   if (!data) return '';
   
-  let cleanData = data.trim();
-
-  // 1. Tenta limpar aspas externas que podem vir do scanner
-  if (cleanData.startsWith('"') && cleanData.endsWith('"')) {
-    cleanData = cleanData.substring(1, cleanData.length - 1);
-  }
-
   try {
-    // 2. Tenta fazer parse como JSON
-    const parsed = JSON.parse(cleanData);
-    
-    // Se for um objeto e tiver a chave 'id' (novo formato de cadastro inteligente)
+    // Tenta fazer parse como JSON
+    const parsed = JSON.parse(data);
     if (parsed && typeof parsed === 'object' && parsed.id) {
-      // Se for o formato JSON, retorna o objeto completo para o SmartRegistration
-      // O SmartRegistration fará a normalização do ID.
-      return parsed;
+      // Normaliza o ID extraído do QR Code
+      return normalizeChromebookId(sanitizeString(parsed.id));
     }
   } catch {
-    // Não é JSON, continua como string
+    // Se não for JSON válido, sanitiza como string e normaliza
+    return normalizeChromebookId(sanitizeString(data));
   }
   
-  // 3. Se não for JSON, trata como string simples (ID)
-  const identifierToUse = sanitizeString(cleanData);
-  
-  // Retorna a string normalizada
-  return normalizeChromebookId(identifierToUse);
+  return normalizeChromebookId(sanitizeString(data));
 }
 
 /**
@@ -182,10 +167,11 @@ export function validateLoanFormData(data: any): {
 
   // Sanitizar RA se fornecido
   if (data.ra && data.ra.trim()) {
-    // NOTE: A função isValidRA não existe no seu código, assumindo que a validação é apenas para garantir que seja uma string simples.
-    // Se você precisar de validação de formato de RA, precisará implementar isValidRA.
-    // Por enquanto, apenas sanitiza.
-    sanitizedData.ra = sanitizeString(data.ra.trim());
+    if (!isValidRA(data.ra.trim())) {
+      errors.push('RA deve conter apenas números (6-12 dígitos)');
+    } else {
+      sanitizedData.ra = sanitizeString(data.ra.trim());
+    }
   }
 
   return {

@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
@@ -6,6 +6,7 @@ import { Textarea } from "./ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Checkbox } from "./ui/checkbox";
 import { Laptop, Factory, Tag, Hash, MapPin, AlertTriangle, Loader2, CheckCircle } from "lucide-react";
+import { useDatabase } from '@/contexts/DatabaseContext';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "./ui/card";
 import {
   Select,
@@ -15,10 +16,7 @@ import {
   SelectValue,
 } from "./ui/select";
 import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
-import { GlassCard } from "./ui/GlassCard";
-import type { Chromebook } from "@/types/database";
-import { useDatabase } from '@/hooks/useDatabase'; // Importando useDatabase
-import { MANUFACTURERS, CHROMEBOOK_MODELS } from '@/utils/constants'; // Importando constantes
+import { GlassCard } from "./ui/GlassCard"; // Importando GlassCard
 
 interface FormData {
   manufacturer: string;
@@ -29,11 +27,11 @@ interface FormData {
   isFixedInClassroom: boolean;
   classroomLocation: string; // Usado como location
   observations: string; // Usado como condition
-  provisioning_status: 'provisioned' | 'deprovisioned'; // Alterado para enum
+  provisioning_status: string;
 }
 
-export function ChromebookRegistration({ onRegistrationSuccess }: { onRegistrationSuccess: (newChromebook: Chromebook) => void }) {
-  const { createChromebook, loading } = useDatabase(); // Usando useDatabase
+export function ChromebookRegistration({ onRegistrationSuccess }: { onRegistrationSuccess: (newChromebook: any) => void }) {
+  const { createChromebook, loading } = useDatabase();
   const { toast } = useToast();
   
   const [formData, setFormData] = useState<FormData>({
@@ -42,12 +40,6 @@ export function ChromebookRegistration({ onRegistrationSuccess }: { onRegistrati
     patrimonyNumber: "", isFixedInClassroom: false,
     classroomLocation: "", observations: "", provisioning_status: 'provisioned',
   });
-
-  // Filtra modelos baseados no fabricante selecionado
-  const filteredModels = useMemo(() => {
-    if (!formData.manufacturer) return [];
-    return CHROMEBOOK_MODELS.filter(m => m.manufacturer === formData.manufacturer);
-  }, [formData.manufacturer]);
 
   const resetForm = () => {
     setFormData({
@@ -59,60 +51,36 @@ export function ChromebookRegistration({ onRegistrationSuccess }: { onRegistrati
   };
 
   const handleFormChange = (field: keyof FormData, value: string | boolean) => {
-    setFormData(prev => {
-      const newState = { ...prev, [field]: value as any };
-      
-      // Se o fabricante mudar, reseta o modelo
-      if (field === 'manufacturer' && prev.manufacturer !== value) {
-        newState.model = '';
-      }
-      
-      return newState;
-    });
+    setFormData(prev => ({ ...prev, [field]: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     if (!formData.manufacturer || !formData.model || !formData.series) {
       toast({ title: "Erro de Validação", description: "Preencha os campos Fabricante, Modelo e Série.", variant: "destructive" });
       return;
     }
     
-    const isDeprovisioned = formData.provisioning_status === 'deprovisioned';
-    
-    // Lógica de Status:
-    // 1. Se for fixo, status é 'fixo'.
-    // 2. Caso contrário, o status inicial é 'disponivel'.
-    // O campo is_deprovisioned é salvo separadamente.
-    const initialStatus = formData.isFixedInClassroom ? 'fixo' as const : 'disponivel' as const;
-    
     const chromebookData = {
       model: formData.model, 
       serialNumber: formData.series,
-      patrimonyNumber: formData.patrimonyNumber || undefined,
+      patrimonyNumber: formData.patrimonyNumber || null,
       manufacturer: formData.manufacturer,
+      // manufacturingYear não é mapeado diretamente para o DB, mas pode ser incluído em 'condition' se necessário
       condition: formData.observations || 'novo', 
-      location: formData.isFixedInClassroom ? formData.classroomLocation : undefined,
-      status: initialStatus, // Usando a lógica corrigida
-      is_deprovisioned: isDeprovisioned, // Salvando o metadado
-      classroom: formData.isFixedInClassroom ? formData.classroomLocation : undefined,
+      location: formData.isFixedInClassroom ? formData.classroomLocation : null,
+      status: formData.isFixedInClassroom ? 'fixo' as const : 'disponivel' as const,
+      is_deprovisioned: formData.provisioning_status === 'deprovisioned',
     };
     
-    try {
-      const result = await createChromebook(chromebookData as any);
-      
-      if (result) {
-        toast({ title: "Sucesso", description: `Chromebook ${result.chromebook_id} cadastrado!`, variant: "success" });
-        resetForm();
-        onRegistrationSuccess(result);
-      } else {
-        // O erro já é toastado dentro do useDatabase, mas garantimos um fallback
-        toast({ title: "Erro", description: "Falha ao cadastrar Chromebook.", variant: "destructive" });
-      }
-    } catch (error) {
-      // Erro já tratado no useDatabase
+    const result = await createChromebook(chromebookData);
+    
+    if (result) {
+      toast({ title: "Sucesso!", description: `Chromebook ${result.chromebook_id} cadastrado.` });
+      resetForm();
+      onRegistrationSuccess(result);
     }
+    // O erro é tratado dentro do useDatabase
   };
 
   const isFormValid = formData.manufacturer && formData.model && formData.series;
@@ -125,7 +93,7 @@ export function ChromebookRegistration({ onRegistrationSuccess }: { onRegistrati
           Novo Equipamento
         </CardTitle>
         <CardDescription>
-          Preencha os detalhes para registrar um novo Chromebook.
+          Preencha os detalhes para registrar um novo Chromebook no inventário.
         </CardDescription>
       </CardHeader>
       
@@ -151,37 +119,33 @@ export function ChromebookRegistration({ onRegistrationSuccess }: { onRegistrati
                     <SelectValue placeholder="Selecione um fabricante" />
                   </SelectTrigger>
                   <SelectContent>
-                    {MANUFACTURERS.map(m => (
-                      <SelectItem key={m} value={m}>{m}</SelectItem>
-                    ))}
+                    <SelectItem value="Acer">Acer</SelectItem>
+                    <SelectItem value="Samsung">Samsung</SelectItem>
+                    <SelectItem value="Lenovo">Lenovo</SelectItem>
+                    <SelectItem value="Dell">Dell</SelectItem>
+                    <SelectItem value="HP">HP</SelectItem>
+                    <SelectItem value="Outro">Outro</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               
               <div className="space-y-2">
                 <Label htmlFor="model">Modelo *</Label>
-                <Select
-                  value={formData.model}
-                  onValueChange={(value) => handleFormChange('model', value)}
-                  required
-                  disabled={!formData.manufacturer || filteredModels.length === 0}
-                >
-                  <SelectTrigger className="bg-white">
-                    <SelectValue placeholder={formData.manufacturer ? "Selecione o modelo" : "Selecione o fabricante primeiro"} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {filteredModels.map(m => (
-                      <SelectItem key={m.model} value={m.model}>{m.model}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Input 
+                  id="model" 
+                  value={formData.model} 
+                  onChange={(e) => handleFormChange('model', e.target.value)} 
+                  placeholder="Ex: Chromebook 14e"
+                  required 
+                  className="bg-white"
+                />
               </div>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="series" className="flex items-center gap-1">
-                  <Hash className="h-3 w-3" /> Número de Série *
+                  <Hash className="h-3 w-3" /> Série *
                 </Label>
                 <Input 
                   id="series" 
@@ -195,7 +159,7 @@ export function ChromebookRegistration({ onRegistrationSuccess }: { onRegistrati
               
               <div className="space-y-2">
                 <Label htmlFor="patrimonyNumber" className="flex items-center gap-1">
-                  Patrimônio
+                  <Hash className="h-3 w-3" /> Patrimônio
                 </Label>
                 <Input 
                   id="patrimonyNumber" 
@@ -266,7 +230,7 @@ export function ChromebookRegistration({ onRegistrationSuccess }: { onRegistrati
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="deprovisioned" id="deprovisioned" />
-                  <Label htmlFor="deprovisioned">Desprovisionado</Label>
+                  <Label htmlFor="deprovisioned">Desprovisionado (Inativo)</Label>
                 </div>
               </RadioGroup>
             </div>
@@ -279,12 +243,12 @@ export function ChromebookRegistration({ onRegistrationSuccess }: { onRegistrati
               Condição e Observações
             </h4>
             <div className="space-y-2">
-              <Label htmlFor="observations">Condição/Observações</Label>
+              <Label htmlFor="observations">Observações (Condição)</Label>
               <Textarea 
                 id="observations" 
                 value={formData.observations} 
                 onChange={(e) => handleFormChange('observations', e.target.value)} 
-                placeholder="Digite observações sobre a condição do equipamento (ex: tela trincada, bateria fraca)"
+                placeholder="Ex: Tela trincada, bateria viciada, etc."
                 className="resize-none min-h-[100px] bg-white"
               />
             </div>

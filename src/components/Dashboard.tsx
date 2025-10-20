@@ -7,12 +7,13 @@ import type { LoanHistoryItem } from "@/types/database";
 import { Badge } from "./ui/badge";
 import { Progress } from "./ui/progress";
 import { ChartContainer, ChartTooltipContent, ChartLegendContent } from "./ui/chart";
-import { Computer, Download, ArrowLeft, BarChart as BarChartIcon, PieChart as PieChartIcon, Clock, Users, Calendar, CalendarRange, Activity, ChartLine, Loader2, History as HistoryIcon } from "lucide-react";
+import { Computer, Download, ArrowLeft, BarChart as BarChartIcon, PieChart as PieChartIcon, Clock, Users, Calendar, CalendarRange, Activity, ChartLine, Brain, Loader2, History as HistoryIcon } from "lucide-react";
 import jsPDF from "jspdf";
 import { useToast } from "./ui/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useDatabase } from '@/hooks/useDatabase';
 import { useOverdueLoans } from '@/hooks/useOverdueLoans';
+import IntelligentReportsTab from './IntelligentReportsTab';
 import { LoanHistory } from "./LoanHistory";
 import { GlassCard } from "./ui/GlassCard"; // Importando GlassCard
 
@@ -22,7 +23,7 @@ interface DashboardProps {
 
 // Componente auxiliar para renderizar o grid de estatísticas
 const StatsGrid = ({ periodView, filteredLoans, filteredReturns, activeLoans, totalChromebooks, averageUsageTime, completionRate }: any) => {
-  if (periodView === 'history') return null;
+  if (periodView === 'history' || periodView === 'reports') return null;
 
   return (
     <div className="grid gap-4 grid-cols-2 md:grid-cols-4 relative z-10">
@@ -119,7 +120,7 @@ export function Dashboard({
   const {
     toast
   } = useToast();
-  const [periodView, setPeriodView] = useState < 'daily' | 'weekly' | 'monthly' | 'history' > ('daily');
+  const [periodView, setPeriodView] = useState < 'daily' | 'weekly' | 'monthly' | 'history' | 'reports' > ('daily');
   const [periodData, setPeriodData] = useState < any[] > ([]);
   const [loading, setLoading] = useState(false);
   const totalChromebooks = chromebooks.length;
@@ -293,6 +294,7 @@ export function Dashboard({
     weekly: 'Esta Semana',
     monthly: 'Este Mês',
     history: 'Histórico Completo',
+    reports: 'Relatórios Inteligentes'
   };
 
   // Função para gerar o PDF do relatório
@@ -344,10 +346,10 @@ export function Dashboard({
     return pdf;
   };
   const handleDownloadPDF = () => {
-    if (periodView === 'history') {
+    if (periodView === 'history' || periodView === 'reports') {
       toast({
         title: "Atenção",
-        description: "O download do Histórico deve ser feito na própria aba, se disponível.",
+        description: "O download de relatórios IA ou Histórico deve ser feito na própria aba, se disponível.",
         variant: "destructive"
       });
       return;
@@ -379,16 +381,9 @@ export function Dashboard({
         <h2 className="text-xl sm:text-3xl font-bold text-gray-800 whitespace-nowrap">
           Dashboard
         </h2>
-        
-        {/* Botão de download: Branco (outline) e apenas ícone */}
-        <Button 
-          variant="outline" // Alterado para outline (branco)
-          size="icon" // Alterado para icon (apenas ícone)
-          onClick={handleDownloadPDF} 
-          disabled={periodView === 'history'}
-          className="h-10 w-10" // Definindo tamanho para ser um quadrado
-        >
-          <Download className="h-5 w-5" /> {/* Ícone sem margem */}
+        <Button variant="outline" onClick={handleDownloadPDF} className="flex items-center gap-2 hover:bg-blue-50" disabled={periodView === 'history' || periodView === 'reports'}>
+          <Download className="h-4 w-4" />
+          <span className="hidden md:inline">Baixar Relatório</span>
         </Button>
       </div>
 
@@ -745,22 +740,27 @@ export function Dashboard({
                   <Clock className="h-5 w-5 text-muted-foreground" />
                 </CardHeader>
                 <CardContent className="h-[250px] sm:h-[300px]">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={durationData} layout="horizontal" margin={{ top: 5, right: 0, left: 0, bottom: 5 }}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis type="number" tick={{ fontSize: 10 }} />
-                        <YAxis dataKey="name" type="category" width={80} tick={{ fontSize: 10 }} />
-                        <Tooltip />
-                        <Bar dataKey="minutos" fill="#8B5CF6" radius={[0, 4, 4, 0]} />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </CardContent>
-                </GlassCard>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={durationData} layout="horizontal" margin={{ top: 5, right: 0, left: 0, bottom: 5 }}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis type="number" tick={{ fontSize: 10 }} />
+                      <YAxis dataKey="name" type="category" width={80} tick={{ fontSize: 10 }} />
+                      <Tooltip />
+                      <Bar dataKey="minutos" fill="#8B5CF6" radius={[0, 4, 4, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </GlassCard>
             </TabsContent>
             
             {/* ABA DE HISTÓRICO */}
             <TabsContent value="history" className="space-y-4 mt-6">
               <LoanHistory history={history} />
+            </TabsContent>
+            
+            {/* ABA DE RELATÓRIOS INTELIGENTES */}
+            <TabsContent value="reports" className="space-y-4 mt-6">
+              <IntelligentReportsTab />
             </TabsContent>
           </>
         )}

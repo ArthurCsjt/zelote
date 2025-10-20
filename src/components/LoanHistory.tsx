@@ -1,18 +1,13 @@
 import { useState, useMemo } from "react";
-import { format, isWithinInterval, startOfDay, endOfDay } from "date-fns";
-import { ptBR } from "date-fns/locale";
+import { format } from "date-fns";
 import { Badge } from "./ui/badge";
 import { Card, CardContent } from "./ui/card";
-import { Clock, Monitor, User, CheckCircle, AlertTriangle, Search, Filter, X, RotateCcw, ChevronLeft, ChevronRight, Calendar } from "lucide-react";
+import { Clock, Monitor, User, CheckCircle, AlertTriangle, Search, Filter, X, RotateCcw } from "lucide-react";
 import type { LoanHistoryItem } from "@/types/database";
 import { Input } from "./ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { Button } from "./ui/button";
-import { GlassCard } from "./ui/GlassCard";
-import { Pagination, PaginationContent, PaginationItem, PaginationLink } from "./ui/pagination";
-import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
-import { Calendar as CalendarComponent } from "./ui/calendar";
-import { cn } from "@/lib/utils";
+import { GlassCard } from "./ui/GlassCard"; // Importando GlassCard
 
 interface LoanHistoryProps {
   history: LoanHistoryItem[];
@@ -22,11 +17,6 @@ export function LoanHistory({ history }: LoanHistoryProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [userTypeFilter, setUserTypeFilter] = useState<string>("all");
-  const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date }>({});
-  
-  // Estados de Paginação
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   const filteredHistory = useMemo(() => {
     let filtered = history;
@@ -52,40 +42,14 @@ export function LoanHistory({ history }: LoanHistoryProps) {
     if (userTypeFilter !== "all") {
       filtered = filtered.filter(loan => loan.user_type === userTypeFilter);
     }
-    
-    // 4. Filtrar por intervalo de datas (loan_date)
-    if (dateRange.from) {
-      const start = startOfDay(dateRange.from);
-      const end = dateRange.to ? endOfDay(dateRange.to) : endOfDay(new Date());
-      
-      filtered = filtered.filter(loan => 
-        isWithinInterval(new Date(loan.loan_date), { start, end })
-      );
-    }
-
-    // Resetar página para 1 se o filtro mudar
-    if (currentPage !== 1 && filtered.length > 0) {
-        setCurrentPage(1);
-    }
 
     return filtered;
-  }, [history, searchTerm, statusFilter, userTypeFilter, dateRange]);
-  
-  // Lógica de Paginação
-  const totalItems = filteredHistory.length;
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedHistory = filteredHistory.slice(
-    startIndex,
-    startIndex + itemsPerPage
-  );
+  }, [history, searchTerm, statusFilter, userTypeFilter]);
 
   const clearFilters = () => {
     setSearchTerm("");
     setStatusFilter("all");
     setUserTypeFilter("all");
-    setDateRange({});
-    setCurrentPage(1);
   };
 
   const getStatusBadgeProps = (status: LoanHistoryItem['status']) => {
@@ -99,42 +63,13 @@ export function LoanHistory({ history }: LoanHistoryProps) {
         return { variant: "secondary", className: "bg-yellow-100 text-yellow-800 hover:bg-yellow-100" };
     }
   };
-  
-  // Função para renderizar os botões de página (apenas 5 visíveis)
-  const renderPageButtons = () => {
-    const maxButtons = 5;
-    let startPage = Math.max(1, currentPage - Math.floor(maxButtons / 2));
-    let endPage = Math.min(totalPages, startPage + maxButtons - 1);
-
-    if (endPage - startPage + 1 < maxButtons) {
-      startPage = Math.max(1, endPage - maxButtons + 1);
-    }
-
-    const buttons = [];
-    for (let i = startPage; i <= endPage; i++) {
-      buttons.push(
-        <PaginationItem key={i}>
-          <PaginationLink
-            isActive={currentPage === i}
-            onClick={() => setCurrentPage(i)}
-            className="cursor-pointer"
-          >
-            {i}
-          </PaginationLink>
-        </PaginationItem>
-      );
-    }
-    return buttons;
-  };
-
-  const isFilterActive = searchTerm || statusFilter !== 'all' || userTypeFilter !== 'all' || dateRange.from;
 
   return (
-    <div className="space-y-6 w-full">
+    <div className="space-y-6">
       <div className="flex items-center gap-2">
         <Clock className="h-5 w-5 text-primary" />
         <h2 className="text-xl font-semibold">Histórico de Empréstimos</h2>
-        <Badge variant="secondary">{totalItems} registros</Badge>
+        <Badge variant="secondary">{filteredHistory.length} / {history.length}</Badge>
       </div>
 
       {/* Painel de Filtros */}
@@ -177,46 +112,8 @@ export function LoanHistory({ history }: LoanHistoryProps) {
             </SelectContent>
           </Select>
           
-          {/* Filtro de Data */}
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant={"outline"}
-                className={cn(
-                  "w-full sm:w-[200px] justify-start text-left font-normal",
-                  !dateRange.from && "text-muted-foreground"
-                )}
-              >
-                <Calendar className="mr-2 h-4 w-4" />
-                {dateRange.from ? (
-                  dateRange.to ? (
-                    <>
-                      {format(dateRange.from, "dd/MM/yyyy")} -{" "}
-                      {format(dateRange.to, "dd/MM/yyyy")}
-                    </>
-                  ) : (
-                    format(dateRange.from, "dd/MM/yyyy")
-                  )
-                ) : (
-                  <span>Filtrar por Data</span>
-                )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="end">
-              <CalendarComponent
-                initialFocus
-                mode="range"
-                defaultMonth={dateRange.from}
-                selected={dateRange}
-                onSelect={setDateRange}
-                numberOfMonths={2}
-                locale={ptBR}
-              />
-            </PopoverContent>
-          </Popover>
-          
           {/* Botão Limpar */}
-          {isFilterActive && (
+          {(searchTerm || statusFilter !== 'all' || userTypeFilter !== 'all') && (
             <Button variant="outline" size="icon" onClick={clearFilters} title="Limpar Filtros">
               <X className="h-4 w-4" />
             </Button>
@@ -224,7 +121,7 @@ export function LoanHistory({ history }: LoanHistoryProps) {
         </div>
       </GlassCard>
 
-      {paginatedHistory.length === 0 ? (
+      {filteredHistory.length === 0 ? (
         <Card>
           <CardContent className="py-8">
             <div className="text-center text-muted-foreground">
@@ -236,7 +133,7 @@ export function LoanHistory({ history }: LoanHistoryProps) {
         </Card>
       ) : (
         <div className="grid gap-4">
-          {paginatedHistory.map((loan) => {
+          {filteredHistory.map((loan) => {
             const { variant, className } = getStatusBadgeProps(loan.status);
             const isReturned = loan.status === 'devolvido';
             const returnedByDifferentUser = isReturned && 
@@ -244,19 +141,16 @@ export function LoanHistory({ history }: LoanHistoryProps) {
               loan.returned_by_email !== loan.student_email;
 
             return (
-              <Card 
-                key={loan.id} 
-                className={`hover:shadow-md transition-shadow ${loan.status === 'atrasado' ? 'border-red-400 bg-red-50/50' : ''}`}
-              >
-                <CardContent className="p-4 sm:p-6"> {/* Reduzindo padding */}
-                  <div className="space-y-3"> {/* Reduzindo espaçamento vertical */}
+              <Card key={loan.id} className="hover:shadow-md transition-shadow">
+                <CardContent className="p-6">
+                  <div className="space-y-4">
                     {/* Header */}
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-3">
-                        <User className="h-4 w-4 text-primary" /> {/* Ícone menor */}
+                        <User className="h-5 w-5 text-primary" />
                         <div>
-                          <h3 className="font-semibold text-base sm:text-lg">{loan.student_name}</h3> {/* Fonte ligeiramente menor */}
-                          <p className="text-xs text-muted-foreground">{loan.student_email}</p> {/* Fonte menor */}
+                          <h3 className="font-semibold text-lg">{loan.student_name}</h3>
+                          <p className="text-sm text-muted-foreground">{loan.student_email}</p>
                         </div>
                       </div>
                       <Badge 
@@ -268,7 +162,7 @@ export function LoanHistory({ history }: LoanHistoryProps) {
                     </div>
 
                     {/* Info badges */}
-                    <div className="flex flex-wrap gap-1.5 text-xs"> {/* Reduzindo espaçamento e fonte */}
+                    <div className="flex flex-wrap gap-2">
                       {loan.student_ra && (
                         <Badge variant="outline">
                           RA: {loan.student_ra}
@@ -294,21 +188,21 @@ export function LoanHistory({ history }: LoanHistoryProps) {
                     </div>
 
                     {/* Purpose */}
-                    <div className="text-sm pt-1">
+                    <div className="text-sm">
                       <span className="font-medium">Finalidade: </span>
                       <span>{loan.purpose}</span>
                     </div>
 
                     {/* Timeline */}
-                    <div className="space-y-2 pt-2"> {/* Reduzindo espaçamento vertical */}
+                    <div className="space-y-3">
                       {/* Empréstimo */}
                       <div className="bg-green-50 border border-green-200 rounded-lg p-3">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
                             <CheckCircle className="h-4 w-4 text-green-600" />
-                            <span className="font-medium text-sm text-green-800">Empréstimo realizado</span>
+                            <span className="font-medium text-green-800">Empréstimo realizado</span>
                           </div>
-                          <span className="text-xs text-green-700"> {/* Fonte menor */}
+                          <span className="text-sm text-green-700">
                             {format(new Date(loan.loan_date), "dd/MM/yyyy 'às' HH:mm")}
                           </span>
                         </div>
@@ -328,13 +222,13 @@ export function LoanHistory({ history }: LoanHistoryProps) {
                               ) : (
                                 <RotateCcw className="h-4 w-4 text-blue-600" />
                               )}
-                              <span className={`font-medium text-sm ${
+                              <span className={`font-medium ${
                                 returnedByDifferentUser ? 'text-orange-800' : 'text-blue-800'
                               }`}>
                                 Devolução realizada
                               </span>
                             </div>
-                            <span className={`text-xs ${
+                            <span className={`text-sm ${
                               returnedByDifferentUser ? 'text-orange-700' : 'text-blue-700'
                             }`}>
                               {format(new Date(loan.return_date), "dd/MM/yyyy 'às' HH:mm")}
@@ -343,7 +237,7 @@ export function LoanHistory({ history }: LoanHistoryProps) {
                           
                           {returnedByDifferentUser && loan.returned_by_name && (
                             <div className="mt-2 pt-2 border-t border-orange-200">
-                              <div className="text-xs text-orange-700"> {/* Fonte menor */}
+                              <div className="text-sm text-orange-700">
                                 <span className="font-medium">Devolvido por: </span>
                                 <span>{loan.returned_by_name}</span>
                                 {loan.returned_by_email && (
@@ -355,7 +249,7 @@ export function LoanHistory({ history }: LoanHistoryProps) {
 
                           {loan.return_notes && (
                             <div className="mt-2 pt-2 border-t border-gray-200">
-                              <div className="text-xs text-muted-foreground"> {/* Fonte menor */}
+                              <div className="text-sm text-muted-foreground">
                                 <span className="font-medium">Observações: </span>
                                 <span>{loan.return_notes}</span>
                               </div>
@@ -369,67 +263,6 @@ export function LoanHistory({ history }: LoanHistoryProps) {
               </Card>
             );
           })}
-        </div>
-      )}
-      
-      {/* Paginação */}
-      {totalPages > 1 && (
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6">
-          {/* Items Per Page Selector */}
-          <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-            <span>Itens por página:</span>
-            <Select
-              value={String(itemsPerPage)}
-              onValueChange={(value) => {
-                setItemsPerPage(Number(value));
-                setCurrentPage(1);
-              }}
-            >
-              <SelectTrigger className="w-[80px] h-8">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="10">10</SelectItem>
-                <SelectItem value="20">20</SelectItem>
-                <SelectItem value="50">50</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Pagination Controls */}
-          <Pagination className="mx-0">
-            <PaginationContent>
-              <PaginationItem>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                  disabled={currentPage === 1}
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-              </PaginationItem>
-
-              {/* Renderizar botões de página */}
-              {renderPageButtons()}
-
-              <PaginationItem>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-                  disabled={currentPage === totalPages}
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
-          
-          {/* Page Info */}
-          <div className="text-sm text-muted-foreground">
-            Página {currentPage} de {totalPages}
-          </div>
         </div>
       )}
     </div>
