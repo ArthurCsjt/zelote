@@ -15,8 +15,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import UserAutocomplete from "./UserAutocomplete";
 import type { UserSearchResult } from '@/hooks/useUserSearch';
 import { BatchDeviceInput } from "./BatchDeviceInput";
-import ChromebookAutocomplete from "./ChromebookAutocomplete"; // NOVO IMPORT
-import type { ChromebookSearchResult } from '@/hooks/useChromebookSearch'; // NOVO IMPORT
+import ChromebookAutocomplete from "./ChromebookAutocomplete";
+import type { ChromebookSearchResult } from '@/hooks/useChromebookSearch';
+import type { ReturnFormData } from '@/types/database'; // IMPORT CORRETO
 
 // Define a interface de props do componente
 interface ReturnDialogProps {
@@ -24,22 +25,8 @@ interface ReturnDialogProps {
   onOpenChange: (open: boolean) => void;
   chromebookId: string;
   onChromebookIdChange: (id: string) => void;
-  returnData: {
-    name: string;
-    ra?: string;
-    email: string;
-    type: 'individual' | 'lote';
-    userType: 'aluno' | 'professor' | 'funcionario';
-    notes?: string;
-  };
-  onReturnDataChange: (data: {
-    name: string;
-    ra?: string;
-    email: string;
-    type: 'individual' | 'lote';
-    userType: 'aluno' | 'professor' | 'funcionario';
-    notes?: string;
-  }) => void;
+  returnData: ReturnFormData & { notes?: string }; // Usando ReturnFormData
+  onReturnDataChange: (data: ReturnFormData & { notes?: string }) => void;
   onConfirm: (ids: string[], returnData: ReturnFormData) => void;
 }
 
@@ -51,6 +38,7 @@ export function ReturnDialog({
   onOpenChange,
   chromebookId,
   onReturnDataChange,
+  returnData, // Acessando a prop
   onConfirm
 }: ReturnDialogProps) {
   // === ESTADOS (STATES) ===
@@ -59,7 +47,7 @@ export function ReturnDialog({
   const [batchDevices, setBatchDevices] = useState<string[]>([]);
   const [confirmChecked, setConfirmChecked] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserSearchResult | null>(null);
-  const [selectedChromebook, setSelectedChromebook] = useState<ChromebookSearchResult | null>(null); // NOVO ESTADO
+  const [selectedChromebook, setSelectedChromebook] = useState<ChromebookSearchResult | null>(null);
 
   // === FUNÇÕES DE MANIPULAÇÃO (HANDLERS) ===
 
@@ -162,8 +150,11 @@ export function ReturnDialog({
       idsToReturn = [selectedChromebook.chromebook_id];
     }
     
+    // Prepara os dados de retorno, excluindo 'notes' se não for parte do tipo ReturnFormData
+    const { notes, ...baseReturnData } = returnData;
+    
     // Chama a função de callback para confirmar a devolução, passando os IDs e os dados
-    onConfirm(idsToReturn, returnData);
+    onConfirm(idsToReturn, baseReturnData);
   };
 
   // === RENDERIZAÇÃO DA INTERFACE (UI) ===
@@ -197,7 +188,7 @@ export function ReturnDialog({
                   onValueChange={(value: 'individual' | 'lote') => {
                     onReturnDataChange({ ...returnData, type: value });
                     if (value === 'individual') {
-                      setBatchDevices([]);
+                      setBatchDevices([]); // Limpa lote ao mudar para individual
                     } else {
                       setSelectedChromebook(null); // Limpa ID individual ao mudar para lote
                     }
