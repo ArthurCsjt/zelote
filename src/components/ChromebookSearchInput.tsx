@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { Check, Search, Loader2, CheckCircle, X, Computer, AlertTriangle } from 'lucide-react';
+import { Check, Search, Loader2, CheckCircle, X, Computer, AlertTriangle, QrCode } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
