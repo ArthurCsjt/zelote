@@ -24,6 +24,7 @@ export function RegistrationHub({ onBack, onRegistrationSuccess }: RegistrationH
   const renderForm = () => {
     switch (currentView) {
       case 'chromebooks':
+        // Usando o novo wrapper que contém as abas Manual e Inteligente
         return <ChromebookRegistration onRegistrationSuccess={onRegistrationSuccess} />;
       case 'students':
         return <StudentRegistration />;
