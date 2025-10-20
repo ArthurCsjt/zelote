@@ -67,10 +67,10 @@ createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     {/* Configuração do Sonner para notificações modernas */}
     <Toaster 
-      position="top-center" 
+      // Removendo 'position' para controlar via CSS
       richColors 
       closeButton 
-      className="z-[9999]"
+      className="z-[9999] sonner-custom-position" // Adicionando classe para controle CSS
       toastOptions={{
         className: 'shadow-lg border-gray-200',
         style: {

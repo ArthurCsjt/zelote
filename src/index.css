@@ -138,73 +138,80 @@
 }
 
 /* ======================================================================== */
-/* ADIÇÃO: Estilos para corrigir o enquadramento do QR Scanner (`html5-qrcode`)  */
+/* ADIÇÃO: Estilos para o Sonner (Toaster) - Posição Responsiva */
 /* ======================================================================== */
 
-/* Este é o 'palco' do scanner, o <div id="qr-code-reader"> que está no seu QRCodeScanner.tsx. */
-#qr-code-reader {
-  width: 100%;             /* Faz o scanner ocupar toda a largura do modal */
-  max-width: 400px;        /* Limita o tamanho em telas maiores */
-  margin: 1rem auto;       /* Centraliza e dá um espaçamento */
-
-  /* A PARTE MAIS IMPORTANTE: Força um formato quadrado, crucial para o enquadramento */
-  aspect-ratio: 1 / 1;
-  
-  position: relative;      /* Necessário para o posicionamento interno do vídeo */
-  overflow: hidden;        /* Esconde as partes do vídeo que 'vazam' para fora do quadrado */
-  border-radius: 12px;     /* Apenas para um visual mais agradável */
+/* Posição Padrão (Mobile First): Topo Centralizado */
+.sonner-custom-position {
+  /* Força a posição top-center no mobile */
+  top: 0 !important;
+  bottom: auto !important;
+  left: 50% !important;
+  right: auto !important;
+  transform: translateX(-50%) !important;
+  width: 100% !important;
+  max-width: 400px !important; /* Limita a largura no mobile */
+  padding: 0 10px !important; /* Padding lateral para não encostar nas bordas */
 }
 
-/* O elemento de vídeo que a biblioteca 'html5-qrcode' cria DENTRO do #qr-code-reader */
+/* Posição para Desktop (PC): Inferior Direito */
+@media (min-width: 768px) {
+  .sonner-custom-position {
+    top: auto !important;
+    bottom: 20px !important; /* 20px do fundo */
+    right: 20px !important; /* 20px da direita */
+    left: auto !important;
+    transform: none !important; /* Remove a transformação de centralização */
+    width: auto !important;
+    max-width: 400px !important; /* Mantém a largura máxima */
+    padding: 0 !important;
+  }
+}
+
+
+/* Estilos para corrigir o enquadramento do QR Scanner (`html5-qrcode`)  */
+#qr-code-reader {
+  width: 100%;             
+  max-width: 400px;        
+  margin: 1rem auto;       
+  aspect-ratio: 1 / 1;
+  position: relative;      
+  overflow: hidden;        
+  border-radius: 12px;     
+}
+
 #qr-code-reader video {
   width: 100%;
   height: 100%;
-  
-  /* A CORREÇÃO PRINCIPAL: Faz o vídeo preencher o espaço sem distorcer, cortando o excesso */
   object-fit: cover; 
 }
 
-/* A 'caixa de scan' que a própria biblioteca desenha. 
-   Este CSS ajuda a garantir que ela não fique com bordas estranhas. */
 #qr-code-reader__scan_region {
   border-radius: 8px;
 }
 
-/* ======================================================================== */
-/* ADIÇÃO: Estilos para o botão de fechar do Sonner (Toaster) */
-/* ======================================================================== */
-
-/* Estiliza o botão de fechar (X) do Sonner */
+/* Estilos para o botão de fechar do Sonner (Toaster) */
 .sonner-toast-button {
-  /* Garante que o botão seja um círculo pequeno e visível */
   width: 24px !important;
   height: 24px !important;
   min-width: 24px !important;
   min-height: 24px !important;
   padding: 0 !important;
   border-radius: 50% !important;
-  
-  /* Cor de fundo e cor do ícone */
-  background-color: rgba(0, 0, 0, 0.1) !important; /* Fundo levemente escuro */
-  color: #6b7280 !important; /* Ícone cinza */
-  
-  /* Posição */
+  background-color: rgba(0, 0, 0, 0.1) !important; 
+  color: #6b7280 !important; 
   top: 8px !important;
   right: 8px !important;
-  
-  /* Transição para o hover */
   transition: all 0.2s ease-in-out !important;
 }
 
-/* Estilo de hover para o botão de fechar */
 .sonner-toast-button:hover {
-  background-color: rgba(0, 0, 0, 0.2) !important; /* Fundo mais escuro no hover */
-  color: #1f2937 !important; /* Ícone mais escuro no hover */
+  background-color: rgba(0, 0, 0, 0.2) !important; 
+  color: #1f2937 !important; 
 }
 
-/* Ajuste para o modo destrutivo (vermelho) */
 .sonner-toast[data-styled-variant="destructive"] .sonner-toast-button {
-  background-color: rgba(255, 255, 255, 0.2) !important; /* Fundo branco transparente no toast vermelho */
+  background-color: rgba(255, 255, 255, 0.2) !important; 
   color: white !important;
 }
 
