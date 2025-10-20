@@ -22,19 +22,15 @@ export const CHROMEBOOK_MODELS: ChromebookModel[] = [
   { model: 'Chromebook 3 (XE500C13)', manufacturer: 'Samsung' },
   { model: 'Chromebook Plus (XE501C13)', manufacturer: 'Samsung' },
   
-  // HP
-  { model: 'Chromebook x360 11 G3 EE', manufacturer: 'HP' },
-  { model: 'Chromebook 11 G8 EE', manufacturer: 'HP' },
+  // HP (Modelos removidos, mas mantendo a lista de modelos limpa)
   
-  // Outros
+  // Outros (Modelos removidos)
   { model: 'Modelo Padrão (Manual)', manufacturer: 'Manual' },
-  { model: 'Outro / Desconhecido', manufacturer: 'Outro' },
 ];
 
 export const MANUFACTURERS = [
   'Acer',
   'Lenovo',
   'Samsung',
-  'HP',
-  'Outro',
+  // HP e Outro removidos
 ];
