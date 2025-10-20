@@ -23,7 +23,7 @@ export function BatchDeviceInput({ batchDevices, setBatchDevices, onScan, disabl
     // CORREÇÃO: Usar sanitizeQRCodeData para extrair o ID, mesmo que o payload seja JSON
     const sanitizedId = sanitizeQRCodeData(data); 
     
-    if (sanitizedId) {
+    if (typeof sanitizedId === 'string' && sanitizedId) {
       if (!batchDevices.includes(sanitizedId)) {
         setBatchDevices(prev => [...prev, sanitizedId]);
         toast({
@@ -89,44 +89,34 @@ export function BatchDeviceInput({ batchDevices, setBatchDevices, onScan, disabl
       <div className="space-y-3">
         <div className="space-y-2">
           <div className="w-full">
-            <Input
-              id="batchInput"
-              value={currentBatchInput}
-              onChange={(e) => setCurrentBatchInput(e.target.value)}
-              placeholder="Digite o ID do dispositivo (ex: 12 ou CHR012)"
-              className="border-gray-200 w-full bg-white"
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault();
-                  addDeviceToBatch();
-                }
-              }}
-              disabled={disabled}
-            />
+            <div className="flex gap-2">
+              <Input
+                id="batchInput"
+                value={currentBatchInput}
+                onChange={(e) => setCurrentBatchInput(e.target.value)}
+                placeholder="Digite o ID do dispositivo (ex: 12 ou CHR012) e pressione Enter"
+                className="border-gray-200 w-full bg-white"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addDeviceToBatch();
+                  }
+                }}
+                disabled={disabled}
+              />
+              <Button 
+                type="button" 
+                variant="outline" 
+                className="border-gray-200 bg-white hover:bg-gray-50 px-3"
+                onClick={() => setIsQRReaderOpen(true)}
+                disabled={disabled}
+              >
+                <QrCode className="h-5 w-5 text-gray-600" />
+              </Button>
+            </div>
           </div>
           
-          <div className="flex gap-2 w-full">
-            <Button 
-              type="button"
-              variant="outline"
-              onClick={addDeviceToBatch}
-              className="flex-1 text-green-600 hover:text-green-700 hover:bg-green-100 border-green-200"
-              disabled={disabled || !currentBatchInput.trim()}
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Adicionar
-            </Button>
-            
-            <Button 
-              type="button" 
-              variant="outline" 
-              className="border-gray-200 bg-white hover:bg-gray-50 px-3"
-              onClick={() => setIsQRReaderOpen(true)}
-              disabled={disabled}
-            >
-              <QrCode className="h-5 w-5 text-gray-600" />
-            </Button>
-          </div>
+          {/* Botão Adicionar removido */}
         </div>
         
         <div className="mt-2 p-2 bg-white rounded-md border border-gray-200 max-h-[150px] overflow-y-auto">

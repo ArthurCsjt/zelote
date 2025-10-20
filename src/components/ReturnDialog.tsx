@@ -101,7 +101,7 @@ export function ReturnDialog({
     // CORREÇÃO: Usar sanitizeQRCodeData para extrair o ID normalizado
     const sanitizedId = sanitizeQRCodeData(result);
     
-    if (sanitizedId) {
+    if (typeof sanitizedId === 'string' && sanitizedId) {
       // O scanner só é aberto para o modo individual neste componente
       onChromebookIdChange(sanitizedId);
       toast({
@@ -117,26 +117,13 @@ export function ReturnDialog({
   /**
    * Normaliza e valida o ID do Chromebook no modo individual.
    */
-  const handleValidateIndividualId = () => {
-    const normalizedId = normalizeChromebookId(chromebookId);
-    
-    if (!normalizedId) {
-      toast({
-        title: "Erro",
-        description: "O ID do Chromebook não pode estar vazio.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    onChromebookIdChange(normalizedId);
-
-    toast({
-      title: "ID Verificado",
-      description: `ID normalizado: ${normalizedId}. Pronto para devolução.`,
-      variant: "info",
-    });
+  const handleChromebookIdChange = (value: string) => {
+    // Normaliza o ID no momento da mudança para manter o estado limpo
+    const normalized = normalizeChromebookId(value);
+    onChromebookIdChange(normalized);
   };
+
+  // Removida a função handleValidateIndividualId
 
   /**
    * Função chamada ao clicar no botão de confirmação
@@ -242,25 +229,11 @@ export function ReturnDialog({
                       <Input
                         id="chromebookId"
                         value={chromebookId}
-                        onChange={(e) => onChromebookIdChange(e.target.value)}
+                        onChange={(e) => handleChromebookIdChange(e.target.value)}
                         placeholder="Digite o ID do Chromebook (ex: 12 ou CHR012)"
                         className="bg-white border-gray-200 pr-10"
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
-                            e.preventDefault();
-                            handleValidateIndividualId();
-                          }
-                        }}
                       />
-                      <Button 
-                        type="button" 
-                        variant="ghost" 
-                        onClick={handleValidateIndividualId}
-                        className="absolute right-1 top-1 h-8 px-2 text-blue-600 hover:text-blue-700 hover:bg-blue-100"
-                        title="Validar ID"
-                      >
-                        <Plus className="h-4 w-4" />
-                      </Button>
+                      {/* Botão de validação removido */}
                     </div>
                     {/* Botão para escanear QR Code */}
                     <Button 

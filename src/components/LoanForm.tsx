@@ -83,7 +83,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
     // Usa sanitizeQRCodeData para garantir que apenas o ID normalizado seja retornado
     const sanitizedId = sanitizeQRCodeData(data); 
     
-    if (sanitizedId) {
+    if (typeof sanitizedId === 'string' && sanitizedId) {
       // Esta função só é chamada no modo INDIVIDUAL
       setFormData(prev => ({ ...prev, chromebookId: sanitizedId }));
       toast({
@@ -95,29 +95,12 @@ export function LoanForm({ onBack }: LoanFormProps) {
   };
   
   const handleChromebookIdChange = (value: string) => {
-    setFormData({ ...formData, chromebookId: value });
+    // Normaliza o ID no momento da mudança para manter o estado limpo
+    const normalized = normalizeChromebookId(value);
+    setFormData({ ...formData, chromebookId: normalized });
   };
 
-  const handleValidateIndividualId = () => {
-    const normalizedId = normalizeChromebookId(formData.chromebookId);
-    
-    if (!normalizedId) {
-      toast({
-        title: "Erro",
-        description: "O ID do Chromebook não pode estar vazio.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setFormData(prev => ({ ...prev, chromebookId: normalizedId }));
-
-    toast({
-      title: "ID Verificado",
-      description: `ID normalizado: ${normalizedId}. Pronto para empréstimo.`,
-      variant: "info",
-    });
-  };
+  // Removida a função handleValidateIndividualId
 
   const resetForm = () => {
     setBatchDevices([]);
@@ -277,23 +260,9 @@ export function LoanForm({ onBack }: LoanFormProps) {
                       value={formData.chromebookId}
                       onChange={(e) => handleChromebookIdChange(e.target.value)}
                       className="border-gray-200 w-full pr-10 bg-white"
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault();
-                          handleValidateIndividualId();
-                        }
-                      }}
                       required // Adicionado required
                     />
-                    <Button 
-                      type="button" 
-                      variant="ghost" 
-                      onClick={handleValidateIndividualId}
-                      className="absolute right-1 top-1 h-8 px-2 text-green-600 hover:text-green-700 hover:bg-green-100"
-                      title="Validar ID"
-                    >
-                      <Plus className="h-4 w-4" />
-                    </Button>
+                    {/* Botão de validação removido */}
                   </div>
                   <Button 
                     type="button" 
@@ -311,7 +280,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
               <BatchDeviceInput
                 batchDevices={batchDevices}
                 setBatchDevices={setBatchDevices}
-                // onScan={handleQRCodeScan} // REMOVIDO: BatchDeviceInput gerencia seu próprio scanner
+                onScan={() => {}} // Não usado, mas mantido para evitar erros de tipo se a prop existisse
                 disabled={loading}
               />
             )}
