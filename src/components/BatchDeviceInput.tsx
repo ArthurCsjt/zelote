@@ -1,57 +1,96 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Input } from './ui/input';
 import { Button } from './ui/button';
 import { Label } from './ui/label';
 import { Badge } from './ui/badge';
-import { Computer, Plus, QrCode } from 'lucide-react';
+import { Computer, Plus, QrCode, Loader2 } from 'lucide-react';
 import { toast } from './ui/use-toast';
-import { normalizeChromebookId } from '@/utils/security';
+import { normalizeChromebookId, sanitizeQRCodeData } from '@/utils/security';
 import { QRCodeReader } from './QRCodeReader';
+import { useChromebookSearch } from '@/hooks/useChromebookSearch'; // Importando o hook de busca
 
 interface BatchDeviceInputProps {
   batchDevices: string[];
   setBatchDevices: React.Dispatch<React.SetStateAction<string[]>>;
   onScan: (data: string) => void;
   disabled: boolean;
+  filterStatus?: 'disponivel' | 'ativo' | 'all'; // NOVO: Para validar o status
 }
 
-export function BatchDeviceInput({ batchDevices, setBatchDevices, onScan, disabled }: BatchDeviceInputProps) {
+export function BatchDeviceInput({ batchDevices, setBatchDevices, onScan, disabled, filterStatus = 'disponivel' }: BatchDeviceInputProps) {
   const [currentBatchInput, setCurrentBatchInput] = useState("");
   const [isQRReaderOpen, setIsQRReaderOpen] = useState(false);
+  const { chromebooks, loading: searchLoading } = useChromebookSearch();
 
   const handleQRCodeScan = (data: string) => {
-    const sanitizedId = normalizeChromebookId(data); 
+    const sanitizedId = sanitizeQRCodeData(data); 
     
-    if (sanitizedId) {
-      if (!batchDevices.includes(sanitizedId)) {
-        setBatchDevices(prev => [...prev, sanitizedId]);
-        toast({
-          title: "Dispositivo adicionado ao lote",
-          description: `ID do Chromebook: ${sanitizedId}`,
-        });
-      } else {
-        toast({
-          title: "Dispositivo já adicionado",
-          description: `O Chromebook ${sanitizedId} já está na lista`,
-          variant: "destructive",
-        });
-      }
+    if (typeof sanitizedId === 'string' && sanitizedId) {
+      // Tenta adicionar o ID escaneado
+      addDeviceToBatch(sanitizedId);
     }
     setIsQRReaderOpen(false);
   };
 
-  const addDeviceToBatch = () => {
-    const normalizedInput = normalizeChromebookId(currentBatchInput);
+  const addDeviceToBatch = useCallback((inputOverride?: string) => {
+    const rawInput = inputOverride || currentBatchInput;
+    const normalizedInput = normalizeChromebookId(rawInput);
     
-    if (normalizedInput && !batchDevices.includes(normalizedInput)) {
-      setBatchDevices([...batchDevices, normalizedInput]);
-      setCurrentBatchInput("");
-    } else if (normalizedInput) {
+    if (!normalizedInput) {
+      toast({
+        title: "Erro",
+        description: "O ID do dispositivo não pode estar vazio.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (batchDevices.includes(normalizedInput)) {
       toast({
         title: "Dispositivo já adicionado",
         description: `O Chromebook ${normalizedInput} já está na lista`,
         variant: "destructive",
       });
+      return;
+    }
+    
+    // 1. Validação de existência e status
+    const chromebook = chromebooks.find(cb => cb.chromebook_id === normalizedInput);
+    
+    if (!chromebook) {
+      toast({
+        title: "Erro de Inventário",
+        description: `Chromebook ${normalizedInput} não encontrado no inventário.`,
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    const requiredStatus = filterStatus === 'ativo' ? 'emprestado' : 'disponivel';
+    
+    if (chromebook.status !== requiredStatus) {
+      toast({
+        title: "Status Incorreto",
+        description: `O Chromebook ${normalizedInput} está com status: ${chromebook.status.toUpperCase()}. Requerido: ${requiredStatus.toUpperCase()}.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // 2. Adiciona se passar na validação
+    setBatchDevices(prev => [...prev, normalizedInput]);
+    setCurrentBatchInput("");
+    toast({
+      title: "Dispositivo adicionado",
+      description: `ID: ${normalizedInput} (${chromebook.model})`,
+      variant: "success",
+    });
+  }, [currentBatchInput, batchDevices, chromebooks, filterStatus]);
+
+  const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      addDeviceToBatch();
     }
   };
 
@@ -73,43 +112,38 @@ export function BatchDeviceInput({ batchDevices, setBatchDevices, onScan, disabl
       <div className="space-y-3">
         <div className="space-y-2">
           <div className="w-full">
-            <Input
-              id="batchInput"
-              value={currentBatchInput}
-              onChange={(e) => setCurrentBatchInput(normalizeChromebookId(e.target.value))}
-              placeholder="Digite o ID do dispositivo (ex: 12 ou CHR012)"
-              className="border-gray-200 w-full bg-white"
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault();
-                  addDeviceToBatch();
-                }
-              }}
-              disabled={disabled}
-            />
-          </div>
-          
-          <div className="flex gap-2 w-full">
-            <Button 
-              type="button"
-              variant="outline"
-              onClick={addDeviceToBatch}
-              className="flex-1 text-green-600 hover:text-green-700 hover:bg-green-100 border-green-200"
-              disabled={disabled || !currentBatchInput.trim()}
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Adicionar
-            </Button>
-            
-            <Button 
-              type="button" 
-              variant="outline" 
-              className="border-gray-200 bg-white hover:bg-gray-50 px-3"
-              onClick={() => setIsQRReaderOpen(true)}
-              disabled={disabled}
-            >
-              <QrCode className="h-5 w-5 text-gray-600" />
-            </Button>
+            <div className="flex gap-2">
+              <Input
+                id="batchInput"
+                value={currentBatchInput}
+                onChange={(e) => setCurrentBatchInput(e.target.value)}
+                placeholder="Digite o ID do dispositivo (ex: 12 ou CHR012)"
+                className="border-gray-200 w-full bg-white"
+                onKeyDown={handleInputKeyDown}
+                disabled={disabled || searchLoading}
+              />
+              
+              {/* Botão de Adicionar reintroduzido */}
+              <Button 
+                type="button"
+                variant="outline"
+                onClick={() => addDeviceToBatch()}
+                className="text-green-600 hover:text-green-700 hover:bg-green-100 border-green-200 px-3"
+                disabled={disabled || searchLoading || !currentBatchInput.trim()}
+              >
+                {searchLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+              </Button>
+              
+              <Button 
+                type="button" 
+                variant="outline" 
+                className="border-gray-200 bg-white hover:bg-gray-50 px-3"
+                onClick={() => setIsQRReaderOpen(true)}
+                disabled={disabled || searchLoading}
+              >
+                <QrCode className="h-5 w-5 text-gray-600" />
+              </Button>
+            </div>
           </div>
         </div>
         

@@ -10,62 +10,56 @@ import { toast } from "./ui/use-toast";
 import { Textarea } from "./ui/textarea";
 import { Computer, Plus, QrCode, User, AlertTriangle, CheckCircle, RotateCcw } from "lucide-react";
 import { Checkbox } from "./ui/checkbox";
-import { sanitizeQRCodeData, normalizeChromebookId } from "@/utils/security"; // Importando a função de normalização
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card"; // Importando Card para melhor agrupamento
-import UserAutocomplete from "./UserAutocomplete"; // Importando UserAutocomplete
-import type { UserSearchResult } from '@/hooks/useUserSearch'; // Importando tipo de resultado de busca
-import { BatchDeviceInput } from "./BatchDeviceInput"; // Importando o componente de lote
+import { sanitizeQRCodeData, normalizeChromebookId } from "@/utils/security";
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import UserAutocomplete from "./UserAutocomplete";
+import type { UserSearchResult } from '@/hooks/useUserSearch';
+import { BatchDeviceInput } from "./BatchDeviceInput";
+import ChromebookAutocomplete from "./ChromebookAutocomplete"; // NOVO IMPORT
+import type { ChromebookSearchResult } from '@/hooks/useChromebookSearch'; // NOVO IMPORT
 
 // Define a interface de props do componente
 interface ReturnDialogProps {
-  open: boolean;                                   // Controla se o diálogo está aberto
-  onOpenChange: (open: boolean) => void;           // Função chamada quando o diálogo está aberto
-  chromebookId: string;                            // ID do Chromebook a ser devolvido (apenas para individual)
-  onChromebookIdChange: (id: string) => void;      // Função chamada quando o ID muda
-  returnData: {                                    // Dados da pessoa que está devolvendo
-    name: string;                                  // Nome do solicitante
-    ra?: string;                                   // RA (Registro Acadêmico), opcional
-    email: string;                                 // Email do solicitante
-    type: 'individual' | 'lote';                   // Tipo de devolução
-    userType: 'aluno' | 'professor' | 'funcionario'; // Tipo de usuário
-  };
-  onReturnDataChange: (data: {                     // Função chamada quando os dados mudam
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  chromebookId: string;
+  onChromebookIdChange: (id: string) => void;
+  returnData: {
     name: string;
     ra?: string;
     email: string;
     type: 'individual' | 'lote';
     userType: 'aluno' | 'professor' | 'funcionario';
+    notes?: string;
+  };
+  onReturnDataChange: (data: {
+    name: string;
+    ra?: string;
+    email: string;
+    type: 'individual' | 'lote';
+    userType: 'aluno' | 'professor' | 'funcionario';
+    notes?: string;
   }) => void;
-  // Alterado o tipo de retorno para incluir a lista de IDs de lote
-  onConfirm: (ids: string[], returnData: ReturnFormData) => void;                           // Função chamada ao confirmar a devolução
+  onConfirm: (ids: string[], returnData: ReturnFormData) => void;
 }
 
 /**
  * Componente de diálogo para processar devolução de Chromebooks
- * Permite devoluções individuais ou em lote
  */
 export function ReturnDialog({
   open,
   onOpenChange,
   chromebookId,
-  onChromebookIdChange,
-  returnData,
   onReturnDataChange,
   onConfirm
 }: ReturnDialogProps) {
   // === ESTADOS (STATES) ===
   
-  // Controla a exibição do scanner de QR Code
   const [showScanner, setShowScanner] = useState(false);
-  
-  // Lista de dispositivos para devolução em lote
   const [batchDevices, setBatchDevices] = useState<string[]>([]);
-  
-  // Confirmação de verificação do estado do equipamento
   const [confirmChecked, setConfirmChecked] = useState(false);
-
-  // Estado para o usuário selecionado via autocompletar
   const [selectedUser, setSelectedUser] = useState<UserSearchResult | null>(null);
+  const [selectedChromebook, setSelectedChromebook] = useState<ChromebookSearchResult | null>(null); // NOVO ESTADO
 
   // === FUNÇÕES DE MANIPULAÇÃO (HANDLERS) ===
 
@@ -87,59 +81,62 @@ export function ReturnDialog({
       name: '',
       ra: '',
       email: '',
-      userType: 'aluno', // Volta para o padrão
+      userType: 'aluno',
     });
+  };
+  
+  const handleChromebookSelect = (chromebook: ChromebookSearchResult) => {
+    // 1. Verifica se o status é 'emprestado' (ativo)
+    if (chromebook.status !== 'emprestado') {
+      toast({
+        title: "Chromebook Indisponível",
+        description: `O Chromebook ${chromebook.chromebook_id} não está registrado como emprestado. Status: ${chromebook.status.toUpperCase()}.`,
+        variant: "destructive",
+      });
+      setSelectedChromebook(null);
+      return;
+    }
+    
+    // 2. Se estiver emprestado, seleciona
+    setSelectedChromebook(chromebook);
+  };
+  
+  const handleChromebookClear = () => {
+    setSelectedChromebook(null);
   };
 
   /**
    * Processa o resultado da leitura do QR Code
-   * @param result - String com o resultado da leitura do QR Code
    */
   const handleQRCodeScan = (result: string) => {
-    // sanitizeQRCodeData já inclui a normalização
     const sanitizedId = sanitizeQRCodeData(result);
     
-    if (sanitizedId) {
-      // O scanner só é aberto para o modo individual neste componente
-      onChromebookIdChange(sanitizedId);
+    if (typeof sanitizedId === 'string' && sanitizedId) {
+      // No modo individual, o Autocomplete fará a busca e validação
+      // Aqui, apenas notificamos o usuário para usar a busca
       toast({
-        title: "QR Code lido com sucesso",
-        description: `ID do Chromebook: ${sanitizedId}`,
+        title: "QR Code lido",
+        description: `ID do Chromebook: ${sanitizedId}. Use a busca para selecionar e confirmar a devolução.`,
+        variant: "info",
       });
     }
-    // Fecha o scanner após processar
     setShowScanner(false);
   };
 
   /**
-   * Normaliza e valida o ID do Chromebook no modo individual.
+   * Função chamada ao clicar no botão de confirmação
    */
-  const handleValidateIndividualId = () => {
-    const normalizedId = normalizeChromebookId(chromebookId);
+  const handleConfirmClick = () => {
+    let idsToReturn: string[] = [];
     
-    if (!normalizedId) {
+    if (!selectedUser) {
       toast({
         title: "Erro",
-        description: "O ID do Chromebook não pode estar vazio.",
+        description: "Selecione o solicitante usando a busca automática.",
         variant: "destructive",
       });
       return;
     }
-
-    onChromebookIdChange(normalizedId);
-
-    toast({
-      title: "ID Verificado",
-      description: `ID normalizado: ${normalizedId}. Pronto para devolução.`,
-    });
-  };
-
-  /**
-   * Função chamada ao clicar no botão de confirmação
-   * Processa a devolução e chama a callback principal
-   */
-  const handleConfirmClick = () => {
-    let idsToReturn: string[] = [];
     
     if (returnData.type === 'lote') {
       // === DEVOLUÇÃO EM LOTE ===
@@ -154,16 +151,15 @@ export function ReturnDialog({
       idsToReturn = batchDevices;
     } else {
       // === DEVOLUÇÃO INDIVIDUAL ===
-      const normalizedId = normalizeChromebookId(chromebookId);
-      if (!normalizedId) {
+      if (!selectedChromebook) {
         toast({
           title: "Erro",
-          description: "O ID do Chromebook é obrigatório.",
+          description: "Selecione um Chromebook ativo para devolução.",
           variant: "destructive",
         });
         return;
       }
-      idsToReturn = [normalizedId];
+      idsToReturn = [selectedChromebook.chromebook_id];
     }
     
     // Chama a função de callback para confirmar a devolução, passando os IDs e os dados
@@ -201,9 +197,9 @@ export function ReturnDialog({
                   onValueChange={(value: 'individual' | 'lote') => {
                     onReturnDataChange({ ...returnData, type: value });
                     if (value === 'individual') {
-                      setBatchDevices([]); // Limpa lote ao mudar para individual
+                      setBatchDevices([]);
                     } else {
-                      onChromebookIdChange(""); // Limpa ID individual ao mudar para lote
+                      setSelectedChromebook(null); // Limpa ID individual ao mudar para lote
                     }
                   }}
                 >
@@ -219,150 +215,91 @@ export function ReturnDialog({
 
               {/* Campos específicos para cada tipo de devolução */}
               {returnData.type === 'individual' ? (
-                /* Campo de ID para devolução individual */
+                /* Campo de ID para devolução individual (AGORA COM AUTOCOMPLETE) */
                 <div className="space-y-2">
                   <Label htmlFor="chromebookId" className="text-gray-700">
-                    ID do Chromebook
+                    ID do Chromebook *
                   </Label>
-                  <div className="flex gap-2">
-                    <div className="relative flex-1">
-                      <Input
-                        id="chromebookId"
-                        value={chromebookId}
-                        onChange={(e) => onChromebookIdChange(e.target.value)}
-                        placeholder="Digite o ID do Chromebook (ex: 12 ou CHR012)"
-                        className="bg-white border-gray-200 pr-10"
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
-                            e.preventDefault();
-                            handleValidateIndividualId();
-                          }
-                        }}
-                      />
-                      <Button 
-                        type="button" 
-                        variant="ghost" 
-                        onClick={handleValidateIndividualId}
-                        className="absolute right-1 top-1 h-8 px-2 text-blue-600 hover:text-blue-700 hover:bg-blue-100"
-                        title="Validar ID"
-                      >
-                        <Plus className="h-4 w-4" />
-                      </Button>
-                    </div>
-                    {/* Botão para escanear QR Code */}
-                    <Button 
-                      type="button"
-                      variant="outline"
-                      onClick={() => setShowScanner(true)}
-                      className="bg-white hover:bg-gray-50"
-                    >
-                      <QrCode className="h-4 w-4" />
-                    </Button>
-                  </div>
+                  <ChromebookAutocomplete
+                      selectedChromebook={selectedChromebook}
+                      onSelect={handleChromebookSelect}
+                      onClear={handleChromebookClear}
+                      disabled={false}
+                      filterStatus="ativo" // Apenas Chromebooks emprestados
+                  />
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    className="border-gray-200 bg-white hover:bg-gray-50 px-3 w-full mt-2"
+                    onClick={() => setShowScanner(true)}
+                    title="Escanear QR Code"
+                  >
+                    <QrCode className="h-5 w-5 text-gray-600 mr-2" />
+                    Escanear QR Code
+                  </Button>
                 </div>
               ) : (
                 /* Interface de devolução em lote (usando BatchDeviceInput) */
                 <BatchDeviceInput
                   batchDevices={batchDevices}
                   setBatchDevices={setBatchDevices}
-                  onScan={handleQRCodeScan} // Passamos a função de adicionar para o scanner interno
+                  onScan={handleQRCodeScan}
                   disabled={false}
+                  filterStatus="ativo" // Passa o filtro para o BatchDeviceInput
                 />
               )}
             </Card>
 
-            {/* Coluna Direita - Informações do Usuário */}
-            <Card className="p-4 space-y-4 bg-white border-gray-100 shadow-md">
-              <CardTitle className="text-lg flex items-center gap-2 text-purple-700">
-                <User className="h-5 w-5" /> Informações do Solicitante
-              </CardTitle>
+            {/* Coluna Direita - Informações do Usuário e Observações */}
+            <div className="space-y-6">
+              <Card className="p-4 space-y-4 bg-purple-50/50 border-purple-100 shadow-inner">
+                <CardTitle className="text-lg flex items-center gap-2 text-purple-700">
+                  <User className="h-5 w-5" /> Informações do Solicitante
+                </CardTitle>
+                
+                {/* Seletor de Usuário com Autocompletar (ÚNICO CAMPO) */}
+                <div className="space-y-2">
+                  <Label htmlFor="userSearch" className="text-gray-700">
+                    Buscar Solicitante (Nome, RA ou Email) *
+                  </Label>
+                  <UserAutocomplete
+                    selectedUser={selectedUser}
+                    onSelect={handleUserSelect}
+                    onClear={handleUserClear}
+                    disabled={false}
+                  />
+                </div>
+                
+                {/* Mensagem de aviso se nenhum usuário for selecionado */}
+                {!selectedUser && (
+                  <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+                    <p className="text-sm text-red-700 flex items-center gap-2">
+                      <AlertTriangle className="h-4 w-4" />
+                      Selecione o solicitante para prosseguir com a devolução.
+                    </p>
+                  </div>
+                )}
+              </Card>
               
-              {/* NOVO: Seletor de Usuário com Autocompletar */}
-              <div className="space-y-2">
-                <Label htmlFor="userSearch" className="text-gray-700">
-                  Buscar Solicitante (Nome, RA ou Email)
-                </Label>
-                <UserAutocomplete
-                  selectedUser={selectedUser}
-                  onSelect={handleUserSelect}
-                  onClear={handleUserClear}
-                  disabled={false} // Deve estar sempre habilitado
-                />
-              </div>
-
-              {/* Campos de Usuário (Exibidos apenas se NENHUM usuário estiver selecionado) */}
-              {!selectedUser && (
-                <>
-                  {/* Seletor de tipo de usuário */}
-                  <div className="space-y-2">
-                    <Label htmlFor="userType" className="text-gray-700">
-                      Tipo de Solicitante
-                    </Label>
-                    <Select
-                      value={returnData.userType}
-                      onValueChange={(value: 'aluno' | 'professor' | 'funcionario') =>
-                        onReturnDataChange({ ...returnData, userType: value })
-                      }
-                    >
-                      <SelectTrigger className="bg-white border-gray-200">
-                        <SelectValue placeholder="Selecione o tipo de solicitante" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="aluno">Aluno</SelectItem>
-                        <SelectItem value="professor">Professor</SelectItem>
-                        <SelectItem value="funcionario">Funcionário</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* Campo de nome do solicitante */}
-                  <div className="space-y-2">
-                    <Label htmlFor="returnerName" className="text-gray-700">
-                      Nome do Solicitante
-                    </Label>
-                    <Input
-                      id="returnerName"
-                      value={returnData.name}
-                      onChange={(e) => onReturnDataChange({ ...returnData, name: e.target.value })}
-                      placeholder="Digite o nome do solicitante"
-                      className="bg-white border-gray-200"
-                    />
-                  </div>
-
-                  {/* Campo de RA (apenas para alunos) */}
-                  {returnData.userType === 'aluno' && (
-                    <div className="space-y-2">
-                      <Label htmlFor="returnerRA" className="text-gray-700">
-                        RA do Aluno (opcional)
-                      </Label>
-                      <Input
-                        id="returnerRA"
-                        value={returnData.ra}
-                        onChange={(e) => onReturnDataChange({ ...returnData, ra: e.target.value })}
-                        placeholder="Digite o RA"
-                        className="bg-white border-gray-200"
-                      />
-                    </div>
-                  )}
-
-                  {/* Campo de email */}
-                  <div className="space-y-2">
-                    <Label htmlFor="returnerEmail" className="text-gray-700">
-                      Email
-                    </Label>
-                    <Input
-                      id="returnerEmail"
-                      type="email"
-                      value={returnData.email}
-                      onChange={(e) => onReturnDataChange({ ...returnData, email: e.target.value })}
-                      placeholder="Digite o email"
-                      className="bg-white border-gray-200"
-                      required
-                    />
-                  </div>
-                </>
-              )}
-            </Card>
+              {/* Campo de Observações */}
+              <Card className="p-4 space-y-4 bg-white border-gray-100 shadow-md">
+                <CardTitle className="text-lg flex items-center gap-2 text-gray-700">
+                  <AlertTriangle className="h-5 w-5" /> Observações da Devolução
+                </CardTitle>
+                <div className="space-y-2">
+                  <Label htmlFor="notes" className="text-gray-700">
+                    Condição do equipamento ou notas sobre a devolução (Opcional)
+                  </Label>
+                  <Textarea
+                    id="notes"
+                    value={returnData.notes || ''}
+                    onChange={(e) => onReturnDataChange({ ...returnData, notes: e.target.value })}
+                    placeholder="Ex: O Chromebook foi devolvido com a tela trincada."
+                    className="bg-white border-gray-200 min-h-[80px]"
+                  />
+                </div>
+              </Card>
+            </div>
           </div>
 
 {/* Confirmação */}
@@ -391,7 +328,12 @@ export function ReturnDialog({
             <Button 
               onClick={handleConfirmClick}
               className="flex-1 bg-blue-600 hover:bg-blue-700"
-              disabled={!confirmChecked || (returnData.type === 'lote' && batchDevices.length === 0 && !chromebookId)}
+              disabled={
+                !confirmChecked || 
+                !selectedUser ||
+                (returnData.type === 'lote' && batchDevices.length === 0) ||
+                (returnData.type === 'individual' && !selectedChromebook)
+              }
             >
               <CheckCircle className="h-4 w-4 mr-2" />
               {returnData.type === 'lote' 
@@ -403,7 +345,6 @@ export function ReturnDialog({
       </Dialog>
 
       {/* Componente de leitura de QR Code (visível apenas quando showScanner = true) */}
-      {/* Mantemos o scanner aqui apenas para o modo INDIVIDUAL, o modo LOTE usa o scanner interno do BatchDeviceInput */}
       {returnData.type === 'individual' && (
         <QRCodeReader
           open={showScanner}
