@@ -1,4 +1,3 @@
-768px).">
 import { useState, useEffect } from 'react';
 
 const DESKTOP_BREAKPOINT = 768;
