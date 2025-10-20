@@ -89,9 +89,11 @@ export function isValidChromebookId(id: string): boolean {
 
 /**
  * Sanitiza entrada do QR Code para prevenir injeção de código.
- * Retorna SEMPRE o ID do Chromebook normalizado como string.
+ * 
+ * Se for JSON válido com 'id', retorna o objeto JSON.
+ * Caso contrário, retorna a string normalizada do ID.
  */
-export function sanitizeQRCodeData(data: string): string {
+export function sanitizeQRCodeData(data: string): string | Record<string, any> {
   if (!data) return '';
   
   let cleanData = data.trim();
@@ -101,31 +103,25 @@ export function sanitizeQRCodeData(data: string): string {
     cleanData = cleanData.substring(1, cleanData.length - 1);
   }
 
-  let identifierToUse = data;
-
   try {
     // 2. Tenta fazer parse como JSON
     const parsed = JSON.parse(cleanData);
     
     // Se for um objeto e tiver a chave 'id' (novo formato de cadastro inteligente)
     if (parsed && typeof parsed === 'object' && parsed.id) {
-      // Se for o formato JSON, extrai o ID e usa ele
-      identifierToUse = parsed.id;
+      // Se for o formato JSON, retorna o objeto completo para o SmartRegistration
+      // O SmartRegistration fará a normalização do ID.
+      return parsed;
     }
   } catch {
-    // Se falhar o parse JSON, continua usando a string bruta
+    // Não é JSON, continua como string
   }
   
-  // 3. Tenta extrair o ID usando Regex (para QR Codes antigos ou simples)
-  const idRegex = /["']id["']\s*:\s*["']([^"']+)["']/;
-  const match = cleanData.match(idRegex);
+  // 3. Se não for JSON, trata como string simples (ID)
+  const identifierToUse = sanitizeString(cleanData);
   
-  if (match && match[1]) {
-    identifierToUse = match[1];
-  }
-  
-  // Sanitiza a string (removendo HTML) e depois normaliza o formato (CHRxxx)
-  return normalizeChromebookId(sanitizeString(identifierToUse));
+  // Retorna a string normalizada
+  return normalizeChromebookId(identifierToUse);
 }
 
 /**

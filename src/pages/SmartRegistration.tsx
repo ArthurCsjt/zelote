@@ -34,6 +34,8 @@ export function SmartRegistration({ onBack }: SmartRegistrationProps) {
   const handleScanSuccess = (scannedData: string) => {
     setIsScannerOpen(false);
     
+    // O sanitizeQRCodeData agora retorna o objeto JSON se for um QR Code detalhado,
+    // ou a string ID normalizada se for um QR Code simples.
     const result = sanitizeQRCodeData(scannedData);
     
     if (typeof result === 'object' && result.id) {
