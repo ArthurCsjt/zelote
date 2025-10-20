@@ -42,7 +42,17 @@ export const UserManagement = () => {
       const { error } = await supabase.functions.invoke('invite-user', {
         body: { email, role },
       });
-      if (error) throw error;
+      if (error) {
+        // Tenta extrair a mensagem de erro detalhada da resposta da função Edge
+        let errorMessage = error.message;
+        try {
+          const errorBody = JSON.parse(error.message);
+          errorMessage = errorBody.error || error.message;
+        } catch {
+          // Se não for JSON, usa a mensagem padrão
+        }
+        throw new Error(errorMessage);
+      }
       toast({ title: 'Convite enviado!', description: `O convite foi enviado com sucesso para ${email}.` });
       setInviteEmail('');
       queryClient.invalidateQueries({ queryKey: ['all_users'] });

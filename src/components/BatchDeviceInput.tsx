@@ -8,6 +8,7 @@ import { toast } from './ui/use-toast';
 import { normalizeChromebookId, sanitizeQRCodeData } from '@/utils/security';
 import { QRCodeReader } from './QRCodeReader';
 import { useChromebookSearch } from '@/hooks/useChromebookSearch';
+import { cn } from '@/lib/utils';
 
 interface BatchDeviceInputProps {
   batchDevices: string[];
