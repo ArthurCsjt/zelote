@@ -164,7 +164,7 @@ export function ReturnDialog({
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+            <DialogTitle className="text-2xl font-bold text-gray-800 dark:text-foreground flex items-center gap-2">
               <RotateCcw className="h-6 w-6 text-blue-600" />
               Registrar Devolução
             </DialogTitle>
@@ -173,14 +173,14 @@ export function ReturnDialog({
           <div className="grid md:grid-cols-2 gap-6">
             
             {/* Coluna Esquerda - Dispositivo/Lote (AGORA AZUL) */}
-            <Card className="p-4 space-y-4 bg-blue-50/50 border-blue-100 shadow-inner">
-              <CardTitle className="text-lg flex items-center gap-2 text-blue-700">
+            <Card className="p-4 space-y-4 bg-blue-50/50 border-blue-100 shadow-inner dark:bg-blue-950/50 dark:border-blue-900/50">
+              <CardTitle className="text-lg flex items-center gap-2 text-blue-700 dark:text-blue-400">
                 <Computer className="h-5 w-5" /> Detalhes do Equipamento
               </CardTitle>
               
               {/* Seletor de tipo de devolução (individual ou lote) */}
               <div className="space-y-2">
-                <Label htmlFor="returnType" className="text-gray-700">
+                <Label htmlFor="returnType" className="text-foreground">
                   Tipo de Devolução
                 </Label>
                 <Select
@@ -194,7 +194,7 @@ export function ReturnDialog({
                     }
                   }}
                 >
-                  <SelectTrigger className="bg-white border-gray-200">
+                  <SelectTrigger className="bg-white border-gray-200 dark:bg-card dark:border-border">
                     <SelectValue placeholder="Selecione o tipo de devolução" />
                   </SelectTrigger>
                   <SelectContent>
@@ -208,7 +208,7 @@ export function ReturnDialog({
               {returnData.type === 'individual' ? (
                 /* Campo de ID para devolução individual (AGORA COM AUTOCOMPLETE) */
                 <div className="space-y-2">
-                  <Label htmlFor="chromebookId" className="text-gray-700">
+                  <Label htmlFor="chromebookId" className="text-foreground">
                     ID do Chromebook *
                   </Label>
                   <ChromebookSearchInput
@@ -234,14 +234,14 @@ export function ReturnDialog({
 
             {/* Coluna Direita - Informações do Usuário e Observações (VERDE/TEAL) */}
             <div className="space-y-6">
-              <Card className="p-4 space-y-4 bg-green-50/50 border-green-100 shadow-inner">
-                <CardTitle className="text-lg flex items-center gap-2 text-green-700">
+              <Card className="p-4 space-y-4 bg-green-50/50 border-green-100 shadow-inner dark:bg-green-950/50 dark:border-green-900/50">
+                <CardTitle className="text-lg flex items-center gap-2 text-green-700 dark:text-green-400">
                   <User className="h-5 w-5" /> Informações do Solicitante
                 </CardTitle>
                 
                 {/* Seletor de Usuário com Autocompletar (ÚNICO CAMPO) */}
                 <div className="space-y-2">
-                  <Label htmlFor="userSearch" className="text-gray-700">
+                  <Label htmlFor="userSearch" className="text-foreground">
                     Buscar Solicitante (Nome, RA ou Email) *
                   </Label>
                   <UserAutocomplete
@@ -254,8 +254,8 @@ export function ReturnDialog({
                 
                 {/* Mensagem de aviso se nenhum usuário for selecionado */}
                 {!selectedUser && (
-                  <div className="p-3 bg-red-50 border border-red-200 rounded-md">
-                    <p className="text-sm text-red-700 flex items-center gap-2">
+                  <div className="p-3 bg-red-50 border border-red-200 rounded-md dark:bg-red-950/50 dark:border-red-900">
+                    <p className="text-sm text-red-700 dark:text-red-400 flex items-center gap-2">
                       <AlertTriangle className="h-4 w-4" />
                       Selecione o solicitante para prosseguir com a devolução.
                     </p>
@@ -264,12 +264,12 @@ export function ReturnDialog({
               </Card>
               
               {/* Campo de Observações (NEUTRO) */}
-              <Card className="p-4 space-y-4 bg-white border-gray-100 shadow-md">
-                <CardTitle className="text-lg flex items-center gap-2 text-gray-700">
+              <Card className="p-4 space-y-4 bg-white border-gray-100 shadow-md dark:bg-card dark:border-border">
+                <CardTitle className="text-lg flex items-center gap-2 text-gray-700 dark:text-foreground">
                   <AlertTriangle className="h-5 w-5" /> Observações da Devolução
                 </CardTitle>
                 <div className="space-y-2">
-                  <Label htmlFor="notes" className="text-gray-700">
+                  <Label htmlFor="notes" className="text-foreground">
                     Condição do equipamento ou notas sobre a devolução (Opcional)
                   </Label>
                   <Textarea
@@ -277,7 +277,7 @@ export function ReturnDialog({
                     value={returnData.notes || ''}
                     onChange={(e) => onReturnDataChange({ ...returnData, notes: e.target.value })}
                     placeholder="Ex: O Chromebook foi devolvido com a tela trincada."
-                    className="bg-white border-gray-200 min-h-[80px]"
+                    className="bg-white border-gray-200 min-h-[80px] dark:bg-card dark:border-border"
                   />
                 </div>
               </Card>
@@ -285,11 +285,11 @@ export function ReturnDialog({
           </div>
 
 {/* Confirmação */}
-          <div className="mt-4 p-3 rounded-md border bg-amber-50 border-amber-200">
+          <div className="mt-4 p-3 rounded-md border bg-amber-50 border-amber-200 dark:bg-amber-950/50 dark:border-amber-900">
             <div className="flex items-start gap-2">
               <Checkbox id="confirmChecked" checked={confirmChecked} onCheckedChange={(v) => setConfirmChecked(!!v)} className="mt-1" />
-              <Label htmlFor="confirmChecked" className="text-sm text-gray-700 leading-5 cursor-pointer">
-                <div className="flex items-center gap-1 font-semibold text-amber-800">
+              <Label htmlFor="confirmChecked" className="text-sm text-foreground leading-5 cursor-pointer">
+                <div className="flex items-center gap-1 font-semibold text-amber-800 dark:text-amber-400">
                     <AlertTriangle className="h-4 w-4" />
                     Verificação Obrigatória
                 </div>

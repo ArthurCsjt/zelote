@@ -59,12 +59,12 @@ const UserAutocomplete: React.FC<UserAutocompleteProps> = ({ selectedUser, onSel
 
   if (selectedUser) {
     return (
-      <GlassCard className="p-3 border-2 border-green-400 bg-green-50/50 shadow-md">
+      <GlassCard className="p-3 border-2 border-green-400 bg-green-50/50 shadow-md dark:bg-green-950/50 dark:border-green-900">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <CheckCircle className="h-5 w-5 text-green-600" />
             <div>
-              <p className="font-semibold text-sm">{selectedUser.name}</p>
+              <p className="font-semibold text-sm text-foreground">{selectedUser.name}</p>
               <p className="text-xs text-muted-foreground">{selectedUser.email}</p>
             </div>
           </div>
@@ -72,7 +72,7 @@ const UserAutocomplete: React.FC<UserAutocompleteProps> = ({ selectedUser, onSel
             <X className="h-4 w-4 text-red-500" />
           </Button>
         </div>
-        <div className="flex flex-wrap gap-2 mt-2 pt-2 border-t border-green-200">
+        <div className="flex flex-wrap gap-2 mt-2 pt-2 border-t border-green-200 dark:border-green-900">
           <Badge variant="secondary" className="capitalize">{selectedUser.type}</Badge>
           {selectedUser.ra && <Badge variant="outline">RA: {selectedUser.ra}</Badge>}
           {selectedUser.turma && <Badge variant="outline">Turma: {selectedUser.turma}</Badge>}
@@ -88,7 +88,7 @@ const UserAutocomplete: React.FC<UserAutocompleteProps> = ({ selectedUser, onSel
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-full justify-between bg-white border-gray-200"
+          className="w-full justify-between bg-white border-gray-200 dark:bg-card dark:border-border"
           disabled={disabled}
         >
           <div className="flex items-center">
@@ -118,7 +118,7 @@ const UserAutocomplete: React.FC<UserAutocompleteProps> = ({ selectedUser, onSel
                   <div className="flex items-center">
                     {getUserIcon(user.type)}
                     <div className="flex flex-col">
-                      <span className="font-medium text-sm">{user.name}</span>
+                      <span className="font-medium text-sm text-foreground">{user.name}</span>
                       <span className="text-xs text-muted-foreground">{user.email}</span>
                     </div>
                   </div>

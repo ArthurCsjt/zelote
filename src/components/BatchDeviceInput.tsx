@@ -107,10 +107,10 @@ export function BatchDeviceInput({ batchDevices, setBatchDevices, onScan, disabl
   return (
     <div className="space-y-2">
       <div className="flex justify-between items-center mb-2">
-        <Label htmlFor="batchDevices" className="text-gray-700">
+        <Label htmlFor="batchDevices" className="text-foreground">
           Dispositivos em Lote (Status Requerido: {requiredStatus.toUpperCase()})
         </Label>
-        <Badge variant="outline" className="bg-green-100 text-green-700 border-green-200">
+        <Badge variant="outline" className="bg-green-100 text-green-700 border-green-200 dark:bg-green-900 dark:text-green-300 dark:border-green-800">
           {batchDevices.length} dispositivos
         </Badge>
       </div>
@@ -124,7 +124,7 @@ export function BatchDeviceInput({ batchDevices, setBatchDevices, onScan, disabl
                 value={currentBatchInput}
                 onChange={handleInputChange}
                 placeholder="Digite o ID do dispositivo (ex: 12 ou CHR012)"
-                className={cn("border-gray-200 w-full bg-white pl-3", validationError && "border-destructive focus-visible:ring-destructive")}
+                className={cn("border-gray-200 w-full bg-white pl-3 dark:bg-card dark:border-border", validationError && "border-destructive focus-visible:ring-destructive")}
                 onKeyDown={handleInputKeyDown}
                 disabled={disabled || searchLoading}
               />
@@ -141,7 +141,7 @@ export function BatchDeviceInput({ batchDevices, setBatchDevices, onScan, disabl
               type="button"
               variant="outline"
               onClick={() => addDeviceToBatch()}
-              className="text-green-600 hover:text-green-700 hover:bg-green-100 border-green-200 px-3"
+              className="text-green-600 hover:text-green-700 hover:bg-green-100 border-green-200 px-3 dark:text-green-400 dark:hover:bg-green-900 dark:border-green-800"
               disabled={disabled || searchLoading || !currentBatchInput.trim()}
             >
               {searchLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
@@ -150,29 +150,29 @@ export function BatchDeviceInput({ batchDevices, setBatchDevices, onScan, disabl
             <Button 
               type="button" 
               variant="outline" 
-              className="border-gray-200 bg-white hover:bg-gray-50 px-3"
+              className="border-gray-200 bg-white hover:bg-gray-50 px-3 dark:bg-card dark:border-border dark:hover:bg-accent"
               onClick={() => setIsQRReaderOpen(true)}
               disabled={disabled || searchLoading}
             >
-              <QrCode className="h-5 w-5 text-gray-600" />
+              <QrCode className="h-5 w-5 text-gray-600 dark:text-muted-foreground" />
             </Button>
           </div>
         </div>
         
-        <div className="mt-2 p-2 bg-white rounded-md border border-gray-200 max-h-[150px] overflow-y-auto">
+        <div className="mt-2 p-2 bg-white rounded-md border border-gray-200 max-h-[150px] overflow-y-auto dark:bg-card dark:border-border">
           {batchDevices.length > 0 ? (
             <div className="space-y-2">
               {batchDevices.map((deviceId, index) => (
-                <div key={index} className="flex justify-between items-center p-2 bg-gray-50 rounded border border-gray-100">
+                <div key={index} className="flex justify-between items-center p-2 bg-gray-50 rounded border border-gray-100 dark:bg-muted/50 dark:border-border">
                   <div className="flex items-center gap-2">
-                    <Computer className="h-4 w-4 text-green-500" />
-                    <span className="text-sm">{deviceId}</span>
+                    <Computer className="h-4 w-4 text-green-500 dark:text-green-400" />
+                    <span className="text-sm text-foreground">{deviceId}</span>
                   </div>
                   <Button 
                     type="button"
                     variant="ghost"
                     onClick={() => removeDeviceFromBatch(deviceId)}
-                    className="h-7 w-7 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+                    className="h-7 w-7 p-0 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950"
                     disabled={disabled}
                   >
                     <X className="h-4 w-4" />
@@ -181,18 +181,18 @@ export function BatchDeviceInput({ batchDevices, setBatchDevices, onScan, disabl
               ))}
             </div>
           ) : (
-            <div className="text-center text-gray-500 py-4">
-              <Computer className="h-10 w-10 mx-auto mb-2 text-gray-300" />
+            <div className="text-center text-muted-foreground py-4">
+              <Computer className="h-10 w-10 mx-auto mb-2 text-gray-300 dark:text-gray-700" />
               <p className="text-sm">Nenhum dispositivo adicionado</p>
             </div>
           )}
         </div>
         
         {batchDevices.length > 0 && (
-          <div className="mt-2 p-3 bg-green-50 border border-green-100 rounded-lg">
-            <div className="flex items-center justify-center bg-white p-3 rounded-md mb-2 border border-green-100">
-              <span className="text-2xl font-bold text-green-700 mr-2">{batchDevices.length}</span>
-              <span className="text-green-600">dispositivo(s) para {filterStatus === 'ativo' ? 'devolução' : 'empréstimo'}</span>
+          <div className="mt-2 p-3 bg-green-50 border border-green-100 rounded-lg dark:bg-green-950/50 dark:border-green-900">
+            <div className="flex items-center justify-center bg-white p-3 rounded-md mb-2 border border-green-100 dark:bg-card dark:border-border">
+              <span className="text-2xl font-bold text-green-700 mr-2 dark:text-green-400">{batchDevices.length}</span>
+              <span className="text-green-600 dark:text-green-400">dispositivo(s) para {filterStatus === 'ativo' ? 'devolução' : 'empréstimo'}</span>
             </div>
           </div>
         )}

@@ -264,14 +264,14 @@ export function LoanForm({ onBack }: LoanFormProps) {
         <div className="grid md:grid-cols-2 gap-6">
             
           {/* Coluna Esquerda - Detalhes do Equipamento/Lote (AZUL CLARO) */}
-          <GlassCard className="p-4 space-y-4 bg-blue-50/50 border-blue-100 shadow-inner">
-            <CardTitle className="text-lg flex items-center gap-2 text-blue-700">
+          <GlassCard className="p-4 space-y-4 bg-blue-50/50 border-blue-100 shadow-inner dark:bg-blue-950/50 dark:border-blue-900/50">
+            <CardTitle className="text-lg flex items-center gap-2 text-blue-700 dark:text-blue-400">
               <Computer className="h-5 w-5" /> Detalhes do Equipamento
             </CardTitle>
             
             {/* Seletor de tipo de empréstimo (individual ou lote) */}
             <div className="space-y-2">
-              <Label htmlFor="loanType" className="text-gray-700">
+              <Label htmlFor="loanType" className="text-foreground">
                 Tipo de Empréstimo
               </Label>
               <Select
@@ -280,7 +280,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
                   setFormData({ ...formData, loanType: value })
                 }
               >
-                <SelectTrigger className="border-gray-200 bg-white">
+                <SelectTrigger className="border-gray-200 bg-white dark:bg-card dark:border-border">
                   <SelectValue placeholder="Selecione o tipo de empréstimo" />
                 </SelectTrigger>
                 <SelectContent>
@@ -293,7 +293,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
             {formData.loanType === 'individual' ? (
               /* Campo de ID para empréstimo individual (AGORA COM AUTOCOMPLETE) */
               <div className="space-y-2">
-                <Label htmlFor="chromebookId" className="text-gray-700">
+                <Label htmlFor="chromebookId" className="text-foreground">
                   ID do Chromebook *
                 </Label>
                 <ChromebookSearchInput
@@ -317,14 +317,14 @@ export function LoanForm({ onBack }: LoanFormProps) {
           </GlassCard>
 
           {/* Coluna Direita - Informações do Solicitante (VERDE/TEAL) */}
-          <GlassCard className="p-4 space-y-4 bg-green-50/50 border-green-100 shadow-inner">
-            <CardTitle className="text-lg flex items-center gap-2 text-green-700">
+          <GlassCard className="p-4 space-y-4 bg-green-50/50 border-green-100 shadow-inner dark:bg-green-950/50 dark:border-green-900/50">
+            <CardTitle className="text-lg flex items-center gap-2 text-green-700 dark:text-green-400">
               <User className="h-5 w-5" /> Informações do Solicitante
             </CardTitle>
             
             {/* Seletor de Usuário com Autocompletar */}
             <div className="space-y-2">
-              <Label htmlFor="userSearch" className="text-gray-700">
+              <Label htmlFor="userSearch" className="text-foreground">
                 Buscar Solicitante (Nome, RA ou Email) *
               </Label>
               <UserAutocomplete
@@ -337,7 +337,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
 
             {/* Campo de finalidade do empréstimo (sempre visível) */}
             <div className="space-y-2 pt-2">
-              <Label htmlFor="purpose" className="text-gray-700">
+              <Label htmlFor="purpose" className="text-foreground">
                 Finalidade *
               </Label>
               <Input
@@ -347,7 +347,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
                 onChange={(e) =>
                   setFormData({ ...formData, purpose: e.target.value })
                 }
-                className="border-gray-200 bg-white"
+                className="border-gray-200 bg-white dark:bg-card dark:border-border"
                 required
               />
             </div>
@@ -355,7 +355,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
         </div>
 
         {/* Opção para definir prazo de devolução (abaixo das colunas) */}
-        <div className="space-y-4 p-4 bg-gray-50/50 rounded-xl border border-gray-200">
+        <div className="space-y-4 p-4 bg-gray-50/50 rounded-xl border border-gray-200 dark:bg-gray-900/50 dark:border-gray-800">
           <div className="flex items-center space-x-2">
             <Checkbox
               id="returnDeadline"
@@ -368,7 +368,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
               }}
               className="border-gray-300"
             />
-            <Label htmlFor="returnDeadline" className="text-gray-700 font-medium cursor-pointer">
+            <Label htmlFor="returnDeadline" className="text-foreground font-medium cursor-pointer">
               Definir prazo de devolução
             </Label>
           </div>
@@ -376,7 +376,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
           {hasReturnDeadline && (
             <div className="space-y-3 pl-6 border-l-2 border-primary/20">
               <div className="space-y-2">
-                <Label className="text-gray-700 text-sm font-medium">
+                <Label className="text-foreground text-sm font-medium">
                   Data e Hora de Devolução
                 </Label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -385,7 +385,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
                       <Button
                         variant="outline"
                         className={cn(
-                          "justify-start text-left font-normal border-gray-200 bg-white",
+                          "justify-start text-left font-normal border-gray-200 bg-white dark:bg-card dark:border-border",
                           !formData.expectedReturnDate && "text-muted-foreground"
                         )}
                       >
@@ -437,10 +437,10 @@ export function LoanForm({ onBack }: LoanFormProps) {
                               setFormData({ ...formData, expectedReturnDate: newDate });
                             }
                           }}
-                          className="border-gray-200 text-center bg-white"
+                          className="border-gray-200 text-center bg-white dark:bg-card dark:border-border"
                         />
                       </div>
-                      <span className="flex items-center text-gray-500">:</span>
+                      <span className="flex items-center text-muted-foreground">:</span>
                       <div className="flex-1">
                         <Input
                           type="number"
@@ -458,11 +458,11 @@ export function LoanForm({ onBack }: LoanFormProps) {
                               setFormData({ ...formData, expectedReturnDate: newDate });
                             }
                           }}
-                          className="border-gray-200 text-center bg-white"
+                          className="border-gray-200 text-center bg-white dark:bg-card dark:border-border"
                         />
                       </div>
                     </div>
-                    <div className="flex items-center text-xs text-gray-500 mt-1">
+                    <div className="flex items-center text-xs text-muted-foreground mt-1">
                       <Clock className="h-3 w-3 mr-1" />
                       {formData.expectedReturnDate && (
                         <span>

@@ -52,13 +52,13 @@ const ChromebookSearchInput: React.FC<ChromebookSearchInputProps> = ({
   const getStatusBadge = (status: ChromebookSearchResult['status']) => {
     switch (status) {
       case 'disponivel':
-        return <Badge className="bg-green-100 text-green-700 hover:bg-green-100">Disponível</Badge>;
+        return <Badge className="bg-green-100 text-green-700 hover:bg-green-100 dark:bg-green-900 dark:text-green-300">Disponível</Badge>;
       case 'emprestado':
-        return <Badge className="bg-yellow-100 text-yellow-700 hover:bg-yellow-100">Emprestado</Badge>;
+        return <Badge className="bg-yellow-100 text-yellow-700 hover:bg-yellow-100 dark:bg-yellow-900 dark:text-yellow-300">Emprestado</Badge>;
       case 'manutencao':
         return <Badge variant="destructive">Manutenção</Badge>;
       case 'fixo':
-        return <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100">Fixo</Badge>;
+        return <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100 dark:bg-blue-900 dark:text-blue-300">Fixo</Badge>;
       default:
         return <Badge variant="secondary">Outro</Badge>;
     }
@@ -80,13 +80,13 @@ const ChromebookSearchInput: React.FC<ChromebookSearchInputProps> = ({
     let icon = <CheckCircle className="h-5 w-5 text-green-600" />;
     
     if (filterStatus === 'disponivel' && !isAvailable) {
-        cardClass = "p-3 border-2 border-red-400 bg-red-50/50 shadow-md";
+        cardClass = "p-3 border-2 border-red-400 bg-red-50/50 shadow-md dark:bg-red-950/50 dark:border-red-900";
         icon = <AlertTriangle className="h-5 w-5 text-red-600" />;
     } else if (filterStatus === 'ativo' && !isEmprestado) {
-        cardClass = "p-3 border-2 border-red-400 bg-red-50/50 shadow-md";
+        cardClass = "p-3 border-2 border-red-400 bg-red-50/50 shadow-md dark:bg-red-950/50 dark:border-red-900";
         icon = <AlertTriangle className="h-5 w-5 text-red-600" />;
     } else {
-        cardClass = "p-3 border-2 border-green-400 bg-green-50/50 shadow-md";
+        cardClass = "p-3 border-2 border-green-400 bg-green-50/50 shadow-md dark:bg-green-950/50 dark:border-green-900";
     }
 
     return (
@@ -95,7 +95,7 @@ const ChromebookSearchInput: React.FC<ChromebookSearchInputProps> = ({
           <div className="flex items-center space-x-3">
             {icon}
             <div>
-              <p className="font-semibold text-sm">{selectedChromebook.chromebook_id}</p>
+              <p className="font-semibold text-sm text-foreground">{selectedChromebook.chromebook_id}</p>
               <p className="text-xs text-muted-foreground">{selectedChromebook.model}</p>
             </div>
           </div>
@@ -103,7 +103,7 @@ const ChromebookSearchInput: React.FC<ChromebookSearchInputProps> = ({
             <X className="h-4 w-4 text-red-500" />
           </Button>
         </div>
-        <div className="flex flex-wrap gap-2 mt-2 pt-2 border-t border-gray-200">
+        <div className="flex flex-wrap gap-2 mt-2 pt-2 border-t border-gray-200 dark:border-border">
           {getStatusBadge(selectedChromebook.status)}
           {filterStatus === 'disponivel' && !isAvailable && (
             <Badge variant="destructive">Status: {selectedChromebook.status.toUpperCase()}</Badge>
@@ -121,7 +121,7 @@ const ChromebookSearchInput: React.FC<ChromebookSearchInputProps> = ({
     <div className="relative space-y-2">
       <div className="flex gap-2">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+          <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
           <Input
             ref={inputRef}
             placeholder="Buscar ID, modelo ou patrimônio..."
@@ -129,35 +129,35 @@ const ChromebookSearchInput: React.FC<ChromebookSearchInputProps> = ({
             onChange={(e) => setSearchTerm(e.target.value)}
             onFocus={() => setIsFocused(true)}
             onBlur={() => setTimeout(() => setIsFocused(false), 200)} // Pequeno delay para permitir o clique
-            className="pl-10 w-full bg-white border-gray-200"
+            className="pl-10 w-full bg-white border-gray-200 dark:bg-card dark:border-border"
             disabled={disabled || loading}
           />
         </div>
         <Button 
           type="button" 
           variant="outline" 
-          className="border-gray-200 bg-white hover:bg-gray-50 px-3"
+          className="border-gray-200 bg-white hover:bg-gray-50 px-3 dark:bg-card dark:border-border dark:hover:bg-accent"
           onClick={onScanClick}
           disabled={disabled || loading}
         >
-          <QrCode className="h-5 w-5 text-gray-600" />
+          <QrCode className="h-5 w-5 text-gray-600 dark:text-muted-foreground" />
         </Button>
       </div>
 
       {/* Lista de Sugestões (aparece abaixo do input) */}
       {isFocused && searchTerm && filteredChromebooks.length > 0 && (
-        <ScrollArea className="absolute z-20 w-full max-h-60 rounded-md border bg-white shadow-lg">
+        <ScrollArea className="absolute z-20 w-full max-h-60 rounded-md border bg-white shadow-lg dark:bg-card dark:border-border">
           <div className="p-1">
             {filteredChromebooks.map((chromebook) => (
               <div
                 key={chromebook.id}
-                className="flex items-center justify-between p-2 cursor-pointer hover:bg-gray-100 rounded-md"
+                className="flex items-center justify-between p-2 cursor-pointer hover:bg-gray-100 rounded-md dark:hover:bg-accent"
                 onMouseDown={() => handleSelect(chromebook)} // Usar onMouseDown para evitar que o onBlur feche antes do clique
               >
                 <div className="flex items-center">
-                  <Computer className="mr-2 h-4 w-4 text-gray-500" />
+                  <Computer className="mr-2 h-4 w-4 text-gray-500 dark:text-muted-foreground" />
                   <div className="flex flex-col">
-                    <span className="font-medium text-sm">{chromebook.chromebook_id}</span>
+                    <span className="font-medium text-sm text-foreground">{chromebook.chromebook_id}</span>
                     <span className="text-xs text-muted-foreground">{chromebook.model}</span>
                   </div>
                 </div>
@@ -176,7 +176,7 @@ const ChromebookSearchInput: React.FC<ChromebookSearchInputProps> = ({
       )}
       
       {isFocused && searchTerm && filteredChromebooks.length === 0 && !loading && (
-        <div className="p-2 text-sm text-muted-foreground text-center border rounded-md bg-white">
+        <div className="p-2 text-sm text-muted-foreground text-center border rounded-md bg-white dark:bg-card dark:border-border">
           Nenhum Chromebook encontrado.
         </div>
       )}
