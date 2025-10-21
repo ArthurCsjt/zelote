@@ -254,6 +254,9 @@ export function Dashboard({
     return diffHours <= 24;
   };
 
+  // Cores para o gráfico de pizza de Status
+  const COLORS = ['#2563EB', '#22C55E'];
+
 
   return <div className="space-y-8 glass-morphism p-4 sm:p-6 lg:p-8 animate-fade-in relative bg-white/95 backdrop-blur-xl rounded-2xl border border-white/20 shadow-2xl shadow-slate-200/20">
       { /* Background gradient overlay */ }
@@ -527,9 +530,10 @@ export function Dashboard({
                         <Badge variant="secondary" className="bg-orange-100 text-orange-700">
                           {loansByUserType.funcionario || 0} empréstimos
                         </Badge>
-                      </CardContent>
-                    </GlassCard>
-                  </div>
+                      </div>
+                      <Progress value={(loansByUserType.funcionario || 0) / filteredLoans.length * 100} className="h-2" />
+                    </div>
+                  </CardContent>
                 </GlassCard>
               </div>
             </>
