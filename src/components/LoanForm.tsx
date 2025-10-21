@@ -265,7 +265,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
         
         <div className="grid md:grid-cols-2 gap-6">
             
-          {/* Coluna Esquerda - Detalhes do Equipamento/Lote (AGORA AZUL) */}
+          {/* Coluna Esquerda - Detalhes do Equipamento/Lote (AGORA AZUL CLARO) */}
           <GlassCard className="p-4 space-y-4 bg-blue-50/50 border-blue-100 shadow-inner">
             <CardTitle className="text-lg flex items-center gap-2 text-blue-700">
               <Computer className="h-5 w-5" /> Detalhes do Equipamento
