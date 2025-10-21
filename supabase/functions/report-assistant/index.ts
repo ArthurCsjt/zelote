@@ -144,11 +144,12 @@ serve(async (req) => {
     }
 
     // Criar cliente Supabase para executar a consulta
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
     
-    // Usamos o Service Role Key para garantir que a função RPC 'execute_sql' possa ser chamada
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    // CORREÇÃO: Usamos o operador '!' para garantir que o createClient receba strings,
+    // pois sabemos que essas variáveis de ambiente estão configuradas.
+    const supabase = createClient(supabaseUrl!, supabaseServiceKey!);
 
     // Executar a consulta usando a função RPC
     const { data, error } = await supabase.rpc('execute_sql', { query: cleanSQL });
