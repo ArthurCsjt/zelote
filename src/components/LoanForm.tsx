@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 import { validateLoanFormData, sanitizeQRCodeData, normalizeChromebookId } from "@/utils/security";
 import { useDatabase } from '@/hooks/useDatabase';
 import UserAutocomplete from "./UserAutocomplete";
+import PurposeAutocomplete from "./PurposeAutocomplete"; // NOVO IMPORT
 import type { UserSearchResult } from '@/hooks/useUserSearch';
 import { Card, CardContent, CardTitle, CardHeader } from "./ui/card"; // Adicionado CardHeader
 import { BatchDeviceInput } from "./BatchDeviceInput";
@@ -68,6 +69,8 @@ export function LoanForm({ onBack }: LoanFormProps) {
       ra: user.ra || '',
       email: user.email,
       userType: user.type,
+      // Limpa a finalidade ao mudar o usuário, pois a finalidade pode mudar
+      purpose: '', 
     }));
   };
 
@@ -79,6 +82,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
       ra: "",
       email: "",
       userType: 'aluno',
+      purpose: '', // Limpa a finalidade
     }));
   };
   
@@ -257,9 +261,9 @@ export function LoanForm({ onBack }: LoanFormProps) {
 
   // Determina o placeholder do campo de finalidade baseado no tipo de usuário
   const purposePlaceholder = selectedUser?.type === 'professor' 
-    ? 'Ex: Aula de História, Projeto de Ciências' 
+    ? 'Buscar professor ou digitar aula (Ex: Aula de História)' 
     : selectedUser?.type === 'funcionario' 
-      ? 'Ex: Suporte Técnico, Evento de Marketing' 
+      ? 'Buscar funcionário ou digitar departamento (Ex: Suporte Técnico)' 
       : 'Ex: Aula de Matemática, Uso Pessoal';
 
   // === RENDERIZAÇÃO DA INTERFACE (UI) ===
@@ -352,20 +356,17 @@ export function LoanForm({ onBack }: LoanFormProps) {
                 />
               </div>
 
-              {/* Campo de finalidade do empréstimo (sempre visível) */}
+              {/* Campo de finalidade do empréstimo (AGORA COM AUTOCOMPLETE DE FINALIDADE) */}
               <div className="space-y-2 pt-2">
                 <Label htmlFor="purpose" className="text-foreground">
-                  Finalidade (Aula/Departamento) *
+                  Finalidade (Aula/Professor/Departamento) *
                 </Label>
-                <Input
-                  id="purpose"
-                  placeholder={purposePlaceholder}
+                <PurposeAutocomplete
                   value={formData.purpose}
-                  onChange={(e) =>
-                    setFormData({ ...formData, purpose: e.target.value })
-                  }
-                  className="border-gray-200 bg-white dark:bg-card dark:border-border"
-                  required
+                  onChange={(value) => setFormData({ ...formData, purpose: value })}
+                  disabled={loading || !selectedUser}
+                  placeholder={purposePlaceholder}
+                  userType={formData.userType}
                 />
               </div>
             </CardContent>
