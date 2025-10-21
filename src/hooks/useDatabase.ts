@@ -10,7 +10,8 @@ import type {
   ReturnFormData, 
   LoanHistoryItem,
   ChromebookData,
-  UserType // Importando UserType
+  UserType, // Importando UserType
+  TeacherData // Importando TeacherData atualizado
 } from '@/types/database';
 
 // Types for new entities
@@ -21,10 +22,12 @@ interface StudentData {
   turma: string;
 }
 
-interface TeacherData {
-  nome_completo: string;
-  email: string;
-}
+// TeacherData agora vem de '@/types/database'
+// interface TeacherData {
+//   nome_completo: string;
+//   email: string;
+//   materia?: string; // Adicionado
+// }
 
 interface StaffData {
   nome_completo: string;
@@ -560,7 +563,8 @@ export const useDatabase = () => {
         .from('professores')
         .insert({
           nome_completo: data.nome_completo,
-          email: data.email
+          email: data.email,
+          materia: data.materia // ADICIONADO
         })
         .select()
         .single();

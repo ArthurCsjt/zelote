@@ -187,18 +187,21 @@ export type Database = {
           email: string
           id: string
           nome_completo: string
+          materia: string | null // ADICIONADO
         }
         Insert: {
           created_at?: string
           email: string
           id?: string
           nome_completo: string
+          materia?: string | null // ADICIONADO
         }
         Update: {
           created_at?: string
           email?: string
           id?: string
           nome_completo?: string
+          materia?: string | null // ADICIONADO
         }
         Relationships: []
       }

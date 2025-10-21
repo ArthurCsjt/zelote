@@ -7,16 +7,17 @@ import { Card, CardContent } from './ui/card'; // Removido CardHeader, CardTitle
 import { toast } from '@/hooks/use-toast';
 import { useDatabase } from '@/hooks/useDatabase';
 import { GlassCard } from './ui/GlassCard'; // Importando GlassCard
+import type { TeacherData } from '@/types/database'; // Importando o tipo atualizado
 
-interface TeacherFormData {
-  nomeCompleto: string;
-  email: string;
+interface TeacherFormData extends TeacherData {
+  // Herda nomeCompleto, email e materia
 }
 
 export function TeacherRegistration() {
   const [formData, setFormData] = useState<TeacherFormData>({
-    nomeCompleto: '',
-    email: ''
+    nome_completo: '',
+    email: '',
+    materia: '' // Inicializando o novo campo
   });
   const [emailError, setEmailError] = useState<string>('');
   const {
@@ -57,10 +58,10 @@ export function TeacherRegistration() {
     e.preventDefault();
 
     // Validações
-    if (!formData.nomeCompleto || !formData.email) {
+    if (!formData.nome_completo || !formData.email) {
       toast({
         title: "Erro de validação",
-        description: "Todos os campos são obrigatórios.",
+        description: "Nome e E-mail são obrigatórios.",
         variant: "destructive"
       });
       return;
@@ -69,9 +70,10 @@ export function TeacherRegistration() {
       return;
     }
     try {
-      const teacherData = {
-        nome_completo: formData.nomeCompleto,
-        email: formData.email
+      const teacherData: TeacherData = {
+        nome_completo: formData.nome_completo,
+        email: formData.email,
+        materia: formData.materia || null // Incluindo a matéria
       };
       const result = await createTeacher(teacherData);
       if (result) {
@@ -82,8 +84,9 @@ export function TeacherRegistration() {
 
         // Reset form
         setFormData({
-          nomeCompleto: '',
-          email: ''
+          nome_completo: '',
+          email: '',
+          materia: ''
         });
       } else {
         toast({
@@ -102,7 +105,7 @@ export function TeacherRegistration() {
     }
   };
 
-  const isFormValid = formData.nomeCompleto && formData.email && !emailError;
+  const isFormValid = formData.nome_completo && formData.email && !emailError;
 
   return (
     <GlassCard className="border-purple-200/50 shadow-lg">
@@ -112,13 +115,24 @@ export function TeacherRegistration() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="nomeCompleto">Nome Completo *</Label>
-              <Input id="nomeCompleto" value={formData.nomeCompleto} onChange={handleInputChange('nomeCompleto')} placeholder="Digite o nome completo" required />
+              <Input id="nomeCompleto" value={formData.nome_completo} onChange={handleInputChange('nome_completo')} placeholder="Digite o nome completo" required />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="email">E-mail *</Label>
               <Input id="email" type="email" value={formData.email} onChange={handleEmailChange} placeholder="professor@sj.pro.br" required className={emailError ? 'border-destructive' : ''} />
               {emailError && <p className="text-sm text-destructive">{emailError}</p>}
+            </div>
+            
+            {/* NOVO CAMPO: Matéria */}
+            <div className="space-y-2">
+              <Label htmlFor="materia">Matéria (Opcional)</Label>
+              <Input 
+                id="materia" 
+                value={formData.materia} 
+                onChange={handleInputChange('materia')} 
+                placeholder="Ex: Matemática, História, Inglês" 
+              />
             </div>
           </div>
 

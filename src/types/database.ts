@@ -140,6 +140,7 @@ export interface AuditItem {
   expected_location?: string;
   // Removendo actual_location que não existe no banco atual
   condition_found?: string;
+  condition_found?: string;
   model_found?: string;
   serial_number_found?: string;
 }
@@ -236,6 +237,13 @@ export interface CountedItemWithDetails {
   scan_method: 'qr_code' | 'manual_id';
   location_confirmed?: boolean;
   notes?: string;
+}
+
+// Tipos de dados para cadastro de professores
+export interface TeacherData {
+  nome_completo: string;
+  email: string;
+  materia?: string; // NOVO CAMPO
 }
 
 // Tipo Database para compatibilidade com o Supabase
