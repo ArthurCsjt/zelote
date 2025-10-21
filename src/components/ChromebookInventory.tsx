@@ -413,10 +413,11 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
           <TableHeader>
             <TableRow>
               <TableHead className="w-[100px]">ID</TableHead>
-              <TableHead className="w-[150px]">Fabricante</TableHead>
+              <TableHead className="w-[150px] hidden sm:table-cell">Fabricante</TableHead>
               <TableHead className="flex-1">Modelo</TableHead>
-              <TableHead className="w-[150px]">Série</TableHead>
-              <TableHead className="hidden md:table-cell w-[120px]">Status</TableHead>
+              <TableHead className="w-[150px] hidden md:table-cell">Série</TableHead>
+              {/* REMOVIDA A CLASSE HIDDEN */}
+              <TableHead className="w-[120px]">Status</TableHead> 
               <TableHead className="w-[180px] text-right">Ações</TableHead>
             </TableRow>
           </TableHeader>
@@ -434,35 +435,37 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
                     : 'Móvel';
                 
                 const mobilityColor = mobilityStatus === 'Fixo' 
-                  ? 'bg-blue-50 text-blue-700 border-blue-200' 
+                  ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900 dark:text-blue-300 dark:border-blue-800' 
                   : mobilityStatus === 'Inativo' 
-                    ? 'bg-gray-200 text-gray-700 border-gray-300'
-                    : 'bg-orange-50 text-orange-700 border-orange-200';
+                    ? 'bg-gray-200 text-gray-700 border-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600'
+                    : 'bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-900 dark:text-orange-300 dark:border-orange-800';
 
                 return (
                   <TableRow key={chromebook.id}>
                     <TableCell className="font-medium text-xs">
                       {chromebook.chromebook_id}
                     </TableCell>
-                    <TableCell>{chromebook.manufacturer || 'N/A'}</TableCell>
+                    <TableCell className="hidden sm:table-cell">{chromebook.manufacturer || 'N/A'}</TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-2">
-                        {chromebook.model}
-                        <span className={`text-xs px-2 py-0.5 rounded-full border ${mobilityColor}`}>
+                      <div className="flex flex-col gap-1">
+                        <span className="font-medium text-sm">{chromebook.model}</span>
+                        <span className={`text-xs px-2 py-0.5 rounded-full border w-fit ${mobilityColor} sm:hidden`}>
                           {mobilityStatus}
                         </span>
                       </div>
                     </TableCell>
-                    <TableCell>{chromebook.serial_number || 'N/A'}</TableCell>
-                    <TableCell className="hidden md:table-cell">
-                      <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${statusInfo.color}`}>
-                        <StatusIcon className="w-3 h-3" />
-                        {statusInfo.label}
+                    <TableCell className="hidden md:table-cell">{chromebook.serial_number || 'N/A'}</TableCell>
+                    <TableCell>
+                      <div className={`inline-flex flex-col items-start gap-1 text-xs font-medium`}>
+                        <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full ${statusInfo.color} dark:text-foreground dark:bg-card/50`}>
+                          <StatusIcon className="w-3 h-3" />
+                          {statusInfo.label}
+                        </div>
                         {chromebook.status === 'fixo' && chromebook.classroom && (
-                          <span className="ml-1 text-[10px] text-blue-700">({chromebook.classroom})</span>
+                          <span className="ml-1 text-[10px] text-blue-700 dark:text-blue-400">({chromebook.classroom})</span>
                         )}
                         {chromebook.is_deprovisioned && (
-                          <span className="ml-1 text-[10px] text-gray-700">(Desprovisionado)</span>
+                          <span className="ml-1 text-[10px] text-gray-700 dark:text-gray-400">(Desprovisionado)</span>
                         )}
                       </div>
                     </TableCell>
@@ -589,8 +592,8 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
             <div className="flex-1 overflow-y-auto px-6 py-4 space-y-6">
               
               {/* Seção 1: Identificação e Modelo */}
-              <div className="space-y-4 p-4 border rounded-lg bg-gray-50/50">
-                <h4 className="font-semibold text-lg text-gray-800 flex items-center gap-2">
+              <div className="space-y-4 p-4 border rounded-lg bg-gray-50/50 dark:bg-gray-900/50">
+                <h4 className="font-semibold text-lg text-gray-800 dark:text-foreground flex items-center gap-2">
                   <Tag className="h-4 w-4 text-blue-600" />
                   Identificação e Modelo
                 </h4>
@@ -603,7 +606,7 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
                     <Input
                       id="chromebook_id"
                       value={editingChromebook.chromebook_id}
-                      className="h-10 bg-gray-200 cursor-not-allowed font-mono text-sm"
+                      className="h-10 bg-gray-200 cursor-not-allowed font-mono text-sm dark:bg-gray-700 dark:text-gray-200"
                       readOnly
                     />
                   </div>
@@ -662,8 +665,8 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
               </div>
 
               {/* Seção 2: Status e Localização */}
-              <div className="space-y-4 p-4 border rounded-lg bg-white shadow-sm">
-                <h4 className="font-semibold text-lg text-gray-800 flex items-center gap-2">
+              <div className="space-y-4 p-4 border rounded-lg bg-white shadow-sm dark:bg-card">
+                <h4 className="font-semibold text-lg text-gray-800 dark:text-foreground flex items-center gap-2">
                   <MapPin className="h-4 w-4 text-green-600" />
                   Status e Localização
                 </h4>
@@ -711,7 +714,7 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
                 </div>
                 
                 {/* Checkbox de Desprovisionamento */}
-                <div className="flex items-center space-x-2 pt-4 border-t border-gray-100">
+                <div className="flex items-center space-x-2 pt-4 border-t border-gray-100 dark:border-border">
                   <Checkbox 
                     id="is_deprovisioned" 
                     checked={editingChromebook.is_deprovisioned} 
@@ -725,8 +728,8 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
               </div>
 
               {/* Seção 3: Condição/Observações */}
-              <div className="space-y-4 p-4 border rounded-lg bg-gray-50/50">
-                <h4 className="font-semibold text-lg text-gray-800 flex items-center gap-2">
+              <div className="space-y-4 p-4 border rounded-lg bg-gray-50/50 dark:bg-gray-900/50">
+                <h4 className="font-semibold text-lg text-gray-800 dark:text-foreground flex items-center gap-2">
                   <AlertTriangle className="h-4 w-4 text-orange-600" />
                   Condição e Notas
                 </h4>
@@ -746,7 +749,7 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
           )}
 
           {/* Fixed Footer */}
-          <DialogFooter className="px-6 py-4 border-t bg-white shrink-0 flex-col sm:flex-row gap-2 sm:justify-end">
+          <DialogFooter className="px-6 py-4 border-t bg-white shrink-0 flex-col sm:flex-row gap-2 sm:justify-end dark:bg-card">
             <Button
               variant="outline"
               onClick={() => {

@@ -67,7 +67,7 @@ createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     {/* Configuração do Sonner para notificações modernas */}
     <Toaster 
-      position="top-center" 
+      position="bottom-right" 
       richColors 
       closeButton 
       className="z-[9999]"
