@@ -7,6 +7,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { useUserSearch, UserSearchResult } from '@/hooks/useUserSearch';
 import { Badge } from './ui/badge';
 import { Input } from './ui/input';
+import { GlassCard } from './ui/GlassCard'; // Importando GlassCard
 
 interface PurposeAutocompleteProps {
   value: string;
@@ -34,7 +35,6 @@ const PurposeAutocomplete: React.FC<PurposeAutocompleteProps> = ({ value, onChan
     
     const lowerCaseSearch = searchTerm.toLowerCase();
     
-    // Filtra apenas professores e funcionários, pois alunos são o solicitante
     return users
       .filter(user => (user.type === 'professor' || user.type === 'funcionario') && user.searchable.includes(lowerCaseSearch))
       .slice(0, 5);
@@ -59,10 +59,44 @@ const PurposeAutocomplete: React.FC<PurposeAutocompleteProps> = ({ value, onChan
     setSearchTerm(purposeValue);
   };
   
+  const handleClear = () => {
+    onChange('');
+    setSearchTerm('');
+  };
+  
   const commandPlaceholder = userType === 'aluno' 
     ? 'Buscar professor ou digitar aula...' 
     : 'Buscar departamento ou digitar finalidade...';
 
+  // Se um valor foi selecionado/digitado, exibe o GlassCard de confirmação
+  if (value) {
+    // Tenta identificar se o valor é um usuário formatado (ex: Professor: Nome)
+    const isUserSelection = value.includes(': ');
+    const displayValue = isUserSelection ? value.split(': ')[1] : value;
+    const displayType = isUserSelection ? value.split(': ')[0] : 'Finalidade';
+    
+    return (
+      <GlassCard className="p-3 border-2 border-green-400 bg-green-50/50 shadow-md dark:bg-green-950/50 dark:border-green-900">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <CheckCircle className="h-5 w-5 text-green-600" />
+            <div>
+              <p className="font-semibold text-sm text-foreground">{displayValue}</p>
+              <p className="text-xs text-muted-foreground">{displayType}</p>
+            </div>
+          </div>
+          <Button variant="ghost" size="sm" onClick={handleClear} disabled={disabled}>
+            <X className="h-4 w-4 text-red-500" />
+          </Button>
+        </div>
+        <div className="flex flex-wrap gap-2 mt-2 pt-2 border-t border-green-200 dark:border-green-900">
+          <Badge variant="secondary" className="capitalize">{displayType}</Badge>
+        </div>
+      </GlassCard>
+    );
+  }
+
+  // Se nenhum valor estiver selecionado, exibe o Popover de busca
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -75,7 +109,7 @@ const PurposeAutocomplete: React.FC<PurposeAutocompleteProps> = ({ value, onChan
         >
           <div className="flex items-center truncate">
             <BookOpen className="mr-2 h-4 w-4 shrink-0 opacity-50" />
-            {value ? value : placeholder}
+            {placeholder}
           </div>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
@@ -83,7 +117,7 @@ const PurposeAutocomplete: React.FC<PurposeAutocompleteProps> = ({ value, onChan
       <PopoverContent className="w-[350px] p-0">
         <Command>
           <CommandInput 
-            placeholder={commandPlaceholder} 
+            placeholder="Buscar professor/departamento ou digitar aula..." 
             value={searchTerm}
             onValueChange={(v) => {
                 setSearchTerm(v);
