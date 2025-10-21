@@ -46,7 +46,8 @@ export function ManualChromebookForm({ onRegistrationSuccess }: { onRegistration
   const [formData, setFormData] = useState<FormData>({
     manufacturer: "", model: "", series: "",
     manufacturingYear: "",
-    patrimonyNumber: "", isFixedInClassroom: false,
+    patrimonyNumber: "", 
+    isFixedInClassroom: false, // PADRÃO: FALSO (MÓVEL)
     classroomLocation: "", observations: "", provisioning_status: 'provisioned',
   });
 
@@ -54,7 +55,8 @@ export function ManualChromebookForm({ onRegistrationSuccess }: { onRegistration
     setFormData({
       manufacturer: "", model: "", series: "",
       manufacturingYear: "",
-      patrimonyNumber: "", isFixedInClassroom: false,
+      patrimonyNumber: "", 
+      isFixedInClassroom: false, // PADRÃO: FALSO (MÓVEL)
       classroomLocation: "", observations: "", provisioning_status: 'provisioned',
     });
   };
@@ -256,7 +258,7 @@ export function ManualChromebookForm({ onRegistrationSuccess }: { onRegistration
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="deprovisioned" id="deprovisioned" />
-                  <Label htmlFor="deprovisioned">Desprovisionado (Inativo)</Label>
+                  <Label htmlFor="deprovisioned">Desprovisionado</Label>
                 </div>
               </RadioGroup>
             </div>

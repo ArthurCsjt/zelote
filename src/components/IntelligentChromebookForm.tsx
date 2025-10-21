@@ -58,7 +58,8 @@ export function IntelligentChromebookForm({ onRegistrationSuccess }: { onRegistr
   
   const [formData, setFormData] = useState<FormData>({
     chromebookId: "", manufacturer: "", model: "", serialNumber: "",
-    patrimonyNumber: "", isFixedInClassroom: false,
+    patrimonyNumber: "", 
+    isFixedInClassroom: false, // PADRÃO: FALSO (MÓVEL)
     classroomLocation: "", observations: "Re-cadastrado via QR Code", provisioning_status: 'provisioned',
   });
   const [isScannerOpen, setIsScannerOpen] = useState(false);
@@ -67,7 +68,8 @@ export function IntelligentChromebookForm({ onRegistrationSuccess }: { onRegistr
   const resetForm = () => {
     setFormData({
       chromebookId: "", manufacturer: "", model: "", serialNumber: "",
-      patrimonyNumber: "", isFixedInClassroom: false,
+      patrimonyNumber: "", 
+      isFixedInClassroom: false, // PADRÃO: FALSO (MÓVEL)
       classroomLocation: "", observations: "Re-cadastrado via QR Code", provisioning_status: 'provisioned',
     });
     setIsDataLoaded(false);
@@ -278,7 +280,7 @@ export function IntelligentChromebookForm({ onRegistrationSuccess }: { onRegistr
                   </div>
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="deprovisioned" id="deprovisioned" />
-                    <Label htmlFor="deprovisioned">Desprovisionado (Inativo)</Label>
+                    <Label htmlFor="deprovisioned">Desprovisionado</Label>
                   </div>
                 </RadioGroup>
               </div>
