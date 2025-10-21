@@ -460,45 +460,53 @@ export function Dashboard({
                   <BarChartIcon className="h-5 w-5 text-muted-foreground" />
                 </CardHeader>
                 <CardContent className="h-[250px] sm:h-[300px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <ComposedChart data={periodData} margin={{ top: 5, right: 0, left: -20, bottom: 5 }}>
-                      <defs>
-                        {/* Gradiente para a área de Empréstimos */}
-                        <linearGradient id="colorEmprestimos" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#2563EB" stopOpacity={0.8}/>
-                          <stop offset="95%" stopColor="#2563EB" stopOpacity={0}/>
-                        </linearGradient>
-                        {/* Gradiente para a área de Devoluções (opcional, mas mantém o estilo) */}
-                        <linearGradient id="colorDevolucoes" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#22C55E" stopOpacity={0.8}/>
-                          <stop offset="95%" stopColor="#22C55E" stopOpacity={0}/>
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
-                      <XAxis dataKey="hora" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
-                      <YAxis tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
-                      <Tooltip content={<ChartTooltipContent />} />
-                      <Legend content={<ChartLegendContent />} wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
-                      
-                      {/* Área para Empréstimos (Visual mais suave) */}
-                      <Area 
-                        type="monotone" 
-                        dataKey="empréstimos" 
-                        stroke="#2563EB" 
-                        fill="url(#colorEmprestimos)" 
-                        fillOpacity={1} 
-                        name="Empréstimos"
-                      />
-                      
-                      {/* Linha ou Barra para Devoluções (Destaque) */}
-                      <Bar 
-                        dataKey="devoluções" 
-                        fill="#22C55E" 
-                        radius={[4, 4, 0, 0]} 
-                        name="Devoluções"
-                      />
-                    </ComposedChart>
-                  </ResponsiveContainer>
+                  <ChartContainer
+                    config={{
+                      empréstimos: { label: "Empréstimos", color: "hsl(var(--primary))" },
+                      devoluções: { label: "Devoluções", color: "hsl(var(--menu-green))" },
+                    }}
+                    className="w-full h-full"
+                  >
+                    <ResponsiveContainer width="100%" height="100%">
+                      <ComposedChart data={periodData} margin={{ top: 5, right: 0, left: -20, bottom: 5 }}>
+                        <defs>
+                          {/* Gradiente para a área de Empréstimos */}
+                          <linearGradient id="colorEmprestimos" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#2563EB" stopOpacity={0.8}/>
+                            <stop offset="95%" stopColor="#2563EB" stopOpacity={0}/>
+                          </linearGradient>
+                          {/* Gradiente para a área de Devoluções (opcional, mas mantém o estilo) */}
+                          <linearGradient id="colorDevolucoes" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#22C55E" stopOpacity={0.8}/>
+                            <stop offset="95%" stopColor="#22C55E" stopOpacity={0}/>
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
+                        <XAxis dataKey="hora" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
+                        <YAxis tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
+                        <Tooltip content={<ChartTooltipContent />} />
+                        <Legend content={<ChartLegendContent />} wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
+                        
+                        {/* Área para Empréstimos (Visual mais suave) */}
+                        <Area 
+                          type="monotone" 
+                          dataKey="empréstimos" 
+                          stroke="#2563EB" 
+                          fill="url(#colorEmprestimos)" 
+                          fillOpacity={1} 
+                          name="Empréstimos"
+                        />
+                        
+                        {/* Linha ou Barra para Devoluções (Destaque) */}
+                        <Bar 
+                          dataKey="devoluções" 
+                          fill="#22C55E" 
+                          radius={[4, 4, 0, 0]} 
+                          name="Devoluções"
+                        />
+                      </ComposedChart>
+                    </ResponsiveContainer>
+                  </ChartContainer>
                 </CardContent>
               </GlassCard>
 
@@ -514,15 +522,23 @@ export function Dashboard({
                     <PieChartIcon className="h-5 w-5 text-muted-foreground" />
                   </CardHeader>
                   <CardContent className="h-[250px] sm:h-[300px] flex items-center justify-center">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
-                        <Pie data={pieData} cx="50%" cy="50%" innerRadius={40} outerRadius={70} fill="#8884d8" paddingAngle={5} dataKey="value" label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}>
-                          {pieData.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index]} />)}
-                        </Pie>
-                        <Tooltip />
-                        <Legend wrapperStyle={{ fontSize: '12px' }} />
-                      </PieChart>
-                    </ResponsiveContainer>
+                    <ChartContainer
+                      config={{
+                        'Em Uso': { label: "Em Uso", color: "hsl(var(--primary))" },
+                        'Disponíveis': { label: "Disponíveis", color: "hsl(var(--menu-green))" },
+                      }}
+                      className="w-full h-full"
+                    >
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+                          <Pie data={pieData} cx="50%" cy="50%" innerRadius={40} outerRadius={70} fill="#8884d8" paddingAngle={5} dataKey="value" label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}>
+                            {pieData.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index]} />)}
+                          </Pie>
+                          <Tooltip content={<ChartTooltipContent />} />
+                          <Legend content={<ChartLegendContent />} wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </ChartContainer>
                   </CardContent>
                 </GlassCard>
 
@@ -537,18 +553,27 @@ export function Dashboard({
                     <Users className="h-5 w-5 text-muted-foreground" />
                   </CardHeader>
                   <CardContent className="h-[250px]">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
-                        <Pie data={userTypeData} cx="50%" cy="50%" innerRadius={40} outerRadius={70} fill="#8884d8" paddingAngle={5} dataKey="value" label={({
+                    <ChartContainer
+                      config={{
+                        'Aluno': { label: "Aluno", color: "#3B82F6" },
+                        'Professor': { label: "Professor", color: "#10B981" },
+                        'Funcionario': { label: "Funcionário", color: "#F59E0B" },
+                      }}
+                      className="w-full h-full"
+                    >
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+                          <Pie data={userTypeData} cx="50%" cy="50%" innerRadius={40} outerRadius={70} fill="#8884d8" paddingAngle={5} dataKey="value" label={({
                       name,
                       value
                     }) => `${name}: ${value}`}>
-                          {userTypeData.map((entry, index) => <Cell key={`cell-${index}`} fill={['#3B82F6', '#10B981', '#F59E0B'][index % 3]} />)}
-                        </Pie>
-                        <Tooltip />
-                        <Legend wrapperStyle={{ fontSize: '12px' }} />
-                      </PieChart>
-                    </ResponsiveContainer>
+                            {userTypeData.map((entry, index) => <Cell key={`cell-${index}`} fill={['#3B82F6', '#10B981', '#F59E0B'][index % 3]} />)}
+                          </Pie>
+                          <Tooltip content={<ChartTooltipContent />} />
+                          <Legend content={<ChartLegendContent />} wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </ChartContainer>
                   </CardContent>
                 </GlassCard>
               </div>
@@ -565,15 +590,22 @@ export function Dashboard({
                     <Clock className="h-5 w-5 text-muted-foreground" />
                   </CardHeader>
                   <CardContent className="h-[250px] sm:h-[300px]">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={durationData} layout="horizontal" margin={{ top: 5, right: 0, left: 0, bottom: 5 }}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis type="number" tick={{ fontSize: 10 }} />
-                        <YAxis dataKey="name" type="category" width={80} tick={{ fontSize: 10 }} />
-                        <Tooltip />
-                        <Bar dataKey="minutos" fill="#8B5CF6" radius={[0, 4, 4, 0]} />
-                      </BarChart>
-                    </ResponsiveContainer>
+                    <ChartContainer
+                      config={{
+                        minutos: { label: "Minutos", color: "#8B5CF6" },
+                      }}
+                      className="w-full h-full"
+                    >
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={durationData} layout="horizontal" margin={{ top: 5, right: 0, left: 0, bottom: 5 }}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis type="number" tick={{ fontSize: 10 }} />
+                          <YAxis dataKey="name" type="category" width={80} tick={{ fontSize: 10 }} />
+                          <Tooltip content={<ChartTooltipContent />} />
+                          <Bar dataKey="minutos" fill="#8B5CF6" radius={[0, 4, 4, 0]} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </ChartContainer>
                   </CardContent>
                 </GlassCard>
 
@@ -643,17 +675,25 @@ export function Dashboard({
                   <BarChartIcon className="h-5 w-5 text-muted-foreground" />
                 </CardHeader>
                 <CardContent className="h-[250px] sm:h-[300px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <ComposedChart data={periodData} margin={{ top: 5, right: 0, left: -20, bottom: 5 }}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="date" tick={{ fontSize: 10 }} />
-                      <YAxis tick={{ fontSize: 10 }} />
-                      <Tooltip />
-                      <Legend wrapperStyle={{ fontSize: '12px' }} />
-                      <Area type="monotone" dataKey="empréstimos" fill="#2563EB" stroke="#2563EB" fillOpacity={0.3} />
-                      <Bar dataKey="devoluções" fill="#22C55E" radius={[4, 4, 0, 0]} />
-                    </ComposedChart>
-                  </ResponsiveContainer>
+                  <ChartContainer
+                    config={{
+                      empréstimos: { label: "Empréstimos", color: "hsl(var(--primary))" },
+                      devoluções: { label: "Devoluções", color: "hsl(var(--menu-green))" },
+                    }}
+                    className="w-full h-full"
+                  >
+                    <ResponsiveContainer width="100%" height="100%">
+                      <ComposedChart data={periodData} margin={{ top: 5, right: 0, left: -20, bottom: 5 }}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="date" tick={{ fontSize: 10 }} />
+                        <YAxis tick={{ fontSize: 10 }} />
+                        <Tooltip content={<ChartTooltipContent />} />
+                        <Legend content={<ChartLegendContent />} wrapperStyle={{ fontSize: '12px' }} />
+                        <Area type="monotone" dataKey="empréstimos" fill="#2563EB" stroke="#2563EB" fillOpacity={0.3} />
+                        <Bar dataKey="devoluções" fill="#22C55E" radius={[4, 4, 0, 0]} />
+                      </ComposedChart>
+                    </ResponsiveContainer>
+                  </ChartContainer>
                 </CardContent>
               </GlassCard>
 
@@ -669,15 +709,24 @@ export function Dashboard({
                     <Users className="h-5 w-5 text-muted-foreground" />
                   </CardHeader>
                   <CardContent className="h-[250px] sm:h-[300px] flex items-center justify-center">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
-                        <Pie data={userTypeData} cx="50%" cy="50%" innerRadius={40} outerRadius={70} fill="#8884d8" paddingAngle={5} dataKey="value" label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}>
-                          {userTypeData.map((entry, index) => <Cell key={`cell-${index}`} fill={['#3B82F6', '#10B981', '#F59E0B'][index % 3]} />)}
-                        </Pie>
-                        <Tooltip />
-                        <Legend wrapperStyle={{ fontSize: '12px' }} />
-                      </PieChart>
-                    </ResponsiveContainer>
+                    <ChartContainer
+                      config={{
+                        'Aluno': { label: "Aluno", color: "#3B82F6" },
+                        'Professor': { label: "Professor", color: "#10B981" },
+                        'Funcionario': { label: "Funcionário", color: "#F59E0B" },
+                      }}
+                      className="w-full h-full"
+                    >
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+                          <Pie data={userTypeData} cx="50%" cy="50%" innerRadius={40} outerRadius={70} fill="#8884d8" paddingAngle={5} dataKey="value" label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}>
+                            {userTypeData.map((entry, index) => <Cell key={`cell-${index}`} fill={['#3B82F6', '#10B981', '#F59E0B'][index % 3]} />)}
+                          </Pie>
+                          <Tooltip content={<ChartTooltipContent />} />
+                          <Legend content={<ChartLegendContent />} wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </ChartContainer>
                   </CardContent>
                 </GlassCard>
 
@@ -692,9 +741,17 @@ export function Dashboard({
                     <Clock className="h-5 w-5 text-muted-foreground" />
                   </CardHeader>
                   <CardContent className="h-[250px] sm:h-[300px] flex items-center justify-center">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
-                        <Pie data={[{
+                    <ChartContainer
+                      config={{
+                        'Manhã (8h-12h)': { label: "Manhã (8h-12h)", color: "#06B6D4" },
+                        'Tarde (12h-17h)': { label: "Tarde (12h-17h)", color: "#8B5CF6" },
+                        'Noite (17h-22h)': { label: "Noite (17h-22h)", color: "#F59E0B" },
+                      }}
+                      className="w-full h-full"
+                    >
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+                          <Pie data={[{
                     name: "Manhã (8h-12h)",
                     value: filteredLoans.filter(loan => {
                       const hour = new Date(loan.loan_date).getHours();
@@ -716,12 +773,13 @@ export function Dashboard({
                       name,
                       value
                     }) => value > 0 ? `${name}: ${value}` : ''}>
-                          {[0, 1, 2].map(index => <Cell key={`cell-${index}`} fill={['#06B6D4', '#8B5CF6', '#F59E0B'][index]} />)}
-                        </Pie>
-                        <Tooltip />
-                        <Legend wrapperStyle={{ fontSize: '12px' }} />
-                      </PieChart>
-                    </ResponsiveContainer>
+                            {[0, 1, 2].map(index => <Cell key={`cell-${index}`} fill={['#06B6D4', '#8B5CF6', '#F59E0B'][index]} />)}
+                          </Pie>
+                          <Tooltip content={<ChartTooltipContent />} />
+                          <Legend content={<ChartLegendContent />} wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </ChartContainer>
                   </CardContent>
                 </GlassCard>
 
@@ -736,15 +794,22 @@ export function Dashboard({
                     <BarChartIcon className="h-5 w-5 text-muted-foreground" />
                   </CardHeader>
                   <CardContent className="h-[250px] sm:h-[300px]">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={durationData} layout="horizontal" margin={{ top: 5, right: 0, left: 0, bottom: 5 }}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis type="number" tick={{ fontSize: 10 }} />
-                        <YAxis dataKey="name" type="category" width={80} tick={{ fontSize: 10 }} />
-                        <Tooltip />
-                        <Bar dataKey="minutos" fill="#8B5CF6" radius={[4, 4, 0, 0]} />
-                      </BarChart>
-                    </ResponsiveContainer>
+                    <ChartContainer
+                      config={{
+                        minutos: { label: "Minutos", color: "#8B5CF6" },
+                      }}
+                      className="w-full h-full"
+                    >
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={durationData} layout="horizontal" margin={{ top: 5, right: 0, left: 0, bottom: 5 }}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis type="number" tick={{ fontSize: 10 }} />
+                          <YAxis dataKey="name" type="category" width={80} tick={{ fontSize: 10 }} />
+                          <Tooltip content={<ChartTooltipContent />} />
+                          <Bar dataKey="minutos" fill="#8B5CF6" radius={[0, 4, 4, 0]} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </ChartContainer>
                   </CardContent>
                 </GlassCard>
               </div>
@@ -762,17 +827,25 @@ export function Dashboard({
                   <BarChartIcon className="h-5 w-5 text-muted-foreground" />
                 </CardHeader>
                 <CardContent className="h-[250px] sm:h-[300px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={periodData} margin={{ top: 5, right: 0, left: -20, bottom: 5 }}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="date" tick={{ fontSize: 10 }} />
-                      <YAxis tick={{ fontSize: 10 }} />
-                      <Tooltip />
-                      <Legend wrapperStyle={{ fontSize: '12px' }} />
-                      <Area type="monotone" dataKey="empréstimos" stackId="1" stroke="#2563EB" fill="#2563EB" fillOpacity={0.3} />
-                      <Area type="monotone" dataKey="devoluções" stackId="1" stroke="#22C55E" fill="#22C55E" fillOpacity={0.3} />
-                    </AreaChart>
-                  </ResponsiveContainer>
+                  <ChartContainer
+                    config={{
+                      empréstimos: { label: "Empréstimos", color: "hsl(var(--primary))" },
+                      devoluções: { label: "Devoluções", color: "hsl(var(--menu-green))" },
+                    }}
+                    className="w-full h-full"
+                  >
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart data={periodData} margin={{ top: 5, right: 0, left: -20, bottom: 5 }}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="date" tick={{ fontSize: 10 }} />
+                        <YAxis tick={{ fontSize: 10 }} />
+                        <Tooltip content={<ChartTooltipContent />} />
+                        <Legend content={<ChartLegendContent />} wrapperStyle={{ fontSize: '12px' }} />
+                        <Area type="monotone" dataKey="empréstimos" stackId="1" stroke="#2563EB" fill="#2563EB" fillOpacity={0.3} />
+                        <Area type="monotone" dataKey="devoluções" stackId="1" stroke="#22C55E" fill="#22C55E" fillOpacity={0.3} />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </ChartContainer>
                 </CardContent>
               </GlassCard>
 
@@ -787,15 +860,22 @@ export function Dashboard({
                     <Clock className="h-5 w-5 text-muted-foreground" />
                   </CardHeader>
                   <CardContent className="h-[250px] sm:h-[300px]">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={durationData} layout="horizontal" margin={{ top: 5, right: 0, left: 0, bottom: 5 }}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis type="number" tick={{ fontSize: 10 }} />
-                        <YAxis dataKey="name" type="category" width={80} tick={{ fontSize: 10 }} />
-                        <Tooltip />
-                        <Bar dataKey="minutos" fill="#8B5CF6" radius={[0, 4, 4, 0]} />
-                      </BarChart>
-                    </ResponsiveContainer>
+                    <ChartContainer
+                      config={{
+                        minutos: { label: "Minutos", color: "#8B5CF6" },
+                      }}
+                      className="w-full h-full"
+                    >
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={durationData} layout="horizontal" margin={{ top: 5, right: 0, left: 0, bottom: 5 }}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis type="number" tick={{ fontSize: 10 }} />
+                          <YAxis dataKey="name" type="category" width={80} tick={{ fontSize: 10 }} />
+                          <Tooltip content={<ChartTooltipContent />} />
+                          <Bar dataKey="minutos" fill="#8B5CF6" radius={[0, 4, 4, 0]} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </ChartContainer>
                   </CardContent>
                 </GlassCard>
             </TabsContent>
