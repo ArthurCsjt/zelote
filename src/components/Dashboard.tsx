@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line, Area, AreaChart, ComposedChart } from "recharts";
@@ -7,7 +7,7 @@ import type { LoanHistoryItem } from "@/types/database";
 import { Badge } from "./ui/badge";
 import { Progress } from "./ui/progress";
 import { ChartContainer, ChartTooltipContent, ChartLegendContent } from "./ui/chart";
-import { Computer, Download, ArrowLeft, BarChart as BarChartIcon, PieChart as PieChartIcon, Clock, Users, Calendar, CalendarRange, Activity, ChartLine, Brain, Loader2, History as HistoryIcon } from "lucide-react";
+import { Computer, Download, ArrowLeft, BarChart as BarChartIcon, PieChart as PieChartIcon, Clock, Users, Calendar, CalendarRange, Activity, ChartLine, Brain, Loader2, History as HistoryIcon, RefreshCw } from "lucide-react";
 import jsPDF from "jspdf";
 import { useToast } from "./ui/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -15,22 +15,41 @@ import { useDatabase } from '@/hooks/useDatabase';
 import { useOverdueLoans } from '@/hooks/useOverdueLoans';
 import IntelligentReportsTab from './IntelligentReportsTab';
 import { LoanHistory } from "./LoanHistory";
-import { GlassCard } from "./ui/GlassCard"; // Importando GlassCard
+import { GlassCard } from "./ui/GlassCard";
+import { useDashboardData, PeriodView } from '@/hooks/useDashboardData'; // NOVO HOOK
+import { Skeleton } from "./ui/skeleton"; // NOVO SKELETON
 
 interface DashboardProps {
   onBack?: () => void;
 }
 
+// Componente auxiliar para renderizar o Skeleton Card
+const StatCardSkeleton = () => (
+  <GlassCard className="border-white/30 border-l-4 border-l-gray-300">
+    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+      <Skeleton className="h-4 w-24" />
+      <Skeleton className="h-5 w-5 rounded-full" />
+    </CardHeader>
+    <CardContent>
+      <Skeleton className="h-8 w-1/2 mb-1" />
+      <Skeleton className="h-3 w-3/4" />
+    </CardContent>
+  </GlassCard>
+);
+
 // Componente auxiliar para renderizar o grid de estatísticas
-const StatsGrid = ({ periodView, filteredLoans, filteredReturns, activeLoans, totalChromebooks, availableChromebooks, averageUsageTime, completionRate, usageRate }: any) => {
+const StatsGrid = ({ periodView, stats, filteredLoans, filteredReturns, loading }: any) => {
   if (periodView === 'history' || periodView === 'reports') return null;
 
-  // Uso Total de Chromebooks (Ativos)
-  const totalActive = activeLoans.length;
-  
-  // Taxa de Uso do Inventário (ativos / total)
-  const totalInventoryUsageRate = totalChromebooks > 0 ? (totalActive / totalChromebooks) * 100 : 0;
+  const { totalActive, totalChromebooks, totalInventoryUsageRate, averageUsageTime, completionRate } = stats;
 
+  if (loading) {
+    return (
+      <div className="grid gap-4 grid-cols-2 md:grid-cols-4 relative z-10">
+        <StatCardSkeleton /><StatCardSkeleton /><StatCardSkeleton /><StatCardSkeleton />
+      </div>
+    );
+  }
 
   return (
     <div className="grid gap-4 grid-cols-2 md:grid-cols-4 relative z-10">
@@ -51,7 +70,7 @@ const StatsGrid = ({ periodView, filteredLoans, filteredReturns, activeLoans, to
         </CardContent>
       </GlassCard>
 
-      {/* CARD 2: Taxa de Uso do Inventário (Porcentagem de uso do inventário total) */}
+      {/* CARD 2: Taxa de Uso do Inventário (CORRIGIDO: ativos / total de móveis) */}
       <GlassCard className="border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-green-500">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-xs sm:text-sm font-medium">
@@ -64,7 +83,7 @@ const StatsGrid = ({ periodView, filteredLoans, filteredReturns, activeLoans, to
           <div className="flex items-center gap-2 mt-1">
             <Progress value={totalInventoryUsageRate} className="h-1.5 sm:h-2" />
             <span className="text-[10px] sm:text-xs text-muted-foreground">
-              {totalActive} de {totalChromebooks} em uso
+              {totalActive} em uso (móveis)
             </span>
           </div>
         </CardContent>
@@ -116,196 +135,28 @@ const StatsGrid = ({ periodView, filteredLoans, filteredReturns, activeLoans, to
 export function Dashboard({
   onBack
 }: DashboardProps) {
-  // Removido useIsMobile
-  
-  const {
-    getLoanHistory,
-    getChromebooks
-  } = useDatabase();
-  const {
-    overdueLoans,
-    upcomingDueLoans
-  } = useOverdueLoans();
-  const [activeLoans, setActiveLoans] = useState < LoanHistoryItem[] > ([]);
-  const [history, setHistory] = useState < LoanHistoryItem[] > ([]);
-  const [chromebooks, setChromebooks] = useState < any[] > ([]);
   const {
     toast
   } = useToast();
-  const [periodView, setPeriodView] = useState < 'daily' | 'weekly' | 'monthly' | 'history' | 'reports' > ('daily');
-  const [periodData, setPeriodData] = useState < any[] > ([]);
-  const [loading, setLoading] = useState(false);
+  const [periodView, setPeriodView] = useState < PeriodView > ('daily');
   
-  // CORREÇÃO AQUI: totalChromebooks é o total do inventário
-  const totalChromebooks = chromebooks.length;
+  // NOVO: Usando o hook centralizado
+  const { 
+    loading, 
+    history, 
+    chromebooks, 
+    filteredLoans, 
+    filteredReturns, 
+    periodChartData, 
+    stats, 
+    refreshData 
+  } = useDashboardData(periodView);
+
+  const { overdueLoans, upcomingDueLoans } = useOverdueLoans();
   
-  // CORREÇÃO AQUI: availableChromebooks é a contagem real de status 'disponivel'
-  const availableChromebooks = chromebooks.filter(cb => cb.status === 'disponivel').length;
+  const { totalChromebooks, availableChromebooks, loansByUserType, userTypeData, durationData } = stats;
 
-  // Buscar dados iniciais
-  const fetchDashboardData = useCallback(async () => {
-    setLoading(true);
-    try {
-      const [historyData, chromebooksData] = await Promise.all([getLoanHistory(), getChromebooks()]);
-      setHistory(historyData);
-      setChromebooks(chromebooksData);
-      setActiveLoans(historyData.filter(loan => !loan.return_date));
-    } catch (error) {
-      console.error('Erro ao buscar dados do dashboard:', error);
-    } finally {
-      setLoading(false);
-    }
-  }, [getLoanHistory, getChromebooks]);
-
-  // useEffect para buscar dados
-  useEffect(() => {
-    fetchDashboardData();
-  }, [fetchDashboardData]);
-
-  // Função para obter dados baseados no período selecionado
-  useEffect(() => {
-    const currentDate = new Date();
-    let filteredData: any[] = [];
-    switch (periodView) {
-      case 'daily':
-        // Dados por hora do dia atual
-        filteredData = Array.from({
-          length: 24
-        }, (_, i) => {
-          const hour = i;
-          const hourLoans = history.filter(loan => {
-            const loanDate = new Date(loan.loan_date);
-            return isToday(loanDate) && loanDate.getHours() === hour;
-          });
-          return {
-            hora: `${hour}h`,
-            empréstimos: hourLoans.length,
-            devoluções: hourLoans.filter(loan => loan.status === 'devolvido').length
-          };
-        });
-        break;
-      case 'weekly':
-        // Dados dos últimos 7 dias
-        filteredData = Array.from({
-          length: 7
-        }, (_, i) => {
-          const date = subDays(currentDate, 6 - i);
-          const dailyLoans = history.filter(loan => isWithinInterval(new Date(loan.loan_date), {
-            start: startOfDay(date),
-            end: new Date(date.setHours(23, 59, 59, 999))
-          }));
-          return {
-            date: format(date, "dd/MM"),
-            empréstimos: dailyLoans.length,
-            devoluções: dailyLoans.filter(loan => loan.return_date).length
-          };
-        });
-        break;
-      case 'monthly':
-        // Dados dos últimos 30 dias
-        filteredData = Array.from({
-          length: 30
-        }, (_, i) => {
-          const date = subDays(currentDate, 29 - i);
-          const dailyLoans = history.filter(loan => isWithinInterval(new Date(loan.loan_date), {
-            start: startOfDay(date),
-            end: new Date(date.setHours(23, 59, 59, 999))
-          }));
-          return {
-            date: format(date, "dd/MM"),
-            empréstimos: dailyLoans.length,
-            devoluções: dailyLoans.filter(loan => loan.return_date).length
-          };
-        });
-        break;
-    }
-    setPeriodData(filteredData);
-  }, [periodView, history]);
-
-  const pieData = [{
-    name: "Em Uso",
-    value: activeLoans.length
-  }, {
-    name: "Disponíveis",
-    value: availableChromebooks
-  }];
-  const COLORS = ["#2563EB", "#22C55E"];
-
-  // Obter dados filtrados pelo período atual
-  const getFilteredLoans = () => {
-    const today = new Date();
-    let startDate: Date;
-    let endDate = today;
-    switch (periodView) {
-      case 'daily':
-        startDate = startOfDay(today);
-        break;
-      case 'weekly':
-        startDate = startOfWeek(today, {
-          weekStartsOn: 1
-        });
-        endDate = endOfWeek(today, {
-          weekStartsOn: 1
-        });
-        break;
-      case 'monthly':
-        startDate = startOfMonth(today);
-        endDate = endOfMonth(today);
-        break;
-      default:
-        startDate = startOfDay(today);
-    }
-    return history.filter(loan => isWithinInterval(new Date(loan.loan_date), {
-      start: startDate,
-      end: endDate
-    }));
-  };
-  const filteredLoans = getFilteredLoans();
-  const filteredReturns = filteredLoans.filter(loan => loan.return_date);
-
-  // Estatísticas
-  const completionRate = filteredLoans.length > 0 ? filteredReturns.length / filteredLoans.length * 100 : 0;
-  const usageRate = totalChromebooks > 0 ? (activeLoans.length / totalChromebooks) * 100 : 0;
-  const averageUsageTime = filteredReturns.reduce((acc, loan) => {
-    if (loan.return_date) {
-      const duration = differenceInMinutes(new Date(loan.return_date), new Date(loan.loan_date));
-      return acc + duration;
-    }
-    return acc;
-  }, 0) / (filteredReturns.length || 1);
-  const loansByUserType = filteredLoans.reduce((acc, loan) => {
-    const userType = loan.user_type || 'aluno';
-    acc[userType] = (acc[userType] || 0) + 1;
-    return acc;
-  }, {} as Record < string, number > );
-  const userTypeData = Object.entries(loansByUserType).map(([type, count]) => ({
-    name: type.charAt(0).toUpperCase() + type.slice(1),
-    value: count
-  }));
-  const completedLoans = filteredLoans.filter(loan => loan.return_date);
-  const averageLoanDurations = completedLoans.reduce((acc, loan) => {
-    if (loan.return_date) {
-      const durationMinutes = differenceInMinutes(new Date(loan.return_date), new Date(loan.loan_date));
-      if (!acc[loan.user_type || 'aluno']) {
-        acc[loan.user_type || 'aluno'] = {
-          total: 0,
-          count: 0
-        };
-      }
-      acc[loan.user_type || 'aluno'].total += durationMinutes;
-      acc[loan.user_type || 'aluno'].count += 1;
-    }
-    return acc;
-  }, {} as Record < string, {
-    total: number;
-    count: number;
-  } > );
-  const durationData = Object.entries(averageLoanDurations).map(([type, data]) => ({
-    name: type.charAt(0).toUpperCase() + type.slice(1),
-    minutos: Math.round(data.total / data.count)
-  }));
-
-  // Texto do período selecionado
+  // Função para gerar o PDF do relatório
   const periodText = {
     daily: 'Hoje',
     weekly: 'Esta Semana',
@@ -314,7 +165,6 @@ export function Dashboard({
     reports: 'Relatórios Inteligentes'
   };
 
-  // Função para gerar o PDF do relatório
   const generatePDFContent = (pdf: jsPDF) => {
     const pageWidth = pdf.internal.pageSize.getWidth();
     let yPosition = 20;
@@ -332,7 +182,13 @@ export function Dashboard({
     pdf.text(`Estatísticas do ${periodText[periodView as keyof typeof periodText]}`, 20, yPosition);
     yPosition += 10;
     pdf.setFontSize(12);
-    const periodStats = [`Empréstimos: ${filteredLoans.length}`, `Devoluções: ${filteredReturns.length}`, `Chromebooks ativos: ${activeLoans.length} de ${totalChromebooks}`, `Tempo médio de uso: ${Math.round(averageUsageTime)} minutos`, `Taxa de devolução: ${completionRate.toFixed(0)}%`];
+    const periodStats = [
+      `Empréstimos: ${filteredLoans.length}`, 
+      `Devoluções: ${filteredReturns.length}`, 
+      `Chromebooks ativos: ${stats.totalActive} de ${totalChromebooks}`, 
+      `Tempo médio de uso: ${Math.round(stats.averageUsageTime)} minutos`, 
+      `Taxa de devolução: ${stats.completionRate.toFixed(0)}%`
+    ];
     periodStats.forEach(stat => {
       pdf.text(`• ${stat}`, 25, yPosition);
       yPosition += 7;
@@ -351,7 +207,7 @@ export function Dashboard({
     pdf.text("Empréstimos Ativos", 20, yPosition);
     yPosition += 10;
     pdf.setFontSize(12);
-    activeLoans.forEach(loan => {
+    history.filter(loan => !loan.return_date).forEach(loan => {
       if (yPosition > pdf.internal.pageSize.getHeight() - 20) {
         pdf.addPage();
         yPosition = 20;
@@ -362,6 +218,7 @@ export function Dashboard({
     });
     return pdf;
   };
+  
   const handleDownloadPDF = () => {
     if (periodView === 'history' || periodView === 'reports') {
       toast({
@@ -388,6 +245,15 @@ export function Dashboard({
       });
     }
   };
+  
+  // Quick Win: Badge "Novo"
+  const isNewLoan = (loan: LoanHistoryItem) => {
+    const loanDate = new Date(loan.loan_date);
+    const now = new Date();
+    const diffHours = differenceInMinutes(now, loanDate) / 60;
+    return diffHours <= 24;
+  };
+
 
   return <div className="space-y-8 glass-morphism p-4 sm:p-6 lg:p-8 animate-fade-in relative bg-white/95 backdrop-blur-xl rounded-2xl border border-white/20 shadow-2xl shadow-slate-200/20">
       { /* Background gradient overlay */ }
@@ -398,15 +264,20 @@ export function Dashboard({
         <h2 className="text-xl sm:text-3xl font-bold text-gray-800 whitespace-nowrap">
           Dashboard
         </h2>
-        <Button variant="outline" onClick={handleDownloadPDF} className="flex items-center gap-2 hover:bg-blue-50" disabled={periodView === 'history' || periodView === 'reports'}>
-          <Download className="h-4 w-4" />
-          <span className="hidden md:inline">Baixar Relatório</span>
+        <Button 
+          variant="outline" 
+          onClick={refreshData} 
+          className="flex items-center gap-2 hover:bg-blue-50" 
+          disabled={loading}
+        >
+          <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+          <span className="hidden md:inline">{loading ? 'Atualizando...' : 'Atualizar Dados'}</span>
         </Button>
       </div>
 
       {/* Tabs for Period Selection */}
-      <Tabs defaultValue="daily" value={periodView} onValueChange={(v) => setPeriodView(v as any)} className="relative z-10">
-        <TabsList className="grid w-full grid-cols-4 h-10">
+      <Tabs defaultValue="daily" value={periodView} onValueChange={(v) => setPeriodView(v as PeriodView)} className="relative z-10">
+        <TabsList className="grid w-full grid-cols-5 h-10">
           <TabsTrigger value="daily" className="flex items-center gap-1 text-xs sm:text-sm">
             <Calendar className="h-3 w-3 sm:h-4 sm:w-4" />
             Diário
@@ -426,29 +297,27 @@ export function Dashboard({
             <HistoryIcon className="h-3 w-3 sm:h-4 sm:w-4" />
             Histórico
           </TabsTrigger>
+          <TabsTrigger 
+            value="reports" 
+            className="flex items-center gap-1 text-xs sm:text-sm data-[state=active]:bg-menu-teal data-[state=active]:text-white data-[state=active]:shadow-md hover:bg-menu-teal/80 transition-colors"
+          >
+            <Brain className="h-3 w-3 sm:h-4 sm:w-4" />
+            IA
+          </TabsTrigger>
         </TabsList>
 
-        {loading ? (
-          <div className="flex justify-center items-center h-64">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <p className="ml-4 text-muted-foreground">Carregando dados...</p>
-          </div>
-        ) : (
-          <>
-            {/* Grid de Cards de Estatísticas (Visível em todas as abas exceto Histórico) */}
-            <StatsGrid 
-              periodView={periodView}
-              filteredLoans={filteredLoans}
-              filteredReturns={filteredReturns}
-              activeLoans={activeLoans}
-              totalChromebooks={totalChromebooks}
-              availableChromebooks={availableChromebooks}
-              averageUsageTime={averageUsageTime}
-              completionRate={completionRate}
-              usageRate={usageRate}
-            />
+        {/* Grid de Cards de Estatísticas (Visível em todas as abas exceto Histórico/Relatórios) */}
+        <StatsGrid 
+          periodView={periodView}
+          filteredLoans={filteredLoans}
+          filteredReturns={filteredReturns}
+          stats={stats}
+          loading={loading}
+        />
 
-            <TabsContent value="daily" className="space-y-4 mt-6">
+        <TabsContent value="daily" className="space-y-4 mt-6">
+          {loading ? <div className="flex justify-center items-center h-64"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div> : (
+            <>
               <GlassCard className="dashboard-card">
                 <CardHeader className="flex flex-row items-center justify-between">
                   <div>
@@ -468,7 +337,7 @@ export function Dashboard({
                     className="w-full h-full"
                   >
                     <ResponsiveContainer width="100%" height="100%">
-                      <ComposedChart data={periodData} margin={{ top: 5, right: 0, left: -20, bottom: 5 }}>
+                      <ComposedChart data={periodChartData} margin={{ top: 5, right: 0, left: -20, bottom: 5 }}>
                         <defs>
                           {/* Gradiente para a área de Empréstimos */}
                           <linearGradient id="colorEmprestimos" x1="0" y1="0" x2="0" y2="1">
@@ -531,8 +400,20 @@ export function Dashboard({
                     >
                       <ResponsiveContainer width="100%" height="100%">
                         <PieChart margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
-                          <Pie data={pieData} cx="50%" cy="50%" innerRadius={40} outerRadius={70} fill="#8884d8" paddingAngle={5} dataKey="value" label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}>
-                            {pieData.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index]} />)}
+                          <Pie data={[{
+                            name: "Em Uso",
+                            value: stats.totalActive
+                          }, {
+                            name: "Disponíveis",
+                            value: availableChromebooks
+                          }]} cx="50%" cy="50%" innerRadius={40} outerRadius={70} fill="#8884d8" paddingAngle={5} dataKey="value" label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}>
+                            {[{
+                              name: "Em Uso",
+                              value: stats.totalActive
+                            }, {
+                              name: "Disponíveis",
+                              value: availableChromebooks
+                            }].map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index]} />)}
                           </Pie>
                           <Tooltip content={<ChartTooltipContent />} />
                           <Legend content={<ChartLegendContent />} wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
@@ -566,7 +447,7 @@ export function Dashboard({
                           <Pie data={userTypeData} cx="50%" cy="50%" innerRadius={40} outerRadius={70} fill="#8884d8" paddingAngle={5} dataKey="value" label={({
                       name,
                       value
-                    }) => `${name}: ${value}`}>
+                    }) => value > 0 ? `${name}: ${value}` : ''}>
                             {userTypeData.map((entry, index) => <Cell key={`cell-${index}`} fill={['#3B82F6', '#10B981', '#F59E0B'][index % 3]} />)}
                           </Pie>
                           <Tooltip content={<ChartTooltipContent />} />
@@ -646,24 +527,18 @@ export function Dashboard({
                         <Badge variant="secondary" className="bg-orange-100 text-orange-700">
                           {loansByUserType.funcionario || 0} empréstimos
                         </Badge>
-                      </div>
-                      <Progress value={(loansByUserType.funcionario || 0) / filteredLoans.length * 100} className="h-2" />
-                    </div>
-                    
-                    <div className="pt-2 border-t">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm font-bold">Chromebooks Disponíveis</span>
-                        <Badge variant="outline" className="border-green-200 text-green-700">
-                          {availableChromebooks} de {totalChromebooks}
-                        </Badge>
-                      </div>
-                    </div>
-                  </CardContent>
+                      </CardContent>
+                    </GlassCard>
+                  </div>
                 </GlassCard>
               </div>
-            </TabsContent>
+            </>
+          )}
+        </TabsContent>
 
-            <TabsContent value="weekly" className="space-y-4 mt-6">
+        <TabsContent value="weekly" className="space-y-4 mt-6">
+          {loading ? <div className="flex justify-center items-center h-64"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div> : (
+            <>
               <GlassCard className="dashboard-card">
                 <CardHeader className="flex flex-row items-center justify-between">
                   <div>
@@ -683,7 +558,7 @@ export function Dashboard({
                     className="w-full h-full"
                   >
                     <ResponsiveContainer width="100%" height="100%">
-                      <ComposedChart data={periodData} margin={{ top: 5, right: 0, left: -20, bottom: 5 }}>
+                      <ComposedChart data={periodChartData} margin={{ top: 5, right: 0, left: -20, bottom: 5 }}>
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis dataKey="date" tick={{ fontSize: 10 }} />
                         <YAxis tick={{ fontSize: 10 }} />
@@ -813,9 +688,13 @@ export function Dashboard({
                   </CardContent>
                 </GlassCard>
               </div>
-            </TabsContent>
+            </>
+          )}
+        </TabsContent>
 
-            <TabsContent value="monthly" className="space-y-4 mt-6">
+        <TabsContent value="monthly" className="space-y-4 mt-6">
+          {loading ? <div className="flex justify-center items-center h-64"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div> : (
+            <>
               <GlassCard className="dashboard-card">
                 <CardHeader className="flex flex-row items-center justify-between">
                   <div>
@@ -835,7 +714,7 @@ export function Dashboard({
                     className="w-full h-full"
                   >
                     <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart data={periodData} margin={{ top: 5, right: 0, left: -20, bottom: 5 }}>
+                      <AreaChart data={periodChartData} margin={{ top: 5, right: 0, left: -20, bottom: 5 }}>
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis dataKey="date" tick={{ fontSize: 10 }} />
                         <YAxis tick={{ fontSize: 10 }} />
@@ -878,19 +757,19 @@ export function Dashboard({
                     </ChartContainer>
                   </CardContent>
                 </GlassCard>
-            </TabsContent>
-            
-            {/* ABA DE HISTÓRICO */}
-            <TabsContent value="history" className="space-y-4 mt-6">
-              <LoanHistory history={history} />
-            </TabsContent>
-            
-            {/* ABA DE RELATÓRIOS INTELIGENTES */}
-            <TabsContent value="reports" className="space-y-4 mt-6">
-              <IntelligentReportsTab />
-            </TabsContent>
-          </>
-        )}
+            </>
+          )}
+        </TabsContent>
+        
+        {/* ABA DE HISTÓRICO */}
+        <TabsContent value="history" className="space-y-4 mt-6">
+          {loading ? <div className="flex justify-center items-center h-64"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div> : <LoanHistory history={history} isNewLoan={isNewLoan} />}
+        </TabsContent>
+        
+        {/* ABA DE RELATÓRIOS INTELIGENTES */}
+        <TabsContent value="reports" className="space-y-4 mt-6">
+          <IntelligentReportsTab />
+        </TabsContent>
       </Tabs>
       
     </div>;

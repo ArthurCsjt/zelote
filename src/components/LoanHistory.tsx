@@ -11,9 +11,10 @@ import { GlassCard } from "./ui/GlassCard"; // Importando GlassCard
 
 interface LoanHistoryProps {
   history: LoanHistoryItem[];
+  isNewLoan: (loan: LoanHistoryItem) => boolean; // NOVO PROP
 }
 
-export function LoanHistory({ history }: LoanHistoryProps) {
+export function LoanHistory({ history, isNewLoan }: LoanHistoryProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [userTypeFilter, setUserTypeFilter] = useState<string>("all");
@@ -140,6 +141,8 @@ export function LoanHistory({ history }: LoanHistoryProps) {
             const returnedByDifferentUser = isReturned && 
               loan.returned_by_email && 
               loan.returned_by_email !== loan.student_email;
+            
+            const isRecent = isNewLoan(loan); // Usando a função passada via prop
 
             return (
               <Card 
@@ -157,12 +160,19 @@ export function LoanHistory({ history }: LoanHistoryProps) {
                           <p className="text-sm text-muted-foreground">{loan.student_email}</p>
                         </div>
                       </div>
-                      <Badge 
-                        variant={variant}
-                        className={className}
-                      >
-                        {loan.status.charAt(0).toUpperCase() + loan.status.slice(1)}
-                      </Badge>
+                      <div className="flex flex-col items-end gap-1">
+                        <Badge 
+                          variant={variant}
+                          className={className}
+                        >
+                          {loan.status.charAt(0).toUpperCase() + loan.status.slice(1)}
+                        </Badge>
+                        {isRecent && (
+                          <Badge className="bg-blue-500 text-white hover:bg-blue-500 text-xs">
+                            NOVO
+                          </Badge>
+                        )}
+                      </div>
                     </div>
 
                     {/* Info badges */}
