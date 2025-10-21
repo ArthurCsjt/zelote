@@ -172,9 +172,9 @@ export function ReturnDialog({
           
           <div className="grid md:grid-cols-2 gap-6">
             
-            {/* Coluna Esquerda - Dispositivo/Lote (APLICANDO ESTILO VERDE/TEAL) */}
-            <Card className="p-4 space-y-4 bg-green-50/50 border-green-100 shadow-inner">
-              <CardTitle className="text-lg flex items-center gap-2 text-green-700">
+            {/* Coluna Esquerda - Dispositivo/Lote (AGORA ROXO) */}
+            <Card className="p-4 space-y-4 bg-purple-50/50 border-purple-100 shadow-inner">
+              <CardTitle className="text-lg flex items-center gap-2 text-purple-700">
                 <Computer className="h-5 w-5" /> Detalhes do Equipamento
               </CardTitle>
               
@@ -232,10 +232,10 @@ export function ReturnDialog({
               )}
             </Card>
 
-            {/* Coluna Direita - Informações do Usuário e Observações */}
+            {/* Coluna Direita - Informações do Usuário e Observações (AGORA VERDE/TEAL) */}
             <div className="space-y-6">
-              <Card className="p-4 space-y-4 bg-purple-50/50 border-purple-100 shadow-inner">
-                <CardTitle className="text-lg flex items-center gap-2 text-purple-700">
+              <Card className="p-4 space-y-4 bg-green-50/50 border-green-100 shadow-inner">
+                <CardTitle className="text-lg flex items-center gap-2 text-green-700">
                   <User className="h-5 w-5" /> Informações do Solicitante
                 </CardTitle>
                 
@@ -263,7 +263,7 @@ export function ReturnDialog({
                 )}
               </Card>
               
-              {/* Campo de Observações */}
+              {/* Campo de Observações (NEUTRO) */}
               <Card className="p-4 space-y-4 bg-white border-gray-100 shadow-md">
                 <CardTitle className="text-lg flex items-center gap-2 text-gray-700">
                   <AlertTriangle className="h-5 w-5" /> Observações da Devolução
