@@ -39,8 +39,9 @@ serve(async (req) => {
 
     const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
     if (!GEMINI_API_KEY) {
+      // Retorna um erro 500 claro se a chave estiver faltando
       return new Response(
-        JSON.stringify({ error: 'Chave da API do Gemini não configurada' }),
+        JSON.stringify({ error: 'Chave da API do Gemini (GEMINI_API_KEY) não configurada no Supabase Secrets.' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
