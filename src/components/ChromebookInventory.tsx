@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import {
@@ -21,7 +21,7 @@ import {
 import { Textarea } from "./ui/textarea";
 import { Label } from "./ui/label";
 import { toast } from "./ui/use-toast";
-import { Search, ArrowLeft, Filter, Edit3, QrCode, CheckCircle, AlertCircle, XCircle, MapPin, Eye, X, Trash2, Save, AlertTriangle, Clock, Tag, Factory, Hash, Map } from "lucide-react";
+import { Search, ArrowLeft, Filter, Edit3, QrCode, CheckCircle, AlertCircle, XCircle, MapPin, Eye, X, Trash2, Save, AlertTriangle, Clock, Tag, Factory, Hash, Map, RefreshCw, Download } from "lucide-react";
 import { QRCodeModal } from "./QRCodeModal";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "./ui/pagination";
 import { ScrollArea } from "./ui/scroll-area";
@@ -75,16 +75,25 @@ export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+  const [isFetching, setIsFetching] = useState(false); // Novo estado para o loading da busca
+
+  // Função para carregar Chromebooks
+  const fetchChromebooks = useCallback(async () => {
+    setIsFetching(true);
+    try {
+      const data = await getChromebooks();
+      setChromebooks(data as ChromebookDataExtended[]);
+    } catch (e) {
+      // O toast de erro já é tratado no useDatabase
+    } finally {
+      setIsFetching(false);
+    }
+  }, [getChromebooks]);
 
 // Load Chromebooks from Supabase on component mount
 useEffect(() => {
-  const fetchChromebooks = async () => {
-    const data = await getChromebooks();
-    setChromebooks(data as ChromebookDataExtended[]);
-  };
-
   fetchChromebooks();
-}, [getChromebooks]);
+}, [fetchChromebooks]);
 
 // Real-time synchronization
 useEffect(() => {
@@ -311,39 +320,64 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
       {/* Estatísticas e Gráfico */}
       <InventoryStats chromebooks={chromebooks} />
 
-      {/* Search and filters */}
-      <div className="flex flex-col sm:flex-row gap-4 mb-6 relative z-10">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-          <Input
-            placeholder="Buscar por ID, patrimônio, modelo, série, fabricante ou localização..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
+      {/* Painel de Busca e Filtros (NOVO GLASS CARD) */}
+      <GlassCard className="mb-6 p-4 relative z-10">
+        <div className="flex flex-col sm:flex-row gap-4 items-center">
+          
+          {/* Campo de Busca */}
+          <div className="relative flex-1 w-full">
+            <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+            <Input
+              placeholder="Buscar por ID, patrimônio, modelo, série, fabricante ou localização..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+          
+          {/* Filtro de Status */}
+          <div className="relative w-full sm:w-[180px]">
+            <Filter className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-full pl-10">
+                <SelectValue placeholder="Filtrar por status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos os Status</SelectItem>
+                <SelectItem value="disponivel">Disponível</SelectItem>
+                <SelectItem value="emprestado">Emprestado</SelectItem>
+                <SelectItem value="fixo">Fixo</SelectItem>
+                <SelectItem value="manutencao">Manutenção</SelectItem>
+                <SelectItem value="fora_uso">Inativo</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          {/* Botões de Ação */}
+          <div className="flex gap-2 w-full sm:w-auto">
+            <Button 
+              onClick={fetchChromebooks}
+              variant="outline"
+              disabled={isFetching}
+              title="Atualizar dados"
+              className="px-3"
+            >
+              <RefreshCw className={`h-4 w-4 ${isFetching ? 'animate-spin' : ''}`} />
+            </Button>
+            <Button 
+              onClick={() => toast({ title: "Backup", description: "Funcionalidade de backup em desenvolvimento.", variant: "info" })}
+              variant="outline"
+              title="Fazer backup"
+              className="px-3"
+            >
+              <Download className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
-        
-        <div className="relative">
-          <Filter className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-[180px] pl-10">
-              <SelectValue placeholder="Filtrar por status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos os Status</SelectItem>
-              <SelectItem value="disponivel">Disponível</SelectItem>
-              <SelectItem value="emprestado">Emprestado</SelectItem>
-              <SelectItem value="fixo">Fixo</SelectItem>
-              <SelectItem value="manutencao">Manutenção</SelectItem>
-              <SelectItem value="fora_uso">Inativo</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        
-        <div className="text-sm text-gray-500 flex items-center">
+        <div className="text-sm text-gray-500 mt-4">
           Resultados: {filteredChromebooks.length} Chromebooks
         </div>
-      </div>
+      </GlassCard>
 
       {/* Table of Chromebooks */}
       <GlassCard className="border-white/30 rounded-2xl overflow-hidden relative z-10 p-0">
