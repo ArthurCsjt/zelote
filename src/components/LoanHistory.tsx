@@ -55,12 +55,13 @@ export function LoanHistory({ history }: LoanHistoryProps) {
   const getStatusBadgeProps = (status: LoanHistoryItem['status']) => {
     switch (status) {
       case 'devolvido':
-        return { variant: "default", className: "bg-green-100 text-green-800 hover:bg-green-100" };
+        return { variant: "default", className: "bg-green-100 text-green-800 hover:bg-green-100", cardClass: "" };
       case 'atrasado':
-        return { variant: "destructive", className: "" };
+        // NOVO: Classes para destacar o card em atraso
+        return { variant: "destructive", className: "", cardClass: "border-red-300 bg-red-50/50 shadow-lg" };
       case 'ativo':
       default:
-        return { variant: "secondary", className: "bg-yellow-100 text-yellow-800 hover:bg-yellow-100" };
+        return { variant: "secondary", className: "bg-yellow-100 text-yellow-800 hover:bg-yellow-100", cardClass: "" };
     }
   };
 
@@ -134,14 +135,17 @@ export function LoanHistory({ history }: LoanHistoryProps) {
       ) : (
         <div className="grid gap-4">
           {filteredHistory.map((loan) => {
-            const { variant, className } = getStatusBadgeProps(loan.status);
+            const { variant, className, cardClass } = getStatusBadgeProps(loan.status);
             const isReturned = loan.status === 'devolvido';
             const returnedByDifferentUser = isReturned && 
               loan.returned_by_email && 
               loan.returned_by_email !== loan.student_email;
 
             return (
-              <Card key={loan.id} className="hover:shadow-md transition-shadow">
+              <Card 
+                key={loan.id} 
+                className={`hover:shadow-md transition-shadow ${cardClass}`} // Aplicando a classe do card
+              >
                 <CardContent className="p-6">
                   <div className="space-y-4">
                     {/* Header */}
