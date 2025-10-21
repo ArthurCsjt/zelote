@@ -29,18 +29,17 @@ const StatsGrid = ({ periodView, filteredLoans, filteredReturns, activeLoans, to
   const totalActive = activeLoans.length;
   
   // Uso Total de Chromebooks Disponíveis (Porcentagem de uso do inventário total)
-  // A métrica 'usageRate' já é (ativos / total), que é a taxa de uso do inventário.
   const totalInventoryUsageRate = totalChromebooks > 0 ? (totalActive / totalChromebooks) * 100 : 0;
 
 
   return (
     <div className="grid gap-4 grid-cols-2 md:grid-cols-4 relative z-10">
       
-      {/* CARD 1: Uso Total de Chromebooks (Contagem de ativos) */}
+      {/* CARD 1: Empréstimos Ativos (Uso Total de Chromebooks) */}
       <GlassCard className="border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-blue-500">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-xs sm:text-sm font-medium">
-            Uso Total de Chromebooks
+            Empréstimos Ativos
           </CardTitle>
           <Computer className="h-4 w-4 sm:h-5 sm:w-5 text-blue-500" />
         </CardHeader>
@@ -52,20 +51,20 @@ const StatsGrid = ({ periodView, filteredLoans, filteredReturns, activeLoans, to
         </CardContent>
       </GlassCard>
 
-      {/* CARD 2: Uso Total de Chromebooks Disponíveis (Porcentagem de uso do inventário total) */}
+      {/* CARD 2: Chromebooks Disponíveis (Contagem real de disponíveis) */}
       <GlassCard className="border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-green-500">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-xs sm:text-sm font-medium">
-            Uso Total do Inventário
+            Chromebooks Disponíveis
           </CardTitle>
           <Computer className="h-4 w-4 sm:h-5 sm:w-5 text-green-500" />
         </CardHeader>
         <CardContent>
-          <div className="text-xl sm:text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">{totalInventoryUsageRate.toFixed(0)}%</div>
+          <div className="text-xl sm:text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">{availableChromebooks}</div>
           <div className="flex items-center gap-2 mt-1">
             <Progress value={totalInventoryUsageRate} className="h-1.5 sm:h-2" />
             <span className="text-[10px] sm:text-xs text-muted-foreground">
-              {totalActive} de {totalChromebooks} em uso
+              {totalInventoryUsageRate.toFixed(0)}% do inventário em uso
             </span>
           </div>
         </CardContent>
@@ -266,7 +265,6 @@ export function Dashboard({
 
   // Estatísticas
   const completionRate = filteredLoans.length > 0 ? filteredReturns.length / filteredLoans.length * 100 : 0;
-  // A métrica 'usageRate' é a taxa de uso do inventário total (ativos / total)
   const usageRate = totalChromebooks > 0 ? (activeLoans.length / totalChromebooks) * 100 : 0;
   const averageUsageTime = filteredReturns.reduce((acc, loan) => {
     if (loan.return_date) {
@@ -736,18 +734,18 @@ export function Dashboard({
                   <BarChartIcon className="h-5 w-5 text-muted-foreground" />
                 </CardHeader>
                 <CardContent className="h-[250px] sm:h-[300px]">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart data={periodData} margin={{ top: 5, right: 0, left: -20, bottom: 5 }}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="date" tick={{ fontSize: 10 }} />
-                        <YAxis tick={{ fontSize: 10 }} />
-                        <Tooltip />
-                        <Legend wrapperStyle={{ fontSize: '12px' }} />
-                        <Area type="monotone" dataKey="empréstimos" stackId="1" stroke="#2563EB" fill="#2563EB" fillOpacity={0.3} />
-                        <Area type="monotone" dataKey="devoluções" stackId="1" stroke="#22C55E" fill="#22C55E" fillOpacity={0.3} />
-                      </AreaChart>
-                    </ResponsiveContainer>
-                  </CardContent>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={periodData} margin={{ top: 5, right: 0, left: -20, bottom: 5 }}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="date" tick={{ fontSize: 10 }} />
+                      <YAxis tick={{ fontSize: 10 }} />
+                      <Tooltip />
+                      <Legend wrapperStyle={{ fontSize: '12px' }} />
+                      <Area type="monotone" dataKey="empréstimos" stackId="1" stroke="#2563EB" fill="#2563EB" fillOpacity={0.3} />
+                      <Area type="monotone" dataKey="devoluções" stackId="1" stroke="#22C55E" fill="#22C55E" fillOpacity={0.3} />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </CardContent>
               </GlassCard>
 
               <GlassCard className="dashboard-card">
