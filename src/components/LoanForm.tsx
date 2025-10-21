@@ -18,20 +18,18 @@ import UserAutocomplete from "./UserAutocomplete";
 import PurposeAutocomplete from "./PurposeAutocomplete"; // NOVO IMPORT
 import type { UserSearchResult } from '@/hooks/useUserSearch';
 import { Card, CardContent, CardTitle, CardHeader } from "./ui/card"; // Adicionado CardHeader
-import { BatchDeviceInput } from "./BatchDeviceInput";
 import { GlassCard } from "./ui/GlassCard";
-import ChromebookSearchInput from "./ChromebookSearchInput"; // NOVO IMPORT
-import type { ChromebookSearchResult } from '@/hooks/useChromebookSearch'; // NOVO IMPORT
+import { DeviceListInput } from "./DeviceListInput"; // NOVO IMPORT
 
 // Define a interface dos dados do formulário de empréstimo
 interface LoanFormData {
   studentName: string;
   ra?: string;
   email: string;
-  chromebookId: string;
+  chromebookId: string; // Mantido para validação, mas não usado diretamente no payload
   purpose: string;
   userType: 'aluno' | 'professor' | 'funcionario';
-  loanType: 'individual' | 'lote';
+  loanType: 'individual' | 'lote'; // Mantido para tipagem, mas será sempre 'lote' na lógica
   expectedReturnDate?: Date;
 }
 
@@ -49,15 +47,13 @@ export function LoanForm({ onBack }: LoanFormProps) {
   const { createLoan, bulkCreateLoans, loading } = useDatabase();
   
   const [formData, setFormData] = useState<LoanFormData>({
-    studentName: "", ra: "", email: "", chromebookId: "", purpose: "", userType: 'aluno', loanType: 'individual'
+    studentName: "", ra: "", email: "", chromebookId: "", purpose: "", userType: 'aluno', loanType: 'lote' // PADRÃO: LOTE
   });
 
   const [selectedUser, setSelectedUser] = useState<UserSearchResult | null>(null);
-  const [selectedChromebook, setSelectedChromebook] = useState<ChromebookSearchResult | null>(null); // NOVO ESTADO
   const [hasReturnDeadline, setHasReturnDeadline] = useState(false);
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
-  const [batchDevices, setBatchDevices] = useState<string[]>([]);
-  const [isQRReaderOpen, setIsQRReaderOpen] = useState(false);
+  const [deviceIds, setDeviceIds] = useState<string[]>([]); // Lista de IDs de dispositivos
 
   // === FUNÇÕES DE MANIPULAÇÃO (HANDLERS) ===
 
@@ -86,72 +82,12 @@ export function LoanForm({ onBack }: LoanFormProps) {
     }));
   };
   
-  const handleChromebookSelect = (chromebook: ChromebookSearchResult) => {
-    // 1. Verifica se o status é 'disponivel'
-    if (chromebook.status !== 'disponivel') {
-      toast({
-        title: "Chromebook Indisponível",
-        description: `O Chromebook ${chromebook.chromebook_id} está com status: ${chromebook.status.toUpperCase()}.`,
-        variant: "destructive",
-      });
-      setSelectedChromebook(null);
-      setFormData(prev => ({ ...prev, chromebookId: '' }));
-      return;
-    }
-    
-    // 2. Se estiver disponível, seleciona
-    setSelectedChromebook(chromebook);
-    setFormData(prev => ({ ...prev, chromebookId: chromebook.chromebook_id }));
-  };
-  
-  const handleChromebookClear = () => {
-    setSelectedChromebook(null);
-    setFormData(prev => ({ ...prev, chromebookId: '' }));
-  };
-
-  const handleQRCodeScan = (data: string) => {
-    const sanitizedId = sanitizeQRCodeData(data); 
-    
-    if (typeof sanitizedId === 'string' && sanitizedId) {
-      if (formData.loanType === 'individual') {
-        // No modo individual, apenas notificamos o usuário para usar a busca manual com o ID.
-        toast({
-          title: "QR Code lido",
-          description: `ID do Chromebook: ${sanitizedId}. Use a busca para selecionar e confirmar.`,
-          variant: "info",
-        });
-      } else {
-        // Lógica de lote
-        if (!batchDevices.includes(sanitizedId)) {
-          setBatchDevices(prev => [...prev, sanitizedId]);
-          toast({
-            title: "Dispositivo adicionado ao lote",
-            description: `ID do Chromebook: ${sanitizedId}`,
-          });
-        } else {
-          toast({
-            title: "Dispositivo já adicionado",
-            description: `O Chromebook ${sanitizedId} já está na lista`,
-            variant: "destructive",
-          });
-        }
-      }
-    }
-    setIsQRReaderOpen(false);
-  };
-  
-  const handleChromebookIdChange = (value: string) => {
-    // Mantemos a normalização para o campo de texto, mas ele será substituído pelo Autocomplete
-    setFormData({ ...formData, chromebookId: normalizeChromebookId(value) });
-  };
-
   const resetForm = () => {
-    setBatchDevices([]);
+    setDeviceIds([]);
     setFormData({ 
-      studentName: "", ra: "", email: "", chromebookId: "", purpose: "", userType: 'aluno', loanType: 'individual'
+      studentName: "", ra: "", email: "", chromebookId: "", purpose: "", userType: 'aluno', loanType: 'lote'
     });
     setSelectedUser(null);
-    setSelectedChromebook(null); // Resetar seleção
     setHasReturnDeadline(false);
   };
 
@@ -168,22 +104,22 @@ export function LoanForm({ onBack }: LoanFormProps) {
         return;
     }
     
-    // 2. Validação de Chromebook (Individual)
-    if (formData.loanType === 'individual' && !selectedChromebook) {
-        toast({
-            title: "Erro de Validação",
-            description: "Selecione um Chromebook disponível na lista de busca.",
-            variant: "destructive",
-        });
-        return;
+    // 2. Validação de Dispositivos
+    if (deviceIds.length === 0) {
+      toast({
+        title: "Erro",
+        description: "Adicione pelo menos um dispositivo para empréstimo.",
+        variant: "destructive",
+      });
+      return;
     }
     
+    // 3. Validação de Campos (usando o primeiro dispositivo para validação de formato)
     const dataToValidate = {
       ...formData,
-      chromebookId: formData.loanType === 'individual' ? selectedChromebook?.chromebook_id : '',
+      chromebookId: deviceIds[0], // Usamos o primeiro ID para validar o formato do ID
     };
     
-    // 3. Validação de Campos (incluindo purpose)
     const validation = validateLoanFormData(dataToValidate);
     
     if (!validation.isValid) {
@@ -195,67 +131,33 @@ export function LoanForm({ onBack }: LoanFormProps) {
       return;
     }
     
-    if (formData.loanType === 'lote') {
-      if (batchDevices.length === 0) {
-        toast({
-          title: "Erro",
-          description: "Adicione pelo menos um dispositivo para empréstimo em lote",
-          variant: "destructive",
-        });
-        return;
-      }
-      
-      const loanDataList: LoanFormData[] = batchDevices.map(deviceId => ({
-        studentName: formData.studentName,
-        ra: formData.ra || '',
-        email: formData.email,
-        chromebookId: deviceId,
-        purpose: formData.purpose,
-        userType: formData.userType,
-        loanType: formData.loanType,
-        expectedReturnDate: hasReturnDeadline && formData.expectedReturnDate ? formData.expectedReturnDate : undefined,
-      }));
-      
-      const { successCount, errorCount } = await bulkCreateLoans(loanDataList);
-      
-      if (successCount > 0) {
-        resetForm();
-        toast({
-          title: "Sucesso",
-          description: `${successCount} Chromebooks emprestados com sucesso. ${errorCount > 0 ? `(${errorCount} falha(s))` : ''}`,
-          variant: "success",
-        });
-      } else if (errorCount > 0) {
-        toast({
-          title: "Erro no Lote",
-          description: "Nenhum empréstimo foi criado. Verifique os erros acima.",
-          variant: "destructive",
-        });
-      }
-      
-    } else {
-      // Modo Individual
-      const loanData = {
-        studentName: dataToValidate.studentName,
-        ra: dataToValidate.ra || '',
-        email: dataToValidate.email,
-        chromebookId: selectedChromebook!.chromebook_id, // Garantido pela validação acima
-        purpose: dataToValidate.purpose,
-        userType: dataToValidate.userType,
-        loanType: dataToValidate.loanType,
-        expectedReturnDate: hasReturnDeadline && formData.expectedReturnDate ? formData.expectedReturnDate : undefined,
-      };
-      
-      const result = await createLoan(loanData as any);
-      
-      if (result) {
-        resetForm();
-        toast({
-          title: "Sucesso",
-          description: "Chromebook emprestado com sucesso",
-          variant: "success",
-        });
-      }
+    // 4. Preparar dados para Empréstimo em Lote (Bulk)
+    const loanDataList: LoanFormData[] = deviceIds.map(deviceId => ({
+      studentName: formData.studentName,
+      ra: formData.ra || '',
+      email: formData.email,
+      chromebookId: deviceId,
+      purpose: formData.purpose,
+      userType: formData.userType,
+      loanType: 'lote', // Forçamos 'lote' para o payload, mesmo que seja 1 item
+      expectedReturnDate: hasReturnDeadline && formData.expectedReturnDate ? formData.expectedReturnDate : undefined,
+    }));
+    
+    const { successCount, errorCount } = await bulkCreateLoans(loanDataList);
+    
+    if (successCount > 0) {
+      resetForm();
+      toast({
+        title: "Sucesso",
+        description: `${successCount} Chromebooks emprestados com sucesso. ${errorCount > 0 ? `(${errorCount} falha(s))` : ''}`,
+        variant: "success",
+      });
+    } else if (errorCount > 0) {
+      toast({
+        title: "Erro no Empréstimo",
+        description: "Nenhum empréstimo foi criado. Verifique os erros acima.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -271,8 +173,6 @@ export function LoanForm({ onBack }: LoanFormProps) {
     <div className="animate-fade-in relative">
       <div className="absolute inset-0 -z-10 bg-gradient-to-br from-blue-50/30 via-purple-50/20 to-pink-50/30 rounded-3xl blur-2xl transform scale-110" />
       
-      {/* REMOVIDO: Título "Novo Empréstimo" */}
-      
       <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
         
         <div className="grid md:grid-cols-2 gap-6">
@@ -281,56 +181,19 @@ export function LoanForm({ onBack }: LoanFormProps) {
           <GlassCard className="bg-blue-50/50 border-blue-100 shadow-inner dark:bg-blue-950/50 dark:border-blue-900/50">
             <CardHeader className="p-4 pb-0">
               <CardTitle className="text-lg flex items-center gap-2 text-blue-700 dark:text-blue-400">
-                <Computer className="h-5 w-5" /> Detalhes do Equipamento
+                <Computer className="h-5 w-5" /> Dispositivos para Empréstimo
               </CardTitle>
             </CardHeader>
             <CardContent className="p-4 space-y-4">
               
-              {/* Seletor de tipo de empréstimo (individual ou lote) */}
-              <div className="space-y-2">
-                <Label htmlFor="loanType" className="text-foreground">
-                  Tipo de Empréstimo
-                </Label>
-                <Select
-                  value={formData.loanType}
-                  onValueChange={(value: 'individual' | 'lote') =>
-                    setFormData({ ...formData, loanType: value })
-                  }
-                >
-                  <SelectTrigger className="border-gray-200 bg-white dark:bg-card dark:border-border">
-                    <SelectValue placeholder="Selecione o tipo de empréstimo" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="individual">Individual</SelectItem>
-                    <SelectItem value="lote">Em Lote</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              {formData.loanType === 'individual' ? (
-                /* Campo de ID para empréstimo individual (AGORA COM AUTOCOMPLETE) */
-                <div className="space-y-2">
-                  <Label htmlFor="chromebookId" className="text-foreground">
-                    ID do Chromebook *
-                  </Label>
-                  <ChromebookSearchInput
-                      selectedChromebook={selectedChromebook}
-                      onSelect={handleChromebookSelect}
-                      onClear={handleChromebookClear}
-                      disabled={loading}
-                      filterStatus="disponivel" // Apenas Chromebooks disponíveis
-                      onScanClick={() => setIsQRReaderOpen(true)}
-                  />
-                </div>
-              ) : (
-                /* Interface de empréstimo em lote (usando o novo componente) */
-                <BatchDeviceInput
-                  batchDevices={batchDevices}
-                  setBatchDevices={setBatchDevices}
-                  onScan={handleQRCodeScan}
-                  disabled={loading}
-                />
-              )}
+              {/* Entrada de Dispositivos Unificada */}
+              <DeviceListInput
+                deviceIds={deviceIds}
+                setDeviceIds={setDeviceIds}
+                disabled={loading}
+                filterStatus="disponivel"
+                actionLabel="Empréstimo"
+              />
             </CardContent>
           </GlassCard>
 
@@ -502,8 +365,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
           className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-0 shadow-lg hover:shadow-xl transform transition-all duration-300 hover:scale-[1.02]"
           disabled={
             loading || 
-            (formData.loanType === 'lote' && batchDevices.length === 0) ||
-            (formData.loanType === 'individual' && !selectedChromebook) ||
+            deviceIds.length === 0 ||
             !selectedUser ||
             !formData.purpose // Adicionando validação para purpose
           }
@@ -513,21 +375,9 @@ export function LoanForm({ onBack }: LoanFormProps) {
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               Processando...
             </>
-          ) : formData.loanType === 'lote' 
-            ? `Emprestar ${batchDevices.length} Chromebooks` 
-            : "Emprestar Chromebook"}
+          ) : `Emprestar ${deviceIds.length} Chromebook${deviceIds.length !== 1 ? 's' : ''}`}
         </Button>
       </form>
-
-      {/* Componente de leitura de QR Code (apenas para empréstimo individual) */}
-      {formData.loanType === 'individual' && (
-        <QRCodeReader
-          open={isQRReaderOpen}
-          onOpenChange={setIsQRReaderOpen}
-          onScan={handleQRCodeScan}
-        />
-      )}
-      {/* O BatchDeviceInput gerencia seu próprio QRCodeReader */}
     </div>
   );
 }

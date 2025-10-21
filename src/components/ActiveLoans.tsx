@@ -20,12 +20,13 @@ export function ActiveLoans({ onBack }: ActiveLoansProps) {
   const [loading, setLoading] = useState(false);
   const [openReturnDialog, setOpenReturnDialog] = useState(false);
   const [selectedLoan, setSelectedLoan] = useState<LoanHistoryItem | null>(null);
-  const [returnData, setReturnData] = useState<ReturnFormData>({
+  const [returnData, setReturnData] = useState<ReturnFormData & { notes?: string }>({
     name: "",
     ra: "",
     email: "",
-    type: 'individual',
-    userType: 'aluno'
+    type: 'lote', // Forçando para 'lote' no novo fluxo unificado
+    userType: 'aluno',
+    notes: ''
   });
   // Estado para armazenar IDs de lote do diálogo de devolução
   const [batchReturnIds, setBatchReturnIds] = useState<string[]>([]);
@@ -54,33 +55,22 @@ export function ActiveLoans({ onBack }: ActiveLoansProps) {
       name: loan.student_name,
       email: loan.student_email,
       ra: loan.student_ra || '',
-      type: loan.loan_type,
+      type: 'lote', // Novo fluxo unificado
       userType: loan.user_type,
+      notes: ''
     });
+    // Define o ID do Chromebook para o novo fluxo unificado
+    setBatchReturnIds([loan.chromebook_id]);
     setOpenReturnDialog(true);
   };
 
   const handleReturn = async (idsToReturn: string[], data: ReturnFormData) => {
-    if (!selectedLoan) return;
+    if (idsToReturn.length === 0) return;
 
     try {
-      let successCount = 0;
-      let errorCount = 0;
-
-      if (selectedLoan.loan_type === 'lote') {
-        // Se for lote, usamos a nova função bulkReturnChromebooks
-        const result = await bulkReturnChromebooks(idsToReturn, data);
-        successCount = result.successCount;
-        errorCount = result.errorCount;
-      } else {
-        // Se for individual, usamos a função existente
-        const success = await returnChromebookById(idsToReturn[0], data);
-        if (success) {
-          successCount = 1;
-        } else {
-          errorCount = 1;
-        }
-      }
+      // No novo fluxo unificado, sempre chamamos bulkReturnChromebooks
+      const result = await bulkReturnChromebooks(idsToReturn, data);
+      const { successCount, errorCount } = result;
       
       if (successCount > 0) {
         setOpenReturnDialog(false);
@@ -89,9 +79,11 @@ export function ActiveLoans({ onBack }: ActiveLoansProps) {
           name: '',
           email: '',
           ra: '',
-          type: 'individual',
-          userType: 'aluno'
+          type: 'lote',
+          userType: 'aluno',
+          notes: ''
         });
+        setBatchReturnIds([]);
         
         // Atualiza a lista manualmente após a devolução
         fetchActiveLoans(); 
@@ -104,7 +96,7 @@ export function ActiveLoans({ onBack }: ActiveLoansProps) {
         // O erro individual/lote já é toastado dentro do useDatabase
       }
     } catch (error) {
-      console.error('Erro ao devolver Chromebook:', error);
+      console.error('Erro ao processar devolução:', error);
       toast({
         title: "Erro",
         description: "Falha ao processar devolução",
