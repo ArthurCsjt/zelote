@@ -586,7 +586,6 @@ export function Dashboard({
                         <Badge variant="secondary" className="bg-orange-100 text-orange-700">
                           {loansByUserType.funcionario || 0} empréstimos
                         </Badge>
-                      </Badge>
                       </div>
                       <Progress value={(loansByUserType.funcionario || 0) / filteredLoans.length * 100} className="h-2" />
                     </div>
