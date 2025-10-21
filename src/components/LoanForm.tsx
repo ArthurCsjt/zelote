@@ -257,15 +257,13 @@ export function LoanForm({ onBack }: LoanFormProps) {
     <div className="animate-fade-in relative">
       <div className="absolute inset-0 -z-10 bg-gradient-to-br from-blue-50/30 via-purple-50/20 to-pink-50/30 rounded-3xl blur-2xl transform scale-110" />
       
-      <h2 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4 relative z-10">
-        Novo Empréstimo
-      </h2>
+      {/* REMOVIDO: Título "Novo Empréstimo" */}
       
       <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
         
         <div className="grid md:grid-cols-2 gap-6">
             
-          {/* Coluna Esquerda - Detalhes do Equipamento/Lote (AGORA AZUL CLARO) */}
+          {/* Coluna Esquerda - Detalhes do Equipamento/Lote (AZUL CLARO) */}
           <GlassCard className="p-4 space-y-4 bg-blue-50/50 border-blue-100 shadow-inner">
             <CardTitle className="text-lg flex items-center gap-2 text-blue-700">
               <Computer className="h-5 w-5" /> Detalhes do Equipamento

@@ -31,7 +31,7 @@ export const LoanHub = ({ onBack }: LoanHubProps) => {
       value: 'form',
       title: 'Novo Empréstimo',
       content: (
-        <div className="p-4">
+        <div className="p-0"> {/* Removendo o padding extra aqui */}
           <LoanForm />
         </div>
       ),
@@ -45,10 +45,7 @@ export const LoanHub = ({ onBack }: LoanHubProps) => {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-bold">Empréstimos de Chromebook</h1>
-        <Button onClick={onBack} variant="outline">Voltar ao Menu</Button>
-      </div>
+      {/* Removido o cabeçalho com o título e o botão 'Voltar ao Menu' */}
       
       <TabbedContent
         tabs={loanTabs}
