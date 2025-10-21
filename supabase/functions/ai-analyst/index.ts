@@ -1,4 +1,4 @@
-// v3 - Melhorando o tratamento de erro da API do Gemini
+// v4 - Atualizando para gemini-pro e novo secret GOOGLE_AI_API_KEY
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.223.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
@@ -29,7 +29,8 @@ serve(async (req) => {
 
   try {
     const body = await req.json();
-    const { userQuestion } = body;
+    // O cliente envia 'userQuestion'
+    const { userQuestion } = body; 
 
     if (!userQuestion) {
       return new Response(
@@ -38,10 +39,11 @@ serve(async (req) => {
       );
     }
 
-    const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
-    if (!GEMINI_API_KEY) {
+    // Usando o novo nome de secret GOOGLE_AI_API_KEY
+    const GOOGLE_AI_KEY = Deno.env.get('GOOGLE_AI_API_KEY'); 
+    if (!GOOGLE_AI_KEY) {
       return new Response(
-        JSON.stringify({ error: 'Chave da API do Gemini (GEMINI_API_KEY) não configurada no Supabase Secrets.' }),
+        JSON.stringify({ error: 'Chave da API do Google AI (GOOGLE_AI_API_KEY) não configurada no Supabase Secrets.' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -72,11 +74,11 @@ serve(async (req) => {
     
     PERGUNTA DO USUÁRIO: ${userQuestion}
     
-    Forneça uma resposta clara, objetiva e formatada EXCLUSIVAMENTE em Markdown.
+    Forneça uma resposta clara, objetiva e formatada EXCLUSIVAMENTE em Markdown com insights acionáveis.
     `;
 
-    // Chamar a API do Gemini
-    const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+    // Chamar a API do Gemini (usando gemini-pro conforme solicitado)
+    const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GOOGLE_AI_KEY}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -99,7 +101,6 @@ serve(async (req) => {
     if (!geminiResponse.ok) {
       const errorText = await geminiResponse.text();
       console.error('Erro da API do Gemini:', geminiResponse.status, errorText);
-      // Retorna o status code do Gemini se for um erro 4xx, ou 502 se for um erro de rede/serviço
       const status = geminiResponse.status >= 400 && geminiResponse.status < 500 ? geminiResponse.status : 502;
       
       return new Response(
