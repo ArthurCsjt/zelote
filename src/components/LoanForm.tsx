@@ -16,7 +16,7 @@ import { validateLoanFormData, sanitizeQRCodeData, normalizeChromebookId } from 
 import { useDatabase } from '@/hooks/useDatabase';
 import UserAutocomplete from "./UserAutocomplete";
 import type { UserSearchResult } from '@/hooks/useUserSearch';
-import { Card, CardContent, CardTitle } from "./ui/card";
+import { Card, CardContent, CardTitle, CardHeader } from "./ui/card"; // Adicionado CardHeader
 import { BatchDeviceInput } from "./BatchDeviceInput";
 import { GlassCard } from "./ui/GlassCard";
 import ChromebookSearchInput from "./ChromebookSearchInput"; // NOVO IMPORT
@@ -110,15 +110,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
     
     if (typeof sanitizedId === 'string' && sanitizedId) {
       if (formData.loanType === 'individual') {
-        // No modo individual, precisamos buscar o item após o scan
-        // Para simplificar, vamos apenas preencher o campo e forçar a seleção
-        // A validação completa ocorrerá no submit.
-        // NOTA: O ChromebookSearchInput não tem um campo de texto para preencher,
-        // mas o Autocomplete fará a busca automaticamente se o usuário digitar.
-        // Para o QR Code, o melhor é forçar a seleção se o ID for válido.
-        
-        // Como o QR Code não retorna o objeto completo, apenas o ID,
-        // vamos apenas notificar o usuário para usar a busca manual com o ID.
+        // No modo individual, apenas notificamos o usuário para usar a busca manual com o ID.
         toast({
           title: "QR Code lido",
           description: `ID do Chromebook: ${sanitizedId}. Use a busca para selecionar e confirmar.`,
@@ -264,93 +256,101 @@ export function LoanForm({ onBack }: LoanFormProps) {
         <div className="grid md:grid-cols-2 gap-6">
             
           {/* Coluna Esquerda - Detalhes do Equipamento/Lote (AZUL CLARO) */}
-          <GlassCard className="p-4 space-y-4 bg-blue-50/50 border-blue-100 shadow-inner dark:bg-blue-950/50 dark:border-blue-900/50">
-            <CardTitle className="text-lg flex items-center gap-2 text-blue-700 dark:text-blue-400">
-              <Computer className="h-5 w-5" /> Detalhes do Equipamento
-            </CardTitle>
-            
-            {/* Seletor de tipo de empréstimo (individual ou lote) */}
-            <div className="space-y-2">
-              <Label htmlFor="loanType" className="text-foreground">
-                Tipo de Empréstimo
-              </Label>
-              <Select
-                value={formData.loanType}
-                onValueChange={(value: 'individual' | 'lote') =>
-                  setFormData({ ...formData, loanType: value })
-                }
-              >
-                <SelectTrigger className="border-gray-200 bg-white dark:bg-card dark:border-border">
-                  <SelectValue placeholder="Selecione o tipo de empréstimo" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="individual">Individual</SelectItem>
-                  <SelectItem value="lote">Em Lote</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            {formData.loanType === 'individual' ? (
-              /* Campo de ID para empréstimo individual (AGORA COM AUTOCOMPLETE) */
+          <GlassCard className="bg-blue-50/50 border-blue-100 shadow-inner dark:bg-blue-950/50 dark:border-blue-900/50">
+            <CardHeader className="p-4 pb-0">
+              <CardTitle className="text-lg flex items-center gap-2 text-blue-700 dark:text-blue-400">
+                <Computer className="h-5 w-5" /> Detalhes do Equipamento
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-4 space-y-4">
+              
+              {/* Seletor de tipo de empréstimo (individual ou lote) */}
               <div className="space-y-2">
-                <Label htmlFor="chromebookId" className="text-foreground">
-                  ID do Chromebook *
+                <Label htmlFor="loanType" className="text-foreground">
+                  Tipo de Empréstimo
                 </Label>
-                <ChromebookSearchInput
-                    selectedChromebook={selectedChromebook}
-                    onSelect={handleChromebookSelect}
-                    onClear={handleChromebookClear}
-                    disabled={loading}
-                    filterStatus="disponivel" // Apenas Chromebooks disponíveis
-                    onScanClick={() => setIsQRReaderOpen(true)}
-                />
+                <Select
+                  value={formData.loanType}
+                  onValueChange={(value: 'individual' | 'lote') =>
+                    setFormData({ ...formData, loanType: value })
+                  }
+                >
+                  <SelectTrigger className="border-gray-200 bg-white dark:bg-card dark:border-border">
+                    <SelectValue placeholder="Selecione o tipo de empréstimo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="individual">Individual</SelectItem>
+                    <SelectItem value="lote">Em Lote</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
-            ) : (
-              /* Interface de empréstimo em lote (usando o novo componente) */
-              <BatchDeviceInput
-                batchDevices={batchDevices}
-                setBatchDevices={setBatchDevices}
-                onScan={handleQRCodeScan}
-                disabled={loading}
-              />
-            )}
+              
+              {formData.loanType === 'individual' ? (
+                /* Campo de ID para empréstimo individual (AGORA COM AUTOCOMPLETE) */
+                <div className="space-y-2">
+                  <Label htmlFor="chromebookId" className="text-foreground">
+                    ID do Chromebook *
+                  </Label>
+                  <ChromebookSearchInput
+                      selectedChromebook={selectedChromebook}
+                      onSelect={handleChromebookSelect}
+                      onClear={handleChromebookClear}
+                      disabled={loading}
+                      filterStatus="disponivel" // Apenas Chromebooks disponíveis
+                      onScanClick={() => setIsQRReaderOpen(true)}
+                  />
+                </div>
+              ) : (
+                /* Interface de empréstimo em lote (usando o novo componente) */
+                <BatchDeviceInput
+                  batchDevices={batchDevices}
+                  setBatchDevices={setBatchDevices}
+                  onScan={handleQRCodeScan}
+                  disabled={loading}
+                />
+              )}
+            </CardContent>
           </GlassCard>
 
           {/* Coluna Direita - Informações do Solicitante (VERDE/TEAL) */}
-          <GlassCard className="p-4 space-y-4 bg-green-50/50 border-green-100 shadow-inner dark:bg-green-950/50 dark:border-green-900/50">
-            <CardTitle className="text-lg flex items-center gap-2 text-green-700 dark:text-green-400">
-              <User className="h-5 w-5" /> Informações do Solicitante
-            </CardTitle>
-            
-            {/* Seletor de Usuário com Autocompletar */}
-            <div className="space-y-2">
-              <Label htmlFor="userSearch" className="text-foreground">
-                Buscar Solicitante (Nome, RA ou Email) *
-              </Label>
-              <UserAutocomplete
-                selectedUser={selectedUser}
-                onSelect={handleUserSelect}
-                onClear={handleUserClear}
-                disabled={loading}
-              />
-            </div>
+          <GlassCard className="bg-green-50/50 border-green-100 shadow-inner dark:bg-green-950/50 dark:border-green-900/50">
+            <CardHeader className="p-4 pb-0">
+              <CardTitle className="text-lg flex items-center gap-2 text-green-700 dark:text-green-400">
+                <User className="h-5 w-5" /> Informações do Solicitante
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-4 space-y-4">
+              
+              {/* Seletor de Usuário com Autocompletar */}
+              <div className="space-y-2">
+                <Label htmlFor="userSearch" className="text-foreground">
+                  Buscar Solicitante (Nome, RA ou Email) *
+                </Label>
+                <UserAutocomplete
+                  selectedUser={selectedUser}
+                  onSelect={handleUserSelect}
+                  onClear={handleUserClear}
+                  disabled={loading}
+                />
+              </div>
 
-            {/* Campo de finalidade do empréstimo (sempre visível) */}
-            <div className="space-y-2 pt-2">
-              <Label htmlFor="purpose" className="text-foreground">
-                Finalidade *
-              </Label>
-              <Input
-                id="purpose"
-                placeholder="Ex: Aula de Matemática"
-                value={formData.purpose}
-                onChange={(e) =>
-                  setFormData({ ...formData, purpose: e.target.value })
-                }
-                className="border-gray-200 bg-white dark:bg-card dark:border-border"
-                required
-              />
-            </div>
+              {/* Campo de finalidade do empréstimo (sempre visível) */}
+              <div className="space-y-2 pt-2">
+                <Label htmlFor="purpose" className="text-foreground">
+                  Finalidade *
+                </Label>
+                <Input
+                  id="purpose"
+                  placeholder="Ex: Aula de Matemática"
+                  value={formData.purpose}
+                  onChange={(e) =>
+                    setFormData({ ...formData, purpose: e.target.value })
+                  }
+                  className="border-gray-200 bg-white dark:bg-card dark:border-border"
+                  required
+                />
+              </div>
+            </CardContent>
           </GlassCard>
         </div>
 
