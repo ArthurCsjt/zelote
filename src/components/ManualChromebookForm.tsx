@@ -70,7 +70,7 @@ export function ManualChromebookForm({ onRegistrationSuccess }: { onRegistration
       condition: formData.observations || 'novo', 
       location: formData.isFixedInClassroom ? formData.classroomLocation : null,
       status: formData.isFixedInClassroom ? 'fixo' as const : 'disponivel' as const,
-      is_deprovisioned: formData.provisioning_status === 'deprovisioned',
+      is_deprovisioned: formData.provisioning_status === 'deprovisioned', // PASSANDO O VALOR
     };
     
     const result = await createChromebook(chromebookData);

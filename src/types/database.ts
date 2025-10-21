@@ -18,6 +18,7 @@ export interface Chromebook {
   created_at: string;
   updated_at: string;
   created_by?: string;
+  is_deprovisioned?: boolean; // NOVO CAMPO
 }
 
 export interface Loan {
@@ -102,9 +103,11 @@ export interface ChromebookData {
   status?: ChromebookStatus;
   condition?: string;
   location?: string;
+  classroom?: string;
   createdAt?: string;
   updatedAt?: string;
   createdBy?: string;
+  is_deprovisioned?: boolean; // NOVO CAMPO
 }
 
 // Tipos de auditoria expandidos com melhorias

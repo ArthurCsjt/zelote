@@ -65,6 +65,7 @@ export const useDatabase = () => {
         location: data.location,
         classroom: data.classroom,
         created_by: user.id,
+        is_deprovisioned: data.is_deprovisioned ?? false, // Adicionando is_deprovisioned
       };
 
       if (hasManufacturer) payload.manufacturer = (data as any).manufacturer;
@@ -135,6 +136,7 @@ export const useDatabase = () => {
         condition: data.condition,
         location: data.location,
         classroom: data.classroom,
+        is_deprovisioned: data.is_deprovisioned, // Adicionando is_deprovisioned
       };
 
       if (hasManufacturer) updatePayload.manufacturer = (data as any).manufacturer;

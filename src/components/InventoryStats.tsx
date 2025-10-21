@@ -17,10 +17,13 @@ export function InventoryStats({ chromebooks }: InventoryStatsProps) {
     return acc;
   }, {} as Record<Chromebook['status'], number>);
 
-  // Calcular contagens de mobilidade
+  // Contagem de Inativos (fora_uso) e Desprovisionados
+  const totalForaUso = stats.fora_uso || 0;
+  const totalDeprovisioned = chromebooks.filter(cb => cb.is_deprovisioned).length;
+  
+  // Contagem de mobilidade
   const totalFixo = stats.fixo || 0;
-  const totalInativo = stats.fora_uso || 0;
-  const totalMovel = total - totalFixo - totalInativo;
+  const totalMovel = total - totalFixo - totalForaUso;
 
   const statItems = [
     {
@@ -59,11 +62,19 @@ export function InventoryStats({ chromebooks }: InventoryStatsProps) {
       description: 'Alocados em salas'
     },
     {
-      title: 'Inativos',
-      value: totalInativo,
+      title: 'Inativos (Admin)',
+      value: totalForaUso,
       icon: XCircle,
       color: 'text-gray-600',
-      description: 'Fora de uso/Desprovisionados'
+      description: 'Marcados como fora de uso'
+    },
+    // Adicionando estatística de Desprovisionados (opcional, mas útil para clareza)
+    {
+      title: 'Desprovisionados',
+      value: totalDeprovisioned,
+      icon: XCircle,
+      color: 'text-gray-500',
+      description: 'Marcados como Desprovisionados'
     },
   ];
 

@@ -44,6 +44,7 @@ interface ChromebookDataExtended extends Chromebook {
   // Adicionando campos que podem ser usados no formulário de edição
   classroom?: string;
   manufacturer?: string;
+  is_deprovisioned?: boolean; // Adicionado para consistência
 }
 
 
@@ -196,9 +197,15 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
     toast({ title: 'Permissão negada', description: 'Apenas administradores podem marcar como Fixo ou Inativo.', variant: 'destructive' });
     return;
   }
+  
+  // Se o status for 'fora_uso', definimos is_deprovisioned como true
+  const isDeprovisioned = newStatus === 'fora_uso';
 
   // Usar a função centralizada do useDatabase
-  const success = await updateChromebook(chromebookId, { status: newStatus as any });
+  const success = await updateChromebook(chromebookId, { 
+    status: newStatus as any,
+    is_deprovisioned: isDeprovisioned, // Atualiza o campo de desprovisionamento
+  });
 
   if (success) {
     // A atualização do estado local será tratada pelo Real-time, mas podemos fazer uma atualização otimista
@@ -246,8 +253,25 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
     setEditingChromebook({
       ...editingChromebook,
       status: value as ChromebookDataExtended['status'],
+      // Se o status for 'fora_uso', marca como desprovisionado no formulário de edição
+      is_deprovisioned: value === 'fora_uso',
     });
   };
+  
+  // Handle is_deprovisioned checkbox change in edit dialog
+  const handleDeprovisionedChange = (checked: boolean) => {
+    if (!editingChromebook) return;
+    
+    // Se marcar como desprovisionado, o status deve ser 'fora_uso'
+    const newStatus = checked ? 'fora_uso' : 'disponivel';
+
+    setEditingChromebook({
+      ...editingChromebook,
+      is_deprovisioned: checked,
+      status: newStatus,
+    });
+  };
+
 
   // Handle save edit
   const handleSaveEdit = async () => {
@@ -273,6 +297,7 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
       condition: editingChromebook.condition,
       location: editingChromebook.location,
       classroom: editingChromebook.classroom,
+      is_deprovisioned: editingChromebook.is_deprovisioned, // Incluindo o novo campo
     };
 
     // Usar a função centralizada do useDatabase
@@ -433,6 +458,9 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
                         {chromebook.status === 'fixo' && chromebook.classroom && (
                           <span className="ml-1 text-[10px] text-blue-700">({chromebook.classroom})</span>
                         )}
+                        {chromebook.is_deprovisioned && (
+                          <span className="ml-1 text-[10px] text-gray-700">(Desprovisionado)</span>
+                        )}
                       </div>
                     </TableCell>
                     <TableCell className="text-right">
@@ -471,7 +499,7 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
                           </SelectTrigger>
                            <SelectContent>
                              <SelectItem value="disponivel">Disponível</SelectItem>
-                             <SelectItem value="emprestado">Emprestado</SelectItem>
+                             <SelectItem value="emprestado" disabled={chromebook.status !== 'emprestado'}>Emprestado</SelectItem>
                              <SelectItem value="fixo">Fixo</SelectItem>
                              <SelectItem value="manutencao">Manutenção</SelectItem>
                              <SelectItem value="fora_uso">Inativo</SelectItem>
@@ -676,6 +704,19 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
                       className="h-10"
                     />
                   </div>
+                </div>
+                
+                {/* Checkbox de Desprovisionamento */}
+                <div className="flex items-center space-x-2 pt-4 border-t border-gray-100">
+                  <Checkbox 
+                    id="is_deprovisioned" 
+                    checked={editingChromebook.is_deprovisioned} 
+                    onCheckedChange={(checked) => handleDeprovisionedChange(!!checked)}
+                    disabled={!isAdmin}
+                  />
+                  <Label htmlFor="is_deprovisioned" className="text-sm font-medium cursor-pointer">
+                    Desprovisionado (Marca o equipamento como Inativo/Fora de Uso)
+                  </Label>
                 </div>
               </div>
 
