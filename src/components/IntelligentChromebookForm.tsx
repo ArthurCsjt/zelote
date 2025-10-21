@@ -25,7 +25,7 @@ interface FormData {
   model: string;
   serialNumber: string;
   patrimonyNumber: string;
-  isFixedInClassroom: boolean;
+  mobilityStatus: 'movel' | 'fixo'; // NOVO CAMPO
   classroomLocation: string;
   observations: string;
   provisioning_status: string;
@@ -59,7 +59,7 @@ export function IntelligentChromebookForm({ onRegistrationSuccess }: { onRegistr
   const [formData, setFormData] = useState<FormData>({
     chromebookId: "", manufacturer: "", model: "", serialNumber: "",
     patrimonyNumber: "", 
-    isFixedInClassroom: false, // PADRÃO: FALSO (MÓVEL)
+    mobilityStatus: 'movel', // PADRÃO: MÓVEL
     classroomLocation: "", observations: "Re-cadastrado via QR Code", provisioning_status: 'provisioned',
   });
   const [isScannerOpen, setIsScannerOpen] = useState(false);
@@ -69,14 +69,14 @@ export function IntelligentChromebookForm({ onRegistrationSuccess }: { onRegistr
     setFormData({
       chromebookId: "", manufacturer: "", model: "", serialNumber: "",
       patrimonyNumber: "", 
-      isFixedInClassroom: false, // PADRÃO: FALSO (MÓVEL)
+      mobilityStatus: 'movel', // PADRÃO: MÓVEL
       classroomLocation: "", observations: "Re-cadastrado via QR Code", provisioning_status: 'provisioned',
     });
     setIsDataLoaded(false);
   };
 
   const handleFormChange = (field: keyof FormData, value: string | boolean) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData(prev => ({ ...prev, [field]: value as any }));
   };
 
   const handleScanSuccess = useCallback((scannedData: string) => {
@@ -108,6 +108,12 @@ export function IntelligentChromebookForm({ onRegistrationSuccess }: { onRegistr
       return;
     }
     
+    const isFixed = formData.mobilityStatus === 'fixo';
+    if (isFixed && !formData.classroomLocation) {
+      toast({ title: "Erro de Validação", description: "A localização da sala é obrigatória para equipamentos fixos.", variant: "destructive" });
+      return;
+    }
+
     const chromebookData = {
       chromebookId: formData.chromebookId,
       model: formData.model, 
@@ -115,8 +121,8 @@ export function IntelligentChromebookForm({ onRegistrationSuccess }: { onRegistr
       patrimonyNumber: formData.patrimonyNumber || null,
       manufacturer: formData.manufacturer,
       condition: formData.observations || 'novo', 
-      location: formData.isFixedInClassroom ? formData.classroomLocation : null,
-      status: formData.isFixedInClassroom ? 'fixo' as const : 'disponivel' as const,
+      location: isFixed ? formData.classroomLocation : null,
+      status: isFixed ? 'fixo' as const : 'disponivel' as const,
       is_deprovisioned: formData.provisioning_status === 'deprovisioned', // PASSANDO O VALOR
     };
     
@@ -130,6 +136,7 @@ export function IntelligentChromebookForm({ onRegistrationSuccess }: { onRegistr
   };
 
   const isFormValid = formData.chromebookId && formData.model && formData.serialNumber;
+  const isFixed = formData.mobilityStatus === 'fixo';
 
   return (
     <GlassCard className="p-6 space-y-6">
@@ -241,18 +248,28 @@ export function IntelligentChromebookForm({ onRegistrationSuccess }: { onRegistr
               </h4>
               
               <div className="space-y-4">
-                <div className="flex items-center space-x-2">
-                  <Checkbox 
-                    id="isFixedInClassroom" 
-                    checked={formData.isFixedInClassroom} 
-                    onCheckedChange={(checked) => handleFormChange('isFixedInClassroom', !!checked)} 
-                  />
-                  <label htmlFor="isFixedInClassroom" className="text-sm font-medium cursor-pointer">
-                    Marcar como Fixo em Sala de Aula (Status inicial: Disponível/Móvel)
-                  </label>
-                </div>
+                <Label className="text-sm font-medium">Status de Mobilidade</Label>
+                <RadioGroup
+                  value={formData.mobilityStatus}
+                  onValueChange={(value: 'movel' | 'fixo') => {
+                    handleFormChange('mobilityStatus', value);
+                    if (value === 'movel') {
+                      handleFormChange('classroomLocation', ''); // Limpa localização se for móvel
+                    }
+                  }}
+                  className="flex space-x-4"
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="movel" id="movel" />
+                    <Label htmlFor="movel">Móvel (Disponível para Empréstimo)</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="fixo" id="fixo" />
+                    <Label htmlFor="fixo">Fixo em Sala de Aula</Label>
+                  </div>
+                </RadioGroup>
                 
-                {formData.isFixedInClassroom && (
+                {isFixed && (
                   <div className="space-y-2 pl-6 border-l-2 border-purple-200">
                     <Label htmlFor="classroomLocation">Localização da Sala *</Label>
                     <Input 
@@ -260,7 +277,7 @@ export function IntelligentChromebookForm({ onRegistrationSuccess }: { onRegistr
                       value={formData.classroomLocation} 
                       onChange={(e) => handleFormChange('classroomLocation', e.target.value)} 
                       placeholder="Ex: Sala 101"
-                      required={formData.isFixedInClassroom} 
+                      required={isFixed} 
                       className="bg-white"
                     />
                   </div>
