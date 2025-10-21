@@ -107,6 +107,10 @@ export const UserManagement = () => {
       if (error) throw new Error(error.message);
       return data || [];
     },
+    // Otimização de cache: mantém os dados 'frescos' por 5 minutos
+    staleTime: 1000 * 60 * 5, 
+    // Não refaz a busca automaticamente ao focar na janela
+    refetchOnWindowFocus: false, 
   });
 
   if (isLoading) {
