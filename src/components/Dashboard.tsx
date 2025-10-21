@@ -22,7 +22,7 @@ interface DashboardProps {
 }
 
 // Componente auxiliar para renderizar o grid de estatísticas
-const StatsGrid = ({ periodView, filteredLoans, filteredReturns, activeLoans, totalChromebooks, averageUsageTime, completionRate }: any) => {
+const StatsGrid = ({ periodView, filteredLoans, filteredReturns, activeLoans, totalChromebooks, averageUsageTime, completionRate, usageRate }: any) => {
   if (periodView === 'history' || periodView === 'reports') return null;
 
   return (
@@ -45,16 +45,16 @@ const StatsGrid = ({ periodView, filteredLoans, filteredReturns, activeLoans, to
       <GlassCard className="border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-green-500">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-xs sm:text-sm font-medium">
-            Chromebooks Ativos
+            Uso Atual do Inventário
           </CardTitle>
           <Computer className="h-4 w-4 sm:h-5 sm:w-5 text-green-500" />
         </CardHeader>
         <CardContent>
-          <div className="text-xl sm:text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">{activeLoans.length}</div>
+          <div className="text-xl sm:text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">{usageRate.toFixed(0)}%</div>
           <div className="flex items-center gap-2 mt-1">
-            <Progress value={activeLoans.length / totalChromebooks * 100} className="h-1.5 sm:h-2" />
+            <Progress value={usageRate} className="h-1.5 sm:h-2" />
             <span className="text-[10px] sm:text-xs text-muted-foreground">
-              {(activeLoans.length / totalChromebooks * 100).toFixed(0)}%
+              {activeLoans.length} de {totalChromebooks} em uso
             </span>
           </div>
         </CardContent>
@@ -249,6 +249,7 @@ export function Dashboard({
 
   // Estatísticas
   const completionRate = filteredLoans.length > 0 ? filteredReturns.length / filteredLoans.length * 100 : 0;
+  const usageRate = totalChromebooks > 0 ? (activeLoans.length / totalChromebooks) * 100 : 0;
   const averageUsageTime = filteredReturns.reduce((acc, loan) => {
     if (loan.return_date) {
       const duration = differenceInMinutes(new Date(loan.return_date), new Date(loan.loan_date));
@@ -427,6 +428,7 @@ export function Dashboard({
               totalChromebooks={totalChromebooks}
               averageUsageTime={averageUsageTime}
               completionRate={completionRate}
+              usageRate={usageRate}
             />
 
             <TabsContent value="daily" className="space-y-4 mt-6">
@@ -731,26 +733,26 @@ export function Dashboard({
 
               <GlassCard className="dashboard-card">
                 <CardHeader className="flex flex-row items-center justify-between">
-                  <div>
-                    <CardTitle className="text-lg">Duração Média de Uso</CardTitle>
-                    <CardDescription>
-                      Por tipo de usuário este mês
-                    </CardDescription>
-                  </div>
-                  <Clock className="h-5 w-5 text-muted-foreground" />
-                </CardHeader>
-                <CardContent className="h-[250px] sm:h-[300px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={durationData} layout="horizontal" margin={{ top: 5, right: 0, left: 0, bottom: 5 }}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis type="number" tick={{ fontSize: 10 }} />
-                      <YAxis dataKey="name" type="category" width={80} tick={{ fontSize: 10 }} />
-                      <Tooltip />
-                      <Bar dataKey="minutos" fill="#8B5CF6" radius={[0, 4, 4, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </GlassCard>
+                    <div>
+                      <CardTitle className="text-lg">Duração Média de Uso</CardTitle>
+                      <CardDescription>
+                        Por tipo de usuário este mês
+                      </CardDescription>
+                    </div>
+                    <Clock className="h-5 w-5 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent className="h-[250px] sm:h-[300px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={durationData} layout="horizontal" margin={{ top: 5, right: 0, left: 0, bottom: 5 }}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis type="number" tick={{ fontSize: 10 }} />
+                        <YAxis dataKey="name" type="category" width={80} tick={{ fontSize: 10 }} />
+                        <Tooltip />
+                        <Bar dataKey="minutos" fill="#8B5CF6" radius={[0, 4, 4, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </GlassCard>
             </TabsContent>
             
             {/* ABA DE HISTÓRICO */}
