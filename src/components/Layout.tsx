@@ -1,12 +1,14 @@
 import React from 'react';
-import { User, LogOut, ArrowLeft, Bell } from 'lucide-react';
+import { User, LogOut, ArrowLeft, Bell, Settings } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/hooks/use-theme';
 import { useNavigate } from 'react-router-dom';
 import { useProfileRole } from '@/hooks/use-profile-role';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
-import { ActivityFeed } from './ActivityFeed'; // Importando o novo componente
+import { ActivityFeed } from './ActivityFeed';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from './ui/dropdown-menu';
+import { cn } from '@/lib/utils';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -115,21 +117,6 @@ const Layout: React.FC<LayoutProps> = ({
 
             <div className="flex items-center space-x-4">
               
-              {/* Informações do Usuário (Email) */}
-              <div className="hidden md:flex items-center space-x-2 text-sm bg-accent rounded-full px-3 py-1.5">
-                <User className="w-4 h-4 text-muted-foreground" />
-                <span className="text-foreground selectable-text">
-                  {user?.email?.substring(0, 20)}...
-                </span>
-              </div>
-              
-              {/* Botão Configurações (Se for Admin) */}
-              {isAdmin && (
-                <button onClick={() => navigate('/settings')} className="flex items-center space-x-1 text-sm text-muted-foreground hover:text-foreground transition-colors duration-200 bg-accent hover:bg-accent/80 rounded-full px-3 py-1.5 touch-manipulation">
-                  <span>Configurações</span>
-                </button>
-              )}
-              
               {/* Botão de Notificações (Sino) */}
               <Popover>
                 <PopoverTrigger asChild>
@@ -144,16 +131,53 @@ const Layout: React.FC<LayoutProps> = ({
                 </PopoverContent>
               </Popover>
               
-              {/* NOVO BOTÃO SAIR (Visível para todos os autenticados) */}
+              {/* Dropdown de Perfil (Email Clicável) */}
               {user && (
-                <Button 
-                  variant="outline" 
-                  size="icon" 
-                  onClick={handleLogout}
-                  className="h-9 w-9 border-gray-300 hover:bg-gray-100"
-                >
-                  <LogOut className="h-4 w-4" />
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button 
+                      variant="outline" 
+                      className="h-9 px-3 border-gray-300 hover:bg-gray-100 flex items-center gap-2"
+                    >
+                      <User className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-sm font-medium hidden sm:inline">
+                        {user.email?.substring(0, user.email.indexOf('@'))}
+                      </span>
+                      <span className="text-sm font-medium sm:hidden">
+                        Perfil
+                      </span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-64">
+                    <DropdownMenuLabel className="font-bold text-base truncate">
+                      {user.email}
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    
+                    {/* Item Configurações (Apenas para Admin) */}
+                    {isAdmin && (
+                      <DropdownMenuItem 
+                        onClick={() => navigate('/settings')}
+                        className="cursor-pointer flex items-center gap-2"
+                      >
+                        <Settings className="h-4 w-4 text-primary" />
+                        Configurações
+                      </DropdownMenuItem>
+                    )}
+                    
+                    {/* Item Sair (Para todos) */}
+                    <DropdownMenuItem 
+                      onClick={handleLogout}
+                      className={cn(
+                        "cursor-pointer flex items-center gap-2",
+                        isAdmin ? 'text-red-600 focus:text-red-700 focus:bg-red-50' : 'text-red-600 focus:text-red-700 focus:bg-red-50'
+                      )}
+                    >
+                      <LogOut className="h-4 w-4" />
+                      Sair
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               )}
             </div>
           </div>
