@@ -1,4 +1,4 @@
-// v2 - Forçando re-deploy após atualização de secret
+// v3 - Melhorando o tratamento de erro da API do Gemini
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.223.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
@@ -40,20 +40,17 @@ serve(async (req) => {
 
     const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
     if (!GEMINI_API_KEY) {
-      // Retorna um erro 500 claro se a chave estiver faltando
       return new Response(
         JSON.stringify({ error: 'Chave da API do Gemini (GEMINI_API_KEY) não configurada no Supabase Secrets.' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
     
-    // Use the Service Role Key to fetch data securely
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     );
 
-    // Fetch relevant data context
     const context = await fetchDatabaseContext(supabaseAdmin);
 
     const databaseContext = `
@@ -101,10 +98,16 @@ serve(async (req) => {
 
     if (!geminiResponse.ok) {
       const errorText = await geminiResponse.text();
-      console.error('Erro da API do Gemini:', errorText);
+      console.error('Erro da API do Gemini:', geminiResponse.status, errorText);
+      // Retorna o status code do Gemini se for um erro 4xx, ou 502 se for um erro de rede/serviço
+      const status = geminiResponse.status >= 400 && geminiResponse.status < 500 ? geminiResponse.status : 502;
+      
       return new Response(
-        JSON.stringify({ error: 'Erro ao comunicar com a API do Gemini', details: errorText }),
-        { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ 
+          error: `Falha na API do Gemini (Status: ${geminiResponse.status})`, 
+          details: errorText 
+        }),
+        { status: status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
