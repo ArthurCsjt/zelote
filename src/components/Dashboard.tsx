@@ -28,14 +28,14 @@ const StatsGrid = ({ periodView, filteredLoans, filteredReturns, activeLoans, to
   // Uso Total de Chromebooks (Ativos)
   const totalActive = activeLoans.length;
   
-  // Uso Total de Chromebooks Disponíveis (Porcentagem de uso do inventário total)
+  // Taxa de Uso do Inventário (ativos / total)
   const totalInventoryUsageRate = totalChromebooks > 0 ? (totalActive / totalChromebooks) * 100 : 0;
 
 
   return (
     <div className="grid gap-4 grid-cols-2 md:grid-cols-4 relative z-10">
       
-      {/* CARD 1: Empréstimos Ativos (Uso Total de Chromebooks) */}
+      {/* CARD 1: Empréstimos Ativos (Contagem de ativos) */}
       <GlassCard className="border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-blue-500">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-xs sm:text-sm font-medium">
@@ -51,20 +51,20 @@ const StatsGrid = ({ periodView, filteredLoans, filteredReturns, activeLoans, to
         </CardContent>
       </GlassCard>
 
-      {/* CARD 2: Chromebooks Disponíveis (Contagem real de disponíveis) */}
+      {/* CARD 2: Taxa de Uso do Inventário (Porcentagem de uso do inventário total) */}
       <GlassCard className="border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-green-500">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-xs sm:text-sm font-medium">
-            Chromebooks Disponíveis
+            Taxa de Uso do Inventário
           </CardTitle>
           <Computer className="h-4 w-4 sm:h-5 sm:w-5 text-green-500" />
         </CardHeader>
         <CardContent>
-          <div className="text-xl sm:text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">{availableChromebooks}</div>
+          <div className="text-xl sm:text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">{totalInventoryUsageRate.toFixed(0)}%</div>
           <div className="flex items-center gap-2 mt-1">
             <Progress value={totalInventoryUsageRate} className="h-1.5 sm:h-2" />
             <span className="text-[10px] sm:text-xs text-muted-foreground">
-              {totalInventoryUsageRate.toFixed(0)}% do inventário em uso
+              {totalActive} de {totalChromebooks} em uso
             </span>
           </div>
         </CardContent>
@@ -586,6 +586,7 @@ export function Dashboard({
                         <Badge variant="secondary" className="bg-orange-100 text-orange-700">
                           {loansByUserType.funcionario || 0} empréstimos
                         </Badge>
+                      </Badge>
                       </div>
                       <Progress value={(loansByUserType.funcionario || 0) / filteredLoans.length * 100} className="h-2" />
                     </div>
