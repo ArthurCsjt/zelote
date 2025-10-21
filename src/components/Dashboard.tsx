@@ -592,7 +592,7 @@ export function Dashboard({
                   <CardContent className="h-[250px] sm:h-[300px]">
                     <ChartContainer
                       config={{
-                        minutos: { label: "Minutos", color: "#8B5CF6" },
+                        minutos: { label: "Minutos", color: "hsl(var(--menu-violet))" }, // Usando cor do menu violeta
                       }}
                       className="w-full h-full"
                     >
@@ -602,7 +602,7 @@ export function Dashboard({
                           <XAxis type="number" tick={{ fontSize: 10 }} />
                           <YAxis dataKey="name" type="category" width={80} tick={{ fontSize: 10 }} />
                           <Tooltip content={<ChartTooltipContent />} />
-                          <Bar dataKey="minutos" fill="#8B5CF6" radius={[0, 4, 4, 0]} />
+                          <Bar dataKey="minutos" fill="hsl(var(--menu-violet))" radius={[0, 4, 4, 0]} />
                         </BarChart>
                       </ResponsiveContainer>
                     </ChartContainer>
@@ -796,7 +796,7 @@ export function Dashboard({
                   <CardContent className="h-[250px] sm:h-[300px]">
                     <ChartContainer
                       config={{
-                        minutos: { label: "Minutos", color: "#8B5CF6" },
+                        minutos: { label: "Minutos", color: "hsl(var(--menu-violet))" },
                       }}
                       className="w-full h-full"
                     >
@@ -806,7 +806,7 @@ export function Dashboard({
                           <XAxis type="number" tick={{ fontSize: 10 }} />
                           <YAxis dataKey="name" type="category" width={80} tick={{ fontSize: 10 }} />
                           <Tooltip content={<ChartTooltipContent />} />
-                          <Bar dataKey="minutos" fill="#8B5CF6" radius={[0, 4, 4, 0]} />
+                          <Bar dataKey="minutos" fill="hsl(var(--menu-violet))" radius={[0, 4, 4, 0]} />
                         </BarChart>
                       </ResponsiveContainer>
                     </ChartContainer>
@@ -862,7 +862,7 @@ export function Dashboard({
                   <CardContent className="h-[250px] sm:h-[300px]">
                     <ChartContainer
                       config={{
-                        minutos: { label: "Minutos", color: "#8B5CF6" },
+                        minutos: { label: "Minutos", color: "hsl(var(--menu-violet))" },
                       }}
                       className="w-full h-full"
                     >
@@ -872,7 +872,7 @@ export function Dashboard({
                           <XAxis type="number" tick={{ fontSize: 10 }} />
                           <YAxis dataKey="name" type="category" width={80} tick={{ fontSize: 10 }} />
                           <Tooltip content={<ChartTooltipContent />} />
-                          <Bar dataKey="minutos" fill="#8B5CF6" radius={[0, 4, 4, 0]} />
+                          <Bar dataKey="minutos" fill="hsl(var(--menu-violet))" radius={[0, 4, 4, 0]} />
                         </BarChart>
                       </ResponsiveContainer>
                     </ChartContainer>
