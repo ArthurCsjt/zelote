@@ -172,9 +172,9 @@ export function ReturnDialog({
           
           <div className="grid md:grid-cols-2 gap-6">
             
-            {/* Coluna Esquerda - Dispositivo/Lote (AGORA ROXO) */}
-            <Card className="p-4 space-y-4 bg-purple-50/50 border-purple-100 shadow-inner">
-              <CardTitle className="text-lg flex items-center gap-2 text-purple-700">
+            {/* Coluna Esquerda - Dispositivo/Lote (AGORA AZUL) */}
+            <Card className="p-4 space-y-4 bg-blue-50/50 border-blue-100 shadow-inner">
+              <CardTitle className="text-lg flex items-center gap-2 text-blue-700">
                 <Computer className="h-5 w-5" /> Detalhes do Equipamento
               </CardTitle>
               
@@ -232,7 +232,7 @@ export function ReturnDialog({
               )}
             </Card>
 
-            {/* Coluna Direita - Informações do Usuário e Observações (AGORA VERDE/TEAL) */}
+            {/* Coluna Direita - Informações do Usuário e Observações (VERDE/TEAL) */}
             <div className="space-y-6">
               <Card className="p-4 space-y-4 bg-green-50/50 border-green-100 shadow-inner">
                 <CardTitle className="text-lg flex items-center gap-2 text-green-700">
