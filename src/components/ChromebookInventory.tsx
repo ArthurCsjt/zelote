@@ -192,7 +192,7 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
     return;
   }
 
-  // Only admins can set FIXO or FORA_USO
+  // Apenas admins podem alterar para FIXO ou FORA_USO
   if ((newStatus === 'fixo' || newStatus === 'fora_uso') && !isAdmin) {
     toast({ title: 'Permissão negada', description: 'Apenas administradores podem marcar como Fixo ou Inativo.', variant: 'destructive' });
     return;
@@ -210,7 +210,6 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
   if (success) {
     // A atualização do estado local será tratada pelo Real-time, mas podemos fazer uma atualização otimista
     // para feedback imediato, embora o Real-time garanta a consistência.
-    // Vamos confiar no Real-time para evitar duplicação de lógica de estado.
     toast({
       title: "Status atualizado",
       description: `Status do Chromebook alterado para ${getStatusInfo(newStatus).label}`,
@@ -312,6 +311,10 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
 
   // Handle delete click
   const handleDeleteClick = (chromebook: ChromebookDataExtended) => {
+    if (!isAdmin) {
+      toast({ title: 'Permissão negada', description: 'Apenas administradores podem excluir equipamentos.', variant: 'destructive' });
+      return;
+    }
     setChromebookToDelete(chromebook);
     setIsDeleteDialogOpen(true);
   };
@@ -487,6 +490,7 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
                           onClick={() => handleDeleteClick(chromebook)}
                           title="Excluir"
                           className="text-red-600 hover:text-red-800"
+                          disabled={!isAdmin} // RESTRIÇÃO AQUI
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -721,7 +725,7 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
               </div>
 
               {/* Seção 3: Condição/Observações */}
-              <div className="space-y-4 p-4 border rounded-lg bg-white shadow-sm">
+              <div className="space-y-4 p-4 border rounded-lg bg-gray-50/50">
                 <h4 className="font-semibold text-lg text-gray-800 flex items-center gap-2">
                   <AlertTriangle className="h-4 w-4 text-orange-600" />
                   Condição e Notas

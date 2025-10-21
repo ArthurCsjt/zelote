@@ -31,7 +31,7 @@ import {
 } from "./ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfileRole } from "@/hooks/use-profile-role";
-import { useDatabase } from "@/hooks/useDatabase"; // Importando useDatabase
+import { useDatabase } from "@/hooks/useDatabase"; // Usando useDatabase
 import { UserEditDialog } from "./UserEditDialog"; // Importando o novo diálogo
 import { GlassCard } from "./ui/GlassCard"; // Importando GlassCard
 
@@ -161,6 +161,10 @@ export function UserInventory() {
   const totalStaff = users.filter(u => u.tipo === 'Funcionário').length;
 
   const handleEdit = (user: User) => {
+    if (!isAdmin) {
+      toast({ title: 'Permissão negada', description: 'Apenas administradores podem editar usuários.', variant: 'destructive' });
+      return;
+    }
     setUserToEdit(user);
     setIsEditDialogOpen(true);
   };
@@ -171,6 +175,10 @@ export function UserInventory() {
   };
 
   const handleDeleteClick = (user: User) => {
+    if (!isAdmin) {
+      toast({ title: 'Permissão negada', description: 'Apenas administradores podem excluir usuários.', variant: 'destructive' });
+      return;
+    }
     setUserToDelete(user);
     setIsDeleteDialogOpen(true);
   };
@@ -366,7 +374,7 @@ export function UserInventory() {
                         size="sm"
                         onClick={() => handleDeleteClick(user)}
                         className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-                        disabled={isDeleting} // Usando o estado de exclusão
+                        disabled={isDeleting || !isAdmin} // RESTRIÇÃO AQUI
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>

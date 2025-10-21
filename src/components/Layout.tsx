@@ -81,6 +81,12 @@ const Layout: React.FC<LayoutProps> = ({
     setShowInstallBanner(false);
     localStorage.setItem('pwa-banner-dismissed', Date.now().toString());
   };
+  
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login', { replace: true });
+  };
+  
   return (
     <div className={`min-h-screen bg-background text-foreground ${isStandalone ? 'safe-area-top safe-area-bottom safe-area-left safe-area-right' : ''}`}>
       {/* Status Bar Overlay for iOS in standalone mode */}
@@ -138,7 +144,17 @@ const Layout: React.FC<LayoutProps> = ({
                 </PopoverContent>
               </Popover>
               
-              {/* Botão Sair REMOVIDO */}
+              {/* NOVO BOTÃO SAIR (Visível para todos os autenticados) */}
+              {user && (
+                <Button 
+                  variant="outline" 
+                  size="icon" 
+                  onClick={handleLogout}
+                  className="h-9 w-9 border-gray-300 hover:bg-gray-100"
+                >
+                  <LogOut className="h-4 w-4" />
+                </Button>
+              )}
             </div>
           </div>
         </div>
