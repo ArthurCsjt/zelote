@@ -154,7 +154,17 @@ export function LoanForm({ onBack }: LoanFormProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // No modo individual, a validação do ID é feita pela seleção do Autocomplete
+    // 1. Validação de Usuário
+    if (!selectedUser) {
+        toast({
+            title: "Erro de Validação",
+            description: "Selecione o solicitante usando a busca automática.",
+            variant: "destructive",
+        });
+        return;
+    }
+    
+    // 2. Validação de Chromebook (Individual)
     if (formData.loanType === 'individual' && !selectedChromebook) {
         toast({
             title: "Erro de Validação",
@@ -169,6 +179,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
       chromebookId: formData.loanType === 'individual' ? selectedChromebook?.chromebook_id : '',
     };
     
+    // 3. Validação de Campos (incluindo purpose)
     const validation = validateLoanFormData(dataToValidate);
     
     if (!validation.isValid) {
@@ -243,6 +254,13 @@ export function LoanForm({ onBack }: LoanFormProps) {
       }
     }
   };
+
+  // Determina o placeholder do campo de finalidade baseado no tipo de usuário
+  const purposePlaceholder = selectedUser?.type === 'professor' 
+    ? 'Ex: Aula de História, Projeto de Ciências' 
+    : selectedUser?.type === 'funcionario' 
+      ? 'Ex: Suporte Técnico, Evento de Marketing' 
+      : 'Ex: Aula de Matemática, Uso Pessoal';
 
   // === RENDERIZAÇÃO DA INTERFACE (UI) ===
   return (
@@ -337,11 +355,11 @@ export function LoanForm({ onBack }: LoanFormProps) {
               {/* Campo de finalidade do empréstimo (sempre visível) */}
               <div className="space-y-2 pt-2">
                 <Label htmlFor="purpose" className="text-foreground">
-                  Finalidade *
+                  Finalidade (Aula/Departamento) *
                 </Label>
                 <Input
                   id="purpose"
-                  placeholder="Ex: Aula de Matemática"
+                  placeholder={purposePlaceholder}
                   value={formData.purpose}
                   onChange={(e) =>
                     setFormData({ ...formData, purpose: e.target.value })
@@ -485,7 +503,8 @@ export function LoanForm({ onBack }: LoanFormProps) {
             loading || 
             (formData.loanType === 'lote' && batchDevices.length === 0) ||
             (formData.loanType === 'individual' && !selectedChromebook) ||
-            !selectedUser
+            !selectedUser ||
+            !formData.purpose // Adicionando validação para purpose
           }
         >
           {loading ? (
