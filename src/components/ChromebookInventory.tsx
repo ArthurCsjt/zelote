@@ -416,7 +416,6 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
               <TableHead className="w-[150px] hidden sm:table-cell">Fabricante</TableHead>
               <TableHead className="flex-1">Modelo</TableHead>
               <TableHead className="w-[150px] hidden md:table-cell">Série</TableHead>
-              {/* REMOVIDA A CLASSE HIDDEN */}
               <TableHead className="w-[120px]">Status</TableHead> 
               <TableHead className="w-[180px] text-right">Ações</TableHead>
             </TableRow>
@@ -464,9 +463,7 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
                         {chromebook.status === 'fixo' && chromebook.classroom && (
                           <span className="ml-1 text-[10px] text-blue-700 dark:text-blue-400">({chromebook.classroom})</span>
                         )}
-                        {chromebook.is_deprovisioned && (
-                          <span className="ml-1 text-[10px] text-gray-700 dark:text-gray-400">(Desprovisionado)</span>
-                        )}
+                        {/* REMOVIDO: A linha que exibia (Desprovisionado) */}
                       </div>
                     </TableCell>
                     <TableCell className="text-right">
@@ -681,9 +678,9 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
                       <SelectContent>
                         <SelectItem value="disponivel">Disponível</SelectItem>
                         <SelectItem value="emprestado" disabled>Emprestado (Apenas via Empréstimo)</SelectItem>
-                        <SelectItem value="fixo" disabled={!isAdmin}>Fixo</SelectItem>
+                        <SelectItem value="fixo">Fixo</SelectItem>
                         <SelectItem value="manutencao">Manutenção</SelectItem>
-                        <SelectItem value="fora_uso" disabled={!isAdmin}>Inativo</SelectItem>
+                        <SelectItem value="fora_uso">Inativo</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
