@@ -5,25 +5,28 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/components/ui/use-toast";
-import { Computer, Lock, Mail, ArrowLeft, KeySquare, LockKeyhole, UserPlus, Eye, EyeOff, AlertCircle } from "lucide-react";
+import { Computer, Lock, Mail, ArrowLeft, KeySquare, LockKeyhole, UserPlus, Eye, EyeOff, AlertCircle, User } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 
 const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isRecoveryMode, setRecoveryMode] = useState(false);
+  const [isRegisterMode, setRegisterMode] = useState(false); // NOVO ESTADO
   const [isUpdatePasswordMode, setUpdatePasswordMode] = useState(false); 
 
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
+  const [registerEmail, setRegisterEmail] = useState(""); // NOVO ESTADO
+  const [registerPassword, setRegisterPassword] = useState(""); // NOVO ESTADO
   const [recoveryEmail, setRecoveryEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false); // Novo estado para visibilidade da senha
+  const [showPassword, setShowPassword] = useState(false); 
 
   const navigate = useNavigate();
   const location = useLocation();
-  const { login, resetPassword, verifyEmail } = useAuth(); // Usando verifyEmail do AuthContext
+  const { login, resetPassword, register, verifyEmail } = useAuth(); 
 
   // Efeito para verificar se o usuário está no fluxo de redefinição/convite
   useEffect(() => {
@@ -83,6 +86,51 @@ const Login = () => {
     setIsLoading(false);
   };
 
+  const handleRegisterSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    if (!verifyEmail(registerEmail)) {
+      toast({
+        title: "Erro de registro",
+        description: "O email deve pertencer ao domínio institucional.",
+        variant: "destructive"
+      });
+      setIsLoading(false);
+      return;
+    }
+    
+    if (registerPassword.length < 6) {
+      toast({
+        title: "Erro de registro",
+        description: "A senha deve ter pelo menos 6 caracteres.",
+        variant: "destructive"
+      });
+      setIsLoading(false);
+      return;
+    }
+
+    const result = await register(registerEmail, registerPassword);
+    
+    if (result.success) {
+      toast({
+        title: "Registro bem-sucedido",
+        description: "Verifique seu email para confirmar sua conta e fazer login."
+      });
+      setLoginEmail(registerEmail);
+      setRegisterEmail("");
+      setRegisterPassword("");
+      setRegisterMode(false);
+    } else {
+      toast({
+        title: "Erro de registro",
+        description: result.error || "Falha ao registrar. Tente novamente.",
+        variant: "destructive"
+      });
+    }
+    setIsLoading(false);
+  };
+
   const handleRecoverySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -109,7 +157,6 @@ const Login = () => {
         title: "Email enviado",
         description: "Verifique sua caixa de entrada para definir sua senha."
       });
-      // Mantém o email preenchido no campo de login ao voltar
       setLoginEmail(recoveryEmail); 
       setRecoveryEmail("");
       setRecoveryMode(false);
@@ -148,7 +195,6 @@ const Login = () => {
         description: "Sua senha foi definida. Você está logado e será redirecionado.",
       });
       
-      // Redireciona para a página principal (o AuthProvider deve pegar a sessão)
       navigate("/", { replace: true });
     } catch (error: any) {
       toast({
@@ -164,13 +210,26 @@ const Login = () => {
   const handleToggleRecoveryMode = () => {
     setRecoveryMode(prev => {
       if (prev) {
-        // Ao sair do modo de recuperação, preenche o email de login com o email de recuperação
         setLoginEmail(recoveryEmail);
         setRecoveryEmail('');
       } else {
-        // Ao entrar no modo de recuperação, preenche o email de recuperação com o email de login
         setRecoveryEmail(loginEmail);
       }
+      setRegisterMode(false); // Garante que o modo de registro esteja desligado
+      return !prev;
+    });
+  };
+  
+  const handleToggleRegisterMode = () => {
+    setRegisterMode(prev => {
+      if (prev) {
+        setLoginEmail(registerEmail);
+        setRegisterEmail('');
+        setRegisterPassword('');
+      } else {
+        setRegisterEmail(loginEmail);
+      }
+      setRecoveryMode(false); // Garante que o modo de recuperação esteja desligado
       return !prev;
     });
   };
@@ -216,6 +275,49 @@ const Login = () => {
           <CardFooter className="pb-6">
             <Button type="submit" className="w-full bg-gradient-to-r from-green-600 to-green-500" disabled={isLoading}>
               {isLoading ? "Salvando..." : "Definir Senha e Entrar"}
+            </Button>
+          </CardFooter>
+        </form>
+      );
+    }
+    
+    if (isRegisterMode) {
+      // MODO DE REGISTRO
+      return (
+        <form onSubmit={handleRegisterSubmit}>
+          <CardHeader className="space-y-1 text-center pb-6 bg-gradient-to-r from-purple-500/10 to-purple-600/10">
+            <div className="flex justify-center mb-4">
+              <div className="p-3 rounded-full bg-purple-100 shadow-md">
+                <UserPlus className="h-10 w-10 text-purple-600" />
+              </div>
+            </div>
+            <CardTitle className="text-2xl font-bold text-purple-800">Novo Cadastro</CardTitle>
+            <CardDescription className="text-gray-600">
+              Use seu e-mail institucional para criar uma conta.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4 pt-6">
+            <div className="space-y-2">
+              <Label htmlFor="register-email" className="text-gray-700 flex items-center gap-1.5"><Mail className="h-4 w-4" />Email Institucional</Label>
+              <Input id="register-email" type="email" placeholder="seu.email@colegiosaojudas.com.br" value={registerEmail} onChange={e => setRegisterEmail(e.target.value)} className="bg-white/70" disabled={isLoading} required />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="register-password" className="text-gray-700 flex items-center gap-1.5"><Lock className="h-4 w-4" />Senha</Label>
+              <div className="relative">
+                <Input id="register-password" type={showPassword ? "text" : "password"} placeholder="Crie sua senha (mínimo 6 caracteres)" value={registerPassword} onChange={e => setRegisterPassword(e.target.value)} className="bg-white/70 pr-10" disabled={isLoading} required />
+                <Button type="button" variant="ghost" size="sm" className="absolute right-0 top-0 h-full px-3 hover:bg-transparent" onClick={() => setShowPassword(prev => !prev)}>
+                  {showPassword ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+          <CardFooter className="flex flex-col space-y-4 pb-6">
+            <Button type="submit" className="w-full bg-gradient-to-r from-purple-600 to-purple-500" disabled={isLoading}>
+              {isLoading ? "Registrando..." : "Cadastrar"}
+            </Button>
+            <Button type="button" variant="ghost" className="text-sm text-gray-600" onClick={handleToggleRegisterMode} disabled={isLoading}>
+              <ArrowLeft className="h-3.5 w-3.5 mr-1" />
+              Voltar ao login
             </Button>
           </CardFooter>
         </form>
@@ -282,6 +384,10 @@ const Login = () => {
             <KeySquare className="h-3.5 w-3.5 mr-1" />
             Primeiro Acesso / Recuperar Senha
           </Button>
+          <Button type="button" variant="link" className="text-sm text-purple-600 p-0 h-auto" onClick={handleToggleRegisterMode} disabled={isLoading}>
+            <User className="h-3.5 w-3.5 mr-1" />
+            Cadastrar-se
+          </Button>
         </CardFooter>
       </form>
     );
@@ -290,8 +396,8 @@ const Login = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#D3E4FD] to-[#F0F7FF] p-4">
       <Card className="w-full max-w-md shadow-xl glass-card border-0 overflow-hidden">
-        {/* O cabeçalho é renderizado apenas se não estiver no modo de atualização de senha, pois ele tem seu próprio cabeçalho */}
-        {!isUpdatePasswordMode && (
+        {/* O cabeçalho é renderizado apenas se não estiver nos modos especiais */}
+        {!isUpdatePasswordMode && !isRecoveryMode && !isRegisterMode && (
           <CardHeader className="space-y-1 text-center pb-6 bg-gradient-to-r from-blue-500/10 to-blue-600/10">
             <div className="flex justify-center mb-4">
               <div className="p-3 rounded-full bg-blue-100 shadow-md">

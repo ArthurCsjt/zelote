@@ -36,6 +36,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const register = async (email: string, password: string) => {
+    if (!verifyEmail(email)) {
+      return { success: false, error: "O registro é permitido apenas com o domínio @colegiosaojudas.com.br." };
+    }
     const { error } = await supabase.auth.signUp({ email, password });
     return { success: !error, error: error?.message };
   };
