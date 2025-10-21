@@ -12,6 +12,7 @@ import { LogOut, Sun, Moon, Monitor } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/hooks/use-theme'; // Importando useTheme
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label'; // IMPORT FALTANTE
 
 const Settings = () => {
   const { isAdmin, loading } = useProfileRole();
