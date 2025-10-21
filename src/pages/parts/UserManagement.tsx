@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from "@/hooks/use-toast";
+import { useProfileRole } from '@/hooks/use-profile-role'; // Importando useProfileRole
 
 // Importando todos os componentes de UI necessários
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -13,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { MoreHorizontal, Loader2, Trash2 } from "lucide-react";
+import { MoreHorizontal, Loader2, Trash2, AlertTriangle } from "lucide-react";
 import { GlassCard } from '@/components/ui/GlassCard'; // Importando GlassCard
 
 type UserProfile = {
@@ -26,6 +27,7 @@ type UserProfile = {
 
 export const UserManagement = () => {
   const { user: currentUser } = useAuth();
+  const { isAdmin, loading: roleLoading } = useProfileRole(); // Usando useProfileRole
   const queryClient = useQueryClient();
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState<'admin' | 'user'>('user');
@@ -107,18 +109,32 @@ export const UserManagement = () => {
       if (error) throw new Error(error.message);
       return data || [];
     },
+    // Desabilita a consulta se o usuário não for admin ou se o papel ainda estiver carregando
+    enabled: isAdmin && !roleLoading, 
     // Otimização de cache: mantém os dados 'frescos' por 5 minutos
     staleTime: 1000 * 60 * 5, 
     // Não refaz a busca automaticamente ao focar na janela
     refetchOnWindowFocus: false, 
   });
 
-  if (isLoading) {
+  if (roleLoading || isLoading) {
     return (
       <div className="flex justify-center items-center p-10">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
         <p className="ml-4 text-muted-foreground">Carregando usuários...</p>
       </div>
+    );
+  }
+  
+  // Se não for admin, mas o componente foi renderizado (o que não deveria acontecer em Settings.tsx, mas como fallback)
+  if (!isAdmin) {
+    return (
+      <Card className="border-red-500 bg-red-50">
+        <CardContent className="pt-6 flex items-center gap-2 text-red-700">
+          <AlertTriangle className="h-5 w-5" />
+          <p>Acesso negado. Você não tem permissão para gerenciar usuários.</p>
+        </CardContent>
+      </Card>
     );
   }
 
