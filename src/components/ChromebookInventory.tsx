@@ -313,7 +313,7 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-6 glass-morphism animate-fade-in relative">
+    <div className="p-0 glass-morphism animate-fade-in relative">
       {/* Background gradient overlay */}
       <div className="absolute inset-0 -z-10 bg-gradient-to-br from-blue-50/30 via-purple-50/20 to-pink-50/30 rounded-3xl blur-2xl transform scale-110" />
       
