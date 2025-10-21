@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, LogOut, ArrowLeft, Bell, Settings } from 'lucide-react';
+import { User, LogOut, ArrowLeft, Bell, Settings, Sun, Moon } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/hooks/use-theme';
 import { useNavigate } from 'react-router-dom';
@@ -89,6 +89,12 @@ const Layout: React.FC<LayoutProps> = ({
     navigate('/login', { replace: true });
   };
   
+  const toggleTheme = () => {
+    // Alterna entre light e dark, ignorando 'system' para o botão rápido
+    const newTheme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(newTheme);
+  };
+
   return (
     <div className={`min-h-screen bg-background text-foreground ${isStandalone ? 'safe-area-top safe-area-bottom safe-area-left safe-area-right' : ''}`}>
       {/* Status Bar Overlay for iOS in standalone mode */}
@@ -116,6 +122,16 @@ const Layout: React.FC<LayoutProps> = ({
             </div>
 
             <div className="flex items-center space-x-4">
+              
+              {/* Botão de Alternância de Tema */}
+              <Button variant="ghost" size="icon" className="h-9 w-9" onClick={toggleTheme}>
+                {theme === 'dark' ? (
+                  <Sun className="h-5 w-5 text-yellow-500" />
+                ) : (
+                  <Moon className="h-5 w-5 text-gray-600" />
+                )}
+                <span className="sr-only">Alternar tema</span>
+              </Button>
               
               {/* Botão de Notificações (Sino) */}
               <Popover>
