@@ -22,6 +22,7 @@ const IntelligentReportsTab: React.FC = () => {
   const {
     toast
   } = useToast();
+  
   const handleGenerateReport = async () => {
     if (!question.trim()) {
       toast({
@@ -32,6 +33,8 @@ const IntelligentReportsTab: React.FC = () => {
       return;
     }
     setIsLoading(true);
+    setReportData(null); // Limpa resultados anteriores
+    
     try {
       const {
         data,
@@ -56,7 +59,7 @@ const IntelligentReportsTab: React.FC = () => {
         throw new Error(errorMessage);
       }
       
-      setReportData(data);
+      setReportData(data as ReportData);
       toast({
         title: "Relatório Gerado",
         description: "Relatório criado com sucesso!"
@@ -72,6 +75,7 @@ const IntelligentReportsTab: React.FC = () => {
       setIsLoading(false);
     }
   };
+  
   const renderTable = (data: any[]) => {
     if (!data || data.length === 0) {
       return <Alert>
@@ -81,19 +85,24 @@ const IntelligentReportsTab: React.FC = () => {
           </AlertDescription>
         </Alert>;
     }
+    
+    // Garante que data[0] existe antes de tentar acessar as chaves
+    if (data.length === 0) return null; 
+    
     const columns = Object.keys(data[0]);
-    return <div className="rounded-md border">
+    
+    return <div className="rounded-md border overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
-              {columns.map(column => <TableHead key={column} className="font-semibold">
-                  {column}
+              {columns.map(column => <TableHead key={column} className="font-semibold whitespace-nowrap">
+                  {column.replace(/_/g, ' ').toUpperCase()}
                 </TableHead>)}
             </TableRow>
           </TableHeader>
           <TableBody>
             {data.map((row, index) => <TableRow key={index}>
-                {columns.map(column => <TableCell key={column}>
+                {columns.map(column => <TableCell key={column} className="whitespace-nowrap">
                     {row[column] !== null && row[column] !== undefined ? String(row[column]) : '-'}
                   </TableCell>)}
               </TableRow>)}
@@ -101,7 +110,9 @@ const IntelligentReportsTab: React.FC = () => {
         </Table>
       </div>;
   };
+  
   const exampleQuestions = ["Quantos chromebooks estão disponíveis?", "Quais são os empréstimos ativos no momento?", "Qual o modelo de chromebook mais emprestado?", "Quantos empréstimos foram feitos este mês?", "Quais chromebooks estão atrasados para devolução?"];
+  
   return <div className="space-y-6">
       <div className="text-center space-y-2">
         <div className="flex items-center justify-center gap-2">
@@ -128,7 +139,7 @@ const IntelligentReportsTab: React.FC = () => {
             <label htmlFor="question" className="text-sm font-medium rounded-md bg-zinc-50">
               Sua Pergunta
             </label>
-            <Textarea id="question" placeholder="Ex: Quantos chromebooks estão emprestados para alunos do ensino médio?" value={question} onChange={e => setQuestion(e.target.value)} rows={3} className="resize-none bg-zinc-100" />
+            <Textarea id="question" placeholder="Ex: Quantos chromebooks estão emprestados para alunos do ensino médio?" value={question} onChange={e => setQuestion(e.target.value)} rows={3} className="resize-none bg-zinc-100 dark:bg-card" />
           </div>
 
           <div className="space-y-2">
