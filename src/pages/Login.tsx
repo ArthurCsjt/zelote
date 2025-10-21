@@ -5,12 +5,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/components/ui/use-toast";
-import { Computer, Lock, Mail, ArrowLeft, KeySquare, LockKeyhole, UserPlus, Eye, EyeOff, AlertCircle, User, LogIn } from "lucide-react";
+import { Computer, Lock, Mail, ArrowLeft, KeySquare, LockKeyhole, UserPlus, Eye, EyeOff, AlertCircle, User, LogIn, RotateCcw } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 
-type AuthMode = 'login' | 'recovery' | 'register' | 'update_password';
+type AuthMode = 'login' | 'forgot_password' | 'register' | 'update_password';
 
 const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -93,6 +93,12 @@ const Login = () => {
       setIsLoading(false);
       return;
     }
+    
+    if (password !== confirmPassword) {
+      toast({ title: "Erro de registro", description: "As senhas não coincidem.", variant: "destructive" });
+      setIsLoading(false);
+      return;
+    }
 
     const result = await register(email, password);
     
@@ -100,6 +106,7 @@ const Login = () => {
       toast({ title: "Registro bem-sucedido", description: "Verifique seu email para confirmar sua conta e fazer login." });
       setEmail(email);
       setPassword("");
+      setConfirmPassword("");
       setCurrentMode('login');
     } else {
       toast({ title: "Erro de registro", description: result.error || "Falha ao registrar. Tente novamente.", variant: "destructive" });
@@ -157,6 +164,15 @@ const Login = () => {
     }
   };
   
+  // Função para limpar campos ao mudar de modo
+  const changeMode = (mode: AuthMode) => {
+    setEmail('');
+    setPassword('');
+    setConfirmPassword('');
+    setShowPassword(false);
+    setCurrentMode(mode);
+  };
+
   // --- Renderização Condicional ---
 
   const renderHeader = (title: string, description: string, Icon: React.ElementType, colorClass: string) => (
@@ -243,12 +259,19 @@ const Login = () => {
                   </Button>
                 </div>
               </div>
+              <div className="space-y-2">
+                <Label htmlFor="confirm-password-reg" className="text-gray-700 flex items-center gap-1.5"><Lock className="h-4 w-4" />Confirmar Senha</Label>
+                <Input id="confirm-password-reg" type="password" placeholder="Confirme sua senha" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className="bg-white/70" disabled={isLoading} required />
+                {password && confirmPassword && password !== confirmPassword && (
+                  <p className="text-xs text-destructive flex items-center gap-1 mt-1"><AlertCircle className="h-3 w-3" />As senhas não coincidem.</p>
+                )}
+              </div>
             </CardContent>
             <CardFooter className="flex flex-col space-y-4 pb-6">
-              <Button type="submit" className="w-full bg-gradient-to-r from-purple-600 to-purple-500" disabled={isLoading || !isEmailValid}>
+              <Button type="submit" className="w-full bg-gradient-to-r from-purple-600 to-purple-500" disabled={isLoading || !isEmailValid || password !== confirmPassword || password.length < 6}>
                 {isLoading ? "Registrando..." : "Cadastrar"}
               </Button>
-              <Button type="button" variant="ghost" className="text-sm text-gray-600" onClick={() => setCurrentMode('login')} disabled={isLoading}>
+              <Button type="button" variant="ghost" className="text-sm text-gray-600" onClick={() => changeMode('login')} disabled={isLoading}>
                 <ArrowLeft className="h-3.5 w-3.5 mr-1" />
                 Voltar ao login
               </Button>
@@ -256,14 +279,14 @@ const Login = () => {
           </form>
         );
 
-      case 'recovery':
+      case 'forgot_password':
         return (
           <form onSubmit={handleRecoverySubmit}>
             {renderHeader(
-              "Primeiro Acesso / Recuperação",
-              "Digite seu e-mail institucional para receber o link de acesso.",
-              KeySquare,
-              "bg-gradient-to-r from-blue-500/10 to-blue-600/10 text-blue-600"
+              "Recuperar Senha",
+              "Digite seu e-mail institucional para receber o link de redefinição.",
+              RotateCcw,
+              "bg-gradient-to-r from-orange-500/10 to-orange-600/10 text-orange-600"
             )}
             <CardContent className="space-y-4 pt-6">
               <div className="space-y-2">
@@ -282,10 +305,10 @@ const Login = () => {
               </div>
             </CardContent>
             <CardFooter className="flex flex-col space-y-4 pb-6">
-              <Button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-blue-500" disabled={isLoading || !isEmailValid}>
-                {isLoading ? "Enviando..." : "Enviar Link de Acesso"}
+              <Button type="submit" className="w-full bg-gradient-to-r from-orange-600 to-orange-500" disabled={isLoading || !isEmailValid}>
+                {isLoading ? "Enviando..." : "Enviar Link de Redefinição"}
               </Button>
-              <Button type="button" variant="ghost" className="text-sm text-gray-600" onClick={() => setCurrentMode('login')} disabled={isLoading}>
+              <Button type="button" variant="ghost" className="text-sm text-gray-600" onClick={() => changeMode('login')} disabled={isLoading}>
                 <ArrowLeft className="h-3.5 w-3.5 mr-1" />
                 Voltar ao login
               </Button>
@@ -332,11 +355,11 @@ const Login = () => {
               <Button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-blue-500" disabled={isLoading || !isEmailValid}>
                 {isLoading ? "Entrando..." : <><LogIn className="h-4 w-4 mr-2" />Entrar</>}
               </Button>
-              <Button type="button" variant="ghost" className="text-sm text-gray-600" onClick={() => setCurrentMode('recovery')} disabled={isLoading}>
+              <Button type="button" variant="ghost" className="text-sm text-gray-600" onClick={() => changeMode('forgot_password')} disabled={isLoading}>
                 <KeySquare className="h-3.5 w-3.5 mr-1" />
-                Primeiro Acesso / Recuperar Senha
+                Esqueci minha senha
               </Button>
-              <Button type="button" variant="link" className="text-sm text-purple-600 p-0 h-auto" onClick={() => setCurrentMode('register')} disabled={isLoading}>
+              <Button type="button" variant="link" className="text-sm text-purple-600 p-0 h-auto" onClick={() => changeMode('register')} disabled={isLoading}>
                 <User className="h-3.5 w-3.5 mr-1" />
                 Cadastrar-se
               </Button>
