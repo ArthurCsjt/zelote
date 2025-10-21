@@ -248,7 +248,7 @@ export function IntelligentChromebookForm({ onRegistrationSuccess }: { onRegistr
                     onCheckedChange={(checked) => handleFormChange('isFixedInClassroom', !!checked)} 
                   />
                   <label htmlFor="isFixedInClassroom" className="text-sm font-medium cursor-pointer">
-                    Equipamento Fixo em Sala de Aula (Status inicial: Fixo)
+                    Marcar como Fixo em Sala de Aula (Status inicial: Disponível/Móvel)
                   </label>
                 </div>
                 
