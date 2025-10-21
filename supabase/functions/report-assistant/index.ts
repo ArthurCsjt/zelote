@@ -1,6 +1,6 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
-import { serve } from "https://deno.land/std@0.223.0/http/server.ts"; // Versão mais recente
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.43.0'; // Versão mais recente
+import { serve } from "https://deno.land/std@0.223.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -45,11 +45,12 @@ serve(async (req) => {
     - model (text, modelo do chromebook)
     - serial_number (text, opcional)
     - patrimony_number (text, opcional)
-    - status (enum: 'disponivel', 'emprestado', 'manutencao', 'fixo')
+    - status (enum: 'disponivel', 'emprestado', 'manutencao', 'fixo', 'fora_uso')
     - condition (text, opcional)
     - location (text, opcional)
     - created_at (timestamp)
     - updated_at (timestamp)
+    - is_deprovisioned (boolean, se o equipamento foi desprovisionado)
 
     TABELA: loans (empréstimos)
     Colunas:
@@ -155,6 +156,7 @@ serve(async (req) => {
     if (error) {
       console.error('Erro ao executar SQL:', error);
       // Retorna 500 Internal Server Error se a execução do SQL falhar
+      // Incluímos a mensagem de erro do banco de dados para melhor diagnóstico no frontend
       return new Response(
         JSON.stringify({ error: 'Erro ao executar a consulta no banco de dados', details: error.message }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
