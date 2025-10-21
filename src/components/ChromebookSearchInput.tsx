@@ -15,6 +15,8 @@ interface ChromebookSearchInputProps {
   disabled: boolean;
   filterStatus?: 'disponivel' | 'ativo' | 'all';
   onScanClick: () => void;
+  /** Se true, o componente não exibe o cartão de confirmação, apenas o input. */
+  isListMode?: boolean; 
 }
 
 const ChromebookSearchInput: React.FC<ChromebookSearchInputProps> = ({ 
@@ -23,7 +25,8 @@ const ChromebookSearchInput: React.FC<ChromebookSearchInputProps> = ({
   onClear, 
   disabled,
   filterStatus = 'all',
-  onScanClick
+  onScanClick,
+  isListMode = false,
 }) => {
   const { chromebooks, loading } = useChromebookSearch();
   const [searchTerm, setSearchTerm] = useState('');
@@ -71,8 +74,8 @@ const ChromebookSearchInput: React.FC<ChromebookSearchInputProps> = ({
     inputRef.current?.blur();
   };
 
-  // Se um item estiver selecionado, exibe o card de confirmação
-  if (selectedChromebook) {
+  // Se isListMode for false E um item estiver selecionado, exibe o card de confirmação
+  if (selectedChromebook && !isListMode) {
     const isAvailable = selectedChromebook.status === 'disponivel';
     const isEmprestado = selectedChromebook.status === 'emprestado';
     
@@ -116,7 +119,7 @@ const ChromebookSearchInput: React.FC<ChromebookSearchInputProps> = ({
     );
   }
 
-  // Se nenhum item estiver selecionado, exibe o campo de busca
+  // Se isListMode for true OU nenhum item estiver selecionado, exibe o campo de busca
   return (
     <div className="relative space-y-2">
       <div className="flex gap-2">

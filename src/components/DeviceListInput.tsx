@@ -3,12 +3,13 @@ import { Input } from './ui/input';
 import { Button } from './ui/button';
 import { Label } from './ui/label';
 import { Badge } from './ui/badge';
-import { Computer, Plus, QrCode, Loader2, X, AlertTriangle } from 'lucide-react';
+import { Computer, Plus, QrCode, Loader2, X, AlertTriangle, Search } from 'lucide-react';
 import { toast } from './ui/use-toast';
 import { normalizeChromebookId, sanitizeQRCodeData } from '@/utils/security';
 import { QRCodeReader } from './QRCodeReader';
-import { useChromebookSearch } from '@/hooks/useChromebookSearch';
+import { useChromebookSearch, ChromebookSearchResult } from '@/hooks/useChromebookSearch';
 import { cn } from '@/lib/utils';
+import ChromebookSearchInput from './ChromebookSearchInput'; // Importando o componente de busca
 
 interface DeviceListInputProps {
   deviceIds: string[];
@@ -52,7 +53,7 @@ export function DeviceListInput({ deviceIds, setDeviceIds, disabled, filterStatu
     return { normalizedInput, chromebook };
   }, [deviceIds, chromebooks, requiredStatus, requiredStatusLabel]);
 
-  // Lógica de adição
+  // Lógica de adição (usada por digitação manual e QR code)
   const addDevice = useCallback((inputOverride?: string) => {
     const rawInput = inputOverride || currentInput;
     const validation = validateAndNormalizeInput(rawInput);
@@ -78,6 +79,28 @@ export function DeviceListInput({ deviceIds, setDeviceIds, disabled, filterStatu
       variant: "success",
     });
   }, [currentInput, validateAndNormalizeInput, setDeviceIds]);
+  
+  // Lógica de adição via busca visual (ChromebookSearchInput)
+  const handleVisualSelect = useCallback((chromebook: ChromebookSearchResult) => {
+    const validation = validateAndNormalizeInput(chromebook.chromebook_id);
+    
+    if (validation.error) {
+      toast({
+        title: "Erro de Validação",
+        description: validation.error,
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setDeviceIds(prev => [...prev, chromebook.chromebook_id]);
+    toast({
+      title: "Dispositivo adicionado",
+      description: `ID: ${chromebook.chromebook_id} (${chromebook.model})`,
+      variant: "success",
+    });
+  }, [validateAndNormalizeInput, setDeviceIds]);
+
 
   const handleQRCodeScan = (data: string) => {
     const sanitizedId = sanitizeQRCodeData(data); 
@@ -116,49 +139,18 @@ export function DeviceListInput({ deviceIds, setDeviceIds, disabled, filterStatu
         </Badge>
       </div>
       
-      <div className="w-full">
-        <div className="flex gap-2">
-          <div className="relative flex-1">
-            <Input
-              id="deviceInput"
-              value={currentInput}
-              onChange={handleInputChange}
-              placeholder="Digite o ID, Patrimônio ou Série (ex: CHR012)"
-              className={cn("border-gray-200 w-full bg-white pl-3 dark:bg-card dark:border-border", validationError && "border-destructive focus-visible:ring-destructive")}
-              onKeyDown={handleInputKeyDown}
-              disabled={disabled || searchLoading}
-            />
-            {validationError && (
-              <div className="absolute top-full left-0 mt-1 text-xs text-destructive flex items-center gap-1">
-                <AlertTriangle className="h-3 w-3" />
-                {validationError}
-              </div>
-            )}
-          </div>
-          
-          {/* Botão de Adicionar */}
-          <Button 
-            type="button"
-            variant="outline"
-            onClick={() => addDevice()}
-            className="text-green-600 hover:text-green-700 hover:bg-green-100 border-green-200 px-3 dark:text-green-400 dark:hover:bg-green-900 dark:border-green-800"
-            disabled={disabled || searchLoading || !currentInput.trim()}
-          >
-            {searchLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
-          </Button>
-          
-          <Button 
-            type="button" 
-            variant="outline" 
-            className="border-gray-200 bg-white hover:bg-gray-50 px-3 dark:bg-card dark:border-border dark:hover:bg-accent"
-            onClick={() => setIsQRReaderOpen(true)}
-            disabled={disabled || searchLoading}
-          >
-            <QrCode className="h-5 w-5 text-gray-600 dark:text-muted-foreground" />
-          </Button>
-        </div>
-      </div>
+      {/* NOVO: Busca Visual (ChromebookSearchInput) */}
+      <ChromebookSearchInput
+        selectedChromebook={null} // Sempre nulo para permitir a busca contínua
+        onSelect={handleVisualSelect}
+        onClear={() => {}} // Não faz nada no modo lista
+        disabled={disabled || searchLoading}
+        filterStatus={filterStatus}
+        onScanClick={() => setIsQRReaderOpen(true)}
+        isListMode={true} // Ativa o modo lista
+      />
       
+      {/* Lista de Dispositivos Adicionados */}
       <div className="mt-2 p-2 bg-white rounded-md border border-gray-200 max-h-[150px] overflow-y-auto dark:bg-card dark:border-border">
         {deviceIds.length > 0 ? (
           <div className="space-y-2">
