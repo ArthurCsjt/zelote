@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { Check, ChevronsUpDown, User, GraduationCap, Briefcase, Search, Loader2, CheckCircle, X, BookOpen } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -19,7 +19,14 @@ interface PurposeAutocompleteProps {
 const PurposeAutocomplete: React.FC<PurposeAutocompleteProps> = ({ value, onChange, disabled, placeholder, userType }) => {
   const [open, setOpen] = useState(false);
   const { users, loading } = useUserSearch();
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState(value);
+
+  // Sincroniza o searchTerm interno com o valor externo quando o popover fecha
+  useEffect(() => {
+    if (!open) {
+      setSearchTerm(value);
+    }
+  }, [value, open]);
 
   // Filtra apenas Professores e Funcionários para sugestões de finalidade
   const filteredSuggestions = useMemo(() => {
@@ -27,6 +34,7 @@ const PurposeAutocomplete: React.FC<PurposeAutocompleteProps> = ({ value, onChan
     
     const lowerCaseSearch = searchTerm.toLowerCase();
     
+    // Filtra apenas professores e funcionários, pois alunos são o solicitante
     return users
       .filter(user => (user.type === 'professor' || user.type === 'funcionario') && user.searchable.includes(lowerCaseSearch))
       .slice(0, 5);
@@ -44,36 +52,17 @@ const PurposeAutocomplete: React.FC<PurposeAutocompleteProps> = ({ value, onChan
   };
   
   const handleSelectUser = (user: UserSearchResult) => {
+    // Formata o valor para ser claro no campo de finalidade
     const purposeValue = `${user.type.charAt(0).toUpperCase() + user.type.slice(1)}: ${user.name}`;
     onChange(purposeValue);
     setOpen(false);
-    setSearchTerm('');
+    setSearchTerm(purposeValue);
   };
   
-  const handleManualChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = e.target.value;
-    setSearchTerm(newValue);
-    onChange(newValue);
-  };
-  
-  // Se o usuário for um aluno, o campo deve ser de texto livre (aula)
-  if (userType === 'aluno') {
-    return (
-      <div className="relative">
-        <BookOpen className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-        <Input
-          placeholder={placeholder}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          className="pl-10 bg-white border-gray-200 dark:bg-card dark:border-border"
-          disabled={disabled}
-          required
-        />
-      </div>
-    );
-  }
+  const commandPlaceholder = userType === 'aluno' 
+    ? 'Buscar professor ou digitar aula...' 
+    : 'Buscar departamento ou digitar finalidade...';
 
-  // Se for Professor ou Funcionário, permite busca e texto livre
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -94,7 +83,7 @@ const PurposeAutocomplete: React.FC<PurposeAutocompleteProps> = ({ value, onChan
       <PopoverContent className="w-[350px] p-0">
         <Command>
           <CommandInput 
-            placeholder="Buscar professor/departamento ou digitar aula..." 
+            placeholder={commandPlaceholder} 
             value={searchTerm}
             onValueChange={(v) => {
                 setSearchTerm(v);
@@ -102,7 +91,7 @@ const PurposeAutocomplete: React.FC<PurposeAutocompleteProps> = ({ value, onChan
             }}
           />
           <CommandList>
-            <CommandEmpty>Nenhuma sugestão encontrada. Digite a finalidade (ex: Aula de Matemática).</CommandEmpty>
+            <CommandEmpty>Nenhuma sugestão encontrada. Digite a finalidade.</CommandEmpty>
             <CommandGroup heading="Sugestões (Professores/Funcionários)">
               {filteredSuggestions.map((user) => (
                 <CommandItem
