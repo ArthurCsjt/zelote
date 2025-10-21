@@ -2,144 +2,126 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Brain, Database, TrendingUp } from 'lucide-react';
-import { GlassCard } from './ui/GlassCard'; // Importando GlassCard
+import { Brain, AlertCircle, CheckCircle, Download, TrendingUp } from 'lucide-react';
+import { GlassCard } from './ui/GlassCard';
 
-interface ReportData {
-  query: string;
-  data: any[];
+interface ReportResponse {
+  response: string;
   userQuestion: string;
 }
+
 const IntelligentReportsTab: React.FC = () => {
-  const [question, setQuestion] = useState('');
-  const [reportData, setReportData] = useState<ReportData | null>(null);
+  const [prompt, setPrompt] = useState('');
+  const [reportData, setReportData] = useState<ReportResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const {
-    toast
-  } = useToast();
-  
+  const [error, setError] = useState('');
+  const { toast } = useToast();
+
   const handleGenerateReport = async () => {
-    if (!question.trim()) {
-      toast({
-        title: "Erro",
-        description: "Por favor, digite uma pergunta.",
-        variant: "destructive"
-      });
+    if (!prompt.trim()) {
+      setError('Por favor, digite uma pergunta ou solicitação.');
       return;
     }
+
     setIsLoading(true);
-    setReportData(null); // Limpa resultados anteriores
-    
+    setError('');
+    setReportData(null);
+
     try {
-      const {
-        data,
-        error
-      } = await supabase.functions.invoke('report-assistant', {
-        body: {
-          userQuestion: question
-        }
+      const { data, error: edgeError } = await supabase.functions.invoke('ai-analyst', {
+        body: { userQuestion: prompt },
       });
-      
-      if (error) {
-        // Tenta extrair a mensagem de erro detalhada da resposta da função Edge
-        let errorMessage = error.message;
+
+      if (edgeError) {
+        let errorMessage = edgeError.message;
         try {
-          // Se o erro for um objeto JSON retornado pela função Edge
-          const errorBody = JSON.parse(error.message);
-          errorMessage = errorBody.error || error.message;
+          const errorBody = JSON.parse(edgeError.message);
+          errorMessage = errorBody.error || edgeError.message;
         } catch {
           // Se não for JSON, usa a mensagem padrão
         }
-        
         throw new Error(errorMessage);
       }
       
-      setReportData(data as ReportData);
+      setReportData(data as ReportResponse);
       toast({
-        title: "Relatório Gerado",
-        description: "Relatório criado com sucesso!"
+        title: "Análise Gerada",
+        description: "O relatório de IA está pronto para visualização."
       });
-    } catch (error: any) {
-      console.error('Erro ao gerar relatório:', error);
-      toast({
-        title: "Erro",
-        description: error.message || "Erro ao gerar relatório. Tente novamente.",
-        variant: "destructive"
-      });
+
+    } catch (err: any) {
+      console.error('Erro ao gerar relatório:', err);
+      setError(err.message || "Erro ao gerar relatório. Tente novamente.");
     } finally {
       setIsLoading(false);
     }
   };
-  
-  const renderTable = (data: any[]) => {
-    if (!data || data.length === 0) {
-      return <Alert>
-          <Database className="h-4 w-4" />
-          <AlertDescription>
-            Nenhum resultado encontrado para esta consulta.
-          </AlertDescription>
-        </Alert>;
-    }
+
+  const downloadReport = () => {
+    if (!reportData?.response) return;
     
-    // Garante que data[0] existe antes de tentar acessar as chaves
-    if (data.length === 0) return null; 
+    const content = `# Relatório de Análise Inteligente\n\n## Pergunta:\n${reportData.userQuestion}\n\n## Resposta:\n${reportData.response}`;
     
-    const columns = Object.keys(data[0]);
+    const blob = new Blob([content], { type: 'text/markdown;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `relatorio-ia-${new Date().toISOString().split('T')[0]}.md`;
+    a.click();
+    URL.revokeObjectURL(url);
     
-    return <div className="rounded-md border overflow-x-auto">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              {columns.map(column => <TableHead key={column} className="font-semibold whitespace-nowrap">
-                  {column.replace(/_/g, ' ').toUpperCase()}
-                </TableHead>)}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {data.map((row, index) => <TableRow key={index}>
-                {columns.map(column => <TableCell key={column} className="whitespace-nowrap">
-                    {row[column] !== null && row[column] !== undefined ? String(row[column]) : '-'}
-                  </TableCell>)}
-              </TableRow>)}
-          </TableBody>
-        </Table>
-      </div>;
+    toast({
+      title: "Download Concluído",
+      description: "O relatório foi baixado como arquivo Markdown.",
+    });
   };
-  
-  const exampleQuestions = ["Quantos chromebooks estão disponíveis?", "Quais são os empréstimos ativos no momento?", "Qual o modelo de chromebook mais emprestado?", "Quantos empréstimos foram feitos este mês?", "Quais chromebooks estão atrasados para devolução?"];
-  
-  return <div className="space-y-6">
+
+  const exampleQuestions = [
+    'Quais são os horários de maior demanda?',
+    'Qual o tempo médio de uso por tipo de usuário?',
+    'Quais Chromebooks precisam de manutenção?',
+    'Resuma o desempenho desta semana'
+  ];
+
+  return (
+    <div className="space-y-6">
       <div className="text-center space-y-2">
         <div className="flex items-center justify-center gap-2">
           <Brain className="h-6 w-6 text-primary" />
-          <h3 className="font-bold text-zinc-950 text-2xl">Relatórios Inteligentes</h3>
+          <h3 className="font-bold text-zinc-950 dark:text-white text-2xl">Relatórios Inteligentes</h3>
         </div>
         <p className="text-muted-foreground">
-          Faça uma pergunta sobre os dados de empréstimos e inventário em linguagem natural
+          Faça uma pergunta sobre os dados de empréstimos e inventário em linguagem natural.
         </p>
       </div>
 
       <GlassCard>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-xl text-zinc-950">
-            <TrendingUp className="h-5 w-5" />
-            Gerar Relatório
+          <CardTitle className="flex items-center gap-2 text-xl text-zinc-950 dark:text-white">
+            <TrendingUp className="h-5 w-5 text-primary" />
+            Gerar Análise
           </CardTitle>
           <CardDescription>
-            Digite sua pergunta e nossa IA gerará automaticamente um relatório personalizado
+            Digite sua pergunta para que a IA analise os dados do seu inventário.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <label htmlFor="question" className="text-sm font-medium rounded-md bg-zinc-50">
+            <label htmlFor="question" className="text-sm font-medium block">
               Sua Pergunta
             </label>
-            <Textarea id="question" placeholder="Ex: Quantos chromebooks estão emprestados para alunos do ensino médio?" value={question} onChange={e => setQuestion(e.target.value)} rows={3} className="resize-none bg-zinc-100 dark:bg-card" />
+            <Textarea 
+              id="question" 
+              placeholder="Ex: Qual o perfil de uso dos professores?" 
+              value={prompt} 
+              onChange={e => setPrompt(e.target.value)} 
+              rows={3} 
+              className="resize-none bg-white dark:bg-card" 
+            />
           </div>
 
           <div className="space-y-2">
@@ -147,47 +129,73 @@ const IntelligentReportsTab: React.FC = () => {
               Exemplos de perguntas:
             </p>
             <div className="flex flex-wrap gap-2">
-              {exampleQuestions.map((example, index) => <Button key={index} variant="outline" size="sm" onClick={() => setQuestion(example)} className="text-xs">
-                  {example}
-                </Button>)}
+              {exampleQuestions.map((example, index) => (
+                <Button 
+                  key={index} 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => setPrompt(example)} 
+                  className="text-xs"
+                >
+                  💡 {example}
+                </Button>
+              ))}
             </div>
           </div>
 
-          <Button onClick={handleGenerateReport} disabled={isLoading || !question.trim()} className="w-full">
-            {isLoading ? <>
+          <Button 
+            onClick={handleGenerateReport} 
+            disabled={isLoading || !prompt.trim()} 
+            className="w-full bg-primary hover:bg-primary/90"
+          >
+            {isLoading ? (
+              <>
                 <LoadingSpinner size="sm" className="mr-2" />
-                Gerando Relatório...
-              </> : 'Gerar Relatório'}
+                Gerando Análise...
+              </>
+            ) : (
+              <>
+                <Brain className="mr-2 h-4 w-4" />
+                Gerar Relatório
+              </>
+            )}
           </Button>
         </CardContent>
       </GlassCard>
 
-      {reportData && <GlassCard>
-          <CardHeader>
-            <CardTitle>Resultado do Relatório</CardTitle>
-            <CardDescription>
-              Pergunta: "{reportData.userQuestion}"
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <p className="text-sm font-medium">Consulta SQL Gerada:</p>
-              <code className="block p-3 bg-muted rounded-md text-sm overflow-x-auto">
-                {reportData.query}
-              </code>
+      {error && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+
+      {reportData && (
+        <GlassCard>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2 text-green-600 dark:text-green-400">
+                <CheckCircle className="h-5 w-5" />
+                Resposta Gerada
+              </CardTitle>
+              <CardDescription>
+                Pergunta: "{reportData.userQuestion}"
+              </CardDescription>
             </div>
-            
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <p className="text-sm font-medium">Resultados:</p>
-                <span className="text-sm text-muted-foreground">
-                  {reportData.data.length} registro(s) encontrado(s)
-                </span>
-              </div>
-              {renderTable(reportData.data)}
+            <Button variant="outline" size="sm" onClick={downloadReport}>
+              <Download className="h-4 w-4 mr-2" />
+              Baixar Markdown
+            </Button>
+          </CardHeader>
+          <CardContent>
+            <div className="prose prose-sm max-w-none p-4 bg-muted/50 rounded-lg border dark:bg-muted/20">
+              {/* Renderiza a resposta em Markdown */}
+              <pre className="whitespace-pre-wrap font-sans text-sm text-foreground">{reportData.response}</pre>
             </div>
           </CardContent>
-        </GlassCard>}
-    </div>;
+        </GlassCard>
+      )}
+    </div>
+  );
 };
 export default IntelligentReportsTab;
