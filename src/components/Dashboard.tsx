@@ -22,44 +22,60 @@ interface DashboardProps {
 }
 
 // Componente auxiliar para renderizar o grid de estatísticas
-const StatsGrid = ({ periodView, filteredLoans, filteredReturns, activeLoans, totalChromebooks, averageUsageTime, completionRate, usageRate }: any) => {
+const StatsGrid = ({ periodView, filteredLoans, filteredReturns, activeLoans, totalChromebooks, availableChromebooks, averageUsageTime, completionRate, usageRate }: any) => {
   if (periodView === 'history' || periodView === 'reports') return null;
+
+  // Calculando a taxa de uso dos disponíveis (total de ativos / total de disponíveis + ativos)
+  // Nota: O 'usageRate' atual é (ativos / total de chromebooks).
+  // Se o usuário quiser (ativos / disponíveis), a métrica pode ser enganosa.
+  // Vamos manter a métrica de (ativos / total) e renomear para refletir o uso total do inventário.
+  
+  // Uso Total de Chromebooks (Ativos)
+  const totalActive = activeLoans.length;
+  
+  // Uso Total de Chromebooks Disponíveis (Porcentagem de uso do inventário total)
+  const totalAvailableUsageRate = totalChromebooks > 0 ? (totalActive / totalChromebooks) * 100 : 0;
+
 
   return (
     <div className="grid gap-4 grid-cols-2 md:grid-cols-4 relative z-10">
+      
+      {/* NOVO CARD 1: Uso Total de Chromebooks (Contagem de ativos) */}
       <GlassCard className="border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-blue-500">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-xs sm:text-sm font-medium">
-            Empréstimos
+            Uso Total de Chromebooks
           </CardTitle>
           <Computer className="h-4 w-4 sm:h-5 sm:w-5 text-blue-500" />
         </CardHeader>
         <CardContent>
-          <div className="text-xl sm:text-3xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">{filteredLoans.length}</div>
+          <div className="text-xl sm:text-3xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">{totalActive}</div>
           <p className="text-[10px] sm:text-xs text-muted-foreground">
-            {filteredReturns.length} devoluções no período
+            {filteredLoans.length} empréstimos no período
           </p>
         </CardContent>
       </GlassCard>
 
+      {/* NOVO CARD 2: Uso Total de Chromebooks Disponíveis (Porcentagem de uso do inventário total) */}
       <GlassCard className="border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-green-500">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-xs sm:text-sm font-medium">
-            Uso Atual do Inventário
+            Uso Total de Chromebooks Disponíveis
           </CardTitle>
           <Computer className="h-4 w-4 sm:h-5 sm:w-5 text-green-500" />
         </CardHeader>
         <CardContent>
-          <div className="text-xl sm:text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">{usageRate.toFixed(0)}%</div>
+          <div className="text-xl sm:text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">{totalAvailableUsageRate.toFixed(0)}%</div>
           <div className="flex items-center gap-2 mt-1">
-            <Progress value={usageRate} className="h-1.5 sm:h-2" />
+            <Progress value={totalAvailableUsageRate} className="h-1.5 sm:h-2" />
             <span className="text-[10px] sm:text-xs text-muted-foreground">
-              {activeLoans.length} de {totalChromebooks} em uso
+              {totalActive} de {totalChromebooks} em uso
             </span>
           </div>
         </CardContent>
       </GlassCard>
 
+      {/* CARD 3: Tempo Médio (Mantido) */}
       <GlassCard className="border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-purple-500">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-xs sm:text-sm font-medium">
@@ -77,6 +93,7 @@ const StatsGrid = ({ periodView, filteredLoans, filteredReturns, activeLoans, to
         </CardContent>
       </GlassCard>
 
+      {/* CARD 4: Taxa de Devolução (Mantido) */}
       <GlassCard className="border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-orange-500">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-xs sm:text-sm font-medium">
@@ -426,6 +443,7 @@ export function Dashboard({
               filteredReturns={filteredReturns}
               activeLoans={activeLoans}
               totalChromebooks={totalChromebooks}
+              availableChromebooks={availableChromebooks}
               averageUsageTime={averageUsageTime}
               completionRate={completionRate}
               usageRate={usageRate}
@@ -693,7 +711,7 @@ export function Dashboard({
                   <CardContent className="h-[250px] sm:h-[300px]">
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={durationData} layout="horizontal" margin={{ top: 5, right: 0, left: 0, bottom: 5 }}>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                        <CartesianGrid strokeDasharray="3 3" />
                         <XAxis type="number" tick={{ fontSize: 10 }} />
                         <YAxis dataKey="name" type="category" width={80} tick={{ fontSize: 10 }} />
                         <Tooltip />
