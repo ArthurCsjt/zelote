@@ -461,15 +461,43 @@ export function Dashboard({
                 </CardHeader>
                 <CardContent className="h-[250px] sm:h-[300px]">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={periodData} margin={{ top: 5, right: 0, left: -20, bottom: 5 }}>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                      <XAxis dataKey="hora" tick={{ fontSize: 10 }} />
-                      <YAxis tick={{ fontSize: 10 }} />
-                      <Tooltip />
-                      <Legend wrapperStyle={{ fontSize: '12px' }} />
-                      <Bar dataKey="empréstimos" fill="#2563EB" radius={[4, 4, 0, 0]} />
-                      <Bar dataKey="devoluções" fill="#22C55E" radius={[4, 4, 0, 0]} />
-                    </BarChart>
+                    <ComposedChart data={periodData} margin={{ top: 5, right: 0, left: -20, bottom: 5 }}>
+                      <defs>
+                        {/* Gradiente para a área de Empréstimos */}
+                        <linearGradient id="colorEmprestimos" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#2563EB" stopOpacity={0.8}/>
+                          <stop offset="95%" stopColor="#2563EB" stopOpacity={0}/>
+                        </linearGradient>
+                        {/* Gradiente para a área de Devoluções (opcional, mas mantém o estilo) */}
+                        <linearGradient id="colorDevolucoes" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#22C55E" stopOpacity={0.8}/>
+                          <stop offset="95%" stopColor="#22C55E" stopOpacity={0}/>
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
+                      <XAxis dataKey="hora" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
+                      <YAxis tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
+                      <Tooltip content={<ChartTooltipContent />} />
+                      <Legend content={<ChartLegendContent />} wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
+                      
+                      {/* Área para Empréstimos (Visual mais suave) */}
+                      <Area 
+                        type="monotone" 
+                        dataKey="empréstimos" 
+                        stroke="#2563EB" 
+                        fill="url(#colorEmprestimos)" 
+                        fillOpacity={1} 
+                        name="Empréstimos"
+                      />
+                      
+                      {/* Linha ou Barra para Devoluções (Destaque) */}
+                      <Bar 
+                        dataKey="devoluções" 
+                        fill="#22C55E" 
+                        radius={[4, 4, 0, 0]} 
+                        name="Devoluções"
+                      />
+                    </ComposedChart>
                   </ResponsiveContainer>
                 </CardContent>
               </GlassCard>
@@ -536,7 +564,7 @@ export function Dashboard({
                     </div>
                     <Clock className="h-5 w-5 text-muted-foreground" />
                   </CardHeader>
-                  <CardContent className="h-[250px]">
+                  <CardContent className="h-[250px] sm:h-[300px]">
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={durationData} layout="horizontal" margin={{ top: 5, right: 0, left: 0, bottom: 5 }}>
                         <CartesianGrid strokeDasharray="3 3" />
