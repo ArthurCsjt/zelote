@@ -30,6 +30,15 @@ interface FormData {
   provisioning_status: string;
 }
 
+// Mapeamento de Fabricantes e Modelos
+const MANUFACTURER_MODELS: Record<string, string[]> = {
+  Acer: ['N18Q5', 'N24P1'],
+  Samsung: ['XE500c13', 'XE310XBA', 'XE501C13'],
+  Lenovo: ['100e Chromebook Gen 3'],
+};
+
+const AVAILABLE_MANUFACTURERS = Object.keys(MANUFACTURER_MODELS);
+
 export function ManualChromebookForm({ onRegistrationSuccess }: { onRegistrationSuccess: (newChromebook: any) => void }) {
   const { createChromebook, loading } = useDatabase();
   const { toast } = useToast();
@@ -52,6 +61,14 @@ export function ManualChromebookForm({ onRegistrationSuccess }: { onRegistration
 
   const handleFormChange = (field: keyof FormData, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+  
+  const handleManufacturerChange = (value: string) => {
+    setFormData(prev => ({ 
+      ...prev, 
+      manufacturer: value, 
+      model: '' // Limpa o modelo ao mudar o fabricante
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -84,6 +101,7 @@ export function ManualChromebookForm({ onRegistrationSuccess }: { onRegistration
   };
 
   const isFormValid = formData.manufacturer && formData.model && formData.series;
+  const currentModels = formData.manufacturer ? MANUFACTURER_MODELS[formData.manufacturer] || [] : [];
 
   return (
     <GlassCard className="p-6 space-y-6">
@@ -112,33 +130,41 @@ export function ManualChromebookForm({ onRegistrationSuccess }: { onRegistration
                 <Label htmlFor="manufacturer">Fabricante *</Label>
                 <Select
                   value={formData.manufacturer}
-                  onValueChange={(value) => handleFormChange('manufacturer', value)}
+                  onValueChange={handleManufacturerChange}
                   required
                 >
                   <SelectTrigger className="bg-white">
                     <SelectValue placeholder="Selecione um fabricante" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Acer">Acer</SelectItem>
-                    <SelectItem value="Samsung">Samsung</SelectItem>
-                    <SelectItem value="Lenovo">Lenovo</SelectItem>
-                    <SelectItem value="Dell">Dell</SelectItem>
-                    <SelectItem value="HP">HP</SelectItem>
-                    <SelectItem value="Outro">Outro</SelectItem>
+                    {AVAILABLE_MANUFACTURERS.map(manufacturer => (
+                      <SelectItem key={manufacturer} value={manufacturer}>
+                        {manufacturer}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
               
               <div className="space-y-2">
                 <Label htmlFor="model">Modelo *</Label>
-                <Input 
-                  id="model" 
-                  value={formData.model} 
-                  onChange={(e) => handleFormChange('model', e.target.value)} 
-                  placeholder="Ex: Chromebook 14e"
-                  required 
-                  className="bg-white"
-                />
+                <Select
+                  value={formData.model}
+                  onValueChange={(value) => handleFormChange('model', value)}
+                  required
+                  disabled={!formData.manufacturer || currentModels.length === 0}
+                >
+                  <SelectTrigger className="bg-white">
+                    <SelectValue placeholder={formData.manufacturer ? "Selecione o modelo" : "Selecione um fabricante primeiro"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {currentModels.map(model => (
+                      <SelectItem key={model} value={model}>
+                        {model}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
             
