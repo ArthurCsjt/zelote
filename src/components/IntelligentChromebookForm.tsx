@@ -31,6 +31,16 @@ interface FormData {
   provisioning_status: string;
 }
 
+// Mapeamento de Modelos para Fabricante (Case Sensitive)
+const MODEL_MAPPING: Record<string, { manufacturer: string; model: string }> = {
+  'XE500c13': { manufacturer: 'Samsung', model: 'XE500c13' },
+  'N18Q5': { manufacturer: 'Acer', model: 'N18Q5' },
+  'N24P1': { manufacturer: 'Acer', model: 'N24P1' },
+  '100e Chromebook Gen 3': { manufacturer: 'Lenovo', model: '100e Chromebook Gen 3' },
+  'XE310XBA': { manufacturer: 'Samsung', model: 'XE310XBA' },
+  'XE501C13': { manufacturer: 'Samsung', model: 'XE501C13' },
+};
+
 // Função auxiliar para tentar extrair dados do QR Code
 const parseQRCodeData = (data: string): Partial<FormData> => {
   try {
@@ -87,14 +97,30 @@ export function IntelligentChromebookForm({ onRegistrationSuccess }: { onRegistr
       toast({ title: "Erro de Leitura", description: "O QR Code não continha dados de identificação válidos.", variant: "destructive" });
       return;
     }
+    
+    let inferredManufacturer = parsedData.manufacturer || '';
+    let inferredModel = parsedData.model || '';
+
+    // Tenta inferir Fabricante e Modelo a partir do mapeamento
+    if (inferredModel && MODEL_MAPPING[inferredModel]) {
+        const mapped = MODEL_MAPPING[inferredModel];
+        inferredManufacturer = mapped.manufacturer;
+        inferredModel = mapped.model;
+    } else if (parsedData.chromebookId && MODEL_MAPPING[parsedData.chromebookId]) {
+        // Caso o ID do chromebook seja o modelo (menos comum, mas como fallback)
+        const mapped = MODEL_MAPPING[parsedData.chromebookId];
+        inferredManufacturer = mapped.manufacturer;
+        inferredModel = mapped.model;
+    }
+
 
     setFormData(prev => ({
       ...prev,
       chromebookId: parsedData.chromebookId || prev.chromebookId,
-      model: parsedData.model || prev.model,
+      model: inferredModel || prev.model,
       serialNumber: parsedData.serialNumber || prev.serialNumber,
       patrimonyNumber: parsedData.patrimonyNumber || prev.patrimonyNumber,
-      manufacturer: parsedData.manufacturer || prev.manufacturer,
+      manufacturer: inferredManufacturer || prev.manufacturer,
       observations: "Re-cadastrado via QR Code",
     }));
     setIsDataLoaded(true);
