@@ -27,6 +27,15 @@ interface StaffData {
   email: string;
 }
 
+// --- Validações de Domínio ---
+const DOMAIN_SUFFIX_ALUNO = '@sj.g12.br';
+const DOMAIN_SUFFIX_PROFESSOR = '@sj.pro.br';
+const DOMAIN_SUFFIX_FUNCIONARIO = '@colegiosaojudas.com.br';
+
+const validateEmailDomain = (email: string, expectedSuffix: string): boolean => {
+  return email.endsWith(expectedSuffix);
+};
+
 export const useDatabase = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
@@ -569,6 +578,12 @@ export const useDatabase = () => {
       return null;
     }
 
+    // Validação de domínio para aluno
+    if (!validateEmailDomain(data.email, DOMAIN_SUFFIX_ALUNO)) {
+        toast({ title: "Erro de Validação", description: `Email de aluno deve terminar com ${DOMAIN_SUFFIX_ALUNO}`, variant: "destructive" });
+        return null;
+    }
+
     setLoading(true);
     try {
       // Chama a RPC ao invés de insert direto
@@ -596,6 +611,11 @@ export const useDatabase = () => {
       toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
       return false;
     }
+    // Validação de domínio para aluno, se o email estiver sendo atualizado
+    if (data.email && !validateEmailDomain(data.email, DOMAIN_SUFFIX_ALUNO)) {
+        toast({ title: "Erro de Validação", description: `Email de aluno deve terminar com ${DOMAIN_SUFFIX_ALUNO}`, variant: "destructive" });
+        return false;
+    }
     setLoading(true);
     try {
       const { error } = await supabase
@@ -615,11 +635,17 @@ export const useDatabase = () => {
   }, [user]);
 
 
-  // Teacher operations - ATUALIZADO PARA USAR RPC
+  // Teacher operations - ATUALIZADO PARA USAR RPC e VALIDAR DOMÍNIO
   const createTeacher = useCallback(async (data: TeacherData): Promise<any> => {
     if (!user) {
       toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
       return null;
+    }
+
+    // Validação de domínio para professor
+    if (!validateEmailDomain(data.email, DOMAIN_SUFFIX_PROFESSOR)) {
+        toast({ title: "Erro de Validação", description: `Email de professor deve terminar com ${DOMAIN_SUFFIX_PROFESSOR}`, variant: "destructive" });
+        return null;
     }
 
     setLoading(true);
@@ -648,6 +674,11 @@ export const useDatabase = () => {
       toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
       return false;
     }
+    // Validação de domínio para professor, se o email estiver sendo atualizado
+    if (data.email && !validateEmailDomain(data.email, DOMAIN_SUFFIX_PROFESSOR)) {
+        toast({ title: "Erro de Validação", description: `Email de professor deve terminar com ${DOMAIN_SUFFIX_PROFESSOR}`, variant: "destructive" });
+        return false;
+    }
     setLoading(true);
     try {
       const { error } = await supabase
@@ -667,11 +698,17 @@ export const useDatabase = () => {
   }, [user]);
 
 
-  // Staff operations - ATUALIZADO PARA USAR RPC
+  // Staff operations - ATUALIZADO PARA USAR RPC e VALIDAR DOMÍNIO
   const createStaff = useCallback(async (data: StaffData): Promise<any> => {
     if (!user) {
       toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
       return null;
+    }
+
+    // Validação de domínio para funcionário
+    if (!validateEmailDomain(data.email, DOMAIN_SUFFIX_FUNCIONARIO)) {
+        toast({ title: "Erro de Validação", description: `Email de funcionário deve terminar com ${DOMAIN_SUFFIX_FUNCIONARIO}`, variant: "destructive" });
+        return null;
     }
 
     setLoading(true);
@@ -698,6 +735,11 @@ export const useDatabase = () => {
     if (!user) {
       toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
       return false;
+    }
+    // Validação de domínio para funcionário, se o email estiver sendo atualizado
+    if (data.email && !validateEmailDomain(data.email, DOMAIN_SUFFIX_FUNCIONARIO)) {
+        toast({ title: "Erro de Validação", description: `Email de funcionário deve terminar com ${DOMAIN_SUFFIX_FUNCIONARIO}`, variant: "destructive" });
+        return false;
     }
     setLoading(true);
     try {
@@ -726,6 +768,12 @@ export const useDatabase = () => {
 
     setLoading(true);
     try {
+      // Validação de domínio para todos os alunos no lote
+      for (const student of students) {
+        if (!validateEmailDomain(student.email, DOMAIN_SUFFIX_ALUNO)) {
+            throw new Error(`Email de aluno inválido: ${student.email}. Deve terminar com ${DOMAIN_SUFFIX_ALUNO}`);
+        }
+      }
       const { error } = await supabase
         .from('alunos')
         .insert(students);
@@ -734,6 +782,7 @@ export const useDatabase = () => {
       return true;
     } catch (error: any) {
       console.error('Erro ao importar alunos:', error);
+      toast({ title: "Erro", description: error.message, variant: "destructive" });
       return false;
     } finally {
       setLoading(false);
