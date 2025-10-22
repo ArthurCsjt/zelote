@@ -279,7 +279,7 @@ export const UserManagement = () => {
             <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={handleDeleteUserConfirm}>
               Excluir
             </AlertDialogAction>
-          </DialogFooter>
+          </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
       
@@ -298,7 +298,7 @@ export const UserManagement = () => {
               <Trash2 className="h-4 w-4 mr-2" />
               Cancelar Convite
             </AlertDialogAction>
-          </DialogFooter>
+          </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </div>
