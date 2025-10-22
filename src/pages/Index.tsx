@@ -9,16 +9,15 @@ import { AuditHub } from '@/components/audit/AuditHub';
 import { useState } from "react";
 import { RegistrationHub } from "@/components/RegistrationHub";
 import Layout from "@/components/Layout";
-// import { ReturnDialog } from "@/components/ReturnDialog"; // REMOVIDO
 import { MainMenu } from "@/components/MainMenu";
 import { InventoryHub } from "@/components/InventoryHub";
 import { Dashboard } from "@/components/Dashboard";
 import { QRCodeModal } from "@/components/QRCodeModal";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { LoanHub } from "@/components/LoanHub";
-// import type { ReturnFormData } from "@/types/database"; // REMOVIDO
 import { useDatabase } from "@/hooks/useDatabase";
-import { QuickRegisterWrapper } from '@/components/QuickRegisterWrapper'; // NOVO IMPORT
+import { QuickRegisterWrapper } from '@/components/QuickRegisterWrapper';
+import { ReturnWrapper } from '@/components/ReturnWrapper'; // NOVO IMPORT
 
 const Index = () => {
   // ADIÇÃO: Chamamos os hooks de autenticação aqui, no componente "pai"
@@ -26,19 +25,24 @@ const Index = () => {
   const { isAdmin, loading: roleLoading } = useProfileRole(user);
   const { loading: dbLoading } = useDatabase();
 
-  const [currentView, setCurrentView] = useState<'menu' | 'registration' | 'dashboard' | 'inventory' | 'loan' | 'audit' | 'quick-register'>('menu');
+  const [currentView, setCurrentView] = useState<'menu' | 'registration' | 'dashboard' | 'inventory' | 'loan' | 'audit' | 'quick-register' | 'return'>('menu');
   const [loanTabDefault, setLoanTabDefault] = useState<'form' | 'active'>('form'); // NOVO ESTADO
   const [showQRCodeModal, setShowQRCodeModal] = useState(false);
   const [selectedChromebookId, setSelectedChromebookId] = useState<string | null>(null);
 
   const handleNavigation = (route: 'registration' | 'dashboard' | 'inventory' | 'loan' | 'return' | 'audit' | 'quick-register') => {
+    // Se a rota for 'return', navegamos diretamente para a view 'return'
     if (route === 'return') {
-      setCurrentView('loan');
-      setLoanTabDefault('active'); // Define a aba inicial como 'active' (Empréstimos Ativos)
+      setCurrentView('return');
       return;
     }
+    
+    // Se a rota for 'loan', definimos a aba padrão como 'form'
+    if (route === 'loan') {
+      setLoanTabDefault('form');
+    }
+    
     setCurrentView(route);
-    setLoanTabDefault('form'); // Padrão para 'form' (Novo Empréstimo)
   };
 
   const handleBackToMenu = () => {
@@ -79,6 +83,8 @@ const Index = () => {
         return <AuditHub />;
       case 'quick-register':
         return <QuickRegisterWrapper onBack={handleBackToMenu} onRegistrationSuccess={handleRegistrationSuccess} />;
+      case 'return': // NOVO CASO
+        return <ReturnWrapper onBack={handleBackToMenu} />;
       default:
         return <MainMenu onNavigate={handleNavigation} />;
     }
