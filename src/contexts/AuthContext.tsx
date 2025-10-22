@@ -9,7 +9,7 @@ export interface AuthContextType {
   login: (email: string, password: string) => Promise<{ success: boolean; error: string | null; }>;
   loginWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
-  register: (email: string, password: string) => Promise<{ success: boolean; error: string | null; }>;
+  // register: (email: string, password: string) => Promise<{ success: boolean; error: string | null; }>; // Removido
   resetPassword: (email: string) => Promise<{ success: boolean; error: string | null; }>;
   verifyEmail: (email: string) => boolean;
 }
