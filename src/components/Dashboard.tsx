@@ -18,7 +18,7 @@ import { GlassCard } from "./ui/GlassCard";
 import { useDashboardData, PeriodView } from '@/hooks/useDashboardData';
 import { Skeleton } from "./ui/skeleton";
 import { DashboardFilter } from "./DashboardFilter"; // NOVO IMPORT
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip"; // Importando Tooltip
+import { Tooltip as ShadcnTooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip"; // Importando Tooltip como ShadcnTooltip
 
 interface DashboardProps {
   onBack?: () => void;
@@ -59,7 +59,7 @@ const StatsGrid = ({ periodView, stats, filteredLoans, filteredReturns, loading 
         {/* CARD 1: Empréstimos Ativos (Contagem de ativos) */}
         <GlassCard className="border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-blue-500">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <Tooltip delayDuration={300}>
+            <ShadcnTooltip delayDuration={300}>
               <TooltipTrigger asChild>
                 <CardTitle className="text-xs sm:text-sm font-medium flex items-center gap-1 cursor-help">
                   Empréstimos Ativos
@@ -69,7 +69,7 @@ const StatsGrid = ({ periodView, stats, filteredLoans, filteredReturns, loading 
               <TooltipContent className="max-w-xs text-xs">
                 <p>Número de Chromebooks atualmente emprestados (status 'emprestado').</p>
               </TooltipContent>
-            </Tooltip>
+            </ShadcnTooltip>
             <Computer className="h-4 w-4 sm:h-5 sm:w-5 text-blue-500" />
           </CardHeader>
           <CardContent>
@@ -83,7 +83,7 @@ const StatsGrid = ({ periodView, stats, filteredLoans, filteredReturns, loading 
         {/* CARD 2: Taxa de Uso do Inventário (CORRIGIDO: ativos / total de móveis) */}
         <GlassCard className="border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-green-500">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <Tooltip delayDuration={300}>
+            <ShadcnTooltip delayDuration={300}>
               <TooltipTrigger asChild>
                 <CardTitle className="text-xs sm:text-sm font-medium flex items-center gap-1 cursor-help">
                   Taxa de Uso Atual
@@ -93,7 +93,7 @@ const StatsGrid = ({ periodView, stats, filteredLoans, filteredReturns, loading 
               <TooltipContent className="max-w-xs text-xs">
                 <p>Porcentagem de Chromebooks móveis que estão emprestados neste exato momento.</p>
               </TooltipContent>
-            </Tooltip>
+            </ShadcnTooltip>
             <Computer className="h-4 w-4 sm:h-5 sm:w-5 text-green-500" />
           </CardHeader>
           <CardContent>
@@ -110,7 +110,7 @@ const StatsGrid = ({ periodView, stats, filteredLoans, filteredReturns, loading 
         {/* NOVO CARD: Ocupação Máxima */}
         <GlassCard className="border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-red-500">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <Tooltip delayDuration={300}>
+            <ShadcnTooltip delayDuration={300}>
               <TooltipTrigger asChild>
                 <CardTitle className="text-xs sm:text-sm font-medium flex items-center gap-1 cursor-help">
                   Ocupação Máxima
@@ -120,7 +120,7 @@ const StatsGrid = ({ periodView, stats, filteredLoans, filteredReturns, loading 
               <TooltipContent className="max-w-xs text-xs">
                 <p>O pico de uso (em %) atingido durante o período e horário selecionados no filtro.</p>
               </TooltipContent>
-            </Tooltip>
+            </ShadcnTooltip>
             <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-red-500" />
           </CardHeader>
           <CardContent>
@@ -134,7 +134,7 @@ const StatsGrid = ({ periodView, stats, filteredLoans, filteredReturns, loading 
         {/* CARD 3: Tempo Médio (Mantido) */}
         <GlassCard className="border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-purple-500">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <Tooltip delayDuration={300}>
+            <ShadcnTooltip delayDuration={300}>
               <TooltipTrigger asChild>
                 <CardTitle className="text-xs sm:text-sm font-medium flex items-center gap-1 cursor-help">
                   Tempo Médio de Uso
@@ -144,7 +144,7 @@ const StatsGrid = ({ periodView, stats, filteredLoans, filteredReturns, loading 
               <TooltipContent className="max-w-xs text-xs">
                 <p>Duração média (em minutos) dos empréstimos que foram devolvidos no período selecionado.</p>
               </TooltipContent>
-            </Tooltip>
+            </ShadcnTooltip>
             <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-purple-500" />
           </CardHeader>
           <CardContent>
@@ -160,7 +160,7 @@ const StatsGrid = ({ periodView, stats, filteredLoans, filteredReturns, loading 
         {/* CARD 4: Taxa de Devolução (Mantido) */}
         <GlassCard className="border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-orange-500">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <Tooltip delayDuration={300}>
+            <ShadcnTooltip delayDuration={300}>
               <TooltipTrigger asChild>
                 <CardTitle className="text-xs sm:text-sm font-medium flex items-center gap-1 cursor-help">
                   Taxa de Devolução
@@ -170,7 +170,7 @@ const StatsGrid = ({ periodView, stats, filteredLoans, filteredReturns, loading 
               <TooltipContent className="max-w-xs text-xs">
                 <p>Porcentagem de empréstimos realizados no período que já foram devolvidos.</p>
               </TooltipContent>
-            </Tooltip>
+            </ShadcnTooltip>
             <Activity className="h-4 w-4 sm:h-5 sm:w-5 text-orange-500" />
           </CardHeader>
           <CardContent>
@@ -363,7 +363,7 @@ export function Dashboard({
                 startHour={startHour}
                 setStartHour={setStartHour}
                 endHour={endHour}
-                setEndHour={setEndHour}
+                setEndHour={endHour}
                 onApply={refreshData} // Força o recálculo dos dados
                 loading={loading}
             />
