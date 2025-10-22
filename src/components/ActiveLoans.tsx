@@ -277,12 +277,11 @@ export function ActiveLoans({ onBack }: ActiveLoansProps) {
       <ReturnDialog
         open={openReturnDialog}
         onOpenChange={setOpenReturnDialog}
-        chromebookId={selectedLoan?.chromebook_id || ""}
-        onChromebookIdChange={() => {}} // Não editável neste contexto
         returnData={returnData}
         onReturnDataChange={setReturnData}
         onConfirm={handleReturn}
         isProcessing={dbLoading}
+        initialDeviceIds={batchReturnIds} // PASSANDO A NOVA PROP
       />
     </div>
   );

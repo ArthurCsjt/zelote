@@ -22,12 +22,13 @@ import type { ReturnFormData } from '@/types/database'; // IMPORT CORRETO
 interface ReturnDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  chromebookId: string; // Mantido para compatibilidade, mas não usado
-  onChromebookIdChange: (id: string) => void; // Mantido para compatibilidade, mas não usado
+  // chromebookId: string; // REMOVIDO
+  // onChromebookIdChange: (id: string) => void; // REMOVIDO
   returnData: ReturnFormData & { notes?: string }; // Usando ReturnFormData
   onReturnDataChange: (data: ReturnFormData & { notes?: string }) => void;
   onConfirm: (ids: string[], returnData: ReturnFormData & { notes?: string }) => void; // ALTERADO: Incluindo notes
   isProcessing: boolean; // NOVO: Estado de processamento
+  initialDeviceIds: string[]; // NOVO: Para pré-carregar IDs (usado no fluxo de empréstimo ativo)
 }
 
 /**
@@ -36,18 +37,26 @@ interface ReturnDialogProps {
 export function ReturnDialog({
   open,
   onOpenChange,
-  chromebookId,
-  onChromebookIdChange, // Mantido para compatibilidade
+  // chromebookId, // REMOVIDO
+  // onChromebookIdChange, // REMOVIDO
   onReturnDataChange,
   returnData, // Acessando a prop
   onConfirm,
-  isProcessing // NOVO: Recebendo a prop
+  isProcessing, // NOVO: Recebendo a prop
+  initialDeviceIds, // NOVO: Recebendo IDs iniciais
 }: ReturnDialogProps) {
   // === ESTADOS (STATES) ===
   
-  const [deviceIds, setDeviceIds] = useState<string[]>([]); // Lista de IDs de dispositivos
+  const [deviceIds, setDeviceIds] = useState<string[]>(initialDeviceIds); // Lista de IDs de dispositivos
   const [confirmChecked, setConfirmChecked] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserSearchResult | null>(null);
+  
+  // Sincroniza IDs iniciais quando o diálogo abre
+  React.useEffect(() => {
+    if (open) {
+        setDeviceIds(initialDeviceIds);
+    }
+  }, [open, initialDeviceIds]);
 
   // === FUNÇÕES DE MANIPULAÇÃO (HANDLERS) ===
 

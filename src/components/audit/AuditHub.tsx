@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, Plus, History, FileText, Trash2, ListChecks, BarChart3 } from 'lucide-react';
+import { Loader2, Plus, History, FileText, Trash2, ListChecks, BarChart3, Eye } from 'lucide-react';
 import { AuditScanner } from './AuditScanner';
 import { AuditStats } from './AuditStats';
 import { AuditFiltersComponent } from './AuditFilters';
@@ -31,7 +31,9 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { GlassCard, CardFooter } from '@/components/ui/GlassCard'; // Importando GlassCard
+import { GlassCard, CardFooter } from '@/components/ui/GlassCard';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'; // Importando Dialog
+import type { AuditReport, InventoryAudit } from '@/types/database'; // Importando tipos
 
  
 
@@ -53,6 +55,13 @@ export const AuditHub = () => {
   } = useAudit();
   const [newAuditName, setNewAuditName] = useState('');
   const [activeTab, setActiveTab] = useState('current');
+  
+  // NOVO ESTADO: Para exibir o relatório detalhado de uma auditoria concluída
+  const [reportModalOpen, setReportModalOpen] = useState(false);
+  const [detailedReport, setDetailedReport] = useState<AuditReport | null>(null);
+  const [reportAuditName, setReportAuditName] = useState('');
+  const [isReportLoading, setIsReportLoading] = useState(false);
+
 
   const handleTabChange = (value: string) => {
     setActiveTab(value);
@@ -66,6 +75,17 @@ export const AuditHub = () => {
       startAudit(newAuditName.trim());
       setNewAuditName('');
     }
+  };
+  
+  const handleViewReport = async (audit: InventoryAudit) => {
+    setIsReportLoading(true);
+    setReportAuditName(audit.audit_name);
+    setReportModalOpen(true);
+    
+    const report = await generateReport(audit.id);
+    
+    setDetailedReport(report);
+    setIsReportLoading(false);
   };
 
   const stats = calculateStats();
@@ -166,6 +186,7 @@ export const AuditHub = () => {
                       <TableHead className="text-right">Finalizada</TableHead>
                       <TableHead className="text-right">Itens</TableHead>
                       <TableHead className="text-right">Conclusão</TableHead>
+                      <TableHead className="text-right">Ações</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -182,6 +203,11 @@ export const AuditHub = () => {
                           {audit.total_expected && audit.total_counted
                             ? `${((audit.total_counted / audit.total_expected) * 100).toFixed(1)}%`
                             : 'N/A'}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button variant="ghost" size="sm" onClick={() => handleViewReport(audit)}>
+                            <Eye className="h-4 w-4" />
+                          </Button>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -238,27 +264,32 @@ export const AuditHub = () => {
                             : 'N/A'}
                         </TableCell>
                         <TableCell className="text-right">
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700">
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>Excluir Auditoria</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  Esta ação removerá a auditoria "{audit.audit_name}" e todos os itens relacionados. Deseja continuar?
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => deleteAudit(audit.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                                  Excluir
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
+                          <div className="flex justify-end gap-2">
+                            <Button variant="ghost" size="sm" onClick={() => handleViewReport(audit)} title="Ver Relatório Detalhado">
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700">
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Excluir Auditoria</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Esta ação removerá a auditoria "{audit.audit_name}" e todos os itens relacionados. Deseja continuar?
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                  <AlertDialogAction onClick={() => deleteAudit(audit.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                                    Excluir
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -271,6 +302,23 @@ export const AuditHub = () => {
           </GlassCard>
         </TabsContent>
       </Tabs>
+      
+      {/* Modal de Relatório Detalhado */}
+      <Dialog open={reportModalOpen} onOpenChange={setReportModalOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold">{reportAuditName}</DialogTitle>
+          </DialogHeader>
+          {isReportLoading ? (
+            <div className="flex justify-center items-center h-64">
+              <Loader2 className="h-8 w-8 animate-spin text-menu-teal" />
+              <p className="ml-3 text-muted-foreground">Gerando relatório detalhado...</p>
+            </div>
+          ) : (
+            <AuditReportComponent report={detailedReport} auditName={reportAuditName} />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

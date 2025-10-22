@@ -84,31 +84,36 @@ export const useInventoryAudit = () => {
     }
   }, [user]);
 
+  // Função auxiliar para buscar todos os Chromebooks e calcular estatísticas de inventário
+  const loadAllChromebooks = useCallback(async () => {
+    const { data: allCbData, error: allCbError } = await supabase
+      .from<any>('chromebooks')
+      .select('*');
+
+    if (allCbError) throw allCbError;
+    
+    const chromebooks = (allCbData || []) as Chromebook[];
+    setAllChromebooks(chromebooks);
+    setTotalExpected(chromebooks.length);
+
+    const stats = {
+      total: chromebooks.length,
+      disponiveis: chromebooks.filter(cb => cb.status === 'disponivel').length,
+      emprestados: chromebooks.filter(cb => cb.status === 'emprestado').length,
+      fixos: chromebooks.filter(cb => cb.status === 'fixo').length,
+    };
+    setInventoryStats(stats);
+    return chromebooks;
+  }, []);
+
   // Carrega auditoria ativa e itens
   const loadActiveAudit = useCallback(async () => {
     if (!user?.id) return;
     try {
       setIsProcessing(true);
       
-      // 1. Otimização: Buscar todos os Chromebooks em uma única chamada
-      const { data: allCbData, error: allCbError } = await supabase
-        .from<any>('chromebooks')
-        .select('*');
-
-      if (allCbError) throw allCbError;
-      
-      const chromebooks = (allCbData || []) as Chromebook[];
-      setAllChromebooks(chromebooks);
-      setTotalExpected(chromebooks.length);
-
-      // Calcular estatísticas de inventário no cliente
-      const stats = {
-        total: chromebooks.length,
-        disponiveis: chromebooks.filter(cb => cb.status === 'disponivel').length,
-        emprestados: chromebooks.filter(cb => cb.status === 'emprestado').length,
-        fixos: chromebooks.filter(cb => cb.status === 'fixo').length,
-      };
-      setInventoryStats(stats);
+      const chromebooks = await loadAllChromebooks();
+      const chromebookMap = new Map(chromebooks.map((cb: Chromebook) => [cb.id, cb]));
 
       // 2. Buscar auditoria ativa
       const { data: auditData, error: auditError } = await supabase
@@ -133,8 +138,6 @@ export const useInventoryAudit = () => {
         if (itemsError) throw itemsError;
 
         // Mapear itens contados com detalhes do chromebook
-        const chromebookMap = new Map(chromebooks.map((cb: Chromebook) => [cb.id, cb]));
-
         const fullItems = (items || []).map((item: any) => {
           const chromebook = chromebookMap.get(item.chromebook_id);
           const display: DisplayCountedItem = {
@@ -159,7 +162,47 @@ export const useInventoryAudit = () => {
     } finally {
       setIsProcessing(false);
     }
-  }, [user]);
+  }, [user, loadAllChromebooks]);
+
+  // NOVO: Função para carregar detalhes de auditorias concluídas
+  const loadAuditReportDetails = useCallback(async (auditId: string): Promise<DisplayCountedItem[] | null> => {
+    try {
+      // 1. Buscar todos os Chromebooks (necessário para mapear IDs)
+      const chromebooks = await loadAllChromebooks();
+      const chromebookMap = new Map(chromebooks.map((cb: Chromebook) => [cb.id, cb]));
+
+      // 2. Buscar itens contados para o auditId
+      const { data: items, error: itemsError } = await supabase
+        .from<any>('audit_items')
+        .select('*')
+        .eq('audit_id', auditId)
+        .order('counted_at', { ascending: false });
+      
+      if (itemsError) throw itemsError;
+
+      // 3. Mapear itens contados com detalhes do chromebook
+      const fullItems = (items || []).map((item: any) => {
+        const chromebook = chromebookMap.get(item.chromebook_id);
+        const display: DisplayCountedItem = {
+          ...item,
+          display_id: chromebook?.chromebook_id || 'ID não encontrado',
+          model: chromebook?.model,
+          manufacturer: chromebook?.manufacturer ?? undefined,
+          serial_number: chromebook?.serial_number ?? undefined,
+          location: chromebook?.location ?? undefined,
+          condition: chromebook?.condition ?? undefined,
+          status: chromebook?.status,
+        } as DisplayCountedItem;
+        return display;
+      });
+      
+      return fullItems;
+    } catch (e: any) {
+      toast({ title: 'Erro ao carregar relatório', description: e.message, variant: 'destructive' });
+      return null;
+    }
+  }, [loadAllChromebooks]);
+
 
   // Recarregar quando montar
   useEffect(() => {
@@ -359,55 +402,68 @@ export const useInventoryAudit = () => {
   };
   
   // NOVO: Função para gerar relatório de qualquer auditoria (ativa ou concluída)
-  const generateReport = useCallback((auditId: string): AuditReport | null => {
+  const generateReport = useCallback(async (auditId: string): Promise<AuditReport | null> => {
     const audit = completedAudits.find(a => a.id === auditId);
     
-    if (!audit) {
-      // Se não for a auditoria ativa, precisamos buscar os dados (simplificado para o escopo atual)
-      // Para o MVP, vamos apenas retornar o relatório da última auditoria concluída se for a aba de relatórios
-      if (activeAudit?.id === auditId) {
-        return calculateActiveReport();
-      }
-      
-      // Se for uma auditoria concluída, precisamos de uma lógica mais complexa para buscar os itens
-      // e os dados de chromebooks daquele momento.
-      // Por simplicidade, vamos apenas retornar o relatório da última concluída se for a aba de relatórios
-      // e o ID for o da última concluída.
-      if (completedAudits.length > 0 && completedAudits[0].id === auditId) {
-        // Para gerar o relatório de uma auditoria concluída, precisaríamos re-executar a lógica de cálculo
-        // com os dados históricos. Como isso é complexo e exige mais chamadas ao DB,
-        // vamos simplificar: se for a última concluída, usaremos os dados resumidos.
-        // No entanto, para o componente AuditReportComponent funcionar, ele precisa de dados detalhados.
-        
-        // Para evitar complexidade excessiva de busca de dados históricos, vamos manter o foco
-        // no relatório da auditoria ATIVA (se houver) ou apenas exibir o resumo da última concluída.
-        // Como o AuditReportComponent espera dados detalhados, vamos apenas retornar null
-        // e deixar o componente de relatório lidar com a ausência de dados detalhados.
-        return null;
-      }
-      
-      return null;
+    if (activeAudit?.id === auditId) {
+      // Se for a auditoria ativa, usa os dados em tempo real
+      return calculateActiveReport();
     }
     
-    // Se for a última auditoria concluída, podemos tentar gerar um relatório básico
-    // usando os dados resumidos salvos no DB (total_counted, total_expected).
-    // No entanto, o AuditReportComponent espera dados de discrepância e estatísticas detalhadas.
+    if (audit) {
+      // Se for uma auditoria concluída, carrega os detalhes
+      const detailedItems = await loadAuditReportDetails(auditId);
+      
+      if (!detailedItems) return null;
+      
+      // Recalcula o relatório usando os dados históricos
+      const { missingItems: historicalMissing, calculateStats: calculateHistoricalStats } = useAuditCalculations(
+        audit, // Passa a auditoria concluída
+        detailedItems, // Passa os itens contados históricos
+        allChromebooks, // Usa a lista completa de chromebooks (para calcular faltantes)
+        audit.total_expected || allChromebooks.length // Usa o total esperado salvo ou o total atual
+      );
+      
+      // Força o cálculo do relatório final com os dados históricos
+      const historicalStats = calculateHistoricalStats();
+      
+      // Recria a estrutura do relatório
+      const report: AuditReport = {
+        summary: {
+          totalCounted: historicalStats.totalCounted,
+          totalExpected: audit.total_expected || allChromebooks.length,
+          completionRate: historicalStats.completionRate,
+          duration: audit.completed_at ? (new Date(audit.completed_at).getTime() - new Date(audit.started_at).getTime() > 0 ? 'Calculando...' : 'N/A') : 'N/A', // Duração precisa de cálculo mais complexo
+          itemsPerHour: 0, // Recalculado no useAuditCalculations
+          averageTimePerItem: '0s', // Recalculado no useAuditCalculations
+        },
+        discrepancies: { 
+          missing: historicalMissing.map(item => ({
+            chromebook_id: item.chromebook_id,
+            expected_location: item.location,
+            condition_expected: item.condition,
+          })), 
+          extra: [], 
+          locationMismatches: [], 
+          conditionIssues: [] 
+        },
+        statistics: historicalStats,
+      };
+      
+      // Recalcula a duração e eficiência usando o hook de cálculo com os dados históricos
+      const { generateReport: calculateFinalReport } = useAuditCalculations(
+        audit, 
+        detailedItems, 
+        allChromebooks, 
+        audit.total_expected || allChromebooks.length
+      );
+      
+      return calculateFinalReport();
+    }
     
-    // Para o MVP, vamos apenas retornar um relatório básico com o resumo.
-    return {
-      summary: {
-        totalCounted: audit.total_counted || 0,
-        totalExpected: audit.total_expected || 0,
-        completionRate: audit.total_expected && audit.total_counted ? `${((audit.total_counted / audit.total_expected) * 100).toFixed(1)}%` : '0.0%',
-        duration: 'N/A', // Não temos a duração detalhada salva
-        itemsPerHour: 0,
-        averageTimePerItem: '0s',
-      },
-      discrepancies: { missing: [], extra: [], locationMismatches: [], conditionIssues: [] },
-      statistics: { byLocation: [], byMethod: { qr_code: 0, manual: 0, percentage_qr: 0, percentage_manual: 0 }, byCondition: [], byTime: [] },
-    };
+    return null;
     
-  }, [activeAudit, calculateActiveReport, completedAudits]);
+  }, [activeAudit, completedAudits, calculateActiveReport, loadAuditReportDetails, allChromebooks]);
 
 
   return {

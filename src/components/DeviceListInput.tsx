@@ -65,17 +65,24 @@ export function DeviceListInput({ deviceIds, setDeviceIds, disabled, filterStatu
       return { error: `Chromebook ${normalizedInput} não encontrado no inventário.` };
     }
     
+    // 1. Validação de Status (baseada no cache local)
     if (chromebook.status !== requiredStatus) {
       return { error: `Status Incorreto: ${chromebook.status.toUpperCase()}. Requerido: ${requiredStatusLabel}.` };
     }
 
-    // NOVO PASSO DE VALIDAÇÃO: Verificar se há um empréstimo ativo (APENAS PARA DEVOLUÇÃO)
+    // 2. Validação de Empréstimo Ativo (Verificação de consistência com o DB)
+    const activeLoans = await getActiveLoans();
+    const isActiveLoan = activeLoans.some(loan => loan.chromebook_id === normalizedInput);
+    
     if (requiredStatus === 'emprestado') {
-        const activeLoans = await getActiveLoans();
-        const isActiveLoan = activeLoans.some(loan => loan.chromebook_id === normalizedInput);
-        
+        // Fluxo de Devolução: Deve ter um empréstimo ativo
         if (!isActiveLoan) {
             return { error: `O Chromebook ${normalizedInput} não possui um empréstimo ativo registrado no sistema.` };
+        }
+    } else if (requiredStatus === 'disponivel') {
+        // Fluxo de Empréstimo: Não deve ter um empréstimo ativo (mesmo que o status local seja 'disponivel')
+        if (isActiveLoan) {
+            return { error: `O Chromebook ${normalizedInput} está marcado como 'disponível', mas possui um empréstimo ativo no sistema. Tente sincronizar o status.` };
         }
     }
 

@@ -75,12 +75,11 @@ export const ReturnWrapper: React.FC<ReturnWrapperProps> = ({ onBack }) => {
       <ReturnDialog
         open={open}
         onOpenChange={handleOpenChange}
-        chromebookId={""} // Não usado no fluxo de lote
-        onChromebookIdChange={() => {}}
         returnData={returnData}
         onReturnDataChange={setReturnData}
         onConfirm={handleConfirmReturn}
         isProcessing={dbLoading}
+        initialDeviceIds={[]} // Inicia vazio no fluxo de lote
       />
     </div>
   );
