@@ -18,7 +18,13 @@ export function OverdueAlertsPanel() {
   };
   
   const handleForceReturn = async (loan: any) => {
-    const success = await forceReturnLoan(loan);
+    // CRÍTICO: Mapear loan_id para id, pois forceReturnLoan espera LoanHistoryItem
+    const loanToReturn = {
+        ...loan,
+        id: loan.loan_id, // Garante que o ID do empréstimo esteja na propriedade 'id'
+    };
+    
+    const success = await forceReturnLoan(loanToReturn);
     if (success) {
         refresh(); // Atualiza a lista para remover o item devolvido
     }
@@ -191,5 +197,3 @@ export function OverdueAlertsPanel() {
         </Button>
       </div>
     </div>
-  );
-}
