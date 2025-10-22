@@ -31,17 +31,7 @@ const Settings = () => {
     navigate('/login', { replace: true });
   };
 
-  const getThemeIcon = (currentTheme: string) => {
-    switch (currentTheme) {
-      case 'dark':
-        return <Moon className="h-4 w-4 mr-2" />;
-      case 'system':
-        return <Monitor className="h-4 w-4 mr-2" />;
-      case 'light':
-      default:
-        return <Sun className="h-4 w-4 mr-2" />;
-    }
-  };
+  // Funções de tema removidas, pois o tema é fixo em 'light'
 
   return (
     <Layout title="Configurações" subtitle="Gerencie configurações administrativas" showBackButton onBack={() => navigate(-1)}>
@@ -52,35 +42,7 @@ const Settings = () => {
           <>
             <UserManagement />
             <DataMaintenance />
-            <GlassCard>
-              <CardHeader>
-                <CardTitle>Preferências do Sistema</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="theme-select">Tema da Interface</Label>
-                  <Select value={theme} onValueChange={(value) => setTheme(value as 'light' | 'dark' | 'system')}>
-                    <SelectTrigger id="theme-select" className="w-[200px]">
-                      <div className="flex items-center">
-                        {getThemeIcon(theme)}
-                        <SelectValue placeholder="Selecionar tema" />
-                      </div>
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="light">
-                        <div className="flex items-center"><Sun className="h-4 w-4 mr-2" /> Claro</div>
-                      </SelectItem>
-                      <SelectItem value="dark">
-                        <div className="flex items-center"><Moon className="h-4 w-4 mr-2" /> Escuro</div>
-                      </SelectItem>
-                      <SelectItem value="system">
-                        <div className="flex items-center"><Monitor className="h-4 w-4 mr-2" /> Sistema</div>
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </CardContent>
-            </GlassCard>
+            {/* Preferências do Sistema (Removido o seletor de tema) */}
           </>
         ) : (
           <Alert>

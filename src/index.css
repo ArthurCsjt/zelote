@@ -49,56 +49,6 @@
     --menu-teal: 174 70% 40%; /* Nova cor para Sistema de Contagem */
     --menu-teal-hover: 174 70% 35%;
   }
-
-  .dark {
-    --background: 240 10% 8%;
-    --foreground: 0 0% 95%;
-
-    --card: 240 10% 12%;
-    --card-foreground: 0 0% 95%;
-
-    --popover: 240 10% 12%;
-    --popover-foreground: 0 0% 95%;
-
-    --primary: 213 100% 50%;
-    --primary-foreground: 0 0% 98%;
-
-    --secondary: 240 5% 20%;
-    --secondary-foreground: 0 0% 95%;
-
-    --muted: 240 5% 18%;
-    --muted-foreground: 240 5% 70%;
-
-    --accent: 240 5% 20%;
-    --accent-foreground: 0 0% 95%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-
-    --border: 240 5% 25%;
-    --input: 240 5% 18%;
-    --ring: 213 100% 50%;
-
-    /* Menu Button Colors - Dark Mode */
-    --menu-green: 142 76% 36%;
-    --menu-green-hover: 142 76% 32%;
-    --menu-blue: 213 94% 68%;
-    --menu-blue-hover: 213 94% 64%;
-    --menu-violet: 258 90% 66%;
-    --menu-violet-hover: 258 90% 62%;
-    --menu-amber: 45 93% 47%;
-    --menu-amber-hover: 45 93% 43%;
-    --menu-rose: 348 83% 47%;
-    --menu-rose-hover: 348 83% 43%;
-    --menu-teal: 174 70% 40%; /* Nova cor para Sistema de Contagem */
-    --menu-teal-hover: 174 70% 35%;
-
-    /* Back Button - Padrão consistente */
-    --back-button: 0 0% 100%;
-    --back-button-foreground: 240 10% 3.9%;
-    --back-button-border: 214.3 31.8% 91.4%;
-    --back-button-hover: 210 40% 96.1%;
-  }
 }
  
 @layer base {
@@ -110,7 +60,8 @@
     font-family: -apple-system, BlinkMacSystemFont, "San Francisco", "Helvetica Neue", sans-serif;
   }
   
-  body.dark {
+  /* Garantindo que o fundo seja sempre claro */
+  body {
     background: hsl(var(--background));
   }
 }
@@ -130,17 +81,7 @@
   overflow: hidden;
 }
 
-/* DARK MODE ADJUSTMENTS FOR GLASS CARD */
-.dark .glass-card {
-  /* Fundo escuro semi-transparente */
-  background: rgba(30, 30, 30, 0.85); 
-  /* Borda mais escura */
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  /* Sombra interna para dar profundidade */
-  box-shadow: 0 4px 30px 0 rgba(0, 0, 0, 0.3), 
-              0 1px 0 0 rgba(255, 255, 255, 0.05) inset,
-              0 -1px 0 0 rgba(0, 0, 0, 0.2) inset;
-}
+/* DARK MODE ADJUSTMENTS FOR GLASS CARD REMOVIDOS */
 
 /* ... (todo o seu CSS existente continua aqui) ... */
 

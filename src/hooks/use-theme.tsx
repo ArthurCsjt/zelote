@@ -1,61 +1,36 @@
 import { useEffect, useState, useCallback } from 'react';
 
-type Theme = 'light' | 'dark' | 'system';
+type Theme = 'light'; // Simplificado para apenas 'light'
 
 const STORAGE_KEY = 'vite-ui-theme';
 
 export function useTheme() {
-  const [theme, setThemeState] = useState<Theme>(() => {
-    if (typeof window === 'undefined') return 'light';
-    try {
-      return (localStorage.getItem(STORAGE_KEY) as Theme) || 'system';
-    } catch {
-      return 'system';
-    }
-  });
+  const theme: Theme = 'light'; // Força o tema para light
 
-  const applyTheme = useCallback((theme: Theme) => {
+  const applyTheme = useCallback(() => {
     const root = window.document.documentElement;
     root.classList.remove('light', 'dark');
-
-    if (theme === 'system') {
-      const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-      root.classList.add(systemTheme);
-      return systemTheme;
-    }
-
-    root.classList.add(theme);
-    return theme;
+    root.classList.add('light');
+    return 'light';
   }, []);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
     
-    // 1. Aplica o tema inicial
-    applyTheme(theme);
+    // Aplica o tema light imediatamente
+    applyTheme();
 
-    // 2. Listener para mudanças no tema do sistema (se o tema for 'system')
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    const handleSystemChange = () => {
-      if (theme === 'system') {
-        applyTheme('system');
-      }
-    };
-    mediaQuery.addEventListener('change', handleSystemChange);
-
-    return () => mediaQuery.removeEventListener('change', handleSystemChange);
-  }, [theme, applyTheme]);
-
-  const setTheme = useCallback((newTheme: Theme) => {
-    try {
-      localStorage.setItem(STORAGE_KEY, newTheme);
-    } catch {}
-    setThemeState(newTheme);
-    applyTheme(newTheme);
+    // Remove qualquer classe 'dark' que possa ter sido definida
+    window.document.documentElement.classList.remove('dark');
+    
   }, [applyTheme]);
 
-  // Retorna o tema atual (que pode ser 'light', 'dark' ou 'system')
-  // E a função para alterá-lo
+  // A função setTheme agora é um mock que não faz nada, mas mantém a interface
+  const setTheme = useCallback((newTheme: Theme) => {
+    console.warn(`Dark Mode desabilitado. Tentativa de definir tema para: ${newTheme}`);
+  }, []);
+
+  // Retorna o tema atual (light) e a função mock
   return {
     theme,
     setTheme,
