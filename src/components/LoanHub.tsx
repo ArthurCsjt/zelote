@@ -7,10 +7,11 @@ import type { LoanHistoryItem, LoanFormData } from "@/types/database";
 import { TabbedContent } from "./TabbedContent"; // Importando TabbedContent
 
 interface LoanHubProps {
-  onBack: () => void;
+  onBack?: () => void;
+  defaultTab?: 'form' | 'active'; // NOVO: Prop para definir a aba inicial
 }
 
-export const LoanHub = ({ onBack }: LoanHubProps) => {
+export const LoanHub = ({ onBack, defaultTab = 'form' }: LoanHubProps) => {
   const { getLoanHistory } = useDatabase();
   const [activeLoans, setActiveLoans] = useState<LoanHistoryItem[]>([]);
   const [loanHistory, setLoanHistory] = useState<LoanHistoryItem[]>([]);
@@ -49,7 +50,7 @@ export const LoanHub = ({ onBack }: LoanHubProps) => {
       
       <TabbedContent
         tabs={loanTabs}
-        defaultValue="form"
+        defaultValue={defaultTab} {/* USANDO A PROP AQUI */}
         listClassName="grid-cols-2"
       />
     </div>

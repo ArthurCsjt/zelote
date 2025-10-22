@@ -26,25 +26,25 @@ const Index = () => {
   const { isAdmin, loading: roleLoading } = useProfileRole(user);
   const { loading: dbLoading } = useDatabase();
 
-  // REMOVIDO: Estados relacionados ao ReturnDialog
-  // const [openReturnDialog, setOpenReturnDialog] = useState(false);
-  // const [chromebookId, setChromebookId] = useState("");
-  // const [returnData, setReturnData] = useState<ReturnFormData>({ name: "", ra: "", email: "", type: 'individual', userType: 'aluno' });
-  
   const [currentView, setCurrentView] = useState<'menu' | 'registration' | 'dashboard' | 'inventory' | 'loan' | 'audit' | 'quick-register'>('menu');
+  const [loanTabDefault, setLoanTabDefault] = useState<'form' | 'active'>('form'); // NOVO ESTADO
   const [showQRCodeModal, setShowQRCodeModal] = useState(false);
   const [selectedChromebookId, setSelectedChromebookId] = useState<string | null>(null);
 
   const handleNavigation = (route: 'registration' | 'dashboard' | 'inventory' | 'loan' | 'return' | 'audit' | 'quick-register') => {
-    // Se a rota for 'return', redireciona para 'loan'
     if (route === 'return') {
       setCurrentView('loan');
+      setLoanTabDefault('active'); // Define a aba inicial como 'active' (Empréstimos Ativos)
       return;
     }
     setCurrentView(route);
+    setLoanTabDefault('form'); // Padrão para 'form' (Novo Empréstimo)
   };
 
-  const handleBackToMenu = () => setCurrentView('menu');
+  const handleBackToMenu = () => {
+    setCurrentView('menu');
+    setLoanTabDefault('form'); // Reseta para o padrão ao voltar
+  };
 
   const handleGenerateQrCode = (chromebookId: string) => {
     setSelectedChromebookId(chromebookId);
@@ -62,9 +62,6 @@ const Index = () => {
     }
   };
 
-  // REMOVIDO: Função handleReturnClick vazia
-  // const handleReturnClick = () => { /* Sua lógica de devolução */ };
-
   const renderCurrentView = () => {
     switch (currentView) {
       case 'registration':
@@ -76,7 +73,8 @@ const Index = () => {
       case 'inventory':
         return <InventoryHub onBack={handleBackToMenu} onGenerateQrCode={handleGenerateQrCode} />;
       case 'loan':
-        return <LoanHub onBack={handleBackToMenu} />;
+        // PASSANDO A ABA INICIAL CORRETA
+        return <LoanHub onBack={handleBackToMenu} defaultTab={loanTabDefault} />;
       case 'audit':
         return <AuditHub />;
       case 'quick-register':
