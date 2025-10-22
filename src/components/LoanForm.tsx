@@ -29,7 +29,7 @@ interface LoanFormData {
   chromebookId: string; // Mantido para validação, mas não usado diretamente no payload
   purpose: string;
   userType: 'aluno' | 'professor' | 'funcionario';
-  loanType: 'individual' | 'lote'; // Mantido para tipagem, mas será sempre 'lote' na lógica
+  loanType: 'individual' | 'lote'; // Mantido para tipagem
   expectedReturnDate?: Date;
 }
 
@@ -131,7 +131,10 @@ export function LoanForm({ onBack }: LoanFormProps) {
       return;
     }
     
-    // 4. Preparar dados para Empréstimo em Lote (Bulk)
+    // 4. Determinar o tipo de empréstimo
+    const loanType: 'individual' | 'lote' = deviceIds.length === 1 ? 'individual' : 'lote';
+    
+    // 5. Preparar dados para Empréstimo em Lote (Bulk)
     const loanDataList: LoanFormData[] = deviceIds.map(deviceId => ({
       studentName: formData.studentName,
       ra: formData.ra || '',
@@ -139,7 +142,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
       chromebookId: deviceId,
       purpose: formData.purpose,
       userType: formData.userType,
-      loanType: 'lote', // Forçamos 'lote' para o payload, mesmo que seja 1 item
+      loanType: loanType, // USANDO O TIPO CORRETO
       expectedReturnDate: hasReturnDeadline && formData.expectedReturnDate ? formData.expectedReturnDate : undefined,
     }));
     
