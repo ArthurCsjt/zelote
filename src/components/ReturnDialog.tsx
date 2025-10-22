@@ -26,7 +26,7 @@ interface ReturnDialogProps {
   onChromebookIdChange: (id: string) => void; // Mantido para compatibilidade, mas não usado
   returnData: ReturnFormData & { notes?: string }; // Usando ReturnFormData
   onReturnDataChange: (data: ReturnFormData & { notes?: string }) => void;
-  onConfirm: (ids: string[], returnData: ReturnFormData) => void;
+  onConfirm: (ids: string[], returnData: ReturnFormData & { notes?: string }) => void; // ALTERADO: Incluindo notes
 }
 
 /**
@@ -36,6 +36,7 @@ export function ReturnDialog({
   open,
   onOpenChange,
   chromebookId,
+  onChromebookIdChange, // Mantido para compatibilidade
   onReturnDataChange,
   returnData, // Acessando a prop
   onConfirm
@@ -95,11 +96,8 @@ export function ReturnDialog({
       return;
     }
     
-    // Prepara os dados de retorno, excluindo 'notes' se não for parte do tipo ReturnFormData
-    const { notes, ...baseReturnData } = returnData;
-    
-    // Chama a função de callback para confirmar a devolução, passando os IDs e os dados
-    onConfirm(deviceIds, baseReturnData);
+    // Passa o objeto returnData completo, incluindo 'notes'
+    onConfirm(deviceIds, returnData);
   };
 
   // === RENDERIZAÇÃO DA INTERFACE (UI) ===

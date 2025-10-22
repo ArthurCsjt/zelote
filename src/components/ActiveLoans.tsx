@@ -64,7 +64,7 @@ export function ActiveLoans({ onBack }: ActiveLoansProps) {
     setOpenReturnDialog(true);
   };
 
-  const handleReturn = async (idsToReturn: string[], data: ReturnFormData) => {
+  const handleReturn = async (idsToReturn: string[], data: ReturnFormData & { notes?: string }) => { // ALTERADO: Recebe notes
     if (idsToReturn.length === 0) return;
 
     try {

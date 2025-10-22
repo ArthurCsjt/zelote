@@ -361,7 +361,7 @@ export const useDatabase = () => {
   }, []);
 
   // Return operations
-  const createReturn = useCallback(async (loanId: string, data: ReturnFormData): Promise<Return | null> => {
+  const createReturn = useCallback(async (loanId: string, data: ReturnFormData & { notes?: string }): Promise<Return | null> => {
     if (!user) {
       toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
       return null;
@@ -377,6 +377,7 @@ export const useDatabase = () => {
           returned_by_ra: data.ra,
           returned_by_email: data.email,
           returned_by_type: data.userType,
+          notes: data.notes, // Incluindo notas
           created_by: user.id
         })
         .select()
@@ -412,6 +413,7 @@ export const useDatabase = () => {
         throw new Error('Chromebook não encontrado ou não está emprestado');
       }
 
+      // CORREÇÃO: O createReturn agora espera ReturnFormData & { notes?: string }
       const result = await createReturn(activeLoan.id, data);
       return !!result;
     } catch (error: any) {
@@ -423,7 +425,7 @@ export const useDatabase = () => {
   }, [createReturn]);
   
   // NOVO: Devolução em lote
-  const bulkReturnChromebooks = useCallback(async (chromebookIds: string[], data: ReturnFormData): Promise<{ successCount: number, errorCount: number }> => {
+  const bulkReturnChromebooks = useCallback(async (chromebookIds: string[], data: ReturnFormData & { notes?: string }): Promise<{ successCount: number, errorCount: number }> => {
     if (!user) {
       toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
       return { successCount: 0, errorCount: chromebookIds.length };
@@ -468,6 +470,7 @@ export const useDatabase = () => {
         returned_by_ra: data.ra,
         returned_by_email: data.email,
         returned_by_type: data.userType,
+        notes: data.notes, // Incluindo notas
         created_by: user.id
       });
     }
