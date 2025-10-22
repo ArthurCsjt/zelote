@@ -1,4 +1,4 @@
-import { useState, useEffect, ReactNode } from "react";
+import { useState, useEffect, ReactNode, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { AuthContext, AuthContextType } from "@/contexts/AuthContext";
 import type { User } from "@supabase/supabase-js";
@@ -6,6 +6,19 @@ import type { User } from "@supabase/supabase-js";
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // NOVO: Função para forçar a atualização da sessão
+  const refreshSession = useCallback(async () => {
+    const { data: { session }, error } = await supabase.auth.refreshSession();
+    if (error) {
+      console.error("Erro ao atualizar sessão:", error);
+      // Se falhar, tenta obter a sessão atual
+      const { data: { session: currentSession } } = await supabase.auth.getSession();
+      setUser(currentSession?.user ?? null);
+    } else {
+      setUser(session?.user ?? null);
+    }
+  }, []);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
