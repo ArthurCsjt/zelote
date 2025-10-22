@@ -17,7 +17,7 @@ import { LoanHistory } from "./LoanHistory";
 import { GlassCard } from "./ui/GlassCard";
 import { useDashboardData, PeriodView } from '@/hooks/useDashboardData';
 import { Skeleton } from "./ui/skeleton";
-import { DashboardFilter } from "./DashboardFilter"; // NOVO IMPORT
+import { CollapsibleDashboardFilter } from "./CollapsibleDashboardFilter"; // NOVO IMPORT
 import { Tooltip as ShadcnTooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip"; // Importando Tooltip como ShadcnTooltip
 
 interface DashboardProps {
@@ -357,13 +357,12 @@ export function Dashboard({
         
         {/* Filtro de Hora (Aparece acima das estatísticas) */}
         <div className="mt-6">
-            <DashboardFilter 
+            <CollapsibleDashboardFilter 
                 periodView={periodView}
-                setPeriodView={setPeriodView}
                 startHour={startHour}
                 setStartHour={setStartHour}
                 endHour={endHour}
-                setEndHour={endHour}
+                setEndHour={setEndHour}
                 onApply={refreshData} // Força o recálculo dos dados
                 loading={loading}
             />
