@@ -248,7 +248,7 @@ export function Dashboard({
   const COLORS = ['#2563EB', '#22C55E'];
 
 
-  return <div className="space-y-8 glass-morphism p-4 sm:p-6 lg:p-8 animate-fade-in relative bg-white/95 backdrop-blur-xl rounded-2xl border border-white/20 shadow-2xl shadow-slate-200/20">
+  return <div className="space-y-8 relative py-[30px]">
       { /* Background gradient overlay */ }
       <div className="absolute inset-0 -z-10 bg-gradient-to-br from-blue-50/30 via-purple-50/20 to-pink-50/30 blur-2xl transform scale-110 py-[25px] rounded-3xl bg-[#000a0e]/0" />
       

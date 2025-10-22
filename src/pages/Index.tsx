@@ -22,7 +22,7 @@ import { ReturnWrapper } from '@/components/ReturnWrapper'; // NOVO IMPORT
 const Index = () => {
   // ADIÇÃO: Chamamos os hooks de autenticação aqui, no componente "pai"
   const { user, logout } = useAuth();
-  const { isAdmin, loading: roleLoading } = useProfileRole(user);
+  const { isAdmin, loading: roleLoading } = useProfileRole();
   const { loading: dbLoading } = useDatabase();
 
   const [currentView, setCurrentView] = useState<'menu' | 'registration' | 'dashboard' | 'inventory' | 'loan' | 'audit' | 'quick-register' | 'return'>('menu');
@@ -75,6 +75,7 @@ const Index = () => {
       case 'dashboard':
         return <Dashboard onBack={handleBackToMenu} />;
       case 'inventory':
+        // CORREÇÃO AQUI: Passando onGenerateQrCode
         return <InventoryHub onBack={handleBackToMenu} onGenerateQrCode={handleGenerateQrCode} />;
       case 'loan':
         // PASSANDO A ABA INICIAL CORRETA

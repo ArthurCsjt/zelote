@@ -32,7 +32,7 @@ export const LoanHub = ({ onBack, defaultTab = 'form' }: LoanHubProps) => {
       value: 'form',
       title: 'Novo Empréstimo',
       content: (
-        <div className="p-0"> {/* Removendo o padding extra aqui */}
+        <div className="p-0">
           <LoanForm />
         </div>
       ),

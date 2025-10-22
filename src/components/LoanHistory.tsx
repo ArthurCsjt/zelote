@@ -8,6 +8,7 @@ import { Input } from "./ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { Button } from "./ui/button";
 import { GlassCard } from "./ui/GlassCard"; // Importando GlassCard
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "./ui/pagination";
 
 interface LoanHistoryProps {
   history: LoanHistoryItem[];
@@ -18,6 +19,8 @@ export function LoanHistory({ history, isNewLoan }: LoanHistoryProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [userTypeFilter, setUserTypeFilter] = useState<string>("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10; // 10 itens por página
 
   const filteredHistory = useMemo(() => {
     let filtered = history;
@@ -47,22 +50,30 @@ export function LoanHistory({ history, isNewLoan }: LoanHistoryProps) {
     return filtered;
   }, [history, searchTerm, statusFilter, userTypeFilter]);
 
+  // Lógica de Paginação
+  const totalPages = Math.ceil(filteredHistory.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedHistory = filteredHistory.slice(
+    startIndex,
+    startIndex + itemsPerPage
+  );
+
   const clearFilters = () => {
     setSearchTerm("");
     setStatusFilter("all");
     setUserTypeFilter("all");
+    setCurrentPage(1);
   };
 
   const getStatusBadgeProps = (status: LoanHistoryItem['status']) => {
     switch (status) {
       case 'devolvido':
-        return { variant: "default", className: "bg-green-100 text-green-800 hover:bg-green-100", cardClass: "" };
+        return { variant: "default", className: "bg-green-100 text-green-800 hover:bg-green-100", cardClass: "border-green-200/50" };
       case 'atrasado':
-        // NOVO: Classes para destacar o card em atraso
         return { variant: "destructive", className: "", cardClass: "border-red-300 bg-red-50/50 shadow-lg" };
       case 'ativo':
       default:
-        return { variant: "secondary", className: "bg-yellow-100 text-yellow-800 hover:bg-yellow-100", cardClass: "" };
+        return { variant: "secondary", className: "bg-yellow-100 text-yellow-800 hover:bg-yellow-100", cardClass: "border-yellow-200/50" };
     }
   };
 
@@ -83,13 +94,13 @@ export function LoanHistory({ history, isNewLoan }: LoanHistoryProps) {
             <Input
               placeholder="Buscar por nome, email, RA ou ID do Chromebook..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
               className="pl-10"
             />
           </div>
 
           {/* Filtro de Status */}
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setCurrentPage(1); }}>
             <SelectTrigger className="w-full sm:w-[180px]">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
@@ -102,7 +113,7 @@ export function LoanHistory({ history, isNewLoan }: LoanHistoryProps) {
           </Select>
 
           {/* Filtro de Tipo de Usuário */}
-          <Select value={userTypeFilter} onValueChange={setUserTypeFilter}>
+          <Select value={userTypeFilter} onValueChange={(v) => { setUserTypeFilter(v); setCurrentPage(1); }}>
             <SelectTrigger className="w-full sm:w-[180px]">
               <SelectValue placeholder="Tipo de Usuário" />
             </SelectTrigger>
@@ -135,7 +146,7 @@ export function LoanHistory({ history, isNewLoan }: LoanHistoryProps) {
         </Card>
       ) : (
         <div className="grid gap-4">
-          {filteredHistory.map((loan) => {
+          {paginatedHistory.map((loan) => {
             const { variant, className, cardClass } = getStatusBadgeProps(loan.status);
             const isReturned = loan.status === 'devolvido';
             const returnedByDifferentUser = isReturned && 
@@ -145,7 +156,7 @@ export function LoanHistory({ history, isNewLoan }: LoanHistoryProps) {
             const isRecent = isNewLoan(loan); // Usando a função passada via prop
 
             return (
-              <Card 
+              <GlassCard 
                 key={loan.id} 
                 className={`hover:shadow-md transition-shadow ${cardClass}`} // Aplicando a classe do card
               >
@@ -274,10 +285,49 @@ export function LoanHistory({ history, isNewLoan }: LoanHistoryProps) {
                     </div>
                   </div>
                 </CardContent>
-              </Card>
+              </GlassCard>
             );
           })}
         </div>
+      )}
+      
+      {/* Paginação */}
+      {totalPages > 1 && (
+        <Pagination className="mt-6">
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+              />
+            </PaginationItem>
+
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              <PaginationItem key={page}>
+                <PaginationLink
+                  isActive={currentPage === page}
+                  onClick={() => setCurrentPage(page)}
+                  className="cursor-pointer"
+                >
+                  {page}
+                </PaginationLink>
+              </PaginationItem>
+            ))}
+
+            <PaginationItem>
+              <PaginationNext
+                onClick={() =>
+                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                }
+                className={
+                  currentPage === totalPages
+                    ? "pointer-events-none opacity-50"
+                    : "cursor-pointer"
+                }
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
       )}
     </div>
   );

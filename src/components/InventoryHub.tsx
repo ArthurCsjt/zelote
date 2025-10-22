@@ -5,14 +5,15 @@ import { TabbedContent } from './TabbedContent'; // Importando o novo componente
 
 interface InventoryHubProps {
   onBack?: () => void;
+  onGenerateQrCode: (chromebookId: string) => void; // NOVO PROP
 }
 
-export function InventoryHub({ onBack }: InventoryHubProps) {
+export function InventoryHub({ onBack, onGenerateQrCode }: InventoryHubProps) {
   const inventoryTabs = [
     {
       value: 'equipments',
       title: 'Equipamentos',
-      content: <ChromebookInventory onBack={onBack} />,
+      content: <ChromebookInventory onBack={onBack} onGenerateQrCode={onGenerateQrCode} />, // PASSANDO O PROP
     },
     {
       value: 'users',

@@ -122,9 +122,8 @@ export function ActiveLoans({ onBack }: ActiveLoansProps) {
   };
 
   return (
-    <div className="space-y-6 glass-morphism p-6 animate-fade-in relative">
-      {/* Background gradient overlay */}
-      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-card/30 via-background/20 to-card/30 rounded-3xl blur-2xl transform scale-110" />
+    <div className="space-y-6 relative">
+      {/* Background gradient overlay removido, pois o LoanHub não tem mais padding */}
       
       {/* Painel de Alertas de Atraso */}
       <OverdueAlertsPanel />
@@ -150,10 +149,14 @@ export function ActiveLoans({ onBack }: ActiveLoansProps) {
           <p className="text-gray-500 text-lg">Carregando empréstimos...</p>
         </div>
       ) : activeLoans.length === 0 ? (
-        <div className="text-center py-12">
-          <Computer className="h-16 w-16 mx-auto mb-4 text-gray-300" />
-          <p className="text-gray-500 text-lg">Nenhum empréstimo ativo</p>
-        </div>
+        <GlassCard>
+          <CardContent className="py-12">
+            <div className="text-center">
+              <Computer className="h-16 w-16 mx-auto mb-4 text-gray-300" />
+              <p className="text-gray-500 text-lg">Nenhum empréstimo ativo</p>
+            </div>
+          </CardContent>
+        </GlassCard>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {activeLoans.map((loan) => {

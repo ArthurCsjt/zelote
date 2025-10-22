@@ -50,9 +50,10 @@ interface ChromebookDataExtended extends Chromebook {
 
 interface ChromebookInventoryProps {
   onBack?: () => void;
+  onGenerateQrCode: (chromebookId: string) => void; // NOVO PROP
 }
 
-export function ChromebookInventory({ onBack }: ChromebookInventoryProps) {
+export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInventoryProps) {
   // Removido useIsMobile
   const { isAdmin } = useProfileRole();
   const { getChromebooks, updateChromebook, deleteChromebook } = useDatabase(); // Usando useDatabase
@@ -471,7 +472,7 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => setShowQRCode(chromebook.chromebook_id)}
+                          onClick={() => onGenerateQrCode(chromebook.chromebook_id)} // USANDO A NOVA PROP
                           title="Ver QR Code"
                         >
                           <QrCode className="h-4 w-4" />
