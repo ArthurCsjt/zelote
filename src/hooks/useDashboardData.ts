@@ -156,8 +156,12 @@ export function useDashboardData(periodView: PeriodView) {
 
     switch (periodView) {
       case 'daily':
-        data = Array.from({ length: 24 }, (_, i) => {
-          const hour = i;
+        // NOVO: Iterar de 6h a 20h (15 horas no total)
+        const startHour = 6;
+        const endHour = 20;
+        
+        data = Array.from({ length: endHour - startHour + 1 }, (_, i) => {
+          const hour = startHour + i;
           const hourLoans = history.filter(loan => {
             const loanDate = new Date(loan.loan_date);
             return isToday(loanDate) && loanDate.getHours() === hour;
