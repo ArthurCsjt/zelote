@@ -54,7 +54,7 @@ const Login = () => {
 
   // --- Validação de E-mail em Tempo Real ---
   const isEmailValid = email.length > 0 && verifyEmail(email);
-  const emailError = email.length > 0 && !isEmailValid ? "O email deve pertencer ao domínio institucional." : null;
+  const emailError = email.length > 0 && !isEmailValid ? "O email deve pertencer ao domínio institucional (@colegiosaojudas.com.br)." : null;
   
   // --- Handlers de Submissão ---
 
