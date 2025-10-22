@@ -3,7 +3,7 @@ import { Input } from './ui/input';
 import { Button } from './ui/button';
 import { Label } from './ui/label';
 import { Badge } from './ui/badge';
-import { Computer, Plus, QrCode, Loader2, X, AlertTriangle, Search, Factory, Tag } from 'lucide-react';
+import { Computer, Plus, QrCode, Loader2, X, AlertTriangle, Search, Factory, Tag, Hash } from 'lucide-react';
 import { toast } from './ui/use-toast';
 import { normalizeChromebookId, sanitizeQRCodeData } from '@/utils/security';
 import { QRCodeReader } from './QRCodeReader';
@@ -152,7 +152,7 @@ export function DeviceListInput({ deviceIds, setDeviceIds, disabled, filterStatu
         {deviceList.length > 0 ? (
           <div className="space-y-2">
             {deviceList.map((chromebook) => (
-              <div key={chromebook.chromebook_id} className="flex justify-between items-center p-2 bg-gray-50 rounded border border-gray-100 dark:bg-muted/50 dark:border-border">
+              <div key={chromebook.chromebook_id} className="flex justify-between items-center p-3 bg-gray-50 rounded border border-gray-100 dark:bg-muted/50 dark:border-border">
                 <div className="flex flex-col gap-1">
                   <div className="flex items-center gap-2">
                     <Computer className="h-4 w-4 text-blue-500 dark:text-blue-400" />
@@ -160,6 +160,19 @@ export function DeviceListInput({ deviceIds, setDeviceIds, disabled, filterStatu
                   </div>
                   <div className="text-xs text-muted-foreground ml-6">
                     {chromebook.model}
+                    {/* NOVO: Detalhes adicionais */}
+                    <div className="flex flex-wrap gap-x-3 gap-y-1 mt-1">
+                      {chromebook.serial_number && (
+                        <span className="flex items-center text-[10px] text-gray-600">
+                          <Hash className="h-3 w-3 mr-1" /> Série: {chromebook.serial_number}
+                        </span>
+                      )}
+                      {chromebook.patrimony_number && (
+                        <span className="flex items-center text-[10px] text-gray-600">
+                          <Tag className="h-3 w-3 mr-1" /> Patrimônio: {chromebook.patrimony_number}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
                 <Button 
