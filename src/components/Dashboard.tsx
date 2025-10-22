@@ -7,7 +7,7 @@ import type { LoanHistoryItem } from "@/types/database";
 import { Badge } from "./ui/badge";
 import { Progress } from "./ui/progress";
 import { ChartContainer, ChartTooltipContent, ChartLegendContent } from "./ui/chart";
-import { Computer, Download, ArrowLeft, BarChart as BarChartIcon, PieChart as PieChartIcon, Clock, Users, Calendar, CalendarRange, Activity, ChartLine, Brain, Loader2, History as HistoryIcon, RefreshCw } from "lucide-react";
+import { Computer, Download, ArrowLeft, BarChart as BarChartIcon, PieChart as PieChartIcon, Clock, Users, Calendar, CalendarRange, Activity, ChartLine, Brain, Loader2, History as HistoryIcon, RefreshCw, TrendingUp } from "lucide-react";
 import jsPDF from "jspdf";
 import { useToast } from "./ui/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -15,8 +15,9 @@ import { useDatabase } from '@/hooks/useDatabase';
 import { useOverdueLoans } from '@/hooks/useOverdueLoans';
 import { LoanHistory } from "./LoanHistory";
 import { GlassCard } from "./ui/GlassCard";
-import { useDashboardData, PeriodView } from '@/hooks/useDashboardData'; // NOVO HOOK
-import { Skeleton } from "./ui/skeleton"; // NOVO SKELETON
+import { useDashboardData, PeriodView } from '@/hooks/useDashboardData';
+import { Skeleton } from "./ui/skeleton";
+import { DashboardFilter } from "./DashboardFilter"; // NOVO IMPORT
 
 interface DashboardProps {
   onBack?: () => void;
@@ -40,7 +41,7 @@ const StatCardSkeleton = () => (
 const StatsGrid = ({ periodView, stats, filteredLoans, filteredReturns, loading }: any) => {
   if (periodView === 'history' || periodView === 'reports') return null;
 
-  const { totalActive, totalChromebooks, totalInventoryUsageRate, averageUsageTime, completionRate } = stats;
+  const { totalActive, totalChromebooks, totalInventoryUsageRate, averageUsageTime, completionRate, maxOccupancyRate } = stats;
 
   if (loading) {
     return (
@@ -51,7 +52,7 @@ const StatsGrid = ({ periodView, stats, filteredLoans, filteredReturns, loading 
   }
 
   return (
-    <div className="grid gap-4 grid-cols-2 md:grid-cols-4 relative z-10">
+    <div className="grid gap-4 grid-cols-2 md:grid-cols-5 relative z-10">
       
       {/* CARD 1: Empréstimos Ativos (Contagem de ativos) */}
       <GlassCard className="border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-blue-500">
@@ -85,6 +86,22 @@ const StatsGrid = ({ periodView, stats, filteredLoans, filteredReturns, loading 
               {totalActive} em uso (móveis)
             </span>
           </div>
+        </CardContent>
+      </GlassCard>
+      
+      {/* NOVO CARD: Ocupação Máxima */}
+      <GlassCard className="border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-red-500">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-xs sm:text-sm font-medium">
+            Ocupação Máxima
+          </CardTitle>
+          <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-red-500" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-xl sm:text-3xl font-bold bg-gradient-to-r from-red-600 to-red-800 bg-clip-text text-transparent">{maxOccupancyRate.toFixed(0)}%</div>
+          <p className="text-[10px] sm:text-xs text-muted-foreground">
+            Pico de uso no período
+          </p>
         </CardContent>
       </GlassCard>
 
@@ -138,8 +155,10 @@ export function Dashboard({
     toast
   } = useToast();
   const [periodView, setPeriodView] = useState < PeriodView > ('daily');
+  const [startHour, setStartHour] = useState(7); // NOVO ESTADO
+  const [endHour, setEndHour] = useState(19); // NOVO ESTADO
   
-  // NOVO: Usando o hook centralizado
+  // NOVO: Usando o hook centralizado com os filtros de hora
   const { 
     loading, 
     history, 
@@ -149,11 +168,11 @@ export function Dashboard({
     periodChartData, 
     stats, 
     refreshData 
-  } = useDashboardData(periodView);
+  } = useDashboardData(periodView, startHour, endHour); // PASSANDO OS FILTROS
 
   const { overdueLoans, upcomingDueLoans } = useOverdueLoans();
   
-  const { totalChromebooks, availableChromebooks, loansByUserType, userTypeData, durationData } = stats;
+  const { totalChromebooks, availableChromebooks, loansByUserType, userTypeData, durationData, maxOccupancyRate } = stats;
 
   // Função para gerar o PDF do relatório
   const periodText = {
@@ -185,6 +204,7 @@ export function Dashboard({
       `Empréstimos: ${filteredLoans.length}`, 
       `Devoluções: ${filteredReturns.length}`, 
       `Chromebooks ativos: ${stats.totalActive} de ${totalChromebooks}`, 
+      `Taxa de Ocupação Máxima: ${stats.maxOccupancyRate.toFixed(0)}%`, // NOVO DADO
       `Tempo médio de uso: ${Math.round(stats.averageUsageTime)} minutos`, 
       `Taxa de devolução: ${stats.completionRate.toFixed(0)}%`
     ];
@@ -291,6 +311,20 @@ export function Dashboard({
             Histórico
           </TabsTrigger>
         </TabsList>
+        
+        {/* Filtro de Hora (Aparece acima das estatísticas) */}
+        <div className="mt-6">
+            <DashboardFilter 
+                periodView={periodView}
+                setPeriodView={setPeriodView}
+                startHour={startHour}
+                setStartHour={setStartHour}
+                endHour={endHour}
+                setEndHour={setEndHour}
+                onApply={refreshData} // Força o recálculo dos dados
+                loading={loading}
+            />
+        </div>
 
         {/* Grid de Cards de Estatísticas (Visível em todas as abas exceto Histórico/Relatórios) */}
         <StatsGrid 
@@ -444,7 +478,51 @@ export function Dashboard({
                   </CardContent>
                 </GlassCard>
               </div>
-
+              
+              {/* NOVO GRÁFICO: Ocupação Horária */}
+              <GlassCard className="dashboard-card">
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <div>
+                    <CardTitle className="text-lg">Taxa de Ocupação Horária</CardTitle>
+                    <CardDescription>
+                      Ocupação do inventário móvel entre {startHour}h e {endHour}h
+                    </CardDescription>
+                  </div>
+                  <TrendingUp className="h-5 w-5 text-muted-foreground" />
+                </CardHeader>
+                <CardContent className="h-[250px] sm:h-[300px]">
+                  <ChartContainer
+                    config={{
+                      ocupação: { label: "Ocupação (%)", color: "hsl(var(--destructive))" },
+                    }}
+                    className="w-full h-full"
+                  >
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={periodChartData.slice(startHour - 6, endHour - 6 + 1)} margin={{ top: 5, right: 0, left: -20, bottom: 5 }}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
+                        <XAxis dataKey="hora" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
+                        <YAxis 
+                            tick={{ fontSize: 10 }} 
+                            domain={[0, 100]} 
+                            tickFormatter={(value) => `${value}%`}
+                            stroke="hsl(var(--muted-foreground))" 
+                        />
+                        <Tooltip content={<ChartTooltipContent />} />
+                        <Legend content={<ChartLegendContent />} wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
+                        
+                        <Line 
+                            type="monotone" 
+                            dataKey="ocupação" 
+                            stroke="hsl(var(--destructive))" 
+                            strokeWidth={2} 
+                            name="Ocupação (%)"
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </ChartContainer>
+                </CardContent>
+              </GlassCard>
+              
               <div className="grid gap-4 grid-cols-1 md:grid-cols-2 mt-4">
                 <GlassCard className="dashboard-card">
                   <CardHeader className="flex flex-row items-center justify-between">
@@ -554,6 +632,50 @@ export function Dashboard({
                         <Area type="monotone" dataKey="empréstimos" fill="#2563EB" stroke="#2563EB" fillOpacity={0.3} />
                         <Bar dataKey="devoluções" fill="#22C55E" radius={[4, 4, 0, 0]} />
                       </ComposedChart>
+                    </ResponsiveContainer>
+                  </ChartContainer>
+                </CardContent>
+              </GlassCard>
+              
+              {/* NOVO GRÁFICO: Ocupação Horária (Semanal) */}
+              <GlassCard className="dashboard-card">
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <div>
+                    <CardTitle className="text-lg">Taxa de Ocupação Horária (Semanal)</CardTitle>
+                    <CardDescription>
+                      Ocupação do inventário móvel entre {startHour}h e {endHour}h
+                    </CardDescription>
+                  </div>
+                  <TrendingUp className="h-5 w-5 text-muted-foreground" />
+                </CardHeader>
+                <CardContent className="h-[250px] sm:h-[300px]">
+                  <ChartContainer
+                    config={{
+                      ocupação: { label: "Ocupação (%)", color: "hsl(var(--destructive))" },
+                    }}
+                    className="w-full h-full"
+                  >
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={periodChartData} margin={{ top: 5, right: 0, left: -20, bottom: 5 }}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
+                        <XAxis dataKey="date" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
+                        <YAxis 
+                            tick={{ fontSize: 10 }} 
+                            domain={[0, 100]} 
+                            tickFormatter={(value) => `${value}%`}
+                            stroke="hsl(var(--muted-foreground))" 
+                        />
+                        <Tooltip content={<ChartTooltipContent />} />
+                        <Legend content={<ChartLegendContent />} wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
+                        
+                        <Line 
+                            type="monotone" 
+                            dataKey="ocupação" 
+                            stroke="hsl(var(--destructive))" 
+                            strokeWidth={2} 
+                            name="Ocupação (%)"
+                        />
+                      </LineChart>
                     </ResponsiveContainer>
                   </ChartContainer>
                 </CardContent>
@@ -714,6 +836,50 @@ export function Dashboard({
                   </ChartContainer>
                 </CardContent>
               </GlassCard>
+              
+              {/* NOVO GRÁFICO: Ocupação Horária (Mensal) */}
+              <GlassCard className="dashboard-card">
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <div>
+                    <CardTitle className="text-lg">Taxa de Ocupação Horária (Mensal)</CardTitle>
+                    <CardDescription>
+                      Ocupação do inventário móvel entre {startHour}h e {endHour}h
+                    </CardDescription>
+                  </div>
+                  <TrendingUp className="h-5 w-5 text-muted-foreground" />
+                </CardHeader>
+                <CardContent className="h-[250px] sm:h-[300px]">
+                  <ChartContainer
+                    config={{
+                      ocupação: { label: "Ocupação (%)", color: "hsl(var(--destructive))" },
+                    }}
+                    className="w-full h-full"
+                  >
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={periodChartData} margin={{ top: 5, right: 0, left: -20, bottom: 5 }}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
+                        <XAxis dataKey="date" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
+                        <YAxis 
+                            tick={{ fontSize: 10 }} 
+                            domain={[0, 100]} 
+                            tickFormatter={(value) => `${value}%`}
+                            stroke="hsl(var(--muted-foreground))" 
+                        />
+                        <Tooltip content={<ChartTooltipContent />} />
+                        <Legend content={<ChartLegendContent />} wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
+                        
+                        <Line 
+                            type="monotone" 
+                            dataKey="ocupação" 
+                            stroke="hsl(var(--destructive))" 
+                            strokeWidth={2} 
+                            name="Ocupação (%)"
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </ChartContainer>
+                </CardContent>
+              </GlassCard>
 
               <GlassCard className="dashboard-card">
                 <CardHeader className="flex flex-row items-center justify-between">
@@ -753,10 +919,6 @@ export function Dashboard({
           {loading ? <div className="flex justify-center items-center h-64"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div> : <LoanHistory history={history} isNewLoan={isNewLoan} />}
         </TabsContent>
         
-        {/* ABA DE RELATÓRIOS INTELIGENTES (REMOVIDA) */}
-        {/* <TabsContent value="reports" className="space-y-4 mt-6">
-          <IntelligentReportsTab />
-        </TabsContent> */}
       </Tabs>
       
     </div>;
