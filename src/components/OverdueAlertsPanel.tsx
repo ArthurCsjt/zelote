@@ -197,3 +197,5 @@ export function OverdueAlertsPanel() {
         </Button>
       </div>
     </div>
+  );
+}
