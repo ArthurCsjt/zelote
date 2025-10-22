@@ -10,7 +10,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/utils'; // Adicionando importação de cn
 
 interface CollapsibleDashboardFilterProps {
   periodView: PeriodView;
