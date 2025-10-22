@@ -13,7 +13,6 @@ import { useToast } from "./ui/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useDatabase } from '@/hooks/useDatabase';
 import { useOverdueLoans } from '@/hooks/useOverdueLoans';
-import IntelligentReportsTab from './IntelligentReportsTab';
 import { LoanHistory } from "./LoanHistory";
 import { GlassCard } from "./ui/GlassCard";
 import { useDashboardData, PeriodView } from '@/hooks/useDashboardData'; // NOVO HOOK
@@ -162,7 +161,7 @@ export function Dashboard({
     weekly: 'Esta Semana',
     monthly: 'Este Mês',
     history: 'Histórico Completo',
-    reports: 'Relatórios Inteligentes'
+    // reports: 'Relatórios Inteligentes' // Removido
   };
 
   const generatePDFContent = (pdf: jsPDF) => {
@@ -195,15 +194,6 @@ export function Dashboard({
     });
     yPosition += 13;
     pdf.setFontSize(16);
-    pdf.text("Empréstimos por Tipo de Usuário", 20, yPosition);
-    yPosition += 10;
-    pdf.setFontSize(12);
-    Object.entries(loansByUserType).forEach(([type, count]) => {
-      pdf.text(`• ${type.charAt(0).toUpperCase() + type.slice(1)}: ${count}`, 25, yPosition);
-      yPosition += 7;
-    });
-    yPosition += 13;
-    pdf.setFontSize(16);
     pdf.text("Empréstimos Ativos", 20, yPosition);
     yPosition += 10;
     pdf.setFontSize(12);
@@ -220,7 +210,7 @@ export function Dashboard({
   };
   
   const handleDownloadPDF = () => {
-    if (periodView === 'history' || periodView === 'reports') {
+    if (periodView === 'history') {
       toast({
         title: "Atenção",
         description: "O download de relatórios IA ou Histórico deve ser feito na própria aba, se disponível.",
@@ -280,7 +270,7 @@ export function Dashboard({
 
       {/* Tabs for Period Selection */}
       <Tabs defaultValue="daily" value={periodView} onValueChange={(v) => setPeriodView(v as PeriodView)} className="relative z-10">
-        <TabsList className="grid w-full grid-cols-5 h-10">
+        <TabsList className="grid w-full grid-cols-4 h-10">
           <TabsTrigger value="daily" className="flex items-center gap-1 text-xs sm:text-sm">
             <Calendar className="h-3 w-3 sm:h-4 sm:w-4" />
             Diário
@@ -299,13 +289,6 @@ export function Dashboard({
           >
             <HistoryIcon className="h-3 w-3 sm:h-4 sm:w-4" />
             Histórico
-          </TabsTrigger>
-          <TabsTrigger 
-            value="reports" 
-            className="flex items-center gap-1 text-xs sm:text-sm data-[state=active]:bg-menu-teal data-[state=active]:text-white data-[state=active]:shadow-md hover:bg-menu-teal/80 transition-colors"
-          >
-            <Brain className="h-3 w-3 sm:h-4 sm:w-4" />
-            IA
           </TabsTrigger>
         </TabsList>
 
@@ -770,10 +753,10 @@ export function Dashboard({
           {loading ? <div className="flex justify-center items-center h-64"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div> : <LoanHistory history={history} isNewLoan={isNewLoan} />}
         </TabsContent>
         
-        {/* ABA DE RELATÓRIOS INTELIGENTES */}
-        <TabsContent value="reports" className="space-y-4 mt-6">
+        {/* ABA DE RELATÓRIOS INTELIGENTES (REMOVIDA) */}
+        {/* <TabsContent value="reports" className="space-y-4 mt-6">
           <IntelligentReportsTab />
-        </TabsContent>
+        </TabsContent> */}
       </Tabs>
       
     </div>;
