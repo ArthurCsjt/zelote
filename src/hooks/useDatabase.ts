@@ -10,8 +10,8 @@ import type {
   ReturnFormData, 
   LoanHistoryItem,
   ChromebookData,
-  UserType, // Importando UserType
-  TeacherData // Importando TeacherData atualizado
+  UserType,
+  TeacherData
 } from '@/types/database';
 
 // Types for new entities
@@ -21,13 +21,6 @@ interface StudentData {
   email: string;
   turma: string;
 }
-
-// TeacherData agora vem de '@/types/database'
-// interface TeacherData {
-//   nome_completo: string;
-//   email: string;
-//   materia?: string; // Adicionado
-// }
 
 interface StaffData {
   nome_completo: string;
@@ -47,7 +40,6 @@ export const useDatabase = () => {
 
     setLoading(true);
     try {
-      // Detect if DB has 'manufacturer' column by trying a lightweight select
       let hasManufacturer = true;
       try {
         const { error: colErr } = await supabase.from('chromebooks').select('manufacturer').limit(1);
@@ -68,12 +60,11 @@ export const useDatabase = () => {
         location: data.location,
         classroom: data.classroom,
         created_by: user.id,
-        is_deprovisioned: data.is_deprovisioned ?? false, // Adicionando is_deprovisioned
+        is_deprovisioned: data.is_deprovisioned ?? false,
       };
 
       if (hasManufacturer) payload.manufacturer = (data as any).manufacturer;
       else {
-        // fallback: store manufacturer value in serial_number if provided
         if ((data as any).manufacturer && !payload.serial_number) payload.serial_number = (data as any).manufacturer;
       }
 
@@ -121,7 +112,6 @@ export const useDatabase = () => {
 
     setLoading(true);
     try {
-      // Detect if DB has 'manufacturer' column
       let hasManufacturer = true;
       try {
         const { error: colErr } = await supabase.from('chromebooks').select('manufacturer').limit(1);
@@ -139,7 +129,7 @@ export const useDatabase = () => {
         condition: data.condition,
         location: data.location,
         classroom: data.classroom,
-        is_deprovisioned: data.is_deprovisioned, // Adicionando is_deprovisioned
+        is_deprovisioned: data.is_deprovisioned,
       };
 
       if (hasManufacturer) updatePayload.manufacturer = (data as any).manufacturer;
@@ -189,7 +179,6 @@ export const useDatabase = () => {
     }
   }, [user]);
   
-  // Função para sincronizar o status do Chromebook
   const syncChromebookStatus = useCallback(async (chromebookId: string): Promise<string | null> => {
     if (!user) {
       toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
@@ -221,7 +210,6 @@ export const useDatabase = () => {
 
     setLoading(true);
     try {
-      // Buscar o chromebook pelo ID
       const { data: chromebook, error: chromebookError } = await supabase
         .from('chromebooks')
         .select('id')
@@ -264,7 +252,6 @@ export const useDatabase = () => {
     }
   }, [user]);
   
-  // Criação de empréstimos em lote
   const bulkCreateLoans = useCallback(async (loanDataList: LoanFormData[]): Promise<{ successCount: number, errorCount: number }> => {
     if (!user) {
       toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
@@ -276,7 +263,6 @@ export const useDatabase = () => {
     let errorCount = 0;
     
     try {
-      // Mapear IDs de Chromebooks para IDs internos do DB
       const chromebookIds = loanDataList.map(d => d.chromebookId);
       const { data: chromebooks, error: cbError } = await supabase
         .from('chromebooks')
@@ -334,7 +320,7 @@ export const useDatabase = () => {
         description: e.message, 
         variant: "destructive" 
       });
-      errorCount = loanDataList.length - successCount; // Recalcula erros
+      errorCount = loanDataList.length - successCount;
     } finally {
       setLoading(false);
     }
@@ -346,7 +332,6 @@ export const useDatabase = () => {
   const getActiveLoans = useCallback(async (): Promise<LoanHistoryItem[]> => {
     setLoading(true);
     try {
-      // Usando a view loan_history para obter empréstimos ativos
       const { data, error } = await supabase
         .from('loan_history')
         .select('*')
@@ -387,14 +372,12 @@ export const useDatabase = () => {
     }
   }, []);
 
-  // Return operations
   const createReturn = useCallback(async (loanId: string, data: ReturnFormData & { notes?: string }): Promise<Return | null> => {
     if (!user) {
       toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
       return null;
     }
 
-    // Não definimos loading aqui, pois ele é gerenciado pelo bulkReturnChromebooks
     try {
       const { data: result, error } = await supabase
         .from('returns')
@@ -404,7 +387,7 @@ export const useDatabase = () => {
           returned_by_ra: data.ra,
           returned_by_email: data.email,
           returned_by_type: data.userType,
-          notes: data.notes, // Incluindo notas
+          notes: data.notes,
           created_by: user.id
         })
         .select()
@@ -412,22 +395,18 @@ export const useDatabase = () => {
 
       if (error) throw error;
       
-      // Não toastamos aqui, pois o bulkReturnChromebooks fará o toast de sucesso em lote
       return result;
     } catch (error: any) {
-      // Não toastamos aqui, pois o bulkReturnChromebooks fará o toast de erro em lote
-      throw error; // Propaga o erro para o chamador
+      throw error;
     }
   }, [user]);
   
-  // NOVO: Função para forçar a devolução de um empréstimo (usado no painel de atrasos)
   const forceReturnLoan = useCallback(async (loan: LoanHistoryItem): Promise<boolean> => {
     if (!user) {
       toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
       return false;
     }
     
-    // CRÍTICO: Verificar se o loan.id é válido antes de prosseguir
     if (!loan.id) {
         toast({ title: "Erro de Dados", description: "ID do empréstimo não encontrado. Não é possível forçar a devolução.", variant: "destructive" });
         return false;
@@ -435,12 +414,11 @@ export const useDatabase = () => {
 
     setLoading(true);
     try {
-      // 1. Criar o registro de devolução
       const returnData: ReturnFormData & { notes?: string } = {
         name: user.email?.split('@')[0] || 'Admin',
         email: user.email || 'admin@system.com',
         type: loan.loan_type,
-        userType: 'funcionario', // Assumindo que o admin é um funcionário
+        userType: 'funcionario',
         notes: `Devolução forçada pelo administrador para corrigir inconsistência. Empréstimo original para: ${loan.student_name} (${loan.student_email}).`
       };
       
@@ -453,12 +431,11 @@ export const useDatabase = () => {
           returned_by_type: returnData.userType,
           notes: returnData.notes,
           created_by: user.id,
-          return_date: new Date().toISOString(), // Data de devolução é agora
+          return_date: new Date().toISOString(),
         });
 
       if (returnError) throw returnError;
       
-      // 2. Sincronizar o status do Chromebook (o trigger já deve fazer isso, mas forçamos para garantir)
       const { data: chromebookData, error: cbError } = await supabase
         .from('chromebooks')
         .select('chromebook_id')
@@ -487,10 +464,8 @@ export const useDatabase = () => {
 
 
   const returnChromebookById = useCallback(async (chromebookId: string, data: ReturnFormData): Promise<boolean> => {
-    // Esta função não é mais usada no fluxo principal, mas mantida por segurança
     setLoading(true);
     try {
-      // Buscar o empréstimo ativo
       const { data: activeLoan, error: loanError } = await supabase
         .from('loan_history')
         .select('id')
@@ -512,7 +487,6 @@ export const useDatabase = () => {
     }
   }, [createReturn]);
   
-  // NOVO: Devolução em lote
   const bulkReturnChromebooks = useCallback(async (chromebookIds: string[], data: ReturnFormData & { notes?: string }): Promise<{ successCount: number, errorCount: number }> => {
     if (!user) {
       toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
@@ -524,7 +498,6 @@ export const useDatabase = () => {
     let errorCount = 0;
 
     try {
-      // 1. Buscar IDs de empréstimos ativos para os Chromebooks fornecidos
       const { data: activeLoans, error: loanError } = await supabase
         .from('loan_history')
         .select('id, chromebook_id')
@@ -557,7 +530,7 @@ export const useDatabase = () => {
           returned_by_ra: data.ra,
           returned_by_email: data.email,
           returned_by_type: data.userType,
-          notes: data.notes, // Incluindo notas
+          notes: data.notes,
           created_by: user.id
         });
       }
@@ -580,7 +553,7 @@ export const useDatabase = () => {
         description: e.message, 
         variant: "destructive" 
       });
-      errorCount = chromebookIds.length - successCount; // Recalcula erros
+      errorCount = chromebookIds.length - successCount;
     } finally {
       setLoading(false);
     }
@@ -589,7 +562,7 @@ export const useDatabase = () => {
   }, [user]);
 
 
-  // Student operations
+  // Student operations - ATUALIZADO PARA USAR RPC
   const createStudent = useCallback(async (data: StudentData): Promise<any> => {
     if (!user) {
       toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
@@ -598,28 +571,26 @@ export const useDatabase = () => {
 
     setLoading(true);
     try {
-      const { data: result, error } = await supabase
-        .from('alunos')
-        .insert({
-          nome_completo: data.nome_completo,
-          ra: data.ra,
-          email: data.email,
-          turma: data.turma
-        })
-        .select()
-        .single();
+      // Chama a RPC ao invés de insert direto
+      const { data: result, error } = await supabase.rpc('create_student', {
+        p_nome_completo: data.nome_completo,
+        p_ra: data.ra,
+        p_email: data.email,
+        p_turma: data.turma
+      });
 
       if (error) throw error;
+      toast({ title: "Sucesso", description: "Aluno cadastrado com sucesso" });
       return result;
     } catch (error: any) {
-      console.error('Erro ao criar aluno:', error);
+      console.error('Erro ao criar aluno via RPC:', error);
+      toast({ title: "Erro", description: error.message || "Falha ao cadastrar aluno", variant: "destructive" });
       return null;
     } finally {
       setLoading(false);
     }
   }, [user]);
   
-  // NOVO: Update Student
   const updateStudent = useCallback(async (id: string, data: Partial<StudentData>): Promise<boolean> => {
     if (!user) {
       toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
@@ -644,7 +615,7 @@ export const useDatabase = () => {
   }, [user]);
 
 
-  // Teacher operations
+  // Teacher operations - ATUALIZADO PARA USAR RPC
   const createTeacher = useCallback(async (data: TeacherData): Promise<any> => {
     if (!user) {
       toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
@@ -653,27 +624,25 @@ export const useDatabase = () => {
 
     setLoading(true);
     try {
-      const { data: result, error } = await supabase
-        .from('professores')
-        .insert({
-          nome_completo: data.nome_completo,
-          email: data.email,
-          materia: data.materia // ADICIONADO
-        })
-        .select()
-        .single();
+      // Chama a RPC ao invés de insert direto
+      const { data: result, error } = await supabase.rpc('create_teacher', {
+        p_nome_completo: data.nome_completo,
+        p_email: data.email,
+        p_materia: data.materia || null
+      });
 
       if (error) throw error;
+      toast({ title: "Sucesso", description: "Professor cadastrado com sucesso" });
       return result;
     } catch (error: any) {
-      console.error('Erro ao criar professor:', error);
+      console.error('Erro ao criar professor via RPC:', error);
+      toast({ title: "Erro", description: error.message || "Falha ao cadastrar professor", variant: "destructive" });
       return null;
     } finally {
       setLoading(false);
     }
   }, [user]);
   
-  // NOVO: Update Teacher
   const updateTeacher = useCallback(async (id: string, data: Partial<TeacherData>): Promise<boolean> => {
     if (!user) {
       toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
@@ -698,7 +667,7 @@ export const useDatabase = () => {
   }, [user]);
 
 
-  // Staff operations
+  // Staff operations - ATUALIZADO PARA USAR RPC
   const createStaff = useCallback(async (data: StaffData): Promise<any> => {
     if (!user) {
       toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
@@ -707,26 +676,24 @@ export const useDatabase = () => {
 
     setLoading(true);
     try {
-      const { data: result, error } = await supabase
-        .from('funcionarios')
-        .insert({
-          nome_completo: data.nome_completo,
-          email: data.email
-        })
-        .select()
-        .single();
+      // Chama a RPC ao invés de insert direto
+      const { data: result, error } = await supabase.rpc('create_staff', {
+        p_nome_completo: data.nome_completo,
+        p_email: data.email
+      });
 
       if (error) throw error;
+      toast({ title: "Sucesso", description: "Funcionário cadastrado com sucesso" });
       return result;
     } catch (error: any) {
-      console.error('Erro ao criar funcionário:', error);
+      console.error('Erro ao criar funcionário via RPC:', error);
+      toast({ title: "Erro", description: error.message || "Falha ao cadastrar funcionário", variant: "destructive" });
       return null;
     } finally {
       setLoading(false);
     }
   }, [user]);
   
-  // NOVO: Update Staff
   const updateStaff = useCallback(async (id: string, data: Partial<StaffData>): Promise<boolean> => {
     if (!user) {
       toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
@@ -751,7 +718,6 @@ export const useDatabase = () => {
   }, [user]);
 
 
-  // Bulk operations
   const bulkInsertStudents = useCallback(async (students: StudentData[]): Promise<boolean> => {
     if (!user) {
       toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
@@ -774,7 +740,6 @@ export const useDatabase = () => {
     }
   }, [user]);
 
-  // Delete all students
   const deleteAllStudents = useCallback(async (): Promise<boolean> => {
     if (!user) {
       toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
@@ -786,7 +751,7 @@ export const useDatabase = () => {
       const { error } = await supabase
         .from('alunos')
         .delete()
-        .neq('id', '00000000-0000-0000-0000-000000000000'); // Delete all records
+        .neq('id', '00000000-0000-0000-0000-000000000000');
 
       if (error) throw error;
       
@@ -808,7 +773,6 @@ export const useDatabase = () => {
     }
   }, [user]);
   
-  // Função unificada para exclusão de usuários (Aluno, Professor, Funcionário)
   const deleteUserRecord = useCallback(async (id: string, userType: UserType): Promise<boolean> => {
     if (!user) {
       toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
@@ -846,31 +810,27 @@ export const useDatabase = () => {
 
   return {
     loading,
-    // Chromebook operations
     createChromebook,
     getChromebooks,
     updateChromebook,
     deleteChromebook,
-    syncChromebookStatus, // NOVO
-    // Loan operations
+    syncChromebookStatus,
     createLoan,
-    bulkCreateLoans, // Exportando a nova função
+    bulkCreateLoans,
     getActiveLoans,
     getLoanHistory,
-    // Return operations
     createReturn,
     returnChromebookById,
-    bulkReturnChromebooks, // Exportando a nova função
-    forceReturnLoan, // NOVO
-    // User/Registration operations
+    bulkReturnChromebooks,
+    forceReturnLoan,
     createStudent,
-    updateStudent, // NOVO
+    updateStudent,
     bulkInsertStudents,
     deleteAllStudents,
     createTeacher,
-    updateTeacher, // NOVO
+    updateTeacher,
     createStaff,
-    updateStaff, // NOVO
+    updateStaff,
     deleteUserRecord
   };
 };
