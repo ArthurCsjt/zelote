@@ -10,8 +10,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 
-// Removendo 'register' do tipo AuthMode
-type AuthMode = 'login' | 'forgot_password' | 'update_password';
+// Reintroduzindo 'register' no tipo AuthMode
+type AuthMode = 'login' | 'register' | 'forgot_password' | 'update_password';
 
 const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -26,8 +26,8 @@ const Login = () => {
 
   const navigate = useNavigate();
   const location = useLocation();
-  // Removendo 'register' do useAuth
-  const { login, resetPassword, verifyEmail } = useAuth(); 
+  // Reintroduzindo 'register' no useAuth
+  const { login, register, resetPassword, verifyEmail } = useAuth(); 
 
   // Efeito para verificar se o usuário está no fluxo de redefinição/convite
   useEffect(() => {
@@ -81,7 +81,31 @@ const Login = () => {
     setIsLoading(false);
   };
 
-  // Removido handleRegisterSubmit
+  const handleRegisterSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    if (password !== confirmPassword) {
+      toast({ title: "Erro de registro", description: "As senhas não coincidem.", variant: "destructive" });
+      setIsLoading(false);
+      return;
+    }
+    if (!isEmailValid) {
+      toast({ title: "Erro de registro", description: "Corrija o email institucional.", variant: "destructive" });
+      setIsLoading(false);
+      return;
+    }
+
+    const result = await register(email, password);
+    if (result.success) {
+      toast({ title: "Registro bem-sucedido", description: "Verifique seu email para confirmar o cadastro." });
+      setCurrentMode('login');
+    } else {
+      toast({ title: "Erro de registro", description: result.error || "Falha ao registrar. Verifique se o auto-registro está ativo no Supabase.", variant: "destructive" });
+    }
+    setIsLoading(false);
+  };
+
 
   const handleRecoverySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -232,6 +256,61 @@ const Login = () => {
           </form>
         );
 
+      case 'register':
+        return (
+          <form onSubmit={handleRegisterSubmit}>
+            {renderHeader(
+              "Novo Cadastro",
+              "Crie sua conta usando seu email institucional.",
+              UserPlus,
+              "bg-gradient-to-r from-purple-500/10 to-purple-600/10 text-purple-600"
+            )}
+            <CardContent className="space-y-4 pt-6">
+              <div className="space-y-2">
+                <Label htmlFor="register-email" className="text-gray-700 flex items-center gap-1.5"><Mail className="h-4 w-4" />Email Institucional</Label>
+                <Input 
+                  id="register-email" 
+                  type="email" 
+                  placeholder="seu.email@colegiosaojudas.com.br" 
+                  value={email} 
+                  onChange={e => setEmail(e.target.value)} 
+                  className={cn("bg-white/70", emailError && "border-destructive")} 
+                  disabled={isLoading} 
+                  required
+                />
+                {emailError && <p className="text-xs text-destructive flex items-center gap-1 mt-1"><AlertCircle className="h-3 w-3" />{emailError}</p>}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="register-password" className="text-gray-700 flex items-center gap-1.5"><Lock className="h-4 w-4" />Senha</Label>
+                <div className="relative">
+                  <Input id="register-password" type={showPassword ? "text" : "password"} placeholder="Mínimo 6 caracteres" value={password} onChange={e => setPassword(e.target.value)} className="bg-white/70 pr-10" disabled={isLoading} required />
+                  <Button type="button" variant="ghost" size="sm" className="absolute right-0 top-0 h-full px-3 hover:bg-transparent" onClick={() => setShowPassword(prev => !prev)}>
+                    {showPassword ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
+                  </Button>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="register-confirm-password" className="text-gray-700 flex items-center gap-1.5"><Lock className="h-4 w-4" />Confirmar Senha</Label>
+                <div className="relative">
+                  <Input id="register-confirm-password" type={showPassword ? "text" : "password"} placeholder="Confirme sua senha" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className="bg-white/70 pr-10" disabled={isLoading} required />
+                  <Button type="button" variant="ghost" size="sm" className="absolute right-0 top-0 h-full px-3 hover:bg-transparent" onClick={() => setShowPassword(prev => !prev)}>
+                    {showPassword ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+            <CardFooter className="flex flex-col space-y-4 pb-6">
+              <Button type="submit" className="w-full bg-gradient-to-r from-purple-600 to-purple-500" disabled={isLoading || !isEmailValid || password.length < 6 || password !== confirmPassword}>
+                {isLoading ? "Registrando..." : <><UserPlus className="h-4 w-4 mr-2" />Cadastrar</>}
+              </Button>
+              <Button type="button" variant="ghost" className="text-sm text-gray-600" onClick={() => changeMode('login')} disabled={isLoading}>
+                <ArrowLeft className="h-3.5 w-3.5 mr-1" />
+                Voltar ao login
+              </Button>
+            </CardFooter>
+          </form>
+        );
+
       case 'login':
       default:
         return (
@@ -275,11 +354,10 @@ const Login = () => {
                 <KeySquare className="h-3.5 w-3.5 mr-1" />
                 Esqueci minha senha
               </Button>
-              {/* REMOVIDO: Botão de Cadastro */}
-              {/* <Button type="button" variant="link" className="text-sm text-purple-600 p-0 h-auto" onClick={() => changeMode('register')} disabled={isLoading}>
+              <Button type="button" variant="link" className="text-sm text-purple-600 p-0 h-auto" onClick={() => changeMode('register')} disabled={isLoading}>
                 <User className="h-3.5 w-3.5 mr-1" />
                 Cadastrar-se
-              </Button> */}
+              </Button>
             </CardFooter>
           </form>
         );

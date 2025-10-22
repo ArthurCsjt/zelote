@@ -48,14 +48,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     await supabase.auth.signOut();
   };
 
-  // Função de registro removida, pois o auto-registro está desativado no Supabase.
-  // const register = async (email: string, password: string) => {
-  //   if (!verifyEmail(email)) {
-  //     return { success: false, error: "O registro é permitido apenas com o domínio @colegiosaojudas.com.br." };
-  //   }
-  //   const { error } = await supabase.auth.signUp({ email, password });
-  //   return { success: !error, error: error?.message };
-  // };
+  // Função de registro reintroduzida
+  const register = async (email: string, password: string) => {
+    if (!verifyEmail(email)) {
+      return { success: false, error: "O registro é permitido apenas com o domínio @colegiosaojudas.com.br." };
+    }
+    const { error } = await supabase.auth.signUp({ email, password });
+    return { success: !error, error: error?.message };
+  };
 
   const resetPassword = async (email: string) => {
     const { error } = await supabase.auth.resetPasswordForEmail(email);
@@ -76,7 +76,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     login,
     loginWithGoogle,
     logout,
-    // register, // Removido
+    register, // Reintroduzido
     resetPassword,
     verifyEmail,
   };
