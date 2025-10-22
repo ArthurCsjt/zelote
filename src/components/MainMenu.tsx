@@ -48,8 +48,8 @@ export function MainMenu({
     {
       title: 'Devolução',
       icon: <RotateCcw className="h-5 w-5" />,
-      // ALTERAÇÃO AQUI: Navega para 'loan' para que o usuário use a aba de ativos
-      action: () => onNavigate('loan'), 
+      // CORREÇÃO: Navega para 'return' para que o Index.tsx possa definir a aba correta
+      action: () => onNavigate('return'), 
       bgColor: 'bg-menu-amber'
     },
     {
