@@ -278,7 +278,7 @@ export function ActiveLoans({ onBack }: ActiveLoansProps) {
         returnData={returnData}
         onReturnDataChange={setReturnData}
         onConfirm={handleReturn}
-        isProcessing={dbLoading} {/* NOVO: Passando o estado de processamento */}
+        isProcessing={dbLoading}
       />
     </div>
   );
