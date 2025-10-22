@@ -107,18 +107,21 @@ export function ReturnDialog({
     <>
       {/* Diálogo principal de devolução */}
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
+        <DialogContent 
+          className="max-w-4xl max-h-[90vh] overflow-y-auto bg-white/95 backdrop-blur-sm border border-gray-200 shadow-xl"
+          style={{ backgroundColor: 'rgba(255, 255, 255, 0.95)' }}
+        >
+          <DialogHeader className="pb-4 border-b">
             <DialogTitle className="text-2xl font-bold text-gray-800 dark:text-foreground flex items-center gap-2">
-              <RotateCcw className="h-6 w-6 text-blue-600" />
+              <RotateCcw className="h-6 w-6 text-menu-amber" />
               Registrar Devolução
             </DialogTitle>
           </DialogHeader>
           
           <div className="grid md:grid-cols-2 gap-6">
             
-            {/* Coluna Esquerda - Dispositivo/Lote (AGORA AZUL) */}
-            <Card className="p-4 space-y-4 bg-blue-50/50 border-blue-100 shadow-inner dark:bg-blue-950/50 dark:border-blue-900/50">
+            {/* Coluna Esquerda - Dispositivo/Lote (AZUL) */}
+            <Card className="p-4 space-y-4 bg-blue-50/50 border-blue-100 shadow-inner dark:bg-blue-950/50 dark:border-blue-900/50 rounded-xl">
               <CardTitle className="text-lg flex items-center gap-2 text-blue-700 dark:text-blue-400">
                 <Computer className="h-5 w-5" /> Dispositivos para Devolução
               </CardTitle>
@@ -135,7 +138,7 @@ export function ReturnDialog({
 
             {/* Coluna Direita - Informações do Usuário e Observações (VERDE/TEAL) */}
             <div className="space-y-6">
-              <Card className="p-4 space-y-4 bg-green-50/50 border-green-100 shadow-inner dark:bg-green-950/50 dark:border-green-900/50">
+              <Card className="p-4 space-y-4 bg-green-50/50 border-green-100 shadow-inner dark:bg-green-950/50 dark:border-green-900/50 rounded-xl">
                 <CardTitle className="text-lg flex items-center gap-2 text-green-700 dark:text-green-400">
                   <User className="h-5 w-5" /> Informações do Solicitante
                 </CardTitle>
@@ -165,9 +168,9 @@ export function ReturnDialog({
               </Card>
               
               {/* Campo de Observações (NEUTRO) */}
-              <Card className="p-4 space-y-4 bg-white border-gray-100 shadow-md dark:bg-card dark:border-border">
+              <Card className="p-4 space-y-4 bg-white border-gray-100 shadow-md dark:bg-card dark:border-border rounded-xl">
                 <CardTitle className="text-lg flex items-center gap-2 text-gray-700 dark:text-foreground">
-                  <AlertTriangle className="h-5 w-5" /> Observações da Devolução
+                  <AlertTriangle className="h-5 w-5 text-orange-500" /> Observações da Devolução
                 </CardTitle>
                 <div className="space-y-2">
                   <Label htmlFor="notes" className="text-foreground">
@@ -186,9 +189,9 @@ export function ReturnDialog({
           </div>
 
 {/* Confirmação */}
-          <div className="mt-4 p-3 rounded-md border bg-amber-50 border-amber-200 dark:bg-amber-950/50 dark:border-amber-900">
+          <div className="mt-4 p-4 rounded-xl border bg-amber-50/50 border-amber-200 dark:bg-amber-950/50 dark:border-amber-900">
             <div className="flex items-start gap-2">
-              <Checkbox id="confirmChecked" checked={confirmChecked} onCheckedChange={(v) => setConfirmChecked(!!v)} className="mt-1" />
+              <Checkbox id="confirmChecked" checked={confirmChecked} onCheckedChange={(v) => setConfirmChecked(!!v)} className="mt-1 border-amber-500" />
               <Label htmlFor="confirmChecked" className="text-sm text-foreground leading-5 cursor-pointer">
                 <div className="flex items-center gap-1 font-semibold text-amber-800 dark:text-amber-400">
                     <AlertTriangle className="h-4 w-4" />
@@ -200,7 +203,7 @@ export function ReturnDialog({
           </div>
 
           {/* Botões de ação no rodapé do diálogo */}
-          <DialogFooter className="mt-6 flex-col sm:flex-row gap-2">
+          <DialogFooter className="mt-6 pt-4 border-t flex-col sm:flex-row gap-2">
             <Button 
               variant="outline" 
               onClick={() => onOpenChange(false)}
@@ -211,7 +214,7 @@ export function ReturnDialog({
             </Button>
             <Button 
               onClick={handleConfirmClick}
-              className="flex-1 bg-blue-600 hover:bg-blue-700"
+              className="flex-1 bg-menu-amber hover:bg-menu-amber-hover"
               disabled={
                 isProcessing || // Desabilita se estiver processando
                 !confirmChecked || 

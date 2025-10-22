@@ -32,14 +32,14 @@ export function OverdueAlertsPanel() {
 
   if (loading) {
     return (
-      <Card>
+      <GlassCard>
         <CardContent className="p-6">
           <div className="flex items-center justify-center">
             <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-            <span className="ml-2">Verificando prazos...</span>
+            <span className="ml-2 text-muted-foreground">Verificando prazos...</span>
           </div>
         </CardContent>
-      </Card>
+      </GlassCard>
     );
   }
 
@@ -65,11 +65,28 @@ export function OverdueAlertsPanel() {
   }
 
   return (
-    <div className="space-y-4">
+    <GlassCard className="p-4 space-y-4">
+      <div className="flex justify-between items-center">
+        <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+          <AlertTriangle className="h-5 w-5 text-orange-600" />
+          Alertas de Devolução
+        </h3>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={refresh}
+          disabled={loading}
+          className="gap-2 bg-white hover:bg-gray-50"
+        >
+          <Clock className="h-4 w-4" />
+          Atualizar Prazos
+        </Button>
+      </div>
+      
       {/* Empréstimos em Atraso */}
       {overdueLoans.length > 0 && (
-        <Alert variant="destructive" className="border-red-200 bg-red-50">
-          <AlertTriangle className="h-5 w-5" />
+        <Alert variant="destructive" className="border-red-300 bg-red-50/70">
+          <AlertTriangle className="h-5 w-5 text-red-700" />
           <AlertTitle className="text-red-800">
             Empréstimos em Atraso ({overdueLoans.length})
           </AlertTitle>
@@ -78,21 +95,21 @@ export function OverdueAlertsPanel() {
               {overdueLoans.map((loan) => (
                 <div 
                   key={loan.loan_id} 
-                  className="bg-white/50 rounded-lg p-3 border border-red-200"
+                  className="bg-white rounded-lg p-3 border border-red-200 shadow-sm"
                 >
                   <div className="flex items-start justify-between">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <User className="h-4 w-4" />
-                        <span className="font-medium">{loan.student_name}</span>
+                        <User className="h-4 w-4 text-red-600" />
+                        <span className="font-medium text-gray-800">{loan.student_name}</span>
                       </div>
-                      <div className="flex items-center gap-2 text-sm">
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <Monitor className="h-3 w-3" />
                         <span>{loan.chromebook_id}</span>
                       </div>
-                      <div className="text-xs text-red-600">
+                      <div className="text-xs text-red-600 mt-1">
                         Deveria ter sido devolvido em:{" "}
-                        {format(new Date(loan.expected_return_date), "dd/MM/yyyy 'às' HH:mm")}
+                        <span className="font-semibold">{format(new Date(loan.expected_return_date), "dd/MM/yyyy 'às' HH:mm")}</span>
                       </div>
                     </div>
                     <div className="flex flex-col items-end gap-1">
@@ -132,8 +149,8 @@ export function OverdueAlertsPanel() {
 
       {/* Empréstimos Próximos ao Vencimento */}
       {upcomingDueLoans.length > 0 && (
-        <Alert className="border-amber-200 bg-amber-50">
-          <CalendarX className="h-5 w-5 text-amber-600" />
+        <Alert className="border-amber-300 bg-amber-50/70">
+          <CalendarX className="h-5 w-5 text-amber-700" />
           <AlertTitle className="text-amber-800">
             Empréstimos Vencendo em Breve ({upcomingDueLoans.length})
           </AlertTitle>
@@ -142,21 +159,21 @@ export function OverdueAlertsPanel() {
               {upcomingDueLoans.map((loan) => (
                 <div 
                   key={loan.loan_id} 
-                  className="bg-white/50 rounded-lg p-3 border border-amber-200"
+                  className="bg-white rounded-lg p-3 border border-amber-200 shadow-sm"
                 >
                   <div className="flex items-start justify-between">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <User className="h-4 w-4" />
-                        <span className="font-medium">{loan.student_name}</span>
+                        <User className="h-4 w-4 text-amber-600" />
+                        <span className="font-medium text-gray-800">{loan.student_name}</span>
                       </div>
-                      <div className="flex items-center gap-2 text-sm">
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <Monitor className="h-3 w-3" />
                         <span>{loan.chromebook_id}</span>
                       </div>
-                      <div className="text-xs text-amber-600">
+                      <div className="text-xs text-amber-600 mt-1">
                         Prazo de devolução:{" "}
-                        {format(new Date(loan.expected_return_date), "dd/MM/yyyy 'às' HH:mm")}
+                        <span className="font-semibold">{format(new Date(loan.expected_return_date), "dd/MM/yyyy 'às' HH:mm")}</span>
                       </div>
                     </div>
                     <div className="flex flex-col items-end gap-1">
@@ -183,19 +200,6 @@ export function OverdueAlertsPanel() {
           </AlertDescription>
         </Alert>
       )}
-
-      <div className="flex justify-end">
-        <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={refresh}
-          disabled={loading}
-          className="gap-2"
-        >
-          <Clock className="h-4 w-4" />
-          Atualizar Prazos
-        </Button>
-      </div>
-    </div>
+    </GlassCard>
   );
 }

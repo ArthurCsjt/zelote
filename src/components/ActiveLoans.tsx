@@ -9,6 +9,7 @@ import { useDatabase } from "@/hooks/useDatabase";
 import { toast } from "@/hooks/use-toast";
 import type { LoanHistoryItem, ReturnFormData } from "@/types/database";
 import { OverdueAlertsPanel } from "./OverdueAlertsPanel";
+import { GlassCard } from "./ui/GlassCard"; // Importando GlassCard
 
 interface ActiveLoansProps {
   onBack?: () => void;
@@ -160,11 +161,11 @@ export function ActiveLoans({ onBack }: ActiveLoansProps) {
             const dueSoonStatus = isDueSoon(loan);
             
             return (
-              <Card 
+              <GlassCard 
                 key={loan.id} 
-                className={`hover:shadow-md transition-shadow ${
-                  overdueStatus ? 'border-red-200 bg-red-50/30' : 
-                  dueSoonStatus ? 'border-amber-200 bg-amber-50/30' : ''
+                className={`hover:shadow-lg transition-shadow ${
+                  overdueStatus ? 'border-red-400 bg-red-50/50' : 
+                  dueSoonStatus ? 'border-amber-400 bg-amber-50/50' : 'border-gray-200/50'
                 }`}
               >
                 <CardContent className="p-6">
@@ -257,14 +258,14 @@ export function ActiveLoans({ onBack }: ActiveLoansProps) {
                     disabled={loading || dbLoading}
                     className={`w-full mt-4 ${
                       overdueStatus ? 'bg-red-600 hover:bg-red-700' : 
-                      dueSoonStatus ? 'bg-amber-600 hover:bg-amber-700' : ''
+                      dueSoonStatus ? 'bg-amber-600 hover:bg-amber-700' : 'bg-blue-600 hover:bg-blue-700'
                     }`}
                   >
                     <CheckCircle className="h-4 w-4 mr-2" />
                     {overdueStatus ? 'Devolver (Atrasado)' : 'Devolver'}
                   </Button>
                 </CardContent>
-              </Card>
+              </GlassCard>
             );
           })}
         </div>
