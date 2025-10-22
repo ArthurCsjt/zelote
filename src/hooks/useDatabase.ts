@@ -252,67 +252,70 @@ export const useDatabase = () => {
     let successCount = 0;
     let errorCount = 0;
     
-    // Mapear IDs de Chromebooks para IDs internos do DB
-    const chromebookIds = loanDataList.map(d => d.chromebookId);
-    const { data: chromebooks, error: cbError } = await supabase
-      .from('chromebooks')
-      .select('id, chromebook_id, status')
-      .in('chromebook_id', chromebookIds);
+    try {
+      // Mapear IDs de Chromebooks para IDs internos do DB
+      const chromebookIds = loanDataList.map(d => d.chromebookId);
+      const { data: chromebooks, error: cbError } = await supabase
+        .from('chromebooks')
+        .select('id, chromebook_id, status')
+        .in('chromebook_id', chromebookIds);
 
-    if (cbError) {
-      toast({ title: "Erro", description: "Falha ao buscar Chromebooks.", variant: "destructive" });
-      setLoading(false);
-      return { successCount: 0, errorCount: loanDataList.length };
-    }
+      if (cbError) {
+        throw new Error("Falha ao buscar Chromebooks.");
+      }
 
-    const chromebookMap = new Map(chromebooks.map(cb => [cb.chromebook_id, cb]));
-    const loansToInsert = [];
+      const chromebookMap = new Map(chromebooks.map(cb => [cb.chromebook_id, cb]));
+      const loansToInsert = [];
 
-    for (const data of loanDataList) {
-      const chromebook = chromebookMap.get(data.chromebookId);
+      for (const data of loanDataList) {
+        const chromebook = chromebookMap.get(data.chromebookId);
+        
+        if (!chromebook || chromebook.status !== 'disponivel') {
+          errorCount++;
+          toast({ 
+            title: "Erro no Lote", 
+            description: `Chromebook ${data.chromebookId} não encontrado ou não está disponível.`, 
+            variant: "destructive" 
+          });
+          continue;
+        }
+
+        loansToInsert.push({
+          chromebook_id: chromebook.id,
+          student_name: data.studentName,
+          student_ra: data.ra,
+          student_email: data.email,
+          purpose: data.purpose,
+          user_type: data.userType,
+          loan_type: data.loanType,
+          expected_return_date: data.expectedReturnDate?.toISOString(),
+          created_by: user.id
+        });
+      }
       
-      if (!chromebook || chromebook.status !== 'disponivel') {
-        errorCount++;
-        toast({ 
-          title: "Erro no Lote", 
-          description: `Chromebook ${data.chromebookId} não encontrado ou não está disponível.`, 
-          variant: "destructive" 
-        });
-        continue;
-      }
+      if (loansToInsert.length > 0) {
+        const { error: insertError } = await supabase
+          .from('loans')
+          .insert(loansToInsert);
 
-      loansToInsert.push({
-        chromebook_id: chromebook.id,
-        student_name: data.studentName,
-        student_ra: data.ra,
-        student_email: data.email,
-        purpose: data.purpose,
-        user_type: data.userType,
-        loan_type: data.loanType,
-        expected_return_date: data.expectedReturnDate?.toISOString(),
-        created_by: user.id
+        if (insertError) {
+          console.error('Erro de inserção em lote:', insertError);
+          throw new Error(`Falha ao inserir ${loansToInsert.length} empréstimos.`);
+        } else {
+          successCount = loansToInsert.length;
+        }
+      }
+    } catch (e: any) {
+      toast({ 
+        title: "Erro de Processamento", 
+        description: e.message, 
+        variant: "destructive" 
       });
-    }
-    
-    if (loansToInsert.length > 0) {
-      const { error: insertError } = await supabase
-        .from('loans')
-        .insert(loansToInsert);
-
-      if (insertError) {
-        console.error('Erro de inserção em lote:', insertError);
-        toast({ 
-          title: "Erro de Inserção", 
-          description: `Falha ao inserir ${loansToInsert.length} empréstimos.`, 
-          variant: "destructive" 
-        });
-        errorCount += loansToInsert.length;
-      } else {
-        successCount = loansToInsert.length;
-      }
+      errorCount = loanDataList.length - successCount; // Recalcula erros
+    } finally {
+      setLoading(false);
     }
 
-    setLoading(false);
     return { successCount, errorCount: loanDataList.length - successCount };
   }, [user]);
 
@@ -320,6 +323,7 @@ export const useDatabase = () => {
   const getActiveLoans = useCallback(async (): Promise<LoanHistoryItem[]> => {
     setLoading(true);
     try {
+      // Usando a view loan_history para obter empréstimos ativos
       const { data, error } = await supabase
         .from('loan_history')
         .select('*')
@@ -367,7 +371,7 @@ export const useDatabase = () => {
       return null;
     }
 
-    setLoading(true);
+    // Não definimos loading aqui, pois ele é gerenciado pelo bulkReturnChromebooks
     try {
       const { data: result, error } = await supabase
         .from('returns')
@@ -385,20 +389,16 @@ export const useDatabase = () => {
 
       if (error) throw error;
       
-      toast({ 
-        title: "Chromebook devolvido", 
-        description: `Devolvido por ${data.name}` 
-      });
+      // Não toastamos aqui, pois o bulkReturnChromebooks fará o toast de sucesso em lote
       return result;
     } catch (error: any) {
-      toast({ title: "Erro", description: error.message, variant: "destructive" });
-      return null;
-    } finally {
-      setLoading(false);
+      // Não toastamos aqui, pois o bulkReturnChromebooks fará o toast de erro em lote
+      throw error; // Propaga o erro para o chamador
     }
   }, [user]);
 
   const returnChromebookById = useCallback(async (chromebookId: string, data: ReturnFormData): Promise<boolean> => {
+    // Esta função não é mais usada no fluxo principal, mas mantida por segurança
     setLoading(true);
     try {
       // Buscar o empréstimo ativo
@@ -413,7 +413,6 @@ export const useDatabase = () => {
         throw new Error('Chromebook não encontrado ou não está emprestado');
       }
 
-      // CORREÇÃO: O createReturn agora espera ReturnFormData & { notes?: string }
       const result = await createReturn(activeLoan.id, data);
       return !!result;
     } catch (error: any) {
@@ -435,65 +434,68 @@ export const useDatabase = () => {
     let successCount = 0;
     let errorCount = 0;
 
-    // 1. Buscar IDs de empréstimos ativos para os Chromebooks fornecidos
-    const { data: activeLoans, error: loanError } = await supabase
-      .from('loan_history')
-      .select('id, chromebook_id')
-      .in('chromebook_id', chromebookIds)
-      .eq('status', 'ativo');
+    try {
+      // 1. Buscar IDs de empréstimos ativos para os Chromebooks fornecidos
+      const { data: activeLoans, error: loanError } = await supabase
+        .from('loan_history')
+        .select('id, chromebook_id')
+        .in('chromebook_id', chromebookIds)
+        .eq('status', 'ativo');
 
-    if (loanError) {
-      toast({ title: "Erro", description: "Falha ao buscar empréstimos ativos.", variant: "destructive" });
-      setLoading(false);
-      return { successCount: 0, errorCount: chromebookIds.length };
-    }
-    
-    const loanMap = new Map(activeLoans.map(loan => [loan.chromebook_id, loan.id]));
-    const returnsToInsert = [];
-
-    for (const chromebookId of chromebookIds) {
-      const loanId = loanMap.get(chromebookId);
+      if (loanError) {
+        throw new Error("Falha ao buscar empréstimos ativos.");
+      }
       
-      if (!loanId) {
-        errorCount++;
-        toast({ 
-          title: "Erro no Lote", 
-          description: `Chromebook ${chromebookId} não está ativo para devolução.`, 
-          variant: "destructive" 
-        });
-        continue;
-      }
+      const loanMap = new Map(activeLoans.map(loan => [loan.chromebook_id, loan.id]));
+      const returnsToInsert = [];
 
-      returnsToInsert.push({
-        loan_id: loanId,
-        returned_by_name: data.name,
-        returned_by_ra: data.ra,
-        returned_by_email: data.email,
-        returned_by_type: data.userType,
-        notes: data.notes, // Incluindo notas
-        created_by: user.id
+      for (const chromebookId of chromebookIds) {
+        const loanId = loanMap.get(chromebookId);
+        
+        if (!loanId) {
+          errorCount++;
+          toast({ 
+            title: "Erro no Lote", 
+            description: `Chromebook ${chromebookId} não está ativo para devolução.`, 
+            variant: "destructive" 
+          });
+          continue;
+        }
+
+        returnsToInsert.push({
+          loan_id: loanId,
+          returned_by_name: data.name,
+          returned_by_ra: data.ra,
+          returned_by_email: data.email,
+          returned_by_type: data.userType,
+          notes: data.notes, // Incluindo notas
+          created_by: user.id
+        });
+      }
+      
+      if (returnsToInsert.length > 0) {
+        const { error: insertError } = await supabase
+          .from('returns')
+          .insert(returnsToInsert);
+
+        if (insertError) {
+          console.error('Erro de inserção de devolução em lote:', insertError);
+          throw new Error(`Falha ao inserir ${returnsToInsert.length} devoluções.`);
+        } else {
+          successCount = returnsToInsert.length;
+        }
+      }
+    } catch (e: any) {
+      toast({ 
+        title: "Erro de Processamento", 
+        description: e.message, 
+        variant: "destructive" 
       });
-    }
-    
-    if (returnsToInsert.length > 0) {
-      const { error: insertError } = await supabase
-        .from('returns')
-        .insert(returnsToInsert);
-
-      if (insertError) {
-        console.error('Erro de inserção de devolução em lote:', insertError);
-        toast({ 
-          title: "Erro de Inserção", 
-          description: `Falha ao inserir ${returnsToInsert.length} devoluções.`, 
-          variant: "destructive" 
-        });
-        errorCount += returnsToInsert.length;
-      } else {
-        successCount = returnsToInsert.length;
-      }
+      errorCount = chromebookIds.length - successCount; // Recalcula erros
+    } finally {
+      setLoading(false);
     }
 
-    setLoading(false);
     return { successCount, errorCount: chromebookIds.length - successCount };
   }, [user]);
 
