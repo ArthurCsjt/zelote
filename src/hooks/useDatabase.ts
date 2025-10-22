@@ -427,6 +427,12 @@ export const useDatabase = () => {
       return false;
     }
     
+    // CRÍTICO: Verificar se o loan.id é válido antes de prosseguir
+    if (!loan.id) {
+        toast({ title: "Erro de Dados", description: "ID do empréstimo não encontrado. Não é possível forçar a devolução.", variant: "destructive" });
+        return false;
+    }
+
     setLoading(true);
     try {
       // 1. Criar o registro de devolução
