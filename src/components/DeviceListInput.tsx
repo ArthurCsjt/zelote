@@ -10,6 +10,7 @@ import { QRCodeReader } from './QRCodeReader';
 import { useChromebookSearch, ChromebookSearchResult } from '@/hooks/useChromebookSearch';
 import { cn } from '@/lib/utils';
 import ChromebookSearchInput from './ChromebookSearchInput'; // Importando o componente de busca
+import { useDatabase } from '@/hooks/useDatabase'; // NOVO IMPORT
 
 // Novo tipo para armazenar o dispositivo completo na lista
 interface DeviceListItem extends ChromebookSearchResult {
@@ -28,10 +29,9 @@ export function DeviceListInput({ deviceIds, setDeviceIds, disabled, filterStatu
   const [deviceList, setDeviceList] = useState<DeviceListItem[]>([]);
   const [isQRReaderOpen, setIsQRReaderOpen] = useState(false);
   const { chromebooks, loading: searchLoading } = useChromebookSearch();
+  const { getActiveLoans } = useDatabase(); // Usando useDatabase para buscar empréstimos ativos
 
   // Sincroniza deviceList com deviceIds (apenas para inicialização ou se deviceIds for alterado externamente)
-  // No entanto, para evitar loops, vamos gerenciar a lista internamente e apenas atualizar deviceIds no final.
-  // Usamos useEffect para garantir que a lista interna reflita a lista externa (deviceIds)
   React.useEffect(() => {
     // Mapeia os IDs externos para os objetos internos, se possível
     const initialList = deviceIds
@@ -48,7 +48,7 @@ export function DeviceListInput({ deviceIds, setDeviceIds, disabled, filterStatu
   const requiredStatusLabel = requiredStatus === 'emprestado' ? 'Emprestado (Ativo)' : 'Disponível';
 
   // Função de validação centralizada
-  const validateAndNormalizeInput = useCallback((rawInput: string) => {
+  const validateAndNormalizeInput = useCallback(async (rawInput: string) => {
     const normalizedInput = normalizeChromebookId(rawInput);
     
     if (!normalizedInput) {
@@ -69,12 +69,23 @@ export function DeviceListInput({ deviceIds, setDeviceIds, disabled, filterStatu
       return { error: `Status Incorreto: ${chromebook.status.toUpperCase()}. Requerido: ${requiredStatusLabel}.` };
     }
 
+    // NOVO PASSO DE VALIDAÇÃO: Verificar se há um empréstimo ativo (APENAS PARA DEVOLUÇÃO)
+    if (requiredStatus === 'emprestado') {
+        const activeLoans = await getActiveLoans();
+        const isActiveLoan = activeLoans.some(loan => loan.chromebook_id === normalizedInput);
+        
+        if (!isActiveLoan) {
+            return { error: `O Chromebook ${normalizedInput} não possui um empréstimo ativo registrado no sistema.` };
+        }
+    }
+
     return { chromebook: chromebook as DeviceListItem };
-  }, [deviceList, chromebooks, requiredStatus, requiredStatusLabel]);
+  }, [deviceList, chromebooks, requiredStatus, requiredStatusLabel, getActiveLoans]);
 
   // Lógica de adição (usada por busca visual e QR code)
-  const addDevice = useCallback((chromebook: DeviceListItem) => {
-    const validation = validateAndNormalizeInput(chromebook.chromebook_id);
+  const addDevice = useCallback(async (chromebook: DeviceListItem) => {
+    // Revalida o item antes de adicionar (necessário para o fluxo de busca visual)
+    const validation = await validateAndNormalizeInput(chromebook.chromebook_id);
     
     if (validation.error) {
       toast({
@@ -86,7 +97,7 @@ export function DeviceListInput({ deviceIds, setDeviceIds, disabled, filterStatu
     }
     
     setDeviceList(prev => {
-      const newList = [...prev, chromebook];
+      const newList = [...prev, validation.chromebook];
       setDeviceIds(newList.map(item => item.chromebook_id)); // Atualiza a lista externa de IDs
       return newList;
     });
@@ -99,11 +110,11 @@ export function DeviceListInput({ deviceIds, setDeviceIds, disabled, filterStatu
   }, [validateAndNormalizeInput, setDeviceIds]);
 
 
-  const handleQRCodeScan = (data: string) => {
+  const handleQRCodeScan = async (data: string) => {
     const sanitizedId = sanitizeQRCodeData(data); 
     
     if (typeof sanitizedId === 'string' && sanitizedId) {
-      const validation = validateAndNormalizeInput(sanitizedId);
+      const validation = await validateAndNormalizeInput(sanitizedId);
       if (validation.error) {
         toast({
           title: "Erro de Validação",
