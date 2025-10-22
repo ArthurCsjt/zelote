@@ -9,6 +9,10 @@ export interface ChromebookSearchResult {
   model: string;
   status: Chromebook['status'];
   searchable: string;
+  // Adicionando campos que faltavam
+  manufacturer?: string | null;
+  serial_number?: string | null;
+  patrimony_number?: string | null;
 }
 
 export function useChromebookSearch() {
@@ -18,21 +22,24 @@ export function useChromebookSearch() {
   const fetchChromebooks = useCallback(async () => {
     setLoading(true);
     try {
-      // Busca apenas os campos essenciais para a pesquisa
+      // Busca agora inclui manufacturer e patrimony_number
       const { data, error } = await supabase
         .from('chromebooks')
-        .select('id, chromebook_id, model, status, serial_number, patrimony_number');
+        .select('id, chromebook_id, model, status, serial_number, patrimony_number, manufacturer');
 
       if (error) throw new Error('Erro ao carregar inventário de Chromebooks.');
 
       const results: ChromebookSearchResult[] = (data || []).map(cb => {
-        const searchable = `${cb.chromebook_id} ${cb.model} ${cb.serial_number} ${cb.patrimony_number}`.toLowerCase();
+        const searchable = `${cb.chromebook_id} ${cb.model} ${cb.serial_number} ${cb.patrimony_number} ${cb.manufacturer}`.toLowerCase();
         return {
           id: cb.id,
           chromebook_id: cb.chromebook_id,
           model: cb.model,
           status: cb.status,
           searchable,
+          manufacturer: cb.manufacturer,
+          serial_number: cb.serial_number,
+          patrimony_number: cb.patrimony_number,
         };
       });
 

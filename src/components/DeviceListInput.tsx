@@ -159,16 +159,27 @@ export function DeviceListInput({ deviceIds, setDeviceIds, disabled, filterStatu
                     <span className="text-sm font-medium text-foreground">{chromebook.chromebook_id}</span>
                   </div>
                   <div className="text-xs text-muted-foreground ml-6">
-                    {chromebook.model}
-                    {/* NOVO: Detalhes adicionais */}
+                    {/* Linha 1: Fabricante e Modelo */}
+                    <div className="flex items-center gap-x-3">
+                      {chromebook.manufacturer && (
+                        <span className="flex items-center text-gray-700 dark:text-gray-300">
+                          <Factory className="h-3 w-3 mr-1" /> {chromebook.manufacturer}
+                        </span>
+                      )}
+                      <span className="font-medium text-gray-800 dark:text-gray-200">
+                        {chromebook.model}
+                      </span>
+                    </div>
+                    
+                    {/* Linha 2: Série e Patrimônio */}
                     <div className="flex flex-wrap gap-x-3 gap-y-1 mt-1">
                       {chromebook.serial_number && (
-                        <span className="flex items-center text-[10px] text-gray-600">
+                        <span className="flex items-center text-[10px] text-gray-600 dark:text-gray-400">
                           <Hash className="h-3 w-3 mr-1" /> Série: {chromebook.serial_number}
                         </span>
                       )}
                       {chromebook.patrimony_number && (
-                        <span className="flex items-center text-[10px] text-gray-600">
+                        <span className="flex items-center text-[10px] text-gray-600 dark:text-gray-400">
                           <Tag className="h-3 w-3 mr-1" /> Patrimônio: {chromebook.patrimony_number}
                         </span>
                       )}
