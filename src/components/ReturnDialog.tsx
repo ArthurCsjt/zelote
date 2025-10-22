@@ -8,7 +8,7 @@ import { Badge } from "./ui/badge";
 import { QRCodeReader } from "./QRCodeReader";
 import { toast } from "./ui/use-toast";
 import { Textarea } from "./ui/textarea";
-import { Computer, Plus, QrCode, User, AlertTriangle, CheckCircle, RotateCcw } from "lucide-react";
+import { Computer, Plus, QrCode, User, AlertTriangle, CheckCircle, RotateCcw, Loader2 } from "lucide-react";
 import { Checkbox } from "./ui/checkbox";
 import { sanitizeQRCodeData, normalizeChromebookId } from "@/utils/security";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
@@ -27,6 +27,7 @@ interface ReturnDialogProps {
   returnData: ReturnFormData & { notes?: string }; // Usando ReturnFormData
   onReturnDataChange: (data: ReturnFormData & { notes?: string }) => void;
   onConfirm: (ids: string[], returnData: ReturnFormData & { notes?: string }) => void; // ALTERADO: Incluindo notes
+  isProcessing: boolean; // NOVO: Estado de processamento
 }
 
 /**
@@ -39,7 +40,8 @@ export function ReturnDialog({
   onChromebookIdChange, // Mantido para compatibilidade
   onReturnDataChange,
   returnData, // Acessando a prop
-  onConfirm
+  onConfirm,
+  isProcessing // NOVO: Recebendo a prop
 }: ReturnDialogProps) {
   // === ESTADOS (STATES) ===
   
@@ -125,7 +127,7 @@ export function ReturnDialog({
               <DeviceListInput
                 deviceIds={deviceIds}
                 setDeviceIds={setDeviceIds}
-                disabled={false}
+                disabled={isProcessing}
                 filterStatus="emprestado" // Apenas Chromebooks emprestados
                 actionLabel="Devolução"
               />
@@ -147,7 +149,7 @@ export function ReturnDialog({
                     selectedUser={selectedUser}
                     onSelect={handleUserSelect}
                     onClear={handleUserClear}
-                    disabled={false}
+                    disabled={isProcessing}
                   />
                 </div>
                 
@@ -203,6 +205,7 @@ export function ReturnDialog({
               variant="outline" 
               onClick={() => onOpenChange(false)}
               className="flex-1 border-gray-200"
+              disabled={isProcessing}
             >
               Cancelar
             </Button>
@@ -210,13 +213,23 @@ export function ReturnDialog({
               onClick={handleConfirmClick}
               className="flex-1 bg-blue-600 hover:bg-blue-700"
               disabled={
+                isProcessing || // Desabilita se estiver processando
                 !confirmChecked || 
                 !selectedUser ||
                 deviceIds.length === 0
               }
             >
-              <CheckCircle className="h-4 w-4 mr-2" />
-              {`Confirmar Devolução de ${deviceIds.length} Dispositivo${deviceIds.length !== 1 ? 's' : ''}`}
+              {isProcessing ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Processando...
+                </>
+              ) : (
+                <>
+                  <CheckCircle className="h-4 w-4 mr-2" />
+                  {`Confirmar Devolução de ${deviceIds.length} Dispositivo${deviceIds.length !== 1 ? 's' : ''}`}
+                </>
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>

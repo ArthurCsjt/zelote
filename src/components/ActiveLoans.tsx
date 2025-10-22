@@ -15,7 +15,7 @@ interface ActiveLoansProps {
 }
 
 export function ActiveLoans({ onBack }: ActiveLoansProps) {
-  const { getActiveLoans, returnChromebookById, bulkReturnChromebooks } = useDatabase();
+  const { getActiveLoans, returnChromebookById, bulkReturnChromebooks, loading: dbLoading } = useDatabase();
   const [activeLoans, setActiveLoans] = useState<LoanHistoryItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [openReturnDialog, setOpenReturnDialog] = useState(false);
@@ -135,10 +135,10 @@ export function ActiveLoans({ onBack }: ActiveLoansProps) {
         <Button 
           onClick={fetchActiveLoans}
           variant="outline"
-          disabled={loading}
+          disabled={loading || dbLoading}
           className="bg-white hover:bg-gray-50"
         >
-          <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+          <RefreshCw className={`h-4 w-4 mr-2 ${loading || dbLoading ? 'animate-spin' : ''}`} />
           Atualizar
         </Button>
       </div>
@@ -254,7 +254,7 @@ export function ActiveLoans({ onBack }: ActiveLoansProps) {
 
                   <Button
                     onClick={() => handleReturnClick(loan)}
-                    disabled={loading}
+                    disabled={loading || dbLoading}
                     className={`w-full mt-4 ${
                       overdueStatus ? 'bg-red-600 hover:bg-red-700' : 
                       dueSoonStatus ? 'bg-amber-600 hover:bg-amber-700' : ''
@@ -278,6 +278,7 @@ export function ActiveLoans({ onBack }: ActiveLoansProps) {
         returnData={returnData}
         onReturnDataChange={setReturnData}
         onConfirm={handleReturn}
+        isProcessing={dbLoading} {/* NOVO: Passando o estado de processamento */}
       />
     </div>
   );
