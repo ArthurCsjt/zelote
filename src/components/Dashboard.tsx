@@ -7,7 +7,7 @@ import type { LoanHistoryItem } from "@/types/database";
 import { Badge } from "./ui/badge";
 import { Progress } from "./ui/progress";
 import { ChartContainer, ChartTooltipContent, ChartLegendContent } from "./ui/chart";
-import { Computer, Download, ArrowLeft, BarChart as BarChartIcon, PieChart as PieChartIcon, Clock, Users, Calendar, CalendarRange, Activity, ChartLine, Brain, Loader2, History as HistoryIcon, RefreshCw, TrendingUp } from "lucide-react";
+import { Computer, Download, ArrowLeft, BarChart as BarChartIcon, PieChart as PieChartIcon, Clock, Users, Calendar, CalendarRange, Activity, ChartLine, Brain, Loader2, History as HistoryIcon, RefreshCw, TrendingUp, Info } from "lucide-react";
 import jsPDF from "jspdf";
 import { useToast } from "./ui/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -18,6 +18,7 @@ import { GlassCard } from "./ui/GlassCard";
 import { useDashboardData, PeriodView } from '@/hooks/useDashboardData';
 import { Skeleton } from "./ui/skeleton";
 import { DashboardFilter } from "./DashboardFilter"; // NOVO IMPORT
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip"; // Importando Tooltip
 
 interface DashboardProps {
   onBack?: () => void;
@@ -52,98 +53,140 @@ const StatsGrid = ({ periodView, stats, filteredLoans, filteredReturns, loading 
   }
 
   return (
-    <div className="grid gap-4 grid-cols-2 md:grid-cols-5 relative z-10">
-      
-      {/* CARD 1: Empréstimos Ativos (Contagem de ativos) */}
-      <GlassCard className="border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-blue-500">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-xs sm:text-sm font-medium">
-            Empréstimos Ativos
-          </CardTitle>
-          <Computer className="h-4 w-4 sm:h-5 sm:w-5 text-blue-500" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-xl sm:text-3xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">{totalActive}</div>
-          <p className="text-[10px] sm:text-xs text-muted-foreground">
-            {filteredLoans.length} empréstimos no período
-          </p>
-        </CardContent>
-      </GlassCard>
+    <TooltipProvider>
+      <div className="grid gap-4 grid-cols-2 md:grid-cols-5 relative z-10">
+        
+        {/* CARD 1: Empréstimos Ativos (Contagem de ativos) */}
+        <GlassCard className="border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-blue-500">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <Tooltip delayDuration={300}>
+              <TooltipTrigger asChild>
+                <CardTitle className="text-xs sm:text-sm font-medium flex items-center gap-1 cursor-help">
+                  Empréstimos Ativos
+                  <Info className="h-3 w-3 text-muted-foreground" />
+                </CardTitle>
+              </TooltipTrigger>
+              <TooltipContent className="max-w-xs text-xs">
+                <p>Número de Chromebooks atualmente emprestados (status 'emprestado').</p>
+              </TooltipContent>
+            </Tooltip>
+            <Computer className="h-4 w-4 sm:h-5 sm:w-5 text-blue-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-xl sm:text-3xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">{totalActive}</div>
+            <p className="text-[10px] sm:text-xs text-muted-foreground">
+              {filteredLoans.length} empréstimos no período
+            </p>
+          </CardContent>
+        </GlassCard>
 
-      {/* CARD 2: Taxa de Uso do Inventário (CORRIGIDO: ativos / total de móveis) */}
-      <GlassCard className="border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-green-500">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-xs sm:text-sm font-medium">
-            Taxa de Uso do Inventário
-          </CardTitle>
-          <Computer className="h-4 w-4 sm:h-5 sm:w-5 text-green-500" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-xl sm:text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">{totalInventoryUsageRate.toFixed(0)}%</div>
-          <div className="flex items-center gap-2 mt-1">
-            <Progress value={totalInventoryUsageRate} className="h-1.5 sm:h-2" />
-            <span className="text-[10px] sm:text-xs text-muted-foreground">
-              {totalActive} em uso (móveis)
-            </span>
-          </div>
-        </CardContent>
-      </GlassCard>
-      
-      {/* NOVO CARD: Ocupação Máxima */}
-      <GlassCard className="border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-red-500">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-xs sm:text-sm font-medium">
-            Ocupação Máxima
-          </CardTitle>
-          <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-red-500" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-xl sm:text-3xl font-bold bg-gradient-to-r from-red-600 to-red-800 bg-clip-text text-transparent">{maxOccupancyRate.toFixed(0)}%</div>
-          <p className="text-[10px] sm:text-xs text-muted-foreground">
-            Pico de uso no período
-          </p>
-        </CardContent>
-      </GlassCard>
+        {/* CARD 2: Taxa de Uso do Inventário (CORRIGIDO: ativos / total de móveis) */}
+        <GlassCard className="border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-green-500">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <Tooltip delayDuration={300}>
+              <TooltipTrigger asChild>
+                <CardTitle className="text-xs sm:text-sm font-medium flex items-center gap-1 cursor-help">
+                  Taxa de Uso Atual
+                  <Info className="h-3 w-3 text-muted-foreground" />
+                </CardTitle>
+              </TooltipTrigger>
+              <TooltipContent className="max-w-xs text-xs">
+                <p>Porcentagem de Chromebooks móveis que estão emprestados neste exato momento.</p>
+              </TooltipContent>
+            </Tooltip>
+            <Computer className="h-4 w-4 sm:h-5 sm:w-5 text-green-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-xl sm:text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">{totalInventoryUsageRate.toFixed(0)}%</div>
+            <div className="flex items-center gap-2 mt-1">
+              <Progress value={totalInventoryUsageRate} className="h-1.5 sm:h-2" />
+              <span className="text-[10px] sm:text-xs text-muted-foreground">
+                {totalActive} em uso (móveis)
+              </span>
+            </div>
+          </CardContent>
+        </GlassCard>
+        
+        {/* NOVO CARD: Ocupação Máxima */}
+        <GlassCard className="border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-red-500">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <Tooltip delayDuration={300}>
+              <TooltipTrigger asChild>
+                <CardTitle className="text-xs sm:text-sm font-medium flex items-center gap-1 cursor-help">
+                  Ocupação Máxima
+                  <Info className="h-3 w-3 text-muted-foreground" />
+                </CardTitle>
+              </TooltipTrigger>
+              <TooltipContent className="max-w-xs text-xs">
+                <p>O pico de uso (em %) atingido durante o período e horário selecionados no filtro.</p>
+              </TooltipContent>
+            </Tooltip>
+            <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-red-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-xl sm:text-3xl font-bold bg-gradient-to-r from-red-600 to-red-800 bg-clip-text text-transparent">{maxOccupancyRate.toFixed(0)}%</div>
+            <p className="text-[10px] sm:text-xs text-muted-foreground">
+              Pico de uso no período
+            </p>
+          </CardContent>
+        </GlassCard>
 
-      {/* CARD 3: Tempo Médio (Mantido) */}
-      <GlassCard className="border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-purple-500">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-xs sm:text-sm font-medium">
-            Tempo Médio
-          </CardTitle>
-          <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-purple-500" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-xl sm:text-3xl font-bold bg-gradient-to-r from-purple-600 to-violet-600 bg-clip-text text-transparent">
-            {Math.round(averageUsageTime)} min
-          </div>
-          <p className="text-[10px] sm:text-xs text-muted-foreground">
-            média no período
-          </p>
-        </CardContent>
-      </GlassCard>
+        {/* CARD 3: Tempo Médio (Mantido) */}
+        <GlassCard className="border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-purple-500">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <Tooltip delayDuration={300}>
+              <TooltipTrigger asChild>
+                <CardTitle className="text-xs sm:text-sm font-medium flex items-center gap-1 cursor-help">
+                  Tempo Médio de Uso
+                  <Info className="h-3 w-3 text-muted-foreground" />
+                </CardTitle>
+              </TooltipTrigger>
+              <TooltipContent className="max-w-xs text-xs">
+                <p>Duração média (em minutos) dos empréstimos que foram devolvidos no período selecionado.</p>
+              </TooltipContent>
+            </Tooltip>
+            <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-purple-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-xl sm:text-3xl font-bold bg-gradient-to-r from-purple-600 to-violet-600 bg-clip-text text-transparent">
+              {Math.round(averageUsageTime)} min
+            </div>
+            <p className="text-[10px] sm:text-xs text-muted-foreground">
+              média no período
+            </p>
+          </CardContent>
+        </GlassCard>
 
-      {/* CARD 4: Taxa de Devolução (Mantido) */}
-      <GlassCard className="border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-orange-500">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-xs sm:text-sm font-medium">
-            Taxa de Devolução
-          </CardTitle>
-          <Activity className="h-4 w-4 sm:h-5 sm:w-5 text-orange-500" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-xl sm:text-3xl font-bold bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent">
-            {completionRate.toFixed(0)}%
-          </div>
-          <div className="flex items-center gap-2 mt-1">
-            <Progress value={completionRate} className="h-1.5 sm:h-2" />
-            <span className="text-[10px] sm:text-xs text-muted-foreground">
-              {filteredReturns.length} de {filteredLoans.length}
-            </span>
-          </div>
-        </CardContent>
-      </GlassCard>
-    </div>
+        {/* CARD 4: Taxa de Devolução (Mantido) */}
+        <GlassCard className="border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-orange-500">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <Tooltip delayDuration={300}>
+              <TooltipTrigger asChild>
+                <CardTitle className="text-xs sm:text-sm font-medium flex items-center gap-1 cursor-help">
+                  Taxa de Devolução
+                  <Info className="h-3 w-3 text-muted-foreground" />
+                </CardTitle>
+              </TooltipTrigger>
+              <TooltipContent className="max-w-xs text-xs">
+                <p>Porcentagem de empréstimos realizados no período que já foram devolvidos.</p>
+              </TooltipContent>
+            </Tooltip>
+            <Activity className="h-4 w-4 sm:h-5 sm:w-5 text-orange-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-xl sm:text-3xl font-bold bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent">
+              {completionRate.toFixed(0)}%
+            </div>
+            <div className="flex items-center gap-2 mt-1">
+              <Progress value={completionRate} className="h-1.5 sm:h-2" />
+              <span className="text-[10px] sm:text-xs text-muted-foreground">
+                {filteredReturns.length} de {filteredLoans.length}
+              </span>
+            </div>
+          </CardContent>
+        </GlassCard>
+      </div>
+    </TooltipProvider>
   );
 };
 
