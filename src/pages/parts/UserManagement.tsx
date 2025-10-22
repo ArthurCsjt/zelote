@@ -16,6 +16,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { MoreHorizontal, Loader2, Trash2, AlertTriangle } from "lucide-react";
 import { GlassCard } from '@/components/ui/GlassCard'; // Importando GlassCard
+import { cn } from '@/lib/utils'; // Importando cn para classes condicionais
 
 type UserProfile = {
   id: string;
@@ -106,7 +107,13 @@ export const UserManagement = () => {
     queryKey: ['all_users'],
     queryFn: async () => {
       const { data, error } = await supabase.rpc('get_all_users');
-      if (error) throw new Error(error.message);
+      if (error) {
+        // Se o erro for de permissão, lançamos um erro específico
+        if (error.message.includes('Unauthorized: Only admins can access this function')) {
+          throw new Error('Acesso negado: Seu perfil não tem permissão de administrador no banco de dados.');
+        }
+        throw new Error(error.message);
+      }
       return data || [];
     },
     // Desabilita a consulta se o usuário não for admin ou se o papel ainda estiver carregando
@@ -139,9 +146,14 @@ export const UserManagement = () => {
   }
 
   if (error) {
+    const isPermissionError = error.message.includes('Acesso negado: Seu perfil não tem permissão de administrador no banco de dados.');
+    
     return (
-      <Card className="border-red-500 bg-red-50">
-        <CardContent className="pt-6"><p className="text-red-700">Erro ao carregar usuários: {error.message}</p></CardContent>
+      <Card className={cn("border-red-500 bg-red-50", isPermissionError ? 'border-l-4' : '')}>
+        <CardContent className="pt-6 flex items-center gap-2 text-red-700">
+          <AlertTriangle className="h-5 w-5" />
+          <p>{isPermissionError ? 'Acesso negado. Seu perfil não tem permissão de administrador no banco de dados.' : `Erro ao carregar usuários: ${error.message}`}</p>
+        </CardContent>
       </Card>
     );
   }
@@ -267,7 +279,7 @@ export const UserManagement = () => {
             <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={handleDeleteUserConfirm}>
               Excluir
             </AlertDialogAction>
-          </AlertDialogFooter>
+          </DialogFooter>
         </AlertDialogContent>
       </AlertDialog>
       
@@ -286,7 +298,7 @@ export const UserManagement = () => {
               <Trash2 className="h-4 w-4 mr-2" />
               Cancelar Convite
             </AlertDialogAction>
-          </AlertDialogFooter>
+          </DialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </div>
