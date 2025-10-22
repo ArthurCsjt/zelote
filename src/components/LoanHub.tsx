@@ -50,7 +50,7 @@ export const LoanHub = ({ onBack, defaultTab = 'form' }: LoanHubProps) => {
       
       <TabbedContent
         tabs={loanTabs}
-        defaultValue={defaultTab} {/* USANDO A PROP AQUI */}
+        defaultValue={defaultTab}
         listClassName="grid-cols-2"
       />
     </div>
