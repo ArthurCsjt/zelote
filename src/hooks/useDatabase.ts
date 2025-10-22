@@ -189,7 +189,7 @@ export const useDatabase = () => {
     }
   }, [user]);
   
-  // NOVO: Função para sincronizar o status do Chromebook
+  // Função para sincronizar o status do Chromebook
   const syncChromebookStatus = useCallback(async (chromebookId: string): Promise<string | null> => {
     if (!user) {
       toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
@@ -419,6 +419,66 @@ export const useDatabase = () => {
       throw error; // Propaga o erro para o chamador
     }
   }, [user]);
+  
+  // NOVO: Função para forçar a devolução de um empréstimo (usado no painel de atrasos)
+  const forceReturnLoan = useCallback(async (loan: LoanHistoryItem): Promise<boolean> => {
+    if (!user) {
+      toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
+      return false;
+    }
+    
+    setLoading(true);
+    try {
+      // 1. Criar o registro de devolução
+      const returnData: ReturnFormData & { notes?: string } = {
+        name: user.email?.split('@')[0] || 'Admin',
+        email: user.email || 'admin@system.com',
+        type: loan.loan_type,
+        userType: 'funcionario', // Assumindo que o admin é um funcionário
+        notes: `Devolução forçada pelo administrador para corrigir inconsistência. Empréstimo original para: ${loan.student_name} (${loan.student_email}).`
+      };
+      
+      const { error: returnError } = await supabase
+        .from('returns')
+        .insert({
+          loan_id: loan.id,
+          returned_by_name: returnData.name,
+          returned_by_email: returnData.email,
+          returned_by_type: returnData.userType,
+          notes: returnData.notes,
+          created_by: user.id,
+          return_date: new Date().toISOString(), // Data de devolução é agora
+        });
+
+      if (returnError) throw returnError;
+      
+      // 2. Sincronizar o status do Chromebook (o trigger já deve fazer isso, mas forçamos para garantir)
+      const { data: chromebookData, error: cbError } = await supabase
+        .from('chromebooks')
+        .select('chromebook_id')
+        .eq('id', loan.chromebook_id)
+        .single();
+        
+      if (cbError || !chromebookData) {
+          console.warn(`Chromebook ID ${loan.chromebook_id} não encontrado para sincronização após devolução forçada.`);
+      } else {
+          await supabase.rpc('sync_chromebook_status', { cb_id: chromebookData.chromebook_id });
+      }
+
+      toast({ 
+        title: "Devolução Forçada", 
+        description: `Empréstimo do Chromebook ${loan.chromebook_id} marcado como devolvido.`, 
+        variant: "success" 
+      });
+      return true;
+    } catch (error: any) {
+      toast({ title: "Erro ao forçar devolução", description: error.message, variant: "destructive" });
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
+
 
   const returnChromebookById = useCallback(async (chromebookId: string, data: ReturnFormData): Promise<boolean> => {
     // Esta função não é mais usada no fluxo principal, mas mantida por segurança
@@ -795,6 +855,7 @@ export const useDatabase = () => {
     createReturn,
     returnChromebookById,
     bulkReturnChromebooks, // Exportando a nova função
+    forceReturnLoan, // NOVO
     // User/Registration operations
     createStudent,
     updateStudent, // NOVO

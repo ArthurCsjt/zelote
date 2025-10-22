@@ -1,4 +1,4 @@
-import { AlertTriangle, Clock, CalendarX, User, Monitor, RefreshCw } from "lucide-react";
+import { AlertTriangle, Clock, CalendarX, User, Monitor, RefreshCw, CheckCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 import { Badge } from "./ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
@@ -10,11 +10,18 @@ import { useDatabase } from "@/hooks/useDatabase"; // Importando useDatabase
 
 export function OverdueAlertsPanel() {
   const { overdueLoans, upcomingDueLoans, loading, refresh } = useOverdueLoans();
-  const { syncChromebookStatus, loading: syncLoading } = useDatabase();
+  const { syncChromebookStatus, forceReturnLoan, loading: dbLoading } = useDatabase(); // Usando forceReturnLoan
 
   const handleSyncStatus = async (chromebookId: string) => {
     await syncChromebookStatus(chromebookId);
     refresh(); // Atualiza a lista de empréstimos após a sincronização
+  };
+  
+  const handleForceReturn = async (loan: any) => {
+    const success = await forceReturnLoan(loan);
+    if (success) {
+        refresh(); // Atualiza a lista para remover o item devolvido
+    }
   };
 
   if (loading) {
@@ -86,16 +93,28 @@ export function OverdueAlertsPanel() {
                         <Badge variant="destructive" className="ml-2">
                           {loan.days_overdue} {loan.days_overdue === 1 ? 'dia' : 'dias'} atrasado
                         </Badge>
-                        <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            onClick={() => handleSyncStatus(loan.chromebook_id)}
-                            disabled={syncLoading}
-                            className="text-xs text-red-500 hover:bg-red-100 h-6 px-2"
-                        >
-                            <RefreshCw className={`h-3 w-3 mr-1 ${syncLoading ? 'animate-spin' : ''}`} />
-                            Sincronizar Status
-                        </Button>
+                        <div className="flex gap-1 mt-1">
+                            <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                onClick={() => handleForceReturn(loan)}
+                                disabled={dbLoading}
+                                className="text-xs text-green-600 hover:bg-green-100 h-6 px-2"
+                            >
+                                <CheckCircle className="h-3 w-3 mr-1" />
+                                Devolvido
+                            </Button>
+                            <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                onClick={() => handleSyncStatus(loan.chromebook_id)}
+                                disabled={dbLoading}
+                                className="text-xs text-red-500 hover:bg-red-100 h-6 px-2"
+                            >
+                                <RefreshCw className={`h-3 w-3 mr-1 ${dbLoading ? 'animate-spin' : ''}`} />
+                                Sincronizar
+                            </Button>
+                        </div>
                     </div>
                   </div>
                 </div>
@@ -144,10 +163,10 @@ export function OverdueAlertsPanel() {
                             variant="ghost" 
                             size="sm" 
                             onClick={() => handleSyncStatus(loan.chromebook_id)}
-                            disabled={syncLoading}
+                            disabled={dbLoading}
                             className="text-xs text-amber-500 hover:bg-amber-100 h-6 px-2"
                         >
-                            <RefreshCw className={`h-3 w-3 mr-1 ${syncLoading ? 'animate-spin' : ''}`} />
+                            <RefreshCw className={`h-3 w-3 mr-1 ${dbLoading ? 'animate-spin' : ''}`} />
                             Sincronizar Status
                         </Button>
                     </div>
