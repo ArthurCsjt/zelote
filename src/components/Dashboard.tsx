@@ -17,7 +17,7 @@ import { LoanHistory } from "./LoanHistory";
 import { GlassCard } from "./ui/GlassCard";
 import { useDashboardData, PeriodView } from '@/hooks/useDashboardData';
 import { Skeleton } from "./ui/skeleton";
-import { CollapsibleDashboardFilter } from "./CollapsibleDashboardFilter"; // NOVO IMPORT
+import { CollapsibleDashboardFilter } from "./CollapsibleDashboardFilter"; // CORRIGIDO: Importando o nome correto
 import { Tooltip as ShadcnTooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip"; // Importando Tooltip como ShadcnTooltip
 
 interface DashboardProps {
