@@ -9,14 +9,14 @@ import { AuditHub } from '@/components/audit/AuditHub';
 import { useState } from "react";
 import { RegistrationHub } from "@/components/RegistrationHub";
 import Layout from "@/components/Layout";
-import { ReturnDialog } from "@/components/ReturnDialog";
+// import { ReturnDialog } from "@/components/ReturnDialog"; // REMOVIDO
 import { MainMenu } from "@/components/MainMenu";
 import { InventoryHub } from "@/components/InventoryHub";
 import { Dashboard } from "@/components/Dashboard";
 import { QRCodeModal } from "@/components/QRCodeModal";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { LoanHub } from "@/components/LoanHub";
-import type { ReturnFormData } from "@/types/database";
+// import type { ReturnFormData } from "@/types/database"; // REMOVIDO
 import { useDatabase } from "@/hooks/useDatabase";
 import { QuickRegisterWrapper } from '@/components/QuickRegisterWrapper'; // NOVO IMPORT
 
@@ -26,16 +26,19 @@ const Index = () => {
   const { isAdmin, loading: roleLoading } = useProfileRole(user);
   const { loading: dbLoading } = useDatabase();
 
-  const [openReturnDialog, setOpenReturnDialog] = useState(false);
-  const [chromebookId, setChromebookId] = useState("");
-  const [returnData, setReturnData] = useState<ReturnFormData>({ name: "", ra: "", email: "", type: 'individual', userType: 'aluno' });
+  // REMOVIDO: Estados relacionados ao ReturnDialog
+  // const [openReturnDialog, setOpenReturnDialog] = useState(false);
+  // const [chromebookId, setChromebookId] = useState("");
+  // const [returnData, setReturnData] = useState<ReturnFormData>({ name: "", ra: "", email: "", type: 'individual', userType: 'aluno' });
+  
   const [currentView, setCurrentView] = useState<'menu' | 'registration' | 'dashboard' | 'inventory' | 'loan' | 'audit' | 'quick-register'>('menu');
   const [showQRCodeModal, setShowQRCodeModal] = useState(false);
   const [selectedChromebookId, setSelectedChromebookId] = useState<string | null>(null);
 
   const handleNavigation = (route: 'registration' | 'dashboard' | 'inventory' | 'loan' | 'return' | 'audit' | 'quick-register') => {
+    // Se a rota for 'return', redireciona para 'loan'
     if (route === 'return') {
-      setOpenReturnDialog(true);
+      setCurrentView('loan');
       return;
     }
     setCurrentView(route);
@@ -59,7 +62,8 @@ const Index = () => {
     }
   };
 
-  const handleReturnClick = () => { /* Sua lógica de devolução */ };
+  // REMOVIDO: Função handleReturnClick vazia
+  // const handleReturnClick = () => { /* Sua lógica de devolução */ };
 
   const renderCurrentView = () => {
     switch (currentView) {
@@ -101,7 +105,7 @@ const Index = () => {
         logout={logout}
       >
         {loading && currentView !== 'menu' ? <div className="flex justify-center items-center h-64"><LoadingSpinner/></div> : renderCurrentView()}
-        <ReturnDialog open={openReturnDialog} onOpenChange={setOpenReturnDialog} chromebookId={chromebookId} onChromebookIdChange={setChromebookId} returnData={returnData} onReturnDataChange={setReturnData} onConfirm={handleReturnClick} />
+        {/* REMOVIDO: ReturnDialog */}
       </Layout>
       <QRCodeModal open={showQRCodeModal} onOpenChange={(open) => setShowQRCodeModal(open)} chromebookId={selectedChromebookId ?? undefined} />
     </AuditProvider>

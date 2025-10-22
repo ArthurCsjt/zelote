@@ -48,7 +48,8 @@ export function MainMenu({
     {
       title: 'Devolução',
       icon: <RotateCcw className="h-5 w-5" />,
-      action: () => onNavigate('return'),
+      // ALTERAÇÃO AQUI: Navega para 'loan' para que o usuário use a aba de ativos
+      action: () => onNavigate('loan'), 
       bgColor: 'bg-menu-amber'
     },
     {
