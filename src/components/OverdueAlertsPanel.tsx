@@ -1,4 +1,4 @@
-import { AlertTriangle, Clock, CalendarX, User, Monitor } from "lucide-react";
+import { AlertTriangle, Clock, CalendarX, User, Monitor, RefreshCw } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 import { Badge } from "./ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
@@ -6,9 +6,16 @@ import { Button } from "./ui/button";
 import { format } from "date-fns";
 import { useOverdueLoans } from "@/hooks/useOverdueLoans";
 import { GlassCard } from "./ui/GlassCard"; // Importando GlassCard
+import { useDatabase } from "@/hooks/useDatabase"; // Importando useDatabase
 
 export function OverdueAlertsPanel() {
   const { overdueLoans, upcomingDueLoans, loading, refresh } = useOverdueLoans();
+  const { syncChromebookStatus, loading: syncLoading } = useDatabase();
+
+  const handleSyncStatus = async (chromebookId: string) => {
+    await syncChromebookStatus(chromebookId);
+    refresh(); // Atualiza a lista de empréstimos após a sincronização
+  };
 
   if (loading) {
     return (
@@ -75,9 +82,21 @@ export function OverdueAlertsPanel() {
                         {format(new Date(loan.expected_return_date), "dd/MM/yyyy 'às' HH:mm")}
                       </div>
                     </div>
-                    <Badge variant="destructive" className="ml-2">
-                      {loan.days_overdue} {loan.days_overdue === 1 ? 'dia' : 'dias'} atrasado
-                    </Badge>
+                    <div className="flex flex-col items-end gap-1">
+                        <Badge variant="destructive" className="ml-2">
+                          {loan.days_overdue} {loan.days_overdue === 1 ? 'dia' : 'dias'} atrasado
+                        </Badge>
+                        <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={() => handleSyncStatus(loan.chromebook_id)}
+                            disabled={syncLoading}
+                            className="text-xs text-red-500 hover:bg-red-100 h-6 px-2"
+                        >
+                            <RefreshCw className={`h-3 w-3 mr-1 ${syncLoading ? 'animate-spin' : ''}`} />
+                            Sincronizar Status
+                        </Button>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -115,11 +134,23 @@ export function OverdueAlertsPanel() {
                         {format(new Date(loan.expected_return_date), "dd/MM/yyyy 'às' HH:mm")}
                       </div>
                     </div>
-                    <Badge variant="outline" className="ml-2 border-amber-400 text-amber-700">
-                      {loan.days_until_due === 0 ? 'Hoje' : 
-                       loan.days_until_due === 1 ? 'Amanhã' : 
-                       `${loan.days_until_due} dias`}
-                    </Badge>
+                    <div className="flex flex-col items-end gap-1">
+                        <Badge variant="outline" className="ml-2 border-amber-400 text-amber-700">
+                          {loan.days_until_due === 0 ? 'Hoje' : 
+                           loan.days_until_due === 1 ? 'Amanhã' : 
+                           `${loan.days_until_due} dias`}
+                        </Badge>
+                        <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={() => handleSyncStatus(loan.chromebook_id)}
+                            disabled={syncLoading}
+                            className="text-xs text-amber-500 hover:bg-amber-100 h-6 px-2"
+                        >
+                            <RefreshCw className={`h-3 w-3 mr-1 ${syncLoading ? 'animate-spin' : ''}`} />
+                            Sincronizar Status
+                        </Button>
+                    </div>
                   </div>
                 </div>
               ))}

@@ -188,6 +188,29 @@ export const useDatabase = () => {
       setLoading(false);
     }
   }, [user]);
+  
+  // NOVO: Função para sincronizar o status do Chromebook
+  const syncChromebookStatus = useCallback(async (chromebookId: string): Promise<string | null> => {
+    if (!user) {
+      toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
+      return null;
+    }
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.rpc('sync_chromebook_status', { cb_id: chromebookId });
+      
+      if (error) throw error;
+      
+      toast({ title: "Sincronização Concluída", description: data });
+      return data;
+    } catch (error: any) {
+      toast({ title: "Erro de Sincronização", description: error.message, variant: "destructive" });
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
+
 
   // Loan operations
   const createLoan = useCallback(async (data: LoanFormData): Promise<Loan | null> => {
@@ -456,7 +479,7 @@ export const useDatabase = () => {
           errorCount++;
           toast({ 
             title: "Erro no Lote", 
-            description: `Chromebook ${chromebookId} não está ativo para devolução.`, 
+            description: `Chromebook ${chromebookId} não possui um empréstimo ativo registrado.`, 
             variant: "destructive" 
           });
           continue;
@@ -762,6 +785,7 @@ export const useDatabase = () => {
     getChromebooks,
     updateChromebook,
     deleteChromebook,
+    syncChromebookStatus, // NOVO
     // Loan operations
     createLoan,
     bulkCreateLoans, // Exportando a nova função
