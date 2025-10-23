@@ -45,7 +45,8 @@ export function DeviceListInput({ deviceIds, setDeviceIds, disabled, filterStatu
 
 
   const requiredStatus = filterStatus === 'emprestado' ? 'emprestado' : 'disponivel';
-  const requiredStatusLabel = requiredStatus === 'emprestado' ? 'Emprestado (Ativo)' : 'Disponível';
+  // SIMPLIFICADO: Apenas 'Ativo' ou 'Disponível'
+  const requiredStatusLabel = requiredStatus === 'emprestado' ? 'Ativo' : 'Disponível'; 
 
   // Função de validação centralizada
   const validateAndNormalizeInput = useCallback(async (rawInput: string) => {
@@ -147,7 +148,7 @@ export function DeviceListInput({ deviceIds, setDeviceIds, disabled, filterStatu
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <Label htmlFor="deviceInput" className="text-foreground font-semibold">
-          Adicionar Dispositivo (Status Requerido: {requiredStatusLabel})
+          Adicionar Dispositivo (Status: {requiredStatusLabel})
         </Label>
         <Badge variant="outline" className="bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900 dark:text-blue-300 dark:border-blue-800">
           {deviceList.length} selecionado(s)

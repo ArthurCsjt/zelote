@@ -17,10 +17,7 @@ export const ReturnWrapper: React.FC<ReturnWrapperProps> = ({ onBack, initialChr
           <RotateCcw className="h-6 w-6 text-menu-amber" />
           Registrar Devolução
         </h1>
-        <Button onClick={onBack} variant="outline">
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Voltar ao Menu
-        </Button>
+        {/* Botão Voltar ao Menu removido, confiando no botão de voltar do Layout */}
       </div>
       <ReturnForm 
         initialChromebookId={initialChromebookId} 
