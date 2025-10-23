@@ -7,7 +7,7 @@ import { useProfileRole } from '@/hooks/use-profile-role';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { ActivityFeed } from './ActivityFeed';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from './ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 
 interface LayoutProps {
@@ -118,8 +118,6 @@ const Layout: React.FC<LayoutProps> = ({
             </div>
 
             <div className="flex items-center space-x-4">
-              
-              {/* Botão de Alternância de Tema REMOVIDO */}
               
               {/* Botão de Notificações (Sino) */}
               <Popover>
