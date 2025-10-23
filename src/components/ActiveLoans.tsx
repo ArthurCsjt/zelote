@@ -9,9 +9,18 @@ import { toast } from "@/hooks/use-toast";
 import type { LoanHistoryItem, ReturnFormData } from "@/types/database";
 import { OverdueAlertsPanel } from "./OverdueAlertsPanel";
 import { GlassCard } from "./ui/GlassCard";
+import { useNavigate } from "react-router-dom"; // Importando useNavigate
 
 interface ActiveLoansProps {
-  onNavigateToReturn: (chromebookId: string) => void; // NOVO PROP
+  // O LoanHub não passa mais a função, mas precisamos de uma forma de navegar.
+  // Vamos usar useNavigate e a função de navegação do Index.tsx (que é o onNavigate do MainMenu)
+  // Como não temos acesso direto ao onNavigate do Index, vamos usar a navegação do React Router
+  // e fazer o Index.tsx reagir à mudança de estado.
+  // Para simplificar, vamos manter a interface de callback, mas o Index.tsx precisa ser atualizado para reagir a isso.
+  // No entanto, como o ActiveLoans está dentro do LoanHub, que está dentro do Index,
+  // a maneira mais limpa é passar a função de navegação do Index para o LoanHub e para o ActiveLoans.
+  // Vamos assumir que o LoanHub passa a função de navegação correta.
+  onNavigateToReturn: (chromebookId: string) => void; // Mantendo o prop para ser passado pelo LoanHub
 }
 
 export function ActiveLoans({ onNavigateToReturn }: ActiveLoansProps) {
@@ -37,7 +46,7 @@ export function ActiveLoans({ onNavigateToReturn }: ActiveLoansProps) {
   }, [fetchActiveLoans]);
 
   const handleReturnClick = (loan: LoanHistoryItem) => {
-    // Navega para a aba de devolução e passa o ID do Chromebook para pré-seleção
+    // Chama a função passada pelo Index.tsx (via LoanHub) para mudar a view
     onNavigateToReturn(loan.chromebook_id);
   };
 

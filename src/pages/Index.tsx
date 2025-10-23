@@ -17,7 +17,7 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { LoanHub } from "@/components/LoanHub";
 import { useDatabase } from "@/hooks/useDatabase";
 import { QuickRegisterWrapper } from '@/components/QuickRegisterWrapper';
-// import { ReturnWrapper } from '@/components/ReturnWrapper'; // REMOVIDO
+import { ReturnWrapper } from '@/components/ReturnWrapper'; // NOVO IMPORT
 
 const Index = () => {
   // ADIÇÃO: Chamamos os hooks de autenticação aqui, no componente "pai"
@@ -25,22 +25,26 @@ const Index = () => {
   const { isAdmin, loading: roleLoading } = useProfileRole();
   const { loading: dbLoading } = useDatabase();
 
-  // ATUALIZADO: Removendo 'return' da lista de views
-  const [currentView, setCurrentView] = useState<'menu' | 'registration' | 'dashboard' | 'inventory' | 'loan' | 'audit' | 'quick-register'>('menu');
-  // ATUALIZADO: O LoanHub agora aceita 'form', 'active' ou 'return'
-  const [loanTabDefault, setLoanTabDefault] = useState<'form' | 'active' | 'return'>('form'); 
+  // ATUALIZADO: Reintroduzindo 'return' na lista de views
+  const [currentView, setCurrentView] = useState<'menu' | 'registration' | 'dashboard' | 'inventory' | 'loan' | 'audit' | 'quick-register' | 'return'>('menu');
+  // ATUALIZADO: O LoanHub agora aceita 'form' ou 'active'
+  const [loanTabDefault, setLoanTabDefault] = useState<'form' | 'active'>('form'); 
   const [selectedChromebookIdForReturn, setSelectedChromebookIdForReturn] = useState<string | undefined>(undefined); // NOVO ESTADO para pré-seleção
   
   const [showQRCodeModal, setShowQRCodeModal] = useState(false);
   const [selectedChromebookId, setSelectedChromebookId] = useState<string | null>(null);
 
-  // ATUALIZADO: Adicionando o parâmetro opcional 'tab'
-  const handleNavigation = (route: 'registration' | 'dashboard' | 'inventory' | 'loan' | 'audit' | 'quick-register', tab?: 'form' | 'active' | 'return') => {
+  // ATUALIZADO: Adicionando o parâmetro opcional 'tab' e 'chromebookId'
+  const handleNavigation = (route: 'registration' | 'dashboard' | 'loan' | 'inventory' | 'audit' | 'quick-register' | 'return', tab?: 'form' | 'active', chromebookId?: string) => {
     
-    // Se a rota for 'loan', definimos a aba padrão
     if (route === 'loan') {
       setLoanTabDefault(tab || 'form');
-      setSelectedChromebookIdForReturn(undefined); // Limpa qualquer pré-seleção
+    }
+    
+    if (route === 'return' && chromebookId) {
+      setSelectedChromebookIdForReturn(chromebookId);
+    } else {
+      setSelectedChromebookIdForReturn(undefined);
     }
     
     setCurrentView(route);
@@ -67,6 +71,16 @@ const Index = () => {
       setCurrentView('inventory');
     }
   };
+  
+  const handleReturnSuccess = () => {
+    // Após a devolução, volta para o menu principal
+    handleBackToMenu();
+  };
+  
+  // Função para ser passada para ActiveLoans via LoanHub
+  const handleNavigateToReturnView = (chromebookId: string) => {
+    handleNavigation('return', undefined, chromebookId);
+  };
 
   const renderCurrentView = () => {
     switch (currentView) {
@@ -77,11 +91,17 @@ const Index = () => {
       case 'inventory':
         return <InventoryHub onBack={handleBackToMenu} onGenerateQrCode={handleGenerateQrCode} />;
       case 'loan':
-        // PASSANDO A ABA INICIAL CORRETA E O ID DE PRÉ-SELEÇÃO
+        // PASSANDO A FUNÇÃO DE NAVEGAÇÃO PARA DEVOLUÇÃO
         return <LoanHub 
           onBack={handleBackToMenu} 
           defaultTab={loanTabDefault} 
+          onNavigateToReturnView={handleNavigateToReturnView}
+        />;
+      case 'return':
+        return <ReturnWrapper 
+          onBack={handleBackToMenu} 
           initialChromebookId={selectedChromebookIdForReturn}
+          onReturnSuccess={handleReturnSuccess}
         />;
       case 'audit':
         return <AuditHub />;
@@ -92,8 +112,30 @@ const Index = () => {
     }
   };
   
-  const getViewTitle = (): string => { /* Sua lógica de títulos */ return 'Zelote'; };
-  const getViewSubtitle = (): string => { /* Sua lógica de subtítulos */ return 'Controle de Chromebooks'; };
+  const getViewTitle = (): string => { 
+    switch (currentView) {
+      case 'registration': return 'Hub de Cadastros';
+      case 'dashboard': return 'Dashboard';
+      case 'inventory': return 'Hub de Inventário';
+      case 'loan': return 'Empréstimos';
+      case 'return': return 'Registrar Devolução';
+      case 'audit': return 'Sistema de Contagem';
+      case 'quick-register': return 'Re-Cadastro Rápido';
+      default: return 'Zelote';
+    }
+  };
+  const getViewSubtitle = (): string => { 
+    switch (currentView) {
+      case 'registration': return 'Gerencie o cadastro de equipamentos e usuários';
+      case 'dashboard': return 'Análise de uso e estatísticas';
+      case 'inventory': return 'Visualize e gerencie o inventário';
+      case 'loan': return 'Realize novos empréstimos e veja ativos';
+      case 'return': return 'Registre a devolução de equipamentos';
+      case 'audit': return 'Realize a contagem física do inventário';
+      case 'quick-register': return 'Re-cadastre um Chromebook rapidamente';
+      default: return 'Controle de Chromebooks';
+    }
+  };
   
   const loading = dbLoading || roleLoading;
 

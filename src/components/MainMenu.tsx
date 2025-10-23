@@ -5,8 +5,8 @@ import { Button } from '@/components/ui/button';
 import { ClipboardList, BarChart3, PlusCircle, Laptop, RotateCcw, Brain, ListChecks, QrCode } from 'lucide-react';
 
 interface MainMenuProps {
-  // ALTERAÇÃO 2: Removendo 'return' e 'quick-register' daqui, pois 'return' vai para 'loan' e 'quick-register' é mantido
-  onNavigate: (route: 'registration' | 'dashboard' | 'loan' | 'inventory' | 'audit' | 'quick-register', tab?: 'form' | 'active' | 'return') => void;
+  // ALTERAÇÃO 2: Reintroduzindo 'return' como rota de nível superior
+  onNavigate: (route: 'registration' | 'dashboard' | 'loan' | 'inventory' | 'audit' | 'quick-register' | 'return', tab?: 'form' | 'active') => void;
 }
 
 const isMobileDevice = () => {
@@ -48,8 +48,8 @@ export function MainMenu({
     {
       title: 'Devolução',
       icon: <RotateCcw className="h-5 w-5" />,
-      // CORREÇÃO: Navega para 'loan' e define a aba 'return'
-      action: () => onNavigate('loan', 'return'), 
+      // CORREÇÃO: Navega para a rota 'return'
+      action: () => onNavigate('return'), 
       bgColor: 'bg-menu-amber'
     },
     {
