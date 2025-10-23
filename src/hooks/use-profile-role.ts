@@ -28,7 +28,9 @@ export function useProfileRole() {
 
         if (error) throw error;
         if (isMounted) {
-          setRole((data?.role as ProfileRole) ?? null);
+          const fetchedRole = (data?.role as ProfileRole) ?? null;
+          console.log(`[useProfileRole] User ID: ${user.id}, Fetched Role: ${fetchedRole}`); // DEBUG LOG
+          setRole(fetchedRole);
         }
       } catch (e) {
         console.error('Erro ao carregar função do perfil:', e);
@@ -45,6 +47,7 @@ export function useProfileRole() {
   }, [user?.id]);
 
   const isAdmin = role === 'admin' || role === 'super_admin';
+  console.log(`[useProfileRole] Current Role: ${role}, Is Admin: ${isAdmin}, Loading: ${loading}`); // DEBUG LOG
 
   return {
     role,
