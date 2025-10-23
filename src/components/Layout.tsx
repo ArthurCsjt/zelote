@@ -34,7 +34,8 @@ const Layout: React.FC<LayoutProps> = ({
   } = useTheme();
   const navigate = useNavigate();
   const {
-    isAdmin
+    isAdmin,
+    loading: roleLoading // Capturando o estado de carregamento
   } = useProfileRole();
   const [showInstallBanner, setShowInstallBanner] = React.useState(false);
   const [isStandalone, setIsStandalone] = React.useState(false);
@@ -119,8 +120,6 @@ const Layout: React.FC<LayoutProps> = ({
 
             <div className="flex items-center space-x-4">
               
-              {/* Botão de Alternância de Tema REMOVIDO */}
-              
               {/* Botão de Notificações (Sino) */}
               <Popover>
                 <PopoverTrigger asChild>
@@ -159,7 +158,8 @@ const Layout: React.FC<LayoutProps> = ({
                     <DropdownMenuSeparator />
                     
                     {/* Item Configurações (Apenas para Admin) */}
-                    {isAdmin && (
+                    {/* Adicionando verificação de roleLoading para evitar piscar */}
+                    {!roleLoading && isAdmin && (
                       <DropdownMenuItem 
                         onClick={() => navigate('/settings')}
                         className="cursor-pointer flex items-center gap-2"
