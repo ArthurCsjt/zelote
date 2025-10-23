@@ -37,10 +37,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const login = async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (!error) {
-        // Força a atualização da sessão para garantir que o useProfileRole pegue o novo ID/Role
-        await refreshSession(); 
-    }
     return { success: !error, error: error?.message };
   };
 
