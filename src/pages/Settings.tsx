@@ -1,28 +1,26 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import Layout from '@/components/Layout';
 import { useProfileRole } from '@/hooks/use-profile-role';
 import { useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { UserManagement } from './parts/UserManagement';
-import { DataMaintenance } from '@/components/DataMaintenance'; // Importando o novo componente
-import { GlassCard } from '@/components/ui/GlassCard'; // Importando GlassCard
+import { DataMaintenance } from '@/components/DataMaintenance';
+import { GlassCard } from '@/components/ui/GlassCard';
 import { Button } from '@/components/ui/button';
-import { LogOut, Sun, Moon, Monitor } from 'lucide-react';
+import { LogOut, Loader2, Settings as SettingsIcon } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useTheme } from '@/hooks/use-theme'; // Importando useTheme
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Label } from '@/components/ui/label'; // IMPORT FALTANTE
 
 const Settings = () => {
   const { isAdmin, loading } = useProfileRole();
   const { logout } = useAuth();
-  const { theme, setTheme } = useTheme(); // Usando useTheme
   const navigate = useNavigate();
 
+  // Redireciona se o usuário não for admin e o carregamento terminar
   useEffect(() => {
     if (!loading && !isAdmin) {
-      // Se for um usuário comum, apenas garante que ele não veja as partes de admin
+      // Se o usuário não for admin, redireciona para a página inicial
+      navigate('/', { replace: true });
     }
   }, [isAdmin, loading, navigate]);
   
@@ -31,28 +29,38 @@ const Settings = () => {
     navigate('/login', { replace: true });
   };
 
-  // Funções de tema removidas, pois o tema é fixo em 'light'
+  if (loading) {
+    return (
+      <Layout title="Configurações" subtitle="Carregando permissões..." showBackButton onBack={() => navigate(-1)}>
+        <div className="flex justify-center items-center h-64">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </Layout>
+    );
+  }
+
+  // Se o usuário não for admin, o useEffect acima já o redirecionou.
+  // Este bloco é um fallback de segurança.
+  if (!isAdmin) {
+    return null; 
+  }
 
   return (
     <Layout title="Configurações" subtitle="Gerencie configurações administrativas" showBackButton onBack={() => navigate(-1)}>
       <div className="max-w-5xl mx-auto grid gap-6 animate-fade-in">
         
-        {/* Seções de Admin (visíveis apenas para Admin) */}
-        {isAdmin ? (
-          <>
-            <UserManagement />
-            <DataMaintenance />
-            {/* Preferências do Sistema (Removido o seletor de tema) */}
-          </>
-        ) : (
-          <Alert>
-            <AlertDescription>
-              Você não tem permissão de administrador. Apenas o botão de Sair está disponível.
-            </AlertDescription>
-          </Alert>
-        )}
+        <div className="flex items-center gap-3 mb-4">
+            <SettingsIcon className="h-7 w-7 text-primary" />
+            <h2 className="text-2xl font-bold text-gray-800">Painel Administrativo</h2>
+        </div>
         
-        {/* Botão de Sair (Visível para todos) */}
+        {/* 1. Gerenciamento de Usuários (Convites e Roles) */}
+        <UserManagement />
+        
+        {/* 2. Manutenção de Dados (Importação e Limpeza) */}
+        <DataMaintenance />
+        
+        {/* 3. Botão de Sair (Visível para todos, mas colocado aqui para consistência) */}
         <GlassCard className="border-red-200/50 bg-red-50/50">
           <CardHeader>
             <CardTitle className="text-red-700">Sair do Sistema</CardTitle>
