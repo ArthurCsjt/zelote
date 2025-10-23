@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, LogOut, ArrowLeft, Bell, Settings, Sun, Moon } from 'lucide-react';
+import { User, LogOut, ArrowLeft, Bell, Settings, Sun, Moon, Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/hooks/use-theme';
 import { useNavigate } from 'react-router-dom';
@@ -35,13 +35,14 @@ const Layout: React.FC<LayoutProps> = ({
   const navigate = useNavigate();
   const {
     isAdmin,
-    loading: roleLoading, // Capturando o estado de carregamento
-    role // ADICIONADO: Desestruturando o valor bruto da função
+    loading: roleLoading,
+    role
   } = useProfileRole();
   const [showInstallBanner, setShowInstallBanner] = React.useState(false);
   const [isStandalone, setIsStandalone] = React.useState(false);
+  
   React.useEffect(() => {
-    // Check if app is running in standalone mode
+    // Lógica PWA (mantida)
     const checkStandalone = () => {
       const isStandaloneMode = window.matchMedia('(display-mode: standalone)').matches;
       const isInWebAppiOS = (window.navigator as any).standalone === true;
@@ -56,19 +57,16 @@ const Layout: React.FC<LayoutProps> = ({
     };
     const isInstalled = checkStandalone();
 
-    // Check if user has dismissed the banner recently
     const dismissedTime = localStorage.getItem('pwa-banner-dismissed');
-    const shouldShowBanner = !isInstalled && (!dismissedTime || Date.now() - parseInt(dismissedTime) > 24 * 60 * 60 * 1000); // 24 hours
+    const shouldShowBanner = !isInstalled && (!dismissedTime || Date.now() - parseInt(dismissedTime) > 24 * 60 * 60 * 1000);
 
     if (shouldShowBanner) {
-      // Show banner after a short delay
       const timer = setTimeout(() => {
         setShowInstallBanner(true);
       }, 2000);
       return () => clearTimeout(timer);
     }
 
-    // Listen for display mode changes
     const displayModeQuery = window.matchMedia('(display-mode: standalone)');
     const handleDisplayModeChange = (e: MediaQueryListEvent) => {
       setIsStandalone(e.matches);
@@ -81,6 +79,7 @@ const Layout: React.FC<LayoutProps> = ({
     displayModeQuery.addEventListener('change', handleDisplayModeChange);
     return () => displayModeQuery.removeEventListener('change', handleDisplayModeChange);
   }, []);
+  
   const handleInstallBannerDismiss = () => {
     setShowInstallBanner(false);
     localStorage.setItem('pwa-banner-dismissed', Date.now().toString());
@@ -143,7 +142,11 @@ const Layout: React.FC<LayoutProps> = ({
                       variant="outline" 
                       className="h-9 px-3 border-gray-300 hover:bg-gray-100 flex items-center gap-2"
                     >
-                      <User className="w-4 h-4 text-muted-foreground" />
+                      {roleLoading ? (
+                        <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                      ) : (
+                        <User className="w-4 h-4 text-muted-foreground" />
+                      )}
                       <span className="text-sm font-medium hidden sm:inline">
                         {user.email?.substring(0, user.email.indexOf('@'))}
                       </span>
@@ -159,6 +162,7 @@ const Layout: React.FC<LayoutProps> = ({
                     <DropdownMenuSeparator />
                     
                     {/* Item Configurações (Apenas para Admin) */}
+                    {/* Usando a verificação explícita do role */}
                     {role && (role === 'admin' || role === 'super_admin') && (
                       <DropdownMenuItem 
                         onClick={() => navigate('/settings')}
