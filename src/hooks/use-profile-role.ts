@@ -20,6 +20,8 @@ export function useProfileRole() {
           }
           return;
         }
+        
+        // 1. Tenta buscar o papel do perfil
         const { data, error } = await supabase
           .from('profiles')
           .select('role')
@@ -27,14 +29,16 @@ export function useProfileRole() {
           .maybeSingle();
 
         if (error) throw error;
+        
         if (isMounted) {
-          const fetchedRole = (data?.role as ProfileRole) ?? null;
-          console.log(`[useProfileRole] User ID: ${user.id}, Fetched Role: ${fetchedRole}`); // DEBUG LOG
+          // 2. Define o papel, usando 'user' como fallback se o perfil for encontrado mas o papel for nulo (improvável)
+          const fetchedRole = (data?.role as ProfileRole) ?? 'user'; 
+          console.log(`[useProfileRole] User ID: ${user.id}, Fetched Role: ${fetchedRole}`);
           setRole(fetchedRole);
         }
       } catch (e) {
         console.error('Erro ao carregar função do perfil:', e);
-        if (isMounted) setRole(null);
+        if (isMounted) setRole(null); // Se houver erro, assume null
       } finally {
         if (isMounted) setLoading(false);
       }
@@ -47,8 +51,8 @@ export function useProfileRole() {
   }, [user?.id]);
 
   const isAdmin = role === 'admin' || role === 'super_admin';
-  console.log(`[useProfileRole] Current Role: ${role}, Is Admin: ${isAdmin}, Loading: ${loading}`); // DEBUG LOG
-
+  // console.log(`[useProfileRole] Current Role: ${role}, Is Admin: ${isAdmin}, Loading: ${loading}`); // Removendo log excessivo
+  
   return {
     role,
     isAdmin,
