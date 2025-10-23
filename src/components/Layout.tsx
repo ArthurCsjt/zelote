@@ -158,8 +158,8 @@ const Layout: React.FC<LayoutProps> = ({
                     <DropdownMenuSeparator />
                     
                     {/* Item Configurações (Apenas para Admin) */}
-                    {/* Adicionando verificação de roleLoading para evitar piscar */}
-                    {!roleLoading && isAdmin && (
+                    {/* CORREÇÃO: Removendo a verificação de roleLoading para garantir que o item apareça assim que isAdmin for true */}
+                    {isAdmin && (
                       <DropdownMenuItem 
                         onClick={() => navigate('/settings')}
                         className="cursor-pointer flex items-center gap-2"
