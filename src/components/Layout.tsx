@@ -119,6 +119,19 @@ const Layout: React.FC<LayoutProps> = ({
 
             <div className="flex items-center space-x-4">
               
+              {/* Botão de Configurações (Apenas para Admin) */}
+              {isAdmin && (
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-9 w-9 text-primary hover:bg-primary/10"
+                  onClick={() => navigate('/settings')}
+                  title="Configurações"
+                >
+                  <Settings className="h-5 w-5" />
+                </Button>
+              )}
+              
               {/* Botão de Notificações (Sino) */}
               <Popover>
                 <PopoverTrigger asChild>
@@ -156,23 +169,11 @@ const Layout: React.FC<LayoutProps> = ({
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     
-                    {/* Item Configurações (Apenas para Admin) */}
-                    {isAdmin && (
-                      <DropdownMenuItem 
-                        onClick={() => navigate('/settings')}
-                        className="cursor-pointer flex items-center gap-2"
-                      >
-                        <Settings className="h-4 w-4 text-primary" />
-                        Configurações
-                      </DropdownMenuItem>
-                    )}
-                    
                     {/* Item Sair (Para todos) */}
                     <DropdownMenuItem 
                       onClick={handleLogout}
                       className={cn(
-                        "cursor-pointer flex items-center gap-2",
-                        isAdmin ? 'text-red-600 focus:text-red-700 focus:bg-red-50' : 'text-red-600 focus:text-red-700 focus:bg-red-50'
+                        "cursor-pointer flex items-center gap-2 text-red-600 focus:text-red-700 focus:bg-red-50"
                       )}
                     >
                       <LogOut className="h-4 w-4" />
