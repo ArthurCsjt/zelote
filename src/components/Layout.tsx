@@ -35,7 +35,8 @@ const Layout: React.FC<LayoutProps> = ({
   const navigate = useNavigate();
   const {
     isAdmin,
-    loading: roleLoading // Capturando o estado de carregamento
+    loading: roleLoading, // Capturando o estado de carregamento
+    role // ADICIONADO: Desestruturando o valor bruto da função
   } = useProfileRole();
   const [showInstallBanner, setShowInstallBanner] = React.useState(false);
   const [isStandalone, setIsStandalone] = React.useState(false);
@@ -158,8 +159,7 @@ const Layout: React.FC<LayoutProps> = ({
                     <DropdownMenuSeparator />
                     
                     {/* Item Configurações (Apenas para Admin) */}
-                    {/* CORREÇÃO: Removendo a verificação de roleLoading para garantir que o item apareça assim que isAdmin for true */}
-                    {isAdmin && (
+                    {role && (role === 'admin' || role === 'super_admin') && (
                       <DropdownMenuItem 
                         onClick={() => navigate('/settings')}
                         className="cursor-pointer flex items-center gap-2"
