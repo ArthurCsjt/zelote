@@ -17,7 +17,7 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { LoanHub } from "@/components/LoanHub";
 import { useDatabase } from "@/hooks/useDatabase";
 import { QuickRegisterWrapper } from '@/components/QuickRegisterWrapper';
-import { ReturnWrapper } from '@/components/ReturnWrapper'; // NOVO IMPORT
+// import { ReturnWrapper } from '@/components/ReturnWrapper'; // REMOVIDO
 
 const Index = () => {
   // ADIÇÃO: Chamamos os hooks de autenticação aqui, no componente "pai"
@@ -25,21 +25,22 @@ const Index = () => {
   const { isAdmin, loading: roleLoading } = useProfileRole();
   const { loading: dbLoading } = useDatabase();
 
-  const [currentView, setCurrentView] = useState<'menu' | 'registration' | 'dashboard' | 'inventory' | 'loan' | 'audit' | 'quick-register' | 'return'>('menu');
-  const [loanTabDefault, setLoanTabDefault] = useState<'form' | 'active'>('form'); // NOVO ESTADO
+  // ATUALIZADO: Removendo 'return' da lista de views
+  const [currentView, setCurrentView] = useState<'menu' | 'registration' | 'dashboard' | 'inventory' | 'loan' | 'audit' | 'quick-register'>('menu');
+  // ATUALIZADO: O LoanHub agora aceita 'form', 'active' ou 'return'
+  const [loanTabDefault, setLoanTabDefault] = useState<'form' | 'active' | 'return'>('form'); 
+  const [selectedChromebookIdForReturn, setSelectedChromebookIdForReturn] = useState<string | undefined>(undefined); // NOVO ESTADO para pré-seleção
+  
   const [showQRCodeModal, setShowQRCodeModal] = useState(false);
   const [selectedChromebookId, setSelectedChromebookId] = useState<string | null>(null);
 
-  const handleNavigation = (route: 'registration' | 'dashboard' | 'inventory' | 'loan' | 'return' | 'audit' | 'quick-register') => {
-    // Se a rota for 'return', navegamos diretamente para a view 'return'
-    if (route === 'return') {
-      setCurrentView('return');
-      return;
-    }
+  // ATUALIZADO: Adicionando o parâmetro opcional 'tab'
+  const handleNavigation = (route: 'registration' | 'dashboard' | 'inventory' | 'loan' | 'audit' | 'quick-register', tab?: 'form' | 'active' | 'return') => {
     
-    // Se a rota for 'loan', definimos a aba padrão como 'form'
+    // Se a rota for 'loan', definimos a aba padrão
     if (route === 'loan') {
-      setLoanTabDefault('form');
+      setLoanTabDefault(tab || 'form');
+      setSelectedChromebookIdForReturn(undefined); // Limpa qualquer pré-seleção
     }
     
     setCurrentView(route);
@@ -48,6 +49,7 @@ const Index = () => {
   const handleBackToMenu = () => {
     setCurrentView('menu');
     setLoanTabDefault('form'); // Reseta para o padrão ao voltar
+    setSelectedChromebookIdForReturn(undefined);
   };
 
   const handleGenerateQrCode = (chromebookId: string) => {
@@ -69,23 +71,22 @@ const Index = () => {
   const renderCurrentView = () => {
     switch (currentView) {
       case 'registration':
-        // O RegistrationHub agora gerencia a navegação interna, mas o botão 'Voltar'
-        // no cabeçalho do Hub leva de volta ao menu principal.
         return <RegistrationHub onBack={handleBackToMenu} onRegistrationSuccess={handleRegistrationSuccess} />;
       case 'dashboard':
         return <Dashboard onBack={handleBackToMenu} />;
       case 'inventory':
-        // CORREÇÃO AQUI: Passando onGenerateQrCode
         return <InventoryHub onBack={handleBackToMenu} onGenerateQrCode={handleGenerateQrCode} />;
       case 'loan':
-        // PASSANDO A ABA INICIAL CORRETA
-        return <LoanHub onBack={handleBackToMenu} defaultTab={loanTabDefault} />;
+        // PASSANDO A ABA INICIAL CORRETA E O ID DE PRÉ-SELEÇÃO
+        return <LoanHub 
+          onBack={handleBackToMenu} 
+          defaultTab={loanTabDefault} 
+          initialChromebookId={selectedChromebookIdForReturn}
+        />;
       case 'audit':
         return <AuditHub />;
       case 'quick-register':
         return <QuickRegisterWrapper onBack={handleBackToMenu} onRegistrationSuccess={handleRegistrationSuccess} />;
-      case 'return': // NOVO CASO
-        return <ReturnWrapper onBack={handleBackToMenu} />;
       default:
         return <MainMenu onNavigate={handleNavigation} />;
     }

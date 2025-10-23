@@ -5,8 +5,8 @@ import { Button } from '@/components/ui/button';
 import { ClipboardList, BarChart3, PlusCircle, Laptop, RotateCcw, Brain, ListChecks, QrCode } from 'lucide-react';
 
 interface MainMenuProps {
-  // ALTERAÇÃO 2: Adicionando a nova rota 'quick-register'
-  onNavigate: (route: 'registration' | 'dashboard' | 'loan' | 'return' | 'inventory' | 'audit' | 'quick-register') => void;
+  // ALTERAÇÃO 2: Removendo 'return' e 'quick-register' daqui, pois 'return' vai para 'loan' e 'quick-register' é mantido
+  onNavigate: (route: 'registration' | 'dashboard' | 'loan' | 'inventory' | 'audit' | 'quick-register', tab?: 'form' | 'active' | 'return') => void;
 }
 
 const isMobileDevice = () => {
@@ -42,14 +42,14 @@ export function MainMenu({
     {
       title: 'Empréstimos',
       icon: <ClipboardList className="h-5 w-5" />,
-      action: () => onNavigate('loan'),
+      action: () => onNavigate('loan', 'form'),
       bgColor: 'bg-menu-violet'
     },
     {
       title: 'Devolução',
       icon: <RotateCcw className="h-5 w-5" />,
-      // CORREÇÃO: Navega para 'return' para que o Index.tsx possa definir a aba correta
-      action: () => onNavigate('return'), 
+      // CORREÇÃO: Navega para 'loan' e define a aba 'return'
+      action: () => onNavigate('loan', 'return'), 
       bgColor: 'bg-menu-amber'
     },
     {

@@ -4,33 +4,20 @@ import { Badge } from "./ui/badge";
 import { Card, CardContent } from "./ui/card";
 import { format } from "date-fns";
 import { CheckCircle, Clock, User, Monitor, Target, AlertTriangle, RefreshCw, Computer } from "lucide-react";
-import { ReturnDialog } from "./ReturnDialog";
 import { useDatabase } from "@/hooks/useDatabase";
 import { toast } from "@/hooks/use-toast";
 import type { LoanHistoryItem, ReturnFormData } from "@/types/database";
 import { OverdueAlertsPanel } from "./OverdueAlertsPanel";
-import { GlassCard } from "./ui/GlassCard"; // Importando GlassCard
+import { GlassCard } from "./ui/GlassCard";
 
 interface ActiveLoansProps {
-  onBack?: () => void;
+  onNavigateToReturn: (chromebookId: string) => void; // NOVO PROP
 }
 
-export function ActiveLoans({ onBack }: ActiveLoansProps) {
-  const { getActiveLoans, returnChromebookById, bulkReturnChromebooks, loading: dbLoading } = useDatabase();
+export function ActiveLoans({ onNavigateToReturn }: ActiveLoansProps) {
+  const { getActiveLoans, loading: dbLoading } = useDatabase();
   const [activeLoans, setActiveLoans] = useState<LoanHistoryItem[]>([]);
   const [loading, setLoading] = useState(false);
-  const [openReturnDialog, setOpenReturnDialog] = useState(false);
-  const [selectedLoan, setSelectedLoan] = useState<LoanHistoryItem | null>(null);
-  const [returnData, setReturnData] = useState<ReturnFormData & { notes?: string }>({
-    name: "",
-    ra: "",
-    email: "",
-    type: 'lote', // Forçando para 'lote' no novo fluxo unificado
-    userType: 'aluno',
-    notes: ''
-  });
-  // Estado para armazenar IDs de lote do diálogo de devolução
-  const [batchReturnIds, setBatchReturnIds] = useState<string[]>([]);
 
   // Buscar dados iniciais e sob demanda
   const fetchActiveLoans = useCallback(async () => {
@@ -50,60 +37,8 @@ export function ActiveLoans({ onBack }: ActiveLoansProps) {
   }, [fetchActiveLoans]);
 
   const handleReturnClick = (loan: LoanHistoryItem) => {
-    setSelectedLoan(loan);
-    // Preenche os dados do devolvente com os dados do emprestador como padrão
-    setReturnData({
-      name: loan.student_name,
-      email: loan.student_email,
-      ra: loan.student_ra || '',
-      type: 'lote', // Novo fluxo unificado
-      userType: loan.user_type,
-      notes: ''
-    });
-    // Define o ID do Chromebook para o novo fluxo unificado
-    setBatchReturnIds([loan.chromebook_id]);
-    setOpenReturnDialog(true);
-  };
-
-  const handleReturn = async (idsToReturn: string[], data: ReturnFormData & { notes?: string }) => { // ALTERADO: Recebe notes
-    if (idsToReturn.length === 0) return;
-
-    try {
-      // No novo fluxo unificado, sempre chamamos bulkReturnChromebooks
-      const result = await bulkReturnChromebooks(idsToReturn, data);
-      const { successCount, errorCount } = result;
-      
-      if (successCount > 0) {
-        setOpenReturnDialog(false);
-        setSelectedLoan(null);
-        setReturnData({
-          name: '',
-          email: '',
-          ra: '',
-          type: 'lote',
-          userType: 'aluno',
-          notes: ''
-        });
-        setBatchReturnIds([]);
-        
-        // Atualiza a lista manualmente após a devolução
-        fetchActiveLoans(); 
-
-        toast({
-          title: "Sucesso",
-          description: `${successCount} Chromebook(s) devolvido(s) com sucesso.`,
-        });
-      } else if (errorCount > 0) {
-        // O erro individual/lote já é toastado dentro do useDatabase
-      }
-    } catch (error) {
-      console.error('Erro ao processar devolução:', error);
-      toast({
-        title: "Erro",
-        description: "Falha ao processar devolução",
-        variant: "destructive",
-      });
-    }
+    // Navega para a aba de devolução e passa o ID do Chromebook para pré-seleção
+    onNavigateToReturn(loan.chromebook_id);
   };
 
   // Função para determinar se o empréstimo está em atraso
@@ -123,7 +58,6 @@ export function ActiveLoans({ onBack }: ActiveLoansProps) {
 
   return (
     <div className="space-y-6 relative">
-      {/* Background gradient overlay removido, pois o LoanHub não tem mais padding */}
       
       {/* Painel de Alertas de Atraso */}
       <OverdueAlertsPanel />
@@ -273,16 +207,6 @@ export function ActiveLoans({ onBack }: ActiveLoansProps) {
           })}
         </div>
       )}
-
-      <ReturnDialog
-        open={openReturnDialog}
-        onOpenChange={setOpenReturnDialog}
-        returnData={returnData}
-        onReturnDataChange={setReturnData}
-        onConfirm={handleReturn}
-        isProcessing={dbLoading}
-        initialDeviceIds={batchReturnIds} // PASSANDO A NOVA PROP
-      />
     </div>
   );
 }
