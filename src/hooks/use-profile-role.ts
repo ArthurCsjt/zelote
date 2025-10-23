@@ -21,24 +21,22 @@ export function useProfileRole() {
           return;
         }
         
-        // 1. Tenta buscar o papel do perfil
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', user.id)
-          .maybeSingle();
+        // ALTERAÇÃO: Usando a função RPC get_my_role() para buscar o papel
+        // Esta função é mais robusta, pois é executada com SECURITY DEFINER no banco.
+        const { data, error } = await supabase.rpc('get_my_role');
 
         if (error) throw error;
         
         if (isMounted) {
-          // 2. Define o papel, usando 'user' como fallback se o perfil for encontrado mas o papel for nulo (improvável)
-          const fetchedRole = (data?.role as ProfileRole) ?? 'user'; 
+          // O RPC retorna a role como uma string (text)
+          const fetchedRole = (data as ProfileRole) ?? 'user'; 
           console.log(`[useProfileRole] User ID: ${user.id}, Fetched Role: ${fetchedRole}`);
           setRole(fetchedRole);
         }
       } catch (e) {
         console.error('Erro ao carregar função do perfil:', e);
-        if (isMounted) setRole(null); // Se houver erro, assume null
+        // Se houver erro, assume 'user' para evitar que o app trave
+        if (isMounted) setRole('user'); 
       } finally {
         if (isMounted) setLoading(false);
       }
@@ -51,7 +49,6 @@ export function useProfileRole() {
   }, [user?.id]);
 
   const isAdmin = role === 'admin' || role === 'super_admin';
-  // console.log(`[useProfileRole] Current Role: ${role}, Is Admin: ${isAdmin}, Loading: ${loading}`); // Removendo log excessivo
   
   return {
     role,
