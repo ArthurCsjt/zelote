@@ -9,22 +9,8 @@ import {
   TableHeader,
   TableRow,
 } from "./ui/table";
-import { Checkbox } from "./ui/checkbox";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle,
-  DialogDescription,
-  DialogFooter
-} from "./ui/dialog";
-import { Textarea } from "./ui/textarea";
-import { Label } from "./ui/label";
 import { toast } from "./ui/use-toast";
-import { Search, ArrowLeft, Filter, Edit3, QrCode, CheckCircle, AlertCircle, XCircle, MapPin, Eye, X, Trash2, Save, AlertTriangle, Clock, Tag, Factory, Hash, Map, RefreshCw, Download } from "lucide-react";
-import { QRCodeModal } from "./QRCodeModal";
-import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "./ui/pagination";
-import { ScrollArea } from "./ui/scroll-area";
+import { Search, Filter, Edit3, QrCode, CheckCircle, AlertCircle, XCircle, Clock, RefreshCw, Download, Trash2 } from "lucide-react";
 import { 
   Select,
   SelectContent,
@@ -32,52 +18,45 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "./ui/pagination";
 import { useProfileRole } from "@/hooks/use-profile-role";
 import { supabase } from "@/integrations/supabase/client";
-import { useDatabase } from "@/hooks/useDatabase"; // Importando useDatabase
-import type { Chromebook, ChromebookData } from "@/types/database";
-import { InventoryStats } from "./InventoryStats"; // Importando o novo componente de estatísticas
-import { GlassCard } from "./ui/GlassCard"; // Importando GlassCard
+import { useDatabase } from "@/hooks/useDatabase";
+import type { Chromebook } from "@/types/database";
+import { InventoryStats } from "./InventoryStats";
+import { GlassCard } from "./ui/GlassCard";
+import { ChromebookEditDialog } from "./ChromebookEditDialog"; // NOVO IMPORT
+import { ChromebookDeleteDialog } from "./ChromebookDeleteDialog"; // NOVO IMPORT
 
-// Interface for Chromebook data structure (matching database)
+// Interface para o estado interno do formulário de edição (mantida para consistência)
 interface ChromebookDataExtended extends Chromebook {
-  // Adicionando campos que podem ser usados no formulário de edição
   classroom?: string;
   manufacturer?: string;
-  is_deprovisioned?: boolean; // Adicionado para consistência
+  is_deprovisioned?: boolean;
 }
-
 
 interface ChromebookInventoryProps {
   onBack?: () => void;
-  onGenerateQrCode: (chromebookId: string) => void; // NOVO PROP
+  onGenerateQrCode: (chromebookId: string) => void;
 }
 
 export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInventoryProps) {
-  // Removido useIsMobile
   const { isAdmin } = useProfileRole();
-  const { getChromebooks, updateChromebook, deleteChromebook } = useDatabase(); // Usando useDatabase
+  const { getChromebooks, updateChromebook } = useDatabase();
   
-  // State for storing all Chromebooks
   const [chromebooks, setChromebooks] = useState<ChromebookDataExtended[]>([]);
-  // State for search term
   const [searchTerm, setSearchTerm] = useState("");
-  // State for status filter
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  // State for edit dialog
+  
+  // Estados para Diálogos
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  // State for delete dialog
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  // State for QR Code dialog
-  const [showQRCode, setShowQRCode] = useState<string | null>(null);
-  // State for the Chromebook being edited
   const [editingChromebook, setEditingChromebook] = useState<ChromebookDataExtended | null>(null);
-  // State for the Chromebook being deleted
   const [chromebookToDelete, setChromebookToDelete] = useState<ChromebookDataExtended | null>(null);
-  // Pagination states
+  
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
-  const [isFetching, setIsFetching] = useState(false); // Novo estado para o loading da busca
+  const [isFetching, setIsFetching] = useState(false);
 
   // Função para carregar Chromebooks
   const fetchChromebooks = useCallback(async () => {
@@ -92,46 +71,46 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
     }
   }, [getChromebooks]);
 
-// Load Chromebooks from Supabase on component mount
-useEffect(() => {
-  fetchChromebooks();
-}, [fetchChromebooks]);
+  // Load Chromebooks from Supabase on component mount
+  useEffect(() => {
+    fetchChromebooks();
+  }, [fetchChromebooks]);
 
-// Real-time synchronization
-useEffect(() => {
-  const channel = supabase
-    .channel('chromebooks-changes')
-    .on(
-      'postgres_changes',
-      {
-        event: '*',
-        schema: 'public',
-        table: 'chromebooks'
-      },
-      (payload) => {
-        console.log('Realtime change received:', payload);
-        
-        if (payload.eventType === 'INSERT') {
-          setChromebooks(prev => [payload.new as ChromebookDataExtended, ...prev]);
-        } else if (payload.eventType === 'UPDATE') {
-          setChromebooks(prev => 
-            prev.map(cb => 
-              cb.id === payload.new.id ? payload.new as ChromebookDataExtended : cb
-            )
-          );
-        } else if (payload.eventType === 'DELETE') {
-          setChromebooks(prev => 
-            prev.filter(cb => cb.id !== payload.old.id)
-          );
+  // Real-time synchronization
+  useEffect(() => {
+    const channel = supabase
+      .channel('chromebooks-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'chromebooks'
+        },
+        (payload) => {
+          console.log('Realtime change received:', payload);
+          
+          if (payload.eventType === 'INSERT') {
+            setChromebooks(prev => [payload.new as ChromebookDataExtended, ...prev]);
+          } else if (payload.eventType === 'UPDATE') {
+            setChromebooks(prev => 
+              prev.map(cb => 
+                cb.id === payload.new.id ? payload.new as ChromebookDataExtended : cb
+              )
+            );
+          } else if (payload.eventType === 'DELETE') {
+            setChromebooks(prev => 
+              prev.filter(cb => cb.id !== payload.old.id)
+            );
+          }
         }
-      }
-    )
-    .subscribe();
+      )
+      .subscribe();
 
-  return () => {
-    supabase.removeChannel(channel);
-  };
-}, []);
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   // Filter Chromebooks based on search term and status
   const filteredChromebooks = chromebooks.filter((chromebook) => {
@@ -176,138 +155,47 @@ useEffect(() => {
       case 'manutencao':
         return { color: 'text-red-600 bg-red-50', icon: AlertTriangle, label: 'Manutenção' };
       case 'fora_uso':
-        return { color: 'text-gray-600 bg-gray-200', icon: XCircle, label: 'Inativo' }; // Alterado para Inativo
+        return { color: 'text-gray-600 bg-gray-200', icon: XCircle, label: 'Inativo' };
       default:
         return { color: 'text-gray-600 bg-gray-50', icon: XCircle, label: 'Desconhecido' };
     }
   };
 
-// Handle status change
-const handleStatusChange = async (chromebookId: string, newStatus: string) => {
-  if (newStatus === 'emprestado') {
-    toast({
-      title: "Atenção",
-      description: "Para emprestar um Chromebook, use a seção de Empréstimos",
-      variant: "destructive",
-    });
-    return;
-  }
-
-  // Apenas admins podem alterar para FIXO ou FORA_USO
-  if ((newStatus === 'fixo' || newStatus === 'fora_uso') && !isAdmin) {
-    toast({ title: 'Permissão negada', description: 'Apenas administradores podem marcar como Fixo ou Inativo.', variant: 'destructive' });
-    return;
-  }
-  
-  // Se o status for 'fora_uso', definimos is_deprovisioned como true
-  const isDeprovisioned = newStatus === 'fora_uso';
-
-  // Usar a função centralizada do useDatabase
-  const success = await updateChromebook(chromebookId, { 
-    status: newStatus as any,
-    is_deprovisioned: isDeprovisioned, // Atualiza o campo de desprovisionamento
-  });
-
-  if (success) {
-    // A atualização do estado local será tratada pelo Real-time, mas podemos fazer uma atualização otimista
-    // para feedback imediato, embora o Real-time garanta a consistência.
-    toast({
-      title: "Status atualizado",
-      description: `Status do Chromebook alterado para ${getStatusInfo(newStatus).label}`,
-    });
-  }
-};
-
-  // Handle edit click
-  const handleEditClick = (chromebook: ChromebookDataExtended) => {
-    setEditingChromebook({ ...chromebook });
-    setIsEditDialogOpen(true);
-  };
-
-  // Handle edit form change
-  const handleEditChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    if (!editingChromebook) return;
-
-    setEditingChromebook({
-      ...editingChromebook,
-      [e.target.id]: e.target.value,
-    });
-  };
-
-  // Handle condition change
-  const handleConditionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    if (!editingChromebook) return;
-
-    setEditingChromebook({
-      ...editingChromebook,
-      condition: e.target.value,
-    });
-  };
-
-  // Handle status change in edit dialog
-  const handleEditStatusChange = (value: string) => {
-    if (!editingChromebook) return;
-
-    setEditingChromebook({
-      ...editingChromebook,
-      status: value as ChromebookDataExtended['status'],
-      // Se o status for 'fora_uso', marca como desprovisionado no formulário de edição
-      is_deprovisioned: value === 'fora_uso',
-    });
-  };
-  
-  // Handle is_deprovisioned checkbox change in edit dialog
-  const handleDeprovisionedChange = (checked: boolean) => {
-    if (!editingChromebook) return;
-    
-    // Se marcar como desprovisionado, o status deve ser 'fora_uso'
-    const newStatus = checked ? 'fora_uso' : 'disponivel';
-
-    setEditingChromebook({
-      ...editingChromebook,
-      is_deprovisioned: checked,
-      status: newStatus,
-    });
-  };
-
-
-  // Handle save edit
-  const handleSaveEdit = async () => {
-    if (!editingChromebook) return;
-
-    // Validate required fields
-    if (!editingChromebook.chromebook_id || !editingChromebook.model) {
+  // Handle status change
+  const handleStatusChange = async (chromebookId: string, newStatus: string) => {
+    if (newStatus === 'emprestado') {
       toast({
-        title: "Campos obrigatórios",
-        description: "Preencha todos os campos obrigatórios",
+        title: "Atenção",
+        description: "Para emprestar um Chromebook, use a seção de Empréstimos",
         variant: "destructive",
       });
       return;
     }
 
-    const updatePayload: Partial<ChromebookData> = {
-      chromebookId: editingChromebook.chromebook_id,
-      model: editingChromebook.model,
-      manufacturer: editingChromebook.manufacturer,
-      serialNumber: editingChromebook.serial_number,
-      patrimonyNumber: editingChromebook.patrimony_number,
-      status: editingChromebook.status,
-      condition: editingChromebook.condition,
-      location: editingChromebook.location,
-      classroom: editingChromebook.classroom,
-      is_deprovisioned: editingChromebook.is_deprovisioned, // Incluindo o novo campo
-    };
+    if ((newStatus === 'fixo' || newStatus === 'fora_uso') && !isAdmin) {
+      toast({ title: 'Permissão negada', description: 'Apenas administradores podem marcar como Fixo ou Inativo.', variant: 'destructive' });
+      return;
+    }
+    
+    const isDeprovisioned = newStatus === 'fora_uso';
 
-    // Usar a função centralizada do useDatabase
-    const success = await updateChromebook(editingChromebook.id, updatePayload);
+    const success = await updateChromebook(chromebookId, { 
+      status: newStatus as any,
+      is_deprovisioned: isDeprovisioned,
+    });
 
     if (success) {
-      setIsEditDialogOpen(false);
-      setEditingChromebook(null);
-      // O Real-time cuidará da atualização do estado local
+      toast({
+        title: "Status atualizado",
+        description: `Status do Chromebook alterado para ${getStatusInfo(newStatus).label}`,
+      });
     }
+  };
+
+  // Handle edit click
+  const handleEditClick = (chromebook: ChromebookDataExtended) => {
+    setEditingChromebook(chromebook);
+    setIsEditDialogOpen(true);
   };
 
   // Handle delete click
@@ -319,26 +207,11 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
     setChromebookToDelete(chromebook);
     setIsDeleteDialogOpen(true);
   };
-
-  // Handle delete confirmation
-  const handleConfirmDelete = async () => {
-    if (!chromebookToDelete) return;
-
-    // Usar a função centralizada do useDatabase
-    const success = await deleteChromebook(chromebookToDelete.id);
-
-    if (success) {
-      setIsDeleteDialogOpen(false);
-      setChromebookToDelete(null);
-      // O Real-time cuidará da atualização do estado local
-    }
-  };
-
-  // Handle back button click
-  const handleBackClick = () => {
-    if (onBack) {
-      onBack();
-    }
+  
+  // Função de callback para o diálogo de exclusão
+  const handleDeleteSuccess = () => {
+    // O Real-time já cuida da atualização, mas limpamos o estado do modal
+    setChromebookToDelete(null);
   };
 
   return (
@@ -349,7 +222,7 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
       {/* Estatísticas e Gráfico */}
       <InventoryStats chromebooks={chromebooks} />
 
-      {/* Painel de Busca e Filtros (NOVO GLASS CARD) */}
+      {/* Painel de Busca e Filtros */}
       <GlassCard className="mb-6 p-4 relative z-10">
         <div className="flex flex-col sm:flex-row gap-4 items-center">
           
@@ -427,7 +300,6 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
                 const statusInfo = getStatusInfo(chromebook.status);
                 const StatusIcon = statusInfo.icon;
                 
-                // Lógica para exibir "Móvel" ou "Fixo"
                 const mobilityStatus = chromebook.status === 'fixo' 
                   ? 'Fixo' 
                   : chromebook.status === 'fora_uso' 
@@ -464,7 +336,6 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
                         {chromebook.status === 'fixo' && chromebook.classroom && (
                           <span className="ml-1 text-[10px] text-blue-700 dark:text-blue-400">({chromebook.classroom})</span>
                         )}
-                        {/* REMOVIDO: A linha que exibia (Desprovisionado) */}
                       </div>
                     </TableCell>
                     <TableCell className="text-right">
@@ -472,7 +343,7 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => onGenerateQrCode(chromebook.chromebook_id)} // USANDO A NOVA PROP
+                          onClick={() => onGenerateQrCode(chromebook.chromebook_id)}
                           title="Ver QR Code"
                         >
                           <QrCode className="h-4 w-4" />
@@ -491,7 +362,7 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
                           onClick={() => handleDeleteClick(chromebook)}
                           title="Excluir"
                           className="text-red-600 hover:text-red-800"
-                          disabled={!isAdmin} // RESTRIÇÃO AQUI
+                          disabled={!isAdmin}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -570,247 +441,19 @@ const handleStatusChange = async (chromebookId: string, newStatus: string) => {
         </Pagination>
       )}
 
-      {/* Edit Dialog */}
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent 
-          // ALTERAÇÃO AQUI: Aumentando max-w para 5xl
-          className="w-[95vw] h-[95vh] max-w-none sm:w-full sm:max-w-5xl sm:max-h-[90vh] flex flex-col p-0"
-        >
-          <DialogHeader className="px-6 py-4 border-b shrink-0">
-            <DialogTitle className="text-xl font-bold flex items-center gap-2">
-              <Edit3 className="h-5 w-5 text-primary" />
-              Editar Chromebook
-            </DialogTitle>
-            <DialogDescription>
-              Atualize as informações do Chromebook. Campos com * são obrigatórios.
-            </DialogDescription>
-          </DialogHeader>
+      {/* Edit Dialog (Agora um componente externo) */}
+      <ChromebookEditDialog
+        open={isEditDialogOpen}
+        onOpenChange={setIsEditDialogOpen}
+        chromebook={editingChromebook}
+      />
 
-          {editingChromebook && (
-            <div className="flex-1 overflow-y-auto px-6 py-4 space-y-6">
-              
-              {/* Seção 1: Identificação e Modelo */}
-              <div className="space-y-4 p-4 border rounded-lg bg-gray-50/50 dark:bg-gray-900/50">
-                <h4 className="font-semibold text-lg text-gray-800 dark:text-foreground flex items-center gap-2">
-                  <Tag className="h-4 w-4 text-blue-600" />
-                  Identificação e Modelo
-                </h4>
-                
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="space-y-1.5">
-                    <Label htmlFor="chromebook_id" className="text-xs font-medium flex items-center gap-1">
-                      ID do Chromebook *
-                    </Label>
-                    <Input
-                      id="chromebook_id"
-                      value={editingChromebook.chromebook_id}
-                      className="h-10 bg-gray-200 cursor-not-allowed font-mono text-sm dark:bg-gray-700 dark:text-gray-200"
-                      readOnly
-                    />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <Label htmlFor="patrimony_number" className="text-xs font-medium flex items-center gap-1">
-                      <Hash className="h-3 w-3" /> Patrimônio
-                    </Label>
-                    <Input
-                      id="patrimony_number"
-                      value={editingChromebook.patrimony_number || ""}
-                      onChange={handleEditChange}
-                      placeholder="Número do patrimônio"
-                      className="h-10"
-                    />
-                  </div>
-                  
-                  <div className="space-y-1.5">
-                    <Label htmlFor="serial_number" className="text-xs font-medium flex items-center gap-1">
-                      <Hash className="h-3 w-3" /> Número de Série
-                    </Label>
-                    <Input
-                      id="serial_number"
-                      value={editingChromebook.serial_number || ""}
-                      onChange={handleEditChange}
-                      placeholder="Número de série"
-                      className="h-10"
-                    />
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <Label htmlFor="manufacturer" className="text-xs font-medium flex items-center gap-1">
-                      <Factory className="h-3 w-3" /> Fabricante
-                    </Label>
-                    <Input
-                      id="manufacturer"
-                      value={editingChromebook.manufacturer || ""}
-                      onChange={handleEditChange}
-                      placeholder="Ex: Lenovo"
-                      className="h-10"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="model" className="text-xs font-medium">Modelo *</Label>
-                    <Input
-                      id="model"
-                      value={editingChromebook.model}
-                      onChange={handleEditChange}
-                      placeholder="Ex: Chromebook 14e"
-                      className="h-10"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Seção 2: Status e Localização */}
-              <div className="space-y-4 p-4 border rounded-lg bg-white shadow-sm dark:bg-card">
-                <h4 className="font-semibold text-lg text-gray-800 dark:text-foreground flex items-center gap-2">
-                  <MapPin className="h-4 w-4 text-green-600" />
-                  Status e Localização
-                </h4>
-                
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="space-y-1.5">
-                    <Label className="text-xs font-medium">Status</Label>
-                    <Select value={editingChromebook.status} onValueChange={handleEditStatusChange}>
-                      <SelectTrigger className="h-10">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="disponivel">Disponível</SelectItem>
-                        <SelectItem value="emprestado" disabled>Emprestado (Apenas via Empréstimo)</SelectItem>
-                        <SelectItem value="fixo">Fixo</SelectItem>
-                        <SelectItem value="manutencao">Manutenção</SelectItem>
-                        <SelectItem value="fora_uso">Inativo</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <Label htmlFor="location" className="text-xs font-medium flex items-center gap-1">
-                      <Map className="h-3 w-3" /> Localização Geral
-                    </Label>
-                    <Input
-                      id="location"
-                      value={editingChromebook.location || ""}
-                      onChange={handleEditChange}
-                      placeholder="Ex: Sala de informática"
-                      className="h-10"
-                    />
-                  </div>
-                  
-                  <div className="space-y-1.5">
-                    <Label htmlFor="classroom" className="text-xs font-medium">Sala de Aula (Fixo)</Label>
-                    <Input
-                      id="classroom"
-                      value={editingChromebook.classroom || ''}
-                      onChange={handleEditChange}
-                      placeholder="Ex.: Sala 21"
-                      className="h-10"
-                    />
-                  </div>
-                </div>
-                
-                {/* Checkbox de Desprovisionamento */}
-                <div className="flex items-center space-x-2 pt-4 border-t border-gray-100 dark:border-border">
-                  <Checkbox 
-                    id="is_deprovisioned" 
-                    checked={editingChromebook.is_deprovisioned} 
-                    onCheckedChange={(checked) => handleDeprovisionedChange(!!checked)}
-                    disabled={!isAdmin}
-                  />
-                  <Label htmlFor="is_deprovisioned" className="text-sm font-medium cursor-pointer">
-                    Desprovisionado (Marca o equipamento como Inativo/Fora de Uso)
-                  </Label>
-                </div>
-              </div>
-
-              {/* Seção 3: Condição/Observações */}
-              <div className="space-y-4 p-4 border rounded-lg bg-gray-50/50 dark:bg-gray-900/50">
-                <h4 className="font-semibold text-lg text-gray-800 dark:text-foreground flex items-center gap-2">
-                  <AlertTriangle className="h-4 w-4 text-orange-600" />
-                  Condição e Notas
-                </h4>
-                
-                <div className="space-y-1.5">
-                  <Label htmlFor="condition" className="text-xs font-medium">Condição/Observações</Label>
-                  <Textarea
-                    id="condition"
-                    value={editingChromebook.condition || ""}
-                    onChange={handleConditionChange}
-                    placeholder="Digite observações sobre a condição do equipamento (ex: tela trincada, bateria fraca)"
-                    className="resize-none min-h-[100px]"
-                  />
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Fixed Footer */}
-          <DialogFooter className="px-6 py-4 border-t bg-white shrink-0 flex-col sm:flex-row gap-2 sm:justify-end dark:bg-card">
-            <Button
-              variant="outline"
-              onClick={() => {
-                setIsEditDialogOpen(false);
-                setEditingChromebook(null);
-              }}
-              className="w-full sm:w-auto h-10"
-            >
-              Cancelar
-            </Button>
-            <Button 
-              onClick={handleSaveEdit}
-              className="w-full sm:w-auto h-10"
-            >
-              <Save className="w-4 h-4 mr-2" />
-              Salvar Alterações
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Confirmar Exclusão</DialogTitle>
-            <DialogDescription>
-              Tem certeza que deseja excluir o Chromebook <strong>{chromebookToDelete?.patrimony_number || chromebookToDelete?.chromebook_id}</strong>?
-              Esta ação não pode ser desfeita.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setIsDeleteDialogOpen(false);
-                setChromebookToDelete(null);
-              }}
-            >
-              Cancelar
-            </Button>
-            <Button 
-              variant="destructive"
-              onClick={handleConfirmDelete}
-            >
-              <Trash2 className="w-4 h-4 mr-2" />
-              Excluir
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* QR Code Modal */}
-      <QRCodeModal
-        open={!!showQRCode}
-        onOpenChange={(open) => setShowQRCode(open ? showQRCode : null)}
-        chromebookId={showQRCode || ""}
-        chromebookData={
-          showQRCode
-            ? (chromebooks.find(c => c.chromebook_id === showQRCode) ?? chromebooks.find(c => c.id === showQRCode))
-            : undefined
-        }
-        showSuccess={false}
+      {/* Delete Confirmation Dialog (Agora um componente externo) */}
+      <ChromebookDeleteDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        chromebook={chromebookToDelete}
+        onDeleteSuccess={handleDeleteSuccess}
       />
     </div>
   );
