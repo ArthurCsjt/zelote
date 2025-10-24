@@ -13,7 +13,7 @@ import {
 } from "./ui/dialog";
 import { Checkbox } from "./ui/checkbox";
 import { toast } from "./ui/use-toast";
-import { Edit3, Save, Tag, Hash, Factory, MapPin, AlertTriangle, Loader2, Map } from "lucide-react";
+import { Edit3, Save, Tag, Hash, Factory, MapPin, AlertTriangle, Loader2, Map, CheckCircle, XCircle } from "lucide-react";
 import { 
   Select,
   SelectContent,
@@ -21,6 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
+import { RadioGroup, RadioGroupItem } from "./ui/radio-group"; // Importando RadioGroup
 import { useDatabase } from '@/hooks/useDatabase';
 import { useProfileRole } from '@/hooks/use-profile-role';
 import type { Chromebook, ChromebookData } from "@/types/database";
@@ -75,13 +76,21 @@ export function ChromebookEditDialog({ open, onOpenChange, chromebook }: Chromeb
   // Handle status change in edit dialog
   const handleEditStatusChange = (value: string) => {
     if (!editingChromebook) return;
+    
+    const newStatus = value as ChromebookDataExtended['status'];
+    
+    // Se o status for 'emprestado', não permite alteração manual
+    if (newStatus === 'emprestado' && editingChromebook.status !== 'emprestado') {
+        toast({ title: "Atenção", description: "O status 'Emprestado' é definido automaticamente pelo sistema de empréstimos.", variant: "destructive" });
+        return;
+    }
 
-    setEditingChromebook({
-      ...editingChromebook,
-      status: value as ChromebookDataExtended['status'],
-      // Se o status for 'fora_uso', marca como desprovisionado no formulário de edição
-      is_deprovisioned: value === 'fora_uso',
-    });
+    setEditingChromebook(prev => ({
+      ...prev!,
+      status: newStatus,
+      // Se o status for 'fora_uso', marca como desprovisionado
+      is_deprovisioned: newStatus === 'fora_uso',
+    }));
   };
   
   // Handle is_deprovisioned checkbox change in edit dialog
@@ -91,11 +100,11 @@ export function ChromebookEditDialog({ open, onOpenChange, chromebook }: Chromeb
     // Se marcar como desprovisionado, o status deve ser 'fora_uso'
     const newStatus = checked ? 'fora_uso' : 'disponivel';
 
-    setEditingChromebook({
-      ...editingChromebook,
+    setEditingChromebook(prev => ({
+      ...prev!,
       is_deprovisioned: checked,
       status: newStatus,
-    });
+    }));
   };
 
   // Handle save edit
@@ -110,6 +119,16 @@ export function ChromebookEditDialog({ open, onOpenChange, chromebook }: Chromeb
         variant: "destructive",
       });
       return;
+    }
+    
+    // Validação de localização para status 'fixo'
+    if (editingChromebook.status === 'fixo' && !editingChromebook.classroom) {
+        toast({
+            title: "Erro de Validação",
+            description: "A localização da sala é obrigatória para equipamentos fixos.",
+            variant: "destructive",
+        });
+        return;
     }
 
     const updatePayload: Partial<ChromebookData> = {
@@ -133,6 +152,8 @@ export function ChromebookEditDialog({ open, onOpenChange, chromebook }: Chromeb
   };
 
   if (!editingChromebook) return null;
+  
+  const isFixed = editingChromebook.status === 'fixo';
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -228,50 +249,84 @@ export function ChromebookEditDialog({ open, onOpenChange, chromebook }: Chromeb
           {/* Seção 2: Status e Localização */}
           <div className="space-y-4 p-4 border rounded-lg bg-white shadow-sm dark:bg-card">
             <h4 className="font-semibold text-lg text-gray-800 dark:text-foreground flex items-center gap-2">
-              <MapPin className="h-4 w-4 text-green-600" />
+              <MapPin className="h-4 w-4 text-purple-600" />
               Status e Localização
             </h4>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="space-y-1.5">
+              <div className="space-y-1.5 md:col-span-1">
                 <Label className="text-xs font-medium">Status</Label>
-                <Select value={editingChromebook.status} onValueChange={handleEditStatusChange}>
+                <Select 
+                    value={editingChromebook.status} 
+                    onValueChange={handleEditStatusChange}
+                    disabled={editingChromebook.status === 'emprestado'} // Não permite mudar se estiver emprestado
+                >
                   <SelectTrigger className="h-10">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="disponivel">Disponível</SelectItem>
-                    <SelectItem value="emprestado" disabled>Emprestado (Apenas via Empréstimo)</SelectItem>
+                    <SelectItem value="emprestado" disabled>Emprestado</SelectItem>
                     <SelectItem value="fixo">Fixo</SelectItem>
                     <SelectItem value="manutencao">Manutenção</SelectItem>
                     <SelectItem value="fora_uso">Inativo</SelectItem>
                   </SelectContent>
                 </Select>
+                {editingChromebook.status === 'emprestado' && (
+                    <p className="text-xs text-yellow-600 flex items-center gap-1 mt-1">
+                        <AlertTriangle className="h-3 w-3" /> Status definido por empréstimo ativo.
+                    </p>
+                )}
               </div>
 
-              <div className="space-y-1.5">
-                <Label htmlFor="location" className="text-xs font-medium flex items-center gap-1">
-                  <Map className="h-3 w-3" /> Localização Geral
-                </Label>
-                <Input
-                  id="location"
-                  value={editingChromebook.location || ""}
-                  onChange={handleEditChange}
-                  placeholder="Ex: Sala de informática"
-                  className="h-10"
-                />
+              <div className="space-y-1.5 md:col-span-2">
+                <Label className="text-xs font-medium">Status de Mobilidade</Label>
+                <RadioGroup
+                    value={isFixed ? 'fixo' : 'movel'}
+                    onValueChange={(value: 'movel' | 'fixo') => {
+                        const newStatus = value === 'fixo' ? 'fixo' : 'disponivel';
+                        handleEditStatusChange(newStatus);
+                    }}
+                    className="flex space-x-4 h-10 items-center"
+                    disabled={editingChromebook.status === 'emprestado' || editingChromebook.status === 'manutencao' || editingChromebook.status === 'fora_uso'}
+                >
+                    <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="movel" id="movel" />
+                        <Label htmlFor="movel">Móvel (Empréstimo)</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="fixo" id="fixo" />
+                        <Label htmlFor="fixo">Fixo (Sala de Aula)</Label>
+                    </div>
+                </RadioGroup>
               </div>
-              
-              <div className="space-y-1.5">
-                <Label htmlFor="classroom" className="text-xs font-medium">Sala de Aula (Fixo)</Label>
-                <Input
-                  id="classroom"
-                  value={editingChromebook.classroom || ''}
-                  onChange={handleEditChange}
-                  placeholder="Ex.: Sala 21"
-                  className="h-10"
-                />
-              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                    <Label htmlFor="location" className="text-xs font-medium flex items-center gap-1">
+                      <Map className="h-3 w-3" /> Localização Geral
+                    </Label>
+                    <Input
+                      id="location"
+                      value={editingChromebook.location || ""}
+                      onChange={handleEditChange}
+                      placeholder="Ex: Sala de informática"
+                      className="h-10"
+                    />
+                </div>
+                
+                <div className="space-y-1.5">
+                    <Label htmlFor="classroom" className="text-xs font-medium">Sala de Aula (Obrigatório se Fixo)</Label>
+                    <Input
+                      id="classroom"
+                      value={editingChromebook.classroom || ''}
+                      onChange={handleEditChange}
+                      placeholder="Ex.: Sala 21"
+                      className="h-10"
+                      required={isFixed}
+                    />
+                </div>
             </div>
             
             {/* Checkbox de Desprovisionamento */}
@@ -280,9 +335,10 @@ export function ChromebookEditDialog({ open, onOpenChange, chromebook }: Chromeb
                 id="is_deprovisioned" 
                 checked={editingChromebook.is_deprovisioned} 
                 onCheckedChange={(checked) => handleDeprovisionedChange(!!checked)}
-                disabled={!isAdmin}
+                disabled={!isAdmin || editingChromebook.status === 'emprestado'}
               />
-              <Label htmlFor="is_deprovisioned" className="text-sm font-medium cursor-pointer">
+              <Label htmlFor="is_deprovisioned" className="text-sm font-medium cursor-pointer flex items-center gap-2">
+                {editingChromebook.is_deprovisioned ? <CheckCircle className="h-4 w-4 text-green-600" /> : <XCircle className="h-4 w-4 text-red-600" />}
                 Desprovisionado (Marca o equipamento como Inativo/Fora de Uso)
               </Label>
             </div>
@@ -311,6 +367,7 @@ export function ChromebookEditDialog({ open, onOpenChange, chromebook }: Chromeb
         {/* Fixed Footer */}
         <DialogFooter className="px-6 py-4 border-t bg-white shrink-0 flex-col sm:flex-row gap-2 sm:justify-end dark:bg-card">
           <Button
+            type="button"
             variant="outline"
             onClick={() => onOpenChange(false)}
             className="w-full sm:w-auto h-10"
@@ -321,7 +378,7 @@ export function ChromebookEditDialog({ open, onOpenChange, chromebook }: Chromeb
           <Button 
             onClick={handleSaveEdit}
             className="w-full sm:w-auto h-10"
-            disabled={isSaving || !editingChromebook.model}
+            disabled={isSaving || !editingChromebook.model || (isFixed && !editingChromebook.classroom)}
           >
             {isSaving ? (
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
