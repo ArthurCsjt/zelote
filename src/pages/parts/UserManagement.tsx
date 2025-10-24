@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from '@/contexts/AuthContext';
@@ -14,9 +14,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { MoreHorizontal, Loader2, Trash2, AlertTriangle, User, Edit3 } from "lucide-react";
+import { MoreHorizontal, Loader2, Trash2, AlertTriangle, User, Edit3, Save } from "lucide-react";
 import { GlassCard } from '@/components/ui/GlassCard'; // Importando GlassCard
 import { cn } from '@/lib/utils'; // Importando cn para classes condicionais
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'; // Adicionando importação do Dialog
 
 type UserProfile = {
   id: string;
@@ -124,7 +125,7 @@ const ProfileEditDialog: React.FC<ProfileEditDialogProps> = ({ open, onOpenChang
             {!canEditRole && <p className="text-xs text-muted-foreground mt-1">Você não pode editar sua própria função ou não tem permissão de administrador.</p>}
           </div>
         </div>
-        <AlertDialogFooter>
+        <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSaving}>
             Cancelar
           </Button>
@@ -132,7 +133,7 @@ const ProfileEditDialog: React.FC<ProfileEditDialogProps> = ({ open, onOpenChang
             {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
             Salvar
           </Button>
-        </AlertDialogFooter>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
