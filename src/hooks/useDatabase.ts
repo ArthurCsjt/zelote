@@ -344,7 +344,7 @@ export const useDatabase = () => {
       const { data, error } = await supabase
         .from('loan_history')
         .select('*')
-        .eq('status', 'ativo')
+        .in('status', ['ativo', 'atrasado'])
         .order('loan_date', { ascending: false });
 
       if (error) throw error;
@@ -475,15 +475,16 @@ export const useDatabase = () => {
   const returnChromebookById = useCallback(async (chromebookId: string, data: ReturnFormData): Promise<boolean> => {
     setLoading(true);
     try {
+      // Busca por empréstimos ativos OU atrasados
       const { data: activeLoan, error: loanError } = await supabase
         .from('loan_history')
         .select('id')
         .eq('chromebook_id', chromebookId)
-        .eq('status', 'ativo')
+        .in('status', ['ativo', 'atrasado'])
         .single();
 
       if (loanError || !activeLoan) {
-        throw new Error('Chromebook não encontrado ou não está emprestado');
+        throw new Error('Chromebook não encontrado ou não possui um empréstimo ativo/atrasado.');
       }
 
       const result = await createReturn(activeLoan.id, data);
@@ -507,11 +508,12 @@ export const useDatabase = () => {
     let errorCount = 0;
 
     try {
+      // Busca por empréstimos ativos OU atrasados
       const { data: activeLoans, error: loanError } = await supabase
         .from('loan_history')
         .select('id, chromebook_id')
         .in('chromebook_id', chromebookIds)
-        .eq('status', 'ativo');
+        .in('status', ['ativo', 'atrasado']);
 
       if (loanError) {
         throw new Error("Falha ao buscar empréstimos ativos.");
@@ -527,7 +529,7 @@ export const useDatabase = () => {
           errorCount++;
           toast({ 
             title: "Erro no Lote", 
-            description: `Chromebook ${chromebookId} não possui um empréstimo ativo registrado.`, 
+            description: `Chromebook ${chromebookId} não possui um empréstimo ativo/atrasado registrado.`, 
             variant: "destructive" 
           });
           continue;
