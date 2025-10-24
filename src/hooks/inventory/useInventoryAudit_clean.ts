@@ -9,7 +9,8 @@ import type {
   Chromebook,
   AuditReport,
 } from '@/types/database';
-import { useAuditCalculations } from './useAuditCalculations';
+// IMPORTANDO AS FUNÇÕES UTILITÁRIAS PURAS
+import { generateAuditReport, calculateMissingItems, calculateAuditStats } from '@/utils/auditCalculations';
 
 // Mantemos o mesmo alias usado nos componentes
 type DisplayCountedItem = CountedItemWithDetails;
@@ -31,13 +32,22 @@ export const useInventoryAudit = () => {
     fixos: 0,
   });
 
-  // NOVO: Usando o hook de cálculo
-  const { missingItems, calculateStats, generateReport: calculateActiveReport } = useAuditCalculations(
-    activeAudit,
-    countedItems,
-    allChromebooks,
-    totalExpected
-  );
+  // NOVO: Usando useMemo para calcular estatísticas e itens faltantes em tempo real (para a auditoria ativa)
+  const stats = useMemo(() => {
+    if (!activeAudit) return null;
+    return calculateAuditStats(countedItems, allChromebooks, totalExpected);
+  }, [activeAudit, countedItems, allChromebooks, totalExpected]);
+
+  const missingItems = useMemo(() => {
+    return calculateMissingItems(countedItems, allChromebooks);
+  }, [countedItems, allChromebooks]);
+  
+  // Função para gerar o relatório da auditoria ATIVA
+  const calculateActiveReport = useCallback((): AuditReport | null => {
+    if (!activeAudit || !stats) return null;
+    return generateAuditReport(activeAudit, countedItems, allChromebooks, totalExpected);
+  }, [activeAudit, countedItems, allChromebooks, totalExpected, stats]);
+
 
   // Aplica filtros (Lógica de filtro permanece aqui, pois depende do estado local)
   useEffect(() => {
@@ -354,6 +364,11 @@ export const useInventoryAudit = () => {
     try {
       setIsProcessing(true);
       const report = calculateActiveReport(); // Usa a função do hook de cálculo
+      
+      if (!report) {
+        throw new Error("Falha ao gerar relatório final.");
+      }
+      
       const { error } = await supabase
         .from<any>('inventory_audits')
         .update({
@@ -403,67 +418,31 @@ export const useInventoryAudit = () => {
   
   // NOVO: Função para gerar relatório de qualquer auditoria (ativa ou concluída)
   const generateReport = useCallback(async (auditId: string): Promise<AuditReport | null> => {
-    const audit = completedAudits.find(a => a.id === auditId);
+    const audit = completedAudits.find(a => a.id === auditId) || activeAudit;
     
-    if (activeAudit?.id === auditId) {
-      // Se for a auditoria ativa, usa os dados em tempo real
-      return calculateActiveReport();
+    if (!audit) return null;
+    
+    let detailedItems: DisplayCountedItem[] | null = [];
+    
+    if (audit.id === activeAudit?.id) {
+        // Se for a auditoria ativa, usa os itens do estado
+        detailedItems = countedItems;
+    } else {
+        // Se for uma auditoria concluída, carrega os detalhes
+        detailedItems = await loadAuditReportDetails(auditId);
     }
     
-    if (audit) {
-      // Se for uma auditoria concluída, carrega os detalhes
-      const detailedItems = await loadAuditReportDetails(auditId);
-      
-      if (!detailedItems) return null;
-      
-      // Recalcula o relatório usando os dados históricos
-      const { missingItems: historicalMissing, calculateStats: calculateHistoricalStats } = useAuditCalculations(
-        audit, // Passa a auditoria concluída
-        detailedItems, // Passa os itens contados históricos
-        allChromebooks, // Usa a lista completa de chromebooks (para calcular faltantes)
-        audit.total_expected || allChromebooks.length // Usa o total esperado salvo ou o total atual
-      );
-      
-      // Força o cálculo do relatório final com os dados históricos
-      const historicalStats = calculateHistoricalStats();
-      
-      // Recria a estrutura do relatório
-      const report: AuditReport = {
-        summary: {
-          totalCounted: historicalStats.totalCounted,
-          totalExpected: audit.total_expected || allChromebooks.length,
-          completionRate: historicalStats.completionRate,
-          duration: audit.completed_at ? (new Date(audit.completed_at).getTime() - new Date(audit.started_at).getTime() > 0 ? 'Calculando...' : 'N/A') : 'N/A', // Duração precisa de cálculo mais complexo
-          itemsPerHour: 0, // Recalculado no useAuditCalculations
-          averageTimePerItem: '0s', // Recalculado no useAuditCalculations
-        },
-        discrepancies: { 
-          missing: historicalMissing.map(item => ({
-            chromebook_id: item.chromebook_id,
-            expected_location: item.location,
-            condition_expected: item.condition,
-          })), 
-          extra: [], 
-          locationMismatches: [], 
-          conditionIssues: [] 
-        },
-        statistics: historicalStats,
-      };
-      
-      // Recalcula a duração e eficiência usando o hook de cálculo com os dados históricos
-      const { generateReport: calculateFinalReport } = useAuditCalculations(
+    if (!detailedItems) return null;
+    
+    // Usa a função utilitária pura para gerar o relatório
+    return generateAuditReport(
         audit, 
         detailedItems, 
         allChromebooks, 
         audit.total_expected || allChromebooks.length
-      );
-      
-      return calculateFinalReport();
-    }
+    );
     
-    return null;
-    
-  }, [activeAudit, completedAudits, calculateActiveReport, loadAuditReportDetails, allChromebooks]);
+  }, [activeAudit, completedAudits, countedItems, loadAuditReportDetails, allChromebooks]);
 
 
   return {
@@ -484,7 +463,7 @@ export const useInventoryAudit = () => {
     deleteAudit,
     reloadAudits,
     generateReport, // Exportando a nova função
-    calculateStats,
+    calculateStats: stats, // Exportando as estatísticas em tempo real
     missingItems,
     allChromebooks,
   };
