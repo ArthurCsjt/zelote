@@ -601,7 +601,12 @@ export const useDatabase = () => {
       return result;
     } catch (error: any) {
       console.error('Erro ao criar aluno via RPC:', error);
-      toast({ title: "Erro", description: error.message || "Falha ao cadastrar aluno", variant: "destructive" });
+      // Verifica se o erro é de restrição de unicidade (email ou RA duplicado)
+      if (error.code === '23505') {
+        toast({ title: "Erro de Cadastro", description: "RA ou E-mail já cadastrado.", variant: "destructive" });
+      } else {
+        toast({ title: "Erro", description: error.message || "Falha ao cadastrar aluno", variant: "destructive" });
+      }
       return null;
     } finally {
       setLoading(false);
@@ -629,7 +634,12 @@ export const useDatabase = () => {
       toast({ title: "Sucesso", description: "Aluno atualizado com sucesso" });
       return true;
     } catch (error: any) {
-      toast({ title: "Erro", description: error.message, variant: "destructive" });
+      // Verifica se o erro é de restrição de unicidade (email ou RA duplicado)
+      if (error.code === '23505') {
+        toast({ title: "Erro de Atualização", description: "RA ou E-mail já cadastrado para outro aluno.", variant: "destructive" });
+      } else {
+        toast({ title: "Erro", description: error.message, variant: "destructive" });
+      }
       return false;
     } finally {
       setLoading(false);
@@ -664,7 +674,12 @@ export const useDatabase = () => {
       return result;
     } catch (error: any) {
       console.error('Erro ao criar professor via RPC:', error);
-      toast({ title: "Erro", description: error.message || "Falha ao cadastrar professor", variant: "destructive" });
+      // Verifica se o erro é de restrição de unicidade (email duplicado)
+      if (error.code === '23505') {
+        toast({ title: "Erro de Cadastro", description: "E-mail já cadastrado para outro professor.", variant: "destructive" });
+      } else {
+        toast({ title: "Erro", description: error.message || "Falha ao cadastrar professor", variant: "destructive" });
+      }
       return null;
     } finally {
       setLoading(false);
@@ -692,7 +707,12 @@ export const useDatabase = () => {
       toast({ title: "Sucesso", description: "Professor atualizado com sucesso" });
       return true;
     } catch (error: any) {
-      toast({ title: "Erro", description: error.message, variant: "destructive" });
+      // Verifica se o erro é de restrição de unicidade (email duplicado)
+      if (error.code === '23505') {
+        toast({ title: "Erro de Atualização", description: "E-mail já cadastrado para outro professor.", variant: "destructive" });
+      } else {
+        toast({ title: "Erro", description: error.message, variant: "destructive" });
+      }
       return false;
     } finally {
       setLoading(false);
@@ -726,7 +746,12 @@ export const useDatabase = () => {
       return result;
     } catch (error: any) {
       console.error('Erro ao criar funcionário via RPC:', error);
-      toast({ title: "Erro", description: error.message || "Falha ao cadastrar funcionário", variant: "destructive" });
+      // Verifica se o erro é de restrição de unicidade (email duplicado)
+      if (error.code === '23505') {
+        toast({ title: "Erro de Cadastro", description: "E-mail já cadastrado para outro funcionário.", variant: "destructive" });
+      } else {
+        toast({ title: "Erro", description: error.message || "Falha ao cadastrar funcionário", variant: "destructive" });
+      }
       return null;
     } finally {
       setLoading(false);
@@ -754,7 +779,12 @@ export const useDatabase = () => {
       toast({ title: "Sucesso", description: "Funcionário atualizado com sucesso" });
       return true;
     } catch (error: any) {
-      toast({ title: "Erro", description: error.message, variant: "destructive" });
+      // Verifica se o erro é de restrição de unicidade (email duplicado)
+      if (error.code === '23505') {
+        toast({ title: "Erro de Atualização", description: "E-mail já cadastrado para outro funcionário.", variant: "destructive" });
+      } else {
+        toast({ title: "Erro", description: error.message, variant: "destructive" });
+      }
       return false;
     } finally {
       setLoading(false);
@@ -784,7 +814,12 @@ export const useDatabase = () => {
       return true;
     } catch (error: any) {
       console.error('Erro ao importar alunos:', error);
-      toast({ title: "Erro", description: error.message, variant: "destructive" });
+      // Verifica se o erro é de restrição de unicidade (email ou RA duplicado)
+      if (error.code === '23505') {
+        toast({ title: "Erro de Importação", description: "Pelo menos um RA ou E-mail já está cadastrado.", variant: "destructive" });
+      } else {
+        toast({ title: "Erro", description: error.message, variant: "destructive" });
+      }
       return false;
     } finally {
       setLoading(false);
