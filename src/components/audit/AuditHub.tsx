@@ -49,7 +49,7 @@ export const AuditHub = () => {
     setFilters,
     startAudit,
     generateReport,
-    calculateStats,
+    calculateStats: auditStats, // RENOMEADO AQUI
     deleteAudit,
     reloadAudits
   } = useAudit();
@@ -88,7 +88,8 @@ export const AuditHub = () => {
     setIsReportLoading(false);
   };
 
-  const stats = calculateStats();
+  // REMOVIDA A CHAMADA DE FUNÇÃO: 'auditStats' já é o objeto de estatísticas (ou null)
+  // const stats = calculateStats(); 
 
   if (activeAudit) {
     return <AuditScanner />;
@@ -264,32 +265,30 @@ export const AuditHub = () => {
                             : 'N/A'}
                         </TableCell>
                         <TableCell className="text-right">
-                          <div className="flex justify-end gap-2">
-                            <Button variant="ghost" size="sm" onClick={() => handleViewReport(audit)} title="Ver Relatório Detalhado">
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
-                                <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700">
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle>Excluir Auditoria</AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    Esta ação removerá a auditoria "{audit.audit_name}" e todos os itens relacionados. Deseja continuar?
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                  <AlertDialogAction onClick={() => deleteAudit(audit.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                                    Excluir
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
-                          </div>
+                          <Button variant="ghost" size="sm" onClick={() => handleViewReport(audit)} title="Ver Relatório Detalhado">
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700">
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Excluir Auditoria</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Esta ação removerá a auditoria "{audit.audit_name}" e todos os itens relacionados. Deseja continuar?
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => deleteAudit(audit.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                                  Excluir
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
                         </TableCell>
                       </TableRow>
                     ))}
