@@ -120,10 +120,10 @@ export function ReturnForm({ initialChromebookId, onReturnSuccess }: ReturnFormP
     <form onSubmit={handleConfirmReturn} className="space-y-6">
       <div className="grid md:grid-cols-2 gap-6">
         
-        {/* Coluna Esquerda - Dispositivo/Lote */}
-        <GlassCard className="bg-blue-50/50 border-blue-100 shadow-inner dark:bg-blue-950/50 dark:border-blue-900/50">
+        {/* Coluna Esquerda - Dispositivo/Lote (Cor 1: Azul) */}
+        <GlassCard className="bg-menu-blue/10 border-menu-blue/30 shadow-inner dark:bg-menu-blue/20 dark:border-menu-blue/50">
           <CardHeader className="p-4 pb-0">
-            <CardTitle className="text-lg flex items-center gap-2 text-blue-700 dark:text-blue-400">
+            <CardTitle className="text-lg flex items-center gap-2 text-menu-blue dark:text-blue-400">
               <Computer className="h-5 w-5" /> Dispositivos para Devolução
             </CardTitle>
           </CardHeader>
@@ -140,9 +140,10 @@ export function ReturnForm({ initialChromebookId, onReturnSuccess }: ReturnFormP
 
         {/* Coluna Direita - Informações do Usuário e Observações */}
         <div className="space-y-6">
-          <GlassCard className="bg-green-50/50 border-green-100 shadow-inner dark:bg-green-950/50 dark:border-green-900/50">
+          {/* Informações do Solicitante (Cor 2: Verde) */}
+          <GlassCard className="bg-menu-green/10 border-menu-green/30 shadow-inner dark:bg-menu-green/20 dark:border-menu-green/50">
             <CardHeader className="p-4 pb-0">
-              <CardTitle className="text-lg flex items-center gap-2 text-green-700 dark:text-green-400">
+              <CardTitle className="text-lg flex items-center gap-2 text-menu-green dark:text-green-400">
                 <User className="h-5 w-5" /> Informações do Solicitante
               </CardTitle>
             </CardHeader>
@@ -170,10 +171,10 @@ export function ReturnForm({ initialChromebookId, onReturnSuccess }: ReturnFormP
             </CardContent>
           </GlassCard>
           
-          {/* Campo de Observações */}
-          <GlassCard className="p-4 space-y-4 bg-white border-gray-100 shadow-md dark:bg-card dark:border-border">
-            <CardTitle className="text-lg flex items-center gap-2 text-gray-700 dark:text-foreground">
-              <AlertTriangle className="h-5 w-5 text-orange-500" /> Observações da Devolução
+          {/* Campo de Observações (Cor 3: Laranja/Âmbar) */}
+          <GlassCard className="p-4 space-y-4 bg-menu-amber/10 border-menu-amber/30 shadow-md dark:bg-menu-amber/20 dark:border-menu-amber/50">
+            <CardTitle className="text-lg flex items-center gap-2 text-menu-amber dark:text-orange-400">
+              <AlertTriangle className="h-5 w-5" /> Observações da Devolução
             </CardTitle>
             <div className="space-y-2">
               <Label htmlFor="notes" className="text-foreground">

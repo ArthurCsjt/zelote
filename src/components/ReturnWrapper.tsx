@@ -12,7 +12,7 @@ interface ReturnWrapperProps {
 export const ReturnWrapper: React.FC<ReturnWrapperProps> = ({ onBack, initialChromebookId, onReturnSuccess }) => {
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-center mb-4">
         <h1 className="text-2xl font-bold flex items-center gap-2 text-gray-800">
           <RotateCcw className="h-6 w-6 text-menu-amber" />
           Registrar Devolução
