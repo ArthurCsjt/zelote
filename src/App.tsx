@@ -30,7 +30,6 @@ const App = () => (
         {/* PASSO 2: O DATABASEPROVIDER DEVE ENVOLVER TODO O RESTO DA APLICAÇÃO */}
         <DatabaseProvider>
           {/* <TooltipProvider> */}
-            {/* MobileToaster e Sonner removidos daqui */}
             
             <BrowserRouter>
               <Routes>

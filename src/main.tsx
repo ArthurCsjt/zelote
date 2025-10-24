@@ -65,17 +65,23 @@ function setupServiceWorkerUpdates() {
 
 createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    {/* Configuração do Sonner para notificações modernas */}
+    {/* Configuração do Sonner para notificações modernas com Glassmorphism */}
     <Toaster 
-      position="bottom-right" 
+      // Usamos top-center para melhor visualização em mobile
+      position="top-center" 
       richColors 
       closeButton 
       className="z-[9999]"
       toastOptions={{
-        className: 'shadow-lg border-gray-200',
+        className: 'shadow-xl border-gray-200',
         style: {
           padding: '12px 16px',
-          borderRadius: '8px',
+          borderRadius: '12px',
+          // Estilos Glassmorphism
+          backgroundColor: 'rgba(255, 255, 255, 0.85)',
+          backdropFilter: 'blur(15px)',
+          WebkitBackdropFilter: 'blur(15px)',
+          border: '1px solid rgba(255, 255, 255, 0.4)',
         },
       }}
     />
