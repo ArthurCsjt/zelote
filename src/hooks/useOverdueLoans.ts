@@ -82,17 +82,25 @@ export function useOverdueLoans() {
   // Mostrar notificações quando houver atrasos
   useEffect(() => {
     if (overdueLoans.length > 0) {
+      const isPlural = overdueLoans.length > 1;
+      const title = `⚠️ ${overdueLoans.length} Empréstimo${isPlural ? 's' : ''} em Atraso`;
+      const description = `Há ${overdueLoans.length} empréstimo${isPlural ? 's' : ''} que ${isPlural ? 'passaram' : 'passou'} do prazo de devolução.`;
+      
       toast({
-        title: `⚠️ ${overdueLoans.length} Empréstimo${overdueLoans.length > 1 ? 's' : ''} em Atraso`,
-        description: `Há empréstimo${overdueLoans.length > 1 ? 's' : ''} que passou${overdueLoans.length === 1 ? 'u' : 'ram'} do prazo de devolução.`,
+        title: title,
+        description: description,
         variant: "destructive",
       });
     }
 
     if (upcomingDueLoans.length > 0) {
+      const isPlural = upcomingDueLoans.length > 1;
+      const title = `📅 ${upcomingDueLoans.length} Empréstimo${isPlural ? 's' : ''} Vencendo`;
+      const description = `Há empréstimo${isPlural ? 's' : ''} com prazo próximo ao vencimento.`;
+      
       toast({
-        title: `📅 ${upcomingDueLoans.length} Empréstimo${upcomingDueLoans.length > 1 ? 's' : ''} Vencendo`,
-        description: `Há empréstimo${upcomingDueLoans.length > 1 ? 's' : ''} com prazo próximo ao vencimento.`,
+        title: title,
+        description: description,
       });
     }
   }, [overdueLoans.length, upcomingDueLoans.length]);
