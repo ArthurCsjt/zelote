@@ -3,30 +3,27 @@ import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import { Card, CardContent } from "./ui/card";
 import { format } from "date-fns";
-import { CheckCircle, Clock, User, Monitor, Target, AlertTriangle, RefreshCw, Computer } from "lucide-react";
+import { CheckCircle, Clock, User, Monitor, Target, AlertTriangle, RefreshCw, Computer, List, LayoutGrid } from "lucide-react";
 import { useDatabase } from "@/hooks/useDatabase";
 import { toast } from "@/hooks/use-toast";
 import type { LoanHistoryItem, ReturnFormData } from "@/types/database";
 import { OverdueAlertsPanel } from "./OverdueAlertsPanel";
 import { GlassCard } from "./ui/GlassCard";
 import { useNavigate } from "react-router-dom"; // Importando useNavigate
+import { ToggleGroup, ToggleGroupItem } from "./ui/toggle-group"; // Importando ToggleGroup
+import { ActiveLoansTable } from "./ActiveLoansTable"; // Importando a nova tabela
 
 interface ActiveLoansProps {
-  // O LoanHub não passa mais a função, mas precisamos de uma forma de navegar.
-  // Vamos usar useNavigate e a função de navegação do Index.tsx (que é o onNavigate do MainMenu)
-  // Como não temos acesso direto ao onNavigate do Index, vamos usar a navegação do React Router
-  // e fazer o Index.tsx reagir à mudança de estado.
-  // Para simplificar, vamos manter a interface de callback, mas o Index.tsx precisa ser atualizado para reagir a isso.
-  // No entanto, como o ActiveLoans está dentro do LoanHub, que está dentro do Index,
-  // a maneira mais limpa é passar a função de navegação do Index para o LoanHub e para o ActiveLoans.
-  // Vamos assumir que o LoanHub passa a função de navegação correta.
-  onNavigateToReturn: (chromebookId: string) => void; // Mantendo o prop para ser passado pelo LoanHub
+  onNavigateToReturn: (chromebookId: string) => void;
 }
+
+type ViewMode = 'cards' | 'table';
 
 export function ActiveLoans({ onNavigateToReturn }: ActiveLoansProps) {
   const { getActiveLoans, loading: dbLoading } = useDatabase();
   const [activeLoans, setActiveLoans] = useState<LoanHistoryItem[]>([]);
   const [loading, setLoading] = useState(false);
+  const [viewMode, setViewMode] = useState<ViewMode>('cards'); // Novo estado para visualização
 
   // Buscar dados iniciais e sob demanda
   const fetchActiveLoans = useCallback(async () => {
@@ -46,7 +43,6 @@ export function ActiveLoans({ onNavigateToReturn }: ActiveLoansProps) {
   }, [fetchActiveLoans]);
 
   const handleReturnClick = (loan: LoanHistoryItem) => {
-    // Chama a função passada pelo Index.tsx (via LoanHub) para mudar a view
     onNavigateToReturn(loan.chromebook_id);
   };
 
@@ -71,19 +67,36 @@ export function ActiveLoans({ onNavigateToReturn }: ActiveLoansProps) {
       {/* Painel de Alertas de Atraso */}
       <OverdueAlertsPanel />
 
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
         <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
           Empréstimos Ativos ({activeLoans.length})
         </h2>
-        <Button 
-          onClick={fetchActiveLoans}
-          variant="outline"
-          disabled={loading || dbLoading}
-          className="bg-white hover:bg-gray-50"
-        >
-          <RefreshCw className={`h-4 w-4 mr-2 ${loading || dbLoading ? 'animate-spin' : ''}`} />
-          Atualizar
-        </Button>
+        <div className="flex items-center gap-3">
+          {/* Seletor de Visualização */}
+          <ToggleGroup 
+            type="single" 
+            value={viewMode} 
+            onValueChange={(value: ViewMode) => value && setViewMode(value)}
+            className="h-9"
+          >
+            <ToggleGroupItem value="cards" aria-label="Visualização em Cards" className="h-9 px-3">
+              <LayoutGrid className="h-4 w-4" />
+            </ToggleGroupItem>
+            <ToggleGroupItem value="table" aria-label="Visualização em Tabela" className="h-9 px-3">
+              <List className="h-4 w-4" />
+            </ToggleGroupItem>
+          </ToggleGroup>
+          
+          <Button 
+            onClick={fetchActiveLoans}
+            variant="outline"
+            disabled={loading || dbLoading}
+            className="bg-white hover:bg-gray-50"
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${loading || dbLoading ? 'animate-spin' : ''}`} />
+            Atualizar
+          </Button>
+        </div>
       </div>
 
       {loading ? (
@@ -100,7 +113,11 @@ export function ActiveLoans({ onNavigateToReturn }: ActiveLoansProps) {
             </div>
           </CardContent>
         </GlassCard>
+      ) : viewMode === 'table' ? (
+        /* Visualização em Tabela */
+        <ActiveLoansTable loans={activeLoans} onNavigateToReturn={onNavigateToReturn} />
       ) : (
+        /* Visualização em Cards (Padrão) */
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {activeLoans.map((loan) => {
             const overdueStatus = isOverdue(loan);
