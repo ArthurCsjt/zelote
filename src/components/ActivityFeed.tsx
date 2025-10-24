@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { ScrollArea } from './ui/scroll-area';
-import { Clock, Monitor, User, CheckCircle, RotateCcw, Loader2, AlertTriangle } from 'lucide-react';
+import { Clock, Monitor, User, CheckCircle, RotateCcw, Loader2, AlertTriangle, UserCheck } from 'lucide-react';
 import { formatDistanceToNow, format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Separator } from './ui/separator';
@@ -12,9 +12,11 @@ interface Activity {
   activity_id: string;
   activity_type: 'Empréstimo' | 'Devolução';
   chromebook_id: string;
-  user_name: string;
-  user_email: string;
+  user_name: string; // Solicitante (Aluno/Prof/Func)
+  user_email: string; // Email do Solicitante
   activity_time: string;
+  creator_name: string | null; // NOVO: Usuário logado que registrou a ação
+  creator_email: string | null; // NOVO: Email do criador
 }
 
 const fetchRecentActivities = async (): Promise<Activity[]> => {
@@ -49,8 +51,8 @@ export function ActivityFeed() {
 
   return (
     <Card className="w-[350px] md:w-[400px] shadow-2xl border-none">
-      <CardHeader className="p-4 border-b">
-        <CardTitle className="text-lg flex items-center gap-2">
+      <CardHeader className="p-4 border-b bg-gray-50/50 backdrop-blur-sm">
+        <CardTitle className="text-lg flex items-center gap-2 text-gray-800">
           <Clock className="h-5 w-5 text-primary" />
           Atividade Recente
         </CardTitle>
@@ -63,6 +65,7 @@ export function ActivityFeed() {
                 const isLoan = activity.activity_type === 'Empréstimo';
                 const Icon = isLoan ? CheckCircle : RotateCcw;
                 const color = isLoan ? 'text-green-600' : 'text-blue-600';
+                const creatorName = activity.creator_name || activity.creator_email?.split('@')[0] || 'Sistema';
                 
                 return (
                   <div key={activity.activity_id} className="p-4 hover:bg-gray-50 transition-colors">
@@ -88,10 +91,20 @@ export function ActivityFeed() {
                         </p>
                       </div>
                     </div>
+                    
+                    {/* Detalhes do Solicitante */}
                     <div className="mt-2 pt-2 border-t border-gray-100">
                       <p className="text-xs text-gray-600 flex items-center gap-1">
-                        <User className="h-3 w-3" />
+                        <User className="h-3 w-3 text-gray-500" />
+                        <span className="font-medium">Solicitante:</span>
                         {activity.user_name} ({activity.user_email})
+                      </p>
+                      
+                      {/* Detalhes do Criador (Admin/Funcionário) */}
+                      <p className="text-xs text-gray-500 flex items-center gap-1 mt-1">
+                        <UserCheck className="h-3 w-3 text-primary" />
+                        <span className="font-medium">Registrado por:</span>
+                        {creatorName}
                       </p>
                     </div>
                   </div>
