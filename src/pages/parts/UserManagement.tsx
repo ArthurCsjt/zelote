@@ -14,17 +14,130 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { MoreHorizontal, Loader2, Trash2, AlertTriangle } from "lucide-react";
+import { MoreHorizontal, Loader2, Trash2, AlertTriangle, User, Edit3 } from "lucide-react";
 import { GlassCard } from '@/components/ui/GlassCard'; // Importando GlassCard
 import { cn } from '@/lib/utils'; // Importando cn para classes condicionais
 
 type UserProfile = {
   id: string;
   email: string;
-  name: string | null;
-  role: 'admin' | 'user';
+  name: string | null; // Adicionado
+  role: 'admin' | 'user' | 'super_admin'; // Adicionado super_admin
   last_sign_in_at: string | null;
 };
+
+// NOVO COMPONENTE: Diálogo de Edição de Perfil de Usuário (Auth)
+interface ProfileEditDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  user: UserProfile | null;
+  onSuccess: () => void;
+}
+
+const ProfileEditDialog: React.FC<ProfileEditDialogProps> = ({ open, onOpenChange, user, onSuccess }) => {
+  const [name, setName] = useState(user?.name || '');
+  const [role, setRole] = useState<'admin' | 'user' | 'super_admin'>(user?.role || 'user');
+  const [isSaving, setIsSaving] = useState(false);
+  const { isAdmin, role: currentRole } = useProfileRole();
+
+  useEffect(() => {
+    if (user) {
+      setName(user.name || '');
+      setRole(user.role);
+    }
+  }, [user]);
+
+  const handleSave = async () => {
+    if (!user) return;
+    setIsSaving(true);
+    
+    try {
+      // 1. Atualizar o nome na tabela profiles
+      const { error: nameError } = await supabase
+        .from('profiles')
+        .update({ name: name.trim() || null })
+        .eq('id', user.id);
+      
+      if (nameError) throw nameError;
+
+      // 2. Atualizar a role (apenas se o usuário logado for admin/super_admin e não estiver editando a si mesmo)
+      if (isAdmin && user.id !== supabase.auth.getUser().id) {
+        // Super admin pode definir qualquer role, Admin só pode definir 'user' ou 'admin'
+        const roleToSet = (currentRole === 'admin' && role === 'super_admin') ? 'admin' : role;
+        
+        const { error: roleError } = await supabase
+          .from('profiles')
+          .update({ role: roleToSet })
+          .eq('id', user.id);
+          
+        if (roleError) throw roleError;
+      }
+
+      toast({ title: 'Sucesso', description: 'Perfil atualizado.' });
+      onSuccess();
+      onOpenChange(false);
+    } catch (e: any) {
+      toast({ title: 'Erro ao salvar', description: e.message, variant: 'destructive' });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  if (!user) return null;
+
+  const canEditRole = isAdmin && user.id !== supabase.auth.getUser().id;
+  const canSetSuperAdmin = currentRole === 'super_admin';
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <User className="h-5 w-5" />
+            Editar Perfil de Acesso
+          </DialogTitle>
+          <DialogDescription>
+            Atualize o nome e a função de acesso para {user.email}.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="grid gap-4 py-4">
+          <div className="space-y-2">
+            <Label htmlFor="name">Nome de Exibição</Label>
+            <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Nome Completo" />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="email">E-mail (Não Editável)</Label>
+            <Input id="email" value={user.email} readOnly disabled />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="role">Função de Acesso</Label>
+            <Select value={role} onValueChange={(v: 'admin' | 'user' | 'super_admin') => setRole(v)} disabled={!canEditRole || isSaving}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="user">Padrão (Apenas Empréstimo/Devolução)</SelectItem>
+                <SelectItem value="admin">Admin (Gerenciamento de Inventário e Usuários)</SelectItem>
+                {canSetSuperAdmin && <SelectItem value="super_admin">Super Admin (Acesso Total)</SelectItem>}
+              </SelectContent>
+            </Select>
+            {!canEditRole && <p className="text-xs text-muted-foreground mt-1">Você não pode editar sua própria função ou não tem permissão de administrador.</p>}
+          </div>
+        </div>
+        <AlertDialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSaving}>
+            Cancelar
+          </Button>
+          <Button onClick={handleSave} disabled={isSaving}>
+            {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+            Salvar
+          </Button>
+        </AlertDialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
 
 export const UserManagement = () => {
   const { user: currentUser } = useAuth();
@@ -35,6 +148,11 @@ export const UserManagement = () => {
   const [userToDelete, setUserToDelete] = useState<UserProfile | null>(null);
   const [isDeletePendingOpen, setIsDeletePendingOpen] = useState(false);
   const [pendingInviteToDelete, setPendingInviteToDelete] = useState<UserProfile | null>(null);
+  
+  // Estados para edição de perfil
+  const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
+  const [userToEditProfile, setUserToEditProfile] = useState<UserProfile | null>(null);
+
 
   const sendInvite = async (email: string, role: 'admin' | 'user') => {
     if (!email) {
@@ -64,14 +182,13 @@ export const UserManagement = () => {
     }
   };
 
-  const updateRole = async (id: string, role: 'admin' | 'user') => {
-    const { error } = await supabase.from('profiles').update({ role }).eq('id', id);
-    if (error) {
-      toast({ title: 'Erro', description: error.message, variant: 'destructive' });
-    } else {
-      toast({ title: 'Perfil atualizado', description: 'Função alterada com sucesso.' });
-      queryClient.invalidateQueries({ queryKey: ['all_users'] });
-    }
+  const handleEditProfile = (user: UserProfile) => {
+    setUserToEditProfile(user);
+    setIsEditProfileOpen(true);
+  };
+
+  const handleEditSuccess = () => {
+    queryClient.invalidateQueries({ queryKey: ['all_users'] });
   };
 
   const handleDeleteUserConfirm = async () => {
@@ -109,12 +226,16 @@ export const UserManagement = () => {
       const { data, error } = await supabase.rpc('get_all_users');
       if (error) {
         // Se o erro for de permissão, lançamos um erro específico
-        if (error.message.includes('Unauthorized: Only admins can access this function')) {
+        if (error.message.includes('Unauthorized: Only admins or super_admins can access this function')) {
           throw new Error('Acesso negado: Seu perfil não tem permissão de administrador no banco de dados.');
         }
         throw new Error(error.message);
       }
-      return data || [];
+      // Garantir que a role seja mapeada corretamente
+      return (data || []).map(u => ({
+        ...u,
+        role: u.role as 'admin' | 'user' | 'super_admin'
+      })) as UserProfile[];
     },
     // Desabilita a consulta se o usuário não for admin ou se o papel ainda estiver carregando
     enabled: isAdmin && !roleLoading, 
@@ -203,7 +324,7 @@ export const UserManagement = () => {
               <div key={user.id} className="flex items-center justify-between p-2 rounded-md hover:bg-black/5">
                 <p className="text-sm font-medium">{user.email}</p>
                 <div className="flex items-center gap-2">
-                  <Button variant="outline" size="sm" onClick={() => sendInvite(user.email, user.role)}>Reenviar</Button>
+                  <Button variant="outline" size="sm" onClick={() => sendInvite(user.email, user.role as 'admin' | 'user')}>Reenviar</Button>
                   <Button 
                     variant="ghost" 
                     size="sm" 
@@ -230,34 +351,41 @@ export const UserManagement = () => {
           {activeUsers.map(user => (
             <div key={user.id} className="flex items-center justify-between p-2 rounded-md hover:bg-black/5">
               <div>
-                <p className="text-sm font-medium">{user.email}</p>
-                <p className="text-xs text-muted-foreground">Último acesso: {user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleDateString() : 'N/A'}</p>
+                <p className="text-sm font-medium">{user.name || 'Nome não definido'}</p>
+                <p className="text-xs text-muted-foreground">{user.email}</p>
               </div>
               <div className="flex items-center gap-2">
+                <Badge variant="outline" className={cn(
+                    user.role === 'super_admin' && 'bg-purple-100 text-purple-800 border-purple-300',
+                    user.role === 'admin' && 'bg-blue-100 text-blue-800 border-blue-300',
+                    user.role === 'user' && 'bg-gray-100 text-gray-800 border-gray-300',
+                    'capitalize'
+                )}>
+                    {user.role.replace('_', ' ')}
+                </Badge>
+                
                 {currentUser && user.id !== currentUser.id ? (
-                  <>
-                    <Select value={user.role} onValueChange={(newRole: 'admin' | 'user') => updateRole(user.id, newRole)}>
-                      <SelectTrigger className="w-[120px]"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="user">Padrão</SelectItem>
-                        <SelectItem value="admin">Admin</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="h-8 w-8 p-0"><MoreHorizontal className="h-4 w-4" /></Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem className="text-red-600 focus:text-red-600 focus:bg-red-50" onClick={() => setUserToDelete(user)}>
-                          Excluir Usuário
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" className="h-8 w-8 p-0"><MoreHorizontal className="h-4 w-4" /></Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuLabel>Ações</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem className="cursor-pointer flex items-center gap-2" onClick={() => handleEditProfile(user)}>
+                        <Edit3 className="h-4 w-4" />
+                        Editar Perfil
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className="text-red-600 focus:text-red-600 focus:bg-red-50 cursor-pointer flex items-center gap-2" onClick={() => setUserToDelete(user)}>
+                        <Trash2 className="h-4 w-4" />
+                        Excluir Usuário
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 ) : (
-                  <Badge variant="outline">Você</Badge>
+                  <Button variant="ghost" size="sm" onClick={() => handleEditProfile(user)}>
+                    <Edit3 className="h-4 w-4" />
+                  </Button>
                 )}
               </div>
             </div>
@@ -301,6 +429,14 @@ export const UserManagement = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      
+      {/* Diálogo de Edição de Perfil */}
+      <ProfileEditDialog
+        open={isEditProfileOpen}
+        onOpenChange={setIsEditProfileOpen}
+        user={userToEditProfile}
+        onSuccess={handleEditSuccess}
+      />
     </div>
   );
 };
