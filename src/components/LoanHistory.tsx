@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import { format } from "date-fns";
 import { Badge } from "./ui/badge";
 import { Card, CardContent } from "./ui/card";
-import { Clock, Monitor, User, CheckCircle, AlertTriangle, Search, Filter, X, RotateCcw } from "lucide-react";
+import { Clock, Monitor, User, CheckCircle, AlertTriangle, Search, Filter, X, RotateCcw, CalendarX } from "lucide-react";
 import type { LoanHistoryItem } from "@/types/database";
 import { Input } from "./ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
@@ -155,6 +155,9 @@ export function LoanHistory({ history, isNewLoan }: LoanHistoryProps) {
             
             const isRecent = isNewLoan(loan); // Usando a função passada via prop
 
+            // Lógica para verificar se a devolução foi feita após o prazo esperado
+            const isLateReturn = isReturned && loan.expected_return_date && new Date(loan.return_date!) > new Date(loan.expected_return_date);
+
             return (
               <GlassCard 
                 key={loan.id} 
@@ -231,49 +234,70 @@ export function LoanHistory({ history, isNewLoan }: LoanHistoryProps) {
                             {format(new Date(loan.loan_date), "dd/MM/yyyy 'às' HH:mm")}
                           </span>
                         </div>
+                        
+                        {/* Prazo Esperado */}
+                        {loan.expected_return_date && (
+                          <div className="mt-2 pt-2 border-t border-green-200 flex items-center justify-between text-sm">
+                            <div className="flex items-center gap-2 text-muted-foreground">
+                              <CalendarX className="h-4 w-4" />
+                              <span className="font-medium">Prazo Esperado:</span>
+                            </div>
+                            <span className="font-medium text-muted-foreground">
+                              {format(new Date(loan.expected_return_date), "dd/MM/yyyy 'às' HH:mm")}
+                            </span>
+                          </div>
+                        )}
                       </div>
 
                       {/* Devolução */}
                       {isReturned && loan.return_date && (
                         <div className={`border rounded-lg p-3 ${
-                          returnedByDifferentUser 
-                            ? 'bg-orange-50 border-orange-200' 
+                          isLateReturn 
+                            ? 'bg-red-50 border-red-200' 
                             : 'bg-blue-50 border-blue-200'
                         }`}>
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                              {returnedByDifferentUser ? (
-                                <AlertTriangle className="h-4 w-4 text-orange-600" />
+                              {isLateReturn ? (
+                                <AlertTriangle className="h-4 w-4 text-red-600" />
                               ) : (
                                 <RotateCcw className="h-4 w-4 text-blue-600" />
                               )}
                               <span className={`font-medium ${
-                                returnedByDifferentUser ? 'text-orange-800' : 'text-blue-800'
+                                isLateReturn ? 'text-red-800' : 'text-blue-800'
                               }`}>
                                 Devolução realizada
                               </span>
                             </div>
                             <span className={`text-sm ${
-                              returnedByDifferentUser ? 'text-orange-700' : 'text-blue-700'
+                              isLateReturn ? 'text-red-700' : 'text-blue-700'
                             }`}>
                               {format(new Date(loan.return_date), "dd/MM/yyyy 'às' HH:mm")}
                             </span>
                           </div>
                           
-                          {returnedByDifferentUser && loan.returned_by_name && (
-                            <div className="mt-2 pt-2 border-t border-orange-200">
-                              <div className="text-sm text-orange-700">
-                                <span className="font-medium">Devolvido por: </span>
-                                <span>{loan.returned_by_name}</span>
-                                {loan.returned_by_email && (
-                                  <span className="text-orange-600"> ({loan.returned_by_email})</span>
-                                )}
-                              </div>
+                          {/* Detalhes da Devolução */}
+                          {(returnedByDifferentUser || isLateReturn) && (
+                            <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700 space-y-1">
+                              {returnedByDifferentUser && loan.returned_by_name && (
+                                <div className="text-sm text-orange-700 dark:text-orange-400">
+                                  <span className="font-medium">Devolvido por: </span>
+                                  <span>{loan.returned_by_name}</span>
+                                  {loan.returned_by_email && (
+                                    <span className="text-orange-600 dark:text-orange-500"> ({loan.returned_by_email})</span>
+                                  )}
+                                </div>
+                              )}
+                              {isLateReturn && (
+                                <div className="text-sm text-red-700 dark:text-red-400 font-semibold">
+                                  ATRASO: Devolvido após o prazo esperado.
+                                </div>
+                              )}
                             </div>
                           )}
 
                           {loan.return_notes && (
-                            <div className="mt-2 pt-2 border-t border-gray-200">
+                            <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
                               <div className="text-sm text-muted-foreground">
                                 <span className="font-medium">Observações: </span>
                                 <span>{loan.return_notes}</span>

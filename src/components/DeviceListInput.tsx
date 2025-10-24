@@ -67,28 +67,36 @@ export function DeviceListInput({ deviceIds, setDeviceIds, disabled, filterStatu
     }
     
     // 1. Validação de Status (baseada no cache local)
-    if (chromebook.status !== requiredStatus) {
-      return { error: `Status Incorreto: ${chromebook.status.toUpperCase()}. Requerido: ${requiredStatusLabel}.` };
+    // Para empréstimo, o status deve ser 'disponivel'
+    if (actionLabel === 'Empréstimo' && chromebook.status !== 'disponivel') {
+        return { error: `Status Incorreto: ${chromebook.status.toUpperCase()}. Requerido: Disponível.` };
     }
+    
+    // Para devolução, o status deve ser 'emprestado'
+    if (actionLabel === 'Devolução' && chromebook.status !== 'emprestado') {
+        return { error: `Status Incorreto: ${chromebook.status.toUpperCase()}. Requerido: Emprestado.` };
+    }
+
 
     // 2. Validação de Empréstimo Ativo (Verificação de consistência com o DB)
     const activeLoans = await getActiveLoans();
-    const isActiveLoan = activeLoans.some(loan => loan.chromebook_id === normalizedInput);
+    const activeLoan = activeLoans.find(loan => loan.chromebook_id === normalizedInput);
     
-    if (requiredStatus === 'emprestado') {
-        // Fluxo de Devolução: Deve ter um empréstimo ativo
-        if (!isActiveLoan) {
+    if (actionLabel === 'Devolução') {
+        // Fluxo de Devolução: Deve ter um empréstimo ativo (status 'ativo' ou 'atrasado' no loan_history)
+        if (!activeLoan) {
             return { error: `O Chromebook ${normalizedInput} não possui um empréstimo ativo registrado no sistema.` };
         }
-    } else if (requiredStatus === 'disponivel') {
-        // Fluxo de Empréstimo: Não deve ter um empréstimo ativo (mesmo que o status local seja 'disponivel')
-        if (isActiveLoan) {
+        // Se houver um empréstimo ativo, a devolução é permitida, mesmo que esteja atrasado.
+    } else if (actionLabel === 'Empréstimo') {
+        // Fluxo de Empréstimo: Não deve ter um empréstimo ativo
+        if (activeLoan) {
             return { error: `O Chromebook ${normalizedInput} está marcado como 'disponível', mas possui um empréstimo ativo no sistema. Tente sincronizar o status.` };
         }
     }
 
     return { chromebook: chromebook as DeviceListItem };
-  }, [deviceList, chromebooks, requiredStatus, requiredStatusLabel, getActiveLoans]);
+  }, [deviceList, chromebooks, actionLabel, getActiveLoans]);
 
   // Lógica de adição (usada por busca visual e QR code)
   const addDevice = useCallback(async (chromebook: DeviceListItem) => {
@@ -148,7 +156,7 @@ export function DeviceListInput({ deviceIds, setDeviceIds, disabled, filterStatu
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <Label htmlFor="deviceInput" className="text-foreground font-semibold">
-          Adicionar Dispositivo (Status: {requiredStatusLabel})
+          Adicionar Dispositivo (Status: {actionLabel === 'Devolução' ? 'Emprestado' : 'Disponível'})
         </Label>
         <Badge variant="outline" className="bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900 dark:text-blue-300 dark:border-blue-800">
           {deviceList.length} selecionado(s)
