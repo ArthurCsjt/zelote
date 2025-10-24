@@ -10,7 +10,7 @@ import {
   TableRow,
 } from "./ui/table";
 import { toast } from "./ui/use-toast";
-import { Search, Filter, Edit3, QrCode, CheckCircle, AlertCircle, XCircle, Clock, RefreshCw, Download, Trash2 } from "lucide-react";
+import { Search, Filter, Edit3, QrCode, CheckCircle, AlertCircle, XCircle, Clock, RefreshCw, Download, Trash2, MapPin } from "lucide-react";
 import { 
   Select,
   SelectContent,
@@ -282,16 +282,16 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
       </GlassCard>
 
       {/* Table of Chromebooks */}
-      <GlassCard className="border-white/30 rounded-2xl overflow-hidden relative z-10 p-0">
-        <Table>
+      <GlassCard className="border-white/30 rounded-2xl overflow-x-auto relative z-10 p-0">
+        <Table className="min-w-[800px] md:min-w-full"> {/* Garante largura mínima para mobile */}
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[100px]">ID</TableHead>
-              <TableHead className="w-[150px] hidden sm:table-cell">Fabricante</TableHead>
-              <TableHead className="flex-1">Modelo</TableHead>
-              <TableHead className="w-[150px] hidden md:table-cell">Série</TableHead>
-              <TableHead className="w-[120px]">Status</TableHead> 
-              <TableHead className="w-[180px] text-right">Ações</TableHead>
+              <TableHead className="w-[100px] text-xs">ID</TableHead>
+              <TableHead className="w-[100px] text-xs">Fabricante</TableHead>
+              <TableHead className="flex-1 text-xs">Modelo</TableHead>
+              <TableHead className="w-[100px] text-xs">Série</TableHead>
+              <TableHead className="w-[120px] text-xs">Status</TableHead> 
+              <TableHead className="w-[180px] text-right text-xs">Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -300,68 +300,67 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
                 const statusInfo = getStatusInfo(chromebook.status);
                 const StatusIcon = statusInfo.icon;
                 
-                const mobilityStatus = chromebook.status === 'fixo' 
-                  ? 'Fixo' 
-                  : chromebook.status === 'fora_uso' 
-                    ? 'Inativo' 
-                    : 'Móvel';
-                
-                const mobilityColor = mobilityStatus === 'Fixo' 
-                  ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900 dark:text-blue-300 dark:border-blue-800' 
-                  : mobilityStatus === 'Inativo' 
-                    ? 'bg-gray-200 text-gray-700 border-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600'
-                    : 'bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-900 dark:text-orange-300 dark:border-orange-800';
-
                 return (
                   <TableRow key={chromebook.id}>
-                    <TableCell className="font-medium text-xs">
+                    <TableCell className="font-medium text-xs py-2 align-top">
                       {chromebook.chromebook_id}
                     </TableCell>
-                    <TableCell className="hidden sm:table-cell">{chromebook.manufacturer || 'N/A'}</TableCell>
-                    <TableCell>
-                      <div className="flex flex-col gap-1">
-                        <span className="font-medium text-sm">{chromebook.model}</span>
-                        <span className={`text-xs px-2 py-0.5 rounded-full border w-fit ${mobilityColor} sm:hidden`}>
-                          {mobilityStatus}
-                        </span>
-                      </div>
+                    <TableCell className="text-xs py-2 align-top">
+                      {chromebook.manufacturer || 'N/A'}
                     </TableCell>
-                    <TableCell className="hidden md:table-cell">{chromebook.serial_number || 'N/A'}</TableCell>
-                    <TableCell>
-                      <div className={`inline-flex flex-col items-start gap-1 text-xs font-medium`}>
-                        <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full ${statusInfo.color} dark:text-foreground dark:bg-card/50`}>
-                          <StatusIcon className="w-3 h-3" />
-                          {statusInfo.label}
-                        </div>
-                        {chromebook.status === 'fixo' && chromebook.classroom && (
-                          <span className="ml-1 text-[10px] text-blue-700 dark:text-blue-400">({chromebook.classroom})</span>
+                    <TableCell className="py-2 align-top">
+                      <div className="flex flex-col gap-0.5">
+                        <span className="font-medium text-xs leading-tight">{chromebook.model}</span>
+                        {chromebook.patrimony_number && (
+                          <span className="text-[10px] text-muted-foreground leading-tight">
+                            Patrimônio: {chromebook.patrimony_number}
+                          </span>
                         )}
                       </div>
                     </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end space-x-2">
+                    <TableCell className="text-xs py-2 align-top">
+                      {chromebook.serial_number || 'N/A'}
+                    </TableCell>
+                    <TableCell className="py-2 align-top">
+                      <div className={`inline-flex flex-col items-start gap-1 text-xs font-medium`}>
+                        <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full ${statusInfo.color} dark:text-foreground dark:bg-card/50`}>
+                          <StatusIcon className="w-3 h-3" />
+                          <span className="text-[10px]">{statusInfo.label}</span>
+                        </div>
+                        {chromebook.status === 'fixo' && chromebook.classroom && (
+                          <span className="ml-1 text-[10px] text-blue-700 dark:text-blue-400 flex items-center gap-0.5">
+                            <MapPin className="h-3 w-3" />
+                            {chromebook.classroom}
+                          </span>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right py-2 align-top">
+                      <div className="flex items-center justify-end space-x-1">
                         <Button
                           variant="ghost"
-                          size="sm"
+                          size="icon"
                           onClick={() => onGenerateQrCode(chromebook.chromebook_id)}
                           title="Ver QR Code"
+                          className="h-8 w-8 p-0"
                         >
                           <QrCode className="h-4 w-4" />
                         </Button>
                         <Button
                           variant="ghost"
-                          size="sm"
+                          size="icon"
                           onClick={() => handleEditClick(chromebook)}
                           title="Editar"
+                          className="h-8 w-8 p-0"
                         >
                           <Edit3 className="h-4 w-4" />
                         </Button>
                         <Button
                           variant="ghost"
-                          size="sm"
+                          size="icon"
                           onClick={() => handleDeleteClick(chromebook)}
                           title="Excluir"
-                          className="text-red-600 hover:text-red-800"
+                          className="h-8 w-8 p-0 text-red-600 hover:text-red-800"
                           disabled={!isAdmin}
                         >
                           <Trash2 className="h-4 w-4" />
@@ -370,7 +369,7 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
                           value={chromebook.status} 
                           onValueChange={(value) => handleStatusChange(chromebook.id, value)}
                         >
-                          <SelectTrigger className="w-[120px] h-8 text-xs">
+                          <SelectTrigger className="w-[100px] h-8 text-xs">
                             <SelectValue />
                           </SelectTrigger>
                            <SelectContent>
@@ -389,7 +388,7 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={8}
+                  colSpan={6}
                   className="h-32 text-center text-gray-500"
                 >
                   {searchTerm || statusFilter !== 'all'
