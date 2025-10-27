@@ -13,7 +13,7 @@ import {
 } from "./ui/dialog";
 import { Checkbox } from "./ui/checkbox";
 import { toast } from "./ui/use-toast";
-import { Edit3, Save, Tag, Hash, Factory, MapPin, AlertTriangle, Loader2, Map, CheckCircle, XCircle } from "lucide-react";
+import { Edit3, Save, Tag, Hash, Factory, MapPin, AlertTriangle, Loader2, Map, CheckCircle, XCircle, Info } from "lucide-react";
 import { 
   Select,
   SelectContent,
@@ -308,7 +308,7 @@ export function ChromebookEditDialog({ open, onOpenChange, chromebook }: Chromeb
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="disponivel">Disponível</SelectItem>
-                  <SelectItem value="emprestado" disabled>Emprestado (Ativo)</SelectItem>
+                  <SelectItem value="emprestado" disabled>Emprestado</SelectItem>
                   <SelectItem value="fixo">Fixo</SelectItem>
                   <SelectItem value="manutencao">Manutenção</SelectItem>
                   <SelectItem value="fora_uso">Inativo</SelectItem>
