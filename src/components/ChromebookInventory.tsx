@@ -10,7 +10,7 @@ import {
   TableRow,
 } from "./ui/table";
 import { toast } from "./ui/use-toast";
-import { Search, Filter, Edit3, QrCode, CheckCircle, AlertCircle, XCircle, Clock, RefreshCw, Download, Trash2, MapPin } from "lucide-react";
+import { Search, Filter, Edit3, QrCode, CheckCircle, AlertCircle, XCircle, Clock, RefreshCw, Download, Trash2, MapPin, FileText } from "lucide-react";
 import { 
   Select,
   SelectContent,
@@ -27,6 +27,7 @@ import { InventoryStats } from "./InventoryStats";
 import { GlassCard } from "./ui/GlassCard";
 import { ChromebookEditDialog } from "./ChromebookEditDialog"; // NOVO IMPORT
 import { ChromebookDeleteDialog } from "./ChromebookDeleteDialog"; // NOVO IMPORT
+import Papa from 'papaparse'; // Importando PapaParse
 
 // Interface para o estado interno do formulário de edição (mantida para consistência)
 interface ChromebookDataExtended extends Chromebook {
@@ -57,6 +58,7 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   const [isFetching, setIsFetching] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
 
   // Função para carregar Chromebooks
   const fetchChromebooks = useCallback(async () => {
@@ -213,6 +215,57 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
     // O Real-time já cuida da atualização, mas limpamos o estado do modal
     setChromebookToDelete(null);
   };
+  
+  // NOVO: Função para exportar dados para CSV
+  const handleExportCSV = async () => {
+    setIsExporting(true);
+    try {
+      // 1. Buscar todos os dados (sem paginação ou filtros de UI)
+      const allData = await getChromebooks();
+      
+      if (allData.length === 0) {
+        toast({ title: "Atenção", description: "Nenhum dado para exportar.", variant: "info" });
+        return;
+      }
+
+      // 2. Preparar os dados para exportação (garantindo que todos os campos estejam presentes)
+      const dataToExport = allData.map(cb => ({
+        id: cb.id,
+        chromebook_id: cb.chromebook_id,
+        model: cb.model,
+        manufacturer: cb.manufacturer || '',
+        serial_number: cb.serial_number || '',
+        patrimony_number: cb.patrimony_number || '',
+        status: cb.status,
+        condition: cb.condition || '',
+        location: cb.location || '',
+        classroom: cb.classroom || '',
+        is_deprovisioned: cb.is_deprovisioned ? 'Sim' : 'Não',
+        created_at: cb.created_at,
+        updated_at: cb.updated_at,
+      }));
+
+      // 3. Converter para CSV
+      const csv = Papa.unparse(dataToExport);
+
+      // 4. Criar e baixar o arquivo
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `inventario_chromebooks_${new Date().toISOString().split('T')[0]}.csv`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+      
+      toast({ title: "Sucesso", description: "Inventário exportado para CSV." });
+
+    } catch (e: any) {
+      console.error('Erro ao exportar CSV:', e);
+      toast({ title: "Erro de Exportação", description: "Falha ao gerar o arquivo CSV.", variant: "destructive" });
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   return (
     <div className="p-0 glass-morphism animate-fade-in relative">
@@ -260,19 +313,24 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
             <Button 
               onClick={fetchChromebooks}
               variant="outline"
-              disabled={isFetching}
+              disabled={isFetching || isExporting}
               title="Atualizar dados"
               className="px-3"
             >
               <RefreshCw className={`h-4 w-4 ${isFetching ? 'animate-spin' : ''}`} />
             </Button>
             <Button 
-              onClick={() => toast({ title: "Backup", description: "Funcionalidade de backup em desenvolvimento.", variant: "info" })}
+              onClick={handleExportCSV}
               variant="outline"
-              title="Fazer backup"
+              title="Fazer backup (Exportar CSV)"
+              disabled={isExporting || isFetching}
               className="px-3"
             >
-              <Download className="h-4 w-4" />
+              {isExporting ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <FileText className="h-4 w-4" />
+              )}
             </Button>
           </div>
         </div>
