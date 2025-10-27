@@ -6,7 +6,7 @@ import { Label } from "./ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { Badge } from "./ui/badge";
 import { Checkbox } from "./ui/checkbox";
-import { Computer, Plus, QrCode, Calendar, Clock, Loader2, CheckCircle, User } from "lucide-react";
+import { Computer, Plus, QrCode, Calendar, Clock, Loader2, CheckCircle, User, BookOpen } from "lucide-react";
 import { QRCodeReader } from "./QRCodeReader";
 import { format } from "date-fns";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
@@ -201,43 +201,56 @@ export function LoanForm({ onBack }: LoanFormProps) {
             </CardContent>
           </GlassCard>
 
-          {/* Coluna Direita - Informações do Solicitante (VIOLETA CLARO) */}
-          <GlassCard className="bg-menu-violet/10 border-menu-violet/30 shadow-inner dark:bg-menu-violet/20 dark:border-menu-violet/50">
-            <CardHeader className="p-4 pb-0">
-              <CardTitle className="text-lg flex items-center gap-2 text-menu-violet dark:text-violet-400">
-                <User className="h-5 w-5" /> Informações do Solicitante
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-4 space-y-4">
-              
-              {/* Seletor de Usuário com Autocompletar */}
-              <div className="space-y-2">
-                <Label htmlFor="userSearch" className="text-foreground">
-                  Buscar Solicitante (Nome, RA ou Email) *
-                </Label>
-                <UserAutocomplete
-                  selectedUser={selectedUser}
-                  onSelect={handleUserSelect}
-                  onClear={handleUserClear}
-                  disabled={loading}
-                />
-              </div>
-
-              {/* Campo de finalidade do empréstimo (AGORA COM AUTOCOMPLETE DE FINALIDADE) */}
-              <div className="space-y-2 pt-2">
-                <Label htmlFor="purpose" className="text-foreground">
-                  Finalidade (Aula/Professor/Departamento) *
-                </Label>
-                <PurposeAutocomplete
-                  value={formData.purpose}
-                  onChange={(value) => setFormData({ ...formData, purpose: value })}
-                  disabled={loading || !selectedUser}
-                  placeholder={purposePlaceholder}
-                  userType={formData.userType}
-                />
-              </div>
-            </CardContent>
-          </GlassCard>
+          {/* Coluna Direita - Informações do Solicitante e Finalidade */}
+          <div className="space-y-6">
+            
+            {/* Card 1: Informações do Solicitante */}
+            <GlassCard className="bg-menu-violet/10 border-menu-violet/30 shadow-inner dark:bg-menu-violet/20 dark:border-menu-violet/50">
+              <CardHeader className="p-4 pb-0">
+                <CardTitle className="text-lg flex items-center gap-2 text-menu-violet dark:text-violet-400">
+                  <User className="h-5 w-5" /> Informações do Solicitante
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-4 space-y-4">
+                
+                {/* Seletor de Usuário com Autocompletar */}
+                <div className="space-y-2">
+                  <Label htmlFor="userSearch" className="text-foreground">
+                    Buscar Solicitante (Nome, RA ou Email) *
+                  </Label>
+                  <UserAutocomplete
+                    selectedUser={selectedUser}
+                    onSelect={handleUserSelect}
+                    onClear={handleUserClear}
+                    disabled={loading}
+                  />
+                </div>
+              </CardContent>
+            </GlassCard>
+            
+            {/* Card 2: Finalidade (NOVO CARD SEPARADO) */}
+            <GlassCard className="bg-menu-violet/10 border-menu-violet/30 shadow-inner dark:bg-menu-violet/20 dark:border-menu-violet/50">
+              <CardHeader className="p-4 pb-0">
+                <CardTitle className="text-lg flex items-center gap-2 text-menu-violet dark:text-violet-400">
+                  <BookOpen className="h-5 w-5" /> Finalidade do Empréstimo
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-4 space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="purpose" className="text-foreground">
+                    Finalidade (Aula/Professor/Departamento) *
+                  </Label>
+                  <PurposeAutocomplete
+                    value={formData.purpose}
+                    onChange={(value) => setFormData({ ...formData, purpose: value })}
+                    disabled={loading || !selectedUser}
+                    placeholder={purposePlaceholder}
+                    userType={formData.userType}
+                  />
+                </div>
+              </CardContent>
+            </GlassCard>
+          </div>
         </div>
 
         {/* Opção para definir prazo de devolução (abaixo das colunas) */}
