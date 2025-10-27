@@ -88,8 +88,8 @@ export function ChromebookEditDialog({ open, onOpenChange, chromebook }: Chromeb
     setEditingChromebook(prev => ({
       ...prev!,
       status: newStatus,
-      // Se o status for 'fora_uso', marca como desprovisionado
-      is_deprovisioned: newStatus === 'fora_uso',
+      // Não forçamos is_deprovisioned aqui, mas sugerimos se for 'fora_uso'
+      is_deprovisioned: newStatus === 'fora_uso' ? true : prev!.is_deprovisioned,
     }));
   };
   
@@ -97,14 +97,20 @@ export function ChromebookEditDialog({ open, onOpenChange, chromebook }: Chromeb
   const handleDeprovisionedChange = (checked: boolean) => {
     if (!editingChromebook) return;
     
-    // Se marcar como desprovisionado, o status deve ser 'fora_uso'
-    const newStatus = checked ? 'fora_uso' : 'disponivel';
-
-    setEditingChromebook(prev => ({
-      ...prev!,
-      is_deprovisioned: checked,
-      status: newStatus,
-    }));
+    // Apenas atualiza o campo is_deprovisioned
+    setEditingChromebook(prev => {
+      const newState = { ...prev!, is_deprovisioned: checked };
+      
+      // Sugestão de status: se desprovisionado, sugere 'fora_uso'. Se provisionado, sugere 'disponivel'.
+      // Mas só muda se o status atual for 'fora_uso' ou 'disponivel' (para não sobrescrever 'fixo' ou 'manutencao')
+      if (checked && newState.status !== 'emprestado' && newState.status !== 'manutencao') {
+        newState.status = 'fora_uso';
+      } else if (!checked && newState.status === 'fora_uso') {
+        newState.status = 'disponivel';
+      }
+      
+      return newState;
+    });
   };
 
   // Handle save edit
@@ -339,7 +345,7 @@ export function ChromebookEditDialog({ open, onOpenChange, chromebook }: Chromeb
               />
               <Label htmlFor="is_deprovisioned" className="text-sm font-medium cursor-pointer flex items-center gap-2">
                 {editingChromebook.is_deprovisioned ? <CheckCircle className="h-4 w-4 text-green-600" /> : <XCircle className="h-4 w-4 text-red-600" />}
-                Desprovisionado (Marca o equipamento como Inativo/Fora de Uso)
+                Desprovisionado (Removido do gerenciamento central)
               </Label>
             </div>
           </div>
