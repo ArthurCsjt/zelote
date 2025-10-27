@@ -225,8 +225,8 @@ const PeriodCharts = ({ periodView, loading, periodChartData, stats, startHour, 
   // Desestruturação segura para stats
   const { 
     totalActive = 0, 
-    totalChromebooks = 0, 
-    availableChromebooks = 0, 
+    // totalChromebooks = 0, // Removido para evitar conflito
+    // availableChromebooks = 0, // Removido para evitar conflito
     loansByUserType = {} 
   } = stats || {};
 
@@ -516,7 +516,15 @@ export function Dashboard({
 
   const { overdueLoans, upcomingDueLoans } = useOverdueLoans();
   
-  const { totalChromebooks, availableChromebooks, loansByUserType, userTypeData, durationData, maxOccupancyRate } = stats || {}; // Desestruturação segura
+  // Desestruturação segura no escopo principal
+  const { 
+    totalChromebooks = 0, 
+    availableChromebooks = 0, 
+    loansByUserType = {}, 
+    userTypeData = [], 
+    durationData = [], 
+    maxOccupancyRate = 0 
+  } = stats || {};
 
   // Função para gerar o PDF do relatório
   const periodText: Record<PeriodView, string> = {
