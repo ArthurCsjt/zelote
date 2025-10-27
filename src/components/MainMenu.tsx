@@ -55,19 +55,19 @@ export function MainMenu({
       title: 'Dashboard',
       icon: <BarChart3 className="h-5 w-5" />,
       action: () => onNavigate('dashboard'),
-      bgColor: 'bg-menu-amber-hover' // Laranja Escuro (Novo)
+      bgColor: 'bg-menu-teal-hover' // NOVO: Verde-Água Escuro
     },
     {
       title: 'Re-Cadastro Rápido',
       icon: <QrCode className="h-5 w-5" />,
       action: () => onNavigate('quick-register'),
-      bgColor: 'bg-menu-teal' // Verde Água
+      bgColor: 'bg-menu-teal' // Verde-Água Claro
     },
     {
       title: 'Sistema de Contagem',
       icon: <ListChecks className="h-5 w-5" />,
       action: () => onNavigate('audit'),
-      bgColor: 'bg-menu-rose' // Rosa/Vermelho (Novo)
+      bgColor: 'bg-menu-rose' // Rosa/Vermelho
     }
   ];
 
