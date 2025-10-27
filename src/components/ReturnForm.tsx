@@ -15,15 +15,14 @@ import type { UserSearchResult } from '@/hooks/useUserSearch';
 import type { ReturnFormData } from '@/types/database';
 
 interface ReturnFormProps {
-  // Propriedade opcional para pré-selecionar um Chromebook (vindo de ActiveLoans)
-  initialChromebookId?: string;
   onReturnSuccess?: () => void;
 }
 
-export function ReturnForm({ initialChromebookId, onReturnSuccess }: ReturnFormProps) {
+export function ReturnForm({ onReturnSuccess }: ReturnFormProps) {
   const { bulkReturnChromebooks, loading: dbLoading } = useDatabase();
   
-  const [deviceIds, setDeviceIds] = useState<string[]>(initialChromebookId ? [initialChromebookId] : []);
+  // Inicializa a lista de dispositivos vazia
+  const [deviceIds, setDeviceIds] = useState<string[]>([]);
   const [confirmChecked, setConfirmChecked] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserSearchResult | null>(null);
   const [returnData, setReturnData] = useState<ReturnFormData & { notes?: string }>({
@@ -35,18 +34,15 @@ export function ReturnForm({ initialChromebookId, onReturnSuccess }: ReturnFormP
     notes: ''
   });
 
-  // Efeito para limpar o formulário ou pré-selecionar o ID inicial
+  // Efeito para limpar o formulário ao montar/resetar
   useEffect(() => {
-    if (initialChromebookId) {
-      setDeviceIds([initialChromebookId]);
-    } else {
-      setDeviceIds([]);
+    // Se a lista de IDs estiver vazia, garante que o usuário e a confirmação também estejam limpos
+    if (deviceIds.length === 0) {
+        setSelectedUser(null);
+        setConfirmChecked(false);
+        setReturnData({ name: "", ra: "", email: "", type: 'lote', userType: 'aluno', notes: '' });
     }
-    // Limpa o usuário e a confirmação ao mudar o ID inicial
-    setSelectedUser(null);
-    setConfirmChecked(false);
-    setReturnData({ name: "", ra: "", email: "", type: 'lote', userType: 'aluno', notes: '' });
-  }, [initialChromebookId]);
+  }, [deviceIds.length]);
 
   const handleUserSelect = (user: UserSearchResult) => {
     setSelectedUser(user);
@@ -117,13 +113,16 @@ export function ReturnForm({ initialChromebookId, onReturnSuccess }: ReturnFormP
   }, [deviceIds, selectedUser, confirmChecked, returnData, bulkReturnChromebooks, onReturnSuccess]);
 
   return (
-    <form onSubmit={handleConfirmReturn} className="space-y-6">
-      <div className="grid md:grid-cols-2 gap-6">
+    <form onSubmit={handleConfirmReturn} className="space-y-6 relative">
+      {/* Gradiente de fundo sutil para a área do formulário */}
+      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-amber-50/30 via-orange-50/20 to-amber-50/30 rounded-3xl blur-2xl transform scale-110" />
+      
+      <div className="grid md:grid-cols-2 gap-6 relative z-10">
         
-        {/* Coluna Esquerda - Dispositivo/Lote (Cor 1: Azul) */}
-        <GlassCard className="bg-menu-blue/10 border-menu-blue/30 shadow-inner dark:bg-menu-blue/20 dark:border-menu-blue/50">
+        {/* Coluna Esquerda - Dispositivo/Lote (Cor 1: Âmbar) */}
+        <GlassCard className="bg-menu-amber/10 border-menu-amber/30 shadow-inner dark:bg-menu-amber/20 dark:border-menu-amber/50">
           <CardHeader className="p-4 pb-0">
-            <CardTitle className="text-lg flex items-center gap-2 text-menu-blue dark:text-blue-400">
+            <CardTitle className="text-lg flex items-center gap-2 text-menu-amber dark:text-orange-400">
               <Computer className="h-5 w-5" /> Dispositivos para Devolução
             </CardTitle>
           </CardHeader>
@@ -140,10 +139,10 @@ export function ReturnForm({ initialChromebookId, onReturnSuccess }: ReturnFormP
 
         {/* Coluna Direita - Informações do Usuário e Observações */}
         <div className="space-y-6">
-          {/* Informações do Solicitante (Cor 2: Verde) */}
-          <GlassCard className="bg-menu-green/10 border-menu-green/30 shadow-inner dark:bg-menu-green/20 dark:border-menu-green/50">
+          {/* Informações do Solicitante (Cor 2: Âmbar) */}
+          <GlassCard className="bg-menu-amber/10 border-menu-amber/30 shadow-inner dark:bg-menu-amber/20 dark:border-menu-amber/50">
             <CardHeader className="p-4 pb-0">
-              <CardTitle className="text-lg flex items-center gap-2 text-menu-green dark:text-green-400">
+              <CardTitle className="text-lg flex items-center gap-2 text-menu-amber dark:text-orange-400">
                 <User className="h-5 w-5" /> Informações do Solicitante
               </CardTitle>
             </CardHeader>
@@ -171,7 +170,7 @@ export function ReturnForm({ initialChromebookId, onReturnSuccess }: ReturnFormP
             </CardContent>
           </GlassCard>
           
-          {/* Campo de Observações (Cor 3: Laranja/Âmbar) */}
+          {/* Campo de Observações (Cor 3: Âmbar) */}
           <GlassCard className="p-4 space-y-4 bg-menu-amber/10 border-menu-amber/30 shadow-md dark:bg-menu-amber/20 dark:border-menu-amber/50">
             <CardTitle className="text-lg flex items-center gap-2 text-menu-amber dark:text-orange-400">
               <AlertTriangle className="h-5 w-5" /> Observações da Devolução

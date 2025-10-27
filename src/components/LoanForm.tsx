@@ -174,16 +174,17 @@ export function LoanForm({ onBack }: LoanFormProps) {
   // === RENDERIZAÇÃO DA INTERFACE (UI) ===
   return (
     <div className="animate-fade-in relative">
-      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-blue-50/30 via-purple-50/20 to-pink-50/30 rounded-3xl blur-2xl transform scale-110" />
+      {/* Gradiente de fundo sutil para a área do formulário */}
+      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-violet-50/30 via-blue-50/20 to-violet-50/30 rounded-3xl blur-2xl transform scale-110" />
       
       <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
         
         <div className="grid md:grid-cols-2 gap-6">
             
-          {/* Coluna Esquerda - Detalhes do Equipamento/Lote (AZUL CLARO) */}
-          <GlassCard className="bg-blue-50/50 border-blue-100 shadow-inner dark:bg-blue-950/50 dark:border-blue-900/50">
+          {/* Coluna Esquerda - Detalhes do Equipamento/Lote (VIOLETA CLARO) */}
+          <GlassCard className="bg-menu-violet/10 border-menu-violet/30 shadow-inner dark:bg-menu-violet/20 dark:border-menu-violet/50">
             <CardHeader className="p-4 pb-0">
-              <CardTitle className="text-lg flex items-center gap-2 text-blue-700 dark:text-blue-400">
+              <CardTitle className="text-lg flex items-center gap-2 text-menu-violet dark:text-violet-400">
                 <Computer className="h-5 w-5" /> Dispositivos para Empréstimo
               </CardTitle>
             </CardHeader>
@@ -200,10 +201,10 @@ export function LoanForm({ onBack }: LoanFormProps) {
             </CardContent>
           </GlassCard>
 
-          {/* Coluna Direita - Informações do Solicitante (VERDE/TEAL) */}
-          <GlassCard className="bg-green-50/50 border-green-100 shadow-inner dark:bg-green-950/50 dark:border-green-900/50">
+          {/* Coluna Direita - Informações do Solicitante (VIOLETA CLARO) */}
+          <GlassCard className="bg-menu-violet/10 border-menu-violet/30 shadow-inner dark:bg-menu-violet/20 dark:border-menu-violet/50">
             <CardHeader className="p-4 pb-0">
-              <CardTitle className="text-lg flex items-center gap-2 text-green-700 dark:text-green-400">
+              <CardTitle className="text-lg flex items-center gap-2 text-menu-violet dark:text-violet-400">
                 <User className="h-5 w-5" /> Informações do Solicitante
               </CardTitle>
             </CardHeader>
@@ -259,7 +260,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
           </div>
 
           {hasReturnDeadline && (
-            <div className="space-y-3 pl-6 border-l-2 border-primary/20">
+            <div className="space-y-3 pl-6 border-l-2 border-menu-violet/50">
               <div className="space-y-2">
                 <Label className="text-foreground text-sm font-medium">
                   Data e Hora de Devolução
@@ -365,7 +366,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
         {/* Botão de envio do formulário */}
         <Button 
           type="submit" 
-          className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-0 shadow-lg hover:shadow-xl transform transition-all duration-300 hover:scale-[1.02]"
+          className="w-full bg-menu-violet hover:bg-menu-violet-hover text-white border-0 shadow-lg hover:shadow-xl transform transition-all duration-300 hover:scale-[1.02]"
           disabled={
             loading || 
             deviceIds.length === 0 ||

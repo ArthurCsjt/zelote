@@ -148,7 +148,7 @@ export function ActiveLoans({ onNavigateToReturn }: ActiveLoansProps) {
                             RA: {loan.student_ra}
                           </Badge>
                         )}
-                        <Badge variant="secondary">
+                        <Badge variant="secondary" className="bg-blue-100 text-blue-700 hover:bg-blue-100">
                           <Monitor className="h-3 w-3 mr-1" />
                           {loan.chromebook_id}
                         </Badge>
@@ -168,7 +168,7 @@ export function ActiveLoans({ onNavigateToReturn }: ActiveLoansProps) {
                           </Badge>
                         )}
                         {dueSoonStatus && !overdueStatus && (
-                          <Badge variant="outline" className="border-amber-400 text-amber-700 gap-1">
+                          <Badge variant="outline" className="border-amber-400 text-amber-700 gap-1 bg-amber-100">
                             <Clock className="h-3 w-3" />
                             Vence em Breve
                           </Badge>
@@ -219,10 +219,7 @@ export function ActiveLoans({ onNavigateToReturn }: ActiveLoansProps) {
                   <Button
                     onClick={() => handleReturnClick(loan)}
                     disabled={loading || dbLoading}
-                    className={`w-full mt-4 ${
-                      overdueStatus ? 'bg-red-600 hover:bg-red-700' : 
-                      dueSoonStatus ? 'bg-amber-600 hover:bg-amber-700' : 'bg-blue-600 hover:bg-blue-700'
-                    }`}
+                    className={`w-full mt-4 bg-menu-amber hover:bg-menu-amber-hover`}
                   >
                     <CheckCircle className="h-4 w-4 mr-2" />
                     {overdueStatus ? 'Devolver (Atrasado)' : 'Devolver'}

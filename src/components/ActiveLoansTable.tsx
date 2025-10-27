@@ -103,7 +103,8 @@ export const ActiveLoansTable: React.FC<ActiveLoansTableProps> = ({ loans, onNav
                   <Button
                     onClick={() => onNavigateToReturn(loan.chromebook_id)}
                     size="sm"
-                    className="h-8 px-3 bg-blue-600 hover:bg-blue-700"
+                    // Usando a cor de devolução (menu-amber)
+                    className="h-8 px-3 bg-menu-amber hover:bg-menu-amber-hover"
                   >
                     <RotateCcw className="h-4 w-4 mr-1" />
                     Devolver
