@@ -26,61 +26,6 @@ export function MainMenu({
     return () => clearTimeout(timer);
   }, []);
 
-  const menuItems = [
-    {
-      title: 'Cadastros',
-      icon: <PlusCircle className="h-5 w-5" />,
-      action: () => onNavigate('registration'),
-      bgColor: 'bg-menu-green'
-    },
-    {
-      title: 'Inventário',
-      icon: <Laptop className="h-5 w-5" />,
-      action: () => onNavigate('inventory'),
-      bgColor: 'bg-menu-blue'
-    },
-    {
-      title: 'Empréstimos',
-      icon: <ClipboardList className="h-5 w-5" />,
-      action: () => onNavigate('loan', 'form'),
-      bgColor: 'bg-menu-violet'
-    },
-    {
-      title: 'Devolução',
-      icon: <RotateCcw className="h-5 w-5" />,
-      // CORREÇÃO: Navega para a rota 'return'
-      action: () => onNavigate('return'), 
-      bgColor: 'bg-menu-amber'
-    },
-    {
-      title: 'Dashboard',
-      icon: <BarChart3 className="h-5 w-5" />,
-      action: () => onNavigate('dashboard'),
-      // ALTERAÇÃO: Usando a cor do sistema de menu
-      bgColor: 'bg-menu-rose' 
-    },
-    // NOVO BOTÃO: Re-Cadastro Rápido
-    {
-      title: 'Re-Cadastro Rápido',
-      icon: <QrCode className="h-5 w-5" />,
-      action: () => onNavigate('quick-register'),
-      bgColor: 'bg-menu-teal' 
-    },
-    {
-      title: 'Sistema de Contagem',
-      icon: <ListChecks className="h-5 w-5" />,
-      action: () => onNavigate('audit'),
-      // CORREÇÃO: Usando uma cor diferente (menu-rose já está em uso, vamos usar menu-violet-hover para um tom mais escuro ou menu-amber-hover)
-      // Vou usar uma cor nova, o menu-rose já está no dashboard, vamos usar o menu-violet-hover para um tom mais escuro.
-      bgColor: 'bg-menu-rose' // Mantendo rose para dashboard, vamos usar uma cor nova para contagem
-    }
-  ];
-  
-  // CORREÇÃO: Vamos usar a cor menu-rose para o Dashboard e menu-teal para Re-Cadastro.
-  // Vou introduzir uma nova cor para o Sistema de Contagem: menu-violet-hover (roxo escuro).
-  // No entanto, para manter a consistência, vou usar a cor 'menu-rose' para o Dashboard e 'menu-teal' para o Re-Cadastro.
-  // Vou usar a cor 'menu-amber-hover' para o Sistema de Contagem, que é um laranja mais escuro.
-  
   const menuItemsFinal = [
     {
       title: 'Cadastros',
@@ -98,32 +43,31 @@ export function MainMenu({
       title: 'Empréstimos',
       icon: <ClipboardList className="h-5 w-5" />,
       action: () => onNavigate('loan', 'form'),
-      bgColor: 'bg-menu-violet'
+      bgColor: 'bg-menu-violet' // Roxo
     },
     {
       title: 'Devolução',
       icon: <RotateCcw className="h-5 w-5" />,
       action: () => onNavigate('return'), 
-      bgColor: 'bg-menu-amber'
+      bgColor: 'bg-menu-amber' // Laranja
     },
     {
       title: 'Dashboard',
       icon: <BarChart3 className="h-5 w-5" />,
       action: () => onNavigate('dashboard'),
-      bgColor: 'bg-menu-rose' 
+      bgColor: 'bg-menu-amber-hover' // Laranja Escuro (Novo)
     },
     {
       title: 'Re-Cadastro Rápido',
       icon: <QrCode className="h-5 w-5" />,
       action: () => onNavigate('quick-register'),
-      bgColor: 'bg-menu-teal' 
+      bgColor: 'bg-menu-teal' // Verde Água
     },
     {
       title: 'Sistema de Contagem',
       icon: <ListChecks className="h-5 w-5" />,
       action: () => onNavigate('audit'),
-      // Usando uma cor diferente: menu-violet-hover (roxo escuro)
-      bgColor: 'bg-menu-violet-hover' 
+      bgColor: 'bg-menu-rose' // Rosa/Vermelho (Novo)
     }
   ];
 
