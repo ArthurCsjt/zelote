@@ -40,10 +40,18 @@ const StatCardSkeleton = () => (
 );
 
 // Componente auxiliar para renderizar o grid de estatísticas
-const StatsGrid = ({ periodView, stats, filteredLoans, filteredReturns, loading }: any) => {
+const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = [], loading }: any) => {
   if (periodView === 'history' || periodView === 'reports') return null;
 
-  const { totalActive, totalChromebooks, totalInventoryUsageRate, averageUsageTime, completionRate, maxOccupancyRate } = stats;
+  // Desestruturação segura, usando valores padrão se stats for null/undefined
+  const { 
+    totalActive = 0, 
+    totalChromebooks = 0, 
+    totalInventoryUsageRate = 0, 
+    averageUsageTime = 0, 
+    completionRate = 0, 
+    maxOccupancyRate = 0 
+  } = stats || {};
 
   if (loading) {
     return (
@@ -214,6 +222,14 @@ const PeriodCharts = ({ periodView, loading, periodChartData, stats, startHour, 
   const chartDescription = isDaily ? 'Movimentação ao longo do dia' : isWeekly ? 'Últimos 7 dias' : 'Últimos 30 dias';
   const chartDataKey = isDaily ? 'hora' : 'date';
   
+  // Desestruturação segura para stats
+  const { 
+    totalActive = 0, 
+    totalChromebooks = 0, 
+    availableChromebooks = 0, 
+    loansByUserType = {} 
+  } = stats || {};
+
   return (
     <>
       <GlassCard className="dashboard-card">
@@ -340,14 +356,14 @@ const PeriodCharts = ({ periodView, loading, periodChartData, stats, startHour, 
                 <PieChart margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
                   <Pie data={[{
                     name: "Em Uso",
-                    value: stats.totalActive
+                    value: totalActive
                   }, {
                     name: "Disponíveis",
                     value: availableChromebooks
                   }]} cx="50%" cy="50%" innerRadius={40} outerRadius={70} fill="#8884d8" paddingAngle={5} dataKey="value" label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}>
                     {[{
                       name: "Em Uso",
-                      value: stats.totalActive
+                      value: totalActive
                     }, {
                       name: "Disponíveis",
                       value: availableChromebooks
@@ -443,30 +459,30 @@ const PeriodCharts = ({ periodView, loading, periodChartData, stats, startHour, 
               <div className="flex justify-between items-center">
                 <span className="text-sm font-medium">Alunos</span>
                 <Badge variant="secondary" className="bg-blue-100 text-blue-700">
-                  {stats.loansByUserType.aluno || 0} empréstimos
+                  {loansByUserType.aluno || 0} empréstimos
                 </Badge>
               </div>
-              <Progress value={(stats.loansByUserType.aluno || 0) / stats.filteredLoans.length * 100} className="h-2" />
+              <Progress value={((loansByUserType.aluno || 0) / filteredLoans.length) * 100} className="h-2" />
             </div>
             
             <div className="space-y-2">
               <div className="flex justify-between items-center">
                 <span className="text-sm font-medium">Professores</span>
                 <Badge variant="secondary" className="bg-green-100 text-green-700">
-                  {stats.loansByUserType.professor || 0} empréstimos
+                  {loansByUserType.professor || 0} empréstimos
                 </Badge>
               </div>
-              <Progress value={(stats.loansByUserType.professor || 0) / stats.filteredLoans.length * 100} className="h-2" />
+              <Progress value={((loansByUserType.professor || 0) / filteredLoans.length) * 100} className="h-2" />
             </div>
             
             <div className="space-y-2">
               <div className="flex justify-between items-center">
                 <span className="text-sm font-medium">Funcionários</span>
                 <Badge variant="secondary" className="bg-orange-100 text-orange-700">
-                  {stats.loansByUserType.funcionario || 0} empréstimos
+                  {loansByUserType.funcionario || 0} empréstimos
                 </Badge>
               </div>
-              <Progress value={(stats.loansByUserType.funcionario || 0) / stats.filteredLoans.length * 100} className="h-2" />
+              <Progress value={((loansByUserType.funcionario || 0) / filteredLoans.length) * 100} className="h-2" />
             </div>
           </CardContent>
         </GlassCard>
@@ -500,7 +516,7 @@ export function Dashboard({
 
   const { overdueLoans, upcomingDueLoans } = useOverdueLoans();
   
-  const { totalChromebooks, availableChromebooks, loansByUserType, userTypeData, durationData, maxOccupancyRate } = stats;
+  const { totalChromebooks, availableChromebooks, loansByUserType, userTypeData, durationData, maxOccupancyRate } = stats || {}; // Desestruturação segura
 
   // Função para gerar o PDF do relatório
   const periodText: Record<PeriodView, string> = {
@@ -529,12 +545,12 @@ export function Dashboard({
     yPosition += 10;
     pdf.setFontSize(12);
     const periodStats = [
-      `Empréstimos: ${filteredLoans.length}`, 
-      `Devoluções: ${filteredReturns.length}`, 
-      `Chromebooks ativos: ${stats.totalActive} de ${totalChromebooks}`, 
-      `Taxa de Ocupação Máxima: ${stats.maxOccupancyRate.toFixed(0)}%`,
-      `Tempo médio de uso: ${Math.round(stats.averageUsageTime)} minutos`, 
-      `Taxa de devolução: ${stats.completionRate.toFixed(0)}%`
+      `Empréstimos: ${filteredLoans?.length || 0}`, 
+      `Devoluções: ${filteredReturns?.length || 0}`, 
+      `Chromebooks ativos: ${stats?.totalActive || 0} de ${totalChromebooks || 0}`, 
+      `Taxa de Ocupação Máxima: ${stats?.maxOccupancyRate.toFixed(0) || 0}%`,
+      `Tempo médio de uso: ${Math.round(stats?.averageUsageTime || 0)} minutos`, 
+      `Taxa de devolução: ${stats?.completionRate.toFixed(0) || 0}%`
     ];
     periodStats.forEach(stat => {
       pdf.text(`• ${stat}`, 25, yPosition);
