@@ -52,10 +52,10 @@ export function StudentForm() {
     }));
   };
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault(); // Garante que o evento padrão seja prevenido imediatamente
 
     // Validações
-    if (!formData.nomeCompleto || !formData.ra || !formData.email || !formData.turma) {
+    if (!formData.nomeCompleto.trim() || !formData.ra.trim() || !formData.email.trim() || !formData.turma.trim()) {
       toast({
         title: "Erro de validação",
         description: "Todos os campos são obrigatórios.",
@@ -66,14 +66,20 @@ export function StudentForm() {
     if (!validateEmail(formData.email)) {
       return;
     }
+    
+    // Se já estiver carregando, ignora o clique (proteção extra contra cliques rápidos)
+    if (loading) return; 
+
     try {
       const studentData = {
-        nome_completo: formData.nomeCompleto,
-        ra: formData.ra,
-        email: formData.email,
-        turma: formData.turma
+        nome_completo: formData.nomeCompleto.trim(),
+        ra: formData.ra.trim(),
+        email: formData.email.trim(),
+        turma: formData.turma.trim()
       };
+      
       const result = await createStudent(studentData);
+      
       if (result) {
         toast({
           title: "Sucesso!",
@@ -88,11 +94,7 @@ export function StudentForm() {
           turma: ''
         });
       } else {
-        toast({
-          title: "Erro",
-          description: "Erro ao cadastrar aluno. Verifique se o RA e e-mail não estão em uso.",
-          variant: "destructive"
-        });
+        // O erro já é tratado no useDatabase, mas garantimos que o fluxo pare aqui se falhar
       }
     } catch (error) {
       console.error('Erro ao cadastrar aluno:', error);
@@ -103,7 +105,9 @@ export function StudentForm() {
       });
     }
   };
-  const isFormValid = formData.nomeCompleto && formData.ra && formData.email && formData.turma && !emailError;
+  
+  const isFormValid = formData.nomeCompleto.trim() && formData.ra.trim() && formData.email.trim() && formData.turma.trim() && !emailError;
+  
   return <GlassCard>
       {/* CardHeader removido */}
       <CardContent>
