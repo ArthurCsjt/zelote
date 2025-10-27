@@ -21,7 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
-import { RadioGroup, RadioGroupItem } from "./ui/radio-group"; // Importando RadioGroup
+import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
 import { useDatabase } from '@/hooks/useDatabase';
 import { useProfileRole } from '@/hooks/use-profile-role';
 import type { Chromebook, ChromebookData } from "@/types/database";
@@ -88,30 +88,53 @@ export function ChromebookEditDialog({ open, onOpenChange, chromebook }: Chromeb
     setEditingChromebook(prev => ({
       ...prev!,
       status: newStatus,
-      // Não forçamos is_deprovisioned aqui, mas sugerimos se for 'fora_uso'
-      is_deprovisioned: newStatus === 'fora_uso' ? true : prev!.is_deprovisioned,
     }));
   };
   
-  // Handle is_deprovisioned checkbox change in edit dialog
-  const handleDeprovisionedChange = (checked: boolean) => {
+  // Handle mobility status change (movel/fixo)
+  const handleMobilityChange = (value: 'movel' | 'fixo') => {
     if (!editingChromebook) return;
     
-    // Apenas atualiza o campo is_deprovisioned
+    const newStatus = value === 'fixo' ? 'fixo' : 'disponivel';
+    
+    // Se o status atual for emprestado/manutencao/fora_uso, não sobrescreve, apenas atualiza o campo classroom
+    if (editingChromebook.status === 'emprestado' || editingChromebook.status === 'manutencao' || editingChromebook.status === 'fora_uso') {
+        setEditingChromebook(prev => ({
+            ...prev!,
+            // Mantém o status atual, mas atualiza a localização se for fixo
+            classroom: value === 'movel' ? '' : prev!.classroom,
+        }));
+        return;
+    }
+
+    setEditingChromebook(prev => ({
+      ...prev!,
+      status: newStatus,
+      classroom: value === 'movel' ? '' : prev!.classroom,
+    }));
+  };
+
+  // Handle provisioning status change (provisioned/deprovisioned)
+  const handleProvisioningChange = (value: 'provisioned' | 'deprovisioned') => {
+    if (!editingChromebook) return;
+    
+    const isDeprovisioned = value === 'deprovisioned';
+    
     setEditingChromebook(prev => {
-      const newState = { ...prev!, is_deprovisioned: checked };
+      const newState = { ...prev!, is_deprovisioned: isDeprovisioned };
       
       // Sugestão de status: se desprovisionado, sugere 'fora_uso'. Se provisionado, sugere 'disponivel'.
       // Mas só muda se o status atual for 'fora_uso' ou 'disponivel' (para não sobrescrever 'fixo' ou 'manutencao')
-      if (checked && newState.status !== 'emprestado' && newState.status !== 'manutencao') {
+      if (isDeprovisioned && newState.status !== 'emprestado' && newState.status !== 'manutencao' && newState.status !== 'fixo') {
         newState.status = 'fora_uso';
-      } else if (!checked && newState.status === 'fora_uso') {
+      } else if (!isDeprovisioned && newState.status === 'fora_uso') {
         newState.status = 'disponivel';
       }
       
       return newState;
     });
   };
+
 
   // Handle save edit
   const handleSaveEdit = async () => {
@@ -128,7 +151,8 @@ export function ChromebookEditDialog({ open, onOpenChange, chromebook }: Chromeb
     }
     
     // Validação de localização para status 'fixo'
-    if (editingChromebook.status === 'fixo' && !editingChromebook.classroom) {
+    const isFixed = editingChromebook.status === 'fixo';
+    if (isFixed && !editingChromebook.classroom) {
         toast({
             title: "Erro de Validação",
             description: "A localização da sala é obrigatória para equipamentos fixos.",
@@ -160,6 +184,18 @@ export function ChromebookEditDialog({ open, onOpenChange, chromebook }: Chromeb
   if (!editingChromebook) return null;
   
   const isFixed = editingChromebook.status === 'fixo';
+  const isEmprestado = editingChromebook.status === 'emprestado';
+  const isManutencao = editingChromebook.status === 'manutencao';
+  const isForaUso = editingChromebook.status === 'fora_uso';
+  
+  const currentMobilityStatus = isFixed ? 'fixo' : 'movel';
+  const currentProvisioningStatus = editingChromebook.is_deprovisioned ? 'deprovisioned' : 'provisioned';
+  
+  // Desabilita a mudança de mobilidade se o status for ativo (emprestado, manutencao, fora_uso)
+  const isMobilityDisabled = isEmprestado || isManutencao || isForaUso;
+  // Desabilita a mudança de provisionamento se estiver emprestado
+  const isProvisioningDisabled = isEmprestado;
+
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -178,7 +214,7 @@ export function ChromebookEditDialog({ open, onOpenChange, chromebook }: Chromeb
 
         <div className="flex-1 overflow-y-auto px-6 py-4 space-y-6">
           
-          {/* Seção 1: Identificação e Modelo */}
+          {/* Seção 1: Identificação e Modelo (Sem Alterações) */}
           <div className="space-y-4 p-4 border rounded-lg bg-gray-50/50 dark:bg-gray-900/50">
             <h4 className="font-semibold text-lg text-gray-800 dark:text-foreground flex items-center gap-2">
               <Tag className="h-4 w-4 text-blue-600" />
@@ -252,63 +288,66 @@ export function ChromebookEditDialog({ open, onOpenChange, chromebook }: Chromeb
             </div>
           </div>
 
-          {/* Seção 2: Status e Localização */}
+          {/* Seção 2: Status e Localização (REESTRUTURADA) */}
           <div className="space-y-4 p-4 border rounded-lg bg-white shadow-sm dark:bg-card">
             <h4 className="font-semibold text-lg text-gray-800 dark:text-foreground flex items-center gap-2">
               <MapPin className="h-4 w-4 text-purple-600" />
               Status e Localização
             </h4>
             
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="space-y-1.5 md:col-span-1">
-                <Label className="text-xs font-medium">Status</Label>
-                <Select 
-                    value={editingChromebook.status} 
-                    onValueChange={handleEditStatusChange}
-                    disabled={editingChromebook.status === 'emprestado'} // Não permite mudar se estiver emprestado
-                >
-                  <SelectTrigger className="h-10">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="disponivel">Disponível</SelectItem>
-                    <SelectItem value="emprestado" disabled>Emprestado</SelectItem>
-                    <SelectItem value="fixo">Fixo</SelectItem>
-                    <SelectItem value="manutencao">Manutenção</SelectItem>
-                    <SelectItem value="fora_uso">Inativo</SelectItem>
-                  </SelectContent>
-                </Select>
-                {editingChromebook.status === 'emprestado' && (
-                    <p className="text-xs text-yellow-600 flex items-center gap-1 mt-1">
-                        <AlertTriangle className="h-3 w-3" /> Status definido por empréstimo ativo.
-                    </p>
-                )}
-              </div>
+            {/* Linha 1: Status de Uso (Select) */}
+            <div className="space-y-1.5">
+              <Label className="text-xs font-medium">Status de Uso (Empréstimo/Manutenção)</Label>
+              <Select 
+                  value={editingChromebook.status} 
+                  onValueChange={handleEditStatusChange}
+                  disabled={isEmprestado} // Não permite mudar se estiver emprestado
+              >
+                <SelectTrigger className="h-10">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="disponivel">Disponível</SelectItem>
+                  <SelectItem value="emprestado" disabled>Emprestado (Ativo)</SelectItem>
+                  <SelectItem value="fixo">Fixo</SelectItem>
+                  <SelectItem value="manutencao">Manutenção</SelectItem>
+                  <SelectItem value="fora_uso">Inativo</SelectItem>
+                </SelectContent>
+              </Select>
+              {isEmprestado && (
+                  <p className="text-xs text-yellow-600 flex items-center gap-1 mt-1">
+                      <AlertTriangle className="h-3 w-3" /> Status definido por empréstimo ativo.
+                  </p>
+              )}
+            </div>
 
-              <div className="space-y-1.5 md:col-span-2">
-                <Label className="text-xs font-medium">Status de Mobilidade</Label>
-                <RadioGroup
-                    value={isFixed ? 'fixo' : 'movel'}
-                    onValueChange={(value: 'movel' | 'fixo') => {
-                        const newStatus = value === 'fixo' ? 'fixo' : 'disponivel';
-                        handleEditStatusChange(newStatus);
-                    }}
-                    className="flex space-x-4 h-10 items-center"
-                    disabled={editingChromebook.status === 'emprestado' || editingChromebook.status === 'manutencao' || editingChromebook.status === 'fora_uso'}
-                >
-                    <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="movel" id="movel" />
-                        <Label htmlFor="movel">Móvel (Empréstimo)</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="fixo" id="fixo" />
-                        <Label htmlFor="fixo">Fixo (Sala de Aula)</Label>
-                    </div>
-                </RadioGroup>
-              </div>
+            {/* Linha 2: Status de Mobilidade (RadioGroup) */}
+            <div className="space-y-2 pt-4 border-t border-gray-100 dark:border-border">
+              <Label className="text-sm font-medium">Status de Mobilidade</Label>
+              <RadioGroup
+                value={currentMobilityStatus}
+                onValueChange={handleMobilityChange}
+                className="flex space-x-4"
+                disabled={isMobilityDisabled}
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="movel" id="movel-edit" />
+                  <Label htmlFor="movel-edit">Móvel (Disponível para Empréstimo)</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="fixo" id="fixo-edit" />
+                  <Label htmlFor="fixo-edit">Fixo em Sala de Aula</Label>
+                </div>
+              </RadioGroup>
+              {isMobilityDisabled && (
+                  <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
+                      <Info className="h-3 w-3" /> Mobilidade desabilitada: Status atual é {editingChromebook.status}.
+                  </p>
+              )}
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Linha 3: Localização (Geral e Sala) */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
                 <div className="space-y-1.5">
                     <Label htmlFor="location" className="text-xs font-medium flex items-center gap-1">
                       <Map className="h-3 w-3" /> Localização Geral
@@ -331,26 +370,42 @@ export function ChromebookEditDialog({ open, onOpenChange, chromebook }: Chromeb
                       placeholder="Ex.: Sala 21"
                       className="h-10"
                       required={isFixed}
+                      disabled={!isFixed}
                     />
                 </div>
             </div>
             
-            {/* Checkbox de Desprovisionamento */}
-            <div className="flex items-center space-x-2 pt-4 border-t border-gray-100 dark:border-border">
-              <Checkbox 
-                id="is_deprovisioned" 
-                checked={editingChromebook.is_deprovisioned} 
-                onCheckedChange={(checked) => handleDeprovisionedChange(!!checked)}
-                disabled={!isAdmin || editingChromebook.status === 'emprestado'}
-              />
-              <Label htmlFor="is_deprovisioned" className="text-sm font-medium cursor-pointer flex items-center gap-2">
-                {editingChromebook.is_deprovisioned ? <CheckCircle className="h-4 w-4 text-green-600" /> : <XCircle className="h-4 w-4 text-red-600" />}
-                Desprovisionado (Removido do gerenciamento central)
-              </Label>
+            {/* Linha 4: Status de Provisionamento (RadioGroup) */}
+            <div className="space-y-2 pt-4 border-t border-gray-100 dark:border-border">
+              <Label className="text-sm font-medium">Status de Provisionamento</Label>
+              <RadioGroup
+                value={currentProvisioningStatus}
+                onValueChange={handleProvisioningChange}
+                className="flex space-x-4"
+                disabled={isProvisioningDisabled}
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="provisioned" id="provisioned-edit" />
+                  <Label htmlFor="provisioned-edit" className="flex items-center gap-1">
+                    <CheckCircle className="h-4 w-4 text-green-600" /> Provisionado
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="deprovisioned" id="deprovisioned-edit" />
+                  <Label htmlFor="deprovisioned-edit" className="flex items-center gap-1">
+                    <XCircle className="h-4 w-4 text-red-600" /> Desprovisionado
+                  </Label>
+                </div>
+              </RadioGroup>
+              {isProvisioningDisabled && (
+                  <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
+                      <Info className="h-3 w-3" /> Provisionamento desabilitado: O equipamento está emprestado.
+                  </p>
+              )}
             </div>
           </div>
 
-          {/* Seção 3: Condição/Observações */}
+          {/* Seção 3: Condição/Observações (Sem Alterações) */}
           <div className="space-y-4 p-4 border rounded-lg bg-gray-50/50 dark:bg-gray-900/50">
             <h4 className="font-semibold text-lg text-gray-800 dark:text-foreground flex items-center gap-2">
               <AlertTriangle className="h-4 w-4 text-orange-600" />
