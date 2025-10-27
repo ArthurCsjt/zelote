@@ -222,13 +222,16 @@ const PeriodCharts = ({ periodView, loading, periodChartData, stats, startHour, 
   const chartDescription = isDaily ? 'Movimentação ao longo do dia' : isWeekly ? 'Últimos 7 dias' : 'Últimos 30 dias';
   const chartDataKey = isDaily ? 'hora' : 'date';
   
-  // Desestruturação segura para stats
+  // Desestruturação segura para stats, incluindo filteredLoans e filteredReturns
   const { 
     totalActive = 0, 
-    // totalChromebooks = 0, // Removido para evitar conflito
-    // availableChromebooks = 0, // Removido para evitar conflito
-    loansByUserType = {} 
+    loansByUserType = {},
+    filteredLoans = [], // Adicionado para uso no cálculo de progresso
+    filteredReturns = [], // Adicionado para uso no cálculo de progresso
   } = stats || {};
+
+  // Garante que filteredLoans.length seja seguro para divisão
+  const totalLoansInPeriod = filteredLoans.length || 1;
 
   return (
     <>
@@ -462,7 +465,7 @@ const PeriodCharts = ({ periodView, loading, periodChartData, stats, startHour, 
                   {loansByUserType.aluno || 0} empréstimos
                 </Badge>
               </div>
-              <Progress value={((loansByUserType.aluno || 0) / filteredLoans.length) * 100} className="h-2" />
+              <Progress value={((loansByUserType.aluno || 0) / totalLoansInPeriod) * 100} className="h-2" />
             </div>
             
             <div className="space-y-2">
@@ -472,7 +475,7 @@ const PeriodCharts = ({ periodView, loading, periodChartData, stats, startHour, 
                   {loansByUserType.professor || 0} empréstimos
                 </Badge>
               </div>
-              <Progress value={((loansByUserType.professor || 0) / filteredLoans.length) * 100} className="h-2" />
+              <Progress value={((loansByUserType.professor || 0) / totalLoansInPeriod) * 100} className="h-2" />
             </div>
             
             <div className="space-y-2">
@@ -482,7 +485,7 @@ const PeriodCharts = ({ periodView, loading, periodChartData, stats, startHour, 
                   {loansByUserType.funcionario || 0} empréstimos
                 </Badge>
               </div>
-              <Progress value={((loansByUserType.funcionario || 0) / filteredLoans.length) * 100} className="h-2" />
+              <Progress value={((loansByUserType.funcionario || 0) / totalLoansInPeriod) * 100} className="h-2" />
             </div>
           </CardContent>
         </GlassCard>
