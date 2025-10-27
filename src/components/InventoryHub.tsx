@@ -2,6 +2,8 @@ import React from 'react';
 import { ChromebookInventory } from './ChromebookInventory';
 import { UserInventory } from './UserInventory';
 import { TabbedContent } from './TabbedContent'; // Importando o novo componente
+import { SectionHeader } from './Shared/SectionHeader'; // Importando SectionHeader
+import { Laptop } from 'lucide-react';
 
 interface InventoryHubProps {
   onBack?: () => void;
@@ -26,7 +28,13 @@ export function InventoryHub({ onBack, onGenerateQrCode }: InventoryHubProps) {
     <div className="min-h-screen bg-background">
       <div className="container mx-auto p-4 max-w-7xl">
         <div className="mb-6 text-center">
-          <h1 className="text-foreground py-[2px] font-bold text-2xl my-[25px] text-gray-800">Hub de Inventário</h1>
+          <SectionHeader 
+            title="Hub de Inventário" 
+            description="Visualize e gerencie equipamentos e usuários cadastrados"
+            icon={Laptop}
+            iconColor="text-menu-blue"
+            className="flex flex-col items-center"
+          />
         </div>
 
         <TabbedContent

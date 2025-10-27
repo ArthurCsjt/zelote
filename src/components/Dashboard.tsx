@@ -20,6 +20,7 @@ import { Skeleton } from "./ui/skeleton";
 import { CollapsibleDashboardFilter } from "./CollapsibleDashboardFilter";
 import { Tooltip as ShadcnTooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select"; // NOVO IMPORT
+import { SectionHeader } from "./Shared/SectionHeader"; // NOVO IMPORT
 
 interface DashboardProps {
   onBack?: () => void;
@@ -633,9 +634,12 @@ export function Dashboard({
       
       {/* Header: Title and Download Button */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center relative z-10 gap-4">
-        <h2 className="text-xl sm:text-3xl font-bold text-gray-800 whitespace-nowrap">
-          Dashboard
-        </h2>
+        <SectionHeader 
+          title="Dashboard" 
+          description="Análise de uso e estatísticas de empréstimos"
+          icon={BarChartIcon}
+          iconColor="text-primary"
+        />
         <div className="flex items-center gap-3 w-full sm:w-auto">
           <Button 
             variant="outline" 

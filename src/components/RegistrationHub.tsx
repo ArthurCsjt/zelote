@@ -5,7 +5,8 @@ import { TeacherRegistration } from './TeacherRegistration';
 import { StaffRegistration } from './StaffRegistration';
 import { RegistrationCardMenu } from './RegistrationCardMenu';
 import { Button } from './ui/button';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, PlusCircle } from 'lucide-react';
+import { SectionHeader } from './Shared/SectionHeader'; // Importando SectionHeader
 
 type RegistrationView = 'chromebooks' | 'students' | 'teachers' | 'staff';
 
@@ -54,9 +55,13 @@ export function RegistrationHub({ onBack, onRegistrationSuccess }: RegistrationH
         
         {/* Cabeçalho do Hub: Centralizado e Preto */}
         <div className="mb-6 text-center">
-          <h1 className="text-gray-800 py-[2px] font-bold text-2xl my-[25px]">
-            Hub de Cadastros
-          </h1>
+          <SectionHeader 
+            title="Hub de Cadastros" 
+            description="Selecione o tipo de item ou usuário para cadastrar"
+            icon={PlusCircle}
+            iconColor="text-menu-green"
+            className="flex flex-col items-center"
+          />
         </div>
         
         {/* Menu de Cards 2x2 */}
