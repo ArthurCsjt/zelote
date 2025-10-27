@@ -2,10 +2,12 @@ import * as React from "react"
 import { toast as sonnerToast } from 'sonner';
 
 // Tipos simplificados para compatibilidade
+type ToastVariant = 'default' | 'destructive' | 'success' | 'info';
+
 type ToastProps = {
   title?: React.ReactNode;
   description?: React.ReactNode;
-  variant?: 'default' | 'destructive' | 'success' | 'info';
+  variant?: ToastVariant;
   duration?: number;
 };
 
@@ -14,33 +16,40 @@ function toast({ title, description, variant = 'default', duration = 4000 }: Toa
   const options: any = {
     description: description,
     duration: duration,
-    // Mapeamento de variantes para cores ricas do Sonner
+    // Sonner já lida com richColors, mas podemos forçar estilos para 'destructive'
     style: {
-      backgroundColor: variant === 'destructive' ? 'hsl(0 84.2% 60.2%)' : undefined,
-      color: variant === 'destructive' ? 'white' : undefined,
+      // Estilo para Destructive (vermelho)
+      ...(variant === 'destructive' && {
+        backgroundColor: 'hsl(0 84.2% 60.2%)', // Cor Destructive
+        color: 'white',
+        border: '1px solid hsl(0 84.2% 60.2%)',
+      }),
     }
   };
 
   switch (variant) {
     case 'destructive':
+      // Usamos sonnerToast.error para destructive
       return sonnerToast.error(title, options);
     case 'success':
+      // Usamos sonnerToast.success para success
       return sonnerToast.success(title, options);
     case 'info':
+      // Usamos sonnerToast.info para info
       return sonnerToast.info(title, options);
     case 'default':
     default:
+      // Usamos sonnerToast para default
       return sonnerToast(title, options);
   }
 }
 
-// Hook de compatibilidade (não precisa de estado interno, apenas retorna a função toast)
+// Hook de compatibilidade
 function useToast() {
-  // Retorna a função toast e um objeto vazio para compatibilidade com a desestruturação
   return {
     toast,
     dismiss: sonnerToast.dismiss,
-    toasts: [], // Mock para evitar erros de desestruturação
+    toasts: [], 
   }
 }
 

@@ -64,7 +64,8 @@ function setupServiceWorkerUpdates() {
 }
 
 createRoot(document.getElementById("root")!).render(
-  <React.StrictMode>
+  // REMOVENDO React.StrictMode para evitar duplicação de efeitos em desenvolvimento
+  <>
     {/* Configuração do Sonner para notificações modernas com Glassmorphism */}
     <Toaster 
       // Usamos top-center para melhor visualização em mobile
@@ -77,16 +78,16 @@ createRoot(document.getElementById("root")!).render(
         style: {
           padding: '12px 16px',
           borderRadius: '12px',
-          // Estilos Glassmorphism
-          backgroundColor: 'rgba(255, 255, 255, 0.85)',
-          backdropFilter: 'blur(15px)',
-          WebkitBackdropFilter: 'blur(15px)',
-          border: '1px solid rgba(255, 255, 255, 0.4)',
+          // Estilos Glassmorphism aprimorados
+          backgroundColor: 'rgba(255, 255, 255, 0.95)', // Mais opaco
+          backdropFilter: 'blur(20px)', // Mais blur
+          WebkitBackdropFilter: 'blur(20px)',
+          border: '1px solid rgba(220, 220, 220, 0.7)', // Borda mais suave
         },
       }}
     />
     <App />
-  </React.StrictMode>
+  </>
 )
 
 setupServiceWorkerUpdates()
