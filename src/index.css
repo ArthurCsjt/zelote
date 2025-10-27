@@ -41,12 +41,12 @@
     --menu-blue: 213 94% 68%;
     --menu-blue-hover: 213 94% 64%;
     --menu-violet: 258 90% 66%;
-    --menu-violet-hover: 258 90% 62%;
+    --menu-violet-hover: 258 90% 62%; /* NOVO: Cor para Sistema de Contagem */
     --menu-amber: 45 93% 47%;
     --menu-amber-hover: 45 93% 43%;
     --menu-rose: 348 83% 47%;
     --menu-rose-hover: 348 83% 43%;
-    --menu-teal: 174 70% 40%; /* Nova cor para Sistema de Contagem */
+    --menu-teal: 174 70% 40%; /* Cor para Re-Cadastro Rápido */
     --menu-teal-hover: 174 70% 35%;
   }
 }
@@ -80,8 +80,6 @@
   position: relative;
   overflow: hidden;
 }
-
-/* DARK MODE ADJUSTMENTS FOR GLASS CARD REMOVIDOS */
 
 /* ... (todo o seu CSS existente continua aqui) ... */
 

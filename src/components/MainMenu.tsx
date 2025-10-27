@@ -70,9 +70,63 @@ export function MainMenu({
       title: 'Sistema de Contagem',
       icon: <ListChecks className="h-5 w-5" />,
       action: () => onNavigate('audit'),
-      bgColor: 'bg-menu-teal' // Usando a nova variável de cor
+      // CORREÇÃO: Usando uma cor diferente (menu-rose já está em uso, vamos usar menu-violet-hover para um tom mais escuro ou menu-amber-hover)
+      // Vou usar uma cor nova, o menu-rose já está no dashboard, vamos usar o menu-violet-hover para um tom mais escuro.
+      bgColor: 'bg-menu-rose' // Mantendo rose para dashboard, vamos usar uma cor nova para contagem
     }
   ];
+  
+  // CORREÇÃO: Vamos usar a cor menu-rose para o Dashboard e menu-teal para Re-Cadastro.
+  // Vou introduzir uma nova cor para o Sistema de Contagem: menu-violet-hover (roxo escuro).
+  // No entanto, para manter a consistência, vou usar a cor 'menu-rose' para o Dashboard e 'menu-teal' para o Re-Cadastro.
+  // Vou usar a cor 'menu-amber-hover' para o Sistema de Contagem, que é um laranja mais escuro.
+  
+  const menuItemsFinal = [
+    {
+      title: 'Cadastros',
+      icon: <PlusCircle className="h-5 w-5" />,
+      action: () => onNavigate('registration'),
+      bgColor: 'bg-menu-green'
+    },
+    {
+      title: 'Inventário',
+      icon: <Laptop className="h-5 w-5" />,
+      action: () => onNavigate('inventory'),
+      bgColor: 'bg-menu-blue'
+    },
+    {
+      title: 'Empréstimos',
+      icon: <ClipboardList className="h-5 w-5" />,
+      action: () => onNavigate('loan', 'form'),
+      bgColor: 'bg-menu-violet'
+    },
+    {
+      title: 'Devolução',
+      icon: <RotateCcw className="h-5 w-5" />,
+      action: () => onNavigate('return'), 
+      bgColor: 'bg-menu-amber'
+    },
+    {
+      title: 'Dashboard',
+      icon: <BarChart3 className="h-5 w-5" />,
+      action: () => onNavigate('dashboard'),
+      bgColor: 'bg-menu-rose' 
+    },
+    {
+      title: 'Re-Cadastro Rápido',
+      icon: <QrCode className="h-5 w-5" />,
+      action: () => onNavigate('quick-register'),
+      bgColor: 'bg-menu-teal' 
+    },
+    {
+      title: 'Sistema de Contagem',
+      icon: <ListChecks className="h-5 w-5" />,
+      action: () => onNavigate('audit'),
+      // Usando uma cor diferente: menu-violet-hover (roxo escuro)
+      bgColor: 'bg-menu-violet-hover' 
+    }
+  ];
+
 
   const getFadeInStyle = (index: number) => {
     if (!isLoaded) return {
@@ -90,7 +144,7 @@ export function MainMenu({
     <div className="space-y-8 relative py-[30px]">
       <div className="absolute inset-0 -z-10 bg-gradient-to-br from-card/50 via-background to-card/50 rounded-3xl blur-3xl transform scale-110" />
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 max-w-4xl mx-auto relative z-10">
-        {menuItems.map((item, index) => (
+        {menuItemsFinal.map((item, index) => (
           <div key={index} style={getFadeInStyle(index)} className="group">
             <Button
               onClick={item.action}
