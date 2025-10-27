@@ -57,8 +57,8 @@ export function TeacherRegistration() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validações
-    if (!formData.nome_completo || !formData.email) {
+    // Validações: Adicionando .trim() para garantir que não são apenas espaços
+    if (!formData.nome_completo.trim() || !formData.email.trim()) {
       toast({
         title: "Erro de validação",
         description: "Nome e E-mail são obrigatórios.",
@@ -71,9 +71,9 @@ export function TeacherRegistration() {
     }
     try {
       const teacherData: TeacherData = {
-        nome_completo: formData.nome_completo,
-        email: formData.email,
-        materia: formData.materia || null // Incluindo a matéria
+        nome_completo: formData.nome_completo.trim(), // Trim antes de enviar
+        email: formData.email.trim(), // Trim antes de enviar
+        materia: formData.materia?.trim() || null // Incluindo a matéria
       };
       const result = await createTeacher(teacherData);
       if (result) {
@@ -89,11 +89,8 @@ export function TeacherRegistration() {
           materia: ''
         });
       } else {
-        toast({
-          title: "Erro",
-          description: "Erro ao cadastrar professor. Verifique se o e-mail não está em uso.",
-          variant: "destructive"
-        });
+        // O erro já é tratado no useDatabase, mas garantimos que o fluxo pare aqui se falhar
+        // O erro 400 Bad Request provavelmente está sendo capturado aqui se a validação de domínio falhar no backend
       }
     } catch (error) {
       console.error('Erro ao cadastrar professor:', error);
@@ -105,7 +102,8 @@ export function TeacherRegistration() {
     }
   };
 
-  const isFormValid = formData.nome_completo && formData.email && !emailError;
+  // A variável isFormValid já garante que o botão esteja desabilitado se os campos estiverem vazios
+  const isFormValid = formData.nome_completo.trim() && formData.email.trim() && !emailError;
 
   return (
     <GlassCard className="border-purple-200/50 shadow-lg">
