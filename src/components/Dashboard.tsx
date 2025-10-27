@@ -17,8 +17,9 @@ import { LoanHistory } from "./LoanHistory";
 import { GlassCard } from "./ui/GlassCard";
 import { useDashboardData, PeriodView } from '@/hooks/useDashboardData';
 import { Skeleton } from "./ui/skeleton";
-import { CollapsibleDashboardFilter } from "./CollapsibleDashboardFilter"; // CORRIGIDO: Importando o nome correto
-import { Tooltip as ShadcnTooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip"; // Importando Tooltip como ShadcnTooltip
+import { CollapsibleDashboardFilter } from "./CollapsibleDashboardFilter";
+import { Tooltip as ShadcnTooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select"; // NOVO IMPORT
 
 interface DashboardProps {
   onBack?: () => void;
@@ -190,6 +191,290 @@ const StatsGrid = ({ periodView, stats, filteredLoans, filteredReturns, loading 
   );
 };
 
+// Componente para renderizar os gráficos de acordo com o período
+const PeriodCharts = ({ periodView, loading, periodChartData, stats, startHour, endHour, totalChromebooks, availableChromebooks, userTypeData, durationData, isNewLoan, history }: any) => {
+  if (loading) {
+    return <div className="flex justify-center items-center h-64"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
+  }
+
+  // Cores para o gráfico de pizza de Status
+  const COLORS = ['#2563EB', '#22C55E'];
+  
+  // Renderiza o histórico completo
+  if (periodView === 'history') {
+    return <LoanHistory history={history} isNewLoan={isNewLoan} />;
+  }
+  
+  // Renderiza os gráficos para Diário, Semanal e Mensal
+  const isDaily = periodView === 'daily';
+  const isWeekly = periodView === 'weekly';
+  const isMonthly = periodView === 'monthly';
+  
+  const chartTitle = isDaily ? 'Atividade por Hora' : isWeekly ? 'Atividade Semanal' : 'Tendência Mensal';
+  const chartDescription = isDaily ? 'Movimentação ao longo do dia' : isWeekly ? 'Últimos 7 dias' : 'Últimos 30 dias';
+  const chartDataKey = isDaily ? 'hora' : 'date';
+  
+  return (
+    <>
+      <GlassCard className="dashboard-card">
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle className="text-lg">{chartTitle}</CardTitle>
+            <CardDescription>
+              {chartDescription}
+            </CardDescription>
+          </div>
+          <BarChartIcon className="h-5 w-5 text-muted-foreground" />
+        </CardHeader>
+        <CardContent className="h-[250px] sm:h-[300px]">
+          <ChartContainer
+            config={{
+              empréstimos: { label: "Empréstimos", color: "hsl(var(--primary))" },
+              devoluções: { label: "Devoluções", color: "hsl(var(--menu-green))" },
+            }}
+            className="w-full h-full"
+          >
+            <ResponsiveContainer width="100%" height="100%">
+              <ComposedChart data={isDaily ? periodChartData.slice(startHour - 6, endHour - 6 + 1) : periodChartData} margin={{ top: 5, right: 0, left: -20, bottom: 5 }}>
+                <defs>
+                  <linearGradient id="colorEmprestimos" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#2563EB" stopOpacity={0.8}/>
+                    <stop offset="95%" stopColor="#2563EB" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
+                <XAxis dataKey={chartDataKey} tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
+                <YAxis tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
+                <Tooltip content={<ChartTooltipContent />} />
+                <Legend content={<ChartLegendContent />} wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
+                
+                {isMonthly ? (
+                  <Area type="monotone" dataKey="empréstimos" stackId="1" stroke="#2563EB" fill="#2563EB" fillOpacity={0.3} name="Empréstimos" />
+                ) : (
+                  <Area 
+                    type="monotone" 
+                    dataKey="empréstimos" 
+                    stroke="#2563EB" 
+                    fill="url(#colorEmprestimos)" 
+                    fillOpacity={1} 
+                    name="Empréstimos"
+                  />
+                )}
+                
+                <Bar 
+                  dataKey="devoluções" 
+                  fill="#22C55E" 
+                  radius={[4, 4, 0, 0]} 
+                  name="Devoluções"
+                />
+              </ComposedChart>
+            </ResponsiveContainer>
+          </ChartContainer>
+        </CardContent>
+      </GlassCard>
+
+      {/* NOVO GRÁFICO: Ocupação Horária */}
+      <GlassCard className="dashboard-card">
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle className="text-lg">Taxa de Ocupação Horária</CardTitle>
+            <CardDescription>
+              Ocupação do inventário móvel entre {startHour}h e {endHour}h
+            </CardDescription>
+          </div>
+          <TrendingUp className="h-5 w-5 text-muted-foreground" />
+        </CardHeader>
+        <CardContent className="h-[250px] sm:h-[300px]">
+          <ChartContainer
+            config={{
+              ocupação: { label: "Ocupação (%)", color: "hsl(var(--destructive))" },
+            }}
+            className="w-full h-full"
+          >
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={isDaily ? periodChartData.slice(startHour - 6, endHour - 6 + 1) : periodChartData} margin={{ top: 5, right: 0, left: -20, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
+                <XAxis dataKey={chartDataKey} tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
+                <YAxis 
+                    tick={{ fontSize: 10 }} 
+                    domain={[0, 100]} 
+                    tickFormatter={(value) => `${value}%`}
+                    stroke="hsl(var(--muted-foreground))" 
+                />
+                <Tooltip content={<ChartTooltipContent />} />
+                <Legend content={<ChartLegendContent />} wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
+                
+                <Line 
+                    type="monotone" 
+                    dataKey="ocupação" 
+                    stroke="hsl(var(--destructive))" 
+                    strokeWidth={2} 
+                    name="Ocupação (%)"
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </ChartContainer>
+        </CardContent>
+      </GlassCard>
+
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
+        <GlassCard className="dashboard-card">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle className="text-lg">Status dos Chromebooks</CardTitle>
+              <CardDescription>
+                Total de {totalChromebooks} equipamentos
+              </CardDescription>
+            </div>
+            <PieChartIcon className="h-5 w-5 text-muted-foreground" />
+          </CardHeader>
+          <CardContent className="h-[250px] sm:h-[300px] flex items-center justify-center">
+            <ChartContainer
+              config={{
+                'Em Uso': { label: "Em Uso", color: "hsl(var(--primary))" },
+                'Disponíveis': { label: "Disponíveis", color: "hsl(var(--menu-green))" },
+              }}
+              className="w-full h-full"
+            >
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+                  <Pie data={[{
+                    name: "Em Uso",
+                    value: stats.totalActive
+                  }, {
+                    name: "Disponíveis",
+                    value: availableChromebooks
+                  }]} cx="50%" cy="50%" innerRadius={40} outerRadius={70} fill="#8884d8" paddingAngle={5} dataKey="value" label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}>
+                    {[{
+                      name: "Em Uso",
+                      value: stats.totalActive
+                    }, {
+                      name: "Disponíveis",
+                      value: availableChromebooks
+                    }].map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index]} />)}
+                  </Pie>
+                  <Tooltip content={<ChartTooltipContent />} />
+                  <Legend content={<ChartLegendContent />} wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
+                </PieChart>
+              </ResponsiveContainer>
+            </ChartContainer>
+          </CardContent>
+        </GlassCard>
+
+        <GlassCard className="dashboard-card">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle className="text-lg">Uso por Tipo de Usuário</CardTitle>
+              <CardDescription>
+                Distribuição dos empréstimos no período
+              </CardDescription>
+            </div>
+            <Users className="h-5 w-5 text-muted-foreground" />
+          </CardHeader>
+          <CardContent className="h-[250px]">
+            <ChartContainer
+              config={{
+                'Aluno': { label: "Aluno", color: "#3B82F6" },
+                'Professor': { label: "Professor", color: "#10B981" },
+                'Funcionario': { label: "Funcionário", color: "#F59E0B" },
+              }}
+              className="w-full h-full"
+            >
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+                  <Pie data={userTypeData} cx="50%" cy="50%" innerRadius={40} outerRadius={70} fill="#8884d8" paddingAngle={5} dataKey="value" label={({
+                      name,
+                      value
+                    }) => value > 0 ? `${name}: ${value}` : ''}>
+                    {userTypeData.map((entry, index) => <Cell key={`cell-${index}`} fill={['#3B82F6', '#10B981', '#F59E0B'][index % 3]} />)}
+                  </Pie>
+                  <Tooltip content={<ChartTooltipContent />} />
+                  <Legend content={<ChartLegendContent />} wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
+                </PieChart>
+              </ResponsiveContainer>
+            </ChartContainer>
+          </CardContent>
+        </GlassCard>
+      </div>
+      
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-2 mt-4">
+        <GlassCard className="dashboard-card">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle className="text-lg">Tempo de Uso Médio</CardTitle>
+              <CardDescription>
+                Por tipo de usuário (minutos)
+              </CardDescription>
+            </div>
+            <Clock className="h-5 w-5 text-muted-foreground" />
+          </CardHeader>
+          <CardContent className="h-[250px] sm:h-[300px]">
+            <ChartContainer
+              config={{
+                minutos: { label: "Minutos", color: "hsl(var(--menu-violet))" }, // Usando cor do menu violeta
+              }}
+              className="w-full h-full"
+            >
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={durationData} layout="horizontal" margin={{ top: 5, right: 0, left: 0, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis type="number" tick={{ fontSize: 10 }} />
+                  <YAxis dataKey="name" type="category" width={80} tick={{ fontSize: 10 }} />
+                  <Tooltip content={<ChartTooltipContent />} />
+                  <Bar dataKey="minutos" fill="hsl(var(--menu-violet))" radius={[0, 4, 4, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartContainer>
+          </CardContent>
+        </GlassCard>
+
+        <GlassCard className="dashboard-card">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle className="text-lg">Estatísticas Rápidas</CardTitle>
+              <CardDescription>
+                Resumo do período
+              </CardDescription>
+            </div>
+            <Activity className="h-5 w-5 text-muted-foreground" />
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium">Alunos</span>
+                <Badge variant="secondary" className="bg-blue-100 text-blue-700">
+                  {stats.loansByUserType.aluno || 0} empréstimos
+                </Badge>
+              </div>
+              <Progress value={(stats.loansByUserType.aluno || 0) / stats.filteredLoans.length * 100} className="h-2" />
+            </div>
+            
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium">Professores</span>
+                <Badge variant="secondary" className="bg-green-100 text-green-700">
+                  {stats.loansByUserType.professor || 0} empréstimos
+                </Badge>
+              </div>
+              <Progress value={(stats.loansByUserType.professor || 0) / stats.filteredLoans.length * 100} className="h-2" />
+            </div>
+            
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium">Funcionários</span>
+                <Badge variant="secondary" className="bg-orange-100 text-orange-700">
+                  {stats.loansByUserType.funcionario || 0} empréstimos
+                </Badge>
+              </div>
+              <Progress value={(stats.loansByUserType.funcionario || 0) / stats.filteredLoans.length * 100} className="h-2" />
+            </div>
+          </CardContent>
+        </GlassCard>
+      </div>
+    </>
+  );
+};
+
 
 export function Dashboard({
   onBack
@@ -197,11 +482,11 @@ export function Dashboard({
   const {
     toast
   } = useToast();
+  // Inicializa com 'daily'
   const [periodView, setPeriodView] = useState < PeriodView > ('daily');
-  const [startHour, setStartHour] = useState(7); // NOVO ESTADO
-  const [endHour, setEndHour] = useState(19); // NOVO ESTADO
+  const [startHour, setStartHour] = useState(7);
+  const [endHour, setEndHour] = useState(19);
   
-  // NOVO: Usando o hook centralizado com os filtros de hora
   const { 
     loading, 
     history, 
@@ -211,26 +496,26 @@ export function Dashboard({
     periodChartData, 
     stats, 
     refreshData 
-  } = useDashboardData(periodView, startHour, endHour); // PASSANDO OS FILTROS
+  } = useDashboardData(periodView, startHour, endHour);
 
   const { overdueLoans, upcomingDueLoans } = useOverdueLoans();
   
   const { totalChromebooks, availableChromebooks, loansByUserType, userTypeData, durationData, maxOccupancyRate } = stats;
 
   // Função para gerar o PDF do relatório
-  const periodText = {
+  const periodText: Record<PeriodView, string> = {
     daily: 'Hoje',
     weekly: 'Esta Semana',
     monthly: 'Este Mês',
     history: 'Histórico Completo',
-    // reports: 'Relatórios Inteligentes' // Removido
+    reports: 'Relatórios Inteligentes' // Mantendo reports como placeholder
   };
 
   const generatePDFContent = (pdf: jsPDF) => {
     const pageWidth = pdf.internal.pageSize.getWidth();
     let yPosition = 20;
     pdf.setFontSize(20);
-    pdf.text(`Relatório de Uso dos Chromebooks - ${periodText[periodView as keyof typeof periodText]}`, pageWidth / 2, yPosition, {
+    pdf.text(`Relatório de Uso dos Chromebooks - ${periodText[periodView]}`, pageWidth / 2, yPosition, {
       align: "center"
     });
     yPosition += 20;
@@ -240,14 +525,14 @@ export function Dashboard({
     });
     yPosition += 20;
     pdf.setFontSize(16);
-    pdf.text(`Estatísticas do ${periodText[periodView as keyof typeof periodText]}`, 20, yPosition);
+    pdf.text(`Estatísticas do ${periodText[periodView]}`, 20, yPosition);
     yPosition += 10;
     pdf.setFontSize(12);
     const periodStats = [
       `Empréstimos: ${filteredLoans.length}`, 
       `Devoluções: ${filteredReturns.length}`, 
       `Chromebooks ativos: ${stats.totalActive} de ${totalChromebooks}`, 
-      `Taxa de Ocupação Máxima: ${stats.maxOccupancyRate.toFixed(0)}%`, // NOVO DADO
+      `Taxa de Ocupação Máxima: ${stats.maxOccupancyRate.toFixed(0)}%`,
       `Tempo médio de uso: ${Math.round(stats.averageUsageTime)} minutos`, 
       `Taxa de devolução: ${stats.completionRate.toFixed(0)}%`
     ];
@@ -273,10 +558,10 @@ export function Dashboard({
   };
   
   const handleDownloadPDF = () => {
-    if (periodView === 'history') {
+    if (periodView === 'history' || periodView === 'reports') {
       toast({
         title: "Atenção",
-        description: "O download de relatórios IA ou Histórico deve ser feito na própria aba, se disponível.",
+        description: "O download de relatórios deve ser feito na aba Histórico/Relatórios, se disponível.",
         variant: "destructive"
       });
       return;
@@ -287,7 +572,7 @@ export function Dashboard({
       pdf.save(`relatorio-chromebooks-${periodView}.pdf`);
       toast({
         title: "Sucesso",
-        description: `Relatório ${periodText[periodView as keyof typeof periodText]} gerado com sucesso!`
+        description: `Relatório ${periodText[periodView]} gerado com sucesso!`
       });
     } catch (error) {
       console.error("Erro ao gerar PDF:", error);
@@ -307,661 +592,93 @@ export function Dashboard({
     return diffHours <= 24;
   };
 
-  // Cores para o gráfico de pizza de Status
-  const COLORS = ['#2563EB', '#22C55E'];
-
+  const periodOptions: { value: PeriodView; label: string; icon: React.ElementType }[] = [
+    { value: 'daily', label: 'Diário (Hoje)', icon: Calendar },
+    { value: 'weekly', label: 'Semanal (7 dias)', icon: CalendarRange },
+    { value: 'monthly', label: 'Mensal (30 dias)', icon: ChartLine },
+    { value: 'history', label: 'Histórico Completo', icon: HistoryIcon },
+    // { value: 'reports', label: 'Relatórios Inteligentes', icon: Brain }, // Mantido como placeholder
+  ];
 
   return <div className="space-y-8 relative py-[30px]">
       { /* Background gradient overlay */ }
       <div className="absolute inset-0 -z-10 bg-gradient-to-br from-blue-50/30 via-purple-50/20 to-pink-50/30 blur-2xl transform scale-110 py-[25px] rounded-3xl bg-[#000a0e]/0" />
       
       {/* Header: Title and Download Button */}
-      <div className="flex justify-between items-center relative z-10">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center relative z-10 gap-4">
         <h2 className="text-xl sm:text-3xl font-bold text-gray-800 whitespace-nowrap">
           Dashboard
         </h2>
-        <Button 
-          variant="outline" 
-          onClick={refreshData} 
-          className="flex items-center gap-2 hover:bg-blue-50" 
-          disabled={loading}
-        >
-          <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-          <span className="hidden md:inline">{loading ? 'Atualizando...' : 'Atualizar Dados'}</span>
-        </Button>
+        <div className="flex items-center gap-3 w-full sm:w-auto">
+          <Button 
+            variant="outline" 
+            onClick={refreshData} 
+            className="flex items-center gap-2 hover:bg-blue-50" 
+            disabled={loading}
+          >
+            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+            <span className="hidden md:inline">{loading ? 'Atualizando...' : 'Atualizar Dados'}</span>
+          </Button>
+          
+          {/* NOVO: Select para seleção de período */}
+          <Select value={periodView} onValueChange={(v) => setPeriodView(v as PeriodView)}>
+            <SelectTrigger className="w-full sm:w-[200px] h-10">
+              <SelectValue placeholder="Selecione o Período" />
+            </SelectTrigger>
+            <SelectContent>
+              {periodOptions.map(option => {
+                const Icon = option.icon;
+                return (
+                  <SelectItem key={option.value} value={option.value} className="flex items-center">
+                    <Icon className="h-4 w-4 mr-2 text-muted-foreground" />
+                    {option.label}
+                  </SelectItem>
+                );
+              })}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
-      {/* Tabs for Period Selection */}
-      <Tabs defaultValue="daily" value={periodView} onValueChange={(v) => setPeriodView(v as PeriodView)} className="relative z-10">
-        <TabsList className="grid w-full grid-cols-4 h-10">
-          <TabsTrigger value="daily" className="flex items-center gap-1 text-xs sm:text-sm">
-            <Calendar className="h-3 w-3 sm:h-4 sm:w-4" />
-            Diário
-          </TabsTrigger>
-          <TabsTrigger value="weekly" className="flex items-center gap-1 text-xs sm:text-sm">
-            <CalendarRange className="h-3 w-3 sm:h-4 sm:w-4" />
-            Semanal
-          </TabsTrigger>
-          <TabsTrigger value="monthly" className="flex items-center gap-1 text-xs sm:text-sm">
-            <ChartLine className="h-3 w-3 sm:h-4 sm:w-4" />
-            Mensal
-          </TabsTrigger>
-          <TabsTrigger 
-            value="history" 
-            className="flex items-center gap-1 text-xs sm:text-sm data-[state=active]:bg-menu-rose data-[state=active]:text-white data-[state=active]:shadow-md hover:bg-menu-rose/80 transition-colors"
-          >
-            <HistoryIcon className="h-3 w-3 sm:h-4 sm:w-4" />
-            Histórico
-          </TabsTrigger>
-        </TabsList>
-        
-        {/* Filtro de Hora (Aparece acima das estatísticas) */}
-        <div className="mt-6">
-            <CollapsibleDashboardFilter 
-                periodView={periodView}
-                startHour={startHour}
-                setStartHour={setStartHour}
-                endHour={endHour}
-                setEndHour={setEndHour}
-                onApply={refreshData} // Força o recálculo dos dados
-                loading={loading}
-            />
-        </div>
+      {/* Filtro de Hora (Aparece acima das estatísticas) */}
+      <div className="mt-6">
+          <CollapsibleDashboardFilter 
+              periodView={periodView}
+              startHour={startHour}
+              setStartHour={setStartHour}
+              endHour={endHour}
+              setEndHour={setEndHour}
+              onApply={refreshData}
+              loading={loading}
+          />
+      </div>
 
-        {/* Grid de Cards de Estatísticas (Visível em todas as abas exceto Histórico/Relatórios) */}
-        <StatsGrid 
+      {/* Grid de Cards de Estatísticas (Visível apenas para períodos temporais) */}
+      <StatsGrid 
+        periodView={periodView}
+        filteredLoans={filteredLoans}
+        filteredReturns={filteredReturns}
+        stats={stats}
+        loading={loading}
+      />
+
+      {/* Conteúdo Principal (Gráficos ou Histórico) */}
+      <div className="space-y-4 mt-6">
+        <PeriodCharts 
           periodView={periodView}
-          filteredLoans={filteredLoans}
-          filteredReturns={filteredReturns}
-          stats={stats}
           loading={loading}
+          periodChartData={periodChartData}
+          stats={stats}
+          startHour={startHour}
+          endHour={endHour}
+          totalChromebooks={totalChromebooks}
+          availableChromebooks={availableChromebooks}
+          userTypeData={userTypeData}
+          durationData={durationData}
+          isNewLoan={isNewLoan}
+          history={history}
         />
-
-        <TabsContent value="daily" className="space-y-4 mt-6">
-          {loading ? <div className="flex justify-center items-center h-64"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div> : (
-            <>
-              <GlassCard className="dashboard-card">
-                <CardHeader className="flex flex-row items-center justify-between">
-                  <div>
-                    <CardTitle className="text-lg">Atividade por Hora</CardTitle>
-                    <CardDescription>
-                      Movimentação ao longo do dia
-                    </CardDescription>
-                  </div>
-                  <BarChartIcon className="h-5 w-5 text-muted-foreground" />
-                </CardHeader>
-                <CardContent className="h-[250px] sm:h-[300px]">
-                  <ChartContainer
-                    config={{
-                      empréstimos: { label: "Empréstimos", color: "hsl(var(--primary))" },
-                      devoluções: { label: "Devoluções", color: "hsl(var(--menu-green))" },
-                    }}
-                    className="w-full h-full"
-                  >
-                    <ResponsiveContainer width="100%" height="100%">
-                      <ComposedChart data={periodChartData} margin={{ top: 5, right: 0, left: -20, bottom: 5 }}>
-                        <defs>
-                          {/* Gradiente para a área de Empréstimos */}
-                          <linearGradient id="colorEmprestimos" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#2563EB" stopOpacity={0.8}/>
-                            <stop offset="95%" stopColor="#2563EB" stopOpacity={0}/>
-                          </linearGradient>
-                          {/* Gradiente para a área de Devoluções (opcional, mas mantém o estilo) */}
-                          <linearGradient id="colorDevolucoes" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#22C55E" stopOpacity={0.8}/>
-                            <stop offset="95%" stopColor="#22C55E" stopOpacity={0}/>
-                          </linearGradient>
-                        </defs>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
-                        <XAxis dataKey="hora" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
-                        <YAxis tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
-                        <Tooltip content={<ChartTooltipContent />} />
-                        <Legend content={<ChartLegendContent />} wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
-                        
-                        {/* Área para Empréstimos (Visual mais suave) */}
-                        <Area 
-                          type="monotone" 
-                          dataKey="empréstimos" 
-                          stroke="#2563EB" 
-                          fill="url(#colorEmprestimos)" 
-                          fillOpacity={1} 
-                          name="Empréstimos"
-                        />
-                        
-                        {/* Linha ou Barra para Devoluções (Destaque) */}
-                        <Bar 
-                          dataKey="devoluções" 
-                          fill="#22C55E" 
-                          radius={[4, 4, 0, 0]} 
-                          name="Devoluções"
-                        />
-                      </ComposedChart>
-                    </ResponsiveContainer>
-                  </ChartContainer>
-                </CardContent>
-              </GlassCard>
-
-              <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
-                <GlassCard className="dashboard-card">
-                  <CardHeader className="flex flex-row items-center justify-between">
-                    <div>
-                      <CardTitle className="text-lg">Status dos Chromebooks</CardTitle>
-                      <CardDescription>
-                        Total de {totalChromebooks} equipamentos
-                      </CardDescription>
-                    </div>
-                    <PieChartIcon className="h-5 w-5 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent className="h-[250px] sm:h-[300px] flex items-center justify-center">
-                    <ChartContainer
-                      config={{
-                        'Em Uso': { label: "Em Uso", color: "hsl(var(--primary))" },
-                        'Disponíveis': { label: "Disponíveis", color: "hsl(var(--menu-green))" },
-                      }}
-                      className="w-full h-full"
-                    >
-                      <ResponsiveContainer width="100%" height="100%">
-                        <PieChart margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
-                          <Pie data={[{
-                            name: "Em Uso",
-                            value: stats.totalActive
-                          }, {
-                            name: "Disponíveis",
-                            value: availableChromebooks
-                          }]} cx="50%" cy="50%" innerRadius={40} outerRadius={70} fill="#8884d8" paddingAngle={5} dataKey="value" label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}>
-                            {[{
-                              name: "Em Uso",
-                              value: stats.totalActive
-                            }, {
-                              name: "Disponíveis",
-                              value: availableChromebooks
-                            }].map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index]} />)}
-                          </Pie>
-                          <Tooltip content={<ChartTooltipContent />} />
-                          <Legend content={<ChartLegendContent />} wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
-                        </PieChart>
-                      </ResponsiveContainer>
-                    </ChartContainer>
-                  </CardContent>
-                </GlassCard>
-
-                <GlassCard className="dashboard-card">
-                  <CardHeader className="flex flex-row items-center justify-between">
-                    <div>
-                      <CardTitle className="text-lg">Uso por Tipo de Usuário</CardTitle>
-                      <CardDescription>
-                        Distribuição dos empréstimos hoje
-                      </CardDescription>
-                    </div>
-                    <Users className="h-5 w-5 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent className="h-[250px]">
-                    <ChartContainer
-                      config={{
-                        'Aluno': { label: "Aluno", color: "#3B82F6" },
-                        'Professor': { label: "Professor", color: "#10B981" },
-                        'Funcionario': { label: "Funcionário", color: "#F59E0B" },
-                      }}
-                      className="w-full h-full"
-                    >
-                      <ResponsiveContainer width="100%" height="100%">
-                        <PieChart margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
-                          <Pie data={userTypeData} cx="50%" cy="50%" innerRadius={40} outerRadius={70} fill="#8884d8" paddingAngle={5} dataKey="value" label={({
-                      name,
-                      value
-                    }) => value > 0 ? `${name}: ${value}` : ''}>
-                            {userTypeData.map((entry, index) => <Cell key={`cell-${index}`} fill={['#3B82F6', '#10B981', '#F59E0B'][index % 3]} />)}
-                          </Pie>
-                          <Tooltip content={<ChartTooltipContent />} />
-                          <Legend content={<ChartLegendContent />} wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
-                        </PieChart>
-                      </ResponsiveContainer>
-                    </ChartContainer>
-                  </CardContent>
-                </GlassCard>
-              </div>
-              
-              {/* NOVO GRÁFICO: Ocupação Horária */}
-              <GlassCard className="dashboard-card">
-                <CardHeader className="flex flex-row items-center justify-between">
-                  <div>
-                    <CardTitle className="text-lg">Taxa de Ocupação Horária</CardTitle>
-                    <CardDescription>
-                      Ocupação do inventário móvel entre {startHour}h e {endHour}h
-                    </CardDescription>
-                  </div>
-                  <TrendingUp className="h-5 w-5 text-muted-foreground" />
-                </CardHeader>
-                <CardContent className="h-[250px] sm:h-[300px]">
-                  <ChartContainer
-                    config={{
-                      ocupação: { label: "Ocupação (%)", color: "hsl(var(--destructive))" },
-                    }}
-                    className="w-full h-full"
-                  >
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={periodChartData.slice(startHour - 6, endHour - 6 + 1)} margin={{ top: 5, right: 0, left: -20, bottom: 5 }}>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
-                        <XAxis dataKey="hora" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
-                        <YAxis 
-                            tick={{ fontSize: 10 }} 
-                            domain={[0, 100]} 
-                            tickFormatter={(value) => `${value}%`}
-                            stroke="hsl(var(--muted-foreground))" 
-                        />
-                        <Tooltip content={<ChartTooltipContent />} />
-                        <Legend content={<ChartLegendContent />} wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
-                        
-                        <Line 
-                            type="monotone" 
-                            dataKey="ocupação" 
-                            stroke="hsl(var(--destructive))" 
-                            strokeWidth={2} 
-                            name="Ocupação (%)"
-                        />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </ChartContainer>
-                </CardContent>
-              </GlassCard>
-              
-              <div className="grid gap-4 grid-cols-1 md:grid-cols-2 mt-4">
-                <GlassCard className="dashboard-card">
-                  <CardHeader className="flex flex-row items-center justify-between">
-                    <div>
-                      <CardTitle className="text-lg">Tempo de Uso Médio</CardTitle>
-                      <CardDescription>
-                        Por tipo de usuário (minutos)
-                      </CardDescription>
-                    </div>
-                    <Clock className="h-5 w-5 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent className="h-[250px] sm:h-[300px]">
-                    <ChartContainer
-                      config={{
-                        minutos: { label: "Minutos", color: "hsl(var(--menu-violet))" }, // Usando cor do menu violeta
-                      }}
-                      className="w-full h-full"
-                    >
-                      <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={durationData} layout="horizontal" margin={{ top: 5, right: 0, left: 0, bottom: 5 }}>
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis type="number" tick={{ fontSize: 10 }} />
-                          <YAxis dataKey="name" type="category" width={80} tick={{ fontSize: 10 }} />
-                          <Tooltip content={<ChartTooltipContent />} />
-                          <Bar dataKey="minutos" fill="hsl(var(--menu-violet))" radius={[0, 4, 4, 0]} />
-                        </BarChart>
-                      </ResponsiveContainer>
-                    </ChartContainer>
-                  </CardContent>
-                </GlassCard>
-
-                <GlassCard className="dashboard-card">
-                  <CardHeader className="flex flex-row items-center justify-between">
-                    <div>
-                      <CardTitle className="text-lg">Estatísticas Rápidas</CardTitle>
-                      <CardDescription>
-                        Resumo do período
-                      </CardDescription>
-                    </div>
-                    <Activity className="h-5 w-5 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <div className="space-y-2">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm font-medium">Alunos</span>
-                        <Badge variant="secondary" className="bg-blue-100 text-blue-700">
-                          {loansByUserType.aluno || 0} empréstimos
-                        </Badge>
-                      </div>
-                      <Progress value={(loansByUserType.aluno || 0) / filteredLoans.length * 100} className="h-2" />
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm font-medium">Professores</span>
-                        <Badge variant="secondary" className="bg-green-100 text-green-700">
-                          {loansByUserType.professor || 0} empréstimos
-                        </Badge>
-                      </div>
-                      <Progress value={(loansByUserType.professor || 0) / filteredLoans.length * 100} className="h-2" />
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm font-medium">Funcionários</span>
-                        <Badge variant="secondary" className="bg-orange-100 text-orange-700">
-                          {loansByUserType.funcionario || 0} empréstimos
-                        </Badge>
-                      </div>
-                      <Progress value={(loansByUserType.funcionario || 0) / filteredLoans.length * 100} className="h-2" />
-                    </div>
-                  </CardContent>
-                </GlassCard>
-              </div>
-            </>
-          )}
-        </TabsContent>
-
-        <TabsContent value="weekly" className="space-y-4 mt-6">
-          {loading ? <div className="flex justify-center items-center h-64"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div> : (
-            <>
-              <GlassCard className="dashboard-card">
-                <CardHeader className="flex flex-row items-center justify-between">
-                  <div>
-                    <CardTitle className="text-lg">Atividade Semanal</CardTitle>
-                    <CardDescription>
-                      Últimos 7 dias
-                    </CardDescription>
-                  </div>
-                  <BarChartIcon className="h-5 w-5 text-muted-foreground" />
-                </CardHeader>
-                <CardContent className="h-[250px] sm:h-[300px]">
-                  <ChartContainer
-                    config={{
-                      empréstimos: { label: "Empréstimos", color: "hsl(var(--primary))" },
-                      devoluções: { label: "Devoluções", color: "hsl(var(--menu-green))" },
-                    }}
-                    className="w-full h-full"
-                  >
-                    <ResponsiveContainer width="100%" height="100%">
-                      <ComposedChart data={periodChartData} margin={{ top: 5, right: 0, left: -20, bottom: 5 }}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="date" tick={{ fontSize: 10 }} />
-                        <YAxis tick={{ fontSize: 10 }} />
-                        <Tooltip content={<ChartTooltipContent />} />
-                        <Legend content={<ChartLegendContent />} wrapperStyle={{ fontSize: '12px' }} />
-                        <Area type="monotone" dataKey="empréstimos" fill="#2563EB" stroke="#2563EB" fillOpacity={0.3} />
-                        <Bar dataKey="devoluções" fill="#22C55E" radius={[4, 4, 0, 0]} />
-                      </ComposedChart>
-                    </ResponsiveContainer>
-                  </ChartContainer>
-                </CardContent>
-              </GlassCard>
-              
-              {/* NOVO GRÁFICO: Ocupação Horária (Semanal) */}
-              <GlassCard className="dashboard-card">
-                <CardHeader className="flex flex-row items-center justify-between">
-                  <div>
-                    <CardTitle className="text-lg">Taxa de Ocupação Horária (Semanal)</CardTitle>
-                    <CardDescription>
-                      Ocupação do inventário móvel entre {startHour}h e {endHour}h
-                    </CardDescription>
-                  </div>
-                  <TrendingUp className="h-5 w-5 text-muted-foreground" />
-                </CardHeader>
-                <CardContent className="h-[250px] sm:h-[300px]">
-                  <ChartContainer
-                    config={{
-                      ocupação: { label: "Ocupação (%)", color: "hsl(var(--destructive))" },
-                    }}
-                    className="w-full h-full"
-                  >
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={periodChartData} margin={{ top: 5, right: 0, left: -20, bottom: 5 }}>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
-                        <XAxis dataKey="date" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
-                        <YAxis 
-                            tick={{ fontSize: 10 }} 
-                            domain={[0, 100]} 
-                            tickFormatter={(value) => `${value}%`}
-                            stroke="hsl(var(--muted-foreground))" 
-                        />
-                        <Tooltip content={<ChartTooltipContent />} />
-                        <Legend content={<ChartLegendContent />} wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
-                        
-                        <Line 
-                            type="monotone" 
-                            dataKey="ocupação" 
-                            stroke="hsl(var(--destructive))" 
-                            strokeWidth={2} 
-                            name="Ocupação (%)"
-                        />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </ChartContainer>
-                </CardContent>
-              </GlassCard>
-
-              <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
-                <GlassCard className="dashboard-card">
-                  <CardHeader className="flex flex-row items-center justify-between">
-                    <div>
-                      <CardTitle className="text-lg">Uso por Tipo de Usuário</CardTitle>
-                      <CardDescription>
-                        Esta semana
-                      </CardDescription>
-                    </div>
-                    <Users className="h-5 w-5 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent className="h-[250px] sm:h-[300px] flex items-center justify-center">
-                    <ChartContainer
-                      config={{
-                        'Aluno': { label: "Aluno", color: "#3B82F6" },
-                        'Professor': { label: "Professor", color: "#10B981" },
-                        'Funcionario': { label: "Funcionário", color: "#F59E0B" },
-                      }}
-                      className="w-full h-full"
-                    >
-                      <ResponsiveContainer width="100%" height="100%">
-                        <PieChart margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
-                          <Pie data={userTypeData} cx="50%" cy="50%" innerRadius={40} outerRadius={70} fill="#8884d8" paddingAngle={5} dataKey="value" label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}>
-                            {userTypeData.map((entry, index) => <Cell key={`cell-${index}`} fill={['#3B82F6', '#10B981', '#F59E0B'][index % 3]} />)}
-                          </Pie>
-                          <Tooltip content={<ChartTooltipContent />} />
-                          <Legend content={<ChartLegendContent />} wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
-                        </PieChart>
-                      </ResponsiveContainer>
-                    </ChartContainer>
-                  </CardContent>
-                </GlassCard>
-
-                <GlassCard className="dashboard-card">
-                  <CardHeader className="flex flex-row items-center justify-between">
-                    <div>
-                      <CardTitle className="text-lg">Distribuição de Horários</CardTitle>
-                      <CardDescription>
-                        Preferências de horário esta semana
-                      </CardDescription>
-                    </div>
-                    <Clock className="h-5 w-5 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent className="h-[250px] sm:h-[300px] flex items-center justify-center">
-                    <ChartContainer
-                      config={{
-                        'Manhã (8h-12h)': { label: "Manhã (8h-12h)", color: "#06B6D4" },
-                        'Tarde (12h-17h)': { label: "Tarde (12h-17h)", color: "#8B5CF6" },
-                        'Noite (17h-22h)': { label: "Noite (17h-22h)", color: "#F59E0B" },
-                      }}
-                      className="w-full h-full"
-                    >
-                      <ResponsiveContainer width="100%" height="100%">
-                        <PieChart margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
-                          <Pie data={[{
-                    name: "Manhã (8h-12h)",
-                    value: filteredLoans.filter(loan => {
-                      const hour = new Date(loan.loan_date).getHours();
-                      return hour >= 8 && hour < 12;
-                    }).length
-                  }, {
-                    name: "Tarde (12h-17h)",
-                    value: filteredLoans.filter(loan => {
-                      const hour = new Date(loan.loan_date).getHours();
-                      return hour >= 12 && hour < 17;
-                    }).length
-                  }, {
-                    name: "Noite (17h-22h)",
-                    value: filteredLoans.filter(loan => {
-                      const hour = new Date(loan.loan_date).getHours();
-                      return hour >= 17 && hour < 22;
-                    }).length
-                  }]} cx="50%" cy="50%" innerRadius={40} outerRadius={70} paddingAngle={5} dataKey="value" label={({
-                      name,
-                      value
-                    }) => value > 0 ? `${name}: ${value}` : ''}>
-                            {[0, 1, 2].map(index => <Cell key={`cell-${index}`} fill={['#06B6D4', '#8B5CF6', '#F59E0B'][index]} />)}
-                          </Pie>
-                          <Tooltip content={<ChartTooltipContent />} />
-                          <Legend content={<ChartLegendContent />} wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
-                        </PieChart>
-                      </ResponsiveContainer>
-                    </ChartContainer>
-                  </CardContent>
-                </GlassCard>
-
-                <GlassCard className="dashboard-card">
-                  <CardHeader className="flex flex-row items-center justify-between">
-                    <div>
-                      <CardTitle className="text-lg">Tempo de Uso por Tipo</CardTitle>
-                      <CardDescription>
-                        Duração média em minutos
-                      </CardDescription>
-                    </div>
-                    <BarChartIcon className="h-5 w-5 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent className="h-[250px] sm:h-[300px]">
-                    <ChartContainer
-                      config={{
-                        minutos: { label: "Minutos", color: "hsl(var(--menu-violet))" },
-                      }}
-                      className="w-full h-full"
-                    >
-                      <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={durationData} layout="horizontal" margin={{ top: 5, right: 0, left: 0, bottom: 5 }}>
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis type="number" tick={{ fontSize: 10 }} />
-                          <YAxis dataKey="name" type="category" width={80} tick={{ fontSize: 10 }} />
-                          <Tooltip content={<ChartTooltipContent />} />
-                          <Bar dataKey="minutos" fill="hsl(var(--menu-violet))" radius={[0, 4, 4, 0]} />
-                        </BarChart>
-                      </ResponsiveContainer>
-                    </ChartContainer>
-                  </CardContent>
-                </GlassCard>
-              </div>
-            </>
-          )}
-        </TabsContent>
-
-        <TabsContent value="monthly" className="space-y-4 mt-6">
-          {loading ? <div className="flex justify-center items-center h-64"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div> : (
-            <>
-              <GlassCard className="dashboard-card">
-                <CardHeader className="flex flex-row items-center justify-between">
-                  <div>
-                    <CardTitle className="text-lg">Tendência Mensal</CardTitle>
-                    <CardDescription>
-                      Últimos 30 dias
-                    </CardDescription>
-                  </div>
-                  <BarChartIcon className="h-5 w-5 text-muted-foreground" />
-                </CardHeader>
-                <CardContent className="h-[250px] sm:h-[300px]">
-                  <ChartContainer
-                    config={{
-                      empréstimos: { label: "Empréstimos", color: "hsl(var(--primary))" },
-                      devoluções: { label: "Devoluções", color: "hsl(var(--menu-green))" },
-                    }}
-                    className="w-full h-full"
-                  >
-                    <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart data={periodChartData} margin={{ top: 5, right: 0, left: -20, bottom: 5 }}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="date" tick={{ fontSize: 10 }} />
-                        <YAxis tick={{ fontSize: 10 }} />
-                        <Tooltip content={<ChartTooltipContent />} />
-                        <Legend content={<ChartLegendContent />} wrapperStyle={{ fontSize: '12px' }} />
-                        <Area type="monotone" dataKey="empréstimos" stackId="1" stroke="#2563EB" fill="#2563EB" fillOpacity={0.3} />
-                        <Area type="monotone" dataKey="devoluções" stackId="1" stroke="#22C55E" fill="#22C55E" fillOpacity={0.3} />
-                      </AreaChart>
-                    </ResponsiveContainer>
-                  </ChartContainer>
-                </CardContent>
-              </GlassCard>
-              
-              {/* NOVO GRÁFICO: Ocupação Horária (Mensal) */}
-              <GlassCard className="dashboard-card">
-                <CardHeader className="flex flex-row items-center justify-between">
-                  <div>
-                    <CardTitle className="text-lg">Taxa de Ocupação Horária (Mensal)</CardTitle>
-                    <CardDescription>
-                      Ocupação do inventário móvel entre {startHour}h e {endHour}h
-                    </CardDescription>
-                  </div>
-                  <TrendingUp className="h-5 w-5 text-muted-foreground" />
-                </CardHeader>
-                <CardContent className="h-[250px] sm:h-[300px]">
-                  <ChartContainer
-                    config={{
-                      ocupação: { label: "Ocupação (%)", color: "hsl(var(--destructive))" },
-                    }}
-                    className="w-full h-full"
-                  >
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={periodChartData} margin={{ top: 5, right: 0, left: -20, bottom: 5 }}>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
-                        <XAxis dataKey="date" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
-                        <YAxis 
-                            tick={{ fontSize: 10 }} 
-                            domain={[0, 100]} 
-                            tickFormatter={(value) => `${value}%`}
-                            stroke="hsl(var(--muted-foreground))" 
-                        />
-                        <Tooltip content={<ChartTooltipContent />} />
-                        <Legend content={<ChartLegendContent />} wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
-                        
-                        <Line 
-                            type="monotone" 
-                            dataKey="ocupação" 
-                            stroke="hsl(var(--destructive))" 
-                            strokeWidth={2} 
-                            name="Ocupação (%)"
-                        />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </ChartContainer>
-                </CardContent>
-              </GlassCard>
-
-              <GlassCard className="dashboard-card">
-                <CardHeader className="flex flex-row items-center justify-between">
-                    <div>
-                      <CardTitle className="text-lg">Duração Média de Uso</CardTitle>
-                      <CardDescription>
-                        Por tipo de usuário este mês
-                      </CardDescription>
-                    </div>
-                    <Clock className="h-5 w-5 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent className="h-[250px] sm:h-[300px]">
-                    <ChartContainer
-                      config={{
-                        minutos: { label: "Minutos", color: "hsl(var(--menu-violet))" },
-                      }}
-                      className="w-full h-full"
-                    >
-                      <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={durationData} layout="horizontal" margin={{ top: 5, right: 0, left: 0, bottom: 5 }}>
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis type="number" tick={{ fontSize: 10 }} />
-                          <YAxis dataKey="name" type="category" width={80} tick={{ fontSize: 10 }} />
-                          <Tooltip content={<ChartTooltipContent />} />
-                          <Bar dataKey="minutos" fill="hsl(var(--menu-violet))" radius={[0, 4, 4, 0]} />
-                        </BarChart>
-                      </ResponsiveContainer>
-                    </ChartContainer>
-                  </CardContent>
-                </GlassCard>
-            </>
-          )}
-        </TabsContent>
-        
-        {/* ABA DE HISTÓRICO */}
-        <TabsContent value="history" className="space-y-4 mt-6">
-          {loading ? <div className="flex justify-center items-center h-64"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div> : <LoanHistory history={history} isNewLoan={isNewLoan} />}
-        </TabsContent>
-        
-      </Tabs>
+      </div>
       
     </div>;
 }
