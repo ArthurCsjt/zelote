@@ -150,6 +150,7 @@ export function IntelligentChromebookForm({ onRegistrationSuccess }: { onRegistr
       manufacturer: formData.manufacturer,
       condition: formData.observations || 'novo', 
       location: isFixed ? formData.classroomLocation : null,
+      // O status é definido pela mobilidade, e não pelo provisionamento
       status: isFixed ? 'fixo' as const : 'disponivel' as const,
       is_deprovisioned: formData.provisioning_status === 'deprovisioned', // PASSANDO O VALOR
     };
@@ -313,7 +314,7 @@ export function IntelligentChromebookForm({ onRegistrationSuccess }: { onRegistr
               </div>
 
               <div className="space-y-2 pt-4 border-t border-gray-100">
-                <Label>Status de Provisionamento</Label>
+                <Label className="text-sm font-medium">Status de Provisionamento</Label>
                 <RadioGroup
                   value={formData.provisioning_status}
                   onValueChange={(value) => handleFormChange('provisioning_status', value)}

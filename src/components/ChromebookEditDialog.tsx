@@ -149,13 +149,8 @@ export function ChromebookEditDialog({ open, onOpenChange, chromebook }: Chromeb
     setEditingChromebook(prev => {
       const newState = { ...prev!, is_deprovisioned: isDeprovisioned };
       
-      // Sugestão de status: se desprovisionado, sugere 'fora_uso'. Se provisionado, sugere 'disponivel'.
-      // Mas só muda se o status atual for 'fora_uso' ou 'disponivel' (para não sobrescrever 'fixo' ou 'manutencao')
-      if (isDeprovisioned && newState.status !== 'emprestado' && newState.status !== 'manutencao' && newState.status !== 'fixo') {
-        newState.status = 'fora_uso';
-      } else if (!isDeprovisioned && newState.status === 'fora_uso') {
-        newState.status = 'disponivel';
-      }
+      // CORREÇÃO: Removendo a lógica de sugestão de status baseada no provisionamento.
+      // O status de uso deve ser alterado apenas pelo Select de Status.
       
       return newState;
     });
