@@ -92,11 +92,11 @@ export function MainMenu({
           <div key={index} style={getFadeInStyle(index)} className="group">
             <Button
               onClick={item.action}
-              // Usando a cor do sistema de menu e a classe hover correspondente
-              className={`w-full h-16 ${item.bgColor} hover:${item.bgColor.replace('bg-menu-', 'bg-menu-').replace('DEFAULT', 'hover')} text-white font-medium rounded-xl shadow-lg hover:shadow-xl transform transition-all duration-300 hover:scale-[1.02] border-0 flex flex-col items-center justify-center gap-1`}
+              // Aumentando a saturação e o efeito de sombra
+              className={`w-full h-20 ${item.bgColor} hover:${item.bgColor.replace('bg-menu-', 'bg-menu-').replace('DEFAULT', 'hover')} text-white font-semibold rounded-xl shadow-lg hover:shadow-2xl transform transition-all duration-300 hover:scale-[1.05] border-0 flex flex-col items-center justify-center gap-1`}
             >
               {item.icon}
-              <span className="text-xs">{item.title}</span>
+              <span className="text-sm">{item.title}</span>
             </Button>
           </div>
         ))}

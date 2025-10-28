@@ -20,13 +20,15 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({
   return (
     <div className={cn("space-y-1", className)}>
       <div className="flex items-center gap-3">
-        <Icon className={cn("h-6 w-6", iconColor)} />
-        <h2 className="text-xl font-bold text-gray-800 dark:text-foreground">
+        {/* Ícone maior (h-8 w-8) */}
+        <Icon className={cn("h-8 w-8", iconColor)} />
+        {/* Título maior (text-2xl) */}
+        <h2 className="text-2xl font-bold text-gray-800 dark:text-foreground">
           {title}
         </h2>
       </div>
       {description && (
-        <p className="text-sm text-muted-foreground ml-9">
+        <p className="text-sm text-muted-foreground ml-11">
           {description}
         </p>
       )}
