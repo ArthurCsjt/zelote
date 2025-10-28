@@ -26,6 +26,14 @@ import { useDatabase } from '@/hooks/useDatabase';
 import { useProfileRole } from '@/hooks/use-profile-role';
 import type { Chromebook, ChromebookData } from "@/types/database";
 
+// Mapeamento de Fabricantes e Modelos (Copiado de ManualChromebookForm.tsx)
+const MANUFACTURER_MODELS: Record<string, string[]> = {
+  Acer: ['N18Q5', 'N24P1'],
+  Samsung: ['XE500c13', 'XE310XBA', 'XE501C13', 'XE500C13'],
+  Lenovo: ['100e Chromebook Gen 3'],
+};
+const AVAILABLE_MANUFACTURERS = Object.keys(MANUFACTURER_MODELS);
+
 // Interface para o estado interno do formulário de edição
 interface ChromebookDataExtended extends Chromebook {
   classroom?: string;
@@ -51,7 +59,7 @@ export function ChromebookEditDialog({ open, onOpenChange, chromebook }: Chromeb
     }
   }, [chromebook]);
 
-  // Handle form change
+  // Handle form change (apenas para inputs de texto)
   const handleEditChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
@@ -71,6 +79,24 @@ export function ChromebookEditDialog({ open, onOpenChange, chromebook }: Chromeb
       ...editingChromebook,
       condition: e.target.value,
     });
+  };
+  
+  // Handle Select change (Fabricante, Modelo)
+  const handleSelectChange = (field: keyof ChromebookDataExtended, value: string) => {
+    if (!editingChromebook) return;
+    
+    if (field === 'manufacturer') {
+        setEditingChromebook(prev => ({
+            ...prev!,
+            manufacturer: value,
+            model: '', // Limpa o modelo ao mudar o fabricante
+        }));
+    } else {
+        setEditingChromebook(prev => ({
+            ...prev!,
+            [field]: value,
+        }));
+    }
   };
 
   // Handle status change in edit dialog
@@ -141,10 +167,10 @@ export function ChromebookEditDialog({ open, onOpenChange, chromebook }: Chromeb
     if (!editingChromebook) return;
 
     // Validate required fields
-    if (!editingChromebook.chromebook_id || !editingChromebook.model) {
+    if (!editingChromebook.chromebook_id || !editingChromebook.model || !editingChromebook.manufacturer) {
       toast({
         title: "Campos obrigatórios",
-        description: "Preencha todos os campos obrigatórios",
+        description: "Preencha os campos ID, Fabricante e Modelo.",
         variant: "destructive",
       });
       return;
@@ -195,6 +221,8 @@ export function ChromebookEditDialog({ open, onOpenChange, chromebook }: Chromeb
   const isMobilityDisabled = isEmprestado || isManutencao || isForaUso;
   // Desabilita a mudança de provisionamento se estiver emprestado
   const isProvisioningDisabled = isEmprestado;
+  
+  const currentModels = editingChromebook.manufacturer ? MANUFACTURER_MODELS[editingChromebook.manufacturer] || [] : [];
 
 
   return (
@@ -214,7 +242,7 @@ export function ChromebookEditDialog({ open, onOpenChange, chromebook }: Chromeb
 
         <div className="flex-1 overflow-y-auto px-6 py-4 space-y-6">
           
-          {/* Seção 1: Identificação e Modelo (Sem Alterações) */}
+          {/* Seção 1: Identificação e Modelo */}
           <div className="space-y-4 p-4 border rounded-lg bg-gray-50/50 dark:bg-gray-900/50">
             <h4 className="font-semibold text-lg text-gray-800 dark:text-foreground flex items-center gap-2">
               <Tag className="h-4 w-4 text-blue-600" />
@@ -262,28 +290,47 @@ export function ChromebookEditDialog({ open, onOpenChange, chromebook }: Chromeb
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Fabricante (SELECT) */}
               <div className="space-y-1.5">
                 <Label htmlFor="manufacturer" className="text-xs font-medium flex items-center gap-1">
-                  <Factory className="h-3 w-3" /> Fabricante
+                  <Factory className="h-3 w-3" /> Fabricante *
                 </Label>
-                <Input
-                  id="manufacturer"
-                  value={editingChromebook.manufacturer || ""}
-                  onChange={handleEditChange}
-                  placeholder="Ex: Lenovo"
-                  className="h-10"
-                />
+                <Select
+                  value={editingChromebook.manufacturer || ''}
+                  onValueChange={(value) => handleSelectChange('manufacturer', value)}
+                >
+                  <SelectTrigger className="h-10 bg-white">
+                    <SelectValue placeholder="Selecione o fabricante" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {AVAILABLE_MANUFACTURERS.map(manufacturer => (
+                      <SelectItem key={manufacturer} value={manufacturer}>
+                        {manufacturer}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
+              
+              {/* Modelo (SELECT) */}
               <div className="space-y-1.5">
                 <Label htmlFor="model" className="text-xs font-medium">Modelo *</Label>
-                <Input
-                  id="model"
+                <Select
                   value={editingChromebook.model}
-                  onChange={handleEditChange}
-                  placeholder="Ex: Chromebook 14e"
-                  className="h-10"
-                  required
-                />
+                  onValueChange={(value) => handleSelectChange('model', value)}
+                  disabled={!editingChromebook.manufacturer || currentModels.length === 0}
+                >
+                  <SelectTrigger className="h-10 bg-white">
+                    <SelectValue placeholder={editingChromebook.manufacturer ? "Selecione o modelo" : "Selecione um fabricante primeiro"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {currentModels.map(model => (
+                      <SelectItem key={model} value={model}>
+                        {model}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           </div>
@@ -439,7 +486,7 @@ export function ChromebookEditDialog({ open, onOpenChange, chromebook }: Chromeb
           <Button 
             onClick={handleSaveEdit}
             className="w-full sm:w-auto h-10"
-            disabled={isSaving || !editingChromebook.model || (isFixed && !editingChromebook.classroom)}
+            disabled={isSaving || !editingChromebook.model || !editingChromebook.manufacturer || (isFixed && !editingChromebook.classroom)}
           >
             {isSaving ? (
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
