@@ -33,7 +33,7 @@ interface FormData {
 // Mapeamento de Fabricantes e Modelos
 const MANUFACTURER_MODELS: Record<string, string[]> = {
   Acer: ['N18Q5', 'N24P1'],
-  Samsung: ['XE500c13', 'XE310XBA', 'XE501C13'],
+  Samsung: ['XE500c13', 'XE310XBA', 'XE501C13', 'XE500C13'], // Adicionado XE500C13
   Lenovo: ['100e Chromebook Gen 3'],
 };
 

@@ -31,8 +31,9 @@ interface FormData {
   provisioning_status: string;
 }
 
-// Mapeamento de Modelos para Fabricante (Case Sensitive)
+// Mapeamento de Modelos para Fabricante (Case Insensitive para chaves)
 const MODEL_MAPPING: Record<string, { manufacturer: string; model: string }> = {
+  'XE500C13': { manufacturer: 'Samsung', model: 'XE500C13' }, // Adicionado o modelo com C maiúsculo
   'XE500c13': { manufacturer: 'Samsung', model: 'XE500c13' },
   'N18Q5': { manufacturer: 'Acer', model: 'N18Q5' },
   'N24P1': { manufacturer: 'Acer', model: 'N24P1' },
@@ -101,14 +102,15 @@ export function IntelligentChromebookForm({ onRegistrationSuccess }: { onRegistr
     let inferredManufacturer = parsedData.manufacturer || '';
     let inferredModel = parsedData.model || '';
 
-    // Tenta inferir Fabricante e Modelo a partir do mapeamento
-    if (inferredModel && MODEL_MAPPING[inferredModel]) {
-        const mapped = MODEL_MAPPING[inferredModel];
+    // Tenta inferir Fabricante e Modelo a partir do mapeamento (usando o modelo em maiúsculas para a busca)
+    const modelKey = inferredModel.toUpperCase();
+    if (MODEL_MAPPING[modelKey]) {
+        const mapped = MODEL_MAPPING[modelKey];
         inferredManufacturer = mapped.manufacturer;
         inferredModel = mapped.model;
-    } else if (parsedData.chromebookId && MODEL_MAPPING[parsedData.chromebookId]) {
+    } else if (parsedData.chromebookId && MODEL_MAPPING[parsedData.chromebookId.toUpperCase()]) {
         // Caso o ID do chromebook seja o modelo (menos comum, mas como fallback)
-        const mapped = MODEL_MAPPING[parsedData.chromebookId];
+        const mapped = MODEL_MAPPING[parsedData.chromebookId.toUpperCase()];
         inferredManufacturer = mapped.manufacturer;
         inferredModel = mapped.model;
     }
@@ -117,10 +119,10 @@ export function IntelligentChromebookForm({ onRegistrationSuccess }: { onRegistr
     setFormData(prev => ({
       ...prev,
       chromebookId: parsedData.chromebookId || prev.chromebookId,
-      model: inferredModel || prev.model,
+      model: inferredModel || parsedData.model || prev.model, // Usa o modelo inferido ou o modelo do QR
       serialNumber: parsedData.serialNumber || prev.serialNumber,
       patrimonyNumber: parsedData.patrimonyNumber || prev.patrimonyNumber,
-      manufacturer: inferredManufacturer || prev.manufacturer,
+      manufacturer: inferredManufacturer || parsedData.manufacturer || prev.manufacturer, // Usa o fabricante inferido ou o do QR
       observations: "Re-cadastrado via QR Code",
     }));
     setIsDataLoaded(true);
