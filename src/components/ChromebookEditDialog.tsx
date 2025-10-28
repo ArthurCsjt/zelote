@@ -150,7 +150,7 @@ export function ChromebookEditDialog({ open, onOpenChange, chromebook }: Chromeb
       const newState = { ...prev!, is_deprovisioned: isDeprovisioned };
       
       // CORREÇÃO: Removendo a lógica de sugestão de status baseada no provisionamento.
-      // O status de uso deve ser alterado apenas pelo Select de Status.
+      // Apenas atualiza o campo is_deprovisioned.
       
       return newState;
     });
