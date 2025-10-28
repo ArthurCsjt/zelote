@@ -179,13 +179,13 @@ export function ManualChromebookForm({ onRegistrationSuccess }: { onRegistration
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="series" className="flex items-center gap-1">
-                  <Hash className="h-3 w-3" /> Série *
+                <Label htmlFor="series">
+                  Série *
                 </Label>
                 <Input 
                   id="series" 
                   value={formData.series} 
-                  onChange={(e) => handleFormChange('series', e.target.value)} 
+                  onChange={handleFormChange('series', e.target.value)} 
                   placeholder="Número de Série"
                   required 
                   className="bg-white"
@@ -193,13 +193,13 @@ export function ManualChromebookForm({ onRegistrationSuccess }: { onRegistration
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="patrimonyNumber" className="flex items-center gap-1">
-                  <Hash className="h-3 w-3" /> Patrimônio
+                <Label htmlFor="patrimonyNumber">
+                  Patrimônio
                 </Label>
                 <Input 
                   id="patrimonyNumber" 
                   value={formData.patrimonyNumber} 
-                  onChange={(e) => handleFormChange('patrimonyNumber', e.target.value)} 
+                  onChange={handleFormChange('patrimonyNumber', e.target.value)} 
                   placeholder="Número de Patrimônio"
                   className="bg-white"
                 />
@@ -210,7 +210,7 @@ export function ManualChromebookForm({ onRegistrationSuccess }: { onRegistration
                 <Input 
                   id="manufacturingYear" 
                   value={formData.manufacturingYear} 
-                  onChange={(e) => handleFormChange('manufacturingYear', e.target.value)} 
+                  onChange={handleFormChange('manufacturingYear', e.target.value)} 
                   placeholder="Ex: 2022"
                   className="bg-white"
                 />
@@ -263,7 +263,7 @@ export function ManualChromebookForm({ onRegistrationSuccess }: { onRegistration
             </div>
 
             <div className="space-y-2 pt-4 border-t border-gray-100">
-              <Label>Status de Provisionamento</Label>
+              <Label className="text-sm font-medium">Status de Provisionamento</Label>
               <RadioGroup
                 value={formData.provisioning_status}
                 onValueChange={(value) => handleFormChange('provisioning_status', value)}
