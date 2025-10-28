@@ -47,7 +47,8 @@ const Settings = () => {
 
   return (
     <Layout title="Configurações" subtitle="Gerencie configurações administrativas" showBackButton onBack={() => navigate(-1)}>
-      <div className="max-w-5xl mx-auto grid gap-6 animate-fade-in">
+      {/* Removido max-w-5xl mx-auto grid gap-6. Usando espaçamento vertical simples. */}
+      <div className="space-y-6">
         
         <div className="flex items-center gap-3 mb-4">
             <SettingsIcon className="h-7 w-7 text-primary" />
