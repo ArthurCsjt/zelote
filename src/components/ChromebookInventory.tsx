@@ -179,11 +179,14 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
       return;
     }
     
-    const isDeprovisioned = newStatus === 'fora_uso';
-
+    // A lógica de isDeprovisioned deve ser separada do status, exceto se o status for 'fora_uso'
+    // No entanto, para simplificar a UI, vamos manter a lógica de que 'fora_uso' implica 'is_deprovisioned: true'
+    // e qualquer outro status implica 'is_deprovisioned: false', a menos que o usuário edite manualmente.
+    // Como o usuário pediu para desvincular, vamos remover a alteração automática aqui.
+    
     const success = await updateChromebook(chromebookId, { 
       status: newStatus as any,
-      is_deprovisioned: isDeprovisioned,
+      // is_deprovisioned: isDeprovisioned, // REMOVIDO: Não alteramos is_deprovisioned aqui
     });
 
     if (success) {
@@ -345,11 +348,11 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
           <TableHeader>
             <TableRow>
               <TableHead className="w-[100px] text-xs">ID</TableHead>
-              <TableHead className="w-[100px] text-xs">Fabricante</TableHead>
-              <TableHead className="flex-1 text-xs">Modelo</TableHead>
-              <TableHead className="w-[100px] text-xs">Série</TableHead>
+              <TableHead className="w-[120px] text-xs">Fabricante</TableHead>
+              <TableHead className="w-[200px] text-xs">Modelo</TableHead> {/* Ajustado */}
+              <TableHead className="w-[150px] text-xs">Série</TableHead> {/* Ajustado */}
               <TableHead className="w-[120px] text-xs">Status</TableHead> 
-              <TableHead className="w-[180px] text-right text-xs">Ações</TableHead>
+              <TableHead className="w-[150px] text-right text-xs">Ações</TableHead> {/* Ajustado */}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -360,13 +363,13 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
                 
                 return (
                   <TableRow key={chromebook.id}>
-                    <TableCell className="font-medium text-xs py-2 align-top">
+                    <TableCell className="font-medium text-xs py-2 align-top w-[100px]">
                       {chromebook.chromebook_id}
                     </TableCell>
-                    <TableCell className="text-xs py-2 align-top">
+                    <TableCell className="text-xs py-2 align-top w-[120px]">
                       {chromebook.manufacturer || 'N/A'}
                     </TableCell>
-                    <TableCell className="py-2 align-top">
+                    <TableCell className="py-2 align-top w-[200px]"> {/* Ajustado */}
                       <div className="flex flex-col gap-0.5">
                         <span className="font-medium text-xs leading-tight">{chromebook.model}</span>
                         {chromebook.patrimony_number && (
@@ -376,10 +379,10 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
                         )}
                       </div>
                     </TableCell>
-                    <TableCell className="text-xs py-2 align-top">
+                    <TableCell className="text-xs py-2 align-top w-[150px]"> {/* Ajustado */}
                       {chromebook.serial_number || 'N/A'}
                     </TableCell>
-                    <TableCell className="py-2 align-top">
+                    <TableCell className="py-2 align-top w-[120px]">
                       <div className={`inline-flex flex-col items-start gap-1 text-xs font-medium`}>
                         <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full ${statusInfo.color} dark:text-foreground dark:bg-card/50`}>
                           <StatusIcon className="w-3 h-3" />
@@ -393,7 +396,7 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
                         )}
                       </div>
                     </TableCell>
-                    <TableCell className="text-right py-2 align-top">
+                    <TableCell className="text-right py-2 align-top w-[150px]"> {/* Ajustado */}
                       <div className="flex items-center justify-end space-x-1">
                         <Button
                           variant="ghost"
