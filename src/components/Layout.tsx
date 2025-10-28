@@ -7,7 +7,7 @@ import { useProfileRole } from '@/hooks/use-profile-role';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { ActivityFeed } from './ActivityFeed';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from './ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 
 interface LayoutProps {
@@ -140,7 +140,11 @@ const Layout: React.FC<LayoutProps> = ({
                   <DropdownMenuTrigger asChild>
                     <Button 
                       variant="outline" 
-                      className="h-9 px-3 border-gray-300 hover:bg-gray-100 flex items-center gap-2"
+                      className={cn(
+                        "h-9 px-3 rounded-full border-gray-300 bg-white hover:bg-gray-100 flex items-center gap-2 transition-all duration-300",
+                        "shadow-sm hover:shadow-md",
+                        "dark:bg-card dark:border-border dark:hover:bg-accent"
+                      )}
                     >
                       {roleLoading ? (
                         <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
