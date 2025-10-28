@@ -352,7 +352,7 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
               <TableHead className="w-[200px] text-xs">Modelo</TableHead> {/* Ajustado */}
               <TableHead className="w-[150px] text-xs">Série</TableHead> {/* Ajustado */}
               <TableHead className="w-[120px] text-xs">Status</TableHead> 
-              <TableHead className="w-[150px] text-right text-xs">Ações</TableHead> {/* Ajustado */}
+              <TableHead className="w-[180px] text-right text-xs">Ações</TableHead> {/* Ajustado */}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -396,7 +396,7 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
                         )}
                       </div>
                     </TableCell>
-                    <TableCell className="text-right py-2 align-top w-[150px]"> {/* Ajustado */}
+                    <TableCell className="text-right py-2 align-top w-[180px]"> {/* Ajustado */}
                       <div className="flex items-center justify-end space-x-1">
                         <Button
                           variant="ghost"
