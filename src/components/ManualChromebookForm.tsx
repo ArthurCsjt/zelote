@@ -185,7 +185,7 @@ export function ManualChromebookForm({ onRegistrationSuccess }: { onRegistration
                 <Input 
                   id="series" 
                   value={formData.series} 
-                  onChange={handleFormChange('series', e.target.value)} 
+                  onChange={(e) => handleFormChange('series', e.target.value)} 
                   placeholder="Número de Série"
                   required 
                   className="bg-white"
@@ -199,7 +199,7 @@ export function ManualChromebookForm({ onRegistrationSuccess }: { onRegistration
                 <Input 
                   id="patrimonyNumber" 
                   value={formData.patrimonyNumber} 
-                  onChange={handleFormChange('patrimonyNumber', e.target.value)} 
+                  onChange={(e) => handleFormChange('patrimonyNumber', e.target.value)} 
                   placeholder="Número de Patrimônio"
                   className="bg-white"
                 />
@@ -210,7 +210,7 @@ export function ManualChromebookForm({ onRegistrationSuccess }: { onRegistration
                 <Input 
                   id="manufacturingYear" 
                   value={formData.manufacturingYear} 
-                  onChange={handleFormChange('manufacturingYear', e.target.value)} 
+                  onChange={(e) => handleFormChange('manufacturingYear', e.target.value)} 
                   placeholder="Ex: 2022"
                   className="bg-white"
                 />
