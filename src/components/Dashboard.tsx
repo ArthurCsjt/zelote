@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line, Area, AreaChart, ComposedChart } from "recharts";
 import { format, startOfDay, isToday, isWithinInterval, subDays, differenceInMinutes, subMonths, subWeeks, startOfWeek, startOfMonth, endOfMonth, endOfWeek, addDays } from "date-fns";
-import type { LoanHistoryItem } from "@/types/database";
+import type { LoanHistoryItem, Chromebook } from "@/types/database";
 import { Badge } from "./ui/badge";
 import { Progress } from "./ui/progress";
 import { ChartContainer, ChartTooltipContent, ChartLegendContent } from "./ui/chart";
@@ -21,6 +21,7 @@ import { CollapsibleDashboardFilter } from "./CollapsibleDashboardFilter";
 import { Tooltip as ShadcnTooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select"; // NOVO IMPORT
 import { SectionHeader } from "./Shared/SectionHeader"; // NOVO IMPORT
+import { DashboardDetailDialog } from "./DashboardDetailDialog"; // NOVO IMPORT
 
 interface DashboardProps {
   onBack?: () => void;
@@ -40,8 +41,30 @@ const StatCardSkeleton = () => (
   </GlassCard>
 );
 
+// Tipos para o estado do modal
+type DetailItem = {
+  id: string;
+  chromebook_id: string;
+  model: string;
+  status?: Chromebook['status'];
+  loan_date?: string;
+  expected_return_date?: string;
+  student_name?: string;
+  isOverdue?: boolean;
+};
+
+type DetailModalState = {
+  open: boolean;
+  title: string;
+  description: string;
+  dataType: 'chromebooks' | 'loans';
+  data: DetailItem[] | null;
+  isLoading: boolean;
+};
+
+
 // Componente auxiliar para renderizar o grid de estatísticas
-const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = [], loading }: any) => {
+const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = [], loading, onCardClick, history }: any) => {
   if (periodView === 'history' || periodView === 'reports') return null;
 
   // Desestruturação segura, usando valores padrão se stats for null/undefined
@@ -49,6 +72,7 @@ const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = []
     totalActive = 0, 
     totalChromebooks = 0, 
     totalInventoryUsageRate = 0, 
+    availableChromebooks = 0, // Adicionado
     averageUsageTime = 0, 
     completionRate = 0, 
     maxOccupancyRate = 0 
@@ -61,13 +85,29 @@ const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = []
       </div>
     );
   }
+  
+  // Função para determinar se o empréstimo está em atraso
+  const isOverdue = (loan: LoanHistoryItem) => {
+    return loan.expected_return_date && new Date(loan.expected_return_date) < new Date();
+  };
 
   return (
     <TooltipProvider>
       <div className="grid gap-4 grid-cols-2 md:grid-cols-5 relative z-10">
         
         {/* CARD 1: Empréstimos Ativos (Contagem de ativos) */}
-        <GlassCard className="border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-blue-500">
+        <GlassCard 
+          className="border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-blue-500 cursor-pointer"
+          onClick={() => onCardClick('Empréstimos Ativos', 'Lista de todos os Chromebooks atualmente emprestados.', 'loans', history.filter((loan: LoanHistoryItem) => !loan.return_date).map((loan: LoanHistoryItem) => ({
+            id: loan.id,
+            chromebook_id: loan.chromebook_id,
+            model: loan.chromebook_model,
+            loan_date: loan.loan_date,
+            expected_return_date: loan.expected_return_date,
+            student_name: loan.student_name,
+            isOverdue: isOverdue(loan),
+          })))}
+        >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <ShadcnTooltip delayDuration={300}>
               <TooltipTrigger asChild>
@@ -90,34 +130,34 @@ const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = []
           </CardContent>
         </GlassCard>
 
-        {/* CARD 2: Taxa de Uso do Inventário (CORRIGIDO: ativos / total de móveis) */}
-        <GlassCard className="border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-green-500">
+        {/* CARD 2: Disponíveis (NOVO: Clicável para ver a lista) */}
+        <GlassCard 
+          className="border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-green-500 cursor-pointer"
+          onClick={() => onCardClick('Disponíveis', 'Lista de Chromebooks prontos para empréstimo.', 'chromebooks', null, 'disponivel')}
+        >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <ShadcnTooltip delayDuration={300}>
               <TooltipTrigger asChild>
                 <CardTitle className="text-xs sm:text-sm font-medium flex items-center gap-1 cursor-help">
-                  Taxa de Uso Atual
+                  Disponíveis
                   <Info className="h-3 w-3 text-muted-foreground" />
                 </CardTitle>
               </TooltipTrigger>
               <TooltipContent className="max-w-xs text-xs">
-                <p>Porcentagem de Chromebooks móveis que estão emprestados neste exato momento.</p>
+                <p>Número de Chromebooks com status 'disponível' no inventário.</p>
               </TooltipContent>
             </ShadcnTooltip>
             <Computer className="h-4 w-4 sm:h-5 sm:w-5 text-green-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-xl sm:text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">{totalInventoryUsageRate.toFixed(0)}%</div>
-            <div className="flex items-center gap-2 mt-1">
-              <Progress value={totalInventoryUsageRate} className="h-1.5 sm:h-2" />
-              <span className="text-[10px] sm:text-xs text-muted-foreground">
-                {totalActive} em uso (móveis)
-              </span>
-            </div>
+            <div className="text-xl sm:text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">{availableChromebooks}</div>
+            <p className="text-[10px] sm:text-xs text-muted-foreground">
+              de {totalChromebooks} no total
+            </p>
           </CardContent>
         </GlassCard>
         
-        {/* NOVO CARD: Ocupação Máxima */}
+        {/* CARD 3: Ocupação Máxima (Não Clicável - Métrica de cálculo) */}
         <GlassCard className="border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-red-500">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <ShadcnTooltip delayDuration={300}>
@@ -141,7 +181,7 @@ const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = []
           </CardContent>
         </GlassCard>
 
-        {/* CARD 3: Tempo Médio (Mantido) */}
+        {/* CARD 4: Tempo Médio (Não Clicável - Métrica de cálculo) */}
         <GlassCard className="border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-purple-500">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <ShadcnTooltip delayDuration={300}>
@@ -167,7 +207,7 @@ const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = []
           </CardContent>
         </GlassCard>
 
-        {/* CARD 4: Taxa de Devolução (Mantido) */}
+        {/* CARD 5: Taxa de Devolução (Não Clicável - Métrica de cálculo) */}
         <GlassCard className="border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-orange-500">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <ShadcnTooltip delayDuration={300}>
@@ -199,6 +239,7 @@ const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = []
     </TooltipProvider>
   );
 };
+
 
 // Componente para renderizar os gráficos de acordo com o período
 const PeriodCharts = ({ periodView, loading, periodChartData, stats, startHour, endHour, totalChromebooks, availableChromebooks, userTypeData, durationData, isNewLoan, history }: any) => {
@@ -506,6 +547,61 @@ export function Dashboard({
     stats, 
     refreshData 
   } = useDashboardData(periodView, startHour, endHour);
+  
+  const { getChromebooksByStatus } = useDatabase(); // NOVO HOOK
+
+  // ESTADO DO MODAL DE DETALHES
+  const [detailModal, setDetailModal] = useState<DetailModalState>({
+    open: false,
+    title: '',
+    description: '',
+    dataType: 'chromebooks',
+    data: null,
+    isLoading: false,
+  });
+
+  // Função para abrir o modal e carregar dados dinamicamente
+  const handleCardClick = useCallback(async (
+    title: string, 
+    description: string, 
+    dataType: 'chromebooks' | 'loans', 
+    initialData: DetailItem[] | null,
+    statusFilter?: Chromebook['status']
+  ) => {
+    setDetailModal({
+      open: true,
+      title,
+      description,
+      dataType,
+      data: initialData,
+      isLoading: !initialData, // Se não houver dados iniciais (como para status), carrega
+    });
+
+    if (statusFilter && dataType === 'chromebooks') {
+      setDetailModal(prev => ({ ...prev, isLoading: true }));
+      const chromebooksData = await getChromebooksByStatus(statusFilter);
+      
+      const mappedData: DetailItem[] = chromebooksData.map(cb => ({
+        id: cb.id,
+        chromebook_id: cb.chromebook_id,
+        model: cb.model,
+        status: cb.status,
+      }));
+      
+      setDetailModal(prev => ({
+        ...prev,
+        data: mappedData,
+        isLoading: false,
+      }));
+    }
+    
+    // Se for loans, os dados já vêm pré-filtrados (history.filter)
+    if (dataType === 'loans' && initialData) {
+        setDetailModal(prev => ({ ...prev, data: initialData, isLoading: false }));
+    }
+    
+  }, [getChromebooksByStatus]);
+
 
   const { overdueLoans, upcomingDueLoans } = useOverdueLoans();
   
@@ -617,7 +713,8 @@ export function Dashboard({
     // { value: 'reports', label: 'Relatórios Inteligentes', icon: Brain }, // Mantido como placeholder
   ];
 
-  return <div className="space-y-8 relative py-[30px]">
+  return (
+    <div className="space-y-8 relative py-[30px]">
       { /* Background gradient overlay */ }
       <div className="absolute inset-0 -z-10 bg-gradient-to-br from-blue-50/30 via-purple-50/20 to-pink-50/30 blur-2xl transform scale-110 py-[25px] rounded-3xl bg-[#000a0e]/0" />
       
@@ -680,6 +777,8 @@ export function Dashboard({
         filteredReturns={filteredReturns}
         stats={stats}
         loading={loading}
+        onCardClick={handleCardClick} // PASSANDO O HANDLER
+        history={history} // PASSANDO O HISTÓRICO COMPLETO
       />
 
       {/* Conteúdo Principal (Gráficos ou Histórico) */}
@@ -700,5 +799,17 @@ export function Dashboard({
         />
       </div>
       
-    </div>;
+      {/* Modal de Detalhes */}
+      <DashboardDetailDialog
+        open={detailModal.open}
+        onOpenChange={(open) => setDetailModal(prev => ({ ...prev, open }))}
+        title={detailModal.title}
+        description={detailModal.description}
+        data={detailModal.data}
+        isLoading={detailModal.isLoading}
+        dataType={detailModal.dataType}
+      />
+      
+    </div>
+  );
 }

@@ -19,7 +19,6 @@ interface StudentData {
   nome_completo: string;
   ra: string;
   email: string;
-  turma: string;
 }
 
 interface StaffData {
@@ -116,6 +115,27 @@ export const useDatabase = () => {
       setLoading(false);
     }
   }, []);
+  
+  // NOVO: Função para buscar Chromebooks por status
+  const getChromebooksByStatus = useCallback(async (status: Chromebook['status']): Promise<Chromebook[]> => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('chromebooks')
+        .select('*')
+        .eq('status', status)
+        .order('chromebook_id', { ascending: true });
+
+      if (error) throw error;
+      return (data || []) as Chromebook[];
+    } catch (error: any) {
+      toast({ title: "Erro de Sincronização", description: `Falha ao carregar Chromebooks com status ${status}.`, variant: "destructive" });
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
 
   const updateChromebook = useCallback(async (id: string, data: Partial<ChromebookData>): Promise<boolean> => {
     if (!user) {
@@ -927,6 +947,7 @@ export const useDatabase = () => {
     loading,
     createChromebook,
     getChromebooks,
+    getChromebooksByStatus, // EXPORTANDO A NOVA FUNÇÃO
     updateChromebook,
     deleteChromebook,
     syncChromebookStatus,
