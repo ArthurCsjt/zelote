@@ -59,8 +59,8 @@
     @apply bg-background text-foreground;
     font-family: -apple-system, BlinkMacSystemFont, "San Francisco", "Helvetica Neue", sans-serif;
     
-    /* NOVO: Gradiente de fundo sutil (Azul para Amarelo/Âmbar) */
-    background: linear-gradient(135deg, #D3E4FD 0%, #F0F7FF 100%);
+    /* NOVO: Gradiente de fundo sutil (Cinza Claro para Azul Pálido) */
+    background: linear-gradient(135deg, #F8F9FA 0%, #E9F1FF 100%);
     background-attachment: fixed; /* Garante que o gradiente cubra toda a tela */
   }
 }
