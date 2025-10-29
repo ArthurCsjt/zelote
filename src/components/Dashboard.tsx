@@ -255,31 +255,20 @@ const PeriodCharts = ({ periodView, loading, periodChartData, stats, startHour, 
             className="w-full h-full"
           >
             <ResponsiveContainer width="100%" height="100%">
-              <ComposedChart data={isDaily ? periodChartData.slice(startHour - 6, endHour - 6 + 1) : periodChartData} margin={{ top: 5, right: 0, left: -20, bottom: 5 }}>
-                <defs>
-                  <linearGradient id="colorEmprestimos" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#2563EB" stopOpacity={0.8}/>
-                    <stop offset="95%" stopColor="#2563EB" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
+              {/* ALTERADO: Usando BarChart em vez de ComposedChart/Area para consistência */}
+              <BarChart data={isDaily ? periodChartData.slice(startHour - 6, endHour - 6 + 1) : periodChartData} margin={{ top: 5, right: 0, left: -20, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
                 <XAxis dataKey={chartDataKey} tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
                 <YAxis tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
                 <Tooltip content={<ChartTooltipContent />} />
                 <Legend content={<ChartLegendContent />} wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
                 
-                {isMonthly ? (
-                  <Area type="monotone" dataKey="empréstimos" stackId="1" stroke="#2563EB" fill="#2563EB" fillOpacity={0.3} name="Empréstimos" />
-                ) : (
-                  <Area 
-                    type="monotone" 
-                    dataKey="empréstimos" 
-                    stroke="#2563EB" 
-                    fill="url(#colorEmprestimos)" 
-                    fillOpacity={1} 
-                    name="Empréstimos"
-                  />
-                )}
+                <Bar 
+                  dataKey="empréstimos" 
+                  fill="#2563EB" 
+                  radius={[4, 4, 0, 0]} 
+                  name="Empréstimos"
+                />
                 
                 <Bar 
                   dataKey="devoluções" 
@@ -287,7 +276,7 @@ const PeriodCharts = ({ periodView, loading, periodChartData, stats, startHour, 
                   radius={[4, 4, 0, 0]} 
                   name="Devoluções"
                 />
-              </ComposedChart>
+              </BarChart>
             </ResponsiveContainer>
           </ChartContainer>
         </CardContent>
