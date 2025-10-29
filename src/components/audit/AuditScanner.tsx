@@ -6,7 +6,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { QRCodeReader } from '@/components/QRCodeReader';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, QrCode, ClipboardCheck, PlusCircle, Trash2, Clock, CheckCircle, AlertCircle, Monitor, MapPin } from 'lucide-react';
+import { Loader2, QrCode, ClipboardCheck, PlusCircle, Trash2, Clock, CheckCircle, AlertCircle, Monitor, MapPin, ListChecks } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import {
   Table,
