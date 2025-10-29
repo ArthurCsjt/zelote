@@ -10,15 +10,12 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 
-// Reintroduzindo 'register' no tipo AuthMode
 type AuthMode = 'login' | 'register' | 'forgot_password' | 'update_password';
 
 const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
-  // Definindo o modo inicial como 'login'
   const [currentMode, setCurrentMode] = useState<AuthMode>('login');
   
-  // Campos de formulário
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -26,7 +23,6 @@ const Login = () => {
 
   const navigate = useNavigate();
   const location = useLocation();
-  // Reintroduzindo 'register' no useAuth
   const { login, register, resetPassword, verifyEmail } = useAuth(); 
 
   // Efeito para verificar se o usuário está no fluxo de redefinição/convite
@@ -37,7 +33,6 @@ const Login = () => {
 
     if (type === 'recovery' || type === 'invite') {
       if (accessToken) {
-        // Tenta definir a sessão com o token da URL
         supabase.auth.setSession({ access_token: accessToken, refresh_token: params.get('refresh_token')! })
           .then(({ data, error }) => {
             if (error) {
@@ -45,9 +40,7 @@ const Login = () => {
               toast({ title: "Erro de acesso", description: "Token inválido ou expirado.", variant: "destructive" });
               navigate('/login', { replace: true });
             } else if (data.session) {
-              // Se a sessão for definida, entra no modo de atualização de senha
               setCurrentMode('update_password');
-              // Limpa o hash da URL para evitar loops
               navigate(location.pathname, { replace: true });
             }
           });
@@ -179,23 +172,33 @@ const Login = () => {
       <CardDescription className="text-gray-600">{description}</CardDescription>
     </CardHeader>
   );
+  
+  // NOVO RENDER HEADER MINIMALISTA
+  const renderMinimalHeader = (title: string, description: string, Icon: React.ElementType) => (
+    <CardHeader className="space-y-1 text-center pb-6 pt-8">
+      <div className="flex justify-center mb-2">
+        <Icon className="h-8 w-8 text-primary" />
+      </div>
+      <CardTitle className="text-3xl font-extrabold text-gray-900">{title}</CardTitle>
+      <CardDescription className="text-sm text-gray-500">{description}</CardDescription>
+    </CardHeader>
+  );
 
   const renderForm = () => {
     switch (currentMode) {
       case 'update_password':
         return (
           <form onSubmit={handleUpdatePasswordSubmit}>
-            {renderHeader(
+            {renderMinimalHeader(
               "Definir Nova Senha",
               "Crie uma senha segura para acessar o sistema.",
-              LockKeyhole,
-              "bg-gradient-to-r from-green-500/10 to-green-600/10 text-green-600"
+              LockKeyhole
             )}
             <CardContent className="space-y-4 pt-6">
               <div className="space-y-2">
                 <Label htmlFor="new-password" className="text-gray-700 flex items-center gap-1.5"><LockKeyhole className="h-4 w-4" />Nova Senha</Label>
                 <div className="relative">
-                  <Input id="new-password" type={showPassword ? "text" : "password"} placeholder="Mínimo 6 caracteres" value={password} onChange={e => setPassword(e.target.value)} className="bg-white/70 pr-10" disabled={isLoading} required />
+                  <Input id="new-password" type={showPassword ? "text" : "password"} placeholder="Mínimo 6 caracteres" value={password} onChange={e => setPassword(e.target.value)} className="bg-white pr-10" disabled={isLoading} required />
                   <Button type="button" variant="ghost" size="sm" className="absolute right-0 top-0 h-full px-3 hover:bg-transparent" onClick={() => setShowPassword(prev => !prev)}>
                     {showPassword ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
                   </Button>
@@ -204,7 +207,7 @@ const Login = () => {
               <div className="space-y-2">
                 <Label htmlFor="confirm-password" className="text-gray-700 flex items-center gap-1.5"><LockKeyhole className="h-4 w-4" />Confirmar Senha</Label>
                 <div className="relative">
-                  <Input id="confirm-password" type={showPassword ? "text" : "password"} placeholder="Confirme sua nova senha" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className="bg-white/70 pr-10" disabled={isLoading} required />
+                  <Input id="confirm-password" type={showPassword ? "text" : "password"} placeholder="Confirme sua nova senha" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className="bg-white pr-10" disabled={isLoading} required />
                   <Button type="button" variant="ghost" size="sm" className="absolute right-0 top-0 h-full px-3 hover:bg-transparent" onClick={() => setShowPassword(prev => !prev)}>
                     {showPassword ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
                   </Button>
@@ -212,7 +215,7 @@ const Login = () => {
               </div>
             </CardContent>
             <CardFooter className="pb-6">
-              <Button type="submit" className="w-full bg-gradient-to-r from-green-600 to-green-500" disabled={isLoading}>
+              <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? "Salvando..." : "Definir Senha e Entrar"}
               </Button>
             </CardFooter>
@@ -222,11 +225,10 @@ const Login = () => {
       case 'forgot_password':
         return (
           <form onSubmit={handleRecoverySubmit}>
-            {renderHeader(
+            {renderMinimalHeader(
               "Recuperar Senha",
               "Digite seu e-mail institucional para receber o link de redefinição.",
-              RotateCcw,
-              "bg-gradient-to-r from-orange-500/10 to-orange-600/10 text-orange-600"
+              RotateCcw
             )}
             <CardContent className="space-y-4 pt-6">
               <div className="space-y-2">
@@ -237,7 +239,7 @@ const Login = () => {
                   placeholder="seu.email@colegiosaojudas.com.br" 
                   value={email} 
                   onChange={e => setEmail(e.target.value)} 
-                  className={cn("bg-white/70", emailError && "border-destructive")} 
+                  className={cn("bg-white", emailError && "border-destructive")} 
                   disabled={isLoading} 
                   required
                 />
@@ -245,10 +247,10 @@ const Login = () => {
               </div>
             </CardContent>
             <CardFooter className="flex flex-col space-y-4 pb-6">
-              <Button type="submit" className="w-full bg-gradient-to-r from-orange-600 to-orange-500" disabled={isLoading || !isEmailValid}>
+              <Button type="submit" className="w-full" disabled={isLoading || !isEmailValid}>
                 {isLoading ? "Enviando..." : "Enviar Link de Redefinição"}
               </Button>
-              <Button type="button" variant="ghost" className="text-sm text-gray-600" onClick={() => changeMode('login')} disabled={isLoading}>
+              <Button type="button" variant="link" className="text-sm text-gray-600 p-0 h-auto" onClick={() => changeMode('login')} disabled={isLoading}>
                 <ArrowLeft className="h-3.5 w-3.5 mr-1" />
                 Voltar ao login
               </Button>
@@ -259,11 +261,10 @@ const Login = () => {
       case 'register':
         return (
           <form onSubmit={handleRegisterSubmit}>
-            {renderHeader(
+            {renderMinimalHeader(
               "Novo Cadastro",
               "Crie sua conta usando seu email institucional.",
-              UserPlus,
-              "bg-gradient-to-r from-purple-500/10 to-purple-600/10 text-purple-600"
+              UserPlus
             )}
             <CardContent className="space-y-4 pt-6">
               <div className="space-y-2">
@@ -274,7 +275,7 @@ const Login = () => {
                   placeholder="seu.email@colegiosaojudas.com.br" 
                   value={email} 
                   onChange={e => setEmail(e.target.value)} 
-                  className={cn("bg-white/70", emailError && "border-destructive")} 
+                  className={cn("bg-white", emailError && "border-destructive")} 
                   disabled={isLoading} 
                   required
                 />
@@ -283,7 +284,7 @@ const Login = () => {
               <div className="space-y-2">
                 <Label htmlFor="register-password" className="text-gray-700 flex items-center gap-1.5"><Lock className="h-4 w-4" />Senha</Label>
                 <div className="relative">
-                  <Input id="register-password" type={showPassword ? "text" : "password"} placeholder="Mínimo 6 caracteres" value={password} onChange={e => setPassword(e.target.value)} className="bg-white/70 pr-10" disabled={isLoading} required />
+                  <Input id="register-password" type={showPassword ? "text" : "password"} placeholder="Mínimo 6 caracteres" value={password} onChange={e => setPassword(e.target.value)} className="bg-white pr-10" disabled={isLoading} required />
                   <Button type="button" variant="ghost" size="sm" className="absolute right-0 top-0 h-full px-3 hover:bg-transparent" onClick={() => setShowPassword(prev => !prev)}>
                     {showPassword ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
                   </Button>
@@ -292,7 +293,7 @@ const Login = () => {
               <div className="space-y-2">
                 <Label htmlFor="register-confirm-password" className="text-gray-700 flex items-center gap-1.5"><Lock className="h-4 w-4" />Confirmar Senha</Label>
                 <div className="relative">
-                  <Input id="register-confirm-password" type={showPassword ? "text" : "password"} placeholder="Confirme sua senha" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className="bg-white/70 pr-10" disabled={isLoading} required />
+                  <Input id="register-confirm-password" type={showPassword ? "text" : "password"} placeholder="Confirme sua senha" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className="bg-white pr-10" disabled={isLoading} required />
                   <Button type="button" variant="ghost" size="sm" className="absolute right-0 top-0 h-full px-3 hover:bg-transparent" onClick={() => setShowPassword(prev => !prev)}>
                     {showPassword ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
                   </Button>
@@ -300,10 +301,10 @@ const Login = () => {
               </div>
             </CardContent>
             <CardFooter className="flex flex-col space-y-4 pb-6">
-              <Button type="submit" className="w-full bg-gradient-to-r from-purple-600 to-purple-500" disabled={isLoading || !isEmailValid || password.length < 6 || password !== confirmPassword}>
+              <Button type="submit" className="w-full" disabled={isLoading || !isEmailValid || password.length < 6 || password !== confirmPassword}>
                 {isLoading ? "Registrando..." : <><UserPlus className="h-4 w-4 mr-2" />Cadastrar</>}
               </Button>
-              <Button type="button" variant="ghost" className="text-sm text-gray-600" onClick={() => changeMode('login')} disabled={isLoading}>
+              <Button type="button" variant="link" className="text-sm text-gray-600 p-0 h-auto" onClick={() => changeMode('login')} disabled={isLoading}>
                 <ArrowLeft className="h-3.5 w-3.5 mr-1" />
                 Voltar ao login
               </Button>
@@ -315,11 +316,10 @@ const Login = () => {
       default:
         return (
           <form onSubmit={handleLoginSubmit}>
-            {renderHeader(
+            {renderMinimalHeader(
               "Zelote",
               "Acesso restrito para usuários convidados",
-              Computer,
-              "bg-gradient-to-r from-blue-500/10 to-blue-600/10 text-blue-600"
+              Computer
             )}
             <CardContent className="space-y-4 pt-6">
               <div className="space-y-2">
@@ -330,7 +330,7 @@ const Login = () => {
                   placeholder="seu.email@colegiosaojudas.com.br" 
                   value={email} 
                   onChange={e => setEmail(e.target.value)} 
-                  className={cn("bg-white/70", emailError && "border-destructive")} 
+                  className={cn("bg-white", emailError && "border-destructive")} 
                   disabled={isLoading} 
                   required
                 />
@@ -339,7 +339,7 @@ const Login = () => {
               <div className="space-y-2">
                 <Label htmlFor="login-password" className="text-gray-700 flex items-center gap-1.5"><Lock className="h-4 w-4" />Senha</Label>
                 <div className="relative">
-                  <Input id="login-password" type={showPassword ? "text" : "password"} placeholder="Digite sua senha" value={password} onChange={e => setPassword(e.target.value)} className="bg-white/70 pr-10" disabled={isLoading} required />
+                  <Input id="login-password" type={showPassword ? "text" : "password"} placeholder="Digite sua senha" value={password} onChange={e => setPassword(e.target.value)} className="bg-white pr-10" disabled={isLoading} required />
                   <Button type="button" variant="ghost" size="sm" className="absolute right-0 top-0 h-full px-3 hover:bg-transparent" onClick={() => setShowPassword(prev => !prev)}>
                     {showPassword ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
                   </Button>
@@ -347,14 +347,14 @@ const Login = () => {
               </div>
             </CardContent>
             <CardFooter className="flex flex-col space-y-4 pb-6">
-              <Button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-blue-500" disabled={isLoading || !isEmailValid}>
+              <Button type="submit" className="w-full" disabled={isLoading || !isEmailValid}>
                 {isLoading ? "Entrando..." : <><LogIn className="h-4 w-4 mr-2" />Entrar</>}
               </Button>
-              <Button type="button" variant="ghost" className="text-sm text-gray-600" onClick={() => changeMode('forgot_password')} disabled={isLoading}>
+              <Button type="button" variant="link" className="text-sm text-gray-600 p-0 h-auto" onClick={() => changeMode('forgot_password')} disabled={isLoading}>
                 <KeySquare className="h-3.5 w-3.5 mr-1" />
                 Esqueci minha senha
               </Button>
-              <Button type="button" variant="link" className="text-sm text-purple-600 p-0 h-auto" onClick={() => changeMode('register')} disabled={isLoading}>
+              <Button type="button" variant="link" className="text-sm text-primary p-0 h-auto" onClick={() => changeMode('register')} disabled={isLoading}>
                 <User className="h-3.5 w-3.5 mr-1" />
                 Cadastrar-se
               </Button>
