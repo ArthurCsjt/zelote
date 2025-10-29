@@ -93,7 +93,7 @@ const Layout: React.FC<LayoutProps> = ({
   // Lógica de toggleTheme removida, pois o tema é fixo em 'light'
 
   return (
-    <div className={`min-h-screen bg-background text-foreground ${isStandalone ? 'safe-area-top safe-area-bottom safe-area-left safe-area-right' : ''}`}>
+    <div className={`min-h-screen bg-transparent text-foreground ${isStandalone ? 'safe-area-top safe-area-bottom safe-area-left safe-area-right' : ''}`}>
       {/* Status Bar Overlay for iOS in standalone mode */}
       {isStandalone && <div className="status-bar-overlay" />}
 
@@ -197,7 +197,7 @@ const Layout: React.FC<LayoutProps> = ({
       </header>
 
       {/* Main Content */}
-      <main className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 no-bounce pt-24 md:pt-28 ${isStandalone ? 'ios-bottom-safe' : ''}`}>
+      <main className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 no-bounce pt-24 md:pt-28 bg-transparent ${isStandalone ? 'ios-bottom-safe' : ''}`}>
         {children}
       </main>
 

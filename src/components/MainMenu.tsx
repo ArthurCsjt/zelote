@@ -86,7 +86,7 @@ export function MainMenu({
 
   return (
     <div className="space-y-8 relative py-[30px]">
-      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-card/50 via-background to-card/50 rounded-3xl blur-3xl transform scale-110" />
+      {/* Removendo o gradiente de sobreposição para que o fundo do body seja visível */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 max-w-4xl mx-auto relative z-10">
         {menuItemsFinal.map((item, index) => (
           <div key={index} style={getFadeInStyle(index)} className="group">
