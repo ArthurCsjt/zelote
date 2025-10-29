@@ -59,8 +59,8 @@
     @apply bg-background text-foreground;
     font-family: -apple-system, BlinkMacSystemFont, "San Francisco", "Helvetica Neue", sans-serif;
     
-    /* NOVO GRADIENTE SOLICITADO */
-    background: linear-gradient(7deg, rgba(179, 195, 34, 1) 0%, rgba(0, 54, 247, 1) 100%);
+    /* NOVO GRADIENTE RADIAL SOLICITADO */
+    background: radial-gradient( circle 349px at 0.3% 48.6%,  rgba(0,0,0,1) 0%, rgba(87,124,253,0.89) 100.7% );
     background-attachment: fixed; /* Garante que o gradiente cubra toda a tela */
   }
 }
