@@ -91,10 +91,7 @@ export function ReturnForm({ onReturnSuccess }: ReturnFormProps) {
       const { successCount, errorCount } = result;
       
       if (successCount > 0) {
-        toast({
-          title: "Sucesso",
-          description: `${successCount} Chromebook(s) devolvido(s) com sucesso.`,
-        });
+        // O TOAST DE SUCESSO JÁ É EMITIDO DENTRO DO bulkReturnChromebooks
         
         // Resetar formulário
         setDeviceIds([]);

@@ -85,10 +85,14 @@ export const useDatabase = () => {
 
       if (error) throw error;
 
-      toast({ title: "Sucesso", description: "Chromebook cadastrado com sucesso" });
+      // REMOVIDO: toast({ title: "Sucesso", description: "Chromebook cadastrado com sucesso" });
       return result as Chromebook;
     } catch (error: any) {
-      toast({ title: "Erro", description: error.message, variant: "destructive" });
+      toast({ 
+        title: "Erro ao cadastrar Chromebook", 
+        description: error.message.includes('duplicate key') ? "ID, Série ou Patrimônio já cadastrado." : error.message, 
+        variant: "destructive" 
+      });
       return null;
     } finally {
       setLoading(false);
@@ -106,7 +110,7 @@ export const useDatabase = () => {
       if (error) throw error;
       return (data || []) as Chromebook[];
     } catch (error: any) {
-      toast({ title: "Erro", description: error.message, variant: "destructive" });
+      toast({ title: "Erro de Sincronização", description: "Falha ao carregar inventário.", variant: "destructive" });
       return [];
     } finally {
       setLoading(false);
@@ -153,10 +157,14 @@ export const useDatabase = () => {
 
       if (error) throw error;
       
-      toast({ title: "Sucesso", description: "Chromebook atualizado com sucesso" });
+      // REMOVIDO: toast({ title: "Sucesso", description: "Chromebook atualizado com sucesso" });
       return true;
     } catch (error: any) {
-      toast({ title: "Erro", description: error.message, variant: "destructive" });
+      toast({ 
+        title: "Erro ao atualizar Chromebook", 
+        description: error.message.includes('duplicate key') ? "ID, Série ou Patrimônio já cadastrado." : error.message, 
+        variant: "destructive" 
+      });
       return false;
     } finally {
       setLoading(false);
@@ -178,10 +186,10 @@ export const useDatabase = () => {
 
       if (error) throw error;
       
-      toast({ title: "Sucesso", description: "Chromebook excluído com sucesso" });
+      toast({ title: "Sucesso", description: "Chromebook excluído com sucesso", variant: "success" });
       return true;
     } catch (error: any) {
-      toast({ title: "Erro", description: error.message, variant: "destructive" });
+      toast({ title: "Erro ao excluir Chromebook", description: error.message, variant: "destructive" });
       return false;
     } finally {
       setLoading(false);
@@ -199,7 +207,8 @@ export const useDatabase = () => {
       
       if (error) throw error;
       
-      toast({ title: "Sincronização Concluída", description: data });
+      // MANTIDO: Este toast é específico e útil para o painel de alertas.
+      toast({ title: "Sincronização Concluída", description: data, variant: "info" });
       return data;
     } catch (error: any) {
       toast({ title: "Erro de Sincronização", description: error.message, variant: "destructive" });
@@ -248,13 +257,10 @@ export const useDatabase = () => {
 
       if (error) throw error;
       
-      toast({ 
-        title: "Empréstimo registrado", 
-        description: `Chromebook ${data.chromebookId} emprestado para ${data.studentName}` 
-      });
+      // REMOVIDO: Toast de sucesso genérico. O componente chamador fará o toast de sucesso em lote.
       return result;
     } catch (error: any) {
-      toast({ title: "Erro", description: error.message, variant: "destructive" });
+      toast({ title: "Erro ao registrar empréstimo", description: error.message, variant: "destructive" });
       return null;
     } finally {
       setLoading(false);
@@ -290,6 +296,7 @@ export const useDatabase = () => {
         
         if (!chromebook || chromebook.status !== 'disponivel') {
           errorCount++;
+          // Toast específico para o item que falhou
           toast({ 
             title: "Erro no Lote", 
             description: `Chromebook ${data.chromebookId} não encontrado ou não está disponível.`, 
@@ -353,7 +360,7 @@ export const useDatabase = () => {
         status: item.status as 'ativo' | 'devolvido' | 'atrasado'
       }));
     } catch (error: any) {
-      toast({ title: "Erro", description: error.message, variant: "destructive" });
+      toast({ title: "Erro de Sincronização", description: "Falha ao carregar empréstimos ativos.", variant: "destructive" });
       return [];
     } finally {
       setLoading(false);
@@ -374,7 +381,7 @@ export const useDatabase = () => {
         status: item.status as 'ativo' | 'devolvido' | 'atrasado'
       }));
     } catch (error: any) {
-      toast({ title: "Erro", description: error.message, variant: "destructive" });
+      toast({ title: "Erro de Sincronização", description: "Falha ao carregar histórico de empréstimos.", variant: "destructive" });
       return [];
     } finally {
       setLoading(false);
@@ -488,14 +495,27 @@ export const useDatabase = () => {
       }
 
       const result = await createReturn(activeLoan.id, data);
-      return !!result;
+      
+      if (result) {
+        // Sincroniza o status do Chromebook após a devolução
+        await syncChromebookStatus(chromebookId);
+        
+        // TOAST DE SUCESSO ESPECÍFICO PARA DEVOLUÇÃO
+        toast({ 
+          title: "Devolução registrada", 
+          description: `Chromebook ${chromebookId} devolvido com sucesso.`, 
+          variant: "success" 
+        });
+        return true;
+      }
+      return false;
     } catch (error: any) {
-      toast({ title: "Erro", description: error.message, variant: "destructive" });
+      toast({ title: "Erro ao registrar devolução", description: error.message, variant: "destructive" });
       return false;
     } finally {
       setLoading(false);
     }
-  }, [createReturn]);
+  }, [createReturn, syncChromebookStatus]);
   
   const bulkReturnChromebooks = useCallback(async (chromebookIds: string[], data: ReturnFormData & { notes?: string }): Promise<{ successCount: number, errorCount: number }> => {
     if (!user) {
@@ -508,7 +528,7 @@ export const useDatabase = () => {
     let errorCount = 0;
 
     try {
-      // Busca por empréstimos ativos OU atrasados
+      // 1. Busca por empréstimos ativos OU atrasados
       const { data: activeLoans, error: loanError } = await supabase
         .from('loan_history')
         .select('id, chromebook_id')
@@ -556,6 +576,14 @@ export const useDatabase = () => {
           throw new Error(`Falha ao inserir ${returnsToInsert.length} devoluções.`);
         } else {
           successCount = returnsToInsert.length;
+          
+          // 2. Sincroniza o status de todos os Chromebooks devolvidos
+          const successfullyReturnedIds = returnsToInsert.map(r => {
+            const loan = activeLoans.find(l => l.id === r.loan_id);
+            return loan?.chromebook_id;
+          }).filter((id): id is string => !!id);
+          
+          await Promise.all(successfullyReturnedIds.map(id => syncChromebookStatus(id)));
         }
       }
     } catch (e: any) {
@@ -570,7 +598,7 @@ export const useDatabase = () => {
     }
 
     return { successCount, errorCount: chromebookIds.length - successCount };
-  }, [user]);
+  }, [user, syncChromebookStatus]);
 
 
   // Student operations - ATUALIZADO PARA USAR RPC
@@ -597,12 +625,12 @@ export const useDatabase = () => {
       });
 
       if (error) throw error;
-      toast({ title: "Sucesso", description: "Aluno cadastrado com sucesso" });
+      // REMOVIDO: toast({ title: "Sucesso", description: "Aluno cadastrado com sucesso" });
       return result;
     } catch (error: any) {
       console.error('Erro ao criar aluno via RPC:', error);
       // Verifica se o erro é de restrição de unicidade (email ou RA duplicado)
-      if (error.code === '23505') {
+      if (error.message.includes('RA ou E-mail informado já está em uso')) {
         toast({ title: "Erro de Cadastro", description: "RA ou E-mail já cadastrado.", variant: "destructive" });
       } else {
         toast({ title: "Erro", description: error.message || "Falha ao cadastrar aluno", variant: "destructive" });
@@ -631,7 +659,7 @@ export const useDatabase = () => {
         .eq('id', id);
 
       if (error) throw error;
-      toast({ title: "Sucesso", description: "Aluno atualizado com sucesso" });
+      // REMOVIDO: toast({ title: "Sucesso", description: "Aluno atualizado com sucesso" });
       return true;
     } catch (error: any) {
       // Verifica se o erro é de restrição de unicidade (email ou RA duplicado)
@@ -670,12 +698,12 @@ export const useDatabase = () => {
       });
 
       if (error) throw error;
-      toast({ title: "Sucesso", description: "Professor cadastrado com sucesso" });
+      // REMOVIDO: toast({ title: "Sucesso", description: "Professor cadastrado com sucesso" });
       return result;
     } catch (error: any) {
       console.error('Erro ao criar professor via RPC:', error);
       // Verifica se o erro é de restrição de unicidade (email duplicado)
-      if (error.code === '23505') {
+      if (error.message.includes('O e-mail informado já está em uso')) {
         toast({ title: "Erro de Cadastro", description: "E-mail já cadastrado para outro professor.", variant: "destructive" });
       } else {
         toast({ title: "Erro", description: error.message || "Falha ao cadastrar professor", variant: "destructive" });
@@ -704,7 +732,7 @@ export const useDatabase = () => {
         .eq('id', id);
 
       if (error) throw error;
-      toast({ title: "Sucesso", description: "Professor atualizado com sucesso" });
+      // REMOVIDO: toast({ title: "Sucesso", description: "Professor atualizado com sucesso" });
       return true;
     } catch (error: any) {
       // Verifica se o erro é de restrição de unicidade (email duplicado)
@@ -742,12 +770,12 @@ export const useDatabase = () => {
       });
 
       if (error) throw error;
-      toast({ title: "Sucesso", description: "Funcionário cadastrado com sucesso" });
+      // REMOVIDO: toast({ title: "Sucesso", description: "Funcionário cadastrado com sucesso" });
       return result;
     } catch (error: any) {
       console.error('Erro ao criar funcionário via RPC:', error);
       // Verifica se o erro é de restrição de unicidade (email duplicado)
-      if (error.code === '23505') {
+      if (error.message.includes('O e-mail informado já está em uso')) {
         toast({ title: "Erro de Cadastro", description: "E-mail já cadastrado para outro funcionário.", variant: "destructive" });
       } else {
         toast({ title: "Erro", description: error.message || "Falha ao cadastrar funcionário", variant: "destructive" });
@@ -776,7 +804,7 @@ export const useDatabase = () => {
         .eq('id', id);
 
       if (error) throw error;
-      toast({ title: "Sucesso", description: "Funcionário atualizado com sucesso" });
+      // REMOVIDO: toast({ title: "Sucesso", description: "Funcionário atualizado com sucesso" });
       return true;
     } catch (error: any) {
       // Verifica se o erro é de restrição de unicidade (email duplicado)
@@ -843,7 +871,8 @@ export const useDatabase = () => {
       
       toast({ 
         title: "Sucesso", 
-        description: "Todos os alunos foram excluídos com sucesso." 
+        description: "Todos os alunos foram excluídos com sucesso.",
+        variant: "success"
       });
       return true;
     } catch (error: any) {
@@ -878,7 +907,7 @@ export const useDatabase = () => {
 
       if (error) throw error;
       
-      toast({ title: "Sucesso", description: `${userType.charAt(0).toUpperCase() + userType.slice(1)} excluído com sucesso.` });
+      toast({ title: "Sucesso", description: `${userType.charAt(0).toUpperCase() + userType.slice(1)} excluído com sucesso.`, variant: "success" });
       return true;
     } catch (error: any) {
       console.error(`Erro ao excluir ${userType}:`, error);

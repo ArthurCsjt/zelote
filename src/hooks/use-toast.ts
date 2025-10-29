@@ -24,6 +24,12 @@ function toast({ title, description, variant = 'default', duration = 4000 }: Toa
         color: 'white',
         border: '1px solid hsl(0 84.2% 60.2%)',
       }),
+      // Estilo para Success (verde)
+      ...(variant === 'success' && {
+        backgroundColor: 'hsl(142 76% 36%)', // Cor menu-green
+        color: 'white',
+        border: '1px solid hsl(142 76% 36%)',
+      }),
     }
   };
 
