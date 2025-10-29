@@ -71,16 +71,18 @@ export const AuditFiltersComponent: React.FC<AuditFiltersProps> = ({
           <div className="space-y-2">
             <label className="text-sm font-medium">Localização</label>
             <Select
-              value={filters.location || ''}
-              onValueChange={(value) => updateFilter('location', value || undefined)}
+              // Se filters.location for undefined/null, usamos 'all-locations' para o Select
+              value={filters.location || 'all-locations'}
+              onValueChange={(value) => updateFilter('location', value === 'all-locations' ? undefined : value)}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Todas as localizações" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todas as localizações</SelectItem>
+                {/* CORREÇÃO: Usando 'all-locations' ao invés de "" */}
+                <SelectItem value="all-locations">Todas as localizações</SelectItem>
                 {locations.map(location => (
-                  <SelectItem key={location} value={location || ''}>
+                  <SelectItem key={location} value={location || 'N/A'}>
                     {location}
                   </SelectItem>
                 ))}
