@@ -59,12 +59,10 @@
     @apply bg-background text-foreground;
     font-family: -apple-system, BlinkMacSystemFont, "San Francisco", "Helvetica Neue", sans-serif;
     
-    /* NOVO: Gradiente de fundo sutil para realçar o Glassmorphism */
-    background: linear-gradient(135deg, hsl(210 40% 98%) 0%, hsl(210 40% 96%) 100%);
+    /* NOVO: Gradiente de fundo sutil (Azul para Amarelo/Âmbar) */
+    background: linear-gradient(135deg, #D3E4FD 0%, #F0F7FF 100%);
+    background-attachment: fixed; /* Garante que o gradiente cubra toda a tela */
   }
-  
-  /* Garantindo que o fundo seja sempre claro */
-  /* REMOVIDO: background: hsl(var(--background)); */
 }
 
 /* Enhanced glass card effect - iPhone style */
