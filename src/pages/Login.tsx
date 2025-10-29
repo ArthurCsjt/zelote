@@ -180,7 +180,7 @@ const Login = () => {
         <Icon className="h-8 w-8 text-primary" />
       </div>
       <CardTitle className="text-3xl font-extrabold text-gray-900">{title}</CardTitle>
-      <CardDescription className="text-sm text-gray-500">{description}</CardDescription>
+      {description && <CardDescription className="text-sm text-gray-500">{description}</CardDescription>}
     </CardHeader>
   );
 
@@ -318,7 +318,7 @@ const Login = () => {
           <form onSubmit={handleLoginSubmit}>
             {renderMinimalHeader(
               "Zelote",
-              "Acesso restrito para usuários convidados",
+              "", // Removendo a descrição aqui
               Computer
             )}
             <CardContent className="space-y-4 pt-6">
