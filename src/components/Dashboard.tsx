@@ -536,7 +536,7 @@ export function Dashboard({
   } = useToast();
   
   // NOVO ESTADO: Datas de início e fim para o filtro dinâmico
-  const [startDate, setStartDate] = useState<Date | null>(startOfDay(subDays(new Date(), 6))); // Padrão: 7 dias atrás
+  const [startDate, setStartDate] = useState<Date | null>(startOfDay(new Date())); // PADRÃO: HOJE
   const [endDate, setEndDate] = useState<Date | null>(endOfDay(new Date())); // Padrão: Hoje
   
   // O PeriodView agora só controla a visualização (Gráficos vs. Histórico)
