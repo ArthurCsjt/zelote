@@ -104,7 +104,7 @@ export const useDatabase = () => {
       const { data, error } = await supabase
         .from('chromebooks')
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('chromebook_id', { ascending: false }); // ALTERADO PARA ORDENAR POR ID DECRESCENTE
 
       if (error) throw error;
       return (data || []) as Chromebook[];
@@ -569,7 +569,7 @@ export const useDatabase = () => {
           errorCount++;
           toast({ 
             title: "Erro no Lote", 
-            description: `Chromebook ${chromebookId} não possui um empréstimo ativo/atrasado registrado.`, 
+            description: `Chromebook ${chromebookId} não possui um empréstimo ativo/atrasado registrado no sistema.`, 
             variant: "destructive" 
           });
           continue;
