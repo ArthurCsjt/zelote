@@ -38,19 +38,22 @@ const ChromebookSearchInput: React.FC<ChromebookSearchInputProps> = ({
     
     let filtered = chromebooks;
 
-    // 1. Filtrar por status
-    if (filterStatus === 'disponivel') {
-      filtered = filtered.filter(cb => cb.status === 'disponivel');
-    } else if (filterStatus === 'ativo') {
-      filtered = filtered.filter(cb => cb.status === 'emprestado');
+    // 1. Filtrar por status (APENAS SE NÃO ESTIVER EM MODO LISTA)
+    if (!isListMode) {
+      if (filterStatus === 'disponivel') {
+        filtered = filtered.filter(cb => cb.status === 'disponivel');
+      } else if (filterStatus === 'ativo') {
+        filtered = filtered.filter(cb => cb.status === 'emprestado');
+      }
     }
+    // Se isListMode for true, não aplicamos filtro de status aqui.
 
     // 2. Filtrar por termo de busca
     const lowerCaseSearch = searchTerm.toLowerCase();
     filtered = filtered.filter(cb => cb.searchable.includes(lowerCaseSearch));
     
     return filtered.slice(0, 10); // Limita a 10 resultados
-  }, [chromebooks, searchTerm, filterStatus, isFocused]);
+  }, [chromebooks, searchTerm, filterStatus, isFocused, isListMode]); // Adicionando isListMode
 
   const getStatusBadge = (status: ChromebookSearchResult['status']) => {
     switch (status) {
