@@ -55,7 +55,7 @@ export function MainMenu({
       title: 'Dashboard',
       icon: <BarChart3 className="h-5 w-5" />,
       action: () => onNavigate('dashboard'),
-      bgColor: 'bg-menu-blue' // ALTERADO PARA AZUL ESCURO
+      bgColor: 'bg-menu-dark-blue' // ALTERADO PARA O NOVO AZUL ESCURO
     },
     {
       title: 'Re-Cadastro Rápido',

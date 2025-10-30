@@ -61,6 +61,10 @@ export default {
           DEFAULT: "hsl(var(--menu-blue))",
           hover: "hsl(var(--menu-blue-hover))",
         },
+        "menu-dark-blue": { // NOVO AZUL ESCURO
+          DEFAULT: "hsl(213 90% 35%)",
+          hover: "hsl(213 90% 30%)",
+        },
         "menu-violet": {
           DEFAULT: "hsl(var(--menu-violet))",
           hover: "hsl(var(--menu-violet-hover))",
