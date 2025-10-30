@@ -527,6 +527,283 @@ const PeriodCharts = ({ periodView, loading, periodChartData, stats, startHour, 
           </CardContent>
         </GlassCard>
       </div>
+    </>
+  );
+};
+
+
+export function Dashboard({
+  onBack
+}: DashboardProps) {
+  const {
+    toast
+  } = useToast();
+  // Inicializa com 'daily'
+  const [periodView, setPeriodView] = useState < PeriodView > ('daily');
+  const [startHour, setStartHour] = useState(7);
+  const [endHour, setEndHour] = useState(19);
+  
+  const { 
+    loading, 
+    history, 
+    chromebooks, 
+    filteredLoans, 
+    filteredReturns, 
+    periodChartData, 
+    stats, 
+    refreshData 
+  } = useDashboardData(periodView, startHour, endHour);
+  
+  const { getChromebooksByStatus } = useDatabase(); // NOVO HOOK
+
+  // ESTADO DO MODAL DE DETALHES
+  const [detailModal, setDetailModal] = useState<DetailModalState>({
+    open: false,
+    title: '',
+    description: '',
+    dataType: 'chromebooks',
+    data: null,
+    isLoading: false,
+  });
+
+  // Função para abrir o modal e carregar dados dinamicamente
+  const handleCardClick = useCallback(async (
+    title: string, 
+    description: string, 
+    dataType: 'chromebooks' | 'loans', 
+    initialData: DetailItem[] | null,
+    statusFilter?: Chromebook['status']
+  ) => {
+    setDetailModal({
+      open: true,
+      title,
+      description,
+      dataType,
+      data: initialData,
+      isLoading: !initialData, // Se não houver dados iniciais (como para status), carrega
+    });
+
+    if (statusFilter && dataType === 'chromebooks') {
+      setDetailModal(prev => ({ ...prev, isLoading: true }));
+      const chromebooksData = await getChromebooksByStatus(statusFilter);
+      
+      const mappedData: DetailItem[] = chromebooksData.map(cb => ({
+        id: cb.id,
+        chromebook_id: cb.chromebook_id,
+        model: cb.model,
+        status: cb.status,
+      }));
+      
+      setDetailModal(prev => ({
+        ...prev,
+        data: mappedData,
+        isLoading: false,
+      }));
+    }
+    
+    // Se for loans, os dados já vêm pré-filtrados (history.filter)
+    if (dataType === 'loans' && initialData) {
+        setDetailModal(prev => ({ ...prev, data: initialData, isLoading: false }));
+    }
+    
+  }, [getChromebooksByStatus]);
+
+
+  const { overdueLoans, upcomingDueLoans } = useOverdueLoans();
+  
+  // Desestruturação segura no escopo principal
+  const { 
+    totalChromebooks = 0, 
+    availableChromebooks = 0, 
+    loansByUserType = {}, 
+    userTypeData = [], 
+    durationData = [], 
+    maxOccupancyRate = 0 
+  } = stats || {};
+
+  // Função para gerar o PDF do relatório
+  const periodText: Record<PeriodView, string> = {
+    daily: 'Hoje',
+    weekly: 'Esta Semana',
+    monthly: 'Este Mês',
+    history: 'Histórico Completo',
+    reports: 'Relatórios Inteligentes' // Mantendo reports como placeholder
+  };
+
+  const generatePDFContent = (pdf: jsPDF) => {
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    let yPosition = 20;
+    pdf.setFontSize(20);
+    pdf.text(`Relatório de Uso dos Chromebooks - ${periodText[periodView]}`, pageWidth / 2, yPosition, {
+      align: "center"
+    });
+    yPosition += 20;
+    pdf.setFontSize(12);
+    pdf.text(`Gerado em: ${format(new Date(), "dd/MM/yyyy 'às' HH:mm")}`, pageWidth / 2, yPosition, {
+      align: "center"
+    });
+    yPosition += 20;
+    pdf.setFontSize(16);
+    pdf.text(`Estatísticas do ${periodText[periodView]}`, 20, yPosition);
+    yPosition += 10;
+    pdf.setFontSize(12);
+    const periodStats = [
+      `Empréstimos: ${filteredLoans?.length || 0}`, 
+      `Devoluções: ${filteredReturns?.length || 0}`, 
+      `Chromebooks ativos: ${stats?.totalActive || 0} de ${totalChromebooks || 0}`, 
+      `Taxa de Ocupação Máxima: ${stats?.maxOccupancyRate.toFixed(0) || 0}%`,
+      `Tempo médio de uso: ${Math.round(stats?.averageUsageTime || 0)} minutos`, 
+      `Taxa de devolução: ${stats?.completionRate.toFixed(0) || 0}%`
+    ];
+    periodStats.forEach(stat => {
+      pdf.text(`• ${stat}`, 25, yPosition);
+      yPosition += 7;
+    });
+    yPosition += 13;
+    pdf.setFontSize(16);
+    pdf.text("Empréstimos Ativos", 20, yPosition);
+    yPosition += 10;
+    pdf.setFontSize(12);
+    history.filter(loan => !loan.return_date).forEach(loan => {
+      if (yPosition > pdf.internal.pageSize.getHeight() - 20) {
+        pdf.addPage();
+        yPosition = 20;
+      }
+      pdf.text(`• ${loan.student_name} - ID: ${loan.chromebook_id}`, 25, yPosition);
+      pdf.text(`  Retirada: ${format(new Date(loan.loan_date), "dd/MM/yyyy 'às' HH:mm")}`, 25, yPosition + 5);
+      yPosition += 15;
+    });
+    return pdf;
+  };
+  
+  const handleDownloadPDF = () => {
+    if (periodView === 'history' || periodView === 'reports') {
+      toast({
+        title: "Atenção",
+        description: "O download de relatórios deve ser feito na aba Histórico/Relatórios, se disponível.",
+        variant: "destructive"
+      });
+      return;
+    }
+    try {
+      const pdf = new jsPDF();
+      generatePDFContent(pdf);
+      pdf.save(`relatorio-chromebooks-${periodView}.pdf`);
+      toast({
+        title: "Sucesso",
+        description: `Relatório ${periodText[periodView]} gerado com sucesso!`
+      });
+    } catch (error) {
+      console.error("Erro ao gerar PDF:", error);
+      toast({
+        title: "Erro",
+        description: "Erro ao gerar o relatório PDF",
+        variant: "destructive"
+      });
+    }
+  };
+  
+  // Quick Win: Badge "Novo"
+  const isNewLoan = (loan: LoanHistoryItem) => {
+    const loanDate = new Date(loan.loan_date);
+    const now = new Date();
+    const diffHours = differenceInMinutes(now, loanDate) / 60;
+    return diffHours <= 24;
+  };
+
+  const periodOptions: { value: PeriodView; label: string; icon: React.ElementType }[] = [
+    { value: 'daily', label: 'Diário (Hoje)', icon: Calendar },
+    { value: 'weekly', label: 'Semanal (7 dias)', icon: CalendarRange },
+    { value: 'monthly', label: 'Mensal (30 dias)', icon: ChartLine },
+    { value: 'history', label: 'Histórico Completo', icon: HistoryIcon },
+    // { value: 'reports', label: 'Relatórios Inteligentes', icon: Brain }, // Mantido como placeholder
+  ];
+
+  return (
+    <div className="space-y-8 relative py-[30px]">
+      { /* Background gradient overlay */ }
+      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-blue-50/30 via-purple-50/20 to-pink-50/30 blur-2xl transform scale-110 py-[25px] rounded-3xl bg-[#000a0e]/0" />
+      
+      {/* Header: Title and Download Button */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center relative z-10 gap-4">
+        <SectionHeader 
+          title="Dashboard" 
+          description="Análise de uso e estatísticas de empréstimos"
+          icon={BarChartIcon}
+          iconColor="text-primary"
+        />
+        <div className="flex items-center gap-3 w-full sm:w-auto">
+          <Button 
+            variant="outline" 
+            onClick={refreshData} 
+            className="flex items-center gap-2 hover:bg-blue-50" 
+            disabled={loading}
+          >
+            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+            <span className="hidden md:inline">{loading ? 'Atualizando...' : 'Atualizar Dados'}</span>
+          </Button>
+          
+          {/* NOVO: Select para seleção de período */}
+          <Select value={periodView} onValueChange={(v) => setPeriodView(v as PeriodView)}>
+            <SelectTrigger className="w-full sm:w-[200px] h-10">
+              <SelectValue placeholder="Selecione o Período" />
+            </SelectTrigger>
+            <SelectContent>
+              {periodOptions.map(option => {
+                const Icon = option.icon;
+                return (
+                  <SelectItem key={option.value} value={option.value} className="flex items-center">
+                    <Icon className="h-4 w-4 mr-2 text-muted-foreground" />
+                    {option.label}
+                  </SelectItem>
+                );
+              })}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      {/* Filtro de Hora (Aparece acima das estatísticas) */}
+      <div className="mt-6">
+          <CollapsibleDashboardFilter 
+              periodView={periodView}
+              startHour={startHour}
+              setStartHour={setStartHour}
+              endHour={endHour}
+              setEndHour={setEndHour}
+              onApply={refreshData}
+              loading={loading}
+          />
+      </div>
+
+      {/* Grid de Cards de Estatísticas (Visível apenas para períodos temporais) */}
+      <StatsGrid 
+        periodView={periodView}
+        filteredLoans={filteredLoans}
+        filteredReturns={filteredReturns}
+        stats={stats}
+        loading={loading}
+        onCardClick={handleCardClick} // PASSANDO O HANDLER
+        history={history} // PASSANDO O HISTÓRICO COMPLETO
+      />
+
+      {/* Conteúdo Principal (Gráficos ou Histórico) */}
+      <div className="space-y-4 mt-6">
+        <PeriodCharts 
+          periodView={periodView}
+          loading={loading}
+          periodChartData={periodChartData}
+          stats={stats}
+          startHour={startHour}
+          endHour={endHour}
+          totalChromebooks={totalChromebooks}
+          availableChromebooks={availableChromebooks}
+          userTypeData={userTypeData}
+          durationData={durationData}
+          isNewLoan={isNewLoan}
+          history={history}
+        />
+      </div>
       
       {/* Modal de Detalhes */}
       <DashboardDetailDialog
