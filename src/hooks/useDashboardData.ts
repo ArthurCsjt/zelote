@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useDatabase } from '@/hooks/useDatabase';
 import { toast } from '@/hooks/use-toast';
 import type { LoanHistoryItem, Chromebook } from '@/types/database';
-import { format, startOfDay, isToday, isWithinInterval, subDays, differenceInMinutes, startOfWeek, endOfWeek, startOfMonth, endOfMonth, addDays } from "date-fns";
+import { format, startOfDay, isToday, isWithinInterval, subDays, differenceInMinutes, startOfWeek, endOfWeek, startOfMonth, endOfMonth, addDays, endOfDay } from "date-fns";
 
 // O PeriodView agora só terá 'history' e 'reports'
 export type PeriodView = 'history' | 'reports';
@@ -134,45 +134,31 @@ export function useDashboardData(
     if (availableForLoan > 0 && startDate && endDate && startHour <= endHour) {
         let maxConcurrentLoans = 0;
         
-        // Iterar por cada hora do dia (ou do período definido)
-        // Para simplificar o cálculo de ocupação máxima, vamos iterar sobre o período de tempo
-        // e verificar o pico de empréstimos ativos.
-        
-        // Criamos um array de pontos de checagem (a cada hora) dentro do intervalo [startDate, endDate]
+        // 1. Definir o intervalo de tempo para checagem
         const checkPoints: Date[] = [];
-        let currentCheck = new Date(startDate);
-        currentCheck.setHours(startHour, 0, 0, 0);
-        
-        const endLimit = new Date(endDate);
-        endLimit.setHours(endHour, 59, 59, 999);
+        let currentDate = startOfDay(startDate);
+        const endLimitDate = endOfDay(endDate);
 
-        while (currentCheck <= endLimit) {
-            // Adiciona o ponto de checagem (meio da hora)
-            const checkTime = new Date(currentCheck);
-            checkTime.setMinutes(30);
-            checkPoints.push(checkTime);
-            
-            // Avança para a próxima hora
-            currentCheck.setHours(currentCheck.getHours() + 1);
-            
-            // Se a próxima hora ultrapassar o endHour, paramos
-            if (currentCheck.getHours() > endHour && currentCheck.getDate() === endDate.getDate()) break;
-            
-            // Se a próxima hora for 00:00, avançamos para o próximo dia e resetamos para startHour
-            if (currentCheck.getHours() === 0) {
-                currentCheck.setDate(currentCheck.getDate() + 1);
-                currentCheck.setHours(startHour, 0, 0, 0);
+        while (currentDate <= endLimitDate) {
+            for (let hour = startHour; hour <= endHour; hour++) {
+                const checkTime = new Date(currentDate);
+                checkTime.setHours(hour, 30, 0, 0); // Checa no meio da hora
+                
+                // Garante que o ponto de checagem esteja dentro do intervalo [startDate, endDate]
+                if (checkTime >= startDate && checkTime <= endDate) {
+                    checkPoints.push(checkTime);
+                }
             }
-            
-            // Se ultrapassarmos o endDate, paramos
-            if (currentCheck > endDate) break;
+            currentDate = addDays(currentDate, 1);
         }
         
+        // 2. Calcular o pico de empréstimos ativos em cada ponto de checagem
         checkPoints.forEach(checkTime => {
             let concurrentLoans = 0;
             
             history.forEach(loan => {
                 const loanStart = new Date(loan.loan_date);
+                // Se o empréstimo não foi devolvido, consideramos que ele está ativo até agora
                 const loanEnd = loan.return_date ? new Date(loan.return_date) : new Date(); 
                 
                 // Verifica se o empréstimo estava ativo no checkTime
