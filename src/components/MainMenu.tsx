@@ -27,52 +27,47 @@ export function MainMenu({
   }, []);
 
   const menuItemsFinal = [
-    // --- Grupo 1: Operações Diárias (Empréstimo/Devolução) ---
+    {
+      title: 'Cadastros',
+      icon: <PlusCircle className="h-5 w-5" />,
+      action: () => onNavigate('registration'),
+      bgColor: 'bg-menu-green'
+    },
+    {
+      title: 'Inventário',
+      icon: <Laptop className="h-5 w-5" />,
+      action: () => onNavigate('inventory'),
+      bgColor: 'bg-menu-blue'
+    },
     {
       title: 'Empréstimos',
       icon: <ClipboardList className="h-5 w-5" />,
       action: () => onNavigate('loan', 'form'),
-      bgColor: 'bg-menu-violet' // Roxo (Ação Principal)
+      bgColor: 'bg-menu-violet' // Roxo
     },
     {
       title: 'Devolução',
       icon: <RotateCcw className="h-5 w-5" />,
       action: () => onNavigate('return'), 
-      bgColor: 'bg-menu-amber' // Laranja (Ação Secundária)
-    },
-    
-    // --- Grupo 2: Inventário e Cadastro ---
-    {
-      title: 'Inventário',
-      icon: <Laptop className="h-5 w-5" />,
-      action: () => onNavigate('inventory'),
-      bgColor: 'bg-menu-green-dark' // NOVO: Verde Escuro (Estrutura)
+      bgColor: 'bg-menu-amber' // Laranja
     },
     {
-      title: 'Cadastros',
-      icon: <PlusCircle className="h-5 w-5" />,
-      action: () => onNavigate('registration'),
-      bgColor: 'bg-menu-green' // Verde Claro (Adição)
+      title: 'Dashboard',
+      icon: <BarChart3 className="h-5 w-5" />,
+      action: () => onNavigate('dashboard'),
+      bgColor: 'bg-menu-dark-blue' // ALTERADO PARA O NOVO AZUL ESCURO
     },
     {
       title: 'Re-Cadastro Rápido',
       icon: <QrCode className="h-5 w-5" />,
       action: () => onNavigate('quick-register'),
-      bgColor: 'bg-menu-teal' // Verde-Água Claro (Ferramenta)
-    },
-    
-    // --- Grupo 3: Análise e Auditoria ---
-    {
-      title: 'Dashboard',
-      icon: <BarChart3 className="h-5 w-5" />,
-      action: () => onNavigate('dashboard'),
-      bgColor: 'bg-menu-dark-blue' // Azul Escuro (Análise)
+      bgColor: 'bg-menu-teal' // Verde-Água Claro
     },
     {
       title: 'Sistema de Contagem',
       icon: <ListChecks className="h-5 w-5" />,
       action: () => onNavigate('audit'),
-      bgColor: 'bg-menu-rose' // Rosa/Vermelho (Auditoria)
+      bgColor: 'bg-menu-rose' // Rosa/Vermelho
     }
   ];
 
