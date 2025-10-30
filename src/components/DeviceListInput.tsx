@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { Input } from './ui/input';
 import { Button } from './ui/button';
 import { Label } from './ui/label';
@@ -11,6 +11,7 @@ import { useChromebookSearch, ChromebookSearchResult } from '@/hooks/useChromebo
 import { cn } from '@/lib/utils';
 import ChromebookSearchInput from './ChromebookSearchInput'; // Importando o componente de busca
 import { useDatabase } from '@/hooks/useDatabase'; // NOVO IMPORT
+import type { LoanHistoryItem } from '@/types/database'; // Importando o tipo de histórico
 
 // Novo tipo para armazenar o dispositivo completo na lista
 interface DeviceListItem extends ChromebookSearchResult {
@@ -30,8 +31,22 @@ export function DeviceListInput({ deviceIds, setDeviceIds, disabled, filterStatu
   const [isQRReaderOpen, setIsQRReaderOpen] = useState(false);
   const { chromebooks, loading: searchLoading } = useChromebookSearch();
   const { getActiveLoans } = useDatabase(); // Usando useDatabase para buscar empréstimos ativos
+  const [activeLoansCache, setActiveLoansCache] = useState<LoanHistoryItem[]>([]);
+  const [isLoanCacheLoading, setIsLoanCacheLoading] = useState(true);
 
-  // Sincroniza deviceList com deviceIds (apenas para inicialização ou se deviceIds for alterado externamente)
+  // 1. Carregar empréstimos ativos no início
+  useEffect(() => {
+    const loadLoans = async () => {
+      setIsLoanCacheLoading(true);
+      const loans = await getActiveLoans();
+      setActiveLoansCache(loans);
+      setIsLoanCacheLoading(false);
+    };
+    loadLoans();
+  }, [getActiveLoans]);
+
+
+  // 2. Sincroniza deviceList com deviceIds (apenas para inicialização ou se deviceIds for alterado externamente)
   React.useEffect(() => {
     // Mapeia os IDs externos para os objetos internos, se possível
     const initialList = deviceIds
@@ -73,30 +88,32 @@ export function DeviceListInput({ deviceIds, setDeviceIds, disabled, filterStatu
     }
     
     // Para devolução, o status deve ser 'emprestado'
-    if (actionLabel === 'Devolução' && chromebook.status !== 'emprestado') {
-        return { error: `Status Incorreto: ${chromebook.status.toUpperCase()}. Requerido: Emprestado.` };
-    }
+    // REMOVIDO: A verificação de status local para devolução, pois o loan_history é a fonte de verdade.
+    // if (actionLabel === 'Devolução' && chromebook.status !== 'emprestado') {
+    //     return { error: `Status Incorreto: ${chromebook.status.toUpperCase()}. Requerido: Emprestado.` };
+    // }
 
 
-    // 2. Validação de Empréstimo Ativo (Verificação de consistência com o DB)
-    const activeLoans = await getActiveLoans();
-    const activeLoan = activeLoans.find(loan => loan.chromebook_id === normalizedInput);
+    // 2. Validação de Empréstimo Ativo (Verificação de consistência com o DB via loan_history)
+    const activeLoan = activeLoansCache.find(loan => loan.chromebook_id === normalizedInput);
     
     if (actionLabel === 'Devolução') {
         // Fluxo de Devolução: Deve ter um empréstimo ativo (status 'ativo' ou 'atrasado' no loan_history)
         if (!activeLoan) {
             return { error: `O Chromebook ${normalizedInput} não possui um empréstimo ativo registrado no sistema.` };
         }
-        // Se houver um empréstimo ativo, a devolução é permitida, mesmo que esteja atrasado.
+        // Se houver um empréstimo ativo, a devolução é permitida, mesmo que o status do CB esteja inconsistente.
     } else if (actionLabel === 'Empréstimo') {
         // Fluxo de Empréstimo: Não deve ter um empréstimo ativo
         if (activeLoan) {
-            return { error: `O Chromebook ${normalizedInput} está marcado como 'disponível', mas possui um empréstimo ativo no sistema. Tente sincronizar o status.` };
+            // Se o status do CB for 'disponivel' mas houver um empréstimo ativo, é uma inconsistência.
+            // Bloqueamos o empréstimo e sugerimos sincronização.
+            return { error: `O Chromebook ${normalizedInput} possui um empréstimo ativo no sistema. Tente sincronizar o status no Dashboard.` };
         }
     }
 
     return { chromebook: chromebook as DeviceListItem };
-  }, [deviceList, chromebooks, actionLabel, getActiveLoans]);
+  }, [deviceList, chromebooks, actionLabel, activeLoansCache]); // Adicionando activeLoansCache como dependência
 
   // Lógica de adição (usada por busca visual e QR code)
   const addDevice = useCallback(async (chromebook: DeviceListItem) => {
@@ -168,7 +185,7 @@ export function DeviceListInput({ deviceIds, setDeviceIds, disabled, filterStatu
         selectedChromebook={null} // Sempre nulo para permitir a busca contínua
         onSelect={addDevice} // Adiciona o objeto completo
         onClear={() => {}} // Não faz nada no modo lista
-        disabled={disabled || searchLoading}
+        disabled={disabled || searchLoading || isLoanCacheLoading}
         filterStatus={filterStatus === 'emprestado' ? 'ativo' : 'disponivel'} // Mapeia para o filtro interno do SearchInput
         onScanClick={() => setIsQRReaderOpen(true)}
         isListMode={true} // Ativa o modo lista
