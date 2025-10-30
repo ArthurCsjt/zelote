@@ -93,49 +93,8 @@ const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = []
 
   return (
     <TooltipProvider>
-      {/* ALTERADO: grid-cols-2 md:grid-cols-4 para acomodar o card de 2 colunas */}
-      <div className="grid gap-4 grid-cols-2 md:grid-cols-4 relative z-10">
-        
-        {/* CARD 3: Pico de Uso de Disponíveis (DESTAQUE) */}
-        <GlassCard className="border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-red-500 md:col-span-2">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <ShadcnTooltip delayDuration={300}>
-              <TooltipTrigger asChild>
-                <CardTitle className="text-sm font-medium flex items-center gap-1 cursor-help">
-                  PICO DE USO DE DISPONÍVEIS
-                  <Info className="h-3 w-3 text-muted-foreground" />
-                </CardTitle>
-              </TooltipTrigger>
-              <TooltipContent className="max-w-sm text-xs">
-                <p>O pico de uso (em %) atingido durante o período e horário selecionados no filtro. É calculado sobre o total de equipamentos móveis (excluindo status 'fixo' e 'fora_uso').</p>
-              </TooltipContent>
-            </ShadcnTooltip>
-            <TrendingUp className="h-6 w-6 sm:h-8 sm:w-8 text-red-500" />
-          </CardHeader>
-          <CardContent>
-            {/* Aumentando o tamanho do valor */}
-            <div className="text-3xl sm:text-5xl font-bold bg-gradient-to-r from-red-600 to-red-800 bg-clip-text text-transparent">
-              {maxOccupancyRate.toFixed(0)}%
-            </div>
-            <p className="text-sm text-muted-foreground mt-1">
-              Pico de uso no período filtrado
-            </p>
-            
-            {/* NOVO BOTÃO DE APLICAR FILTRO */}
-            <div className="mt-3 pt-3 border-t border-red-200">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={onApplyFilter}
-                className="w-full bg-white hover:bg-red-50 text-red-600 border-red-300"
-                disabled={loading}
-              >
-                <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-                Aplicar Filtro de Período
-              </Button>
-            </div>
-          </CardContent>
-        </GlassCard>
+      {/* ALTERADO: grid-cols-2 md:grid-cols-5 para acomodar 5 cards na primeira linha */}
+      <div className="grid gap-4 grid-cols-2 md:grid-cols-5 relative z-10">
         
         {/* CARD 1: Empréstimos Ativos (Contagem de ativos) */}
         <GlassCard 
@@ -199,9 +158,73 @@ const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = []
           </CardContent>
         </GlassCard>
         
-        {/* Linha 2: Tempo Médio e Taxa de Devolução */}
+        {/* NOVO CARD: Taxa de Uso do Inventário (Neste Instante) */}
+        <GlassCard className="border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-red-500">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <ShadcnTooltip delayDuration={300}>
+              <TooltipTrigger asChild>
+                <CardTitle className="text-xs sm:text-sm font-medium flex items-center gap-1 cursor-help">
+                  TAXA DE USO (Neste Instante)
+                  <Info className="h-3 w-3 text-muted-foreground" />
+                </CardTitle>
+              </TooltipTrigger>
+              <TooltipContent className="max-w-sm text-xs">
+                <p>Porcentagem de equipamentos móveis (não fixos) que estão atualmente emprestados.</p>
+              </TooltipContent>
+            </ShadcnTooltip>
+            <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-red-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-xl sm:text-3xl font-bold bg-gradient-to-r from-red-600 to-red-800 bg-clip-text text-transparent">
+              {totalInventoryUsageRate.toFixed(0)}%
+            </div>
+            <p className="text-[10px] sm:text-xs text-muted-foreground">
+              Uso atual do inventário móvel
+            </p>
+          </CardContent>
+        </GlassCard>
+
+        {/* CARD 3: Taxa de Uso do Inventário (Pico no Período) - Antigo Pico de Uso */}
+        <GlassCard className="border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-orange-500">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <ShadcnTooltip delayDuration={300}>
+              <TooltipTrigger asChild>
+                <CardTitle className="text-xs sm:text-sm font-medium flex items-center gap-1 cursor-help">
+                  TAXA DE USO (Pico no Período)
+                  <Info className="h-3 w-3 text-muted-foreground" />
+                </CardTitle>
+              </TooltipTrigger>
+              <TooltipContent className="max-w-sm text-xs">
+                <p>O pico de uso (em %) atingido durante o período e horário selecionados no filtro.</p>
+              </TooltipContent>
+            </ShadcnTooltip>
+            <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-orange-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-xl sm:text-3xl font-bold bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent">
+              {maxOccupancyRate.toFixed(0)}%
+            </div>
+            <p className="text-[10px] sm:text-xs text-muted-foreground">
+              Pico de uso no período filtrado
+            </p>
+            
+            {/* Botão de Aplicar Filtro (Mantido aqui para o card de pico) */}
+            <div className="mt-3 pt-3 border-t border-orange-200">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={onApplyFilter}
+                className="w-full bg-white hover:bg-orange-50 text-orange-600 border-orange-300"
+                disabled={loading}
+              >
+                <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+                Aplicar Filtro
+              </Button>
+            </div>
+          </CardContent>
+        </GlassCard>
         
-        {/* CARD 4: Tempo Médio (Não Clicável - Métrica de cálculo) */}
+        {/* CARD 5: Tempo Médio (Não Clicável - Métrica de cálculo) */}
         <GlassCard className="border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-purple-500">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <ShadcnTooltip delayDuration={300}>
@@ -227,8 +250,8 @@ const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = []
           </CardContent>
         </GlassCard>
 
-        {/* CARD 5: Taxa de Devolução (Não Clicável - Métrica de cálculo) */}
-        <GlassCard className="border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-orange-500">
+        {/* CARD 6: Taxa de Devolução (Linha 2) */}
+        <GlassCard className="border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-teal-500 md:col-span-2">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <ShadcnTooltip delayDuration={300}>
               <TooltipTrigger asChild>
@@ -241,10 +264,10 @@ const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = []
                 <p>Porcentagem de empréstimos realizados no período que já foram devolvidos.</p>
               </TooltipContent>
             </ShadcnTooltip>
-            <Activity className="h-4 w-4 sm:h-5 sm:w-5 text-orange-500" />
+            <Activity className="h-4 w-4 sm:h-5 sm:w-5 text-teal-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-xl sm:text-3xl font-bold bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent">
+            <div className="text-xl sm:text-3xl font-bold bg-gradient-to-r from-teal-600 to-cyan-600 bg-clip-text text-transparent">
               {completionRate.toFixed(0)}%
             </div>
             <div className="flex items-center gap-2 mt-1">
@@ -294,94 +317,96 @@ const PeriodCharts = ({ periodView, loading, periodChartData, stats, startHour, 
 
   return (
     <>
-      <GlassCard className="dashboard-card">
-        <CardHeader className="flex flex-row items-center justify-between">
-          <div>
-            <CardTitle className="text-lg">{chartTitle}</CardTitle>
-            <CardDescription>
-              {chartDescription}
-            </CardDescription>
-          </div>
-          <BarChartIcon className="h-5 w-5 text-muted-foreground" />
-        </CardHeader>
-        <CardContent className="h-[250px] sm:h-[300px]">
-          <ChartContainer
-            config={{
-              empréstimos: { label: "Empréstimos", color: "hsl(var(--primary))" },
-              devoluções: { label: "Devoluções", color: "hsl(var(--menu-green))" },
-            }}
-            className="w-full h-full"
-          >
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={periodChartData} margin={{ top: 5, right: 0, left: -20, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
-                <XAxis dataKey={chartDataKey} tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
-                <YAxis tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
-                <Tooltip content={<ChartTooltipContent />} />
-                <Legend content={<ChartLegendContent />} wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
-                
-                <Bar 
-                  dataKey="empréstimos" 
-                  fill="#2563EB" 
-                  radius={[4, 4, 0, 0]} 
-                  name="Empréstimos"
-                />
-                
-                <Bar 
-                  dataKey="devoluções" 
-                  fill="#22C55E" 
-                  radius={[4, 4, 0, 0]} 
-                  name="Devoluções"
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          </ChartContainer>
-        </CardContent>
-      </GlassCard>
+      <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
+        <GlassCard className="dashboard-card">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle className="text-lg">{chartTitle}</CardTitle>
+              <CardDescription>
+                {chartDescription}
+              </CardDescription>
+            </div>
+            <BarChartIcon className="h-5 w-5 text-muted-foreground" />
+          </CardHeader>
+          <CardContent className="h-[250px] sm:h-[300px]">
+            <ChartContainer
+              config={{
+                empréstimos: { label: "Empréstimos", color: "hsl(var(--primary))" },
+                devoluções: { label: "Devoluções", color: "hsl(var(--menu-green))" },
+              }}
+              className="w-full h-full"
+            >
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={periodChartData} margin={{ top: 5, right: 0, left: -20, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
+                  <XAxis dataKey={chartDataKey} tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
+                  <YAxis tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
+                  <Tooltip content={<ChartTooltipContent />} />
+                  <Legend content={<ChartLegendContent />} wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
+                  
+                  <Bar 
+                    dataKey="empréstimos" 
+                    fill="#2563EB" 
+                    radius={[4, 4, 0, 0]} 
+                    name="Empréstimos"
+                  />
+                  
+                  <Bar 
+                    dataKey="devoluções" 
+                    fill="#22C55E" 
+                    radius={[4, 4, 0, 0]} 
+                    name="Devoluções"
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartContainer>
+          </CardContent>
+        </GlassCard>
 
-      {/* NOVO GRÁFICO: Ocupação Horária */}
-      <GlassCard className="dashboard-card">
-        <CardHeader className="flex flex-row items-center justify-between">
-          <div>
-            <CardTitle className="text-lg">Taxa de Ocupação Horária</CardTitle>
-            <CardDescription>
-              Ocupação do inventário móvel no período selecionado
-            </CardDescription>
-          </div>
-          <TrendingUp className="h-5 w-5 text-muted-foreground" />
-        </CardHeader>
-        <CardContent className="h-[250px] sm:h-[300px]">
-          <ChartContainer
-            config={{
-              ocupação: { label: "Ocupação (%)", color: "hsl(var(--destructive))" },
-            }}
-            className="w-full h-full"
-          >
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={periodChartData} margin={{ top: 5, right: 0, left: -20, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
-                <XAxis dataKey={chartDataKey} tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
-                <YAxis 
-                    tick={{ fontSize: 10 }} 
-                    domain={[0, 100]} 
-                    tickFormatter={(value) => `${value}%`}
-                    stroke="hsl(var(--muted-foreground))" 
-                />
-                <Tooltip content={<ChartTooltipContent />} />
-                <Legend content={<ChartLegendContent />} wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
-                
-                <Line 
-                    type="monotone" 
-                    dataKey="ocupação" 
-                    stroke="hsl(var(--destructive))" 
-                    strokeWidth={2} 
-                    name="Ocupação (%)"
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </ChartContainer>
-        </CardContent>
-      </GlassCard>
+        {/* NOVO GRÁFICO: Ocupação Horária */}
+        <GlassCard className="dashboard-card">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle className="text-lg">Taxa de Ocupação Horária</CardTitle>
+              <CardDescription>
+                Ocupação do inventário móvel no período selecionado
+              </CardDescription>
+            </div>
+            <TrendingUp className="h-5 w-5 text-muted-foreground" />
+          </CardHeader>
+          <CardContent className="h-[250px] sm:h-[300px]">
+            <ChartContainer
+              config={{
+                ocupação: { label: "Ocupação (%)", color: "hsl(var(--destructive))" },
+              }}
+              className="w-full h-full"
+            >
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={periodChartData} margin={{ top: 5, right: 0, left: -20, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
+                  <XAxis dataKey={chartDataKey} tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
+                  <YAxis 
+                      tick={{ fontSize: 10 }} 
+                      domain={[0, 100]} 
+                      tickFormatter={(value) => `${value}%`}
+                      stroke="hsl(var(--muted-foreground))" 
+                  />
+                  <Tooltip content={<ChartTooltipContent />} />
+                  <Legend content={<ChartLegendContent />} wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
+                  
+                  <Line 
+                      type="monotone" 
+                      dataKey="ocupação" 
+                      stroke="hsl(var(--destructive))" 
+                      strokeWidth={2} 
+                      name="Ocupação (%)"
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </ChartContainer>
+          </CardContent>
+        </GlassCard>
+      </div>
 
       <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
         <GlassCard className="dashboard-card">
