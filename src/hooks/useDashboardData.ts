@@ -18,8 +18,6 @@ interface DashboardStats {
   userTypeData: { name: string; value: number }[];
   durationData: { name: string; minutos: number }[];
   maxOccupancyRate: number; // Taxa de ocupação máxima
-  peakTime: Date | null; // NOVO: Momento em que o pico ocorreu
-  peakLoanIds: string[]; // NOVO: IDs dos empréstimos ativos no pico
 }
 
 export function useDashboardData(
@@ -133,8 +131,6 @@ export function useDashboardData(
     
     // CÁLCULO: Taxa de Ocupação Máxima no Período Filtrado (startHour a endHour)
     let maxOccupancyRate = 0;
-    let peakTime: Date | null = null;
-    let peakLoanIds: string[] = [];
     
     if (availableForLoan > 0 && startDate && endDate && startHour <= endHour) {
         let maxConcurrentLoans = 0;
@@ -160,7 +156,6 @@ export function useDashboardData(
         // 2. Calcular o pico de empréstimos ativos em cada ponto de checagem
         checkPoints.forEach(checkTime => {
             let concurrentLoans = 0;
-            let currentPeakLoanIds: string[] = [];
             
             history.forEach(loan => {
                 const loanStart = new Date(loan.loan_date);
@@ -170,14 +165,11 @@ export function useDashboardData(
                 // Verifica se o empréstimo estava ativo no checkTime
                 if (checkTime >= loanStart && checkTime <= loanEnd) {
                     concurrentLoans++;
-                    currentPeakLoanIds.push(loan.id); // Armazena o ID do empréstimo (loan.id)
                 }
             });
             
             if (concurrentLoans > maxConcurrentLoans) {
                 maxConcurrentLoans = concurrentLoans;
-                peakTime = checkTime;
-                peakLoanIds = currentPeakLoanIds;
             }
         });
         
@@ -196,8 +188,6 @@ export function useDashboardData(
       userTypeData,
       durationData,
       maxOccupancyRate: Math.min(100, maxOccupancyRate), // Limita a 100%
-      peakTime,
-      peakLoanIds,
     };
   }, [chromebooks, history, filteredLoans, startHour, endHour, startDate, endDate]);
 

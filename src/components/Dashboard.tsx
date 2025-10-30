@@ -64,7 +64,7 @@ type DetailModalState = {
 
 
 // Componente auxiliar para renderizar o grid de estatísticas
-const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = [], loading, onCardClick, history, onPeakClick }: any) => {
+const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = [], loading, onCardClick, history, onApplyFilter }: any) => {
   if (periodView === 'history' || periodView === 'reports') return null;
 
   // Desestruturação segura, usando valores padrão se stats for null/undefined
@@ -76,8 +76,6 @@ const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = []
     averageUsageTime = 0, 
     completionRate = 0, 
     maxOccupancyRate = 0,
-    peakTime = null, // NOVO
-    peakLoanIds = [], // NOVO
   } = stats || {};
 
   if (loading) {
@@ -120,23 +118,22 @@ const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = []
               {maxOccupancyRate.toFixed(0)}%
             </div>
             <p className="text-sm text-muted-foreground mt-1">
-              Pico de uso no período selecionado
+              Pico de uso no período filtrado
             </p>
             
-            {/* NOVO BOTÃO DE DETALHES DO PICO */}
-            {peakTime && maxOccupancyRate > 0 && (
-              <div className="mt-3 pt-3 border-t border-red-200">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={() => onPeakClick(peakTime, peakLoanIds)}
-                  className="w-full bg-white hover:bg-red-50 text-red-600 border-red-300"
-                >
-                  <Eye className="h-4 w-4 mr-2" />
-                  Ver Detalhes do Pico ({format(peakTime, 'dd/MM HH:mm')})
-                </Button>
-              </div>
-            )}
+            {/* NOVO BOTÃO DE APLICAR FILTRO */}
+            <div className="mt-3 pt-3 border-t border-red-200">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={onApplyFilter}
+                className="w-full bg-white hover:bg-red-50 text-red-600 border-red-300"
+                disabled={loading}
+              >
+                <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+                Aplicar Filtro de Período
+              </Button>
+            </div>
           </CardContent>
         </GlassCard>
         
@@ -632,32 +629,17 @@ export function Dashboard({
     
   }, [getChromebooksByStatus]);
   
-  // NOVO: Função para lidar com o clique no Pico de Uso
-  const handlePeakClick = useCallback((peakTime: Date, peakLoanIds: string[]) => {
-    if (peakLoanIds.length === 0) return;
-    
-    // Filtra o histórico completo para encontrar os empréstimos ativos no momento do pico
-    const peakLoans = history.filter(loan => peakLoanIds.includes(loan.id));
-    
-    const mappedData: DetailItem[] = peakLoans.map(loan => ({
-        id: loan.id,
-        chromebook_id: loan.chromebook_id,
-        model: loan.chromebook_model,
-        loan_date: loan.loan_date,
-        expected_return_date: loan.expected_return_date,
-        student_name: loan.student_name,
-        isOverdue: loan.expected_return_date && new Date(loan.expected_return_date) < peakTime,
-    }));
-    
-    setDetailModal({
-        open: true,
-        title: `Empréstimos Ativos no Pico de Uso`,
-        description: `Lista de ${mappedData.length} empréstimos ativos em ${format(peakTime, "dd/MM/yyyy 'às' HH:mm")}.`,
-        dataType: 'loans',
-        data: mappedData,
-        isLoading: false,
+  // NOVO: Função para lidar com o clique no Pico de Uso (agora apenas aplica o filtro)
+  const handleApplyFilter = () => {
+    // O CollapsibleDashboardFilter já atualiza startDate/endDate/startHour/endHour no estado.
+    // Basta chamar refreshData para que o useDashboardData recalcule com os novos filtros.
+    refreshData();
+    toast({
+      title: "Filtro Aplicado",
+      description: "Os gráficos e o pico de uso foram atualizados para o período selecionado.",
+      variant: "info"
     });
-  }, [history]);
+  };
 
 
   const { overdueLoans, upcomingDueLoans } = useOverdueLoans();
@@ -670,8 +652,6 @@ export function Dashboard({
     userTypeData = [], 
     durationData = [], 
     maxOccupancyRate = 0,
-    peakTime = null, // NOVO
-    peakLoanIds = [], // NOVO
   } = stats || {};
 
   // Função para gerar o PDF do relatório
@@ -824,7 +804,7 @@ export function Dashboard({
                 setStartHour={setStartHour}
                 endHour={endHour}
                 setEndHour={setEndHour}
-                onApply={refreshData}
+                onApply={handleApplyFilter} // USANDO O NOVO HANDLER
                 loading={loading}
             />
         </div>
@@ -840,7 +820,7 @@ export function Dashboard({
           loading={loading}
           onCardClick={handleCardClick}
           history={history}
-          onPeakClick={handlePeakClick} // PASSANDO A NOVA FUNÇÃO
+          onApplyFilter={handleApplyFilter} // PASSANDO O HANDLER PARA O CARD
         />
       )}
 
