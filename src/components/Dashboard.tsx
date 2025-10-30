@@ -17,7 +17,6 @@ import { LoanHistory } from "./LoanHistory";
 import { GlassCard } from "./ui/GlassCard";
 import { useDashboardData, PeriodView } from '@/hooks/useDashboardData';
 import { Skeleton } from "./ui/skeleton";
-import { CollapsibleDashboardFilter } from "./CollapsibleDashboardFilter";
 import { Tooltip as ShadcnTooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select"; // NOVO IMPORT
 import { SectionHeader } from "./Shared/SectionHeader"; // NOVO IMPORT
@@ -106,7 +105,7 @@ const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = []
                   <Info className="h-3 w-3 text-muted-foreground" />
                 </CardTitle>
               </TooltipTrigger>
-              <TooltipContent className="max-w-xs text-xs">
+              <TooltipContent className="max-w-sm text-xs"> {/* AUMENTADO max-w-xs para max-w-sm */}
                 <p>O pico de uso (em %) atingido durante o período e horário selecionados no filtro. É calculado sobre o total de equipamentos móveis (excluindo status 'fixo' e 'fora_uso').</p>
               </TooltipContent>
             </ShadcnTooltip>
@@ -144,7 +143,7 @@ const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = []
                   <Info className="h-3 w-3 text-muted-foreground" />
                 </CardTitle>
               </TooltipTrigger>
-              <TooltipContent className="max-w-xs text-xs">
+              <TooltipContent className="max-w-sm text-xs"> {/* AUMENTADO max-w-xs para max-w-sm */}
                 <p>Número de Chromebooks atualmente emprestados (status 'emprestado').</p>
               </TooltipContent>
             </ShadcnTooltip>
@@ -171,7 +170,7 @@ const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = []
                   <Info className="h-3 w-3 text-muted-foreground" />
                 </CardTitle>
               </TooltipTrigger>
-              <TooltipContent className="max-w-xs text-xs">
+              <TooltipContent className="max-w-sm text-xs"> {/* AUMENTADO max-w-xs para max-w-sm */}
                 <p>Número de Chromebooks com status 'disponível' no inventário.</p>
               </TooltipContent>
             </ShadcnTooltip>
@@ -197,7 +196,7 @@ const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = []
                   <Info className="h-3 w-3 text-muted-foreground" />
                 </CardTitle>
               </TooltipTrigger>
-              <TooltipContent className="max-w-xs text-xs">
+              <TooltipContent className="max-w-sm text-xs"> {/* AUMENTADO max-w-xs para max-w-sm */}
                 <p>Duração média (em minutos) dos empréstimos que foram devolvidos no período selecionado.</p>
               </TooltipContent>
             </ShadcnTooltip>
@@ -223,7 +222,7 @@ const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = []
                   <Info className="h-3 w-3 text-muted-foreground" />
                 </CardTitle>
               </TooltipTrigger>
-              <TooltipContent className="max-w-xs text-xs">
+              <TooltipContent className="max-w-sm text-xs"> {/* AUMENTADO max-w-xs para max-w-sm */}
                 <p>Porcentagem de empréstimos realizados no período que já foram devolvidos.</p>
               </TooltipContent>
             </ShadcnTooltip>
