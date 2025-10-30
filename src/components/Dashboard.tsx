@@ -96,13 +96,13 @@ const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = []
       {/* ALTERADO: grid-cols-2 md:grid-cols-4 para acomodar o card de 2 colunas */}
       <div className="grid gap-4 grid-cols-2 md:grid-cols-4 relative z-10">
         
-        {/* CARD 3: Ocupação Máxima (DESTAQUE) */}
+        {/* CARD 3: Pico de Uso do Inventário (DESTAQUE) */}
         <GlassCard className="border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-red-500 md:col-span-2">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <ShadcnTooltip delayDuration={300}>
               <TooltipTrigger asChild>
                 <CardTitle className="text-sm font-medium flex items-center gap-1 cursor-help">
-                  OCUPAÇÃO MÁXIMA DO INVENTÁRIO
+                  PICO DE USO DO INVENTÁRIO
                   <Info className="h-3 w-3 text-muted-foreground" />
                 </CardTitle>
               </TooltipTrigger>
