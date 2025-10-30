@@ -261,15 +261,12 @@ const PeriodCharts = ({ periodView, loading, periodChartData, stats, startHour, 
     return <LoanHistory history={history} isNewLoan={isNewLoan} />;
   }
   
-  // Renderiza os gráficos para Diário, Semanal e Mensal
-  const isDaily = periodView === 'daily';
-  const isWeekly = periodView === 'weekly';
-  const isMonthly = periodView === 'monthly';
+  // Renderiza os gráficos para o intervalo de tempo selecionado
   
-  const chartTitle = isDaily ? 'Atividade por Hora' : isWeekly ? 'Atividade Semanal' : 'Tendência Mensal';
-  const chartDescription = isDaily ? 'Movimentação ao longo do dia' : isWeekly ? 'Últimos 7 dias' : 'Últimos 30 dias';
-  const chartDataKey = isDaily ? 'hora' : 'date';
-  
+  const chartTitle = periodChartData.length > 2 ? 'Atividade Diária' : 'Atividade Horária';
+  const chartDescription = periodChartData.length > 2 ? 'Movimentação ao longo dos dias selecionados' : 'Movimentação ao longo das horas selecionadas';
+  const chartDataKey = 'label'; // Usamos 'label' agora
+
   // Desestruturação segura para stats, incluindo filteredLoans e filteredReturns
   const { 
     totalActive = 0, 
@@ -302,8 +299,7 @@ const PeriodCharts = ({ periodView, loading, periodChartData, stats, startHour, 
             className="w-full h-full"
           >
             <ResponsiveContainer width="100%" height="100%">
-              {/* ALTERADO: Usando BarChart em vez de ComposedChart/Area para consistência */}
-              <BarChart data={isDaily ? periodChartData.slice(startHour - 6, endHour - 6 + 1) : periodChartData} margin={{ top: 5, right: 0, left: -20, bottom: 5 }}>
+              <BarChart data={periodChartData} margin={{ top: 5, right: 0, left: -20, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
                 <XAxis dataKey={chartDataKey} tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
                 <YAxis tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
@@ -335,7 +331,7 @@ const PeriodCharts = ({ periodView, loading, periodChartData, stats, startHour, 
           <div>
             <CardTitle className="text-lg">Taxa de Ocupação Horária</CardTitle>
             <CardDescription>
-              Ocupação do inventário móvel entre {startHour}h e {endHour}h
+              Ocupação do inventário móvel no período selecionado
             </CardDescription>
           </div>
           <TrendingUp className="h-5 w-5 text-muted-foreground" />
@@ -348,7 +344,7 @@ const PeriodCharts = ({ periodView, loading, periodChartData, stats, startHour, 
             className="w-full h-full"
           >
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={isDaily ? periodChartData.slice(startHour - 6, endHour - 6 + 1) : periodChartData} margin={{ top: 5, right: 0, left: -20, bottom: 5 }}>
+              <LineChart data={periodChartData} margin={{ top: 5, right: 0, left: -20, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
                 <XAxis dataKey={chartDataKey} tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
                 <YAxis 
@@ -538,8 +534,14 @@ export function Dashboard({
   const {
     toast
   } = useToast();
-  // Inicializa com 'daily'
-  const [periodView, setPeriodView] = useState < PeriodView > ('daily');
+  
+  // NOVO ESTADO: Datas de início e fim para o filtro dinâmico
+  const [startDate, setStartDate] = useState<Date | null>(startOfDay(subDays(new Date(), 6))); // Padrão: 7 dias atrás
+  const [endDate, setEndDate] = useState<Date | null>(endOfDay(new Date())); // Padrão: Hoje
+  
+  // O PeriodView agora só controla a visualização (Gráficos vs. Histórico)
+  const [periodView, setPeriodView] = useState < PeriodView | 'charts' > ('charts');
+  
   const [startHour, setStartHour] = useState(7);
   const [endHour, setEndHour] = useState(19);
   
@@ -552,9 +554,14 @@ export function Dashboard({
     periodChartData, 
     stats, 
     refreshData 
-  } = useDashboardData(periodView, startHour, endHour);
+  } = useDashboardData(
+    periodView === 'charts' ? startDate : null, // Passa datas apenas se estiver em modo 'charts'
+    periodView === 'charts' ? endDate : null,
+    startHour, 
+    endHour
+  );
   
-  const { getChromebooksByStatus } = useDatabase(); // NOVO HOOK
+  const { getChromebooksByStatus } = useDatabase();
 
   // ESTADO DO MODAL DE DETALHES
   const [detailModal, setDetailModal] = useState<DetailModalState>({
@@ -622,12 +629,10 @@ export function Dashboard({
   } = stats || {};
 
   // Função para gerar o PDF do relatório
-  const periodText: Record<PeriodView, string> = {
-    daily: 'Hoje',
-    weekly: 'Esta Semana',
-    monthly: 'Este Mês',
+  const periodText: Record<PeriodView | 'charts', string> = {
+    charts: `Período: ${startDate && endDate ? `${format(startDate, 'dd/MM/yyyy')} - ${format(endDate, 'dd/MM/yyyy')}` : 'N/A'}`,
     history: 'Histórico Completo',
-    reports: 'Relatórios Inteligentes' // Mantendo reports como placeholder
+    reports: 'Relatórios Inteligentes'
   };
 
   const generatePDFContent = (pdf: jsPDF) => {
@@ -644,7 +649,7 @@ export function Dashboard({
     });
     yPosition += 20;
     pdf.setFontSize(16);
-    pdf.text(`Estatísticas do ${periodText[periodView]}`, 20, yPosition);
+    pdf.text(`Estatísticas do Período`, 20, yPosition);
     yPosition += 10;
     pdf.setFontSize(12);
     const periodStats = [
@@ -677,10 +682,10 @@ export function Dashboard({
   };
   
   const handleDownloadPDF = () => {
-    if (periodView === 'history' || periodView === 'reports') {
+    if (periodView !== 'charts') {
       toast({
         title: "Atenção",
-        description: "O download de relatórios deve ser feito na aba Histórico/Relatórios, se disponível.",
+        description: "O download de relatórios só está disponível na aba 'Análise de Uso'.",
         variant: "destructive"
       });
       return;
@@ -688,10 +693,10 @@ export function Dashboard({
     try {
       const pdf = new jsPDF();
       generatePDFContent(pdf);
-      pdf.save(`relatorio-chromebooks-${periodView}.pdf`);
+      pdf.save(`relatorio-chromebooks-personalizado.pdf`);
       toast({
         title: "Sucesso",
-        description: `Relatório ${periodText[periodView]} gerado com sucesso!`
+        description: `Relatório gerado com sucesso!`
       });
     } catch (error) {
       console.error("Erro ao gerar PDF:", error);
@@ -711,10 +716,8 @@ export function Dashboard({
     return diffHours <= 24;
   };
 
-  const periodOptions: { value: PeriodView; label: string; icon: React.ElementType }[] = [
-    { value: 'daily', label: 'Diário (Hoje)', icon: Calendar },
-    { value: 'weekly', label: 'Semanal (7 dias)', icon: CalendarRange },
-    { value: 'monthly', label: 'Mensal (30 dias)', icon: ChartLine },
+  const periodOptions: { value: PeriodView | 'charts'; label: string; icon: React.ElementType }[] = [
+    { value: 'charts', label: 'Análise de Uso', icon: BarChartIcon },
     { value: 'history', label: 'Histórico Completo', icon: HistoryIcon },
     // { value: 'reports', label: 'Relatórios Inteligentes', icon: Brain }, // Mantido como placeholder
   ];
@@ -743,10 +746,10 @@ export function Dashboard({
             <span className="hidden md:inline">{loading ? 'Atualizando...' : 'Atualizar Dados'}</span>
           </Button>
           
-          {/* NOVO: Select para seleção de período */}
-          <Select value={periodView} onValueChange={(v) => setPeriodView(v as PeriodView)}>
+          {/* NOVO: Select para seleção de visualização */}
+          <Select value={periodView} onValueChange={(v) => setPeriodView(v as PeriodView | 'charts')}>
             <SelectTrigger className="w-full sm:w-[200px] h-10">
-              <SelectValue placeholder="Selecione o Período" />
+              <SelectValue placeholder="Selecione a Visualização" />
             </SelectTrigger>
             <SelectContent>
               {periodOptions.map(option => {
@@ -763,29 +766,36 @@ export function Dashboard({
         </div>
       </div>
 
-      {/* Filtro de Hora (Aparece acima das estatísticas) */}
-      <div className="mt-6">
-          <CollapsibleDashboardFilter 
-              periodView={periodView}
-              startHour={startHour}
-              setStartHour={setStartHour}
-              endHour={endHour}
-              setEndHour={setEndHour}
-              onApply={refreshData}
-              loading={loading}
-          />
-      </div>
+      {/* Filtro de Hora (Aparece apenas no modo 'charts') */}
+      {periodView === 'charts' && (
+        <div className="mt-6">
+            <CollapsibleDashboardFilter 
+                startDate={startDate}
+                setStartDate={setStartDate}
+                endDate={endDate}
+                setEndDate={setEndDate}
+                startHour={startHour}
+                setStartHour={setStartHour}
+                endHour={endHour}
+                setEndHour={setEndHour}
+                onApply={refreshData}
+                loading={loading}
+            />
+        </div>
+      )}
 
-      {/* Grid de Cards de Estatísticas (Visível apenas para períodos temporais) */}
-      <StatsGrid 
-        periodView={periodView}
-        filteredLoans={filteredLoans}
-        filteredReturns={filteredReturns}
-        stats={stats}
-        loading={loading}
-        onCardClick={handleCardClick} // PASSANDO O HANDLER
-        history={history} // PASSANDO O HISTÓRICO COMPLETO
-      />
+      {/* Grid de Cards de Estatísticas (Visível apenas no modo 'charts') */}
+      {periodView === 'charts' && (
+        <StatsGrid 
+          periodView={periodView}
+          filteredLoans={filteredLoans}
+          filteredReturns={filteredReturns}
+          stats={stats}
+          loading={loading}
+          onCardClick={handleCardClick}
+          history={history}
+        />
+      )}
 
       {/* Conteúdo Principal (Gráficos ou Histórico) */}
       <div className="space-y-4 mt-6">
