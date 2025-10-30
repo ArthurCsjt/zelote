@@ -57,11 +57,15 @@ export default {
           DEFAULT: "hsl(var(--menu-green))",
           hover: "hsl(var(--menu-green-hover))",
         },
+        "menu-green-dark": { // NOVO: Verde mais escuro para Inventário
+          DEFAULT: "hsl(142 76% 28%)",
+          hover: "hsl(142 76% 24%)",
+        },
         "menu-blue": {
           DEFAULT: "hsl(var(--menu-blue))",
           hover: "hsl(var(--menu-blue-hover))",
         },
-        "menu-dark-blue": { // NOVO AZUL ESCURO
+        "menu-dark-blue": { // AZUL ESCURO PARA DASHBOARD
           DEFAULT: "hsl(213 90% 35%)",
           hover: "hsl(213 90% 30%)",
         },
