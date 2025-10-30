@@ -93,10 +93,78 @@ const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = []
 
   return (
     <TooltipProvider>
-      {/* ALTERADO: grid-cols-2 md:grid-cols-5 para acomodar 5 cards na primeira linha */}
-      <div className="grid gap-4 grid-cols-2 md:grid-cols-5 relative z-10">
+      {/* Grid principal com 4 colunas em telas grandes */}
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-4 relative z-10">
         
-        {/* CARD 1: Empréstimos Ativos (Contagem de ativos) */}
+        {/* CARD 1: TAXA DE USO (Neste Instante) - DESTAQUE */}
+        <GlassCard className="border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-[1.02] border-l-4 border-l-red-500 md:col-span-2">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <ShadcnTooltip delayDuration={300}>
+              <TooltipTrigger asChild>
+                <CardTitle className="text-base font-bold flex items-center gap-1 cursor-help text-gray-700">
+                  TAXA DE USO (Neste Instante)
+                  <Info className="h-4 w-4 text-muted-foreground" />
+                </CardTitle>
+              </TooltipTrigger>
+              <TooltipContent className="max-w-sm text-xs">
+                <p>Porcentagem de equipamentos móveis (não fixos) que estão atualmente emprestados.</p>
+              </TooltipContent>
+            </ShadcnTooltip>
+            <TrendingUp className="h-6 w-6 sm:h-8 sm:w-8 text-red-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-4xl sm:text-6xl font-extrabold bg-gradient-to-r from-red-600 to-red-800 bg-clip-text text-transparent">
+              {totalInventoryUsageRate.toFixed(0)}%
+            </div>
+            <p className="text-sm text-muted-foreground mt-1">
+              Uso atual do inventário móvel
+            </p>
+          </CardContent>
+        </GlassCard>
+
+        {/* CARD 2: TAXA DE USO (Pico no Período) - DESTAQUE */}
+        <GlassCard className="border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-[1.02] border-l-4 border-l-orange-500 md:col-span-2">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <ShadcnTooltip delayDuration={300}>
+              <TooltipTrigger asChild>
+                <CardTitle className="text-base font-bold flex items-center gap-1 cursor-help text-gray-700">
+                  TAXA DE USO (Pico no Período)
+                  <Info className="h-4 w-4 text-muted-foreground" />
+                </CardTitle>
+              </TooltipTrigger>
+              <TooltipContent className="max-w-sm text-xs">
+                <p>O pico de uso (em %) atingido durante o período e horário selecionados no filtro.</p>
+              </TooltipContent>
+            </ShadcnTooltip>
+            <TrendingUp className="h-6 w-6 sm:h-8 sm:w-8 text-orange-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-4xl sm:text-6xl font-extrabold bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent">
+              {maxOccupancyRate.toFixed(0)}%
+            </div>
+            <p className="text-sm text-muted-foreground mt-1">
+              Pico de uso no período filtrado
+            </p>
+            
+            {/* Botão de Aplicar Filtro (Mantido aqui para o card de pico) */}
+            <div className="mt-3 pt-3 border-t border-orange-200">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={onApplyFilter}
+                className="w-full bg-white hover:bg-orange-50 text-orange-600 border-orange-300"
+                disabled={loading}
+              >
+                <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+                Aplicar Filtro de Período
+              </Button>
+            </div>
+          </CardContent>
+        </GlassCard>
+        
+        {/* LINHA 2: Cards Menores (4 colunas em md) */}
+        
+        {/* CARD 3: Empréstimos Ativos (Contagem de ativos) */}
         <GlassCard 
           className="border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-blue-500 cursor-pointer"
           onClick={() => onCardClick('Empréstimos Ativos', 'Lista de todos os Chromebooks atualmente emprestados.', 'loans', history.filter((loan: LoanHistoryItem) => !loan.return_date).map((loan: LoanHistoryItem) => ({
@@ -131,7 +199,7 @@ const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = []
           </CardContent>
         </GlassCard>
 
-        {/* CARD 2: Disponíveis (NOVO: Clicável para ver a lista) */}
+        {/* CARD 4: Disponíveis (NOVO: Clicável para ver a lista) */}
         <GlassCard 
           className="border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-green-500 cursor-pointer"
           onClick={() => onCardClick('Disponíveis', 'Lista de Chromebooks prontos para empréstimo.', 'chromebooks', null, 'disponivel')}
@@ -155,72 +223,6 @@ const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = []
             <p className="text-[10px] sm:text-xs text-muted-foreground">
               de {totalChromebooks} no total
             </p>
-          </CardContent>
-        </GlassCard>
-        
-        {/* NOVO CARD: Taxa de Uso do Inventário (Neste Instante) */}
-        <GlassCard className="border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-red-500">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <ShadcnTooltip delayDuration={300}>
-              <TooltipTrigger asChild>
-                <CardTitle className="text-xs sm:text-sm font-medium flex items-center gap-1 cursor-help">
-                  TAXA DE USO (Neste Instante)
-                  <Info className="h-3 w-3 text-muted-foreground" />
-                </CardTitle>
-              </TooltipTrigger>
-              <TooltipContent className="max-w-sm text-xs">
-                <p>Porcentagem de equipamentos móveis (não fixos) que estão atualmente emprestados.</p>
-              </TooltipContent>
-            </ShadcnTooltip>
-            <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-red-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-xl sm:text-3xl font-bold bg-gradient-to-r from-red-600 to-red-800 bg-clip-text text-transparent">
-              {totalInventoryUsageRate.toFixed(0)}%
-            </div>
-            <p className="text-[10px] sm:text-xs text-muted-foreground">
-              Uso atual do inventário móvel
-            </p>
-          </CardContent>
-        </GlassCard>
-
-        {/* CARD 3: Taxa de Uso do Inventário (Pico no Período) - Antigo Pico de Uso */}
-        <GlassCard className="border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-orange-500">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <ShadcnTooltip delayDuration={300}>
-              <TooltipTrigger asChild>
-                <CardTitle className="text-xs sm:text-sm font-medium flex items-center gap-1 cursor-help">
-                  TAXA DE USO (Pico no Período)
-                  <Info className="h-3 w-3 text-muted-foreground" />
-                </CardTitle>
-              </TooltipTrigger>
-              <TooltipContent className="max-w-sm text-xs">
-                <p>O pico de uso (em %) atingido durante o período e horário selecionados no filtro.</p>
-              </TooltipContent>
-            </ShadcnTooltip>
-            <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-orange-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-xl sm:text-3xl font-bold bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent">
-              {maxOccupancyRate.toFixed(0)}%
-            </div>
-            <p className="text-[10px] sm:text-xs text-muted-foreground">
-              Pico de uso no período filtrado
-            </p>
-            
-            {/* Botão de Aplicar Filtro (Mantido aqui para o card de pico) */}
-            <div className="mt-3 pt-3 border-t border-orange-200">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={onApplyFilter}
-                className="w-full bg-white hover:bg-orange-50 text-orange-600 border-orange-300"
-                disabled={loading}
-              >
-                <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-                Aplicar Filtro
-              </Button>
-            </div>
           </CardContent>
         </GlassCard>
         
@@ -251,7 +253,7 @@ const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = []
         </GlassCard>
 
         {/* CARD 6: Taxa de Devolução (Linha 2) */}
-        <GlassCard className="border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-teal-500 md:col-span-2">
+        <GlassCard className="border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-teal-500">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <ShadcnTooltip delayDuration={300}>
               <TooltipTrigger asChild>
