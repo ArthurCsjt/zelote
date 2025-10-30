@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Button } from "./ui/button";
 import { QRCodeSVG } from 'qrcode.react';
-import { CheckCircle, Download, Printer, X } from "lucide-react";
+import { CheckCircle, Download, Printer, X, QrCode } from "lucide-react";
 import { toast } from "./ui/use-toast";
 import { supabase } from '@/integrations/supabase/client';
 
@@ -245,16 +245,10 @@ export function QRCodeModal({
         className="max-w-sm mx-auto bg-white/95 backdrop-blur-sm border border-gray-200 shadow-xl"
         style={{ backgroundColor: 'rgba(255, 255, 255, 0.95)' }}
       >
-  <DialogHeader className="text-center">
+        <DialogHeader className="text-center">
+          {/* NOVO: Ícone de QR Code mais discreto e alinhado */}
           <div className="flex items-center justify-center gap-2 mb-2">
-            <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
-              <QRCodeSVG 
-                value="qr" 
-                size={16} 
-                bgColor="transparent" 
-                fgColor="white"
-              />
-            </div>
+            <QrCode className="h-8 w-8 text-primary" />
           </div>
           <DialogTitle className="text-xl font-semibold text-gray-800">
             QR Code Gerado
@@ -294,14 +288,14 @@ export function QRCodeModal({
         <div className="flex gap-3 px-6 pb-2">
           <Button
             onClick={handleDownloadPNG}
-            className="flex-1 bg-blue-500 hover:bg-blue-600 text-white"
+            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white" // Usando azul mais escuro
           >
             <Download className="mr-2 h-4 w-4" />
             Baixar PNG
           </Button>
           <Button
             onClick={handlePrint}
-            className="flex-1 bg-green-500 hover:bg-green-600 text-white"
+            className="flex-1 bg-menu-green hover:bg-menu-green-hover text-white" // Usando verde do menu
           >
             <Printer className="mr-2 h-4 w-4" />
             Imprimir
