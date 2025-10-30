@@ -93,7 +93,35 @@ const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = []
 
   return (
     <TooltipProvider>
-      <div className="grid gap-4 grid-cols-2 md:grid-cols-5 relative z-10">
+      {/* ALTERADO: grid-cols-2 md:grid-cols-4 para acomodar o card de 2 colunas */}
+      <div className="grid gap-4 grid-cols-2 md:grid-cols-4 relative z-10">
+        
+        {/* CARD 3: Ocupação Máxima (DESTAQUE) */}
+        <GlassCard className="border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-red-500 md:col-span-2">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <ShadcnTooltip delayDuration={300}>
+              <TooltipTrigger asChild>
+                <CardTitle className="text-sm font-medium flex items-center gap-1 cursor-help">
+                  OCUPAÇÃO MÁXIMA DO INVENTÁRIO
+                  <Info className="h-3 w-3 text-muted-foreground" />
+                </CardTitle>
+              </TooltipTrigger>
+              <TooltipContent className="max-w-xs text-xs">
+                <p>O pico de uso (em %) atingido durante o período e horário selecionados no filtro.</p>
+              </TooltipContent>
+            </ShadcnTooltip>
+            <TrendingUp className="h-6 w-6 sm:h-8 sm:w-8 text-red-500" />
+          </CardHeader>
+          <CardContent>
+            {/* Aumentando o tamanho do valor */}
+            <div className="text-3xl sm:text-5xl font-bold bg-gradient-to-r from-red-600 to-red-800 bg-clip-text text-transparent">
+              {maxOccupancyRate.toFixed(0)}%
+            </div>
+            <p className="text-sm text-muted-foreground mt-1">
+              Pico de uso no período selecionado
+            </p>
+          </CardContent>
+        </GlassCard>
         
         {/* CARD 1: Empréstimos Ativos (Contagem de ativos) */}
         <GlassCard 
@@ -157,30 +185,8 @@ const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = []
           </CardContent>
         </GlassCard>
         
-        {/* CARD 3: Ocupação Máxima (Não Clicável - Métrica de cálculo) */}
-        <GlassCard className="border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-red-500">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <ShadcnTooltip delayDuration={300}>
-              <TooltipTrigger asChild>
-                <CardTitle className="text-xs sm:text-sm font-medium flex items-center gap-1 cursor-help">
-                  Ocupação Máxima
-                  <Info className="h-3 w-3 text-muted-foreground" />
-                </CardTitle>
-              </TooltipTrigger>
-              <TooltipContent className="max-w-xs text-xs">
-                <p>O pico de uso (em %) atingido durante o período e horário selecionados no filtro.</p>
-              </TooltipContent>
-            </ShadcnTooltip>
-            <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-red-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-xl sm:text-3xl font-bold bg-gradient-to-r from-red-600 to-red-800 bg-clip-text text-transparent">{maxOccupancyRate.toFixed(0)}%</div>
-            <p className="text-[10px] sm:text-xs text-muted-foreground">
-              Pico de uso no período
-            </p>
-          </CardContent>
-        </GlassCard>
-
+        {/* Linha 2: Tempo Médio e Taxa de Devolução */}
+        
         {/* CARD 4: Tempo Médio (Não Clicável - Métrica de cálculo) */}
         <GlassCard className="border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-purple-500">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
