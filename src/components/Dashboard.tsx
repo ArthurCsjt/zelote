@@ -7,7 +7,7 @@ import type { LoanHistoryItem, Chromebook } from "@/types/database";
 import { Badge } from "./ui/badge";
 import { Progress } from "./ui/progress";
 import { ChartContainer, ChartTooltipContent, ChartLegendContent } from "./ui/chart";
-import { Computer, Download, ArrowLeft, BarChart as BarChartIcon, PieChart as PieChartIcon, Clock, Users, Calendar, CalendarRange, Activity, ChartLine, Brain, Loader2, History as HistoryIcon, RefreshCw, TrendingUp, Info } from "lucide-react";
+import { Computer, Download, ArrowLeft, BarChart as BarChartIcon, PieChart as PieChartIcon, Clock, Users, Calendar, CalendarRange, Activity, ChartLine, Brain, Loader2, History as HistoryIcon, RefreshCw, TrendingUp, Info, Eye } from "lucide-react";
 import jsPDF from "jspdf";
 import { useToast } from "./ui/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -64,7 +64,7 @@ type DetailModalState = {
 
 
 // Componente auxiliar para renderizar o grid de estatísticas
-const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = [], loading, onCardClick, history }: any) => {
+const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = [], loading, onCardClick, history, onPeakClick }: any) => {
   if (periodView === 'history' || periodView === 'reports') return null;
 
   // Desestruturação segura, usando valores padrão se stats for null/undefined
@@ -75,7 +75,9 @@ const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = []
     availableChromebooks = 0, // Adicionado
     averageUsageTime = 0, 
     completionRate = 0, 
-    maxOccupancyRate = 0 
+    maxOccupancyRate = 0,
+    peakTime = null, // NOVO
+    peakLoanIds = [], // NOVO
   } = stats || {};
 
   if (loading) {
@@ -120,6 +122,21 @@ const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = []
             <p className="text-sm text-muted-foreground mt-1">
               Pico de uso no período selecionado
             </p>
+            
+            {/* NOVO BOTÃO DE DETALHES DO PICO */}
+            {peakTime && maxOccupancyRate > 0 && (
+              <div className="mt-3 pt-3 border-t border-red-200">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => onPeakClick(peakTime, peakLoanIds)}
+                  className="w-full bg-white hover:bg-red-50 text-red-600 border-red-300"
+                >
+                  <Eye className="h-4 w-4 mr-2" />
+                  Ver Detalhes do Pico ({format(peakTime, 'dd/MM HH:mm')})
+                </Button>
+              </div>
+            )}
           </CardContent>
         </GlassCard>
         
@@ -614,6 +631,33 @@ export function Dashboard({
     }
     
   }, [getChromebooksByStatus]);
+  
+  // NOVO: Função para lidar com o clique no Pico de Uso
+  const handlePeakClick = useCallback((peakTime: Date, peakLoanIds: string[]) => {
+    if (peakLoanIds.length === 0) return;
+    
+    // Filtra o histórico completo para encontrar os empréstimos ativos no momento do pico
+    const peakLoans = history.filter(loan => peakLoanIds.includes(loan.id));
+    
+    const mappedData: DetailItem[] = peakLoans.map(loan => ({
+        id: loan.id,
+        chromebook_id: loan.chromebook_id,
+        model: loan.chromebook_model,
+        loan_date: loan.loan_date,
+        expected_return_date: loan.expected_return_date,
+        student_name: loan.student_name,
+        isOverdue: loan.expected_return_date && new Date(loan.expected_return_date) < peakTime,
+    }));
+    
+    setDetailModal({
+        open: true,
+        title: `Empréstimos Ativos no Pico de Uso`,
+        description: `Lista de ${mappedData.length} empréstimos ativos em ${format(peakTime, "dd/MM/yyyy 'às' HH:mm")}.`,
+        dataType: 'loans',
+        data: mappedData,
+        isLoading: false,
+    });
+  }, [history]);
 
 
   const { overdueLoans, upcomingDueLoans } = useOverdueLoans();
@@ -625,7 +669,9 @@ export function Dashboard({
     loansByUserType = {}, 
     userTypeData = [], 
     durationData = [], 
-    maxOccupancyRate = 0 
+    maxOccupancyRate = 0,
+    peakTime = null, // NOVO
+    peakLoanIds = [], // NOVO
   } = stats || {};
 
   // Função para gerar o PDF do relatório
@@ -794,6 +840,7 @@ export function Dashboard({
           loading={loading}
           onCardClick={handleCardClick}
           history={history}
+          onPeakClick={handlePeakClick} // PASSANDO A NOVA FUNÇÃO
         />
       )}
 
