@@ -345,14 +345,14 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
       {/* Table of Chromebooks */}
       <GlassCard className="border-white/30 rounded-2xl overflow-x-auto relative z-10 p-0">
         <Table className="min-w-[800px] md:min-w-full"> {/* Garante largura mínima para mobile */}
-          <TableHeader className="bg-gray-100/70"> {/* NOVO ESTILO AQUI */}
+          <TableHeader className="bg-gray-100"> {/* ALTERADO: Removido /70 */}
             <TableRow>
-              <TableHead className="w-[100px] text-xs font-bold text-gray-800">ID</TableHead>
-              <TableHead className="w-[120px] text-xs font-bold text-gray-800">Fabricante</TableHead>
-              <TableHead className="w-[200px] text-xs font-bold text-gray-800">Modelo</TableHead> {/* Ajustado */}
-              <TableHead className="w-[150px] text-xs font-bold text-gray-800">Série</TableHead> {/* Ajustado */}
-              <TableHead className="w-[120px] text-xs font-bold text-gray-800">Status</TableHead> 
-              <TableHead className="w-[180px] text-center text-xs font-bold text-gray-800">Ações</TableHead> {/* ALTERADO: text-center */}
+              <TableHead className="w-[100px] text-xs font-bold text-gray-800 uppercase tracking-wider">ID</TableHead>
+              <TableHead className="w-[120px] text-xs font-bold text-gray-800 uppercase tracking-wider">Fabricante</TableHead>
+              <TableHead className="w-[200px] text-xs font-bold text-gray-800 uppercase tracking-wider">Modelo</TableHead>
+              <TableHead className="w-[150px] text-xs font-bold text-gray-800 uppercase tracking-wider">Série</TableHead>
+              <TableHead className="w-[120px] text-xs font-bold text-gray-800 uppercase tracking-wider">Status</TableHead> 
+              <TableHead className="w-[180px] text-center text-xs font-bold text-gray-800 uppercase tracking-wider">Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -369,7 +369,7 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
                     <TableCell className="text-xs py-2 align-top w-[120px]">
                       {chromebook.manufacturer || 'N/A'}
                     </TableCell>
-                    <TableCell className="py-2 align-top w-[200px]"> {/* Ajustado */}
+                    <TableCell className="py-2 align-top w-[200px]">
                       <div className="flex flex-col gap-0.5">
                         <span className="font-medium text-xs leading-tight">{chromebook.model}</span>
                         {chromebook.patrimony_number && (
@@ -379,7 +379,7 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
                         )}
                       </div>
                     </TableCell>
-                    <TableCell className="text-xs py-2 align-top w-[150px]"> {/* Ajustado */}
+                    <TableCell className="text-xs py-2 align-top w-[150px]">
                       {chromebook.serial_number || 'N/A'}
                     </TableCell>
                     <TableCell className="py-2 align-top w-[120px]">
@@ -396,8 +396,8 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
                         )}
                       </div>
                     </TableCell>
-                    <TableCell className="text-center py-2 align-top w-[180px]"> {/* ALTERADO: text-center */}
-                      <div className="flex items-center justify-center space-x-1"> {/* ALTERADO: justify-center */}
+                    <TableCell className="text-center py-2 align-top w-[180px]">
+                      <div className="flex items-center justify-center space-x-1">
                         <Button
                           variant="ghost"
                           size="icon"
