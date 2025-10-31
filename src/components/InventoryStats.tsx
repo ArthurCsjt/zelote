@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Computer, CheckCircle, Clock, AlertTriangle, MapPin, XCircle, Factory, Hash } from 'lucide-react';
+import { Computer, CheckCircle, Clock, AlertTriangle, MapPin, XCircle, Factory, Hash, Unlock } from 'lucide-react';
 import type { Chromebook } from '@/types/database';
 import { GlassCard } from './ui/GlassCard';
 
@@ -68,13 +68,13 @@ export function InventoryStats({ chromebooks }: InventoryStatsProps) {
       color: 'text-gray-600',
       description: 'Marcados como fora de uso'
     },
-    // Adicionando estatística de Desprovisionados (opcional, mas útil para clareza)
+    // Usando Unlock para Desprovisionados
     {
       title: 'Desprovisionados',
       value: totalDeprovisioned,
-      icon: XCircle,
-      color: 'text-gray-500',
-      description: 'Marcados como Desprovisionados'
+      icon: Unlock, // Ícone alterado para Unlock
+      color: 'text-orange-500', // Cor alterada para laranja para diferenciar
+      description: 'Removidos do gerenciamento'
     },
   ];
 
