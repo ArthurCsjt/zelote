@@ -51,10 +51,11 @@ export function ActivityFeed() {
   }
 
   return (
+    // O Card agora tem uma altura máxima e usa flex-col
     <Card className="w-[350px] md:w-[400px] shadow-2xl border-none flex flex-col max-h-[90vh]">
       
-      {/* Cabeçalho Fixo e Aprimorado */}
-      <CardHeader className="p-4 border-b bg-white/90 backdrop-blur-sm sticky top-0 z-10 flex flex-row items-center justify-between">
+      {/* Cabeçalho Fixo e Aprimorado (shrink-0 para não encolher) */}
+      <CardHeader className="p-4 border-b bg-white/90 backdrop-blur-sm sticky top-0 z-10 flex flex-row items-center justify-between shrink-0">
         <CardTitle className="text-lg flex items-center gap-2 text-gray-800">
           <Clock className="h-5 w-5 text-primary" />
           Atividade Recente
@@ -70,15 +71,15 @@ export function ActivityFeed() {
         </Button>
       </CardHeader>
       
-      {/* Área de Rolagem */}
-      <ScrollArea className="flex-1 h-[300px]">
+      {/* Área de Rolagem (flex-1 para ocupar o espaço restante) */}
+      <ScrollArea className="flex-1 w-full">
         <CardContent className="p-0">
           {activities && activities.length > 0 ? (
             <div className="divide-y divide-gray-100">
               {activities.map((activity, index) => {
                 const isLoan = activity.activity_type === 'Empréstimo';
                 const Icon = isLoan ? CheckCircle : RotateCcw;
-                const colorClass = isLoan ? 'text-green-600' : 'text-blue-600';
+                const color = isLoan ? 'text-green-600' : 'text-blue-600';
                 const badgeBg = isLoan ? 'bg-green-500' : 'bg-blue-500';
                 const creatorName = activity.creator_name || activity.creator_email?.split('@')[0] || 'Sistema';
                 
@@ -93,7 +94,7 @@ export function ActivityFeed() {
                         <div>
                           <p className="font-medium text-sm text-gray-800 flex items-center gap-2">
                             {activity.activity_type}
-                            <Icon className={`h-4 w-4 ${colorClass}`} />
+                            <Icon className={`h-4 w-4 ${color}`} />
                           </p>
                           <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
                             <Monitor className="h-3 w-3" />
