@@ -80,7 +80,22 @@
   overflow: hidden;
 }
 
-/* ... (todo o seu CSS existente continua aqui) ... */
+/* ======================================================================== */
+/* ADIÇÃO: Classes de Delay para Animação Sequencial */
+/* ======================================================================== */
+.animation-delay-0 { animation-delay: 0ms; }
+.animation-delay-100 { animation-delay: 100ms; }
+.animation-delay-200 { animation-delay: 200ms; }
+.animation-delay-300 { animation-delay: 300ms; }
+.animation-delay-400 { animation-delay: 400ms; }
+.animation-delay-500 { animation-delay: 500ms; }
+.animation-delay-600 { animation-delay: 600ms; }
+.animation-delay-700 { animation-delay: 700ms; }
+.animation-delay-800 { animation-delay: 800ms; }
+.animation-delay-900 { animation-delay: 900ms; }
+.animation-delay-1000 { animation-delay: 1000ms; }
+.animation-delay-1100 { animation-delay: 1100ms; }
+
 
 /* PWA and Layout specific styles */
 .safe-area-top {

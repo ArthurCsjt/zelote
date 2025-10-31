@@ -64,10 +64,8 @@ type DetailModalState = {
   isLoading: boolean;
 };
 
-// REMOVIDO: TopUsersPanel (substituído por TopLoanContextsPanel)
-
 // Componente auxiliar para renderizar o grid de estatísticas
-const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = [], loading, onCardClick, history, onApplyFilter }: any) => {
+const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = [], loading, onCardClick, history, onApplyFilter, isMounted }: any) => {
   if (periodView === 'history' || periodView === 'reports') return null;
 
   // Desestruturação segura, usando valores padrão se stats for null/undefined
@@ -94,13 +92,16 @@ const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = []
     return loan.expected_return_date && new Date(loan.expected_return_date) < new Date();
   };
 
+  const getAnimationClass = (delay: number) => 
+    isMounted ? `animate-fadeIn animation-delay-${delay}` : 'opacity-0';
+
   return (
     <TooltipProvider>
       {/* Grid principal com 4 colunas em telas grandes */}
       <div className="grid gap-4 grid-cols-1 md:grid-cols-4 relative z-10">
         
         {/* CARD 1: TAXA DE USO (Neste Instante) - DESTAQUE */}
-        <GlassCard className="border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-[1.02] border-l-4 border-l-red-500 md:col-span-2">
+        <GlassCard className={cn("border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-[1.02] border-l-4 border-l-red-500 md:col-span-2", getAnimationClass(0))}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <ShadcnTooltip delayDuration={300}>
               <TooltipTrigger asChild>
@@ -126,7 +127,7 @@ const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = []
         </GlassCard>
 
         {/* CARD 2: TAXA DE USO (Pico no Período) - DESTAQUE */}
-        <GlassCard className="border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-[1.02] border-l-4 border-l-orange-500 md:col-span-2">
+        <GlassCard className={cn("border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-[1.02] border-l-4 border-l-orange-500 md:col-span-2", getAnimationClass(100))}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <ShadcnTooltip delayDuration={300}>
               <TooltipTrigger asChild>
@@ -169,7 +170,7 @@ const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = []
         
         {/* CARD 3: Empréstimos Ativos (Contagem de ativos) */}
         <GlassCard 
-          className="border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-blue-500 cursor-pointer"
+          className={cn("border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-blue-500 cursor-pointer", getAnimationClass(200))}
           onClick={() => onCardClick('Empréstimos Ativos', 'Lista de todos os Chromebooks atualmente emprestados.', 'loans', history.filter((loan: LoanHistoryItem) => !loan.return_date).map((loan: LoanHistoryItem) => ({
             id: loan.id,
             chromebook_id: loan.chromebook_id,
@@ -204,7 +205,7 @@ const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = []
 
         {/* CARD 4: Disponíveis (NOVO: Clicável para ver a lista) */}
         <GlassCard 
-          className="border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-green-500 cursor-pointer"
+          className={cn("border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-green-500 cursor-pointer", getAnimationClass(300))}
           onClick={() => onCardClick('Disponíveis', 'Lista de Chromebooks prontos para empréstimo.', 'chromebooks', null, 'disponivel')}
         >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -230,7 +231,7 @@ const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = []
         </GlassCard>
         
         {/* CARD 5: Tempo Médio (Não Clicável - Métrica de cálculo) */}
-        <GlassCard className="border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-purple-500">
+        <GlassCard className={cn("border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-purple-500", getAnimationClass(400))}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <ShadcnTooltip delayDuration={300}>
               <TooltipTrigger asChild>
@@ -256,7 +257,7 @@ const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = []
         </GlassCard>
 
         {/* CARD 6: Taxa de Devolução (Linha 2) */}
-        <GlassCard className="border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-teal-500">
+        <GlassCard className={cn("border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-teal-500", getAnimationClass(500))}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <ShadcnTooltip delayDuration={300}>
               <TooltipTrigger asChild>
@@ -290,7 +291,7 @@ const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = []
 
 
 // Componente para renderizar os gráficos de acordo com o período
-const PeriodCharts = ({ periodView, loading, periodChartData, stats, startHour, endHour, totalChromebooks, availableChromebooks, userTypeData, durationData, isNewLoan, history }: any) => {
+const PeriodCharts = ({ periodView, loading, periodChartData, stats, startHour, endHour, totalChromebooks, availableChromebooks, userTypeData, durationData, isNewLoan, history, isMounted }: any) => {
   if (loading) {
     return <div className="flex justify-center items-center h-64"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
   }
@@ -334,12 +335,15 @@ const PeriodCharts = ({ periodView, loading, periodChartData, stats, startHour, 
       minutos: d.minutos,
       color: DURATION_COLORS[d.name] || '#9CA3AF',
   }));
+  
+  const getAnimationClass = (delay: number) => 
+    isMounted ? `animate-fadeIn animation-delay-${delay}` : 'opacity-0';
 
 
   return (
     <>
       <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
-        <GlassCard className="dashboard-card">
+        <GlassCard className={cn("dashboard-card", getAnimationClass(600))}>
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
               <CardTitle className="text-lg">{chartTitle}</CardTitle>
@@ -385,7 +389,7 @@ const PeriodCharts = ({ periodView, loading, periodChartData, stats, startHour, 
         </GlassCard>
 
         {/* NOVO GRÁFICO: Ocupação Horária */}
-        <GlassCard className="dashboard-card">
+        <GlassCard className={cn("dashboard-card", getAnimationClass(700))}>
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
               <CardTitle className="text-lg">Taxa de Ocupação Horária</CardTitle>
@@ -430,7 +434,7 @@ const PeriodCharts = ({ periodView, loading, periodChartData, stats, startHour, 
       </div>
 
       <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
-        <GlassCard className="dashboard-card">
+        <GlassCard className={cn("dashboard-card", getAnimationClass(800))}>
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
               <CardTitle className="text-lg">Status dos Chromebooks</CardTitle>
@@ -473,7 +477,7 @@ const PeriodCharts = ({ periodView, loading, periodChartData, stats, startHour, 
           </CardContent>
         </GlassCard>
 
-        <GlassCard className="dashboard-card">
+        <GlassCard className={cn("dashboard-card", getAnimationClass(900))}>
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
               <CardTitle className="text-lg">Uso por Tipo de Usuário</CardTitle>
@@ -511,9 +515,11 @@ const PeriodCharts = ({ periodView, loading, periodChartData, stats, startHour, 
       
       <div className="grid gap-4 grid-cols-1 md:grid-cols-2 mt-4">
         {/* NOVO PAINEL: Top Contextos de Empréstimo */}
-        <TopLoanContextsPanel topLoanContexts={topLoanContexts} />
+        <div className={getAnimationClass(1000)}>
+            <TopLoanContextsPanel topLoanContexts={topLoanContexts} />
+        </div>
 
-        <GlassCard className="dashboard-card">
+        <GlassCard className={cn("dashboard-card", getAnimationClass(1100))}>
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
               <CardTitle className="text-lg">Estatísticas Rápidas</CardTitle>
@@ -567,6 +573,15 @@ export function Dashboard({
   const {
     toast
   } = useToast();
+  
+  // NOVO ESTADO: Para controlar a animação de montagem
+  const [isMounted, setIsMounted] = useState(false);
+  
+  useEffect(() => {
+    // Ativa a animação após um pequeno delay para garantir que o componente esteja no DOM
+    const timer = setTimeout(() => setIsMounted(true), 50);
+    return () => clearTimeout(timer);
+  }, []);
   
   // NOVO ESTADO: Datas de início e fim para o filtro dinâmico
   const [startDate, setStartDate] = useState<Date | null>(startOfDay(new Date())); // PADRÃO: HOJE
@@ -774,7 +789,7 @@ export function Dashboard({
       <div className="absolute inset-0 -z-10 bg-gradient-to-br from-blue-50/30 via-purple-50/20 to-pink-50/30 blur-2xl transform scale-110 py-[25px] rounded-3xl bg-[#000a0e]/0" />
       
       {/* Header: Title and Download Button */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center relative z-10 gap-4">
+      <div className={cn("flex flex-col sm:flex-row justify-between items-start sm:items-center relative z-10 gap-4", isMounted ? 'animate-fadeIn animation-delay-0' : 'opacity-0')}>
         <SectionHeader 
           title="Dashboard" 
           description="Análise de uso e estatísticas de empréstimos"
@@ -814,7 +829,7 @@ export function Dashboard({
 
       {/* Filtro de Hora (Aparece apenas no modo 'charts') */}
       {periodView === 'charts' && (
-        <div className="mt-6">
+        <div className={cn("mt-6", isMounted ? 'animate-fadeIn animation-delay-100' : 'opacity-0')}>
             <CollapsibleDashboardFilter 
                 startDate={startDate}
                 setStartDate={setStartDate}
@@ -841,6 +856,7 @@ export function Dashboard({
           onCardClick={handleCardClick}
           history={history}
           onApplyFilter={handleApplyFilter} // PASSANDO O HANDLER PARA O CARD
+          isMounted={isMounted} // PASSANDO O ESTADO DE MONTAGEM
         />
       )}
 
@@ -859,6 +875,7 @@ export function Dashboard({
           durationData={durationData}
           isNewLoan={isNewLoan}
           history={history}
+          isMounted={isMounted} // PASSANDO O ESTADO DE MONTAGEM
         />
       </div>
       
