@@ -61,7 +61,7 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
   const [chromebookToDelete, setChromebookToDelete] = useState<ChromebookDataExtended | null>(null);
   
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  const [itemsPerPage, setItemsPerPage] = useState(10); // ALTERADO: Agora é um estado
   const [isFetching, setIsFetching] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
 
@@ -145,10 +145,10 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
     startIndex + itemsPerPage
   );
 
-  // Reset pagination when filters change
+  // Reset pagination when filters or itemsPerPage change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, statusFilter]);
+  }, [searchTerm, statusFilter, itemsPerPage]);
 
   // Get status information for display
   const getStatusInfo = (status: string) => {
@@ -395,8 +395,27 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
           </div>
         </div>
         <div className="flex justify-between items-center mt-4">
-          <div className="text-sm text-gray-500">
+          <div className="text-sm text-gray-500 flex items-center gap-4">
             Resultados: {filteredChromebooks.length} Chromebooks
+            
+            {/* NOVO: Seletor de Itens por Página */}
+            <div className="flex items-center gap-2">
+                <span className="text-xs">Itens por página:</span>
+                <Select 
+                    value={String(itemsPerPage)} 
+                    onValueChange={(value) => setItemsPerPage(Number(value))}
+                >
+                    <SelectTrigger className="w-[70px] h-8 text-xs">
+                        <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="10">10</SelectItem>
+                        <SelectItem value="25">25</SelectItem>
+                        <SelectItem value="50">50</SelectItem>
+                        <SelectItem value="100">100</SelectItem>
+                    </SelectContent>
+                </Select>
+            </div>
           </div>
           {printItems.length > 0 && (
             <Button variant="link" size="sm" onClick={clearPrintItems} className="text-red-600 h-auto p-0 text-xs">
