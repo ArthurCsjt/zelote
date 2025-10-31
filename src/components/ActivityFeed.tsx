@@ -71,8 +71,8 @@ export function ActivityFeed() {
         </Button>
       </CardHeader>
       
-      {/* Área de Rolagem (flex-1 para ocupar o espaço restante) */}
-      <ScrollArea className="flex-1 w-full">
+      {/* Área de Rolagem: Definindo uma altura máxima para garantir que a rolagem funcione */}
+      <ScrollArea className="w-full max-h-[calc(90vh-100px)]"> {/* 90vh menos o espaço do header e padding */}
         <CardContent className="p-0">
           {activities && activities.length > 0 ? (
             <div className="divide-y divide-gray-100">
