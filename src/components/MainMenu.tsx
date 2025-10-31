@@ -3,6 +3,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 // ALTERAÇÃO 1: Adicionado o ícone 'ListChecks' para o novo botão
 import { ClipboardList, BarChart3, PlusCircle, Laptop, RotateCcw, Brain, ListChecks, QrCode } from 'lucide-react';
+import { AppBenefits } from './AppBenefits'; // NOVO IMPORT
 
 interface MainMenuProps {
   // ALTERAÇÃO 2: Reintroduzindo 'return' como rota de nível superior
@@ -87,6 +88,8 @@ export function MainMenu({
   return (
     <div className="space-y-8 relative py-[30px]">
       {/* Removendo o gradiente de sobreposição para que o fundo do body seja visível */}
+      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-blue-50/30 via-purple-50/20 to-pink-50/30 blur-2xl transform scale-110 py-[25px] rounded-3xl bg-[#000a0e]/0" />
+      
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 max-w-4xl mx-auto relative z-10">
         {menuItemsFinal.map((item, index) => (
           <div key={index} style={getFadeInStyle(index)} className="group">
@@ -101,6 +104,9 @@ export function MainMenu({
           </div>
         ))}
       </div>
+      
+      {/* NOVO: Seção de Benefícios */}
+      <AppBenefits />
     </div>
   );
 }
