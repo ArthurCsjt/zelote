@@ -43,7 +43,8 @@ export const PrintPreviewPage: React.FC = () => {
     );
   }
   
-  const gridClass = `grid-cols-${columns}`;
+  // Ajuste: Usamos grid-cols-2 por padrão e aplicamos o grid selecionado a partir de 'sm'
+  const gridClass = `grid-cols-2 sm:grid-cols-${columns}`;
   const printGridClass = `print:grid-cols-${columns}`;
 
   return (
