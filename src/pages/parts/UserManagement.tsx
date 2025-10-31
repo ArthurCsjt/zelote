@@ -148,8 +148,9 @@ export const UserManagement = () => {
   const { user: currentUser } = useAuth();
   const { isAdmin, loading: roleLoading } = useProfileRole(); // Usando useProfileRole
   const queryClient = useQueryClient();
-  const [inviteEmail, setInviteEmail] = useState('');
-  const [inviteRole, setInviteRole] = useState<'admin' | 'user'>('user');
+  // Removendo estados de convite
+  // const [inviteEmail, setInviteEmail] = useState('');
+  // const [inviteRole, setInviteRole] = useState<'admin' | 'user'>('user');
   const [userToDelete, setUserToDelete] = useState<UserProfile | null>(null);
   const [isDeletePendingOpen, setIsDeletePendingOpen] = useState(false);
   const [pendingInviteToDelete, setPendingInviteToDelete] = useState<UserProfile | null>(null);
@@ -159,33 +160,12 @@ export const UserManagement = () => {
   const [userToEditProfile, setUserToEditProfile] = useState<UserProfile | null>(null);
 
 
+  // Removendo função sendInvite
+  /*
   const sendInvite = async (email: string, role: 'admin' | 'user') => {
-    if (!email) {
-      toast({ title: 'Informe um e-mail', description: 'O campo de e-mail não pode estar vazio.', variant: 'destructive' });
-      return;
-    }
-    try {
-      const { error } = await supabase.functions.invoke('invite-user', {
-        body: { email, role },
-      });
-      if (error) {
-        // Tenta extrair a mensagem de erro detalhada da resposta da função Edge
-        let errorMessage = error.message;
-        try {
-          const errorBody = JSON.parse(error.message);
-          errorMessage = errorBody.error || error.message;
-        } catch {
-          // Se não for JSON, usa a mensagem padrão
-        }
-        throw new Error(errorMessage);
-      }
-      toast({ title: 'Convite enviado!', description: `O convite foi enviado com sucesso para ${email}.` });
-      setInviteEmail('');
-      queryClient.invalidateQueries({ queryKey: ['all_users'] });
-    } catch (e: any) {
-      toast({ title: 'Erro no convite', description: e.message || 'Ocorreu um erro ao enviar o convite.', variant: 'destructive' });
-    }
+    // ... (código removido)
   };
+  */
 
   const handleEditProfile = (user: UserProfile) => {
     setUserToEditProfile(user);
@@ -291,45 +271,28 @@ export const UserManagement = () => {
     <div className="space-y-6">
       <GlassCard>
         <CardHeader>
-          <CardTitle>Gerenciamento de Usuários</CardTitle>
-          <CardDescription>Envie convites e gerencie as permissões.</CardDescription>
+          <CardTitle>Gerenciamento de Acesso</CardTitle>
+          <CardDescription>
+            Gerencie as funções de acesso (roles) dos usuários que se registraram com o domínio institucional.
+          </CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div className="grid sm:grid-cols-[1fr_auto_auto] gap-3 items-end">
-              <div>
-                <Label htmlFor="inviteEmail">Convidar novo usuário</Label>
-                <Input id="inviteEmail" placeholder="email@exemplo.com" value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} />
-              </div>
-              <div>
-                <Label>Função</Label>
-                <Select value={inviteRole} onValueChange={(v: 'admin' | 'user') => setInviteRole(v)}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="user">Padrão</SelectItem>
-                    <SelectItem value="admin">Admin</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <Button onClick={() => sendInvite(inviteEmail, inviteRole)} disabled={isLoading || !inviteEmail}>
-                Enviar Convite
-              </Button>
-            </div>
-          </div>
-        </CardContent>
+        {/* O formulário de convite foi removido daqui */}
       </GlassCard>
 
       <GlassCard>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">Convites Pendentes <Badge variant="secondary">{pendingUsers.length}</Badge></CardTitle>
+          <CardTitle className="flex items-center gap-2">Contas Pendentes (Não Logadas) <Badge variant="secondary">{pendingUsers.length}</Badge></CardTitle>
+          <CardDescription>
+            Estes usuários se registraram, mas ainda não fizeram o primeiro login ou não confirmaram o email.
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-2">
-          {pendingUsers.length === 0 ? <p className="text-sm text-muted-foreground">Nenhum convite pendente.</p> :
+          {pendingUsers.length === 0 ? <p className="text-sm text-muted-foreground">Nenhuma conta pendente.</p> :
             pendingUsers.map(user => (
               <div key={user.id} className="flex items-center justify-between p-2 rounded-md hover:bg-black/5">
                 <p className="text-sm font-medium">{user.email}</p>
                 <div className="flex items-center gap-2">
-                  <Button variant="outline" size="sm" onClick={() => sendInvite(user.email, user.role as 'admin' | 'user')}>Reenviar</Button>
+                  {/* Removendo botão Reenviar, pois o registro é por auto-serviço */}
                   <Button 
                     variant="ghost" 
                     size="sm" 
@@ -416,20 +379,20 @@ export const UserManagement = () => {
         </AlertDialogContent>
       </AlertDialog>
       
-      {/* Diálogo de Confirmação para Convites Pendentes */}
+      {/* Diálogo de Confirmação para Contas Pendentes */}
       <AlertDialog open={isDeletePendingOpen} onOpenChange={setIsDeletePendingOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Cancelar Convite Pendente</AlertDialogTitle>
+            <AlertDialogTitle>Excluir Conta Pendente</AlertDialogTitle>
             <AlertDialogDescription>
-              Tem certeza que deseja cancelar o convite enviado para <span className="font-bold">{pendingInviteToDelete?.email}</span>? O usuário não poderá mais se registrar com este link.
-            </AlertDialogDescription>
+              Tem certeza que deseja excluir a conta pendente de <span className="font-bold">{pendingInviteToDelete?.email}</span>? O usuário terá que se registrar novamente.
+            </GAlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Manter Convite</AlertDialogCancel>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={handleDeletePendingInviteConfirm}>
               <Trash2 className="h-4 w-4 mr-2" />
-              Cancelar Convite
+              Excluir Conta
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
