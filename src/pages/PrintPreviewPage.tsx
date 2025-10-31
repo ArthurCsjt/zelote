@@ -71,7 +71,7 @@ export const PrintPreviewPage: React.FC = () => {
               Configurações de Impressão
             </CardTitle>
             <CardDescription>
-              {printItems.length} Chromebooks selecionados. Ajuste as configurações de impressão do seu navegador (margens, cabeçalhos/rodapés) para melhor resultado.
+              {printItems.length} Chromebooks selecionados. Para melhor resultado, ajuste as margens do navegador para 'Nenhuma' e desative cabeçalhos/rodapés.
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col sm:flex-row gap-4 p-0">
