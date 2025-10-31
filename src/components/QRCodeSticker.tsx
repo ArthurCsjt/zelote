@@ -20,10 +20,9 @@ export const QRCodeSticker: React.FC<QRCodeStickerProps> = ({ item, className })
   return (
     <div 
       className={cn(
-        // Tamanho fixo para visualização em tela (mobile/desktop)
+        // Removidas as classes w-full max-w-[200px] mx-auto h-[180px]
         "p-2 border border-gray-300 rounded-md flex flex-col items-center text-center bg-white shadow-sm",
-        "w-full max-w-[200px] mx-auto h-[180px]", // Usando w-full e max-w para responsividade
-        // Estilos de impressão
+        // Estilos de impressão (mantidos)
         "print:w-[4cm] print:h-[4.5cm] print:p-1 print:border-dashed print:border-gray-500 print:break-inside-avoid",
         className
       )}
