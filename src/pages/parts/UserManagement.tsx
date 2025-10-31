@@ -43,6 +43,7 @@ const ProfileEditDialog: React.FC<ProfileEditDialogProps> = ({ open, onOpenChang
 
   useEffect(() => {
     if (user) {
+      // Inicializa o estado com o valor atual do usuário
       setName(user.name || '');
       setRole(user.role);
     }
