@@ -316,6 +316,21 @@ const PeriodCharts = ({ periodView, loading, periodChartData, stats, startHour, 
 
   // Garante que filteredLoans.length seja seguro para divisão
   const totalLoansInPeriod = filteredLoans.length || 1;
+  
+  // Mapeamento de cores para o gráfico de duração
+  const DURATION_COLORS: Record<string, string> = {
+    Aluno: '#3B82F6', // Azul (menu-blue)
+    Professor: '#10B981', // Verde (menu-green)
+    Funcionario: '#F59E0B', // Laranja (menu-amber)
+  };
+  
+  // Mapeamento de dados para o gráfico de duração (garantindo que o nome seja a chave)
+  const durationChartData = durationData.map((d: any) => ({
+      name: d.name,
+      minutos: d.minutos,
+      color: DURATION_COLORS[d.name] || '#9CA3AF',
+  }));
+
 
   return (
     <>
@@ -504,17 +519,25 @@ const PeriodCharts = ({ periodView, loading, periodChartData, stats, startHour, 
           <CardContent className="h-[250px] sm:h-[300px]">
             <ChartContainer
               config={{
-                minutos: { label: "Minutos", color: "hsl(var(--menu-violet))" }, // Usando cor do menu violeta
+                minutos: { label: "Minutos", color: "hsl(var(--menu-violet))" },
               }}
               className="w-full h-full"
             >
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={durationData} layout="horizontal" margin={{ top: 5, right: 0, left: 0, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis type="number" tick={{ fontSize: 10 }} />
-                  <YAxis dataKey="name" type="category" width={80} tick={{ fontSize: 10 }} />
+                <BarChart data={durationChartData} margin={{ top: 5, right: 0, left: -20, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                  <XAxis dataKey="name" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
+                  <YAxis tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
                   <Tooltip content={<ChartTooltipContent />} />
-                  <Bar dataKey="minutos" fill="hsl(var(--menu-violet))" radius={[0, 4, 4, 0]} />
+                  <Legend content={<ChartLegendContent />} wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
+                  
+                  <Bar 
+                    dataKey="minutos" 
+                    // Usamos a cor definida no objeto de dados
+                    fill={({ name }) => DURATION_COLORS[name] || '#9CA3AF'} 
+                    radius={[4, 4, 0, 0]} 
+                    name="Minutos"
+                  />
                 </BarChart>
               </ResponsiveContainer>
             </ChartContainer>
