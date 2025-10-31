@@ -71,10 +71,14 @@ export function ActivityFeed() {
                   <div key={activity.activity_id} className="p-4 hover:bg-gray-50 transition-colors">
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-3">
-                        <Icon className={`h-5 w-5 ${color}`} />
+                        {/* NOVO: Número da Atividade */}
+                        <div className={`flex items-center justify-center h-6 w-6 rounded-full text-xs font-bold text-white ${isLoan ? 'bg-green-500' : 'bg-blue-500'}`}>
+                            {index + 1}
+                        </div>
                         <div>
-                          <p className="font-medium text-sm text-gray-800">
+                          <p className="font-medium text-sm text-gray-800 flex items-center gap-2">
                             {activity.activity_type}
+                            <Icon className={`h-4 w-4 ${color}`} />
                           </p>
                           <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
                             <Monitor className="h-3 w-3" />
