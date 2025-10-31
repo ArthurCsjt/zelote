@@ -345,14 +345,14 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
       {/* Table of Chromebooks */}
       <GlassCard className="border-white/30 rounded-2xl overflow-x-auto relative z-10 p-0">
         <Table className="min-w-[800px] md:min-w-full"> {/* Garante largura mínima para mobile */}
-          <TableHeader className="bg-gray-100"> {/* ALTERADO: Removido /70 */}
+          <TableHeader className="bg-gray-100">
             <TableRow>
-              <TableHead className="w-[100px] text-xs font-bold text-gray-800 uppercase tracking-wider">ID</TableHead>
-              <TableHead className="w-[120px] text-xs font-bold text-gray-800 uppercase tracking-wider">Fabricante</TableHead>
-              <TableHead className="w-[200px] text-xs font-bold text-gray-800 uppercase tracking-wider">Modelo</TableHead>
-              <TableHead className="w-[150px] text-xs font-bold text-gray-800 uppercase tracking-wider">Série</TableHead>
-              <TableHead className="w-[120px] text-xs font-bold text-gray-800 uppercase tracking-wider">Status</TableHead> 
-              <TableHead className="w-[180px] text-center text-xs font-bold text-gray-800 uppercase tracking-wider">Ações</TableHead>
+              <TableHead className="w-[100px] text-xs font-extrabold text-gray-900 uppercase tracking-wider">ID</TableHead>
+              <TableHead className="w-[120px] text-xs font-extrabold text-gray-900 uppercase tracking-wider">Fabricante</TableHead>
+              <TableHead className="w-[200px] text-xs font-extrabold text-gray-900 uppercase tracking-wider">Modelo</TableHead>
+              <TableHead className="w-[150px] text-xs font-extrabold text-gray-900 uppercase tracking-wider">Série</TableHead>
+              <TableHead className="w-[120px] text-xs font-extrabold text-gray-900 uppercase tracking-wider">Status</TableHead> 
+              <TableHead className="w-[180px] text-center text-xs font-extrabold text-gray-900 uppercase tracking-wider">Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
