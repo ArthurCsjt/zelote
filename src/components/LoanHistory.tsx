@@ -2,24 +2,29 @@ import { useState, useMemo } from "react";
 import { format } from "date-fns";
 import { Badge } from "./ui/badge";
 import { Card, CardContent } from "./ui/card";
-import { Clock, Monitor, User, CheckCircle, AlertTriangle, Search, Filter, X, RotateCcw, CalendarX } from "lucide-react";
+import { Clock, Monitor, User, CheckCircle, AlertTriangle, Search, Filter, X, RotateCcw, CalendarX, List, LayoutGrid } from "lucide-react";
 import type { LoanHistoryItem } from "@/types/database";
 import { Input } from "./ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { Button } from "./ui/button";
-import { GlassCard } from "./ui/GlassCard"; // Importando GlassCard
+import { GlassCard } from "./ui/GlassCard";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "./ui/pagination";
+import { ToggleGroup, ToggleGroupItem } from "./ui/toggle-group"; // Importando ToggleGroup
+import { LoanHistoryTable } from "./LoanHistoryTable"; // Importando o novo componente de Tabela
 
 interface LoanHistoryProps {
   history: LoanHistoryItem[];
   isNewLoan: (loan: LoanHistoryItem) => boolean; // NOVO PROP
 }
 
+type ViewMode = 'cards' | 'table';
+
 export function LoanHistory({ history, isNewLoan }: LoanHistoryProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [userTypeFilter, setUserTypeFilter] = useState<string>("all");
   const [currentPage, setCurrentPage] = useState(1);
+  const [viewMode, setViewMode] = useState<ViewMode>('cards'); // NOVO ESTADO
   const itemsPerPage = 10; // 10 itens por página
 
   const filteredHistory = useMemo(() => {
@@ -79,10 +84,27 @@ export function LoanHistory({ history, isNewLoan }: LoanHistoryProps) {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-2">
-        <Clock className="h-5 w-5 text-primary" />
-        <h2 className="text-xl font-semibold">Histórico de Empréstimos</h2>
-        <Badge variant="secondary">{filteredHistory.length} / {history.length}</Badge>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Clock className="h-5 w-5 text-primary" />
+          <h2 className="text-xl font-semibold">Histórico de Empréstimos</h2>
+          <Badge variant="secondary">{filteredHistory.length} / {history.length}</Badge>
+        </div>
+        
+        {/* Seletor de Visualização */}
+        <ToggleGroup 
+          type="single" 
+          value={viewMode} 
+          onValueChange={(value: ViewMode) => value && setViewMode(value)}
+          className="h-9"
+        >
+          <ToggleGroupItem value="cards" aria-label="Visualização em Cards" className="h-9 px-3">
+            <LayoutGrid className="h-4 w-4" />
+          </ToggleGroupItem>
+          <ToggleGroupItem value="table" aria-label="Visualização em Tabela" className="h-9 px-3">
+            <List className="h-4 w-4" />
+          </ToggleGroupItem>
+        </ToggleGroup>
       </div>
 
       {/* Painel de Filtros */}
@@ -144,7 +166,11 @@ export function LoanHistory({ history, isNewLoan }: LoanHistoryProps) {
             </div>
           </CardContent>
         </Card>
+      ) : viewMode === 'table' ? (
+        /* Visualização em Tabela */
+        <LoanHistoryTable history={paginatedHistory} isNewLoan={isNewLoan} />
       ) : (
+        /* Visualização em Cards */
         <div className="grid gap-4">
           {paginatedHistory.map((loan) => {
             const { variant, className, cardClass } = getStatusBadgeProps(loan.status);
