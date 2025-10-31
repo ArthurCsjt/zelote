@@ -41,9 +41,7 @@ export const QRCodeSticker: React.FC<QRCodeStickerProps> = ({ item, className })
         <h3 className="text-sm font-bold text-gray-900 truncate w-full">
           {item.chromebook_id}
         </h3>
-        <p className="text-[10px] text-muted-foreground leading-tight mt-0.5 truncate w-full">
-          {item.model}
-        </p>
+        {/* REMOVIDO: Linha do Modelo */}
         <p className="text-[9px] text-gray-600 leading-tight mt-0.5 truncate w-full">
           S/N: {item.serial_number || 'N/A'}
         </p>
