@@ -43,8 +43,8 @@ export const AppBenefits: React.FC = () => {
             <GlassCard 
               key={index} 
               className={cn(
-                "p-2 text-center transition-all duration-300 hover:shadow-xl hover:scale-[1.02]",
-                "border-l-4 border-gray-200 hover:border-l-primary"
+                "p-2 text-center transition-all duration-300", // Mantém a transição, mas remove os efeitos de hover
+                "border-l-4 border-gray-200" // Mantém a borda cinza estática
               )}
             >
               <CardContent className="p-0 space-y-1">
