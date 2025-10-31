@@ -33,31 +33,34 @@ const benefits = [
 
 export const AppBenefits: React.FC = () => {
   return (
-    <div className="mt-12 pt-8 border-t border-gray-200 max-w-6xl mx-auto">
-      <h2 className="text-2xl font-bold text-center text-gray-800 mb-6 flex items-center justify-center gap-2">
-        <Zap className="h-6 w-6 text-primary" />
+    <div className="mt-10 pt-6 border-t border-gray-200 max-w-6xl mx-auto">
+      <h2 className="text-xl font-bold text-center text-gray-800 mb-5 flex items-center justify-center gap-2">
+        <Zap className="h-5 w-5 text-primary" />
         Por que usar o Zelote?
       </h2>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {benefits.map((benefit, index) => {
           const Icon = benefit.icon;
           return (
             <GlassCard 
               key={index} 
               className={cn(
-                "p-4 text-center transition-all duration-300 hover:shadow-xl hover:scale-[1.02]",
+                "p-3 text-center transition-all duration-300 hover:shadow-xl hover:scale-[1.02]",
                 "border-l-4 border-gray-200 hover:border-l-primary"
               )}
             >
-              <CardContent className="p-0 space-y-3">
+              <CardContent className="p-0 space-y-2">
                 <div className="flex justify-center">
-                  <Icon className={cn("h-8 w-8", benefit.color)} />
+                  {/* Ícone menor */}
+                  <Icon className={cn("h-6 w-6", benefit.color)} />
                 </div>
-                <CardTitle className="text-lg font-semibold text-gray-800">
+                {/* Título menor */}
+                <CardTitle className="text-sm font-semibold text-gray-800">
                   {benefit.title}
                 </CardTitle>
-                <CardDescription className="text-sm text-muted-foreground">
+                {/* Descrição menor */}
+                <CardDescription className="text-xs text-muted-foreground">
                   {benefit.description}
                 </CardDescription>
               </CardContent>
