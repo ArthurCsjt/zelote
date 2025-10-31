@@ -44,7 +44,7 @@ export const PrintPreviewPage: React.FC = () => {
   }
   
   // Ajuste: Usamos grid-cols-2 por padrão (mobile) e aplicamos o grid selecionado a partir de 'sm'
-  // Usamos a sintaxe completa para garantir que o Tailwind detecte as classes dinâmicas.
+  // Reduzindo o gap para gap-2 (0.5rem) para otimizar o espaço em tela.
   const gridClass = columns === '2' 
     ? 'grid-cols-2 sm:grid-cols-2' 
     : columns === '3' 
@@ -103,8 +103,10 @@ export const PrintPreviewPage: React.FC = () => {
         </GlassCard>
 
         {/* Área de Impressão */}
-        <div id="print-area" className="max-w-4xl mx-auto bg-white p-4 sm:p-8"> {/* Adicionando fundo branco e padding para a área de visualização */}
-          <div className={cn("grid gap-4 print:gap-2", gridClass, printGridClass)}>
+        {/* Reduzindo o padding na visualização em tela para p-2 (0.5rem) */}
+        <div id="print-area" className="max-w-4xl mx-auto bg-white p-2 sm:p-4"> 
+          {/* Aplicando gap-2 para a visualização em tela */}
+          <div className={cn("grid gap-2 print:gap-2", gridClass, printGridClass)}>
             {printItems.map((item) => (
               <QRCodeSticker key={item.id} item={item} />
             ))}

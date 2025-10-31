@@ -152,6 +152,12 @@
     visibility: hidden;
   }
   
+  /* Remove padding e margem do corpo no modo de impressão */
+  body {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  
   /* Mostra apenas a área de impressão e seus filhos */
   #print-area, #print-area * {
     visibility: visible;
@@ -181,8 +187,8 @@
   /* Ajusta o grid para impressão (4 colunas por padrão) */
   #print-area > div {
     display: grid;
-    gap: 0.5cm; /* Espaçamento entre etiquetas */
-    padding: 0.5cm;
+    gap: 0.2cm; /* Espaçamento mínimo entre etiquetas */
+    padding: 0.2cm; /* Padding mínimo para a área de corte */
   }
   
   /* Classes de grid dinâmicas para impressão */
