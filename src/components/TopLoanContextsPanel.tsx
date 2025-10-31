@@ -23,6 +23,9 @@ const getUserTypeIcon = (type: string) => {
     }
 };
 
+// Cores para o ranking (1º, 2º, 3º)
+const RANK_COLORS = ['bg-yellow-400', 'bg-gray-300', 'bg-amber-600'];
+
 export const TopLoanContextsPanel: React.FC<TopLoanContextsPanelProps> = ({ topLoanContexts }) => {
   return (
     <GlassCard className="dashboard-card">
@@ -38,31 +41,47 @@ export const TopLoanContextsPanel: React.FC<TopLoanContextsPanelProps> = ({ topL
       <CardContent className="space-y-3">
         {topLoanContexts.length > 0 ? (
           <div className="space-y-3">
-            {topLoanContexts.map((item, index) => (
-              <div 
-                key={index} 
-                className="flex flex-col p-3 border rounded-lg bg-white shadow-sm hover:bg-gray-50 transition-colors"
-              >
-                <div className="flex justify-between items-start">
-                    <div className="flex items-center gap-2">
-                        <span className="text-sm font-bold text-muted-foreground">{index + 1}.</span>
-                        <div className="flex flex-col">
-                            <span className="text-sm font-semibold truncate max-w-[200px]">{item.name}</span>
-                            <span className="text-xs text-muted-foreground truncate max-w-[200px]">{item.purpose}</span>
-                        </div>
+            {topLoanContexts.map((item, index) => {
+              const rankColor = RANK_COLORS[index] || 'bg-gray-100';
+              const Icon = getUserTypeIcon(item.userType);
+              
+              return (
+                <div 
+                  key={index} 
+                  className="flex items-center p-3 border rounded-lg bg-white shadow-sm hover:bg-gray-50 transition-colors relative overflow-hidden"
+                >
+                  {/* Indicador de Ranking (Fita Lateral) */}
+                  <div className={cn(
+                    "absolute left-0 top-0 bottom-0 w-1.5 rounded-l-lg",
+                    rankColor
+                  )} />
+                  
+                  <div className="flex items-center flex-1 ml-2">
+                    {/* Ícone do Tipo de Usuário */}
+                    <div className="mr-3 shrink-0">
+                        {Icon}
                     </div>
-                    <Badge variant="secondary" className="bg-blue-100 text-blue-700 shrink-0">
-                        {item.count} empréstimo{item.count > 1 ? 's' : ''}
-                    </Badge>
+                    
+                    <div className="flex flex-col min-w-0 flex-1">
+                        {/* Nome e Finalidade */}
+                        <span className="text-sm font-semibold truncate text-gray-800">{item.name}</span>
+                        <span className="text-xs text-muted-foreground truncate">{item.purpose}</span>
+                        
+                        {/* Tipo de Usuário (Badge) */}
+                        <Badge variant="outline" className="capitalize w-fit mt-1 text-[10px] px-1.5 py-0.5">
+                            {item.userType}
+                        </Badge>
+                    </div>
+                  </div>
+                  
+                  {/* Contagem de Empréstimos */}
+                  <div className="flex flex-col items-end shrink-0 ml-4">
+                    <span className="text-xl font-bold text-primary">{item.count}</span>
+                    <span className="text-xs text-muted-foreground">empréstimos</span>
+                  </div>
                 </div>
-                <div className="mt-2 flex items-center gap-2 pt-2 border-t border-gray-100">
-                    <Badge variant="outline" className="capitalize flex items-center gap-1">
-                        {getUserTypeIcon(item.userType)}
-                        {item.userType}
-                    </Badge>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         ) : (
           <div className="text-center py-4">
