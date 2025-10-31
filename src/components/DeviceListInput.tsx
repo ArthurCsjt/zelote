@@ -87,13 +87,6 @@ export function DeviceListInput({ deviceIds, setDeviceIds, disabled, filterStatu
         return { error: `Status Incorreto: ${chromebook.status.toUpperCase()}. Requerido: Disponível.` };
     }
     
-    // Para devolução, o status deve ser 'emprestado'
-    // REMOVIDO: A verificação de status local para devolução, pois o loan_history é a fonte de verdade.
-    // if (actionLabel === 'Devolução' && chromebook.status !== 'emprestado') {
-    //     return { error: `Status Incorreto: ${chromebook.status.toUpperCase()}. Requerido: Emprestado.` };
-    // }
-
-
     // 2. Validação de Empréstimo Ativo (Verificação de consistência com o DB via loan_history)
     const activeLoan = activeLoansCache.find(loan => loan.chromebook_id === normalizedInput);
     
@@ -192,7 +185,7 @@ export function DeviceListInput({ deviceIds, setDeviceIds, disabled, filterStatu
       />
       
       {/* Lista de Dispositivos Adicionados */}
-      <div className="mt-2 p-2 bg-white rounded-md border border-gray-200 max-h-[150px] overflow-y-auto dark:bg-card dark:border-border">
+      <div className="mt-2 p-2 bg-white rounded-md border border-gray-200 max-h-[250px] overflow-y-auto dark:bg-card dark:border-border">
         {deviceList.length > 0 ? (
           <div className="space-y-2">
             {deviceList.map((chromebook) => (
