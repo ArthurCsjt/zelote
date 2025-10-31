@@ -6,12 +6,14 @@ import { useAuth } from "./contexts/AuthContext";
 
 // PASSO 1: IMPORTAR O PROVIDER DO BANCO DE DADOS
 import { DatabaseProvider } from './contexts/DatabaseContext'; // Ajuste o caminho se necessário
+import { PrintProvider } from './contexts/PrintContext'; // NOVO IMPORT
 
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import Settings from "./pages/Settings";
+import { PrintPreviewPage } from "./pages/PrintPreviewPage"; // NOVO IMPORT
 
 const queryClient = new QueryClient();
 
@@ -29,8 +31,7 @@ const App = () => (
       <AuthProvider>
         {/* PASSO 2: O DATABASEPROVIDER DEVE ENVOLVER TODO O RESTO DA APLICAÇÃO */}
         <DatabaseProvider>
-          {/* <TooltipProvider> */}
-            
+          <PrintProvider> {/* NOVO: PrintProvider */}
             <BrowserRouter>
               <Routes>
                 <Route path="/login" element={<Login />} />
@@ -47,10 +48,17 @@ const App = () => (
                   </ProtectedRoute>
                 } />
                 
+                {/* NOVA ROTA DE IMPRESSÃO */}
+                <Route path="/print-preview" element={
+                  <ProtectedRoute>
+                    <PrintPreviewPage />
+                  </ProtectedRoute>
+                } />
+                
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>
-          {/* </TooltipProvider> */}
+          </PrintProvider>
         </DatabaseProvider>
       </AuthProvider>
     </QueryClientProvider>

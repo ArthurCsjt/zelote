@@ -142,3 +142,47 @@
 #qr-code-reader__scan_region {
   border-radius: 8px;
 }
+
+/* ======================================================================== */
+/* NOVO: Estilos de Impressão em Lote */
+/* ======================================================================== */
+@media print {
+  /* Esconde o corpo principal e mostra apenas a área de impressão */
+  body * {
+    visibility: hidden;
+  }
+  
+  /* Mostra apenas a área de impressão e seus filhos */
+  #print-area, #print-area * {
+    visibility: visible;
+  }
+  
+  /* Posiciona a área de impressão no topo da página */
+  #print-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    padding: 0 !important; /* Remove padding do container */
+    margin: 0 !important;
+  }
+  
+  /* Remove o botão "Imprimir" e outros controles */
+  .no-print {
+    display: none !important;
+  }
+  
+  /* Garante que as etiquetas não sejam cortadas entre páginas */
+  .print-preview-page {
+    margin: 0;
+    padding: 0;
+  }
+  
+  /* Ajusta o grid para impressão (ex: 4 colunas por página) */
+  #print-area > div {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); /* 4 etiquetas por linha */
+    gap: 0.5cm; /* Espaçamento entre etiquetas */
+    padding: 0.5cm;
+  }
+}

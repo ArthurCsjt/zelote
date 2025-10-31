@@ -10,7 +10,7 @@ import {
   TableRow,
 } from "./ui/table";
 import { toast } from "./ui/use-toast";
-import { Search, Filter, Edit3, QrCode, CheckCircle, AlertCircle, XCircle, Clock, RefreshCw, Download, Trash2, MapPin, FileText, Loader2, AlertTriangle } from "lucide-react";
+import { Search, Filter, Edit3, QrCode, CheckCircle, AlertCircle, XCircle, Clock, RefreshCw, Download, Trash2, MapPin, FileText, Loader2, AlertTriangle, Printer } from "lucide-react";
 import { 
   Select,
   SelectContent,
@@ -28,6 +28,8 @@ import { GlassCard } from "./ui/GlassCard";
 import { ChromebookEditDialog } from "./ChromebookEditDialog"; // NOVO IMPORT
 import { ChromebookDeleteDialog } from "./ChromebookDeleteDialog"; // NOVO IMPORT
 import Papa from 'papaparse'; // Importando PapaParse
+import { useNavigate } from "react-router-dom"; // NOVO IMPORT
+import { usePrintContext } from "@/contexts/PrintContext"; // NOVO IMPORT
 
 // Interface para o estado interno do formulário de edição (mantida para consistência)
 interface ChromebookDataExtended extends Chromebook {
@@ -44,6 +46,8 @@ interface ChromebookInventoryProps {
 export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInventoryProps) {
   const { isAdmin } = useProfileRole();
   const { getChromebooks, updateChromebook } = useDatabase();
+  const navigate = useNavigate(); // Inicializa useNavigate
+  const { setPrintItems } = usePrintContext(); // Usa o contexto de impressão
   
   const [chromebooks, setChromebooks] = useState<ChromebookDataExtended[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -269,6 +273,17 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
       setIsExporting(false);
     }
   };
+  
+  // NOVO: Handler para impressão em lote
+  const handleBatchPrint = () => {
+    if (filteredChromebooks.length === 0) {
+      toast({ title: "Atenção", description: "Nenhum Chromebook para imprimir. Ajuste os filtros.", variant: "info" });
+      return;
+    }
+    
+    setPrintItems(filteredChromebooks);
+    navigate('/print-preview');
+  };
 
   return (
     <div className="p-0 glass-morphism animate-fade-in relative">
@@ -313,6 +328,17 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
           
           {/* Botões de Ação */}
           <div className="flex gap-2 w-full sm:w-auto">
+            {/* NOVO BOTÃO DE IMPRESSÃO EM LOTE */}
+            <Button 
+              onClick={handleBatchPrint}
+              variant="outline"
+              title={`Imprimir QR Codes em Lote (${filteredChromebooks.length} itens)`}
+              disabled={filteredChromebooks.length === 0 || isFetching || isExporting}
+              className="px-3 bg-white hover:bg-gray-50"
+            >
+              <Printer className="h-4 w-4" />
+            </Button>
+            
             <Button 
               onClick={fetchChromebooks}
               variant="outline"
