@@ -6,26 +6,26 @@ import { cn } from '@/lib/utils';
 
 const benefits = [
   {
-    title: "Agilidade com QR Code",
-    description: "Cadastre e gerencie empréstimos/devoluções em segundos usando o scanner integrado.",
+    title: "Empréstimo Rápido (QR)",
+    description: "Use o scanner para registrar empréstimos e devoluções em segundos.",
     icon: QrCode,
     color: "text-menu-teal",
   },
   {
-    title: "Controle Total do Inventário",
-    description: "Saiba o status e a localização de cada Chromebook em tempo real.",
+    title: "Inventário em Tempo Real",
+    description: "Status e localização de cada Chromebook sempre atualizados.",
     icon: Shield,
     color: "text-menu-blue",
   },
   {
-    title: "Análise de Uso Inteligente",
-    description: "Visualize taxas de ocupação, picos de uso e histórico de empréstimos em dashboards.",
+    title: "Análise de Uso",
+    description: "Descubra picos de uso e visualize o histórico em dashboards claros.",
     icon: BarChart3,
     color: "text-menu-dark-blue",
   },
   {
-    title: "Auditoria Física Simplificada",
-    description: "Realize contagens rápidas e identifique discrepâncias no inventário automaticamente.",
+    title: "Contagem Simples",
+    description: "Auditoria física rápida para identificar itens faltantes e discrepâncias.",
     icon: ListChecks,
     color: "text-menu-rose",
   },
