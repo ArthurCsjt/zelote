@@ -7,6 +7,12 @@ import { format, startOfDay, isToday, isWithinInterval, subDays, differenceInMin
 // O PeriodView agora só terá 'history' e 'reports'
 export type PeriodView = 'history' | 'reports';
 
+interface TopUser {
+  name: string;
+  count: number;
+  email: string;
+}
+
 interface DashboardStats {
   totalChromebooks: number;
   availableChromebooks: number;
@@ -18,6 +24,11 @@ interface DashboardStats {
   userTypeData: { name: string; value: number }[];
   durationData: { name: string; minutos: number }[];
   maxOccupancyRate: number; // Taxa de ocupação máxima
+  topUsersByLoanCount: { // NOVO CAMPO
+    aluno: TopUser[];
+    professor: TopUser[];
+    funcionario: TopUser[];
+  };
 }
 
 export function useDashboardData(
@@ -175,6 +186,29 @@ export function useDashboardData(
         
         maxOccupancyRate = (maxConcurrentLoans / availableForLoan) * 100;
     }
+    
+    // CÁLCULO: Usuários Mais Ativos
+    const loanCounts = filteredLoans.reduce((acc, loan) => {
+        const key = `${loan.user_type}:${loan.student_email}`;
+        if (!acc[key]) {
+            acc[key] = {
+                name: loan.student_name,
+                email: loan.student_email,
+                type: loan.user_type,
+                count: 0,
+            };
+        }
+        acc[key].count += 1;
+        return acc;
+    }, {} as Record<string, TopUser & { type: string }>);
+    
+    const allTopUsers = Object.values(loanCounts).sort((a, b) => b.count - a.count);
+    
+    const topUsersByLoanCount = {
+        aluno: allTopUsers.filter(u => u.type === 'aluno').slice(0, 5),
+        professor: allTopUsers.filter(u => u.type === 'professor').slice(0, 5),
+        funcionario: allTopUsers.filter(u => u.type === 'funcionario').slice(0, 5),
+    };
 
 
     return {
@@ -188,6 +222,7 @@ export function useDashboardData(
       userTypeData,
       durationData,
       maxOccupancyRate: Math.min(100, maxOccupancyRate), // Limita a 100%
+      topUsersByLoanCount, // NOVO
     };
   }, [chromebooks, history, filteredLoans, startHour, endHour, startDate, endDate]);
 

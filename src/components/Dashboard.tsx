@@ -7,7 +7,7 @@ import type { LoanHistoryItem, Chromebook } from "@/types/database";
 import { Badge } from "./ui/badge";
 import { Progress } from "./ui/progress";
 import { ChartContainer, ChartTooltipContent, ChartLegendContent } from "./ui/chart";
-import { Computer, Download, ArrowLeft, BarChart as BarChartIcon, PieChart as PieChartIcon, Clock, Users, Calendar, CalendarRange, Activity, ChartLine, Brain, Loader2, History as HistoryIcon, RefreshCw, TrendingUp, Info, Eye } from "lucide-react";
+import { Computer, Download, ArrowLeft, BarChart as BarChartIcon, PieChart as PieChartIcon, Clock, Users, Calendar, CalendarRange, Activity, ChartLine, Brain, Loader2, History as HistoryIcon, RefreshCw, TrendingUp, Info, Eye, UserCheck, GraduationCap, Briefcase } from "lucide-react"; // Adicionado UserCheck, GraduationCap, Briefcase
 import jsPDF from "jspdf";
 import { useToast } from "./ui/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -60,6 +60,56 @@ type DetailModalState = {
   dataType: 'chromebooks' | 'loans';
   data: DetailItem[] | null;
   isLoading: boolean;
+};
+
+// NOVO COMPONENTE: TopUsersPanel
+const TopUsersPanel = ({ topUsersByLoanCount }: any) => {
+  const userTypes = [
+    { type: 'aluno', title: 'Alunos Mais Ativos', icon: GraduationCap, color: 'text-blue-600', data: topUsersByLoanCount.aluno },
+    { type: 'professor', title: 'Professores Mais Ativos', icon: UserCheck, color: 'text-green-600', data: topUsersByLoanCount.professor },
+    { type: 'funcionario', title: 'Funcionários Mais Ativos', icon: Briefcase, color: 'text-orange-600', data: topUsersByLoanCount.funcionario },
+  ];
+
+  return (
+    <GlassCard className="dashboard-card">
+      <CardHeader>
+        <CardTitle className="text-lg flex items-center gap-2">
+          <Users className="h-5 w-5 text-primary" />
+          Usuários Mais Ativos
+        </CardTitle>
+        <CardDescription>
+          Top 5 usuários com mais empréstimos no período.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {userTypes.map(({ type, title, icon: Icon, color, data }) => (
+          <div key={type} className="space-y-3 p-3 border rounded-lg bg-gray-50/50">
+            <h4 className={cn("font-semibold text-sm flex items-center gap-1", color)}>
+              <Icon className="h-4 w-4" />
+              {title.split(' ')[0]}
+            </h4>
+            <div className="space-y-2">
+              {data.length > 0 ? (
+                data.map((user: any, index: number) => (
+                  <div key={user.email} className="flex justify-between items-center">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold text-muted-foreground">{index + 1}.</span>
+                      <span className="text-sm truncate max-w-[120px]">{user.name}</span>
+                    </div>
+                    <Badge variant="secondary" className="bg-gray-200 text-gray-700">
+                      {user.count} empréstimo{user.count > 1 ? 's' : ''}
+                    </Badge>
+                  </div>
+                ))
+              ) : (
+                <p className="text-xs text-muted-foreground">Nenhum empréstimo registrado.</p>
+              )}
+            </div>
+          </div>
+        ))}
+      </CardContent>
+    </GlassCard>
+  );
 };
 
 
@@ -312,6 +362,7 @@ const PeriodCharts = ({ periodView, loading, periodChartData, stats, startHour, 
     loansByUserType = {},
     filteredLoans = [], // Adicionado para uso no cálculo de progresso
     filteredReturns = [], // Adicionado para uso no cálculo de progresso
+    topUsersByLoanCount = { aluno: [], professor: [], funcionario: [] }, // NOVO
   } = stats || {};
 
   // Garante que filteredLoans.length seja seguro para divisão
@@ -506,43 +557,8 @@ const PeriodCharts = ({ periodView, loading, periodChartData, stats, startHour, 
       </div>
       
       <div className="grid gap-4 grid-cols-1 md:grid-cols-2 mt-4">
-        <GlassCard className="dashboard-card">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle className="text-lg">Tempo de Uso Médio</CardTitle>
-              <CardDescription>
-                Por tipo de usuário (minutos)
-              </CardDescription>
-            </div>
-            <Clock className="h-5 w-5 text-muted-foreground" />
-          </CardHeader>
-          <CardContent className="h-[250px] sm:h-[300px]">
-            <ChartContainer
-              config={{
-                minutos: { label: "Minutos", color: "hsl(var(--menu-violet))" },
-              }}
-              className="w-full h-full"
-            >
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={durationChartData} margin={{ top: 5, right: 0, left: -20, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                  <XAxis dataKey="name" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
-                  <YAxis tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
-                  <Tooltip content={<ChartTooltipContent />} />
-                  <Legend content={<ChartLegendContent />} wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
-                  
-                  <Bar 
-                    dataKey="minutos" 
-                    // Usamos a cor definida no objeto de dados
-                    fill={({ name }) => DURATION_COLORS[name] || '#9CA3AF'} 
-                    radius={[4, 4, 0, 0]} 
-                    name="Minutos"
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            </ChartContainer>
-          </CardContent>
-        </GlassCard>
+        {/* SUBSTITUÍDO: Tempo de Uso Médio -> Usuários Mais Ativos */}
+        <TopUsersPanel topUsersByLoanCount={topUsersByLoanCount} />
 
         <GlassCard className="dashboard-card">
           <CardHeader className="flex flex-row items-center justify-between">
@@ -702,6 +718,7 @@ export function Dashboard({
     userTypeData = [], 
     durationData = [], 
     maxOccupancyRate = 0,
+    topUsersByLoanCount = { aluno: [], professor: [], funcionario: [] }, // NOVO
   } = stats || {};
 
   // Função para gerar o PDF do relatório
