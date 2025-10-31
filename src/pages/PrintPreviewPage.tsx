@@ -18,7 +18,8 @@ export const PrintPreviewPage: React.FC = () => {
   useEffect(() => {
     // Redireciona se não houver itens para imprimir
     if (printItems.length === 0) {
-      navigate('/inventory', { replace: true });
+      // Navega para a rota raiz se não houver itens
+      navigate('/', { replace: true });
     }
   }, [printItems.length, navigate]);
 
@@ -28,7 +29,8 @@ export const PrintPreviewPage: React.FC = () => {
   
   const handleBack = () => {
     clearPrintItems(); // Limpa a seleção ao voltar
-    navigate('/inventory'); // Volta para o inventário (rota interna)
+    // Navega para a rota raiz (/)
+    navigate('/'); 
   };
 
   if (printItems.length === 0) {
@@ -53,7 +55,7 @@ export const PrintPreviewPage: React.FC = () => {
           className="flex items-center gap-2 bg-white hover:bg-gray-100"
         >
           <ArrowLeft className="h-4 w-4" />
-          Voltar ao Inventário
+          Voltar ao Menu Principal
         </Button>
       </div>
       
