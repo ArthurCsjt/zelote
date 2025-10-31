@@ -14,7 +14,8 @@ export const PrintPreviewPage: React.FC = () => {
   useEffect(() => {
     // Redireciona se não houver itens para imprimir
     if (printItems.length === 0) {
-      navigate('/inventory', { replace: true });
+      // Redireciona para a rota raiz, que deve levar ao menu ou login
+      navigate('/', { replace: true });
     }
   }, [printItems.length, navigate]);
 
@@ -45,9 +46,9 @@ export const PrintPreviewPage: React.FC = () => {
           </CardDescription>
         </CardHeader>
         <CardContent className="flex gap-4">
-          <Button onClick={() => navigate('/inventory')} variant="outline">
+          <Button onClick={() => navigate('/')} variant="outline">
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Voltar ao Inventário
+            Voltar ao Menu Principal
           </Button>
           <Button onClick={handlePrint} className="bg-menu-green hover:bg-menu-green-hover">
             <Printer className="h-4 w-4 mr-2" />
