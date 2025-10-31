@@ -148,9 +148,6 @@ export const UserManagement = () => {
   const { user: currentUser } = useAuth();
   const { isAdmin, loading: roleLoading } = useProfileRole(); // Usando useProfileRole
   const queryClient = useQueryClient();
-  // Removendo estados de convite
-  // const [inviteEmail, setInviteEmail] = useState('');
-  // const [inviteRole, setInviteRole] = useState<'admin' | 'user'>('user');
   const [userToDelete, setUserToDelete] = useState<UserProfile | null>(null);
   const [isDeletePendingOpen, setIsDeletePendingOpen] = useState(false);
   const [pendingInviteToDelete, setPendingInviteToDelete] = useState<UserProfile | null>(null);
@@ -159,13 +156,6 @@ export const UserManagement = () => {
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
   const [userToEditProfile, setUserToEditProfile] = useState<UserProfile | null>(null);
 
-
-  // Removendo função sendInvite
-  /*
-  const sendInvite = async (email: string, role: 'admin' | 'user') => {
-    // ... (código removido)
-  };
-  */
 
   const handleEditProfile = (user: UserProfile) => {
     setUserToEditProfile(user);
@@ -386,7 +376,7 @@ export const UserManagement = () => {
             <AlertDialogTitle>Excluir Conta Pendente</AlertDialogTitle>
             <AlertDialogDescription>
               Tem certeza que deseja excluir a conta pendente de <span className="font-bold">{pendingInviteToDelete?.email}</span>? O usuário terá que se registrar novamente.
-            </GAlertDialogDescription>
+            </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
