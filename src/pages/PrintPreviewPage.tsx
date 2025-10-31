@@ -1,15 +1,19 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Printer, QrCode, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Printer, QrCode, AlertTriangle, ListChecks } from 'lucide-react';
 import { usePrintContext } from '@/contexts/PrintContext';
 import { useNavigate } from 'react-router-dom';
 import { QRCodeSticker } from '@/components/QRCodeSticker';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { GlassCard } from '@/components/ui/GlassCard';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+import { cn } from '@/lib/utils';
 
 export const PrintPreviewPage: React.FC = () => {
-  const { printItems } = usePrintContext();
+  const { printItems, clearPrintItems } = usePrintContext();
   const navigate = useNavigate();
+  const [columns, setColumns] = useState<'2' | '3' | '4'>('4'); // Estado para o número de colunas
 
   useEffect(() => {
     // Redireciona se não houver itens para imprimir
@@ -22,6 +26,11 @@ export const PrintPreviewPage: React.FC = () => {
   const handlePrint = () => {
     window.print();
   };
+  
+  const handleBack = () => {
+    clearPrintItems(); // Limpa a seleção ao voltar
+    navigate('/inventory'); // Volta para o inventário (rota interna)
+  };
 
   if (printItems.length === 0) {
     return (
@@ -30,6 +39,9 @@ export const PrintPreviewPage: React.FC = () => {
       </div>
     );
   }
+  
+  const gridClass = `grid-cols-${columns}`;
+  const printGridClass = `print:grid-cols-${columns}`;
 
   return (
     <div className="p-4 sm:p-8 bg-gray-50 min-h-screen">
@@ -45,21 +57,41 @@ export const PrintPreviewPage: React.FC = () => {
             {printItems.length} Chromebooks selecionados. Ajuste as configurações de impressão do seu navegador (margens, cabeçalhos/rodapés) para melhor resultado.
           </CardDescription>
         </CardHeader>
-        <CardContent className="flex gap-4">
-          <Button onClick={() => navigate('/')} variant="outline">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Voltar ao Menu Principal
-          </Button>
-          <Button onClick={handlePrint} className="bg-menu-green hover:bg-menu-green-hover">
-            <Printer className="h-4 w-4 mr-2" />
-            Imprimir Etiquetas
-          </Button>
+        <CardContent className="flex flex-col sm:flex-row gap-4">
+          
+          {/* Seletor de Colunas */}
+          <div className="flex items-center gap-3">
+            <Label htmlFor="columns" className="text-sm font-medium flex items-center gap-1">
+                <ListChecks className="h-4 w-4" /> Layout:
+            </Label>
+            <Select value={columns} onValueChange={(v) => setColumns(v as '2' | '3' | '4')}>
+              <SelectTrigger className="w-[120px]">
+                <SelectValue placeholder="Colunas" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="2">2 Colunas</SelectItem>
+                <SelectItem value="3">3 Colunas</SelectItem>
+                <SelectItem value="4">4 Colunas</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div className="flex gap-4 mt-2 sm:mt-0">
+            <Button onClick={handleBack} variant="outline">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Voltar ao Inventário
+            </Button>
+            <Button onClick={handlePrint} className="bg-menu-green hover:bg-menu-green-hover">
+              <Printer className="h-4 w-4 mr-2" />
+              Imprimir Etiquetas
+            </Button>
+          </div>
         </CardContent>
       </GlassCard>
 
       {/* Área de Impressão */}
       <div id="print-area" className="max-w-4xl mx-auto">
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 print:gap-2">
+        <div className={cn("grid gap-4 print:gap-2", gridClass, printGridClass)}>
           {printItems.map((item) => (
             <QRCodeSticker key={item.id} item={item} />
           ))}

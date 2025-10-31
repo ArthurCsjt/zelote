@@ -178,11 +178,21 @@
     padding: 0;
   }
   
-  /* Ajusta o grid para impressão (ex: 4 colunas por página) */
+  /* Ajusta o grid para impressão (4 colunas por padrão) */
   #print-area > div {
     display: grid;
-    grid-template-columns: repeat(4, 1fr); /* 4 etiquetas por linha */
     gap: 0.5cm; /* Espaçamento entre etiquetas */
     padding: 0.5cm;
+  }
+  
+  /* Classes de grid dinâmicas para impressão */
+  .print\:grid-cols-2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .print\:grid-cols-3 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .print\:grid-cols-4 {
+    grid-template-columns: repeat(4, 1fr);
   }
 }

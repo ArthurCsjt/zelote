@@ -10,7 +10,7 @@ import {
   TableRow,
 } from "./ui/table";
 import { toast } from "./ui/use-toast";
-import { Search, Filter, Edit3, QrCode, CheckCircle, AlertCircle, XCircle, Clock, RefreshCw, Download, Trash2, MapPin, FileText, Loader2, AlertTriangle, Printer } from "lucide-react";
+import { Search, Filter, Edit3, QrCode, CheckCircle, AlertCircle, XCircle, Clock, RefreshCw, Download, Trash2, MapPin, FileText, Loader2, AlertTriangle, Printer, ListChecks, X } from "lucide-react";
 import { 
   Select,
   SelectContent,
@@ -25,11 +25,12 @@ import { useDatabase } from "@/hooks/useDatabase";
 import type { Chromebook } from "@/types/database";
 import { InventoryStats } from "./InventoryStats";
 import { GlassCard } from "./ui/GlassCard";
-import { ChromebookEditDialog } from "./ChromebookEditDialog"; // NOVO IMPORT
-import { ChromebookDeleteDialog } from "./ChromebookDeleteDialog"; // NOVO IMPORT
-import Papa from 'papaparse'; // Importando PapaParse
-import { useNavigate } from "react-router-dom"; // NOVO IMPORT
-import { usePrintContext } from "@/contexts/PrintContext"; // NOVO IMPORT
+import { ChromebookEditDialog } from "./ChromebookEditDialog";
+import { ChromebookDeleteDialog } from "./ChromebookDeleteDialog";
+import Papa from 'papaparse';
+import { useNavigate } from "react-router-dom";
+import { usePrintContext } from "@/contexts/PrintContext";
+import { Checkbox } from "./ui/checkbox"; // NOVO IMPORT
 
 // Interface para o estado interno do formulário de edição (mantida para consistência)
 interface ChromebookDataExtended extends Chromebook {
@@ -46,8 +47,8 @@ interface ChromebookInventoryProps {
 export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInventoryProps) {
   const { isAdmin } = useProfileRole();
   const { getChromebooks, updateChromebook } = useDatabase();
-  const navigate = useNavigate(); // Inicializa useNavigate
-  const { setPrintItems } = usePrintContext(); // Usa o contexto de impressão
+  const navigate = useNavigate();
+  const { printItems, addItemToPrint, removeItemFromPrint, clearPrintItems } = usePrintContext(); // USANDO NOVAS FUNÇÕES
   
   const [chromebooks, setChromebooks] = useState<ChromebookDataExtended[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -183,14 +184,8 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
       return;
     }
     
-    // A lógica de isDeprovisioned deve ser separada do status, exceto se o status for 'fora_uso'
-    // No entanto, para simplificar a UI, vamos manter a lógica de que 'fora_uso' implica 'is_deprovisioned: true'
-    // e qualquer outro status implica 'is_deprovisioned: false', a menos que o usuário edite manualmente.
-    // Como o usuário pediu para desvincular, vamos remover a alteração automática aqui.
-    
     const success = await updateChromebook(chromebookId, { 
       status: newStatus as any,
-      // is_deprovisioned: isDeprovisioned, // REMOVIDO: Não alteramos is_deprovisioned aqui
     });
 
     if (success) {
@@ -223,7 +218,7 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
     setChromebookToDelete(null);
   };
   
-  // NOVO: Função para exportar dados para CSV
+  // Função para exportar dados para CSV
   const handleExportCSV = async () => {
     setIsExporting(true);
     try {
@@ -276,14 +271,45 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
   
   // NOVO: Handler para impressão em lote
   const handleBatchPrint = () => {
-    if (filteredChromebooks.length === 0) {
-      toast({ title: "Atenção", description: "Nenhum Chromebook para imprimir. Ajuste os filtros.", variant: "info" });
+    if (printItems.length === 0) {
+      toast({ title: "Atenção", description: "Selecione pelo menos um Chromebook para imprimir.", variant: "info" });
       return;
     }
     
-    setPrintItems(filteredChromebooks);
     navigate('/print-preview');
   };
+  
+  // Lógica de seleção de item
+  const isItemSelected = (chromebookId: string) => printItems.some(item => item.id === chromebookId);
+  
+  const handleToggleItem = (chromebook: ChromebookDataExtended) => {
+    if (isItemSelected(chromebook.id)) {
+      removeItemFromPrint(chromebook.id);
+    } else {
+      addItemToPrint(chromebook);
+    }
+  };
+  
+  // Lógica de seleção de todos os itens da página
+  const handleToggleAllOnPage = () => {
+    const allOnPageSelected = paginatedChromebooks.every(cb => isItemSelected(cb.id));
+    
+    if (allOnPageSelected) {
+      // Desseleciona todos da página
+      paginatedChromebooks.forEach(cb => removeItemFromPrint(cb.id));
+    } else {
+      // Seleciona todos da página
+      paginatedChromebooks.forEach(cb => {
+        if (!isItemSelected(cb.id)) {
+          addItemToPrint(cb);
+        }
+      });
+    }
+  };
+  
+  // Verifica se todos os itens da página estão selecionados
+  const isAllOnPageSelected = paginatedChromebooks.length > 0 && paginatedChromebooks.every(cb => isItemSelected(cb.id));
+
 
   return (
     <div className="p-0 glass-morphism animate-fade-in relative">
@@ -328,15 +354,20 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
           
           {/* Botões de Ação */}
           <div className="flex gap-2 w-full sm:w-auto">
-            {/* NOVO BOTÃO DE IMPRESSÃO EM LOTE */}
+            {/* Botão de Impressão em Lote */}
             <Button 
               onClick={handleBatchPrint}
               variant="outline"
-              title={`Imprimir QR Codes em Lote (${filteredChromebooks.length} itens)`}
-              disabled={filteredChromebooks.length === 0 || isFetching || isExporting}
-              className="px-3 bg-white hover:bg-gray-50"
+              title={`Imprimir QR Codes em Lote (${printItems.length} itens)`}
+              disabled={printItems.length === 0 || isFetching || isExporting}
+              className="px-3 bg-white hover:bg-gray-50 relative"
             >
               <Printer className="h-4 w-4" />
+              {printItems.length > 0 && (
+                <span className="absolute -top-2 -right-2 h-5 w-5 rounded-full bg-red-500 text-white text-xs flex items-center justify-center">
+                  {printItems.length}
+                </span>
+              )}
             </Button>
             
             <Button 
@@ -363,8 +394,16 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
             </Button>
           </div>
         </div>
-        <div className="text-sm text-gray-500 mt-4">
-          Resultados: {filteredChromebooks.length} Chromebooks
+        <div className="flex justify-between items-center mt-4">
+          <div className="text-sm text-gray-500">
+            Resultados: {filteredChromebooks.length} Chromebooks
+          </div>
+          {printItems.length > 0 && (
+            <Button variant="link" size="sm" onClick={clearPrintItems} className="text-red-600 h-auto p-0 text-xs">
+              <X className="h-3 w-3 mr-1" />
+              Limpar Seleção ({printItems.length})
+            </Button>
+          )}
         </div>
       </GlassCard>
 
@@ -373,6 +412,13 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
         <Table className="min-w-[800px] md:min-w-full"> {/* Garante largura mínima para mobile */}
           <TableHeader className="bg-gray-100">
             <TableRow>
+              <TableHead className="w-[50px] text-center">
+                <Checkbox 
+                  checked={isAllOnPageSelected}
+                  onCheckedChange={handleToggleAllOnPage}
+                  aria-label="Selecionar todos na página"
+                />
+              </TableHead>
               <TableHead className="w-[100px] text-xs font-extrabold text-gray-900 uppercase tracking-wider">ID</TableHead>
               <TableHead className="w-[120px] text-xs font-extrabold text-gray-900 uppercase tracking-wider">Fabricante</TableHead>
               <TableHead className="w-[200px] text-xs font-extrabold text-gray-900 uppercase tracking-wider">Modelo</TableHead>
@@ -386,9 +432,16 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
               paginatedChromebooks.map((chromebook) => {
                 const statusInfo = getStatusInfo(chromebook.status);
                 const StatusIcon = statusInfo.icon;
+                const isSelected = isItemSelected(chromebook.id);
                 
                 return (
-                  <TableRow key={chromebook.id}>
+                  <TableRow key={chromebook.id} className={isSelected ? 'bg-blue-50/50 hover:bg-blue-100/50' : ''}>
+                    <TableCell className="text-center py-2 align-top">
+                      <Checkbox 
+                        checked={isSelected}
+                        onCheckedChange={() => handleToggleItem(chromebook)}
+                      />
+                    </TableCell>
                     <TableCell className="font-medium text-xs py-2 align-top w-[100px]">
                       {chromebook.chromebook_id}
                     </TableCell>
@@ -475,7 +528,7 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={6}
+                  colSpan={7}
                   className="h-32 text-center text-gray-500"
                 >
                   {searchTerm || statusFilter !== 'all'
