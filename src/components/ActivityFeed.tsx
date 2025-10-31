@@ -3,10 +3,11 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { ScrollArea } from './ui/scroll-area';
-import { Clock, Monitor, User, CheckCircle, RotateCcw, Loader2, AlertTriangle, UserCheck } from 'lucide-react';
+import { Clock, Monitor, User, CheckCircle, RotateCcw, Loader2, AlertTriangle, UserCheck, RefreshCw } from 'lucide-react';
 import { formatDistanceToNow, format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Separator } from './ui/separator';
+import { Button } from './ui/button'; // Importando Button
 
 interface Activity {
   activity_id: string;
@@ -26,7 +27,7 @@ const fetchRecentActivities = async (): Promise<Activity[]> => {
 };
 
 export function ActivityFeed() {
-  const { data: activities, isLoading, error } = useQuery<Activity[]>({
+  const { data: activities, isLoading, error, refetch } = useQuery<Activity[]>({
     queryKey: ['recentActivities'],
     queryFn: fetchRecentActivities,
     refetchInterval: 30000, // Atualiza a cada 30 segundos
@@ -34,7 +35,7 @@ export function ActivityFeed() {
 
   if (isLoading) {
     return (
-      <div className="p-4 flex justify-center items-center h-32">
+      <div className="p-4 flex justify-center items-center h-32 w-[350px] md:w-[400px]">
         <Loader2 className="h-6 w-6 animate-spin text-primary" />
       </div>
     );
@@ -42,7 +43,7 @@ export function ActivityFeed() {
 
   if (error) {
     return (
-      <div className="p-4 text-center text-sm text-destructive">
+      <div className="p-4 text-center text-sm text-destructive w-[350px] md:w-[400px]">
         <AlertTriangle className="h-5 w-5 mx-auto mb-2" />
         Erro ao carregar atividades: {error.message}
       </div>
@@ -50,43 +51,57 @@ export function ActivityFeed() {
   }
 
   return (
-    <Card className="w-[350px] md:w-[400px] shadow-2xl border-none">
-      <CardHeader className="p-4 border-b bg-gray-50/50 backdrop-blur-sm">
+    <Card className="w-[350px] md:w-[400px] shadow-2xl border-none flex flex-col max-h-[90vh]">
+      
+      {/* Cabeçalho Fixo e Aprimorado */}
+      <CardHeader className="p-4 border-b bg-white/90 backdrop-blur-sm sticky top-0 z-10 flex flex-row items-center justify-between">
         <CardTitle className="text-lg flex items-center gap-2 text-gray-800">
           <Clock className="h-5 w-5 text-primary" />
           Atividade Recente
         </CardTitle>
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          onClick={() => refetch()}
+          disabled={isLoading}
+          className="h-8 w-8 p-0 text-muted-foreground hover:bg-gray-100"
+        >
+          <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+        </Button>
       </CardHeader>
-      <ScrollArea className="h-[300px]">
+      
+      {/* Área de Rolagem */}
+      <ScrollArea className="flex-1 h-[300px]">
         <CardContent className="p-0">
           {activities && activities.length > 0 ? (
             <div className="divide-y divide-gray-100">
               {activities.map((activity, index) => {
                 const isLoan = activity.activity_type === 'Empréstimo';
                 const Icon = isLoan ? CheckCircle : RotateCcw;
-                const color = isLoan ? 'text-green-600' : 'text-blue-600';
+                const colorClass = isLoan ? 'text-green-600' : 'text-blue-600';
+                const badgeBg = isLoan ? 'bg-green-500' : 'bg-blue-500';
                 const creatorName = activity.creator_name || activity.creator_email?.split('@')[0] || 'Sistema';
                 
                 return (
                   <div key={activity.activity_id} className="p-4 hover:bg-gray-50 transition-colors">
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-3">
-                        {/* NOVO: Número da Atividade */}
-                        <div className={`flex items-center justify-center h-6 w-6 rounded-full text-xs font-bold text-white ${isLoan ? 'bg-green-500' : 'bg-blue-500'}`}>
+                        {/* Número da Atividade */}
+                        <div className={`flex items-center justify-center h-6 w-6 rounded-full text-xs font-bold text-white shrink-0 ${badgeBg}`}>
                             {index + 1}
                         </div>
                         <div>
                           <p className="font-medium text-sm text-gray-800 flex items-center gap-2">
                             {activity.activity_type}
-                            <Icon className={`h-4 w-4 ${color}`} />
+                            <Icon className={`h-4 w-4 ${colorClass}`} />
                           </p>
                           <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
                             <Monitor className="h-3 w-3" />
-                            {activity.chromebook_id}
+                            <span className="font-semibold">{activity.chromebook_id}</span>
                           </p>
                         </div>
                       </div>
-                      <div className="text-right">
+                      <div className="text-right shrink-0">
                         <p className="text-xs text-gray-500 whitespace-nowrap">
                           {formatDistanceToNow(new Date(activity.activity_time), { addSuffix: true, locale: ptBR })}
                         </p>
@@ -96,16 +111,15 @@ export function ActivityFeed() {
                       </div>
                     </div>
                     
-                    {/* Detalhes do Solicitante */}
-                    <div className="mt-2 pt-2 border-t border-gray-100">
-                      <p className="text-xs text-gray-600 flex items-center gap-1">
+                    {/* Detalhes do Solicitante e Criador */}
+                    <div className="mt-2 pt-2 border-t border-gray-100 space-y-1">
+                      <p className="text-xs text-gray-700 flex items-center gap-1">
                         <User className="h-3 w-3 text-gray-500" />
                         <span className="font-medium">Solicitante:</span>
-                        {activity.user_name} ({activity.user_email})
+                        {activity.user_name}
                       </p>
                       
-                      {/* Detalhes do Criador (Admin/Funcionário) */}
-                      <p className="text-xs text-gray-500 flex items-center gap-1 mt-1">
+                      <p className="text-xs text-gray-500 flex items-center gap-1">
                         <UserCheck className="h-3 w-3 text-primary" />
                         <span className="font-medium">Registrado por:</span>
                         {creatorName}
