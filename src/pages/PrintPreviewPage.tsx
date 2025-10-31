@@ -30,7 +30,7 @@ export const PrintPreviewPage: React.FC = () => {
   
   const handleBack = () => {
     clearPrintItems(); // Limpa a seleção ao voltar
-    navigate('/'); // CORREÇÃO: Volta para a rota raiz (/)
+    navigate('/'); // Volta para a rota raiz (/)
   };
 
   if (printItems.length === 0) {
@@ -43,8 +43,14 @@ export const PrintPreviewPage: React.FC = () => {
     );
   }
   
-  // Ajuste: Usamos grid-cols-2 por padrão e aplicamos o grid selecionado a partir de 'sm'
-  const gridClass = `grid-cols-2 sm:grid-cols-${columns}`;
+  // Ajuste: Usamos grid-cols-2 por padrão (mobile) e aplicamos o grid selecionado a partir de 'sm'
+  // Usamos a sintaxe completa para garantir que o Tailwind detecte as classes dinâmicas.
+  const gridClass = columns === '2' 
+    ? 'grid-cols-2 sm:grid-cols-2' 
+    : columns === '3' 
+      ? 'grid-cols-2 sm:grid-cols-3' 
+      : 'grid-cols-2 sm:grid-cols-4';
+      
   const printGridClass = `print:grid-cols-${columns}`;
 
   return (
