@@ -35,6 +35,33 @@ const validateEmailDomain = (email: string, expectedSuffix: string): boolean => 
   return email.endsWith(expectedSuffix);
 };
 
+// Função auxiliar para mapear ChromebookData (camelCase) para o formato do DB (snake_case)
+const mapChromebookDataToDb = (data: Partial<ChromebookData>, userId: string | undefined) => {
+    const payload: any = {
+        chromebook_id: data.chromebookId,
+        model: data.model,
+        serial_number: data.serialNumber,
+        patrimony_number: data.patrimonyNumber,
+        manufacturer: data.manufacturer,
+        status: data.status,
+        condition: data.condition,
+        location: data.location,
+        classroom: data.classroom,
+        is_deprovisioned: data.is_deprovisioned ?? false,
+    };
+    
+    // Adiciona created_by apenas se estiver criando
+    if (userId && !data.id) {
+        payload.created_by = userId;
+    }
+    
+    // Remove chaves com valor undefined para evitar erros de Supabase
+    Object.keys(payload).forEach(key => payload[key] === undefined && delete payload[key]);
+    
+    return payload;
+};
+
+
 export const useDatabase = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
@@ -48,33 +75,7 @@ export const useDatabase = () => {
 
     setLoading(true);
     try {
-      let hasManufacturer = true;
-      try {
-        const { error: colErr } = await supabase.from('chromebooks').select('manufacturer').limit(1);
-        if (colErr) {
-          hasManufacturer = false;
-        }
-      } catch (e) {
-        hasManufacturer = false;
-      }
-
-      const payload: any = {
-        chromebook_id: data.chromebookId,
-        model: data.model,
-        serial_number: data.serialNumber,
-        patrimony_number: data.patrimonyNumber,
-        status: data.status as any,
-        condition: data.condition,
-        location: data.location,
-        classroom: data.classroom,
-        created_by: user.id,
-        is_deprovisioned: data.is_deprovisioned ?? false,
-      };
-
-      if (hasManufacturer) payload.manufacturer = (data as any).manufacturer;
-      else {
-        if ((data as any).manufacturer && !payload.serial_number) payload.serial_number = (data as any).manufacturer;
-      }
+      const payload = mapChromebookDataToDb(data, user.id);
 
       const { data: result, error } = await supabase
         .from('chromebooks')
@@ -145,30 +146,8 @@ export const useDatabase = () => {
 
     setLoading(true);
     try {
-      let hasManufacturer = true;
-      try {
-        const { error: colErr } = await supabase.from('chromebooks').select('manufacturer').limit(1);
-        if (colErr) hasManufacturer = false;
-      } catch (e) {
-        hasManufacturer = false;
-      }
-
-      const updatePayload: any = {
-        chromebook_id: data.chromebookId,
-        model: data.model,
-        serial_number: data.serialNumber,
-        patrimony_number: data.patrimonyNumber,
-        status: data.status as any,
-        condition: data.condition,
-        location: data.location,
-        classroom: data.classroom,
-        is_deprovisioned: data.is_deprovisioned,
-      };
-
-      if (hasManufacturer) updatePayload.manufacturer = (data as any).manufacturer;
-      else {
-        if ((data as any).manufacturer && !updatePayload.serial_number) updatePayload.serial_number = (data as any).manufacturer;
-      }
+      // Usa a função de mapeamento, mas não passa o userId para evitar atualizar created_by
+      const updatePayload = mapChromebookDataToDb(data, undefined);
 
       const { error } = await supabase
         .from('chromebooks')

@@ -65,9 +65,21 @@ export function ChromebookEditDialog({ open, onOpenChange, chromebook }: Chromeb
   ) => {
     if (!editingChromebook) return;
 
+    // Mapeia IDs de input para chaves do estado (que são snake_case)
+    const fieldMap: Record<string, keyof ChromebookDataExtended> = {
+        'chromebook_id': 'chromebook_id',
+        'patrimony_number': 'patrimony_number',
+        'serial_number': 'serial_number',
+        'location': 'location',
+        'classroom': 'classroom',
+        'condition': 'condition',
+    };
+    
+    const field = fieldMap[e.target.id] || e.target.id as keyof ChromebookDataExtended;
+
     setEditingChromebook({
       ...editingChromebook,
-      [e.target.id]: e.target.value,
+      [field]: e.target.value,
     });
   };
 
@@ -182,6 +194,7 @@ export function ChromebookEditDialog({ open, onOpenChange, chromebook }: Chromeb
         return;
     }
 
+    // Mapeia os campos snake_case do estado local para camelCase do ChromebookData
     const updatePayload: Partial<ChromebookData> = {
       chromebookId: editingChromebook.chromebook_id,
       model: editingChromebook.model,

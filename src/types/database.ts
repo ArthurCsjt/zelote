@@ -138,9 +138,7 @@ export interface AuditItem {
   created_at: string;
   // Campos adicionais para melhorias
   expected_location?: string;
-  // Removendo actual_location que não existe no banco atual
-  condition_found?: string;
-  condition_found?: string;
+  condition_found?: string; // CORRIGIDO: Removida a duplicação
   model_found?: string;
   serial_number_found?: string;
 }
