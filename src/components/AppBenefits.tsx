@@ -33,7 +33,7 @@ const benefits = [
 
 export const AppBenefits: React.FC = () => {
   return (
-    <div className="mt-20 pt-10 border-t border-gray-200 max-w-6xl mx-auto">
+    <div className="mt-20 pt-10 max-w-6xl mx-auto">
       {/* Título removido */}
       
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
