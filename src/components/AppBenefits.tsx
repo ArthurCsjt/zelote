@@ -33,30 +33,30 @@ const benefits = [
 
 export const AppBenefits: React.FC = () => {
   return (
-    <div className="mt-20 pt-10 max-w-6xl mx-auto">
+    <div className="mt-12 pt-6 max-w-6xl mx-auto">
       {/* Título removido */}
       
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {benefits.map((benefit, index) => {
           const Icon = benefit.icon;
           return (
             <GlassCard 
               key={index} 
               className={cn(
-                "p-3 text-center transition-all duration-300 hover:shadow-xl hover:scale-[1.02]",
+                "p-2 text-center transition-all duration-300 hover:shadow-xl hover:scale-[1.02]",
                 "border-l-4 border-gray-200 hover:border-l-primary"
               )}
             >
-              <CardContent className="p-0 space-y-2">
-                <div className="flex justify-center">
-                  {/* Ícone menor */}
-                  <Icon className={cn("h-6 w-6", benefit.color)} />
+              <CardContent className="p-0 space-y-1">
+                <div className="flex justify-center pt-1">
+                  {/* Ícone menor: h-5 w-5 */}
+                  <Icon className={cn("h-5 w-5", benefit.color)} />
                 </div>
-                {/* Título menor */}
+                {/* Título menor: text-sm */}
                 <CardTitle className="text-sm font-semibold text-gray-800">
                   {benefit.title}
                 </CardTitle>
-                {/* Descrição menor */}
+                {/* Descrição menor: text-xs */}
                 <CardDescription className="text-xs text-muted-foreground">
                   {benefit.description}
                 </CardDescription>
