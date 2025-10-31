@@ -33,7 +33,7 @@ const benefits = [
 
 export const AppBenefits: React.FC = () => {
   return (
-    <div className="mt-10 pt-6 border-t border-gray-200 max-w-6xl mx-auto">
+    <div className="mt-20 pt-10 border-t border-gray-200 max-w-6xl mx-auto">
       <h2 className="text-xl font-bold text-center text-gray-800 mb-5 flex items-center justify-center gap-2">
         <Zap className="h-5 w-5 text-primary" />
         Por que usar o Zelote?
