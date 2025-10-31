@@ -661,7 +661,7 @@ export function Dashboard({
     refreshData();
     toast({
       title: "Filtro Aplicado",
-      description: `Análise atualizada para o período de ${format(startDate!, 'dd/MM/yyyy')} a ${format(endDate!, 'dd/MM/yyyy')} (${startHour}h às ${endHour}h).`,
+      description: `Análise atualizada para o período de ${startDate && format(startDate, 'dd/MM/yyyy')} a ${endDate && format(endDate, 'dd/MM/yyyy')} (${startHour}h às ${endHour}h).`,
       variant: "info"
     });
   };
@@ -778,6 +778,9 @@ export function Dashboard({
   const periodBadge = useMemo(() => {
     if (periodView !== 'charts' || !startDate || !endDate) return null;
     
+    // Adicionando verificação de validade da data
+    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) return null;
+
     const startFmt = format(startDate, 'dd/MM');
     const endFmt = format(endDate, 'dd/MM');
     const dateRange = startFmt === endFmt ? startFmt : `${startFmt} - ${endFmt}`;
@@ -841,7 +844,7 @@ export function Dashboard({
             <CollapsibleDashboardFilter 
                 startDate={startDate}
                 setStartDate={setStartDate}
-                endDate={setEndDate}
+                endDate={endDate}
                 setEndDate={setEndDate}
                 startHour={startHour}
                 setStartHour={setStartHour}
