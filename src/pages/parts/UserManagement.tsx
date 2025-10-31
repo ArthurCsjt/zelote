@@ -18,6 +18,7 @@ import { MoreHorizontal, Loader2, Trash2, AlertTriangle, User, Edit3, Save } fro
 import { GlassCard } from '@/components/ui/GlassCard'; // Importando GlassCard
 import { cn } from '@/lib/utils'; // Importando cn para classes condicionais
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'; // Adicionando importação do Dialog
+import type { User as AuthUser } from '@supabase/supabase-js'; // Importando o tipo User do Supabase
 
 type UserProfile = {
   id: string;
@@ -33,9 +34,10 @@ interface ProfileEditDialogProps {
   onOpenChange: (open: boolean) => void;
   user: UserProfile | null;
   onSuccess: () => void;
+  currentUser: AuthUser | null; // Adicionando o usuário logado
 }
 
-const ProfileEditDialog: React.FC<ProfileEditDialogProps> = ({ open, onOpenChange, user, onSuccess }) => {
+const ProfileEditDialog: React.FC<ProfileEditDialogProps> = ({ open, onOpenChange, user, onSuccess, currentUser }) => {
   const [name, setName] = useState(user?.name || '');
   const [role, setRole] = useState<'admin' | 'user' | 'super_admin'>(user?.role || 'user');
   const [isSaving, setIsSaving] = useState(false);
@@ -50,7 +52,7 @@ const ProfileEditDialog: React.FC<ProfileEditDialogProps> = ({ open, onOpenChang
   }, [user]);
 
   const handleSave = async () => {
-    if (!user) return;
+    if (!user || !currentUser) return;
     setIsSaving(true);
     
     try {
@@ -63,7 +65,7 @@ const ProfileEditDialog: React.FC<ProfileEditDialogProps> = ({ open, onOpenChang
       if (nameError) throw nameError;
 
       // 2. Atualizar a role (apenas se o usuário logado for admin/super_admin e não estiver editando a si mesmo)
-      if (isAdmin && user.id !== supabase.auth.getUser().id) {
+      if (isAdmin && user.id !== currentUser.id) {
         // Super admin pode definir qualquer role, Admin só pode definir 'user' ou 'admin'
         const roleToSet = (currentRole === 'admin' && role === 'super_admin') ? 'admin' : role;
         
@@ -87,7 +89,8 @@ const ProfileEditDialog: React.FC<ProfileEditDialogProps> = ({ open, onOpenChang
 
   if (!user) return null;
 
-  const canEditRole = isAdmin && user.id !== supabase.auth.getUser().id;
+  // Usando currentUser.id para comparação síncrona
+  const canEditRole = isAdmin && user.id !== currentUser?.id;
   const canSetSuperAdmin = currentRole === 'super_admin';
 
   return (
@@ -438,6 +441,7 @@ export const UserManagement = () => {
         onOpenChange={setIsEditProfileOpen}
         user={userToEditProfile}
         onSuccess={handleEditSuccess}
+        currentUser={currentUser}
       />
     </div>
   );
