@@ -23,6 +23,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { SectionHeader } from "./Shared/SectionHeader"; // NOVO IMPORT
 import { DashboardDetailDialog } from "./DashboardDetailDialog"; // NOVO IMPORT
 import { cn } from '@/lib/utils'; // <-- IMPORTAÇÃO ADICIONADA
+import { TopLoanContextsPanel } from "./TopLoanContextsPanel"; // <-- NOVO IMPORT
 
 interface DashboardProps {
   onBack?: () => void;
@@ -63,56 +64,7 @@ type DetailModalState = {
   isLoading: boolean;
 };
 
-// NOVO COMPONENTE: TopUsersPanel
-const TopUsersPanel = ({ topUsersByLoanCount }: any) => {
-  const userTypes = [
-    { type: 'aluno', title: 'Alunos Mais Ativos', icon: GraduationCap, color: 'text-blue-600', data: topUsersByLoanCount.aluno },
-    { type: 'professor', title: 'Professores Mais Ativos', icon: UserCheck, color: 'text-green-600', data: topUsersByLoanCount.professor },
-    { type: 'funcionario', title: 'Funcionários Mais Ativos', icon: Briefcase, color: 'text-orange-600', data: topUsersByLoanCount.funcionario },
-  ];
-
-  return (
-    <GlassCard className="dashboard-card">
-      <CardHeader>
-        <CardTitle className="text-lg flex items-center gap-2">
-          <Users className="h-5 w-5 text-primary" />
-          Usuários Mais Ativos
-        </CardTitle>
-        <CardDescription>
-          Top 5 usuários com mais empréstimos no período.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {userTypes.map(({ type, title, icon: Icon, color, data }) => (
-          <div key={type} className="space-y-3 p-3 border rounded-lg bg-gray-50/50">
-            <h4 className={cn("font-semibold text-sm flex items-center gap-1", color)}>
-              <Icon className="h-4 w-4" />
-              {title.split(' ')[0]}
-            </h4>
-            <div className="space-y-2">
-              {data.length > 0 ? (
-                data.map((user: any, index: number) => (
-                  <div key={user.email} className="flex justify-between items-center">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-muted-foreground">{index + 1}.</span>
-                      <span className="text-sm truncate max-w-[120px]">{user.name}</span>
-                    </div>
-                    <Badge variant="secondary" className="bg-gray-200 text-gray-700">
-                      {user.count} empréstimo{user.count > 1 ? 's' : ''}
-                    </Badge>
-                  </div>
-                ))
-              ) : (
-                <p className="text-xs text-muted-foreground">Nenhum empréstimo registrado.</p>
-              )}
-            </div>
-          </div>
-        ))}
-      </CardContent>
-    </GlassCard>
-  );
-};
-
+// REMOVIDO: TopUsersPanel (substituído por TopLoanContextsPanel)
 
 // Componente auxiliar para renderizar o grid de estatísticas
 const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = [], loading, onCardClick, history, onApplyFilter }: any) => {
@@ -363,7 +315,7 @@ const PeriodCharts = ({ periodView, loading, periodChartData, stats, startHour, 
     loansByUserType = {},
     filteredLoans = [], // Adicionado para uso no cálculo de progresso
     filteredReturns = [], // Adicionado para uso no cálculo de progresso
-    topUsersByLoanCount = { aluno: [], professor: [], funcionario: [] }, // NOVO
+    topLoanContexts = [], // NOVO
   } = stats || {};
 
   // Garante que filteredLoans.length seja seguro para divisão
@@ -558,8 +510,8 @@ const PeriodCharts = ({ periodView, loading, periodChartData, stats, startHour, 
       </div>
       
       <div className="grid gap-4 grid-cols-1 md:grid-cols-2 mt-4">
-        {/* SUBSTITUÍDO: Tempo de Uso Médio -> Usuários Mais Ativos */}
-        <TopUsersPanel topUsersByLoanCount={topUsersByLoanCount} />
+        {/* NOVO PAINEL: Top Contextos de Empréstimo */}
+        <TopLoanContextsPanel topLoanContexts={topLoanContexts} />
 
         <GlassCard className="dashboard-card">
           <CardHeader className="flex flex-row items-center justify-between">
@@ -719,7 +671,7 @@ export function Dashboard({
     userTypeData = [], 
     durationData = [], 
     maxOccupancyRate = 0,
-    topUsersByLoanCount = { aluno: [], professor: [], funcionario: [] }, // NOVO
+    topLoanContexts = [], // NOVO
   } = stats || {};
 
   // Função para gerar o PDF do relatório

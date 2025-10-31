@@ -7,10 +7,12 @@ import { format, startOfDay, isToday, isWithinInterval, subDays, differenceInMin
 // O PeriodView agora só terá 'history' e 'reports'
 export type PeriodView = 'history' | 'reports';
 
-interface TopUser {
-  name: string;
+interface TopLoanContext {
+  context: string; // Combinação de Nome + Finalidade
+  name: string; // Nome do Solicitante
+  purpose: string; // Finalidade
   count: number;
-  email: string;
+  userType: string;
 }
 
 interface DashboardStats {
@@ -24,11 +26,7 @@ interface DashboardStats {
   userTypeData: { name: string; value: number }[];
   durationData: { name: string; minutos: number }[];
   maxOccupancyRate: number; // Taxa de ocupação máxima
-  topUsersByLoanCount: { // NOVO CAMPO
-    aluno: TopUser[];
-    professor: TopUser[];
-    funcionario: TopUser[];
-  };
+  topLoanContexts: TopLoanContext[]; // NOVO CAMPO
 }
 
 export function useDashboardData(
@@ -187,28 +185,25 @@ export function useDashboardData(
         maxOccupancyRate = (maxConcurrentLoans / availableForLoan) * 100;
     }
     
-    // CÁLCULO: Usuários Mais Ativos
-    const loanCounts = filteredLoans.reduce((acc, loan) => {
-        const key = `${loan.user_type}:${loan.student_email}`;
-        if (!acc[key]) {
-            acc[key] = {
+    // CÁLCULO: Top Contextos de Empréstimo (Solicitante + Finalidade)
+    const contextCounts = filteredLoans.reduce((acc, loan) => {
+        const contextKey = `${loan.student_email}:${loan.purpose}`;
+        if (!acc[contextKey]) {
+            acc[contextKey] = {
+                context: `${loan.student_name} (${loan.purpose})`,
                 name: loan.student_name,
-                email: loan.student_email,
-                type: loan.user_type,
+                purpose: loan.purpose,
                 count: 0,
+                userType: loan.user_type,
             };
         }
-        acc[key].count += 1;
+        acc[contextKey].count += 1;
         return acc;
-    }, {} as Record<string, TopUser & { type: string }>);
+    }, {} as Record<string, TopLoanContext>);
     
-    const allTopUsers = Object.values(loanCounts).sort((a, b) => b.count - a.count);
-    
-    const topUsersByLoanCount = {
-        aluno: allTopUsers.filter(u => u.type === 'aluno').slice(0, 5),
-        professor: allTopUsers.filter(u => u.type === 'professor').slice(0, 5),
-        funcionario: allTopUsers.filter(u => u.type === 'funcionario').slice(0, 5),
-    };
+    const topLoanContexts = Object.values(contextCounts)
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 5);
 
 
     return {
@@ -222,7 +217,7 @@ export function useDashboardData(
       userTypeData,
       durationData,
       maxOccupancyRate: Math.min(100, maxOccupancyRate), // Limita a 100%
-      topUsersByLoanCount, // NOVO
+      topLoanContexts, // NOVO
     };
   }, [chromebooks, history, filteredLoans, startHour, endHour, startDate, endDate]);
 
