@@ -7,7 +7,7 @@ import type { LoanHistoryItem, Chromebook } from "@/types/database";
 import { Badge } from "./ui/badge";
 import { Progress } from "./ui/progress";
 import { ChartContainer, ChartTooltipContent, ChartLegendContent } from "./ui/chart";
-import { Computer, Download, ArrowLeft, BarChart as BarChartIcon, PieChart as PieChartIcon, Clock, Users, Calendar, CalendarRange, Activity, ChartLine, Brain, Loader2, History as HistoryIcon, RefreshCw, TrendingUp, Info, Eye, UserCheck, GraduationCap, Briefcase } from "lucide-react"; // Adicionado UserCheck, GraduationCap, Briefcase
+import { Computer, Download, ArrowLeft, BarChart as BarChartIcon, PieChart as PieChartIcon, Clock, Users, Calendar, CalendarRange, Activity, ChartLine, Brain, Loader2, History as HistoryIcon, RefreshCw, TrendingUp, Info, Eye, UserCheck, GraduationCap, Briefcase, Zap, Waves } from "lucide-react"; // Adicionado Zap e Waves
 import jsPDF from "jspdf";
 import { useToast } from "./ui/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -65,7 +65,7 @@ type DetailModalState = {
 };
 
 // Componente auxiliar para renderizar o grid de estatísticas
-const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = [], loading, onCardClick, history, onApplyFilter, isMounted }: any) => {
+const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = [], loading, onCardClick, history, isMounted }: any) => {
   if (periodView === 'history' || periodView === 'reports') return null;
 
   // Desestruturação segura, usando valores padrão se stats for null/undefined
@@ -73,24 +73,30 @@ const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = []
     totalActive = 0, 
     totalChromebooks = 0, 
     totalInventoryUsageRate = 0, 
-    availableChromebooks = 0, // Adicionado
+    usageRateColor = 'green', // NOVO
+    availableChromebooks = 0, 
     averageUsageTime = 0, 
     completionRate = 0, 
     maxOccupancyRate = 0,
+    occupancyRateColor = 'green', // NOVO
   } = stats || {};
 
-  if (loading) {
-    return (
-      <div className="grid gap-4 grid-cols-2 md:grid-cols-4 relative z-10">
-        <StatCardSkeleton /><StatCardSkeleton /><StatCardSkeleton /><StatCardSkeleton />
-      </div>
-    );
-  }
-  
   // Função para determinar se o empréstimo está em atraso
   const isOverdue = (loan: LoanHistoryItem) => {
     return loan.expected_return_date && new Date(loan.expected_return_date) < new Date();
   };
+  
+  const getColorClasses = (color: 'green' | 'yellow' | 'red') => {
+    switch (color) {
+      case 'green': return { text: 'text-green-600', bg: 'bg-green-50', border: 'border-green-500', gradient: 'from-green-600 to-emerald-600' };
+      case 'yellow': return { text: 'text-amber-600', bg: 'bg-amber-50', border: 'border-amber-500', gradient: 'from-amber-600 to-orange-600' };
+      case 'red': return { text: 'text-red-600', bg: 'bg-red-50', border: 'border-red-500', gradient: 'from-red-600 to-red-800' };
+      default: return { text: 'text-gray-600', bg: 'bg-gray-50', border: 'border-gray-500', gradient: 'from-gray-600 to-gray-800' };
+    }
+  };
+  
+  const usageColors = getColorClasses(usageRateColor);
+  const picoColors = getColorClasses(occupancyRateColor);
 
   const getAnimationClass = (delay: number) => 
     isMounted ? `animate-fadeIn animation-delay-${delay}` : 'opacity-0';
@@ -101,12 +107,12 @@ const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = []
       <div className="grid gap-4 grid-cols-1 md:grid-cols-4 relative z-10">
         
         {/* CARD 1: TAXA DE USO (Neste Instante) - DESTAQUE */}
-        <GlassCard className={cn("border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-[1.02] border-l-4 border-l-red-500 md:col-span-2", getAnimationClass(0))}>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <GlassCard className={cn("border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-[1.02] border-l-4 md:col-span-2 p-6", usageColors.border.replace('border-', 'border-l-'), getAnimationClass(0))}>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-0">
             <ShadcnTooltip delayDuration={300}>
               <TooltipTrigger asChild>
                 <CardTitle className="text-base font-bold flex items-center gap-1 cursor-help text-gray-700">
-                  TAXA DE USO (Neste Instante)
+                  TAXA DE USO (Tempo Real)
                   <Info className="h-4 w-4 text-muted-foreground" />
                 </CardTitle>
               </TooltipTrigger>
@@ -114,10 +120,10 @@ const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = []
                 <p>Porcentagem de equipamentos móveis (não fixos) que estão atualmente emprestados.</p>
               </TooltipContent>
             </ShadcnTooltip>
-            <TrendingUp className="h-6 w-6 sm:h-8 sm:w-8 text-red-500" />
+            <Waves className={cn("h-6 w-6 sm:h-8 sm:w-8 animate-pulse", usageColors.text)} />
           </CardHeader>
-          <CardContent>
-            <div className="text-4xl sm:text-6xl font-extrabold bg-gradient-to-r from-red-600 to-red-800 bg-clip-text text-transparent">
+          <CardContent className="p-0 pt-2">
+            <div className={cn("text-4xl sm:text-6xl font-extrabold bg-clip-text text-transparent", `bg-gradient-to-r ${usageColors.gradient}`)}>
               {totalInventoryUsageRate.toFixed(0)}%
             </div>
             <p className="text-sm text-muted-foreground mt-1">
@@ -127,8 +133,8 @@ const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = []
         </GlassCard>
 
         {/* CARD 2: TAXA DE USO (Pico no Período) - DESTAQUE */}
-        <GlassCard className={cn("border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-[1.02] border-l-4 border-l-orange-500 md:col-span-2", getAnimationClass(100))}>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <GlassCard className={cn("border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-[1.02] border-l-4 md:col-span-2 p-6", picoColors.border.replace('border-', 'border-l-'), getAnimationClass(100))}>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-0">
             <ShadcnTooltip delayDuration={300}>
               <TooltipTrigger asChild>
                 <CardTitle className="text-base font-bold flex items-center gap-1 cursor-help text-gray-700">
@@ -140,29 +146,15 @@ const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = []
                 <p>O pico de uso (em %) atingido durante o período e horário selecionados no filtro.</p>
               </TooltipContent>
             </ShadcnTooltip>
-            <TrendingUp className="h-6 w-6 sm:h-8 sm:w-8 text-orange-500" />
+            <TrendingUp className={cn("h-6 w-6 sm:h-8 sm:w-8", picoColors.text)} />
           </CardHeader>
-          <CardContent>
-            <div className="text-4xl sm:text-6xl font-extrabold bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent">
+          <CardContent className="p-0 pt-2">
+            <div className={cn("text-4xl sm:text-6xl font-extrabold bg-clip-text text-transparent", `bg-gradient-to-r ${picoColors.gradient}`)}>
               {maxOccupancyRate.toFixed(0)}%
             </div>
             <p className="text-sm text-muted-foreground mt-1">
               Pico de uso no período filtrado
             </p>
-            
-            {/* Botão de Aplicar Filtro (Mantido aqui para o card de pico) */}
-            <div className="mt-3 pt-3 border-t border-orange-200">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={onApplyFilter}
-                className="w-full bg-white hover:bg-orange-50 text-orange-600 border-orange-300"
-                disabled={loading}
-              >
-                <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-                Aplicar Filtro de Período
-              </Button>
-            </div>
           </CardContent>
         </GlassCard>
         
@@ -170,7 +162,7 @@ const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = []
         
         {/* CARD 3: Empréstimos Ativos (Contagem de ativos) */}
         <GlassCard 
-          className={cn("border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-blue-500 cursor-pointer", getAnimationClass(200))}
+          className={cn("border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-blue-500 cursor-pointer p-4", getAnimationClass(200))}
           onClick={() => onCardClick('Empréstimos Ativos', 'Lista de todos os Chromebooks atualmente emprestados.', 'loans', history.filter((loan: LoanHistoryItem) => !loan.return_date).map((loan: LoanHistoryItem) => ({
             id: loan.id,
             chromebook_id: loan.chromebook_id,
@@ -181,7 +173,7 @@ const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = []
             isOverdue: isOverdue(loan),
           })))}
         >
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-0">
             <ShadcnTooltip delayDuration={300}>
               <TooltipTrigger asChild>
                 <CardTitle className="text-xs sm:text-sm font-medium flex items-center gap-1 cursor-help">
@@ -190,25 +182,25 @@ const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = []
                 </CardTitle>
               </TooltipTrigger>
               <TooltipContent className="max-w-sm text-xs">
-                <p>Número de Chromebooks atualmente emprestados (status 'emprestado').</p>
+                <p>Número de Chromebooks atualmente emprestados (status 'emprestado'). Clique para ver a lista.</p>
               </TooltipContent>
             </ShadcnTooltip>
             <Computer className="h-4 w-4 sm:h-5 sm:w-5 text-blue-500" />
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-0 pt-2">
             <div className="text-xl sm:text-3xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">{totalActive}</div>
-            <p className="text-[10px] sm:text-xs text-muted-foreground">
+            <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">
               {filteredLoans.length} empréstimos no período
             </p>
           </CardContent>
         </GlassCard>
 
-        {/* CARD 4: Disponíveis (NOVO: Clicável para ver a lista) */}
+        {/* CARD 4: Disponíveis (Clicável para ver a lista) */}
         <GlassCard 
-          className={cn("border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-green-500 cursor-pointer", getAnimationClass(300))}
+          className={cn("border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-green-500 cursor-pointer p-4", getAnimationClass(300))}
           onClick={() => onCardClick('Disponíveis', 'Lista de Chromebooks prontos para empréstimo.', 'chromebooks', null, 'disponivel')}
         >
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-0">
             <ShadcnTooltip delayDuration={300}>
               <TooltipTrigger asChild>
                 <CardTitle className="text-xs sm:text-sm font-medium flex items-center gap-1 cursor-help">
@@ -217,22 +209,22 @@ const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = []
                 </CardTitle>
               </TooltipTrigger>
               <TooltipContent className="max-w-sm text-xs">
-                <p>Número de Chromebooks com status 'disponível' no inventário.</p>
+                <p>Número de Chromebooks com status 'disponível' no inventário. Clique para ver a lista.</p>
               </TooltipContent>
             </ShadcnTooltip>
             <Computer className="h-4 w-4 sm:h-5 sm:w-5 text-green-500" />
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-0 pt-2">
             <div className="text-xl sm:text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">{availableChromebooks}</div>
-            <p className="text-[10px] sm:text-xs text-muted-foreground">
+            <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">
               de {totalChromebooks} no total
             </p>
           </CardContent>
         </GlassCard>
         
         {/* CARD 5: Tempo Médio (Não Clicável - Métrica de cálculo) */}
-        <GlassCard className={cn("border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-purple-500", getAnimationClass(400))}>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <GlassCard className={cn("border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-purple-500 p-4", getAnimationClass(400))}>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-0">
             <ShadcnTooltip delayDuration={300}>
               <TooltipTrigger asChild>
                 <CardTitle className="text-xs sm:text-sm font-medium flex items-center gap-1 cursor-help">
@@ -246,19 +238,19 @@ const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = []
             </ShadcnTooltip>
             <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-purple-500" />
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-0 pt-2">
             <div className="text-xl sm:text-3xl font-bold bg-gradient-to-r from-purple-600 to-violet-600 bg-clip-text text-transparent">
               {Math.round(averageUsageTime)} min
             </div>
-            <p className="text-[10px] sm:text-xs text-muted-foreground">
+            <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">
               média no período
             </p>
           </CardContent>
         </GlassCard>
 
         {/* CARD 6: Taxa de Devolução (Linha 2) */}
-        <GlassCard className={cn("border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-teal-500", getAnimationClass(500))}>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <GlassCard className={cn("border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-teal-500 p-4", getAnimationClass(500))}>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-0">
             <ShadcnTooltip delayDuration={300}>
               <TooltipTrigger asChild>
                 <CardTitle className="text-xs sm:text-sm font-medium flex items-center gap-1 cursor-help">
@@ -272,7 +264,7 @@ const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = []
             </ShadcnTooltip>
             <Activity className="h-4 w-4 sm:h-5 sm:w-5 text-teal-500" />
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-0 pt-2">
             <div className="text-xl sm:text-3xl font-bold bg-gradient-to-r from-teal-600 to-cyan-600 bg-clip-text text-transparent">
               {completionRate.toFixed(0)}%
             </div>
@@ -314,9 +306,9 @@ const PeriodCharts = ({ periodView, loading, periodChartData, stats, startHour, 
   const { 
     totalActive = 0, 
     loansByUserType = {},
-    filteredLoans = [], // Adicionado para uso no cálculo de progresso
-    filteredReturns = [], // Adicionado para uso no cálculo de progresso
-    topLoanContexts = [], // NOVO
+    filteredLoans = [], 
+    filteredReturns = [], 
+    topLoanContexts = [], 
   } = stats || {};
 
   // Garante que filteredLoans.length seja seguro para divisão
@@ -353,7 +345,7 @@ const PeriodCharts = ({ periodView, loading, periodChartData, stats, startHour, 
             </div>
             <BarChartIcon className="h-5 w-5 text-muted-foreground" />
           </CardHeader>
-          <CardContent className="h-[250px] sm:h-[300px]">
+          <CardContent className="h-[300px]"> {/* AUMENTADO PARA 300PX */}
             <ChartContainer
               config={{
                 empréstimos: { label: "Empréstimos", color: "hsl(var(--primary))" },
@@ -399,7 +391,7 @@ const PeriodCharts = ({ periodView, loading, periodChartData, stats, startHour, 
             </div>
             <TrendingUp className="h-5 w-5 text-muted-foreground" />
           </CardHeader>
-          <CardContent className="h-[250px] sm:h-[300px]">
+          <CardContent className="h-[300px]"> {/* AUMENTADO PARA 300PX */}
             <ChartContainer
               config={{
                 ocupação: { label: "Ocupação (%)", color: "hsl(var(--destructive))" },
@@ -444,7 +436,7 @@ const PeriodCharts = ({ periodView, loading, periodChartData, stats, startHour, 
             </div>
             <PieChartIcon className="h-5 w-5 text-muted-foreground" />
           </CardHeader>
-          <CardContent className="h-[250px] sm:h-[300px] flex items-center justify-center">
+          <CardContent className="h-[300px] flex items-center justify-center"> {/* AUMENTADO PARA 300PX */}
             <ChartContainer
               config={{
                 'Em Uso': { label: "Em Uso", color: "hsl(var(--primary))" },
@@ -487,7 +479,7 @@ const PeriodCharts = ({ periodView, loading, periodChartData, stats, startHour, 
             </div>
             <Users className="h-5 w-5 text-muted-foreground" />
           </CardHeader>
-          <CardContent className="h-[250px]">
+          <CardContent className="h-[300px]"> {/* AUMENTADO PARA 300PX */}
             <ChartContainer
               config={{
                 'Aluno': { label: "Aluno", color: "#3B82F6" },
@@ -666,11 +658,10 @@ export function Dashboard({
   // NOVO: Função para lidar com o clique no Pico de Uso (agora apenas aplica o filtro)
   const handleApplyFilter = () => {
     // O CollapsibleDashboardFilter já atualiza startDate/endDate/startHour/endHour no estado.
-    // Basta chamar refreshData para que o useDashboardData recalcule com os novos filtros.
     refreshData();
     toast({
       title: "Filtro Aplicado",
-      description: "Os gráficos e o pico de uso foram atualizados para o período selecionado.",
+      description: `Análise atualizada para o período de ${format(startDate!, 'dd/MM/yyyy')} a ${format(endDate!, 'dd/MM/yyyy')} (${startHour}h às ${endHour}h).`,
       variant: "info"
     });
   };
@@ -686,7 +677,7 @@ export function Dashboard({
     userTypeData = [], 
     durationData = [], 
     maxOccupancyRate = 0,
-    topLoanContexts = [], // NOVO
+    topLoanContexts = [], 
   } = stats || {};
 
   // Função para gerar o PDF do relatório
@@ -782,6 +773,23 @@ export function Dashboard({
     { value: 'history', label: 'Histórico Completo', icon: HistoryIcon },
     // { value: 'reports', label: 'Relatórios Inteligentes', icon: Brain }, // Mantido como placeholder
   ];
+  
+  // Badge de Período Ativo
+  const periodBadge = useMemo(() => {
+    if (periodView !== 'charts' || !startDate || !endDate) return null;
+    
+    const startFmt = format(startDate, 'dd/MM');
+    const endFmt = format(endDate, 'dd/MM');
+    const dateRange = startFmt === endFmt ? startFmt : `${startFmt} - ${endFmt}`;
+    
+    return (
+      <Badge variant="secondary" className="bg-blue-100 text-blue-700 border-blue-300 text-sm font-medium">
+        <CalendarRange className="h-3 w-3 mr-1" />
+        {dateRange} | {startHour}h - {endHour}h
+      </Badge>
+    );
+  }, [periodView, startDate, endDate, startHour, endHour]);
+
 
   return (
     <div className="space-y-8 relative py-[30px]">
@@ -829,11 +837,11 @@ export function Dashboard({
 
       {/* Filtro de Hora (Aparece apenas no modo 'charts') */}
       {periodView === 'charts' && (
-        <div className={cn("mt-6", isMounted ? 'animate-fadeIn animation-delay-100' : 'opacity-0')}>
+        <div className={cn("mt-6 space-y-4", isMounted ? 'animate-fadeIn animation-delay-100' : 'opacity-0')}>
             <CollapsibleDashboardFilter 
                 startDate={startDate}
                 setStartDate={setStartDate}
-                endDate={endDate}
+                endDate={setEndDate}
                 setEndDate={setEndDate}
                 startHour={startHour}
                 setStartHour={setStartHour}
@@ -842,6 +850,12 @@ export function Dashboard({
                 onApply={handleApplyFilter} // USANDO O NOVO HANDLER
                 loading={loading}
             />
+            {/* Badge de Período Ativo */}
+            {periodBadge && (
+                <div className="flex justify-start">
+                    {periodBadge}
+                </div>
+            )}
         </div>
       )}
 
@@ -855,7 +869,6 @@ export function Dashboard({
           loading={loading}
           onCardClick={handleCardClick}
           history={history}
-          onApplyFilter={handleApplyFilter} // PASSANDO O HANDLER PARA O CARD
           isMounted={isMounted} // PASSANDO O ESTADO DE MONTAGEM
         />
       )}

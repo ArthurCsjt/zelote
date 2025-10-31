@@ -20,12 +20,14 @@ interface DashboardStats {
   availableChromebooks: number;
   totalActive: number;
   totalInventoryUsageRate: number;
+  usageRateColor: 'green' | 'yellow' | 'red'; // NOVO: Cor semafórica
   averageUsageTime: number;
   completionRate: number;
   loansByUserType: Record<string, number>;
   userTypeData: { name: string; value: number }[];
   durationData: { name: string; minutos: number }[];
   maxOccupancyRate: number; // Taxa de ocupação máxima
+  occupancyRateColor: 'green' | 'yellow' | 'red'; // NOVO: Cor semafórica para pico
   topLoanContexts: TopLoanContext[]; // NOVO CAMPO
 }
 
@@ -95,6 +97,12 @@ export function useDashboardData(
 
     // Taxa de Uso do Inventário (ativos / total de móveis)
     const totalInventoryUsageRate = availableForLoan > 0 ? (totalActive / availableForLoan) * 100 : 0;
+    
+    // Cor semafórica para Taxa de Uso (Tempo Real)
+    const usageRateColor: 'green' | 'yellow' | 'red' = 
+        totalInventoryUsageRate < 60 ? 'green' : 
+        totalInventoryUsageRate < 85 ? 'yellow' : 'red';
+
 
     // Estatísticas de Devolução
     const completedLoans = filteredLoans.filter(loan => loan.return_date);
@@ -185,6 +193,11 @@ export function useDashboardData(
         maxOccupancyRate = (maxConcurrentLoans / availableForLoan) * 100;
     }
     
+    // Cor semafórica para Taxa de Ocupação (Pico)
+    const occupancyRateColor: 'green' | 'yellow' | 'red' = 
+        maxOccupancyRate < 60 ? 'green' : 
+        maxOccupancyRate < 85 ? 'yellow' : 'red';
+    
     // CÁLCULO: Top Contextos de Empréstimo (Solicitante + Finalidade)
     const contextCounts = filteredLoans.reduce((acc, loan) => {
         const contextKey = `${loan.student_email}:${loan.purpose}`;
@@ -211,12 +224,14 @@ export function useDashboardData(
       availableChromebooks,
       totalActive,
       totalInventoryUsageRate,
+      usageRateColor, // NOVO
       averageUsageTime,
       completionRate,
       loansByUserType,
       userTypeData,
       durationData,
       maxOccupancyRate: Math.min(100, maxOccupancyRate), // Limita a 100%
+      occupancyRateColor, // NOVO
       topLoanContexts, // NOVO
     };
   }, [chromebooks, history, filteredLoans, startHour, endHour, startDate, endDate]);

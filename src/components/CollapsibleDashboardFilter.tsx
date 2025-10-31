@@ -23,7 +23,7 @@ interface CollapsibleDashboardFilterProps {
   setStartHour: (hour: number) => void;
   endHour: number;
   setEndHour: (hour: number) => void;
-  onApply: () => void;
+  onApply: () => void; // Mantido para ser chamado no clique
   loading: boolean;
 }
 
@@ -53,7 +53,7 @@ export const CollapsibleDashboardFilter: React.FC<CollapsibleDashboardFilterProp
     const newDate = new Date(date);
     
     if (type === 'start') {
-        // Mantém a hora atual do startHour
+        // Mantém a hora atual do startHour e define minutos/segundos para 0
         newDate.setHours(startHour, 0, 0, 0);
         setStartDate(newDate);
         setIsStartCalendarOpen(false);
@@ -63,7 +63,7 @@ export const CollapsibleDashboardFilter: React.FC<CollapsibleDashboardFilterProp
             setEndDate(newDate);
         }
     } else {
-        // Mantém a hora atual do endHour
+        // Mantém a hora atual do endHour e define minutos/segundos para 59/999
         newDate.setHours(endHour, 59, 59, 999);
         setEndDate(newDate);
         setIsEndCalendarOpen(false);
