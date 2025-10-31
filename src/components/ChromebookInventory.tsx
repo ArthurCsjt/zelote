@@ -345,14 +345,14 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
       {/* Table of Chromebooks */}
       <GlassCard className="border-white/30 rounded-2xl overflow-x-auto relative z-10 p-0">
         <Table className="min-w-[800px] md:min-w-full"> {/* Garante largura mínima para mobile */}
-          <TableHeader>
+          <TableHeader className="bg-gray-100/70"> {/* NOVO ESTILO AQUI */}
             <TableRow>
-              <TableHead className="w-[100px] text-xs">ID</TableHead>
-              <TableHead className="w-[120px] text-xs">Fabricante</TableHead>
-              <TableHead className="w-[200px] text-xs">Modelo</TableHead> {/* Ajustado */}
-              <TableHead className="w-[150px] text-xs">Série</TableHead> {/* Ajustado */}
-              <TableHead className="w-[120px] text-xs">Status</TableHead> 
-              <TableHead className="w-[180px] text-center text-xs">Ações</TableHead> {/* ALTERADO: text-center */}
+              <TableHead className="w-[100px] text-xs font-bold text-gray-800">ID</TableHead>
+              <TableHead className="w-[120px] text-xs font-bold text-gray-800">Fabricante</TableHead>
+              <TableHead className="w-[200px] text-xs font-bold text-gray-800">Modelo</TableHead> {/* Ajustado */}
+              <TableHead className="w-[150px] text-xs font-bold text-gray-800">Série</TableHead> {/* Ajustado */}
+              <TableHead className="w-[120px] text-xs font-bold text-gray-800">Status</TableHead> 
+              <TableHead className="w-[180px] text-center text-xs font-bold text-gray-800">Ações</TableHead> {/* ALTERADO: text-center */}
             </TableRow>
           </TableHeader>
           <TableBody>
