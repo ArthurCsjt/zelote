@@ -30,7 +30,7 @@ export const PrintPreviewPage: React.FC = () => {
   
   const handleBack = () => {
     clearPrintItems(); // Limpa a seleção ao voltar
-    navigate('/inventory'); // Volta para o inventário
+    navigate('/'); // CORREÇÃO: Volta para a rota raiz (/)
   };
 
   if (printItems.length === 0) {
