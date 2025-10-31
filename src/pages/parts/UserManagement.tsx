@@ -149,8 +149,9 @@ export const UserManagement = () => {
   const { isAdmin, loading: roleLoading } = useProfileRole(); // Usando useProfileRole
   const queryClient = useQueryClient();
   const [userToDelete, setUserToDelete] = useState<UserProfile | null>(null);
-  const [isDeletePendingOpen, setIsDeletePendingOpen] = useState(false);
-  const [pendingInviteToDelete, setPendingInviteToDelete] = useState<UserProfile | null>(null);
+  // Removendo estados de exclusão de pendentes, pois a seção será removida
+  // const [isDeletePendingOpen, setIsDeletePendingOpen] = useState(false);
+  // const [pendingInviteToDelete, setPendingInviteToDelete] = useState<UserProfile | null>(null);
   
   // Estados para edição de perfil
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
@@ -180,6 +181,8 @@ export const UserManagement = () => {
     }
   };
   
+  // Removendo função de exclusão de pendentes
+  /*
   const handleDeletePendingInviteConfirm = async () => {
     if (!pendingInviteToDelete) return;
     try {
@@ -194,6 +197,7 @@ export const UserManagement = () => {
       setIsDeletePendingOpen(false);
     }
   };
+  */
 
   const { data: allUsers = [], isLoading, error } = useQuery<UserProfile[]>({
     queryKey: ['all_users'],
@@ -254,7 +258,7 @@ export const UserManagement = () => {
     );
   }
 
-  const pendingUsers = allUsers.filter((user) => user.last_sign_in_at === null);
+  // const pendingUsers = allUsers.filter((user) => user.last_sign_in_at === null); // Removido
   const activeUsers = allUsers.filter((user) => user.last_sign_in_at !== null);
 
   return (
@@ -269,37 +273,7 @@ export const UserManagement = () => {
         {/* O formulário de convite foi removido daqui */}
       </GlassCard>
 
-      <GlassCard>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">Contas Pendentes (Não Logadas) <Badge variant="secondary">{pendingUsers.length}</Badge></CardTitle>
-          <CardDescription>
-            Estes usuários se registraram, mas ainda não fizeram o primeiro login ou não confirmaram o email.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          {pendingUsers.length === 0 ? <p className="text-sm text-muted-foreground">Nenhuma conta pendente.</p> :
-            pendingUsers.map(user => (
-              <div key={user.id} className="flex items-center justify-between p-2 rounded-md hover:bg-black/5">
-                <p className="text-sm font-medium">{user.email}</p>
-                <div className="flex items-center gap-2">
-                  {/* Removendo botão Reenviar, pois o registro é por auto-serviço */}
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="text-red-600 hover:text-red-800"
-                    onClick={() => {
-                      setPendingInviteToDelete(user);
-                      setIsDeletePendingOpen(true);
-                    }}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            ))
-          }
-        </CardContent>
-      </GlassCard>
+      {/* SEÇÃO REMOVIDA: Contas Pendentes (Não Logadas) */}
 
       <GlassCard>
         <CardHeader>
@@ -369,24 +343,8 @@ export const UserManagement = () => {
         </AlertDialogContent>
       </AlertDialog>
       
-      {/* Diálogo de Confirmação para Contas Pendentes */}
-      <AlertDialog open={isDeletePendingOpen} onOpenChange={setIsDeletePendingOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Excluir Conta Pendente</AlertDialogTitle>
-            <AlertDialogDescription>
-              Tem certeza que deseja excluir a conta pendente de <span className="font-bold">{pendingInviteToDelete?.email}</span>? O usuário terá que se registrar novamente.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={handleDeletePendingInviteConfirm}>
-              <Trash2 className="h-4 w-4 mr-2" />
-              Excluir Conta
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      {/* Diálogo de Confirmação para Contas Pendentes (Mantido o código do Dialog, mas não será acionado) */}
+      {/* Removido o estado isDeletePendingOpen, então este dialog não será aberto */}
       
       {/* Diálogo de Edição de Perfil */}
       <ProfileEditDialog
