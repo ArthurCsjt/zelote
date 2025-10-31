@@ -22,6 +22,7 @@ import { Tooltip as ShadcnTooltip, TooltipContent, TooltipProvider, TooltipTrigg
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select"; // NOVO IMPORT
 import { SectionHeader } from "./Shared/SectionHeader"; // NOVO IMPORT
 import { DashboardDetailDialog } from "./DashboardDetailDialog"; // NOVO IMPORT
+import { cn } from '@/lib/utils'; // <-- IMPORTAÇÃO ADICIONADA
 
 interface DashboardProps {
   onBack?: () => void;
