@@ -32,7 +32,7 @@ export const TopLoanContextsPanel: React.FC<TopLoanContextsPanelProps> = ({ topL
       <CardHeader>
         <CardTitle className="text-lg flex items-center gap-2">
           <BookOpen className="h-5 w-5 text-primary" />
-          Top 5 Contextos de Empréstimo
+          Padrões de Uso Mais Comuns
         </CardTitle>
         <CardDescription>
           As combinações mais frequentes de Solicitante e Finalidade no período.
