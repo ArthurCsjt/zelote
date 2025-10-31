@@ -19,14 +19,17 @@ import { useDatabase } from "@/hooks/useDatabase";
 import { QuickRegisterWrapper } from '@/components/QuickRegisterWrapper';
 import { ReturnWrapper } from '@/components/ReturnWrapper'; // NOVO IMPORT
 
+// ATUALIZADO: Removendo 'quick-register' do tipo de rota
+type AppView = 'menu' | 'registration' | 'dashboard' | 'inventory' | 'loan' | 'audit' | 'return';
+
 const Index = () => {
   // ADIÇÃO: Chamamos os hooks de autenticação aqui, no componente "pai"
   const { user, logout } = useAuth();
   const { isAdmin, loading: roleLoading } = useProfileRole();
   const { loading: dbLoading } = useDatabase();
 
-  // ATUALIZADO: Reintroduzindo 'return' na lista de views
-  const [currentView, setCurrentView] = useState<'menu' | 'registration' | 'dashboard' | 'inventory' | 'loan' | 'audit' | 'quick-register' | 'return'>('menu');
+  // ATUALIZADO: Removendo 'quick-register' do tipo de rota
+  const [currentView, setCurrentView] = useState<AppView>('menu');
   // ATUALIZADO: O LoanHub agora aceita 'form' ou 'active'
   const [loanTabDefault, setLoanTabDefault] = useState<'form' | 'active'>('form'); 
   const [selectedChromebookIdForReturn, setSelectedChromebookIdForReturn] = useState<string | undefined>(undefined); // NOVO ESTADO para pré-seleção
@@ -34,8 +37,8 @@ const Index = () => {
   const [showQRCodeModal, setShowQRCodeModal] = useState(false);
   const [selectedChromebookId, setSelectedChromebookId] = useState<string | null>(null);
 
-  // ATUALIZADO: Adicionando o parâmetro opcional 'tab' e 'chromebookId'
-  const handleNavigation = (route: 'registration' | 'dashboard' | 'loan' | 'inventory' | 'audit' | 'quick-register' | 'return', tab?: 'form' | 'active', chromebookId?: string) => {
+  // ATUALIZADO: Removendo 'quick-register' do tipo de rota
+  const handleNavigation = (route: 'registration' | 'dashboard' | 'loan' | 'inventory' | 'audit' | 'return', tab?: 'form' | 'active', chromebookId?: string) => {
     
     if (route === 'loan') {
       setLoanTabDefault(tab || 'form');
@@ -64,12 +67,8 @@ const Index = () => {
   const handleRegistrationSuccess = (newChromebook: any) => {
     setSelectedChromebookId(newChromebook.chromebook_id);
     setShowQRCodeModal(true);
-    // Se o registro foi feito via QuickRegister, volta para o menu após o sucesso
-    if (currentView === 'quick-register') {
-      setCurrentView('menu');
-    } else {
-      setCurrentView('inventory');
-    }
+    // REMOVIDO: Lógica de QuickRegister
+    setCurrentView('inventory');
   };
   
   const handleReturnSuccess = () => {
@@ -105,8 +104,7 @@ const Index = () => {
         />;
       case 'audit':
         return <AuditHub />;
-      case 'quick-register':
-        return <QuickRegisterWrapper onBack={handleBackToMenu} onRegistrationSuccess={handleRegistrationSuccess} />;
+      // REMOVIDO: case 'quick-register':
       default:
         return <MainMenu onNavigate={handleNavigation} />;
     }
@@ -120,7 +118,7 @@ const Index = () => {
       case 'loan': return 'Empréstimos';
       case 'return': return 'Registrar Devolução';
       case 'audit': return 'Sistema de Contagem';
-      case 'quick-register': return 'Re-Cadastro Rápido';
+      // REMOVIDO: case 'quick-register': return 'Re-Cadastro Rápido';
       default: return 'Zelote';
     }
   };
@@ -132,7 +130,7 @@ const Index = () => {
       case 'loan': return 'Realize novos empréstimos e veja ativos';
       case 'return': return 'Registre a devolução de equipamentos';
       case 'audit': return 'Realize a contagem física do inventário';
-      case 'quick-register': return 'Re-cadastre um Chromebook rapidamente';
+      // REMOVIDO: case 'quick-register': return 'Re-cadastre um Chromebook rapidamente';
       default: return 'Controle de Chromebooks';
     }
   };

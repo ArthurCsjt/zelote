@@ -58,12 +58,15 @@ export function MainMenu({
       action: () => onNavigate('dashboard'),
       bgColor: 'bg-menu-dark-blue' // ALTERADO PARA O NOVO AZUL ESCURO
     },
+    // REMOVIDO: Re-Cadastro Rápido
+    /*
     {
       title: 'Re-Cadastro Rápido',
       icon: <QrCode className="h-5 w-5" />,
       action: () => onNavigate('quick-register'),
       bgColor: 'bg-menu-teal' // Verde-Água Claro
     },
+    */
     {
       title: 'Sistema de Contagem',
       icon: <ListChecks className="h-5 w-5" />,
