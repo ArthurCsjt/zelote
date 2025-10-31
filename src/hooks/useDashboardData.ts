@@ -203,7 +203,7 @@ export function useDashboardData(
     
     const topLoanContexts = Object.values(contextCounts)
         .sort((a, b) => b.count - a.count)
-        .slice(0, 5);
+        .slice(0, 10); // ALTERADO DE 5 PARA 10
 
 
     return {
