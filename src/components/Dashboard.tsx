@@ -287,6 +287,16 @@ const PeriodCharts = ({ periodView, loading, periodChartData, stats, startHour, 
   if (loading) {
     return <div className="flex justify-center items-center h-64"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
   }
+  
+  if (periodView === 'charts' && periodChartData.length === 0) {
+    return (
+      <GlassCard className="p-8 text-center">
+        <AlertTriangle className="h-12 w-12 text-orange-400 mx-auto mb-4" />
+        <p className="text-lg font-semibold text-gray-700">Nenhum dado de empréstimo encontrado no período.</p>
+        <p className="text-sm text-muted-foreground mt-2">Tente ampliar o intervalo de datas ou horários no filtro acima.</p>
+      </GlassCard>
+    );
+  }
 
   // Cores para o gráfico de pizza de Status
   const COLORS = ['#2563EB', '#22C55E'];
@@ -658,10 +668,21 @@ export function Dashboard({
   // NOVO: Função para lidar com o clique no Pico de Uso (agora apenas aplica o filtro)
   const handleApplyFilter = () => {
     // O CollapsibleDashboardFilter já atualiza startDate/endDate/startHour/endHour no estado.
+    
+    // VERIFICAÇÃO DE VALIDADE ANTES DE FORMATAR
+    if (!startDate || !endDate || isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+        toast({
+            title: "Erro de Filtro",
+            description: "As datas de início e fim são inválidas.",
+            variant: "destructive"
+        });
+        return;
+    }
+    
     refreshData();
     toast({
       title: "Filtro Aplicado",
-      description: `Análise atualizada para o período de ${startDate && format(startDate, 'dd/MM/yyyy')} a ${endDate && format(endDate, 'dd/MM/yyyy')} (${startHour}h às ${endHour}h).`,
+      description: `Análise atualizada para o período de ${format(startDate, 'dd/MM/yyyy')} a ${format(endDate, 'dd/MM/yyyy')} (${startHour}h às ${endHour}h).`,
       variant: "info"
     });
   };
