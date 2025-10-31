@@ -66,8 +66,8 @@ export default {
           hover: "hsl(213 90% 30%)",
         },
         "menu-violet": {
-          DEFAULT: "hsl(var(--menu-violet))",
-          hover: "hsl(var(--menu-violet-hover))",
+          DEFAULT: "hsl(258 70% 45%)",
+          hover: "hsl(258 70% 40%)",
         },
         "menu-amber": {
           DEFAULT: "hsl(var(--menu-amber))",

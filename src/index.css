@@ -40,8 +40,8 @@
     --menu-green-hover: 142 76% 32%;
     --menu-blue: 213 94% 68%;
     --menu-blue-hover: 213 94% 64%;
-    --menu-violet: 258 90% 66%;
-    --menu-violet-hover: 258 90% 62%; /* NOVO: Cor para Sistema de Contagem */
+    --menu-violet: 258 70% 45%; /* AJUSTADO: Mais escuro */
+    --menu-violet-hover: 258 70% 40%; /* AJUSTADO: Hover mais escuro */
     --menu-amber: 35 93% 40%; /* AJUSTADO: Laranja mais escuro e vibrante */
     --menu-amber-hover: 35 93% 35%; /* AJUSTADO: Hover mais escuro */
     --menu-rose: 348 83% 47%;
