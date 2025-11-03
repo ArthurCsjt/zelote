@@ -325,20 +325,22 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
           
           {/* Campo de Busca */}
           <div className="relative flex-1 w-full">
-            <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+            <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400 dark:text-muted-foreground" />
             <Input
               placeholder="Buscar por ID, patrimônio, modelo, série, fabricante ou localização..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
+              // CORREÇÃO: Usando bg-input para o fundo do input
+              className="pl-10 bg-input dark:bg-input" 
             />
           </div>
           
           {/* Filtro de Status */}
           <div className="relative w-full sm:w-[180px]">
-            <Filter className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+            <Filter className="absolute left-3 top-3 h-4 w-4 text-gray-400 dark:text-muted-foreground" />
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full pl-10">
+              {/* CORREÇÃO: Usando bg-input para o fundo do select trigger */}
+              <SelectTrigger className="w-full pl-10 bg-input dark:bg-input">
                 <SelectValue placeholder="Filtrar por status" />
               </SelectTrigger>
               <SelectContent>
@@ -360,9 +362,10 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
               variant="outline"
               title={`Imprimir QR Codes em Lote (${printItems.length} itens)`}
               disabled={printItems.length === 0 || isFetching || isExporting}
-              className="px-3 bg-white hover:bg-gray-50 relative"
+              // CORREÇÃO: Usando bg-card/hover:bg-accent e garantindo cor do ícone
+              className="px-3 bg-card hover:bg-accent dark:bg-card dark:hover:bg-accent relative"
             >
-              <Printer className="h-4 w-4" />
+              <Printer className="h-4 w-4 text-primary dark:text-primary" />
               {printItems.length > 0 && (
                 <span className="absolute -top-2 -right-2 h-5 w-5 rounded-full bg-red-500 text-white text-xs flex items-center justify-center">
                   {printItems.length}
@@ -375,21 +378,23 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
               variant="outline"
               disabled={isFetching || isExporting}
               title="Atualizar dados"
-              className="px-3"
+              // CORREÇÃO: Usando bg-card/hover:bg-accent e garantindo cor do ícone
+              className="px-3 bg-card hover:bg-accent dark:bg-card dark:hover:bg-accent"
             >
-              <RefreshCw className={`h-4 w-4 ${isFetching ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`h-4 w-4 text-primary dark:text-primary ${isFetching ? 'animate-spin' : ''}`} />
             </Button>
             <Button 
               onClick={handleExportCSV}
               variant="outline"
               title="Fazer backup (Exportar CSV)"
               disabled={isExporting || isFetching}
-              className="px-3"
+              // CORREÇÃO: Usando bg-card/hover:bg-accent e garantindo cor do ícone
+              className="px-3 bg-card hover:bg-accent dark:bg-card dark:hover:bg-accent"
             >
               {isExporting ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <Loader2 className="h-4 w-4 animate-spin text-primary dark:text-primary" />
               ) : (
-                <FileText className="h-4 w-4" />
+                <FileText className="h-4 w-4 text-primary dark:text-primary" />
               )}
             </Button>
           </div>
@@ -405,7 +410,8 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
                     value={String(itemsPerPage)} 
                     onValueChange={(value) => setItemsPerPage(Number(value))}
                 >
-                    <SelectTrigger className="w-[70px] h-8 text-xs">
+                    {/* CORREÇÃO: Usando bg-input para o fundo do select trigger */}
+                    <SelectTrigger className="w-[70px] h-8 text-xs bg-input dark:bg-input">
                         <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -429,8 +435,8 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
       {/* Table of Chromebooks */}
       <GlassCard className="border-white/30 rounded-2xl overflow-x-auto relative z-10 p-0">
         <Table className="min-w-[800px] md:min-w-full"> {/* Garante largura mínima para mobile */}
-          <TableHeader className="bg-gray-100 border-b border-gray-300"> {/* Adicionando borda inferior */}
-            <TableRow className="bg-gray-50/80"> {/* Fundo mais claro para a linha do cabeçalho */}
+          <TableHeader className="bg-gray-100 border-b border-gray-300 dark:bg-muted/50 dark:border-border"> {/* Adicionando borda inferior */}
+            <TableRow className="bg-gray-50/80 dark:bg-muted/50"> {/* Fundo mais claro para a linha do cabeçalho */}
               <TableHead className="w-[50px] text-center">
                 <Checkbox 
                   checked={isAllOnPageSelected}
@@ -438,12 +444,12 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
                   aria-label="Selecionar todos na página"
                 />
               </TableHead>
-              <TableHead className="w-[100px] text-xs font-extrabold text-gray-700 uppercase tracking-wider">ID</TableHead>
-              <TableHead className="w-[120px] text-xs font-extrabold text-gray-700 uppercase tracking-wider">Fabricante</TableHead>
-              <TableHead className="w-[200px] text-xs font-extrabold text-gray-700 uppercase tracking-wider">Modelo</TableHead>
-              <TableHead className="w-[150px] text-xs font-extrabold text-gray-700 uppercase tracking-wider">Série</TableHead>
-              <TableHead className="w-[120px] text-xs font-extrabold text-gray-700 uppercase tracking-wider">Status</TableHead> 
-              <TableHead className="w-[180px] text-center text-xs font-extrabold text-gray-700 uppercase tracking-wider">Ações</TableHead>
+              <TableHead className="w-[100px] text-xs font-extrabold text-gray-700 uppercase tracking-wider dark:text-gray-300">ID</TableHead>
+              <TableHead className="w-[120px] text-xs font-extrabold text-gray-700 uppercase tracking-wider dark:text-gray-300">Fabricante</TableHead>
+              <TableHead className="w-[200px] text-xs font-extrabold text-gray-700 uppercase tracking-wider dark:text-gray-300">Modelo</TableHead>
+              <TableHead className="w-[150px] text-xs font-extrabold text-gray-700 uppercase tracking-wider dark:text-gray-300">Série</TableHead>
+              <TableHead className="w-[120px] text-xs font-extrabold text-gray-700 uppercase tracking-wider dark:text-gray-300">Status</TableHead> 
+              <TableHead className="w-[180px] text-center text-xs font-extrabold text-gray-700 uppercase tracking-wider dark:text-gray-300">Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -454,7 +460,7 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
                 const isSelected = isItemSelected(chromebook.id);
                 
                 return (
-                  <TableRow key={chromebook.id} className={isSelected ? 'bg-blue-50/50 hover:bg-blue-100/50' : ''}>
+                  <TableRow key={chromebook.id} className={isSelected ? 'bg-blue-50/50 hover:bg-blue-100/50 dark:bg-blue-950/50 dark:hover:bg-blue-900/50' : ''}>
                     <TableCell className="text-center py-2 align-top">
                       <Checkbox 
                         checked={isSelected}
@@ -528,7 +534,8 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
                           value={chromebook.status} 
                           onValueChange={(value) => handleStatusChange(chromebook.id, value)}
                         >
-                          <SelectTrigger className="w-[100px] h-8 text-xs">
+                          {/* CORREÇÃO: Usando bg-input para o fundo do select trigger */}
+                          <SelectTrigger className="w-[100px] h-8 text-xs bg-input dark:bg-input">
                             <SelectValue />
                           </SelectTrigger>
                            <SelectContent>
