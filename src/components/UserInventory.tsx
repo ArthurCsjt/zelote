@@ -34,6 +34,7 @@ import { useProfileRole } from "@/hooks/use-profile-role";
 import { useDatabase } from "@/hooks/useDatabase"; // Usando useDatabase
 import { UserEditDialog } from "./UserEditDialog"; // Importando o novo diálogo
 import { GlassCard } from "./ui/GlassCard"; // Importando GlassCard
+import { cn } from "@/lib/utils"; // Importando cn
 
 interface User {
   id: string;
@@ -87,7 +88,7 @@ export function UserInventory() {
         .order('created_at', { ascending: false });
 
       if (alunosError || professoresError || funcionariosError) {
-        throw new Error('Erro ao carregar usuários');
+        throw new Error('Erro ao carregar dados de usuários.');
       }
 
       // Combine all users
@@ -246,7 +247,7 @@ export function UserInventory() {
             <GraduationCap className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">{totalStudents}</div>
+            <div className="text-2xl font-bold text-green-600 dark:text-green-400">{totalStudents}</div>
           </CardContent>
         </GlassCard>
 
@@ -256,7 +257,7 @@ export function UserInventory() {
             <UserCheck className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-600">{totalTeachers}</div>
+            <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{totalTeachers}</div>
           </CardContent>
         </GlassCard>
 
@@ -266,7 +267,7 @@ export function UserInventory() {
             <Briefcase className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-purple-600">{totalStaff}</div>
+            <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">{totalStaff}</div>
           </CardContent>
         </GlassCard>
       </div>
@@ -274,19 +275,19 @@ export function UserInventory() {
       {/* Search and filters */}
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+          <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400 dark:text-muted-foreground" />
           <Input
             placeholder="Buscar por nome, email, RA ou turma..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
+            className="pl-10 bg-input dark:bg-input dark:border-border"
           />
         </div>
         
         <div className="relative">
-          <Filter className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+          <Filter className="absolute left-3 top-3 h-4 w-4 text-gray-400 dark:text-muted-foreground" />
           <Select value={typeFilter} onValueChange={setTypeFilter}>
-            <SelectTrigger className="w-[180px] pl-10">
+            <SelectTrigger className="w-[180px] pl-10 bg-card dark:bg-card dark:border-border">
               <SelectValue placeholder="Tipo de usuário" />
             </SelectTrigger>
             <SelectContent>
@@ -300,9 +301,9 @@ export function UserInventory() {
 
         {typeFilter === 'Aluno' && (
           <div className="relative">
-            <Filter className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+            <Filter className="absolute left-3 top-3 h-4 w-4 text-gray-400 dark:text-muted-foreground" />
             <Select value={classFilter} onValueChange={setClassFilter}>
-              <SelectTrigger className="w-[180px] pl-10">
+              <SelectTrigger className="w-[180px] pl-10 bg-card dark:bg-card dark:border-border">
                 <SelectValue placeholder="Filtrar por turma" />
               </SelectTrigger>
               <SelectContent>
@@ -315,7 +316,7 @@ export function UserInventory() {
           </div>
         )}
         
-        <div className="text-sm text-gray-500 flex items-center">
+        <div className="text-sm text-gray-500 dark:text-muted-foreground flex items-center">
           Resultados: {filteredUsers.length}
         </div>
       </div>
@@ -340,10 +341,10 @@ export function UserInventory() {
                 <TableCell>
                   <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                     user.tipo === 'Aluno' 
-                      ? 'bg-green-100 text-green-800' 
+                      ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' 
                       : user.tipo === 'Professor'
-                      ? 'bg-blue-100 text-blue-800'
-                      : 'bg-purple-100 text-purple-800'
+                      ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300'
+                      : 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300'
                   }`}>
                     {user.tipo}
                   </span>
