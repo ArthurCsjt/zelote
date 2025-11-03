@@ -62,6 +62,8 @@ const Index = () => {
   const handleGenerateQrCode = (chromebookId: string) => {
     setSelectedChromebookId(chromebookId);
     setShowQRCodeModal(true);
+    // REMOVIDO: Lógica de QuickRegister
+    setCurrentView('inventory');
   };
 
   const handleRegistrationSuccess = (newChromebook: any) => {

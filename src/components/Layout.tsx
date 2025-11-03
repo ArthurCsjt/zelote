@@ -100,7 +100,7 @@ const Layout: React.FC<LayoutProps> = ({
   };
 
   return (
-    <div className={`min-h-screen bg-transparent text-foreground ${isStandalone ? 'safe-area-top safe-area-bottom safe-area-left safe-area-right' : ''}`}>
+    <div className={`min-h-screen bg-background text-foreground ${isStandalone ? 'safe-area-top safe-area-bottom safe-area-left safe-area-right' : ''}`}>
       {/* Status Bar Overlay for iOS in standalone mode */}
       {isStandalone && <div className="status-bar-overlay" />}
 
@@ -131,7 +131,7 @@ const Layout: React.FC<LayoutProps> = ({
               <Popover>
                 <PopoverTrigger asChild>
                   <Button variant="ghost" size="icon" className="relative h-9 w-9">
-                    <Bell className="h-5 w-5 text-gray-600" />
+                    <Bell className="h-5 w-5 text-gray-600 dark:text-gray-400" />
                     {/* Exemplo de badge de notificação (pode ser ligado a um estado real) */}
                     <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500" />
                   </Button>

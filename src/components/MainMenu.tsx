@@ -91,7 +91,7 @@ export function MainMenu({
   return (
     <div className="space-y-8 relative py-[30px]">
       {/* Removendo o gradiente de sobreposição para que o fundo do body seja visível */}
-      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-blue-50/30 via-purple-50/20 to-pink-50/30 blur-2xl transform scale-110 py-[25px] rounded-3xl bg-[#000a0e]/0" />
+      <div className="absolute inset-0 -z-10 bg-transparent blur-2xl transform scale-110 py-[25px] rounded-3xl bg-[#000a0e]/0" />
       
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 max-w-4xl mx-auto relative z-10">
         {menuItemsFinal.map((item, index) => (

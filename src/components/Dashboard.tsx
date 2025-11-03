@@ -88,10 +88,10 @@ const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = []
   
   const getColorClasses = (color: 'green' | 'yellow' | 'red') => {
     switch (color) {
-      case 'green': return { text: 'text-green-600', bg: 'bg-green-50', border: 'border-green-500', gradient: 'from-green-600 to-emerald-600' };
-      case 'yellow': return { text: 'text-amber-600', bg: 'bg-amber-50', border: 'border-amber-500', gradient: 'from-amber-600 to-orange-600' };
-      case 'red': return { text: 'text-red-600', bg: 'bg-red-50', border: 'border-red-500', gradient: 'from-red-600 to-red-800' };
-      default: return { text: 'text-gray-600', bg: 'bg-gray-50', border: 'border-gray-500', gradient: 'from-gray-600 to-gray-800' };
+      case 'green': return { text: 'text-green-600 dark:text-green-400', bg: 'bg-green-50 dark:bg-green-950/50', border: 'border-green-500', gradient: 'from-green-600 to-emerald-600' };
+      case 'yellow': return { text: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-50 dark:bg-amber-950/50', border: 'border-amber-500', gradient: 'from-amber-600 to-orange-600' };
+      case 'red': return { text: 'text-red-600 dark:text-red-400', bg: 'bg-red-50 dark:bg-red-950/50', border: 'border-red-500', gradient: 'from-red-600 to-red-800' };
+      default: return { text: 'text-gray-600 dark:text-gray-400', bg: 'bg-gray-50 dark:bg-gray-950/50', border: 'border-gray-500', gradient: 'from-gray-600 to-gray-800' };
     }
   };
   
@@ -111,7 +111,7 @@ const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = []
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-0">
             <ShadcnTooltip delayDuration={300}>
               <TooltipTrigger asChild>
-                <CardTitle className="text-base font-bold flex items-center gap-1 cursor-help text-gray-700">
+                <CardTitle className="text-base font-bold flex items-center gap-1 cursor-help text-gray-700 dark:text-gray-300">
                   TAXA DE USO (Tempo Real)
                   <Info className="h-4 w-4 text-muted-foreground" />
                 </CardTitle>
@@ -137,7 +137,7 @@ const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = []
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-0">
             <ShadcnTooltip delayDuration={300}>
               <TooltipTrigger asChild>
-                <CardTitle className="text-base font-bold flex items-center gap-1 cursor-help text-gray-700">
+                <CardTitle className="text-base font-bold flex items-center gap-1 cursor-help text-gray-700 dark:text-gray-300">
                   TAXA DE USO (Pico no Período)
                   <Info className="h-4 w-4 text-muted-foreground" />
                 </CardTitle>
@@ -185,7 +185,7 @@ const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = []
                 <p>Número de Chromebooks atualmente emprestados (status 'emprestado'). Clique para ver a lista.</p>
               </TooltipContent>
             </ShadcnTooltip>
-            <Computer className="h-4 w-4 sm:h-5 sm:w-5 text-blue-500" />
+            <Computer className="h-4 w-4 sm:h-5 sm:w-5 text-blue-500 dark:text-blue-400" />
           </CardHeader>
           <CardContent className="p-0 pt-2">
             <div className="text-xl sm:text-3xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">{totalActive}</div>
@@ -212,7 +212,7 @@ const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = []
                 <p>Número de Chromebooks com status 'disponível' no inventário. Clique para ver a lista.</p>
               </TooltipContent>
             </ShadcnTooltip>
-            <Computer className="h-4 w-4 sm:h-5 sm:w-5 text-green-500" />
+            <Computer className="h-4 w-4 sm:h-5 sm:w-5 text-green-500 dark:text-green-400" />
           </CardHeader>
           <CardContent className="p-0 pt-2">
             <div className="text-xl sm:text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">{availableChromebooks}</div>
@@ -236,7 +236,7 @@ const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = []
                 <p>Duração média (em minutos) dos empréstimos que foram devolvidos no período selecionado.</p>
               </TooltipContent>
             </ShadcnTooltip>
-            <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-purple-500" />
+            <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-purple-500 dark:text-purple-400" />
           </CardHeader>
           <CardContent className="p-0 pt-2">
             <div className="text-xl sm:text-3xl font-bold bg-gradient-to-r from-purple-600 to-violet-600 bg-clip-text text-transparent">
@@ -262,7 +262,7 @@ const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = []
                 <p>Porcentagem de empréstimos realizados no período que já foram devolvidos.</p>
               </TooltipContent>
             </ShadcnTooltip>
-            <Activity className="h-4 w-4 sm:h-5 sm:w-5 text-teal-500" />
+            <Activity className="h-4 w-4 sm:h-5 sm:w-5 text-teal-500 dark:text-teal-400" />
           </CardHeader>
           <CardContent className="p-0 pt-2">
             <div className="text-xl sm:text-3xl font-bold bg-gradient-to-r from-teal-600 to-cyan-600 bg-clip-text text-transparent">
@@ -292,7 +292,7 @@ const PeriodCharts = ({ periodView, loading, periodChartData, stats, startHour, 
     return (
       <GlassCard className="p-8 text-center">
         <AlertTriangle className="h-12 w-12 text-orange-400 mx-auto mb-4" />
-        <p className="text-lg font-semibold text-gray-700">Nenhum dado de empréstimo encontrado no período.</p>
+        <p className="text-lg font-semibold text-gray-700 dark:text-gray-300">Nenhum dado de empréstimo encontrado no período.</p>
         <p className="text-sm text-muted-foreground mt-2">Tente ampliar o intervalo de datas ou horários no filtro acima.</p>
       </GlassCard>
     );
@@ -348,7 +348,7 @@ const PeriodCharts = ({ periodView, loading, periodChartData, stats, startHour, 
         <GlassCard className={cn("dashboard-card", getAnimationClass(600))}>
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
-              <CardTitle className="text-lg">{chartTitle}</CardTitle>
+              <CardTitle className="text-lg">Gráfico de Atividade</CardTitle>
               <CardDescription>
                 {chartDescription}
               </CardDescription>
@@ -535,7 +535,7 @@ const PeriodCharts = ({ periodView, loading, periodChartData, stats, startHour, 
             <div className="space-y-2">
               <div className="flex justify-between items-center">
                 <span className="text-sm font-medium">Alunos</span>
-                <Badge variant="secondary" className="bg-blue-100 text-blue-700">
+                <Badge variant="secondary" className="bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
                   {loansByUserType.aluno || 0} empréstimos
                 </Badge>
               </div>
@@ -545,7 +545,7 @@ const PeriodCharts = ({ periodView, loading, periodChartData, stats, startHour, 
             <div className="space-y-2">
               <div className="flex justify-between items-center">
                 <span className="text-sm font-medium">Professores</span>
-                <Badge variant="secondary" className="bg-green-100 text-green-700">
+                <Badge variant="secondary" className="bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300">
                   {loansByUserType.professor || 0} empréstimos
                 </Badge>
               </div>
@@ -555,7 +555,7 @@ const PeriodCharts = ({ periodView, loading, periodChartData, stats, startHour, 
             <div className="space-y-2">
               <div className="flex justify-between items-center">
                 <span className="text-sm font-medium">Funcionários</span>
-                <Badge variant="secondary" className="bg-orange-100 text-orange-700">
+                <Badge variant="secondary" className="bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300">
                   {loansByUserType.funcionario || 0} empréstimos
                 </Badge>
               </div>
@@ -807,7 +807,7 @@ export function Dashboard({
     const dateRange = startFmt === endFmt ? startFmt : `${startFmt} - ${endFmt}`;
     
     return (
-      <Badge variant="secondary" className="bg-blue-100 text-blue-700 border-blue-300 text-sm font-medium">
+      <Badge variant="secondary" className="bg-blue-100 text-blue-700 border-blue-300 text-sm font-medium dark:bg-blue-900 dark:text-blue-300 dark:border-blue-800">
         <CalendarRange className="h-3 w-3 mr-1" />
         {dateRange} | {startHour}h - {endHour}h
       </Badge>
@@ -818,7 +818,7 @@ export function Dashboard({
   return (
     <div className="space-y-8 relative py-[30px]">
       { /* Background gradient overlay */ }
-      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-blue-50/30 via-purple-50/20 to-pink-50/30 blur-2xl transform scale-110 py-[25px] rounded-3xl bg-[#000a0e]/0" />
+      <div className="absolute inset-0 -z-10 bg-transparent blur-2xl transform scale-110 py-[25px] rounded-3xl bg-[#000a0e]/0" />
       
       {/* Header: Title and Download Button */}
       <div className={cn("flex flex-col sm:flex-row justify-between items-start sm:items-center relative z-10 gap-4", isMounted ? 'animate-fadeIn animation-delay-0' : 'opacity-0')}>
@@ -832,7 +832,7 @@ export function Dashboard({
           <Button 
             variant="outline" 
             onClick={refreshData} 
-            className="flex items-center gap-2 hover:bg-blue-50" 
+            className="flex items-center gap-2 hover:bg-blue-50 dark:bg-card dark:hover:bg-accent" 
             disabled={loading}
           >
             <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
@@ -841,7 +841,7 @@ export function Dashboard({
           
           {/* NOVO: Select para seleção de visualização */}
           <Select value={periodView} onValueChange={(v) => setPeriodView(v as PeriodView | 'charts')}>
-            <SelectTrigger className="w-full sm:w-[200px] h-10">
+            <SelectTrigger className="w-full sm:w-[200px] h-10 dark:bg-card dark:border-border">
               <SelectValue placeholder="Selecione a Visualização" />
             </SelectTrigger>
             <SelectContent>
