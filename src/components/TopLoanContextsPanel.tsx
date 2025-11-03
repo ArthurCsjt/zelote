@@ -48,7 +48,10 @@ export const TopLoanContextsPanel: React.FC<TopLoanContextsPanelProps> = ({ topL
               return (
                 <div 
                   key={index} 
-                  className="flex items-center p-3 border rounded-lg bg-white shadow-sm hover:bg-gray-50 transition-colors relative overflow-hidden"
+                  className={cn(
+                    "flex items-center p-3 border rounded-lg shadow-sm hover:shadow-md transition-colors relative overflow-hidden",
+                    "bg-white dark:bg-card/50 hover:bg-gray-50 dark:hover:bg-card/80" // Ajuste de fundo para Dark Mode
+                  )}
                 >
                   {/* Indicador de Ranking (Fita Lateral) */}
                   <div className={cn(
@@ -64,11 +67,11 @@ export const TopLoanContextsPanel: React.FC<TopLoanContextsPanelProps> = ({ topL
                     
                     <div className="flex flex-col min-w-0 flex-1">
                         {/* Nome e Finalidade */}
-                        <span className="text-sm font-semibold truncate text-gray-800">{item.name}</span>
+                        <span className="text-sm font-semibold truncate text-gray-800 dark:text-gray-200">{item.name}</span>
                         <span className="text-xs text-muted-foreground truncate">{item.purpose}</span>
                         
                         {/* Tipo de Usuário (Badge) */}
-                        <Badge variant="outline" className="capitalize w-fit mt-1 text-[10px] px-1.5 py-0.5">
+                        <Badge variant="outline" className="capitalize w-fit mt-1 text-[10px] px-1.5 py-0.5 dark:bg-muted dark:text-muted-foreground dark:border-border">
                             {item.userType}
                         </Badge>
                     </div>
