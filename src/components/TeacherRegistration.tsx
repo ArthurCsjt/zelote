@@ -113,12 +113,27 @@ export function TeacherRegistration() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="nomeCompleto">Nome Completo *</Label>
-              <Input id="nomeCompleto" value={formData.nome_completo} onChange={handleInputChange('nome_completo')} placeholder="Digite o nome completo" required />
+              <Input 
+                id="nomeCompleto" 
+                value={formData.nome_completo} 
+                onChange={handleInputChange('nome_completo')} 
+                placeholder="Digite o nome completo" 
+                required 
+                className="dark:bg-input dark:border-border"
+              />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="email">E-mail *</Label>
-              <Input id="email" type="email" value={formData.email} onChange={handleEmailChange} placeholder="professor@sj.pro.br" required className={emailError ? 'border-destructive' : ''} />
+              <Input 
+                id="email" 
+                type="email" 
+                value={formData.email} 
+                onChange={handleEmailChange} 
+                placeholder="professor@sj.pro.br" 
+                required 
+                className={emailError ? 'border-destructive dark:bg-input dark:border-destructive' : 'dark:bg-input dark:border-border'} 
+              />
               {emailError && <p className="text-sm text-destructive">{emailError}</p>}
             </div>
             
@@ -130,6 +145,7 @@ export function TeacherRegistration() {
                 value={formData.materia} 
                 onChange={handleInputChange('materia')} 
                 placeholder="Ex: Matemática, História, Inglês" 
+                className="dark:bg-input dark:border-border"
               />
             </div>
           </div>
