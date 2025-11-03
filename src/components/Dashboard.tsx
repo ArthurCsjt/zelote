@@ -624,3 +624,202 @@ const PeriodCharts = ({ periodView, loading, periodChartData, stats, startHour, 
     </>
   );
 }
+
+// Exportação nomeada do componente
+export function Dashboard({ onBack }: DashboardProps) {
+  const { refreshData, loading, history, chromebooks, filteredLoans, filteredReturns, periodChartData, stats } = useDashboardData(null, null);
+  const { refresh: refreshOverdue } = useOverdueLoans();
+  const [isMounted, setIsMounted] = useState(false);
+  
+  // Estado para o filtro de período
+  const [startDate, setStartDate] = useState<Date | null>(startOfDay(subDays(new Date(), 7)));
+  const [endDate, setEndDate] = useState<Date | null>(endOfDay(new Date()));
+  const [startHour, setStartHour] = useState(7);
+  const [endHour, setEndHour] = useState(19);
+  
+  // Estado para a visualização (charts, history, reports)
+  const [periodView, setPeriodView] = useState<PeriodView>('charts');
+  
+  // Estado para o modal de detalhes
+  const [detailModal, setDetailModal] = useState<DetailModalState>({
+    open: false,
+    title: '',
+    description: '',
+    dataType: 'chromebooks',
+    data: null,
+    isLoading: false,
+  });
+  
+  // Hook para montar a animação
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  // Função para verificar se um empréstimo é novo (para destaque no histórico)
+  const isNewLoan = useCallback((loan: LoanHistoryItem) => {
+    const loanDate = new Date(loan.loan_date);
+    return differenceInMinutes(new Date(), loanDate) < 5; // Novo se criado nos últimos 5 minutos
+  }, []);
+  
+  // Função para aplicar o filtro de período
+  const handleApplyFilter = () => {
+    // O hook useDashboardData já recalcula quando startDate/endDate/startHour/endHour mudam.
+    // Apenas forçamos a atualização dos dados brutos se necessário.
+    refreshData();
+  };
+  
+  // Função para lidar com o clique nos cards de estatísticas
+  const handleCardClick = useCallback(async (title: string, description: string, dataType: 'chromebooks' | 'loans', data: DetailItem[] | null = null, statusFilter?: Chromebook['status']) => {
+    setDetailModal({
+      open: true,
+      title,
+      description,
+      dataType,
+      data: null,
+      isLoading: true,
+    });
+
+    if (dataType === 'chromebooks' && statusFilter) {
+      const { data: chromebooksData, error } = await supabase
+        .from('chromebooks')
+        .select('id, chromebook_id, model, status')
+        .eq('status', statusFilter);
+        
+      if (error) {
+        toast({ title: "Erro", description: "Falha ao carregar lista de Chromebooks.", variant: "destructive" });
+        setDetailModal(prev => ({ ...prev, isLoading: false }));
+        return;
+      }
+      
+      const detailData: DetailItem[] = (chromebooksData || []).map(cb => ({
+        id: cb.id,
+        chromebook_id: cb.chromebook_id,
+        model: cb.model,
+        status: cb.status,
+      }));
+      
+      setDetailModal(prev => ({ ...prev, data: detailData, isLoading: false }));
+      
+    } else if (dataType === 'loans' && data) {
+      // Se for empréstimos, os dados já foram pré-calculados no StatsGrid
+      setDetailModal(prev => ({ ...prev, data, isLoading: false }));
+    } else {
+      setDetailModal(prev => ({ ...prev, isLoading: false }));
+    }
+  }, []);
+
+
+  return (
+    <div className="space-y-6">
+      <SectionHeader 
+        title="Dashboard de Uso" 
+        description="Análise de empréstimos, devoluções e inventário em tempo real."
+        icon={BarChartIcon}
+        iconColor="text-menu-dark-blue"
+        className="flex flex-col items-center"
+      />
+      
+      {/* Filtro de Período */}
+      <CollapsibleDashboardFilter
+        startDate={startDate}
+        setStartDate={setStartDate}
+        endDate={endDate}
+        setEndDate={setEndDate}
+        startHour={startHour}
+        setStartHour={setStartHour}
+        endHour={endHour}
+        setEndHour={setEndHour}
+        onApply={handleApplyFilter}
+        loading={loading}
+      />
+      
+      {/* Tabs de Visualização */}
+      <Tabs value={periodView} onValueChange={(v) => setPeriodView(v as PeriodView)}>
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="charts" className="flex items-center gap-2">
+            <BarChartIcon className="h-4 w-4" />
+            Gráficos e Estatísticas
+          </TabsTrigger>
+          <TabsTrigger value="history" className="flex items-center gap-2">
+            <HistoryIcon className="h-4 w-4" />
+            Histórico Completo
+          </TabsTrigger>
+          <TabsTrigger value="reports" className="flex items-center gap-2" disabled>
+            <Brain className="h-4 w-4" />
+            Assistente de Relatórios (Em Breve)
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="charts" className="space-y-6 mt-6">
+          {loading ? (
+            <div className="grid gap-4 grid-cols-1 md:grid-cols-4">
+              <StatCardSkeleton />
+              <StatCardSkeleton />
+              <StatCardSkeleton />
+              <StatCardSkeleton />
+            </div>
+          ) : (
+            <StatsGrid 
+              periodView={periodView} 
+              stats={stats} 
+              filteredLoans={filteredLoans} 
+              filteredReturns={filteredReturns} 
+              loading={loading} 
+              onCardClick={handleCardClick}
+              history={history}
+              isMounted={isMounted}
+            />
+          )}
+          
+          {/* Gráficos (Renderizados pelo componente auxiliar) */}
+          <PeriodCharts 
+            periodView={periodView} 
+            loading={loading} 
+            periodChartData={periodChartData} 
+            stats={stats} 
+            startHour={startHour} 
+            endHour={endHour} 
+            totalChromebooks={stats?.totalChromebooks}
+            availableChromebooks={stats?.availableChromebooks}
+            userTypeData={stats?.userTypeData}
+            durationData={stats?.durationData}
+            isNewLoan={isNewLoan}
+            history={history}
+            isMounted={isMounted}
+          />
+        </TabsContent>
+
+        <TabsContent value="history" className="space-y-6 mt-6">
+          <PeriodCharts 
+            periodView={periodView} 
+            loading={loading} 
+            history={history} 
+            isNewLoan={isNewLoan}
+          />
+        </TabsContent>
+        
+        <TabsContent value="reports" className="space-y-6 mt-6">
+          <GlassCard className="p-8 text-center">
+            <Brain className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <p className="text-lg font-semibold text-foreground">Assistente de Relatórios</p>
+            <p className="text-sm text-muted-foreground mt-2">
+              Em breve, você poderá fazer perguntas em linguagem natural sobre os dados do seu inventário.
+            </p>
+          </GlassCard>
+        </TabsContent>
+      </Tabs>
+      
+      {/* Modal de Detalhes */}
+      <DashboardDetailDialog
+        open={detailModal.open}
+        onOpenChange={(open) => setDetailModal(prev => ({ ...prev, open }))}
+        title={detailModal.title}
+        description={detailModal.description}
+        data={detailModal.data}
+        isLoading={detailModal.isLoading}
+        dataType={detailModal.dataType}
+      />
+      
+    </div>
+  );
+}
