@@ -17,14 +17,15 @@ import { LoanHistory } from "./LoanHistory";
 import { GlassCard } from "./ui/GlassCard";
 import { useDashboardData, PeriodView } from '@/hooks/useDashboardData';
 import { Skeleton } from "./ui/skeleton";
-import { CollapsibleDashboardFilter } from "./CollapsibleDashboardFilter"; // <-- IMPORTAÇÃO CORRIGIDA
+// Removendo importação de CollapsibleDashboardFilter
 import { Tooltip as ShadcnTooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select"; // NOVO IMPORT
-import { SectionHeader } from "./Shared/SectionHeader"; // NOVO IMPORT
-import { DashboardDetailDialog } from "./DashboardDetailDialog"; // NOVO IMPORT
-import { cn } from '@/lib/utils'; // <-- IMPORTAÇÃO ADICIONADA
-import { TopLoanContextsPanel } from "./TopLoanContextsPanel"; // <-- NOVO IMPORT
-import { useTheme } from '@/lib/theme'; // NOVO IMPORT
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
+import { SectionHeader } from "./Shared/SectionHeader";
+import { DashboardDetailDialog } from "./DashboardDetailDialog";
+import { cn } from '@/lib/utils';
+import { TopLoanContextsPanel } from "./TopLoanContextsPanel";
+import { useTheme } from '@/lib/theme';
+import { ptBR } from "date-fns/locale"; // Adicionando locale para formatação
 
 interface DashboardProps {
   onBack?: () => void;
@@ -66,7 +67,7 @@ type DetailModalState = {
 };
 
 // Componente auxiliar para renderizar o grid de estatísticas
-const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = [], loading, onCardClick, history, isMounted }: any) => {
+const StatsGrid = ({ periodView, stats, history, isMounted }: any) => {
   if (periodView === 'history' || periodView === 'reports') return null;
 
   // Desestruturação segura, usando valores padrão se stats for null/undefined
@@ -74,12 +75,12 @@ const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = []
     totalActive = 0, 
     totalChromebooks = 0, 
     totalInventoryUsageRate = 0, 
-    usageRateColor = 'green', // NOVO
+    usageRateColor = 'green',
     availableChromebooks = 0, 
     averageUsageTime = 0, 
     completionRate = 0, 
     maxOccupancyRate = 0,
-    occupancyRateColor = 'green', // NOVO
+    occupancyRateColor = 'green',
   } = stats || {};
 
   // Função para determinar se o empréstimo está em atraso
@@ -139,12 +140,12 @@ const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = []
             <ShadcnTooltip delayDuration={300}>
               <TooltipTrigger asChild>
                 <CardTitle className="text-base font-bold flex items-center gap-1 cursor-help text-foreground">
-                  TAXA DE USO (Pico no Período)
+                  TAXA DE USO (Pico Histórico)
                   <Info className="h-4 w-4 text-muted-foreground" />
                 </CardTitle>
               </TooltipTrigger>
               <TooltipContent className="max-w-sm text-xs bg-card text-card-foreground border-border">
-                <p>O pico de uso (em %) atingido durante o período e horário selecionados no filtro.</p>
+                <p>O pico de uso (em %) atingido em qualquer momento no histórico.</p>
               </TooltipContent>
             </ShadcnTooltip>
             <TrendingUp className={cn("h-6 w-6 sm:h-8 sm:w-8", picoColors.text)} />
@@ -154,7 +155,7 @@ const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = []
               {maxOccupancyRate.toFixed(0)}%
             </div>
             <p className="text-sm text-muted-foreground mt-1">
-              Pico de uso no período filtrado
+              Pico de uso no histórico
             </p>
           </CardContent>
         </GlassCard>
@@ -191,7 +192,7 @@ const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = []
           <CardContent className="p-0 pt-2">
             <div className="text-xl sm:text-3xl font-bold bg-gradient-to-r from-primary to-blue-800 bg-clip-text text-transparent">{totalActive}</div>
             <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">
-              {filteredLoans.length} empréstimos no período
+              {history.length} empréstimos no histórico
             </p>
           </CardContent>
         </GlassCard>
@@ -234,7 +235,7 @@ const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = []
                 </CardTitle>
               </TooltipTrigger>
               <TooltipContent className="max-w-sm text-xs bg-card text-card-foreground border-border">
-                <p>Duração média (em minutos) dos empréstimos que foram devolvidos no período selecionado.</p>
+                <p>Duração média (em minutos) dos empréstimos que foram devolvidos.</p>
               </TooltipContent>
             </ShadcnTooltip>
             <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-menu-violet" />
@@ -244,7 +245,7 @@ const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = []
               {Math.round(averageUsageTime)} min
             </div>
             <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">
-              média no período
+              média histórica
             </p>
           </CardContent>
         </GlassCard>
@@ -260,7 +261,7 @@ const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = []
                 </CardTitle>
               </TooltipTrigger>
               <TooltipContent className="max-w-sm text-xs bg-card text-card-foreground border-border">
-                <p>Porcentagem de empréstimos realizados no período que já foram devolvidos.</p>
+                <p>Porcentagem de empréstimos no histórico que já foram devolvidos.</p>
               </TooltipContent>
             </ShadcnTooltip>
             <Activity className="h-4 w-4 sm:h-5 sm:w-5 text-menu-teal" />
@@ -272,7 +273,7 @@ const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = []
             <div className="flex items-center gap-2 mt-1">
               <Progress value={completionRate} className="h-1.5 sm:h-2" />
               <span className="text-[10px] sm:text-xs text-muted-foreground mt-1">
-                {filteredReturns.length} de {filteredLoans.length}
+                {history.filter(l => l.return_date).length} de {history.length}
               </span>
             </div>
           </CardContent>
@@ -284,7 +285,7 @@ const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = []
 
 
 // Componente para renderizar os gráficos de acordo com o período
-const PeriodCharts = ({ periodView, loading, periodChartData, stats, startHour, endHour, totalChromebooks, availableChromebooks, userTypeData, durationData, isNewLoan, history, isMounted, filteredLoans = [], filteredReturns = [] }: any) => {
+const PeriodCharts = ({ periodView, loading, periodChartData, stats, isNewLoan, history, isMounted }: any) => {
   const { theme } = useTheme();
   
   // Cores adaptativas para Recharts
@@ -301,19 +302,6 @@ const PeriodCharts = ({ periodView, loading, periodChartData, stats, startHour, 
     return <div className="flex justify-center items-center h-64"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
   }
   
-  if (periodView === 'charts' && periodChartData.length === 0) {
-    return (
-      <GlassCard className="p-8 text-center">
-        <AlertTriangle className="h-12 w-12 text-warning mx-auto mb-4" />
-        <p className="text-lg font-semibold text-foreground">Nenhum dado de empréstimo encontrado no período.</p>
-        <p className="text-sm text-muted-foreground mt-2">Tente ampliar o intervalo de datas ou horários no filtro acima.</p>
-      </GlassCard>
-    );
-  }
-
-  // Cores para o gráfico de pizza de Status
-  const PIE_COLORS = [chartColors.primary, chartColors.success];
-  
   // Renderiza o histórico completo
   if (periodView === 'history') {
     return <LoanHistory history={history} isNewLoan={isNewLoan} />;
@@ -321,19 +309,23 @@ const PeriodCharts = ({ periodView, loading, periodChartData, stats, startHour, 
   
   // Renderiza os gráficos para o intervalo de tempo selecionado
   
-  const chartTitle = periodChartData.length > 2 ? 'Atividade Diária' : 'Atividade Horária';
-  const chartDescription = periodChartData.length > 2 ? 'Movimentação ao longo dos dias selecionados' : 'Movimentação ao longo das horas selecionadas';
-  const chartDataKey = 'label'; // Usamos 'label' agora
+  const chartTitle = 'Atividade Diária (Últimos 7 Dias)';
+  const chartDescription = 'Empréstimos e devoluções nos últimos 7 dias';
+  const chartDataKey = 'label';
 
-  // Desestruturação segura para stats, garantindo que loansByUserType e topLoanContexts sejam arrays/objetos vazios se stats for null
+  // Desestruturação segura para stats
   const { 
     totalActive = 0, 
     loansByUserType = {},
     topLoanContexts = [], 
+    userTypeData = [],
+    durationData = [],
+    totalChromebooks = 0,
+    availableChromebooks = 0,
   } = stats || {};
 
-  // Garante que filteredLoans.length seja seguro para divisão
-  const totalLoansInPeriod = filteredLoans.length || 1;
+  // Garante que totalLoansInPeriod seja seguro para divisão
+  const totalLoansInPeriod = history.length || 1;
   
   // Mapeamento de cores para o gráfico de duração
   const DURATION_COLORS: Record<string, string> = {
@@ -341,13 +333,6 @@ const PeriodCharts = ({ periodView, loading, periodChartData, stats, startHour, 
     Professor: chartColors.success,
     Funcionario: chartColors.error,
   };
-  
-  // Mapeamento de dados para o gráfico de duração (garantindo que o nome seja a chave)
-  const durationChartData = durationData.map((d: any) => ({
-      name: d.name,
-      minutos: d.minutos,
-      color: DURATION_COLORS[d.name] || chartColors.text,
-  }));
   
   const getAnimationClass = (delay: number) => 
     isMounted ? `animate-fadeIn animation-delay-${delay}` : 'opacity-0';
@@ -366,7 +351,7 @@ const PeriodCharts = ({ periodView, loading, periodChartData, stats, startHour, 
             </div>
             <BarChartIcon className="h-5 w-5 text-muted-foreground" />
           </CardHeader>
-          <CardContent className="h-[300px]"> {/* AUMENTADO PARA 300PX */}
+          <CardContent className="h-[300px]">
             <ChartContainer
               config={{
                 empréstimos: { label: "Empréstimos", color: chartColors.primary },
@@ -409,18 +394,18 @@ const PeriodCharts = ({ periodView, loading, periodChartData, stats, startHour, 
           </CardContent>
         </GlassCard>
 
-        {/* NOVO GRÁFICO: Ocupação Horária */}
+        {/* GRÁFICO: Ocupação Horária (Mantido, mas com dados simplificados) */}
         <GlassCard className={cn("dashboard-card", getAnimationClass(700))}>
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
-              <CardTitle className="text-lg text-foreground">Taxa de Ocupação Horária</CardTitle>
+              <CardTitle className="text-lg text-foreground">Taxa de Ocupação (Simulada)</CardTitle>
               <CardDescription className="text-muted-foreground">
-                Ocupação do inventário móvel no período selecionado
+                Ocupação do inventário móvel nos últimos 7 dias
               </CardDescription>
             </div>
             <TrendingUp className="h-5 w-5 text-muted-foreground" />
           </CardHeader>
-          <CardContent className="h-[300px]"> {/* AUMENTADO PARA 300PX */}
+          <CardContent className="h-[300px]">
             <ChartContainer
               config={{
                 ocupação: { label: "Ocupação (%)", color: chartColors.error },
@@ -473,7 +458,7 @@ const PeriodCharts = ({ periodView, loading, periodChartData, stats, startHour, 
             </div>
             <PieChartIcon className="h-5 w-5 text-muted-foreground" />
           </CardHeader>
-          <CardContent className="h-[300px] flex items-center justify-center"> {/* AUMENTADO PARA 300PX */}
+          <CardContent className="h-[300px] flex items-center justify-center">
             <ChartContainer
               config={{
                 'Em Uso': { label: "Em Uso", color: chartColors.primary },
@@ -519,12 +504,12 @@ const PeriodCharts = ({ periodView, loading, periodChartData, stats, startHour, 
             <div>
               <CardTitle className="text-lg text-foreground">Uso por Tipo de Usuário</CardTitle>
               <CardDescription className="text-muted-foreground">
-                Distribuição dos empréstimos no período
+                Distribuição dos empréstimos no histórico
               </CardDescription>
             </div>
             <Users className="h-5 w-5 text-muted-foreground" />
           </CardHeader>
-          <CardContent className="h-[300px]"> {/* AUMENTADO PARA 300PX */}
+          <CardContent className="h-[300px]">
             <ChartContainer
               config={{
                 'Aluno': { label: "Aluno", color: chartColors.primary },
@@ -569,7 +554,7 @@ const PeriodCharts = ({ periodView, loading, periodChartData, stats, startHour, 
             <div>
               <CardTitle className="text-lg text-foreground">Estatísticas Rápidas</CardTitle>
               <CardDescription className="text-muted-foreground">
-                Resumo do período
+                Resumo do histórico
               </CardDescription>
             </div>
             <Activity className="h-5 w-5 text-muted-foreground" />
@@ -625,15 +610,10 @@ const PeriodCharts = ({ periodView, loading, periodChartData, stats, startHour, 
 
 // Exportação nomeada do componente
 export function Dashboard({ onBack }: DashboardProps) {
-  const { refreshData, loading, history, chromebooks, filteredLoans = [], filteredReturns = [], periodChartData, stats } = useDashboardData(null, null);
+  // Removendo os estados de filtro de data/hora
+  const { refreshData, loading, history, chromebooks, periodChartData, stats } = useDashboardData();
   const { refresh: refreshOverdue } = useOverdueLoans();
   const [isMounted, setIsMounted] = useState(false);
-  
-  // Estado para o filtro de período
-  const [startDate, setStartDate] = useState<Date | null>(startOfDay(subDays(new Date(), 7)));
-  const [endDate, setEndDate] = useState<Date | null>(endOfDay(new Date()));
-  const [startHour, setStartHour] = useState(7);
-  const [endHour, setEndHour] = useState(19);
   
   // Estado para a visualização (charts, history, reports)
   const [periodView, setPeriodView] = useState<PeriodView>('charts');
@@ -658,13 +638,6 @@ export function Dashboard({ onBack }: DashboardProps) {
     const loanDate = new Date(loan.loan_date);
     return differenceInMinutes(new Date(), loanDate) < 5; // Novo se criado nos últimos 5 minutos
   }, []);
-  
-  // Função para aplicar o filtro de período
-  const handleApplyFilter = () => {
-    // O hook useDashboardData já recalcula quando startDate/endDate/startHour/endHour mudam.
-    // Apenas forçamos a atualização dos dados brutos se necessário.
-    refreshData();
-  };
   
   // Função para lidar com o clique nos cards de estatísticas
   const handleCardClick = useCallback(async (title: string, description: string, dataType: 'chromebooks' | 'loans', data: DetailItem[] | null = null, statusFilter?: Chromebook['status']) => {
@@ -717,19 +690,7 @@ export function Dashboard({ onBack }: DashboardProps) {
         className="flex flex-col items-center"
       />
       
-      {/* Filtro de Período */}
-      <CollapsibleDashboardFilter
-        startDate={startDate}
-        setStartDate={setStartDate}
-        endDate={endDate}
-        setEndDate={setEndDate}
-        startHour={startHour}
-        setStartHour={setStartHour}
-        endHour={endHour}
-        setEndHour={setEndHour}
-        onApply={handleApplyFilter}
-        loading={loading}
-      />
+      {/* Removendo o CollapsibleDashboardFilter */}
       
       {/* Tabs de Visualização */}
       <Tabs value={periodView} onValueChange={(v) => setPeriodView(v as PeriodView)}>
@@ -760,12 +721,9 @@ export function Dashboard({ onBack }: DashboardProps) {
             <StatsGrid 
               periodView={periodView} 
               stats={stats} 
-              filteredLoans={filteredLoans} 
-              filteredReturns={filteredReturns} 
-              loading={loading} 
-              onCardClick={handleCardClick}
-              history={history}
+              history={history} 
               isMounted={isMounted}
+              onCardClick={handleCardClick}
             />
           )}
           
@@ -775,17 +733,9 @@ export function Dashboard({ onBack }: DashboardProps) {
             loading={loading} 
             periodChartData={periodChartData} 
             stats={stats} 
-            startHour={startHour} 
-            endHour={endHour} 
-            totalChromebooks={stats?.totalChromebooks}
-            availableChromebooks={stats?.availableChromebooks}
-            userTypeData={stats?.userTypeData}
-            durationData={stats?.durationData}
             isNewLoan={isNewLoan}
             history={history}
             isMounted={isMounted}
-            filteredLoans={filteredLoans}
-            filteredReturns={filteredReturns}
           />
         </TabsContent>
 
@@ -795,8 +745,6 @@ export function Dashboard({ onBack }: DashboardProps) {
             loading={loading} 
             history={history} 
             isNewLoan={isNewLoan}
-            filteredLoans={filteredLoans}
-            filteredReturns={filteredReturns}
           />
         </TabsContent>
         
