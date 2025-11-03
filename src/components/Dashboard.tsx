@@ -325,7 +325,7 @@ const PeriodCharts = ({ periodView, loading, periodChartData, stats, startHour, 
   const chartDescription = periodChartData.length > 2 ? 'Movimentação ao longo dos dias selecionados' : 'Movimentação ao longo das horas selecionadas';
   const chartDataKey = 'label'; // Usamos 'label' agora
 
-  // Desestruturação segura para stats, incluindo filteredLoans e filteredReturns
+  // Desestruturação segura para stats, garantindo que loansByUserType e topLoanContexts sejam arrays/objetos vazios se stats for null
   const { 
     totalActive = 0, 
     loansByUserType = {},
@@ -579,30 +579,30 @@ const PeriodCharts = ({ periodView, loading, periodChartData, stats, startHour, 
               <div className="flex justify-between items-center">
                 <span className="text-sm font-medium text-foreground">Alunos</span>
                 <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/30">
-                  {stats?.loansByUserType.aluno || 0} empréstimos
+                  {stats?.loansByUserType?.aluno || 0} empréstimos
                 </Badge>
               </div>
-              <Progress value={((stats?.loansByUserType.aluno || 0) / totalLoansInPeriod) * 100} className="h-2" />
+              <Progress value={((stats?.loansByUserType?.aluno || 0) / totalLoansInPeriod) * 100} className="h-2" />
             </div>
             
             <div className="space-y-2">
               <div className="flex justify-between items-center">
                 <span className="text-sm font-medium text-foreground">Professores</span>
                 <Badge variant="secondary" className="bg-success-bg text-success-foreground border-success/30">
-                  {stats?.loansByUserType.professor || 0} empréstimos
+                  {stats?.loansByUserType?.professor || 0} empréstimos
                 </Badge>
               </div>
-              <Progress value={((stats?.loansByUserType.professor || 0) / totalLoansInPeriod) * 100} className="h-2" />
+              <Progress value={((stats?.loansByUserType?.professor || 0) / totalLoansInPeriod) * 100} className="h-2" />
             </div>
             
             <div className="space-y-2">
               <div className="flex justify-between items-center">
                 <span className="text-sm font-medium text-foreground">Funcionários</span>
                 <Badge variant="secondary" className="bg-warning-bg text-warning-foreground border-warning/30">
-                  {stats?.loansByUserType.funcionario || 0} empréstimos
+                  {stats?.loansByUserType?.funcionario || 0} empréstimos
                 </Badge>
               </div>
-              <Progress value={((stats?.loansByUserType.funcionario || 0) / totalLoansInPeriod) * 100} className="h-2" />
+              <Progress value={((stats?.loansByUserType?.funcionario || 0) / totalLoansInPeriod) * 100} className="h-2" />
             </div>
           </CardContent>
         </GlassCard>
