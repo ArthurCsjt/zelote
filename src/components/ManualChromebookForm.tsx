@@ -102,7 +102,7 @@ export function ManualChromebookForm({ onRegistrationSuccess }: { onRegistration
     const result = await createChromebook(chromebookData);
     
     if (result) {
-      toast({ title: "Sucesso!", description: `Chromebook ${result.chromebook_id} cadastrado.` });
+      toast({ title: "Sucesso", description: `Chromebook ${result.chromebook_id} cadastrado.` });
       onRegistrationSuccess(result);
       resetForm();
     }
@@ -137,13 +137,13 @@ export function ManualChromebookForm({ onRegistrationSuccess }: { onRegistration
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="manufacturer">Fabricante *</Label>
+                <Label htmlFor="manufacturer" className="dark:text-muted-foreground">Fabricante *</Label>
                 <Select
                   value={formData.manufacturer}
                   onValueChange={handleManufacturerChange}
                   required
                 >
-                  <SelectTrigger className="bg-input dark:bg-card">
+                  <SelectTrigger className="bg-input dark:bg-input">
                     <SelectValue placeholder="Selecione um fabricante" />
                   </SelectTrigger>
                   <SelectContent>
@@ -157,14 +157,14 @@ export function ManualChromebookForm({ onRegistrationSuccess }: { onRegistration
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="model">Modelo *</Label>
+                <Label htmlFor="model" className="dark:text-muted-foreground">Modelo *</Label>
                 <Select
                   value={formData.model}
                   onValueChange={(value) => handleFormChange('model', value)}
                   required
                   disabled={!formData.manufacturer || currentModels.length === 0}
                 >
-                  <SelectTrigger className="bg-input dark:bg-card">
+                  <SelectTrigger className="bg-input dark:bg-input">
                     <SelectValue placeholder={formData.manufacturer ? "Selecione o modelo" : "Selecione um fabricante primeiro"} />
                   </SelectTrigger>
                   <SelectContent>
@@ -180,7 +180,7 @@ export function ManualChromebookForm({ onRegistrationSuccess }: { onRegistration
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="series">
+                <Label htmlFor="series" className="dark:text-muted-foreground">
                   Série *
                 </Label>
                 <Input 
@@ -189,12 +189,12 @@ export function ManualChromebookForm({ onRegistrationSuccess }: { onRegistration
                   onChange={(e) => handleFormChange('series', e.target.value)} 
                   placeholder="Número de Série"
                   required 
-                  className="bg-input dark:bg-card"
+                  className="bg-input dark:bg-input"
                 />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="patrimonyNumber">
+                <Label htmlFor="patrimonyNumber" className="dark:text-muted-foreground">
                   Patrimônio
                 </Label>
                 <Input 
@@ -202,18 +202,18 @@ export function ManualChromebookForm({ onRegistrationSuccess }: { onRegistration
                   value={formData.patrimonyNumber} 
                   onChange={(e) => handleFormChange('patrimonyNumber', e.target.value)} 
                   placeholder="Número de Patrimônio"
-                  className="bg-input dark:bg-card"
+                  className="bg-input dark:bg-input"
                 />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="manufacturingYear">Ano de Fabricação</Label>
+                <Label htmlFor="manufacturingYear" className="dark:text-muted-foreground">Ano de Fabricação</Label>
                 <Input 
                   id="manufacturingYear" 
                   value={formData.manufacturingYear} 
                   onChange={(e) => handleFormChange('manufacturingYear', e.target.value)} 
                   placeholder="Ex: 2022"
-                  className="bg-input dark:bg-card"
+                  className="bg-input dark:bg-input"
                 />
               </div>
             </div>
@@ -227,7 +227,7 @@ export function ManualChromebookForm({ onRegistrationSuccess }: { onRegistration
             </h4>
             
             <div className="space-y-4">
-              <Label className="text-sm font-medium">Status de Mobilidade</Label>
+              <Label className="text-sm font-medium dark:text-muted-foreground">Status de Mobilidade</Label>
               <RadioGroup
                 value={formData.mobilityStatus}
                 onValueChange={(value: 'movel' | 'fixo') => {
@@ -240,31 +240,31 @@ export function ManualChromebookForm({ onRegistrationSuccess }: { onRegistration
               >
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="movel" id="movel" />
-                  <Label htmlFor="movel">Móvel (Disponível para Empréstimo)</Label>
+                  <Label htmlFor="movel" className="dark:text-foreground">Móvel (Disponível para Empréstimo)</Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="fixo" id="fixo" />
-                  <Label htmlFor="fixo">Fixo em Sala de Aula</Label>
+                  <Label htmlFor="fixo" className="dark:text-foreground">Fixo em Sala de Aula</Label>
                 </div>
               </RadioGroup>
               
               {isFixed && (
                 <div className="space-y-2 pl-6 border-l-2 border-purple-200">
-                  <Label htmlFor="classroomLocation">Localização da Sala *</Label>
+                  <Label htmlFor="classroomLocation" className="dark:text-muted-foreground">Localização da Sala *</Label>
                   <Input 
                     id="classroomLocation" 
                     value={formData.classroomLocation} 
                     onChange={(e) => handleFormChange('classroomLocation', e.target.value)} 
                     placeholder="Ex: Sala 101"
                     required={isFixed} 
-                    className="bg-input dark:bg-card"
+                    className="bg-input dark:bg-input"
                   />
                 </div>
               )}
             </div>
 
             <div className="space-y-2 pt-4 border-t border-gray-100 dark:border-border">
-              <Label className="text-sm font-medium">Status de Provisionamento</Label>
+              <Label className="text-sm font-medium dark:text-muted-foreground">Status de Provisionamento</Label>
               <RadioGroup
                 value={formData.provisioning_status}
                 onValueChange={(value) => handleFormChange('provisioning_status', value)}
@@ -272,11 +272,11 @@ export function ManualChromebookForm({ onRegistrationSuccess }: { onRegistration
               >
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="provisioned" id="provisioned" />
-                  <Label htmlFor="provisioned">Provisionado</Label>
+                  <Label htmlFor="provisioned" className="dark:text-foreground">Provisionado</Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="deprovisioned" id="deprovisioned" />
-                  <Label htmlFor="deprovisioned">Desprovisionado</Label>
+                  <Label htmlFor="deprovisioned" className="dark:text-foreground">Desprovisionado</Label>
                 </div>
               </RadioGroup>
             </div>
@@ -289,13 +289,13 @@ export function ManualChromebookForm({ onRegistrationSuccess }: { onRegistration
               Condição e Observações
             </h4>
             <div className="space-y-2">
-              <Label htmlFor="observations">Observações (Condição)</Label>
+              <Label htmlFor="observations" className="dark:text-muted-foreground">Observações (Condição)</Label>
               <Textarea 
                 id="observations" 
                 value={formData.observations} 
                 onChange={(e) => handleFormChange('observations', e.target.value)} 
                 placeholder="Ex: Tela trincada, bateria viciada, etc."
-                className="resize-none min-h-[100px] bg-input dark:bg-card"
+                className="resize-none min-h-[100px] bg-input dark:bg-input"
               />
             </div>
           </div>

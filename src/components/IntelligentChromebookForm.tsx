@@ -158,7 +158,7 @@ export function IntelligentChromebookForm({ onRegistrationSuccess }: { onRegistr
     const result = await createChromebook(chromebookData);
     
     if (result) {
-      toast({ title: "Sucesso!", description: `Chromebook ${result.chromebook_id} re-cadastrado.` });
+      toast({ title: "Sucesso", description: `Chromebook ${result.chromebook_id} re-cadastrado.` });
       onRegistrationSuccess(result);
       resetForm();
     }
@@ -202,7 +202,7 @@ export function IntelligentChromebookForm({ onRegistrationSuccess }: { onRegistr
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="chromebookId" className="flex items-center gap-1">
+                  <Label htmlFor="chromebookId" className="flex items-center gap-1 dark:text-muted-foreground">
                     ID do Chromebook *
                   </Label>
                   <Input 
@@ -211,12 +211,12 @@ export function IntelligentChromebookForm({ onRegistrationSuccess }: { onRegistr
                     onChange={(e) => handleFormChange('chromebookId', e.target.value)} 
                     placeholder="ID (Ex: CHR001)"
                     required 
-                    className="bg-input dark:bg-card font-mono"
+                    className="bg-input dark:bg-input font-mono"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="patrimonyNumber" className="flex items-center gap-1">
+                  <Label htmlFor="patrimonyNumber" className="flex items-center gap-1 dark:text-muted-foreground">
                     <Hash className="h-3 w-3" /> Patrimônio
                   </Label>
                   <Input 
@@ -224,12 +224,12 @@ export function IntelligentChromebookForm({ onRegistrationSuccess }: { onRegistr
                     value={formData.patrimonyNumber} 
                     onChange={(e) => handleFormChange('patrimonyNumber', e.target.value)} 
                     placeholder="Número de Patrimônio"
-                    className="bg-input dark:bg-card"
+                    className="bg-input dark:bg-input"
                   />
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="serialNumber" className="flex items-center gap-1">
+                  <Label htmlFor="serialNumber" className="flex items-center gap-1 dark:text-muted-foreground">
                     <Hash className="h-3 w-3" /> Número de Série *
                   </Label>
                   <Input 
@@ -238,32 +238,32 @@ export function IntelligentChromebookForm({ onRegistrationSuccess }: { onRegistr
                     onChange={(e) => handleFormChange('serialNumber', e.target.value)} 
                     placeholder="Número de Série"
                     required 
-                    className="bg-input dark:bg-card"
+                    className="bg-input dark:bg-input"
                   />
                 </div>
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="manufacturer">Fabricante</Label>
+                  <Label htmlFor="manufacturer" className="dark:text-muted-foreground">Fabricante</Label>
                   <Input
                     id="manufacturer"
                     value={formData.manufacturer}
                     onChange={(e) => handleFormChange('manufacturer', e.target.value)}
                     placeholder="Ex: Lenovo"
-                    className="bg-input dark:bg-card"
+                    className="bg-input dark:bg-input"
                   />
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="model">Modelo *</Label>
+                  <Label htmlFor="model" className="dark:text-muted-foreground">Modelo *</Label>
                   <Input 
                     id="model" 
                     value={formData.model} 
                     onChange={(e) => handleFormChange('model', e.target.value)} 
                     placeholder="Ex: Chromebook 14e"
                     required 
-                    className="bg-input dark:bg-card"
+                    className="bg-input dark:bg-input"
                   />
                 </div>
               </div>
@@ -277,7 +277,7 @@ export function IntelligentChromebookForm({ onRegistrationSuccess }: { onRegistr
               </h4>
               
               <div className="space-y-4">
-                <Label className="text-sm font-medium">Status de Mobilidade</Label>
+                <Label className="text-sm font-medium dark:text-muted-foreground">Status de Mobilidade</Label>
                 <RadioGroup
                   value={formData.mobilityStatus}
                   onValueChange={(value: 'movel' | 'fixo') => {
@@ -290,31 +290,31 @@ export function IntelligentChromebookForm({ onRegistrationSuccess }: { onRegistr
                 >
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="movel" id="movel" />
-                    <Label htmlFor="movel">Móvel (Disponível para Empréstimo)</Label>
+                    <Label htmlFor="movel" className="dark:text-foreground">Móvel (Disponível para Empréstimo)</Label>
                   </div>
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="fixo" id="fixo" />
-                    <Label htmlFor="fixo">Fixo em Sala de Aula</Label>
+                    <Label htmlFor="fixo" className="dark:text-foreground">Fixo em Sala de Aula</Label>
                   </div>
                 </RadioGroup>
                 
                 {isFixed && (
                   <div className="space-y-2 pl-6 border-l-2 border-purple-200">
-                    <Label htmlFor="classroomLocation">Localização da Sala *</Label>
+                    <Label htmlFor="classroomLocation" className="dark:text-muted-foreground">Localização da Sala *</Label>
                     <Input 
                       id="classroomLocation" 
                       value={formData.classroomLocation} 
                       onChange={(e) => handleFormChange('classroomLocation', e.target.value)} 
                       placeholder="Ex: Sala 101"
                       required={isFixed} 
-                      className="bg-input dark:bg-card"
+                      className="bg-input dark:bg-input"
                     />
                   </div>
                 )}
               </div>
 
               <div className="space-y-2 pt-4 border-t border-gray-100 dark:border-border">
-                <Label className="text-sm font-medium">Status de Provisionamento</Label>
+                <Label className="text-sm font-medium dark:text-muted-foreground">Status de Provisionamento</Label>
                 <RadioGroup
                   value={formData.provisioning_status}
                   onValueChange={(value) => handleFormChange('provisioning_status', value)}
@@ -322,11 +322,11 @@ export function IntelligentChromebookForm({ onRegistrationSuccess }: { onRegistr
                 >
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="provisioned" id="provisioned" />
-                    <Label htmlFor="provisioned">Provisionado</Label>
+                    <Label htmlFor="provisioned" className="dark:text-foreground">Provisionado</Label>
                   </div>
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="deprovisioned" id="deprovisioned" />
-                    <Label htmlFor="deprovisioned">Desprovisionado</Label>
+                    <Label htmlFor="deprovisioned" className="dark:text-foreground">Desprovisionado</Label>
                   </div>
                 </RadioGroup>
               </div>
@@ -339,13 +339,13 @@ export function IntelligentChromebookForm({ onRegistrationSuccess }: { onRegistr
                 Condição e Observações
               </h4>
               <div className="space-y-2">
-                <Label htmlFor="observations">Observações (Condição)</Label>
+                <Label htmlFor="observations" className="dark:text-muted-foreground">Observações (Condição)</Label>
                 <Textarea 
                   id="observations" 
                   value={formData.observations} 
                   onChange={(e) => handleFormChange('observations', e.target.value)} 
                   placeholder="Ex: Tela trincada, bateria viciada, etc."
-                  className="resize-none min-h-[100px] bg-input dark:bg-card"
+                  className="resize-none min-h-[100px] bg-input dark:bg-input"
                 />
               </div>
             </div>

@@ -259,19 +259,19 @@ export function ChromebookEditDialog({ open, onOpenChange, chromebook }: Chromeb
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-1.5">
-                <Label htmlFor="chromebook_id" className="text-xs font-medium flex items-center gap-1">
+                <Label htmlFor="chromebook_id" className="text-xs font-medium flex items-center gap-1 dark:text-muted-foreground">
                   ID do Chromebook *
                 </Label>
                 <Input
                   id="chromebook_id"
                   value={editingChromebook.chromebook_id}
-                  className="h-10 bg-input dark:bg-card cursor-not-allowed font-mono text-sm dark:text-gray-200"
+                  className="h-10 bg-input dark:bg-input cursor-not-allowed font-mono text-sm dark:text-gray-200"
                   readOnly
                 />
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="patrimony_number" className="text-xs font-medium flex items-center gap-1">
+                <Label htmlFor="patrimony_number" className="text-xs font-medium flex items-center gap-1 dark:text-muted-foreground">
                   <Hash className="h-3 w-3" /> Patrimônio
                 </Label>
                 <Input
@@ -279,12 +279,12 @@ export function ChromebookEditDialog({ open, onOpenChange, chromebook }: Chromeb
                   value={editingChromebook.patrimony_number || ""}
                   onChange={handleEditChange}
                   placeholder="Número do patrimônio"
-                  className="h-10 bg-input dark:bg-card"
+                  className="h-10 bg-input dark:bg-input"
                 />
               </div>
               
               <div className="space-y-1.5">
-                <Label htmlFor="serial_number" className="text-xs font-medium flex items-center gap-1">
+                <Label htmlFor="serial_number" className="text-xs font-medium flex items-center gap-1 dark:text-muted-foreground">
                   <Hash className="h-3 w-3" /> Número de Série
                 </Label>
                 <Input
@@ -292,7 +292,7 @@ export function ChromebookEditDialog({ open, onOpenChange, chromebook }: Chromeb
                   value={editingChromebook.serial_number || ""}
                   onChange={handleEditChange}
                   placeholder="Número de série"
-                  className="h-10 bg-input dark:bg-card"
+                  className="h-10 bg-input dark:bg-input"
                 />
               </div>
             </div>
@@ -300,14 +300,14 @@ export function ChromebookEditDialog({ open, onOpenChange, chromebook }: Chromeb
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Fabricante (SELECT) */}
               <div className="space-y-1.5">
-                <Label htmlFor="manufacturer" className="text-xs font-medium flex items-center gap-1">
+                <Label htmlFor="manufacturer" className="text-xs font-medium flex items-center gap-1 dark:text-muted-foreground">
                   <Factory className="h-3 w-3" /> Fabricante *
                 </Label>
                 <Select
                   value={editingChromebook.manufacturer || ''}
                   onValueChange={(value) => handleSelectChange('manufacturer', value)}
                 >
-                  <SelectTrigger className="h-10 bg-input dark:bg-card">
+                  <SelectTrigger className="h-10 bg-input dark:bg-input">
                     <SelectValue placeholder="Selecione o fabricante" />
                   </SelectTrigger>
                   <SelectContent>
@@ -322,13 +322,13 @@ export function ChromebookEditDialog({ open, onOpenChange, chromebook }: Chromeb
               
               {/* Modelo (SELECT) */}
               <div className="space-y-1.5">
-                <Label htmlFor="model" className="text-xs font-medium">Modelo *</Label>
+                <Label htmlFor="model" className="text-xs font-medium dark:text-muted-foreground">Modelo *</Label>
                 <Select
                   value={editingChromebook.model}
                   onValueChange={(value) => handleSelectChange('model', value)}
                   disabled={!editingChromebook.manufacturer || currentModels.length === 0}
                 >
-                  <SelectTrigger className="h-10 bg-input dark:bg-card">
+                  <SelectTrigger className="h-10 bg-input dark:bg-input">
                     <SelectValue placeholder={editingChromebook.manufacturer ? "Selecione o modelo" : "Selecione um fabricante primeiro"} />
                   </SelectTrigger>
                   <SelectContent>
@@ -352,13 +352,13 @@ export function ChromebookEditDialog({ open, onOpenChange, chromebook }: Chromeb
             
             {/* Linha 1: Status de Uso (Select) */}
             <div className="space-y-1.5">
-              <Label className="text-xs font-medium">Status de Uso (Empréstimo/Manutenção)</Label>
+              <Label className="text-xs font-medium dark:text-muted-foreground">Status de Uso (Empréstimo/Manutenção)</Label>
               <Select 
                   value={editingChromebook.status} 
                   onValueChange={handleEditStatusChange}
                   disabled={isEmprestado} // Não permite mudar se estiver emprestado
               >
-                <SelectTrigger className="h-10 bg-input dark:bg-card">
+                <SelectTrigger className="h-10 bg-input dark:bg-input">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -378,7 +378,7 @@ export function ChromebookEditDialog({ open, onOpenChange, chromebook }: Chromeb
 
             {/* Linha 2: Status de Mobilidade (RadioGroup) */}
             <div className="space-y-2 pt-4 border-t border-gray-100 dark:border-border">
-              <Label className="text-sm font-medium">Status de Mobilidade</Label>
+              <Label className="text-sm font-medium dark:text-muted-foreground">Status de Mobilidade</Label>
               <RadioGroup
                 value={currentMobilityStatus}
                 onValueChange={handleMobilityChange}
@@ -387,11 +387,11 @@ export function ChromebookEditDialog({ open, onOpenChange, chromebook }: Chromeb
               >
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="movel" id="movel-edit" />
-                  <Label htmlFor="movel-edit">Móvel (Disponível para Empréstimo)</Label>
+                  <Label htmlFor="movel-edit" className="dark:text-foreground">Móvel (Disponível para Empréstimo)</Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="fixo" id="fixo-edit" />
-                  <Label htmlFor="fixo-edit">Fixo em Sala de Aula</Label>
+                  <Label htmlFor="fixo-edit" className="dark:text-foreground">Fixo em Sala de Aula</Label>
                 </div>
               </RadioGroup>
               {isMobilityDisabled && (
@@ -404,7 +404,7 @@ export function ChromebookEditDialog({ open, onOpenChange, chromebook }: Chromeb
             {/* Linha 3: Localização (Geral e Sala) */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
                 <div className="space-y-1.5">
-                    <Label htmlFor="location" className="text-xs font-medium flex items-center gap-1">
+                    <Label htmlFor="location" className="text-xs font-medium flex items-center gap-1 dark:text-muted-foreground">
                       <Map className="h-3 w-3" /> Localização Geral
                     </Label>
                     <Input
@@ -412,18 +412,18 @@ export function ChromebookEditDialog({ open, onOpenChange, chromebook }: Chromeb
                       value={editingChromebook.location || ""}
                       onChange={handleEditChange}
                       placeholder="Ex: Sala de informática"
-                      className="h-10 bg-input dark:bg-card"
+                      className="h-10 bg-input dark:bg-input"
                     />
                 </div>
                 
                 <div className="space-y-1.5">
-                    <Label htmlFor="classroom" className="text-xs font-medium">Sala de Aula (Obrigatório se Fixo)</Label>
+                    <Label htmlFor="classroom" className="text-xs font-medium dark:text-muted-foreground">Sala de Aula (Obrigatório se Fixo)</Label>
                     <Input
                       id="classroom"
                       value={editingChromebook.classroom || ''}
                       onChange={handleEditChange}
                       placeholder="Ex.: Sala 21"
-                      className="h-10 bg-input dark:bg-card"
+                      className="h-10 bg-input dark:bg-input"
                       required={isFixed}
                       disabled={!isFixed}
                     />
@@ -432,7 +432,7 @@ export function ChromebookEditDialog({ open, onOpenChange, chromebook }: Chromeb
             
             {/* Linha 4: Status de Provisionamento (RadioGroup) */}
             <div className="space-y-2 pt-4 border-t border-gray-100 dark:border-border">
-              <Label className="text-sm font-medium">Status de Provisionamento</Label>
+              <Label className="text-sm font-medium dark:text-muted-foreground">Status de Provisionamento</Label>
               <RadioGroup
                 value={currentProvisioningStatus}
                 onValueChange={handleProvisioningChange}
@@ -441,13 +441,13 @@ export function ChromebookEditDialog({ open, onOpenChange, chromebook }: Chromeb
               >
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="provisioned" id="provisioned-edit" />
-                  <Label htmlFor="provisioned-edit" className="flex items-center gap-1">
+                  <Label htmlFor="provisioned-edit" className="flex items-center gap-1 dark:text-foreground">
                     <CheckCircle className="h-4 w-4 text-green-600" /> Provisionado
                   </Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="deprovisioned" id="deprovisioned-edit" />
-                  <Label htmlFor="deprovisioned-edit" className="flex items-center gap-1">
+                  <Label htmlFor="deprovisioned-edit" className="flex items-center gap-1 dark:text-foreground">
                     <XCircle className="h-4 w-4 text-red-600" /> Desprovisionado
                   </Label>
                 </div>
@@ -468,13 +468,13 @@ export function ChromebookEditDialog({ open, onOpenChange, chromebook }: Chromeb
             </h4>
             
             <div className="space-y-1.5">
-              <Label htmlFor="condition" className="text-xs font-medium">Condição/Observações</Label>
+              <Label htmlFor="condition" className="text-xs font-medium dark:text-muted-foreground">Condição/Observações</Label>
               <Textarea
                 id="condition"
                 value={editingChromebook.condition || ""}
                 onChange={handleConditionChange}
                 placeholder="Digite observações sobre a condição do equipamento (ex: tela trincada, bateria fraca)"
-                className="resize-none min-h-[100px] bg-input dark:bg-card"
+                className="resize-none min-h-[100px] bg-input dark:bg-input"
               />
             </div>
           </div>
