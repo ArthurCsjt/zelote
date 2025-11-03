@@ -280,8 +280,8 @@
 }
 
 .animated-menu-bg {
-  /* Reduzindo o tamanho do gradiente para 200% */
-  background-size: 200% 200%; 
+  /* Aumenta o background-size para 400% para um fade maior */
+  background-size: 400% 400%; 
   /* Mantendo a velocidade moderada */
   animation: bg-pan 20s linear infinite;
 }
