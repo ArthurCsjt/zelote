@@ -160,6 +160,18 @@ const Login = () => {
   };
 
   // --- Renderização Condicional ---
+
+  const renderHeader = (title: string, description: string, Icon: React.ElementType, colorClass: string) => (
+    <CardHeader className={cn("space-y-1 text-center pb-6", colorClass)}>
+      <div className="flex justify-center mb-4">
+        <div className="p-3 rounded-full bg-white/50 shadow-md">
+          <Icon className="h-10 w-10 text-current" />
+        </div>
+      </div>
+      <CardTitle className="text-2xl font-bold text-gray-800">{title}</CardTitle>
+      <CardDescription className="text-gray-600">{description}</CardDescription>
+    </CardHeader>
+  );
   
   // NOVO RENDER HEADER MINIMALISTA
   const renderMinimalHeader = (title: string, description: string, Icon: React.ElementType) => (
@@ -167,8 +179,8 @@ const Login = () => {
       <div className="flex justify-center mb-2">
         <Icon className="h-8 w-8 text-primary" />
       </div>
-      <CardTitle className="text-3xl font-extrabold text-foreground">{title}</CardTitle>
-      {description && <CardDescription className="text-sm text-muted-foreground">{description}</CardDescription>}
+      <CardTitle className="text-3xl font-extrabold text-gray-900">{title}</CardTitle>
+      {description && <CardDescription className="text-sm text-gray-500">{description}</CardDescription>}
     </CardHeader>
   );
 
@@ -184,36 +196,18 @@ const Login = () => {
             )}
             <CardContent className="space-y-4 pt-6">
               <div className="space-y-2">
-                <Label htmlFor="new-password" className="text-foreground flex items-center gap-1.5"><LockKeyhole className="h-4 w-4" />Nova Senha</Label>
+                <Label htmlFor="new-password" className="text-gray-700 flex items-center gap-1.5"><LockKeyhole className="h-4 w-4" />Nova Senha</Label>
                 <div className="relative">
-                  <Input 
-                    id="new-password" 
-                    type={showPassword ? "text" : "password"} 
-                    placeholder="Mínimo 6 caracteres" 
-                    value={password} 
-                    onChange={e => setPassword(e.target.value)} 
-                    className="bg-input-bg text-input-foreground border-input pr-10" 
-                    disabled={isLoading} 
-                    required 
-                  />
+                  <Input id="new-password" type={showPassword ? "text" : "password"} placeholder="Mínimo 6 caracteres" value={password} onChange={e => setPassword(e.target.value)} className="bg-white pr-10" disabled={isLoading} required />
                   <Button type="button" variant="ghost" size="sm" className="absolute right-0 top-0 h-full px-3 hover:bg-transparent" onClick={() => setShowPassword(prev => !prev)}>
                     {showPassword ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
                   </Button>
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="confirm-password" className="text-foreground flex items-center gap-1.5"><LockKeyhole className="h-4 w-4" />Confirmar Senha</Label>
+                <Label htmlFor="confirm-password" className="text-gray-700 flex items-center gap-1.5"><LockKeyhole className="h-4 w-4" />Confirmar Senha</Label>
                 <div className="relative">
-                  <Input 
-                    id="confirm-password" 
-                    type={showPassword ? "text" : "password"} 
-                    placeholder="Confirme sua nova senha" 
-                    value={confirmPassword} 
-                    onChange={e => setConfirmPassword(e.target.value)} 
-                    className="bg-input-bg text-input-foreground border-input pr-10" 
-                    disabled={isLoading} 
-                    required 
-                  />
+                  <Input id="confirm-password" type={showPassword ? "text" : "password"} placeholder="Confirme sua nova senha" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className="bg-white pr-10" disabled={isLoading} required />
                   <Button type="button" variant="ghost" size="sm" className="absolute right-0 top-0 h-full px-3 hover:bg-transparent" onClick={() => setShowPassword(prev => !prev)}>
                     {showPassword ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
                   </Button>
@@ -238,25 +232,25 @@ const Login = () => {
             )}
             <CardContent className="space-y-4 pt-6">
               <div className="space-y-2">
-                <Label htmlFor="recovery-email" className="text-foreground flex items-center gap-1.5"><Mail className="h-4 w-4" />Email Institucional</Label>
+                <Label htmlFor="recovery-email" className="text-gray-700 flex items-center gap-1.5"><Mail className="h-4 w-4" />Email Institucional</Label>
                 <Input 
                   id="recovery-email" 
                   type="email" 
                   placeholder="seu.email@colegiosaojudas.com.br" 
                   value={email} 
                   onChange={e => setEmail(e.target.value)} 
-                  className={cn("bg-input-bg text-input-foreground border-input", emailError && "border-error")} 
+                  className={cn("bg-white", emailError && "border-destructive")} 
                   disabled={isLoading} 
                   required
                 />
-                {emailError && <p className="text-xs text-error-foreground flex items-center gap-1 mt-1"><AlertCircle className="h-3 w-3" />{emailError}</p>}
+                {emailError && <p className="text-xs text-destructive flex items-center gap-1 mt-1"><AlertCircle className="h-3 w-3" />{emailError}</p>}
               </div>
             </CardContent>
             <CardFooter className="flex flex-col space-y-4 pb-6">
               <Button type="submit" className="w-full" disabled={isLoading || !isEmailValid}>
                 {isLoading ? "Enviando..." : "Enviar Link de Redefinição"}
               </Button>
-              <Button type="button" variant="link" className="text-sm text-muted-foreground p-0 h-auto" onClick={() => changeMode('login')} disabled={isLoading}>
+              <Button type="button" variant="link" className="text-sm text-gray-600 p-0 h-auto" onClick={() => changeMode('login')} disabled={isLoading}>
                 <ArrowLeft className="h-3.5 w-3.5 mr-1" />
                 Voltar ao login
               </Button>
@@ -274,50 +268,32 @@ const Login = () => {
             )}
             <CardContent className="space-y-4 pt-6">
               <div className="space-y-2">
-                <Label htmlFor="register-email" className="text-foreground flex items-center gap-1.5"><Mail className="h-4 w-4" />Email Institucional</Label>
+                <Label htmlFor="register-email" className="text-gray-700 flex items-center gap-1.5"><Mail className="h-4 w-4" />Email Institucional</Label>
                 <Input 
                   id="register-email" 
                   type="email" 
                   placeholder="seu.email@colegiosaojudas.com.br" 
                   value={email} 
                   onChange={e => setEmail(e.target.value)} 
-                  className={cn("bg-input-bg text-input-foreground border-input", emailError && "border-error")} 
+                  className={cn("bg-white", emailError && "border-destructive")} 
                   disabled={isLoading} 
                   required
                 />
-                {emailError && <p className="text-xs text-error-foreground flex items-center gap-1 mt-1"><AlertCircle className="h-3 w-3" />{emailError}</p>}
+                {emailError && <p className="text-xs text-destructive flex items-center gap-1 mt-1"><AlertCircle className="h-3 w-3" />{emailError}</p>}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="register-password" className="text-foreground flex items-center gap-1.5"><Lock className="h-4 w-4" />Senha</Label>
+                <Label htmlFor="register-password" className="text-gray-700 flex items-center gap-1.5"><Lock className="h-4 w-4" />Senha</Label>
                 <div className="relative">
-                  <Input 
-                    id="register-password" 
-                    type={showPassword ? "text" : "password"} 
-                    placeholder="Mínimo 6 caracteres" 
-                    value={password} 
-                    onChange={e => setPassword(e.target.value)} 
-                    className="bg-input-bg text-input-foreground border-input pr-10" 
-                    disabled={isLoading} 
-                    required 
-                  />
+                  <Input id="register-password" type={showPassword ? "text" : "password"} placeholder="Mínimo 6 caracteres" value={password} onChange={e => setPassword(e.target.value)} className="bg-white pr-10" disabled={isLoading} required />
                   <Button type="button" variant="ghost" size="sm" className="absolute right-0 top-0 h-full px-3 hover:bg-transparent" onClick={() => setShowPassword(prev => !prev)}>
                     {showPassword ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
                   </Button>
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="register-confirm-password" className="text-foreground flex items-center gap-1.5"><Lock className="h-4 w-4" />Confirmar Senha</Label>
+                <Label htmlFor="register-confirm-password" className="text-gray-700 flex items-center gap-1.5"><Lock className="h-4 w-4" />Confirmar Senha</Label>
                 <div className="relative">
-                  <Input 
-                    id="register-confirm-password" 
-                    type={showPassword ? "text" : "password"} 
-                    placeholder="Confirme sua senha" 
-                    value={confirmPassword} 
-                    onChange={e => setConfirmPassword(e.target.value)} 
-                    className="bg-input-bg text-input-foreground border-input pr-10" 
-                    disabled={isLoading} 
-                    required 
-                  />
+                  <Input id="register-confirm-password" type={showPassword ? "text" : "password"} placeholder="Confirme sua senha" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className="bg-white pr-10" disabled={isLoading} required />
                   <Button type="button" variant="ghost" size="sm" className="absolute right-0 top-0 h-full px-3 hover:bg-transparent" onClick={() => setShowPassword(prev => !prev)}>
                     {showPassword ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
                   </Button>
@@ -328,7 +304,7 @@ const Login = () => {
               <Button type="submit" className="w-full" disabled={isLoading || !isEmailValid || password.length < 6 || password !== confirmPassword}>
                 {isLoading ? "Registrando..." : <><UserPlus className="h-4 w-4 mr-2" />Cadastrar</>}
               </Button>
-              <Button type="button" variant="link" className="text-sm text-muted-foreground p-0 h-auto" onClick={() => changeMode('login')} disabled={isLoading}>
+              <Button type="button" variant="link" className="text-sm text-gray-600 p-0 h-auto" onClick={() => changeMode('login')} disabled={isLoading}>
                 <ArrowLeft className="h-3.5 w-3.5 mr-1" />
                 Voltar ao login
               </Button>
@@ -347,32 +323,23 @@ const Login = () => {
             )}
             <CardContent className="space-y-4 pt-6">
               <div className="space-y-2">
-                <Label htmlFor="login-email" className="text-foreground flex items-center gap-1.5"><Mail className="h-4 w-4" />Email Institucional</Label>
+                <Label htmlFor="login-email" className="text-gray-700 flex items-center gap-1.5"><Mail className="h-4 w-4" />Email Institucional</Label>
                 <Input 
                   id="login-email" 
                   type="email" 
                   placeholder="seu.email@colegiosaojudas.com.br" 
                   value={email} 
                   onChange={e => setEmail(e.target.value)} 
-                  className={cn("bg-input-bg text-input-foreground border-input", emailError && "border-error")} 
+                  className={cn("bg-white", emailError && "border-destructive")} 
                   disabled={isLoading} 
                   required
                 />
-                {emailError && <p className="text-xs text-error-foreground flex items-center gap-1 mt-1"><AlertCircle className="h-3 w-3" />{emailError}</p>}
+                {emailError && <p className="text-xs text-destructive flex items-center gap-1 mt-1"><AlertCircle className="h-3 w-3" />{emailError}</p>}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="login-password" className="text-foreground flex items-center gap-1.5"><Lock className="h-4 w-4" />Senha</Label>
+                <Label htmlFor="login-password" className="text-gray-700 flex items-center gap-1.5"><Lock className="h-4 w-4" />Senha</Label>
                 <div className="relative">
-                  <Input 
-                    id="login-password" 
-                    type={showPassword ? "text" : "password"} 
-                    placeholder="Digite sua senha" 
-                    value={password} 
-                    onChange={e => setPassword(e.target.value)} 
-                    className="bg-input-bg text-input-foreground border-input pr-10" 
-                    disabled={isLoading} 
-                    required 
-                  />
+                  <Input id="login-password" type={showPassword ? "text" : "password"} placeholder="Digite sua senha" value={password} onChange={e => setPassword(e.target.value)} className="bg-white pr-10" disabled={isLoading} required />
                   <Button type="button" variant="ghost" size="sm" className="absolute right-0 top-0 h-full px-3 hover:bg-transparent" onClick={() => setShowPassword(prev => !prev)}>
                     {showPassword ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
                   </Button>
@@ -383,7 +350,7 @@ const Login = () => {
               <Button type="submit" className="w-full" disabled={isLoading || !isEmailValid}>
                 {isLoading ? "Entrando..." : <><LogIn className="h-4 w-4 mr-2" />Entrar</>}
               </Button>
-              <Button type="button" variant="link" className="text-sm text-muted-foreground p-0 h-auto" onClick={() => changeMode('forgot_password')} disabled={isLoading}>
+              <Button type="button" variant="link" className="text-sm text-gray-600 p-0 h-auto" onClick={() => changeMode('forgot_password')} disabled={isLoading}>
                 <KeySquare className="h-3.5 w-3.5 mr-1" />
                 Esqueci minha senha
               </Button>
@@ -398,8 +365,8 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background-secondary p-4">
-      <Card className="w-full max-w-md shadow-xl glass-card border-border overflow-hidden bg-card">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#D3E4FD] to-[#F0F7FF] p-4">
+      <Card className="w-full max-w-md shadow-xl glass-card border-0 overflow-hidden">
         {renderForm()}
       </Card>
     </div>

@@ -19,44 +19,22 @@ export default {
     },
     extend: {
       colors: {
-        // Core Colors
-        background: "hsl(var(--background))",
-        "background-secondary": "hsl(var(--background-secondary))",
-        foreground: "hsl(var(--foreground))",
-        
-        // Surfaces
-        card: {
-          DEFAULT: "hsl(var(--card))",
-          foreground: "hsl(var(--card-foreground))",
-          hover: "hsl(var(--card-hover))",
-        },
-        modal: {
-          DEFAULT: "hsl(var(--modal))",
-          border: "hsl(var(--modal-border))",
-        },
-        overlay: "hsl(var(--overlay))",
-        
-        // Inputs
+        border: "hsl(var(--border))",
         input: "hsl(var(--input))",
-        "input-bg": "hsl(var(--input-bg))",
-        "input-foreground": "hsl(var(--input-foreground))",
-        "input-placeholder": "hsl(var(--input-placeholder))",
-
-        // Primary Button
+        ring: "hsl(var(--ring))",
+        background: "hsl(var(--background))",
+        foreground: "hsl(var(--foreground))",
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
-          hover: "hsl(var(--primary-hover))",
         },
-        
-        // States
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
           foreground: "hsl(var(--secondary-foreground))",
         },
         destructive: {
-          DEFAULT: "hsl(var(--error))",
-          foreground: "hsl(var(--error-foreground))",
+          DEFAULT: "hsl(var(--destructive))",
+          foreground: "hsl(var(--destructive-foreground))",
         },
         muted: {
           DEFAULT: "hsl(var(--muted))",
@@ -70,35 +48,11 @@ export default {
           DEFAULT: "hsl(var(--popover))",
           foreground: "hsl(var(--popover-foreground))",
         },
-        
-        // Semantic Colors
-        success: {
-          DEFAULT: "hsl(var(--success))",
-          foreground: "hsl(var(--success-foreground))",
-          bg: "hsl(var(--success-bg))",
+        card: {
+          DEFAULT: "hsl(var(--card))",
+          foreground: "hsl(var(--card-foreground))",
         },
-        warning: {
-          DEFAULT: "hsl(var(--warning))",
-          foreground: "hsl(var(--warning-foreground))",
-          bg: "hsl(var(--warning-bg))",
-        },
-        error: {
-          DEFAULT: "hsl(var(--error))",
-          foreground: "hsl(var(--error-foreground))",
-          bg: "hsl(var(--error-bg))",
-        },
-        info: {
-          DEFAULT: "hsl(var(--info))",
-          foreground: "hsl(var(--info-foreground))",
-          bg: "hsl(var(--info-bg))",
-        },
-        
-        // Borders & Rings
-        border: "hsl(var(--border))",
-        "border-strong": "hsl(var(--border-strong))",
-        ring: "hsl(var(--ring))",
-        
-        // Menu Colors System (Mantidos, mas ajustados no index.css dark mode)
+        // Menu Colors System
         "menu-green": {
           DEFAULT: "hsl(var(--menu-green))",
           hover: "hsl(var(--menu-green-hover))",
@@ -107,13 +61,13 @@ export default {
           DEFAULT: "hsl(var(--menu-blue))",
           hover: "hsl(var(--menu-blue-hover))",
         },
-        "menu-dark-blue": { 
+        "menu-dark-blue": { // NOVO AZUL ESCURO
           DEFAULT: "hsl(213 90% 35%)",
           hover: "hsl(213 90% 30%)",
         },
         "menu-violet": {
-          DEFAULT: "hsl(var(--menu-violet))",
-          hover: "hsl(var(--menu-violet-hover))",
+          DEFAULT: "hsl(258 70% 45%)",
+          hover: "hsl(258 70% 40%)",
         },
         "menu-amber": {
           DEFAULT: "hsl(var(--menu-amber))",
@@ -127,12 +81,18 @@ export default {
           DEFAULT: "hsl(var(--menu-teal))",
           hover: "hsl(var(--menu-teal-hover))",
         },
-        // Back Button System (Removido, pois não é mais usado)
+        // Back Button System
+        "back-button": {
+          DEFAULT: "hsl(var(--back-button))",
+          foreground: "hsl(var(--back-button-foreground))",
+          border: "hsl(var(--back-button-border))",
+          hover: "hsl(var(--back-button-hover))",
+        },
       },
       borderRadius: {
-        lg: "var(--radius-lg)",
-        md: "var(--radius)",
-        sm: "var(--radius-sm)",
+        lg: "var(--radius)",
+        md: "calc(var(--radius) - 2px)",
+        sm: "calc(var(--radius) - 4px)",
       },
       keyframes: {
         "accordion-down": {

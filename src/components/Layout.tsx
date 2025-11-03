@@ -1,6 +1,7 @@
 import React from 'react';
 import { User, LogOut, ArrowLeft, Bell, Settings, Sun, Moon, Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTheme } from '@/hooks/use-theme';
 import { useNavigate } from 'react-router-dom';
 import { useProfileRole } from '@/hooks/use-profile-role';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -8,8 +9,6 @@ import { Button } from '@/components/ui/button';
 import { ActivityFeed } from './ActivityFeed';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
-import { useTheme } from '@/lib/theme'; // NOVO IMPORT
-import { ThemeToggle } from './ThemeToggle'; // NOVO IMPORT
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -32,7 +31,7 @@ const Layout: React.FC<LayoutProps> = ({
   const {
     theme,
     setTheme
-  } = useTheme(); // Usando o novo hook
+  } = useTheme();
   const navigate = useNavigate();
   const {
     isAdmin,
@@ -101,15 +100,12 @@ const Layout: React.FC<LayoutProps> = ({
   };
 
   return (
-    <div className={`min-h-screen bg-background text-foreground ${isStandalone ? 'safe-area-top safe-area-bottom safe-area-left safe-area-right' : ''}`}>
+    <div className={`min-h-screen bg-transparent text-foreground ${isStandalone ? 'safe-area-top safe-area-bottom safe-area-left safe-area-right' : ''}`}>
       {/* Status Bar Overlay for iOS in standalone mode */}
       {isStandalone && <div className="status-bar-overlay" />}
 
       {/* Header */}
-      <header className={cn(
-        "bg-card/95 backdrop-blur-xl shadow-sm border-b border-border fixed top-0 left-0 right-0 z-50",
-        isStandalone ? 'safe-area-top' : ''
-      )}>
+      <header className={`bg-card/95 backdrop-blur-xl shadow-sm border-b border-border fixed top-0 left-0 right-0 z-50 ${isStandalone ? 'safe-area-top' : ''}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center gap-4">
@@ -119,7 +115,7 @@ const Layout: React.FC<LayoutProps> = ({
                 </button>
               )}
               <div>
-                <h1 className="bg-gradient-to-r from-primary to-menu-violet bg-clip-text text-transparent text-2xl font-bold text-left">
+                <h1 className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent text-2xl font-bold text-left">
                   Zelote
                 </h1>
                 <div className="flex items-center gap-2">
@@ -131,16 +127,13 @@ const Layout: React.FC<LayoutProps> = ({
 
             <div className="flex items-center space-x-4">
               
-              {/* Theme Toggle */}
-              <ThemeToggle />
-              
               {/* Botão de Notificações (Sino) */}
               <Popover>
                 <PopoverTrigger asChild>
                   <Button variant="ghost" size="icon" className="relative h-9 w-9">
-                    <Bell className="h-5 w-5 text-muted-foreground" />
+                    <Bell className="h-5 w-5 text-gray-600" />
                     {/* Exemplo de badge de notificação (pode ser ligado a um estado real) */}
-                    <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-error" />
+                    <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500" />
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="p-0 w-auto" align="end">
@@ -155,8 +148,9 @@ const Layout: React.FC<LayoutProps> = ({
                     <Button 
                       variant="outline" 
                       className={cn(
-                        "h-9 px-3 rounded-full border-border bg-card hover:bg-card-hover flex items-center gap-2 transition-all duration-300",
+                        "h-9 px-3 rounded-full border-gray-300 bg-white hover:bg-gray-100 flex items-center gap-2 transition-all duration-300",
                         "shadow-sm hover:shadow-md",
+                        "dark:bg-card dark:border-border dark:hover:bg-accent"
                       )}
                     >
                       {roleLoading ? (
@@ -172,18 +166,18 @@ const Layout: React.FC<LayoutProps> = ({
                       </span>
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-64 bg-card border-border text-foreground">
+                  <DropdownMenuContent align="end" className="w-64">
                     <DropdownMenuLabel className="font-bold text-base truncate">
                       {user.email}
                     </DropdownMenuLabel>
-                    <DropdownMenuSeparator className="bg-border" />
+                    <DropdownMenuSeparator />
                     
                     {/* Item Configurações (Apenas para Admin) */}
                     {/* Usando a verificação explícita do role */}
                     {role && (role === 'admin' || role === 'super_admin') && (
                       <DropdownMenuItem 
                         onClick={() => navigate('/settings')}
-                        className="cursor-pointer flex items-center gap-2 hover:bg-accent focus:bg-accent"
+                        className="cursor-pointer flex items-center gap-2"
                       >
                         <Settings className="h-4 w-4 text-primary" />
                         Configurações
@@ -194,7 +188,8 @@ const Layout: React.FC<LayoutProps> = ({
                     <DropdownMenuItem 
                       onClick={handleLogout}
                       className={cn(
-                        "cursor-pointer flex items-center gap-2 text-error-foreground hover:bg-error-bg focus:bg-error-bg",
+                        "cursor-pointer flex items-center gap-2",
+                        isAdmin ? 'text-red-600 focus:text-red-700 focus:bg-red-50' : 'text-red-600 focus:text-red-700 focus:bg-red-50'
                       )}
                     >
                       <LogOut className="h-4 w-4" />

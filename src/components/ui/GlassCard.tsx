@@ -1,28 +1,28 @@
-import React from 'react';
-import { cn } from '@/lib/utils';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './card';
+import * as React from "react";
+import { cn } from "@/lib/utils";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
+
+// Re-exportando os subcomponentes para manter a API familiar do shadcn/ui
+export { CardHeader, CardTitle, CardDescription, CardContent, CardFooter };
 
 interface GlassCardProps extends React.ComponentPropsWithoutRef<typeof Card> {
   // Adicione props específicas se necessário
 }
 
+/**
+ * Um componente Card que aplica automaticamente o estilo 'glass-morphism'
+ * para consistência visual em toda a aplicação.
+ */
 export const GlassCard = React.forwardRef<HTMLDivElement, GlassCardProps>(
-  ({ className, children, ...props }, ref) => (
+  ({ className, ...props }, ref) => (
     <Card
       ref={ref}
       className={cn(
-        "glass-card", // Classe CSS definida em index.css
-        "rounded-lg p-0 border-border", // Usando border-border
-        "transition-all duration-300",
+        "glass-card transition-all duration-300 hover:shadow-xl",
         className
       )}
       {...props}
-    >
-      {children}
-    </Card>
+    />
   )
 );
 GlassCard.displayName = "GlassCard";
-
-// Exportando os subcomponentes para manter a compatibilidade
-export { CardContent, CardDescription, CardFooter, CardHeader, CardTitle };

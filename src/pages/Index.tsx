@@ -62,8 +62,6 @@ const Index = () => {
   const handleGenerateQrCode = (chromebookId: string) => {
     setSelectedChromebookId(chromebookId);
     setShowQRCodeModal(true);
-    // REMOVIDO: Lógica de QuickRegister
-    setCurrentView('inventory');
   };
 
   const handleRegistrationSuccess = (newChromebook: any) => {
@@ -119,7 +117,7 @@ const Index = () => {
       case 'inventory': return 'Hub de Inventário';
       case 'loan': return 'Empréstimos';
       case 'return': return 'Registrar Devolução';
-      case 'audit': return 'Contagem de Chromebooks'; // RENOMEADO
+      case 'audit': return 'Sistema de Contagem';
       // REMOVIDO: case 'quick-register': return 'Re-Cadastro Rápido';
       default: return 'Zelote';
     }
@@ -131,7 +129,7 @@ const Index = () => {
       case 'inventory': return 'Visualize e gerencie o inventário';
       case 'loan': return 'Realize novos empréstimos e veja ativos';
       case 'return': return 'Registre a devolução de equipamentos';
-      case 'audit': return 'Realize a contagem física do inventário'; // MANTIDO O SUBTITLE
+      case 'audit': return 'Realize a contagem física do inventário';
       // REMOVIDO: case 'quick-register': return 'Re-cadastre um Chromebook rapidamente';
       default: return 'Controle de Chromebooks';
     }
