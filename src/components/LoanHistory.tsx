@@ -73,12 +73,12 @@ export function LoanHistory({ history, isNewLoan }: LoanHistoryProps) {
   const getStatusBadgeProps = (status: LoanHistoryItem['status']) => {
     switch (status) {
       case 'devolvido':
-        return { variant: "default", className: "bg-green-100 text-green-800 hover:bg-green-100", cardClass: "border-green-200/50" };
+        return { variant: "default", className: "bg-green-100 text-green-800 hover:bg-green-100 dark:bg-green-900 dark:text-green-300", cardClass: "border-green-200/50" };
       case 'atrasado':
-        return { variant: "destructive", className: "", cardClass: "border-red-300 bg-red-50/50 shadow-lg" };
+        return { variant: "destructive", className: "", cardClass: "border-red-300 bg-red-50/50 shadow-lg dark:bg-red-950/50 dark:border-red-900" };
       case 'ativo':
       default:
-        return { variant: "secondary", className: "bg-yellow-100 text-yellow-800 hover:bg-yellow-100", cardClass: "border-yellow-200/50" };
+        return { variant: "secondary", className: "bg-yellow-100 text-yellow-800 hover:bg-yellow-100 dark:bg-yellow-900 dark:text-yellow-300", cardClass: "border-yellow-200/50" };
     }
   };
 
@@ -235,7 +235,7 @@ export function LoanHistory({ history, isNewLoan }: LoanHistoryProps) {
                         {loan.user_type}
                       </Badge>
                       {loan.loan_type === 'lote' && (
-                        <Badge className="bg-orange-100 text-orange-800 hover:bg-orange-100">
+                        <Badge className="bg-orange-100 text-orange-800 hover:bg-orange-100 dark:bg-orange-900 dark:text-orange-300">
                           Lote
                         </Badge>
                       )}
@@ -250,20 +250,20 @@ export function LoanHistory({ history, isNewLoan }: LoanHistoryProps) {
                     {/* Timeline */}
                     <div className="space-y-3">
                       {/* Empréstimo */}
-                      <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                      <div className="bg-green-50 border border-green-200 rounded-lg p-3 dark:bg-green-950/50 dark:border-green-900">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
-                            <CheckCircle className="h-4 w-4 text-green-600" />
-                            <span className="font-medium text-green-800">Empréstimo realizado</span>
+                            <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
+                            <span className="font-medium text-green-800 dark:text-green-300">Empréstimo realizado</span>
                           </div>
-                          <span className="text-sm text-green-700">
+                          <span className="text-sm text-green-700 dark:text-green-400">
                             {format(new Date(loan.loan_date), "dd/MM/yyyy 'às' HH:mm")}
                           </span>
                         </div>
                         
                         {/* Prazo Esperado */}
                         {loan.expected_return_date && (
-                          <div className="mt-2 pt-2 border-t border-green-200 flex items-center justify-between text-sm">
+                          <div className="mt-2 pt-2 border-t border-green-200 dark:border-green-800 flex items-center justify-between text-sm">
                             <div className="flex items-center gap-2 text-muted-foreground">
                               <CalendarX className="h-4 w-4" />
                               <span className="font-medium">Prazo Esperado:</span>
@@ -279,24 +279,24 @@ export function LoanHistory({ history, isNewLoan }: LoanHistoryProps) {
                       {isReturned && loan.return_date && (
                         <div className={`border rounded-lg p-3 ${
                           isLateReturn 
-                            ? 'bg-red-50 border-red-200' 
-                            : 'bg-blue-50 border-blue-200'
+                            ? 'bg-red-50 border-red-200 dark:bg-red-950/50 dark:border-red-900' 
+                            : 'bg-blue-50 border-blue-200 dark:bg-blue-950/50 dark:border-blue-900'
                         }`}>
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                               {isLateReturn ? (
-                                <AlertTriangle className="h-4 w-4 text-red-600" />
+                                <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400" />
                               ) : (
-                                <RotateCcw className="h-4 w-4 text-blue-600" />
+                                <RotateCcw className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                               )}
                               <span className={`font-medium ${
-                                isLateReturn ? 'text-red-800' : 'text-blue-800'
+                                isLateReturn ? 'text-red-800 dark:text-red-300' : 'text-blue-800 dark:text-blue-300'
                               }`}>
                                 Devolução realizada
                               </span>
                             </div>
                             <span className={`text-sm ${
-                              isLateReturn ? 'text-red-700' : 'text-blue-700'
+                              isLateReturn ? 'text-red-700 dark:text-red-400' : 'text-blue-700 dark:text-blue-400'
                             }`}>
                               {format(new Date(loan.return_date), "dd/MM/yyyy 'às' HH:mm")}
                             </span>

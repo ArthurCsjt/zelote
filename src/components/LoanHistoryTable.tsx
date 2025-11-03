@@ -24,12 +24,12 @@ export const LoanHistoryTable: React.FC<LoanHistoryTableProps> = ({ history, isN
   const getStatusProps = (status: LoanHistoryItem['status']) => {
     switch (status) {
       case 'devolvido':
-        return { color: 'text-green-700', bg: 'bg-green-100', icon: CheckCircle, label: 'Devolvido' };
+        return { color: 'text-green-700 dark:text-green-300', bg: 'bg-green-100 dark:bg-green-900', icon: CheckCircle, label: 'Devolvido' };
       case 'atrasado':
-        return { color: 'text-red-700', bg: 'bg-red-100', icon: AlertTriangle, label: 'Atrasado' };
+        return { color: 'text-red-700 dark:text-red-300', bg: 'bg-red-100 dark:bg-red-900', icon: AlertTriangle, label: 'Atrasado' };
       case 'ativo':
       default:
-        return { color: 'text-yellow-700', bg: 'bg-yellow-100', icon: Clock, label: 'Ativo' };
+        return { color: 'text-yellow-700 dark:text-yellow-300', bg: 'bg-yellow-100 dark:bg-yellow-900', icon: Clock, label: 'Ativo' };
     }
   };
 
@@ -56,7 +56,7 @@ export const LoanHistoryTable: React.FC<LoanHistoryTableProps> = ({ history, isN
               <TableRow 
                 key={loan.id} 
                 className={cn(
-                  loan.status === 'atrasado' && 'bg-red-50/50 hover:bg-red-100/50',
+                  loan.status === 'atrasado' && 'bg-red-50/50 hover:bg-red-100/50 dark:bg-red-950/50 dark:hover:bg-red-900/50',
                   isRecent && 'border-l-4 border-blue-500'
                 )}
               >
@@ -89,7 +89,7 @@ export const LoanHistoryTable: React.FC<LoanHistoryTableProps> = ({ history, isN
                   {loan.return_date ? (
                     <span className={cn(
                         "font-medium",
-                        loan.status === 'atrasado' ? 'text-red-600' : 'text-gray-700'
+                        loan.status === 'atrasado' ? 'text-red-600 dark:text-red-400' : 'text-gray-700 dark:text-gray-300'
                     )}>
                         {format(new Date(loan.return_date), "dd/MM/yyyy HH:mm")}
                     </span>
