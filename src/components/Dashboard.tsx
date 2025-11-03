@@ -67,7 +67,7 @@ type DetailModalState = {
 };
 
 // Componente auxiliar para renderizar o grid de estatísticas
-const StatsGrid = ({ periodView, stats, history, isMounted }: any) => {
+const StatsGrid = ({ periodView, stats, history, isMounted, onCardClick }: any) => {
   if (periodView === 'history' || periodView === 'reports') return null;
 
   // Desestruturação segura, usando valores padrão se stats for null/undefined
@@ -80,7 +80,7 @@ const StatsGrid = ({ periodView, stats, history, isMounted }: any) => {
     averageUsageTime = 0, 
     completionRate = 0, 
     maxOccupancyRate = 0,
-    occupancyRateColor = 'green',
+    occupancyRate = 'green',
   } = stats || {};
 
   // Função para determinar se o empréstimo está em atraso
@@ -98,7 +98,7 @@ const StatsGrid = ({ periodView, stats, history, isMounted }: any) => {
   };
   
   const usageColors = getColorClasses(usageRateColor);
-  const picoColors = getColorClasses(occupancyRateColor);
+  const picoColors = getColorClasses(occupancyRate);
 
   const getAnimationClass = (delay: number) => 
     isMounted ? `animate-fadeIn animation-delay-${delay}` : 'opacity-0';
@@ -297,6 +297,9 @@ const PeriodCharts = ({ periodView, loading, periodChartData, stats, isNewLoan, 
     text: theme === 'dark' ? 'hsl(210 40% 98%)' : 'hsl(222.2 84% 4.9%)',
     background: theme === 'dark' ? 'hsl(217.2 32.6% 15%)' : 'hsl(0 0% 100%)',
   };
+  
+  // DEFINIÇÃO CORRIGIDA DE PIE_COLORS
+  const PIE_COLORS = [chartColors.primary, chartColors.success];
   
   if (loading) {
     return <div className="flex justify-center items-center h-64"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
@@ -610,7 +613,6 @@ const PeriodCharts = ({ periodView, loading, periodChartData, stats, isNewLoan, 
 
 // Exportação nomeada do componente
 export function Dashboard({ onBack }: DashboardProps) {
-  // Removendo os estados de filtro de data/hora
   const { refreshData, loading, history, chromebooks, periodChartData, stats } = useDashboardData();
   const { refresh: refreshOverdue } = useOverdueLoans();
   const [isMounted, setIsMounted] = useState(false);
@@ -689,8 +691,6 @@ export function Dashboard({ onBack }: DashboardProps) {
         iconColor="text-menu-dark-blue"
         className="flex flex-col items-center"
       />
-      
-      {/* Removendo o CollapsibleDashboardFilter */}
       
       {/* Tabs de Visualização */}
       <Tabs value={periodView} onValueChange={(v) => setPeriodView(v as PeriodView)}>
