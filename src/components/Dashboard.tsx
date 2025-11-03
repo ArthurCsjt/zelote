@@ -621,6 +621,6 @@ const PeriodCharts = ({ periodView, loading, periodChartData, stats, startHour, 
         dataType={detailModal.dataType}
       />
       
-    </div>
+    </>
   );
 }
