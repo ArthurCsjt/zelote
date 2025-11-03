@@ -141,6 +141,20 @@ const Layout: React.FC<LayoutProps> = ({
                 </PopoverContent>
               </Popover>
               
+              {/* Botão de Alternância de Tema */}
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                className="h-9 w-9"
+              >
+                {theme === 'dark' ? (
+                  <Sun className="h-5 w-5 text-yellow-400" />
+                ) : (
+                  <Moon className="h-5 w-5 text-gray-600" />
+                )}
+              </Button>
+              
               {/* Dropdown de Perfil (Email Clicável) */}
               {user && (
                 <DropdownMenu>

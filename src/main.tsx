@@ -68,6 +68,8 @@ createRoot(document.getElementById("root")!).render(
   <>
     {/* Configuração do Sonner para notificações modernas com Glassmorphism */}
     <Toaster 
+      // Adicionando o atributo theme para Sonner seguir o tema do HTML
+      theme={document.documentElement.classList.contains('dark') ? 'dark' : 'light'}
       // Usamos top-center para melhor visualização em mobile
       position="top-center" 
       richColors 
