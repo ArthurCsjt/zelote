@@ -107,7 +107,7 @@ export const CollapsibleDashboardFilter: React.FC<CollapsibleDashboardFilterProp
           <div className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50/50 transition-colors rounded-t-xl">
             <div className="flex items-center gap-2">
               <CalendarRange className="h-5 w-5 text-blue-600" />
-              <h3 className="text-lg font-semibold text-gray-800">Intervalo de Análise</h3>
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Intervalo de Análise</h3>
               {isFilterInvalid && (
                 <AlertTriangle className="h-4 w-4 text-destructive" title="Filtro de hora inválido" />
               )}
@@ -116,7 +116,7 @@ export const CollapsibleDashboardFilter: React.FC<CollapsibleDashboardFilterProp
           </div>
         </CollapsibleTrigger>
         
-        <CollapsibleContent className="space-y-4 p-4 pt-0 border-t border-gray-100">
+        <CollapsibleContent className="space-y-4 p-4 pt-0 border-t border-gray-100 dark:border-border">
           
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             
@@ -130,7 +130,7 @@ export const CollapsibleDashboardFilter: React.FC<CollapsibleDashboardFilterProp
                   <Button
                     variant="outline"
                     className={cn(
-                      "w-full justify-start text-left font-normal",
+                      "w-full justify-start text-left font-normal bg-input dark:bg-input dark:border-border", // CORREÇÃO APLICADA AQUI
                       !startDate && "text-muted-foreground"
                     )}
                     disabled={loading}
@@ -159,7 +159,7 @@ export const CollapsibleDashboardFilter: React.FC<CollapsibleDashboardFilterProp
                   <Button
                     variant="outline"
                     className={cn(
-                      "w-full justify-start text-left font-normal",
+                      "w-full justify-start text-left font-normal bg-input dark:bg-input dark:border-border", // CORREÇÃO APLICADA AQUI
                       !endDate && "text-muted-foreground"
                     )}
                     disabled={loading}
@@ -194,7 +194,7 @@ export const CollapsibleDashboardFilter: React.FC<CollapsibleDashboardFilterProp
                 value={startHour}
                 onChange={(e) => handleHourChange(parseInt(e.target.value) || 0, 'start')}
                 disabled={loading}
-                className="text-center"
+                className="text-center bg-input dark:bg-input dark:border-border" // CORREÇÃO APLICADA AQUI
               />
             </div>
 
@@ -211,7 +211,7 @@ export const CollapsibleDashboardFilter: React.FC<CollapsibleDashboardFilterProp
                 value={endHour}
                 onChange={(e) => handleHourChange(parseInt(e.target.value) || 0, 'end')}
                 disabled={loading}
-                className="text-center"
+                className="text-center bg-input dark:bg-input dark:border-border" // CORREÇÃO APLICADA AQUI
               />
             </div>
             
