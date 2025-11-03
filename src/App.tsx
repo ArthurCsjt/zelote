@@ -32,6 +32,23 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 const ToasterWrapper = () => {
   const { theme } = useTheme();
   
+  // Definindo estilos baseados no tema
+  const toastStyle = theme === 'dark' ? {
+    // Dark Mode: Fundo semi-transparente escuro
+    backgroundColor: 'rgba(34, 34, 34, 0.95)', // Cor escura customizada
+    backdropFilter: 'blur(20px)',
+    WebkitBackdropFilter: 'blur(20px)',
+    border: '1px solid rgba(80, 80, 80, 0.7)', // Borda mais escura
+    color: 'hsl(0 0% 98%)', // Texto claro
+  } : {
+    // Light Mode: Fundo semi-transparente claro
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    backdropFilter: 'blur(20px)',
+    WebkitBackdropFilter: 'blur(20px)',
+    border: '1px solid rgba(220, 220, 220, 0.7)',
+    color: 'hsl(240 10% 3.9%)', // Texto escuro
+  };
+
   return (
     <Toaster 
       theme={theme} // Passando o tema dinamicamente
@@ -40,15 +57,11 @@ const ToasterWrapper = () => {
       closeButton 
       className="z-[9999]"
       toastOptions={{
-        className: 'shadow-xl border-gray-200',
+        className: 'shadow-xl',
         style: {
           padding: '12px 16px',
           borderRadius: '12px',
-          // Estilos Glassmorphism aprimorados
-          backgroundColor: 'rgba(255, 255, 255, 0.95)', // Mais opaco
-          backdropFilter: 'blur(20px)', // Mais blur
-          WebkitBackdropFilter: 'blur(20px)',
-          border: '1px solid rgba(220, 220, 220, 0.7)', // Borda mais suave
+          ...toastStyle, // Aplicando estilos dinâmicos
         },
       }}
     />

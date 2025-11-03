@@ -20,13 +20,15 @@ function toast({ title, description, variant = 'default', duration = 4000 }: Toa
     style: {
       // Estilo para Destructive (vermelho)
       ...(variant === 'destructive' && {
-        backgroundColor: 'hsl(0 84.2% 60.2%)', // Cor Destructive
+        // Usando a cor Destructive do Tailwind (0 84.2% 60.2%)
+        backgroundColor: 'hsl(0 84.2% 60.2%)', 
         color: 'white',
         border: '1px solid hsl(0 84.2% 60.2%)',
       }),
       // Estilo para Success (verde)
       ...(variant === 'success' && {
-        backgroundColor: 'hsl(142 76% 36%)', // Cor menu-green
+        // Usando a cor menu-green (142 76% 36%)
+        backgroundColor: 'hsl(142 76% 36%)', 
         color: 'white',
         border: '1px solid hsl(142 76% 36%)',
       }),
