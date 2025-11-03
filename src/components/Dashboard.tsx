@@ -17,7 +17,6 @@ import { LoanHistory } from "./LoanHistory";
 import { GlassCard } from "./ui/GlassCard";
 import { useDashboardData, PeriodView } from '@/hooks/useDashboardData';
 import { Skeleton } from "./ui/skeleton";
-// Removendo importação de CollapsibleDashboardFilter
 import { Tooltip as ShadcnTooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { SectionHeader } from "./Shared/SectionHeader";
@@ -80,7 +79,7 @@ const StatsGrid = ({ periodView, stats, history, isMounted, onCardClick }: any) 
     averageUsageTime = 0, 
     completionRate = 0, 
     maxOccupancyRate = 0,
-    occupancyRate = 'green',
+    occupancyRateColor = 'green',
   } = stats || {};
 
   // Função para determinar se o empréstimo está em atraso
@@ -98,7 +97,7 @@ const StatsGrid = ({ periodView, stats, history, isMounted, onCardClick }: any) 
   };
   
   const usageColors = getColorClasses(usageRateColor);
-  const picoColors = getColorClasses(occupancyRate);
+  const picoColors = getColorClasses(occupancyRateColor);
 
   const getAnimationClass = (delay: number) => 
     isMounted ? `animate-fadeIn animation-delay-${delay}` : 'opacity-0';
@@ -620,7 +619,7 @@ export function Dashboard({ onBack }: DashboardProps) {
   // Estado para a visualização (charts, history, reports)
   const [periodView, setPeriodView] = useState<PeriodView>('charts');
   
-  // Estado para o modal de detalhes
+  // Estado para o modal de detalhes (MOVIDO PARA O ESCOPO CORRETO)
   const [detailModal, setDetailModal] = useState<DetailModalState>({
     open: false,
     title: '',
@@ -641,7 +640,7 @@ export function Dashboard({ onBack }: DashboardProps) {
     return differenceInMinutes(new Date(), loanDate) < 5; // Novo se criado nos últimos 5 minutos
   }, []);
   
-  // Função para lidar com o clique nos cards de estatísticas
+  // Função para lidar com o clique nos cards de estatísticas (MOVIDO PARA O ESCOPO CORRETO)
   const handleCardClick = useCallback(async (title: string, description: string, dataType: 'chromebooks' | 'loans', data: DetailItem[] | null = null, statusFilter?: Chromebook['status']) => {
     setDetailModal({
       open: true,
@@ -759,7 +758,7 @@ export function Dashboard({ onBack }: DashboardProps) {
         </TabsContent>
       </Tabs>
       
-      {/* Modal de Detalhes */}
+      {/* Modal de Detalhes (AGORA NO ESCOPO CORRETO) */}
       <DashboardDetailDialog
         open={detailModal.open}
         onOpenChange={(open) => setDetailModal(prev => ({ ...prev, open }))}
