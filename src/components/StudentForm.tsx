@@ -115,23 +115,52 @@ export function StudentForm() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="nomeCompleto">Nome Completo *</Label>
-              <Input id="nomeCompleto" value={formData.nomeCompleto} onChange={handleInputChange('nomeCompleto')} placeholder="Digite o nome completo" required />
+              <Input 
+                id="nomeCompleto" 
+                value={formData.nomeCompleto} 
+                onChange={handleInputChange('nomeCompleto')} 
+                placeholder="Digite o nome completo" 
+                required 
+                className="dark:bg-input dark:border-border"
+              />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="ra">RA (Registro do Aluno) *</Label>
-              <Input id="ra" value={formData.ra} onChange={handleInputChange('ra')} placeholder="Digite o RA" required />
+              <Input 
+                id="ra" 
+                value={formData.ra} 
+                onChange={handleInputChange('ra')} 
+                placeholder="Digite o RA" 
+                required 
+                className="dark:bg-input dark:border-border"
+              />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="email">E-mail *</Label>
-              <Input id="email" type="email" value={formData.email} onChange={handleEmailChange} placeholder="aluno@sj.g12.br" required className={emailError ? 'border-destructive' : ''} />
+              <Input 
+                id="email" 
+                type="email" 
+                value={formData.email} 
+                onChange={handleEmailChange} 
+                placeholder="aluno@sj.g12.br" 
+                required 
+                className={emailError ? 'border-destructive dark:bg-input dark:border-destructive' : 'dark:bg-input dark:border-border'} 
+              />
               {emailError && <p className="text-sm text-destructive">{emailError}</p>}
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="turma">Turma *</Label>
-              <Input id="turma" value={formData.turma} onChange={handleInputChange('turma')} placeholder="Digite a turma" required />
+              <Input 
+                id="turma" 
+                value={formData.turma} 
+                onChange={handleInputChange('turma')} 
+                placeholder="Digite a turma" 
+                required 
+                className="dark:bg-input dark:border-border"
+              />
             </div>
           </div>
 
