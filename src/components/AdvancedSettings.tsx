@@ -47,7 +47,7 @@ export function AdvancedSettings() {
 
   return (
     <div className="space-y-4">
-      <div className="border border-destructive/20 rounded-lg p-4 bg-destructive/5">
+      <div className="border border-destructive/20 rounded-lg p-4 bg-destructive/5 dark:bg-destructive/10 dark:border-destructive/50">
         <h3 className="font-semibold text-destructive mb-2 flex items-center gap-2">
           <AlertTriangle className="h-5 w-5" />
           Reiniciar Cadastros de Alunos
@@ -67,23 +67,23 @@ export function AdvancedSettings() {
       </div>
 
       <Dialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-[425px] dark:bg-card dark:border-border">
           <DialogHeader>
             <DialogTitle className="text-destructive">
               Confirmar Exclusão Permanente de Todos os Alunos
             </DialogTitle>
             <DialogDescription className="space-y-2">
-              <div className="p-3 bg-destructive/10 border border-destructive/20 rounded">
+              <div className="p-3 bg-destructive/10 border border-destructive/20 rounded dark:bg-destructive/20 dark:border-destructive/50">
                 <p className="font-semibold text-destructive">
                   Atenção! Esta é uma ação irreversível.
                 </p>
-                <p className="text-sm">
+                <p className="text-sm text-muted-foreground">
                   Você tem certeza de que deseja apagar todos os registros de alunos do banco de dados?
                 </p>
               </div>
-              <p className="text-sm font-medium">
+              <p className="text-sm font-medium dark:text-foreground">
                 Para confirmar, por favor, digite a frase{" "}
-                <code className="bg-muted px-1 py-0.5 rounded text-xs">
+                <code className="bg-muted px-1 py-0.5 rounded text-xs dark:bg-gray-700 dark:text-gray-200">
                   APAGAR TODOS OS ALUNOS
                 </code>{" "}
                 no campo abaixo.
@@ -98,7 +98,7 @@ export function AdvancedSettings() {
                 value={confirmationText}
                 onChange={(e) => setConfirmationText(e.target.value)}
                 placeholder="Digite a frase de confirmação"
-                className="mt-1"
+                className="mt-1 dark:bg-input dark:border-border"
               />
             </div>
           </div>
