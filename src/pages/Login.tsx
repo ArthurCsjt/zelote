@@ -160,18 +160,6 @@ const Login = () => {
   };
 
   // --- Renderização Condicional ---
-
-  const renderHeader = (title: string, description: string, Icon: React.ElementType, colorClass: string) => (
-    <CardHeader className={cn("space-y-1 text-center pb-6", colorClass)}>
-      <div className="flex justify-center mb-4">
-        <div className="p-3 rounded-full bg-white/50 shadow-md">
-          <Icon className="h-10 w-10 text-current" />
-        </div>
-      </div>
-      <CardTitle className="text-2xl font-bold text-gray-800">{title}</CardTitle>
-      <CardDescription className="text-gray-600">{description}</CardDescription>
-    </CardHeader>
-  );
   
   // NOVO RENDER HEADER MINIMALISTA
   const renderMinimalHeader = (title: string, description: string, Icon: React.ElementType) => (

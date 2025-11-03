@@ -18,6 +18,7 @@ import { LoanHub } from "@/components/LoanHub";
 import { useDatabase } from "@/hooks/useDatabase";
 import { QuickRegisterWrapper } from '@/components/QuickRegisterWrapper';
 import { ReturnWrapper } from '@/components/ReturnWrapper'; // NOVO IMPORT
+import { cn } from '@/lib/utils'; // Importando cn
 
 // ATUALIZADO: Removendo 'quick-register' do tipo de rota
 type AppView = 'menu' | 'registration' | 'dashboard' | 'inventory' | 'loan' | 'audit' | 'return';
@@ -139,6 +140,11 @@ const Index = () => {
   
   const loading = dbLoading || roleLoading;
 
+  // NOVO: Classe de fundo para o menu principal
+  const menuBackgroundClass = currentView === 'menu' 
+    ? 'bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-900 dark:to-gray-800' 
+    : 'bg-background'; // Usa o fundo padrão do tema para outras views
+
   return (
     // ADIÇÃO: Envolvemos tudo com o AuditProvider
     <AuditProvider>
@@ -151,6 +157,8 @@ const Index = () => {
         user={user}
         isAdmin={isAdmin}
         logout={logout}
+        // Passando a classe de fundo para o Layout
+        backgroundClass={menuBackgroundClass} 
       >
         {loading && currentView !== 'menu' ? <div className="flex justify-center items-center h-64"><LoadingSpinner/></div> : renderCurrentView()}
         {/* REMOVIDO: ReturnDialog */}

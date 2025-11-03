@@ -16,13 +16,16 @@ interface LayoutProps {
   subtitle?: string;
   showBackButton?: boolean;
   onBack?: () => void; // Função de callback para o botão de voltar
+  // NOVO: Propriedade para classe de fundo
+  backgroundClass?: string; 
 }
 const Layout: React.FC<LayoutProps> = ({
   children,
   title,
   subtitle,
   showBackButton,
-  onBack
+  onBack,
+  backgroundClass = 'bg-background' // Padrão para bg-background
 }) => {
   const {
     user,
@@ -100,7 +103,7 @@ const Layout: React.FC<LayoutProps> = ({
   };
 
   return (
-    <div className={`min-h-screen bg-background text-foreground ${isStandalone ? 'safe-area-top safe-area-bottom safe-area-left safe-area-right' : ''}`}>
+    <div className={cn(`min-h-screen text-foreground ${isStandalone ? 'safe-area-top safe-area-bottom safe-area-left safe-area-right' : ''}`, backgroundClass)}>
       {/* Status Bar Overlay for iOS in standalone mode */}
       {isStandalone && <div className="status-bar-overlay" />}
 
