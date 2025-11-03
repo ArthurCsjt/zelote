@@ -17,6 +17,7 @@ import NotFound from "./pages/NotFound";
 import Settings from "./pages/Settings";
 import { PrintPreviewPage } from "./pages/PrintPreviewPage"; // NOVO IMPORT
 import Layout from "./components/Layout"; // Importando Layout
+import { cn } from "./lib/utils"; // IMPORTANDO CN AQUI
 
 const queryClient = new QueryClient();
 
