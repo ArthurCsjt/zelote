@@ -134,6 +134,7 @@ export const AuditScanner = () => {
                     onChange={(e) => setManualId(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleAddManualId()}
                     autoComplete="off"
+                    className="dark:bg-input dark:border-border"
                   />
                   <Button onClick={handleAddManualId} disabled={!manualId.trim() || isProcessing} variant="secondary">
                     <PlusCircle className="h-4 w-4" />

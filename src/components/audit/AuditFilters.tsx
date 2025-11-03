@@ -63,7 +63,7 @@ export const AuditFiltersComponent: React.FC<AuditFiltersProps> = ({
                 placeholder="ID, modelo ou localização..."
                 value={filters.search || ''}
                 onChange={(e) => updateFilter('search', e.target.value)}
-                className="pl-8"
+                className="pl-8 dark:bg-input dark:border-border"
               />
             </div>
           </div>
@@ -75,7 +75,7 @@ export const AuditFiltersComponent: React.FC<AuditFiltersProps> = ({
               value={filters.location || 'all-locations'}
               onValueChange={(value) => updateFilter('location', value === 'all-locations' ? undefined : value)}
             >
-              <SelectTrigger>
+              <SelectTrigger className="dark:bg-input dark:border-border">
                 <SelectValue placeholder="Todas as localizações" />
               </SelectTrigger>
               <SelectContent>
@@ -96,7 +96,7 @@ export const AuditFiltersComponent: React.FC<AuditFiltersProps> = ({
               value={filters.scanMethod || 'all'}
               onValueChange={(value) => updateFilter('scanMethod', value as any)}
             >
-              <SelectTrigger>
+              <SelectTrigger className="dark:bg-input dark:border-border">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
