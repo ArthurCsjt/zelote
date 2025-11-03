@@ -264,7 +264,7 @@
 }
 
 /* ======================================================================== */
-/* NOVO: Animação de Fundo para o Menu Principal (Mais Visível) */
+/* NOVO: Animação de Fundo para o Menu Principal (Sutil e Moderado) */
 /* ======================================================================== */
 
 @keyframes bg-pan {
@@ -280,30 +280,30 @@
 }
 
 .animated-menu-bg {
-  /* Aumenta o tamanho do gradiente para que o movimento seja notável */
-  background-size: 400% 400%; 
-  /* Aplica a animação: 20s de duração, linear, infinito */
+  /* Reduzindo o tamanho do gradiente para 200% */
+  background-size: 200% 200%; 
+  /* Mantendo a velocidade moderada */
   animation: bg-pan 20s linear infinite;
 }
 
-/* Light Mode Gradient */
+/* Light Mode Gradient (Tons de cinza e azul muito claros) */
 .light .animated-menu-bg {
   background-image: linear-gradient(
     -45deg, 
     hsl(var(--background)) 0%, 
-    hsl(213 94% 95%) 25%, 
-    hsl(258 70% 95%) 50%, 
+    hsl(210 40% 98%) 25%, /* Cinza muito claro */
+    hsl(213 94% 98%) 50%, /* Azul muito claro */
     hsl(var(--background)) 100%
   );
 }
 
-/* Dark Mode Gradient */
+/* Dark Mode Gradient (Tons de cinza escuro e azul escuro sutil) */
 .dark .animated-menu-bg {
   background-image: linear-gradient(
     -45deg, 
     hsl(220 10% 10%) 0%, 
-    hsl(213 100% 20%) 25%, 
-    hsl(258 70% 20%) 50%, 
+    hsl(220 10% 15%) 25%, /* Cinza escuro */
+    hsl(213 100% 15%) 50%, /* Azul escuro sutil */
     hsl(220 10% 10%) 100%
   );
 }
