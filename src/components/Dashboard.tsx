@@ -284,7 +284,7 @@ const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = []
 
 
 // Componente para renderizar os gráficos de acordo com o período
-const PeriodCharts = ({ periodView, loading, periodChartData, stats, startHour, endHour, totalChromebooks, availableChromebooks, userTypeData, durationData, isNewLoan, history, isMounted }: any) => {
+const PeriodCharts = ({ periodView, loading, periodChartData, stats, startHour, endHour, totalChromebooks, availableChromebooks, userTypeData, durationData, isNewLoan, history, isMounted, filteredLoans = [], filteredReturns = [] }: any) => {
   const { theme } = useTheme();
   
   // Cores adaptativas para Recharts
@@ -329,8 +329,6 @@ const PeriodCharts = ({ periodView, loading, periodChartData, stats, startHour, 
   const { 
     totalActive = 0, 
     loansByUserType = {},
-    filteredLoans = [], 
-    filteredReturns = [], 
     topLoanContexts = [], 
   } = stats || {};
 
@@ -623,11 +621,11 @@ const PeriodCharts = ({ periodView, loading, periodChartData, stats, startHour, 
       
     </>
   );
-};
+}
 
 // Exportação nomeada do componente
 export function Dashboard({ onBack }: DashboardProps) {
-  const { refreshData, loading, history, chromebooks, filteredLoans, filteredReturns, periodChartData, stats } = useDashboardData(null, null);
+  const { refreshData, loading, history, chromebooks, filteredLoans = [], filteredReturns = [], periodChartData, stats } = useDashboardData(null, null);
   const { refresh: refreshOverdue } = useOverdueLoans();
   const [isMounted, setIsMounted] = useState(false);
   
@@ -786,6 +784,8 @@ export function Dashboard({ onBack }: DashboardProps) {
             isNewLoan={isNewLoan}
             history={history}
             isMounted={isMounted}
+            filteredLoans={filteredLoans}
+            filteredReturns={filteredReturns}
           />
         </TabsContent>
 
@@ -795,6 +795,8 @@ export function Dashboard({ onBack }: DashboardProps) {
             loading={loading} 
             history={history} 
             isNewLoan={isNewLoan}
+            filteredLoans={filteredLoans}
+            filteredReturns={filteredReturns}
           />
         </TabsContent>
         
