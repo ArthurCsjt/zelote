@@ -35,16 +35,16 @@ export const ActiveLoansTable: React.FC<ActiveLoansTableProps> = ({ loans, onNav
   };
 
   return (
-    <div className="border rounded-xl overflow-hidden bg-white/80 backdrop-blur-sm shadow-lg">
+    <div className="border rounded-xl overflow-hidden bg-white/80 backdrop-blur-sm shadow-lg dark:bg-card/80 dark:border-border">
       <Table>
-        <TableHeader>
+        <TableHeader className="bg-gray-100 dark:bg-muted/50">
           <TableRow>
-            <TableHead className="w-[150px]">ID Chromebook</TableHead>
-            <TableHead className="w-[200px]">Solicitante</TableHead>
-            <TableHead className="hidden sm:table-cell">Finalidade</TableHead>
-            <TableHead className="w-[150px] hidden md:table-cell">Empréstimo</TableHead>
-            <TableHead className="w-[150px]">Prazo</TableHead>
-            <TableHead className="w-[100px] text-right">Ações</TableHead>
+            <TableHead className="w-[150px] text-gray-700 dark:text-gray-300">ID Chromebook</TableHead>
+            <TableHead className="w-[200px] text-gray-700 dark:text-gray-300">Solicitante</TableHead>
+            <TableHead className="hidden sm:table-cell text-gray-700 dark:text-gray-300">Finalidade</TableHead>
+            <TableHead className="w-[150px] hidden md:table-cell text-gray-700 dark:text-gray-300">Empréstimo</TableHead>
+            <TableHead className="w-[150px] text-gray-700 dark:text-gray-300">Prazo</TableHead>
+            <TableHead className="w-[100px] text-right text-gray-700 dark:text-gray-300">Ações</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -56,24 +56,26 @@ export const ActiveLoansTable: React.FC<ActiveLoansTableProps> = ({ loans, onNav
               <TableRow 
                 key={loan.id} 
                 className={cn(
-                  overdueStatus && 'bg-red-50/50 hover:bg-red-100/50',
-                  dueSoonStatus && !overdueStatus && 'bg-amber-50/50 hover:bg-amber-100/50'
+                  // Fundo da linha no Dark Mode
+                  "dark:hover:bg-muted/50",
+                  overdueStatus && 'bg-red-50/50 hover:bg-red-100/50 dark:bg-red-950/50 dark:hover:bg-red-900/50',
+                  dueSoonStatus && !overdueStatus && 'bg-amber-50/50 hover:bg-amber-100/50 dark:bg-amber-950/50 dark:hover:bg-amber-900/50'
                 )}
               >
-                <TableCell className="font-medium text-sm flex items-center gap-2">
+                <TableCell className="font-medium text-sm flex items-center gap-2 dark:text-foreground">
                   <Monitor className="h-4 w-4 text-muted-foreground hidden sm:block" />
                   {loan.chromebook_id}
                 </TableCell>
                 <TableCell>
                   <div className="flex flex-col">
-                    <span className="font-medium text-sm">{loan.student_name}</span>
+                    <span className="font-medium text-sm dark:text-foreground">{loan.student_name}</span>
                     <span className="text-xs text-muted-foreground">{loan.student_email}</span>
                   </div>
                 </TableCell>
-                <TableCell className="hidden sm:table-cell text-xs max-w-[200px] truncate">
+                <TableCell className="hidden sm:table-cell text-xs max-w-[200px] truncate dark:text-muted-foreground">
                   {loan.purpose}
                 </TableCell>
-                <TableCell className="hidden md:table-cell text-xs">
+                <TableCell className="hidden md:table-cell text-xs dark:text-muted-foreground">
                   {format(new Date(loan.loan_date), "dd/MM/yyyy HH:mm")}
                 </TableCell>
                 <TableCell>
@@ -81,7 +83,7 @@ export const ActiveLoansTable: React.FC<ActiveLoansTableProps> = ({ loans, onNav
                     <div className="flex flex-col items-start">
                       <span className={cn(
                         "text-xs font-medium",
-                        overdueStatus ? 'text-red-600' : dueSoonStatus ? 'text-amber-600' : 'text-gray-700'
+                        overdueStatus ? 'text-red-600 dark:text-red-400' : dueSoonStatus ? 'text-amber-600 dark:text-amber-400' : 'text-gray-700 dark:text-gray-300'
                       )}>
                         {format(new Date(loan.expected_return_date), "dd/MM/yy HH:mm")}
                       </span>
@@ -89,14 +91,14 @@ export const ActiveLoansTable: React.FC<ActiveLoansTableProps> = ({ loans, onNav
                         variant={overdueStatus ? 'destructive' : dueSoonStatus ? 'outline' : 'secondary'}
                         className={cn(
                             "mt-1 w-fit",
-                            dueSoonStatus && !overdueStatus && "border-amber-400 text-amber-700 bg-amber-100"
+                            dueSoonStatus && !overdueStatus && "border-amber-400 text-amber-700 bg-amber-100 dark:bg-amber-900 dark:text-amber-300 dark:border-amber-700"
                         )}
                       >
                         {overdueStatus ? 'Atrasado' : dueSoonStatus ? 'Vence em breve' : 'Com prazo'}
                       </Badge>
                     </div>
                   ) : (
-                    <Badge variant="secondary">Sem prazo</Badge>
+                    <Badge variant="secondary" className="dark:bg-gray-700 dark:text-gray-300">Sem prazo</Badge>
                   )}
                 </TableCell>
                 <TableCell className="text-right">
