@@ -110,6 +110,7 @@ export function StaffRegistration() {
                 onChange={handleInputChange('nomeCompleto')} 
                 placeholder="Digite o nome completo" 
                 required 
+                className="dark:bg-input dark:border-border"
               />
             </div>
 
@@ -124,7 +125,7 @@ export function StaffRegistration() {
                   onChange={handleEmailChange} 
                   placeholder={`exemplo${DOMAIN_SUFFIX}`} 
                   required 
-                  className={emailError ? 'border-destructive focus-visible:ring-destructive' : ''}
+                  className={emailError ? 'border-destructive focus-visible:ring-destructive dark:bg-input dark:border-destructive' : 'dark:bg-input dark:border-border'}
                 />
                 {/* Exibe o sufixo do domínio como um helper visual */}
                 <span className="absolute right-2 top-1/2 transform -translate-y-1/2 text-xs text-muted-foreground pointer-events-none hidden sm:block">
