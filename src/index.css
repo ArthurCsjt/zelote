@@ -262,3 +262,48 @@
     grid-template-columns: repeat(4, 1fr);
   }
 }
+
+/* ======================================================================== */
+/* NOVO: Animação de Fundo para o Menu Principal (Mais Visível) */
+/* ======================================================================== */
+
+@keyframes bg-pan {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.animated-menu-bg {
+  /* Aumenta o tamanho do gradiente para que o movimento seja notável */
+  background-size: 400% 400%; 
+  /* Aplica a animação: 20s de duração, linear, infinito */
+  animation: bg-pan 20s linear infinite;
+}
+
+/* Light Mode Gradient */
+.light .animated-menu-bg {
+  background-image: linear-gradient(
+    -45deg, 
+    hsl(var(--background)) 0%, 
+    hsl(213 94% 95%) 25%, 
+    hsl(258 70% 95%) 50%, 
+    hsl(var(--background)) 100%
+  );
+}
+
+/* Dark Mode Gradient */
+.dark .animated-menu-bg {
+  background-image: linear-gradient(
+    -45deg, 
+    hsl(220 10% 10%) 0%, 
+    hsl(213 100% 20%) 25%, 
+    hsl(258 70% 20%) 50%, 
+    hsl(220 10% 10%) 100%
+  );
+}
