@@ -4,6 +4,7 @@ import App from './App.tsx'
 import './index.css'
 import { toast as sonnerToast, Toaster } from 'sonner' // Usando Sonner
 import { ToastAction } from "@/components/ui/toast" // Mantendo o import para o ToastAction se necessário, mas vamos usar o Sonner
+import { initTheme } from './lib/theme.ts'; // Importando initTheme
 
 // Ensure React is available globally
 // Expose React for devtools in iframe
@@ -63,6 +64,9 @@ function setupServiceWorkerUpdates() {
   }
 }
 
+// Inicializa o tema antes de renderizar
+initTheme();
+
 createRoot(document.getElementById("root")!).render(
   // REMOVENDO React.StrictMode para evitar duplicação de efeitos em desenvolvimento
   <>
@@ -76,13 +80,12 @@ createRoot(document.getElementById("root")!).render(
       toastOptions={{
         className: 'shadow-xl border-gray-200',
         style: {
-          padding: '12px 16px',
-          borderRadius: '12px',
-          // Estilos Glassmorphism aprimorados
-          backgroundColor: 'rgba(255, 255, 255, 0.95)', // Mais opaco
-          backdropFilter: 'blur(20px)', // Mais blur
-          WebkitBackdropFilter: 'blur(20px)',
-          border: '1px solid rgba(220, 220, 220, 0.7)', // Borda mais suave
+          padding: '16px',
+          borderRadius: 'var(--radius)',
+          backgroundColor: 'hsl(var(--card))',
+          color: 'hsl(var(--card-foreground))',
+          border: '1px solid hsl(var(--border))',
+          backdropFilter: 'blur(20px)',
         },
       }}
     />

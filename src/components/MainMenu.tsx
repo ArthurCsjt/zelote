@@ -58,17 +58,9 @@ export function MainMenu({
       action: () => onNavigate('dashboard'),
       bgColor: 'bg-menu-dark-blue' // ALTERADO PARA O NOVO AZUL ESCURO
     },
-    // REMOVIDO: Re-Cadastro Rápido
-    /*
+    // RENOMEADO: Sistema de Contagem -> Contagem de Chromebooks
     {
-      title: 'Re-Cadastro Rápido',
-      icon: <QrCode className="h-5 w-5" />,
-      action: () => onNavigate('quick-register'),
-      bgColor: 'bg-menu-teal' // Verde-Água Claro
-    },
-    */
-    {
-      title: 'Sistema de Contagem',
+      title: 'Contagem de Chromebooks',
       icon: <ListChecks className="h-5 w-5" />,
       action: () => onNavigate('audit'),
       bgColor: 'bg-menu-rose' // Rosa/Vermelho

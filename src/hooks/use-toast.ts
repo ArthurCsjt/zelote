@@ -16,37 +16,21 @@ function toast({ title, description, variant = 'default', duration = 4000 }: Toa
   const options: any = {
     description: description,
     duration: duration,
-    // Sonner já lida com richColors, mas podemos forçar estilos para 'destructive'
-    style: {
-      // Estilo para Destructive (vermelho)
-      ...(variant === 'destructive' && {
-        backgroundColor: 'hsl(0 84.2% 60.2%)', // Cor Destructive
-        color: 'white',
-        border: '1px solid hsl(0 84.2% 60.2%)',
-      }),
-      // Estilo para Success (verde)
-      ...(variant === 'success' && {
-        backgroundColor: 'hsl(142 76% 36%)', // Cor menu-green
-        color: 'white',
-        border: '1px solid hsl(142 76% 36%)',
-      }),
-    }
+    // Remove custom styles here, relying on Sonner's richColors and theme="system"
   };
 
   switch (variant) {
     case 'destructive':
-      // Usamos sonnerToast.error para destructive
+      // Mapeia 'destructive' para 'error' do Sonner
       return sonnerToast.error(title, options);
     case 'success':
-      // Usamos sonnerToast.success para success
       return sonnerToast.success(title, options);
     case 'info':
-      // Usamos sonnerToast.info para info
       return sonnerToast.info(title, options);
     case 'default':
     default:
-      // Usamos sonnerToast para default
-      return sonnerToast(title, options);
+      // Mapeia 'default' para 'message' do Sonner
+      return sonnerToast.message(title, options);
   }
 }
 
