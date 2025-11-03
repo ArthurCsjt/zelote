@@ -25,6 +25,7 @@ import { cn } from '@/lib/utils';
 import { TopLoanContextsPanel } from "./TopLoanContextsPanel";
 import { useTheme } from '@/lib/theme';
 import { ptBR } from "date-fns/locale"; // Adicionando locale para formatação
+import { supabase } from "@/integrations/supabase/client"; // Adicionando importação do supabase
 
 interface DashboardProps {
   onBack?: () => void;
@@ -596,15 +597,7 @@ const PeriodCharts = ({ periodView, loading, periodChartData, stats, isNewLoan, 
       </div>
       
       {/* Modal de Detalhes */}
-      <DashboardDetailDialog
-        open={detailModal.open}
-        onOpenChange={(open) => setDetailModal(prev => ({ ...prev, open }))}
-        title={detailModal.title}
-        description={detailModal.description}
-        data={detailModal.data}
-        isLoading={detailModal.isLoading}
-        dataType={detailModal.dataType}
-      />
+      {/* Este modal será renderizado no componente Dashboard principal */}
       
     </>
   );
@@ -619,7 +612,7 @@ export function Dashboard({ onBack }: DashboardProps) {
   // Estado para a visualização (charts, history, reports)
   const [periodView, setPeriodView] = useState<PeriodView>('charts');
   
-  // Estado para o modal de detalhes (MOVIDO PARA O ESCOPO CORRETO)
+  // Estado para o modal de detalhes
   const [detailModal, setDetailModal] = useState<DetailModalState>({
     open: false,
     title: '',
@@ -640,7 +633,7 @@ export function Dashboard({ onBack }: DashboardProps) {
     return differenceInMinutes(new Date(), loanDate) < 5; // Novo se criado nos últimos 5 minutos
   }, []);
   
-  // Função para lidar com o clique nos cards de estatísticas (MOVIDO PARA O ESCOPO CORRETO)
+  // Função para lidar com o clique nos cards de estatísticas
   const handleCardClick = useCallback(async (title: string, description: string, dataType: 'chromebooks' | 'loans', data: DetailItem[] | null = null, statusFilter?: Chromebook['status']) => {
     setDetailModal({
       open: true,
@@ -722,7 +715,7 @@ export function Dashboard({ onBack }: DashboardProps) {
               stats={stats} 
               history={history} 
               isMounted={isMounted}
-              onCardClick={handleCardClick}
+              onCardClick={handleCardClick} // PASSANDO A FUNÇÃO
             />
           )}
           
