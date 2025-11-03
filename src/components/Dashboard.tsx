@@ -7,7 +7,7 @@ import type { LoanHistoryItem, Chromebook } from "@/types/database";
 import { Badge } from "./ui/badge";
 import { Progress } from "./ui/progress";
 import { ChartContainer, ChartTooltipContent, ChartLegendContent } from "./ui/chart";
-import { Computer, Download, ArrowLeft, BarChart as BarChartIcon, PieChart as PieChartIcon, Clock, Users, Calendar, CalendarRange, Activity, ChartLine, Brain, Loader2, History as HistoryIcon, RefreshCw, TrendingUp, Info, Eye, UserCheck, GraduationCap, Briefcase, Zap, Waves, AlertTriangle } from "lucide-react"; // Adicionado Zap, Waves e AlertTriangle
+import { Computer, Download, ArrowLeft, BarChart as BarChartIcon, PieChart as PieChartIcon, Clock, Users, Calendar, CalendarRange, Activity, ChartLine, Brain, Loader2, History as HistoryIcon, RefreshCw, TrendingUp, Info, Eye, UserCheck, GraduationCap, Briefcase, Zap, Waves, AlertTriangle } from "lucide-react";
 import jsPDF from "jspdf";
 import { useToast } from "./ui/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -563,7 +563,7 @@ const PeriodCharts = ({ periodView, loading, periodChartData, stats, startHour, 
       <div className="grid gap-4 grid-cols-1 md:grid-cols-2 mt-4">
         {/* NOVO PAINEL: Top Contextos de Empréstimo */}
         <div className={getAnimationClass(1000)}>
-            <TopLoanContextsPanel topLoanContexts={topLoanContexts} />
+            <TopLoanContextsPanel topLoanContexts={stats?.topLoanContexts || []} />
         </div>
 
         <GlassCard className={cn("dashboard-card", getAnimationClass(1100))}>
@@ -581,30 +581,30 @@ const PeriodCharts = ({ periodView, loading, periodChartData, stats, startHour, 
               <div className="flex justify-between items-center">
                 <span className="text-sm font-medium text-foreground">Alunos</span>
                 <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/30">
-                  {loansByUserType.aluno || 0} empréstimos
+                  {stats?.loansByUserType.aluno || 0} empréstimos
                 </Badge>
               </div>
-              <Progress value={((loansByUserType.aluno || 0) / totalLoansInPeriod) * 100} className="h-2" />
+              <Progress value={((stats?.loansByUserType.aluno || 0) / totalLoansInPeriod) * 100} className="h-2" />
             </div>
             
             <div className="space-y-2">
               <div className="flex justify-between items-center">
                 <span className="text-sm font-medium text-foreground">Professores</span>
                 <Badge variant="secondary" className="bg-success-bg text-success-foreground border-success/30">
-                  {loansByUserType.professor || 0} empréstimos
+                  {stats?.loansByUserType.professor || 0} empréstimos
                 </Badge>
               </div>
-              <Progress value={((loansByUserType.professor || 0) / totalLoansInPeriod) * 100} className="h-2" />
+              <Progress value={((stats?.loansByUserType.professor || 0) / totalLoansInPeriod) * 100} className="h-2" />
             </div>
             
             <div className="space-y-2">
               <div className="flex justify-between items-center">
                 <span className="text-sm font-medium text-foreground">Funcionários</span>
                 <Badge variant="secondary" className="bg-warning-bg text-warning-foreground border-warning/30">
-                  {loansByUserType.funcionario || 0} empréstimos
+                  {stats?.loansByUserType.funcionario || 0} empréstimos
                 </Badge>
               </div>
-              <Progress value={((loansByUserType.funcionario || 0) / totalLoansInPeriod) * 100} className="h-2" />
+              <Progress value={((stats?.loansByUserType.funcionario || 0) / totalLoansInPeriod) * 100} className="h-2" />
             </div>
           </CardContent>
         </GlassCard>
@@ -623,7 +623,7 @@ const PeriodCharts = ({ periodView, loading, periodChartData, stats, startHour, 
       
     </>
   );
-}
+};
 
 // Exportação nomeada do componente
 export function Dashboard({ onBack }: DashboardProps) {
