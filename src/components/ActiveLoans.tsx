@@ -77,12 +77,12 @@ export function ActiveLoans({ onNavigateToReturn }: ActiveLoansProps) {
             type="single" 
             value={viewMode} 
             onValueChange={(value: ViewMode) => value && setViewMode(value)}
-            className="h-9"
+            className="h-9 bg-white dark:bg-card dark:border-border" // Adicionado dark:bg-card
           >
-            <ToggleGroupItem value="cards" aria-label="Visualização em Cards" className="h-9 px-3">
+            <ToggleGroupItem value="cards" aria-label="Visualização em Cards" className="h-9 px-3 dark:data-[state=on]:bg-primary dark:data-[state=on]:text-primary-foreground">
               <LayoutGrid className="h-4 w-4" />
             </ToggleGroupItem>
-            <ToggleGroupItem value="table" aria-label="Visualização em Tabela" className="h-9 px-3">
+            <ToggleGroupItem value="table" aria-label="Visualização em Tabela" className="h-9 px-3 dark:data-[state=on]:bg-primary dark:data-[state=on]:text-primary-foreground">
               <List className="h-4 w-4" />
             </ToggleGroupItem>
           </ToggleGroup>
@@ -91,7 +91,7 @@ export function ActiveLoans({ onNavigateToReturn }: ActiveLoansProps) {
             onClick={fetchActiveLoans}
             variant="outline"
             disabled={loading || dbLoading}
-            className="bg-white hover:bg-gray-50"
+            className="bg-white hover:bg-gray-50 dark:bg-card dark:hover:bg-accent dark:text-foreground dark:border-border" // Ajustado para Dark Mode
           >
             <RefreshCw className={`h-4 w-4 mr-2 ${loading || dbLoading ? 'animate-spin' : ''}`} />
             Atualizar
@@ -127,8 +127,8 @@ export function ActiveLoans({ onNavigateToReturn }: ActiveLoansProps) {
               <GlassCard 
                 key={loan.id} 
                 className={`hover:shadow-lg transition-shadow ${
-                  overdueStatus ? 'border-red-400 bg-red-50/50' : 
-                  dueSoonStatus ? 'border-amber-400 bg-amber-50/50' : 'border-gray-200/50'
+                  overdueStatus ? 'border-red-400 bg-red-50/50 dark:bg-red-950/50' : 
+                  dueSoonStatus ? 'border-amber-400 bg-amber-50/50 dark:bg-amber-950/50' : 'border-gray-200/50 dark:border-border/50'
                 }`}
               >
                 <CardContent className="p-6">
@@ -137,26 +137,26 @@ export function ActiveLoans({ onNavigateToReturn }: ActiveLoansProps) {
                       <div className="flex items-center gap-3">
                         <User className="h-5 w-5 text-primary" />
                         <div>
-                          <h3 className="font-semibold text-lg">{loan.student_name}</h3>
+                          <h3 className="font-semibold text-lg dark:text-foreground">{loan.student_name}</h3>
                           <p className="text-sm text-muted-foreground">{loan.student_email}</p>
                         </div>
                       </div>
 
                       <div className="flex flex-wrap gap-2">
                         {loan.student_ra && (
-                          <Badge variant="outline">
+                          <Badge variant="outline" className="dark:bg-muted dark:text-muted-foreground dark:border-border">
                             RA: {loan.student_ra}
                           </Badge>
                         )}
-                        <Badge variant="secondary" className="bg-blue-100 text-blue-700 hover:bg-blue-100">
+                        <Badge variant="secondary" className="bg-blue-100 text-blue-700 hover:bg-blue-100 dark:bg-blue-900 dark:text-blue-300">
                           <Monitor className="h-3 w-3 mr-1" />
                           {loan.chromebook_id}
                         </Badge>
-                        <Badge variant="outline" className="capitalize">
+                        <Badge variant="outline" className="capitalize dark:bg-muted dark:text-muted-foreground dark:border-border">
                           {loan.user_type}
                         </Badge>
                         {loan.loan_type === 'lote' && (
-                          <Badge className="bg-orange-100 text-orange-800 hover:bg-orange-100">
+                          <Badge className="bg-orange-100 text-orange-800 hover:bg-orange-100 dark:bg-orange-900 dark:text-orange-300">
                             Lote
                           </Badge>
                         )}
@@ -168,7 +168,7 @@ export function ActiveLoans({ onNavigateToReturn }: ActiveLoansProps) {
                           </Badge>
                         )}
                         {dueSoonStatus && !overdueStatus && (
-                          <Badge variant="outline" className="border-amber-400 text-amber-700 gap-1 bg-amber-100">
+                          <Badge variant="outline" className="border-amber-400 text-amber-700 gap-1 bg-amber-100 dark:bg-amber-900 dark:text-amber-300 dark:border-amber-700">
                             <Clock className="h-3 w-3" />
                             Vence em Breve
                           </Badge>
@@ -176,13 +176,13 @@ export function ActiveLoans({ onNavigateToReturn }: ActiveLoansProps) {
                       </div>
 
                       <div className="space-y-2">
-                        <div className="flex items-center gap-2 text-sm">
+                        <div className="flex items-center gap-2 text-sm dark:text-gray-300">
                           <Target className="h-4 w-4 text-muted-foreground" />
                           <span className="font-medium">Finalidade:</span>
                           <span>{loan.purpose}</span>
                         </div>
                         
-                        <div className="flex items-center gap-2 text-sm">
+                        <div className="flex items-center gap-2 text-sm dark:text-gray-300">
                           <Clock className="h-4 w-4 text-muted-foreground" />
                           <span className="font-medium">Emprestado em:</span>
                           <span>{format(new Date(loan.loan_date), "dd/MM/yyyy 'às' HH:mm")}</span>
@@ -191,7 +191,7 @@ export function ActiveLoans({ onNavigateToReturn }: ActiveLoansProps) {
                         {/* Mostrar data de devolução esperada se existir */}
                         {loan.expected_return_date && (
                           <div className={`flex items-center gap-2 text-sm ${
-                            overdueStatus ? 'text-red-600' : dueSoonStatus ? 'text-amber-600' : ''
+                            overdueStatus ? 'text-red-600 dark:text-red-400' : dueSoonStatus ? 'text-amber-600 dark:text-amber-400' : 'dark:text-gray-300'
                           }`}>
                             <AlertTriangle className={`h-4 w-4 ${
                               overdueStatus ? 'text-red-500' : dueSoonStatus ? 'text-amber-500' : 'text-muted-foreground'
@@ -206,7 +206,7 @@ export function ActiveLoans({ onNavigateToReturn }: ActiveLoansProps) {
                         )}
 
                         {loan.chromebook_model && (
-                          <div className="flex items-center gap-2 text-sm">
+                          <div className="flex items-center gap-2 text-sm dark:text-gray-300">
                             <Monitor className="h-4 w-4 text-muted-foreground" />
                             <span className="font-medium">Modelo:</span>
                             <span>{loan.chromebook_model}</span>
