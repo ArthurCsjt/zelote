@@ -112,18 +112,18 @@ export function LoanHistory({ history, isNewLoan }: LoanHistoryProps) {
         <div className="flex flex-col sm:flex-row gap-3 items-center">
           {/* Busca */}
           <div className="relative flex-1 w-full">
-            <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+            <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400 dark:text-muted-foreground" />
             <Input
               placeholder="Buscar por nome, email, RA ou ID do Chromebook..."
               value={searchTerm}
               onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
-              className="pl-10"
+              className="pl-10 bg-input dark:bg-input dark:border-border"
             />
           </div>
 
           {/* Filtro de Status */}
           <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setCurrentPage(1); }}>
-            <SelectTrigger className="w-full sm:w-[180px]">
+            <SelectTrigger className="w-full sm:w-[180px] bg-card dark:bg-card dark:border-border">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
@@ -136,7 +136,7 @@ export function LoanHistory({ history, isNewLoan }: LoanHistoryProps) {
 
           {/* Filtro de Tipo de Usuário */}
           <Select value={userTypeFilter} onValueChange={(v) => { setUserTypeFilter(v); setCurrentPage(1); }}>
-            <SelectTrigger className="w-full sm:w-[180px]">
+            <SelectTrigger className="w-full sm:w-[180px] bg-card dark:bg-card dark:border-border">
               <SelectValue placeholder="Tipo de Usuário" />
             </SelectTrigger>
             <SelectContent>
