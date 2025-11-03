@@ -135,29 +135,29 @@ const ChromebookSearchInput: React.FC<ChromebookSearchInputProps> = ({
             onChange={(e) => setSearchTerm(e.target.value)}
             onFocus={() => setIsFocused(true)}
             onBlur={() => setTimeout(() => setIsFocused(false), 200)} // Pequeno delay para permitir o clique
-            className="pl-10 w-full bg-white border-gray-200 dark:bg-card dark:border-border"
+            className="pl-10 w-full bg-input dark:bg-card border-border dark:border-border"
             disabled={disabled || loading}
           />
         </div>
         <Button 
           type="button" 
           variant="outline" 
-          className="border-gray-200 bg-white hover:bg-gray-50 px-3 dark:bg-card dark:border-border dark:hover:bg-accent"
+          className="border-border bg-input hover:bg-accent px-3 dark:bg-card dark:border-border dark:hover:bg-accent"
           onClick={onScanClick}
           disabled={disabled || loading}
         >
-          <QrCode className="h-5 w-5 text-gray-600 dark:text-muted-foreground" />
+          <QrCode className="h-5 w-5 text-muted-foreground" />
         </Button>
       </div>
 
       {/* Lista de Sugestões (aparece abaixo do input) */}
       {isFocused && searchTerm && filteredChromebooks.length > 0 && (
-        <ScrollArea className="absolute z-20 w-full max-h-60 rounded-md border bg-white shadow-lg dark:bg-card dark:border-border">
+        <ScrollArea className="absolute z-20 w-full max-h-60 rounded-md border bg-card shadow-lg dark:bg-card dark:border-border">
           <div className="p-1">
             {filteredChromebooks.map((chromebook) => (
               <div
                 key={chromebook.id}
-                className="flex items-center justify-between p-2 cursor-pointer hover:bg-gray-100 rounded-md dark:hover:bg-accent"
+                className="flex items-center justify-between p-2 cursor-pointer hover:bg-accent rounded-md dark:hover:bg-accent"
                 onMouseDown={() => handleSelect(chromebook)} // Usar onMouseDown para evitar que o onBlur feche antes do clique
               >
                 <div className="flex items-center">
@@ -182,7 +182,7 @@ const ChromebookSearchInput: React.FC<ChromebookSearchInputProps> = ({
       )}
       
       {isFocused && searchTerm && filteredChromebooks.length === 0 && !loading && (
-        <div className="p-2 text-sm text-muted-foreground text-center border rounded-md bg-white dark:bg-card dark:border-border">
+        <div className="p-2 text-sm text-muted-foreground text-center border rounded-md bg-card dark:bg-card dark:border-border">
           Nenhum Chromebook encontrado.
         </div>
       )}

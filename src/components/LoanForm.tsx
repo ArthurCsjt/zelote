@@ -182,7 +182,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
         <div className="grid md:grid-cols-2 gap-6">
             
           {/* Coluna Esquerda - Detalhes do Equipamento/Lote (VIOLETA CLARO) */}
-          <GlassCard className="bg-menu-violet/10 border-menu-violet/30 shadow-inner dark:bg-menu-violet/20 dark:border-menu-violet/50">
+          <GlassCard className="bg-menu-violet/10 border-menu-violet/30 shadow-inner dark:bg-card/50 dark:border-menu-violet/50">
             <CardHeader className="p-4 pb-0">
               <CardTitle className="text-lg flex items-center gap-2 text-menu-violet dark:text-violet-400">
                 <Computer className="h-5 w-5" /> Dispositivos para Empréstimo
@@ -205,7 +205,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
           <div className="space-y-6">
             
             {/* Card 1: Informações do Solicitante */}
-            <GlassCard className="bg-menu-violet/10 border-menu-violet/30 shadow-inner dark:bg-menu-violet/20 dark:border-menu-violet/50">
+            <GlassCard className="bg-menu-violet/10 border-menu-violet/30 shadow-inner dark:bg-card/50 dark:border-menu-violet/50">
               <CardHeader className="p-4 pb-0">
                 <CardTitle className="text-lg flex items-center gap-2 text-menu-violet dark:text-violet-400">
                   <User className="h-5 w-5" /> Informações do Solicitante
@@ -229,7 +229,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
             </GlassCard>
             
             {/* Card 2: Finalidade (NOVO CARD SEPARADO) */}
-            <GlassCard className="bg-menu-violet/10 border-menu-violet/30 shadow-inner dark:bg-menu-violet/20 dark:border-menu-violet/50">
+            <GlassCard className="bg-menu-violet/10 border-menu-violet/30 shadow-inner dark:bg-card/50 dark:border-menu-violet/50">
               <CardHeader className="p-4 pb-0">
                 <CardTitle className="text-lg flex items-center gap-2 text-menu-violet dark:text-violet-400">
                   <BookOpen className="h-5 w-5" /> Finalidade do Empréstimo
@@ -254,7 +254,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
         </div>
 
         {/* Opção para definir prazo de devolução (abaixo das colunas) */}
-        <div className="space-y-4 p-4 bg-gray-50/50 rounded-xl border border-gray-200 dark:bg-gray-900/50 dark:border-gray-800">
+        <div className="space-y-4 p-4 bg-muted/50 rounded-xl border border-border dark:bg-card/50">
           <div className="flex items-center space-x-2">
             <Checkbox
               id="returnDeadline"
@@ -284,7 +284,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
                       <Button
                         variant="outline"
                         className={cn(
-                          "justify-start text-left font-normal border-gray-200 bg-white dark:bg-card dark:border-border",
+                          "justify-start text-left font-normal border-gray-200 bg-input dark:bg-card dark:border-border",
                           !formData.expectedReturnDate && "text-muted-foreground"
                         )}
                       >
@@ -336,7 +336,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
                               setFormData({ ...formData, expectedReturnDate: newDate });
                             }
                           }}
-                          className="border-gray-200 text-center bg-white dark:bg-card dark:border-border"
+                          className="border-gray-200 text-center bg-input dark:bg-card dark:border-border"
                         />
                       </div>
                       <span className="flex items-center text-muted-foreground">:</span>
@@ -357,7 +357,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
                               setFormData({ ...formData, expectedReturnDate: newDate });
                             }
                           }}
-                          className="border-gray-200 text-center bg-white dark:bg-card dark:border-border"
+                          className="border-gray-200 text-center bg-input dark:bg-card dark:border-border"
                         />
                       </div>
                     </div>

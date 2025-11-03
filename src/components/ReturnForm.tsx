@@ -117,7 +117,7 @@ export function ReturnForm({ onReturnSuccess }: ReturnFormProps) {
       <div className="grid md:grid-cols-2 gap-6 relative z-10">
         
         {/* Coluna Esquerda - Dispositivo/Lote (Cor 1: Âmbar) */}
-        <GlassCard className="bg-menu-amber/10 border-menu-amber/30 shadow-inner dark:bg-menu-amber/20 dark:border-menu-amber/50">
+        <GlassCard className="bg-menu-amber/10 border-menu-amber/30 shadow-inner dark:bg-card/50 dark:border-menu-amber/50">
           <CardHeader className="p-4 pb-0">
             <CardTitle className="text-lg flex items-center gap-2 text-menu-amber dark:text-orange-400">
               <Computer className="h-5 w-5" /> Dispositivos para Devolução
@@ -137,7 +137,7 @@ export function ReturnForm({ onReturnSuccess }: ReturnFormProps) {
         {/* Coluna Direita - Informações do Usuário e Observações */}
         <div className="space-y-6">
           {/* Informações do Solicitante (Cor 2: Âmbar) */}
-          <GlassCard className="bg-menu-amber/10 border-menu-amber/30 shadow-inner dark:bg-menu-amber/20 dark:border-menu-amber/50">
+          <GlassCard className="bg-menu-amber/10 border-menu-amber/30 shadow-inner dark:bg-card/50 dark:border-menu-amber/50">
             <CardHeader className="p-4 pb-0">
               <CardTitle className="text-lg flex items-center gap-2 text-menu-amber dark:text-orange-400">
                 <User className="h-5 w-5" /> Informações do Solicitante
@@ -168,7 +168,7 @@ export function ReturnForm({ onReturnSuccess }: ReturnFormProps) {
           </GlassCard>
           
           {/* Campo de Observações (Cor 3: Âmbar) */}
-          <GlassCard className="p-4 space-y-4 bg-menu-amber/10 border-menu-amber/30 shadow-md dark:bg-menu-amber/20 dark:border-menu-amber/50">
+          <GlassCard className="p-4 space-y-4 bg-menu-amber/10 border-menu-amber/30 shadow-md dark:bg-card/50 dark:border-menu-amber/50">
             <CardTitle className="text-lg flex items-center gap-2 text-menu-amber dark:text-orange-400">
               <AlertTriangle className="h-5 w-5" /> Observações da Devolução
             </CardTitle>
@@ -181,7 +181,7 @@ export function ReturnForm({ onReturnSuccess }: ReturnFormProps) {
                 value={returnData.notes || ''}
                 onChange={(e) => setReturnData({ ...returnData, notes: e.target.value })}
                 placeholder="Ex: O Chromebook foi devolvido com a tela trincada."
-                className="bg-white border-gray-200 min-h-[80px] dark:bg-card dark:border-border"
+                className="bg-input border-gray-200 min-h-[80px] dark:bg-card dark:border-border"
               />
             </div>
           </GlassCard>

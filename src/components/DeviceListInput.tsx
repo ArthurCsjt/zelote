@@ -185,11 +185,11 @@ export function DeviceListInput({ deviceIds, setDeviceIds, disabled, filterStatu
       />
       
       {/* Lista de Dispositivos Adicionados */}
-      <div className="mt-2 p-2 bg-white rounded-md border border-gray-200 max-h-[250px] overflow-y-auto dark:bg-card dark:border-border">
+      <div className="mt-2 p-2 bg-card rounded-md border border-border max-h-[250px] overflow-y-auto dark:bg-card dark:border-border">
         {deviceList.length > 0 ? (
           <div className="space-y-2">
             {deviceList.map((chromebook) => (
-              <div key={chromebook.chromebook_id} className="flex justify-between items-center p-3 bg-gray-50 rounded border border-gray-100 dark:bg-muted/50 dark:border-border">
+              <div key={chromebook.chromebook_id} className="flex justify-between items-center p-3 bg-muted/50 rounded border border-border dark:bg-muted/50 dark:border-border">
                 <div className="flex flex-col gap-1">
                   <div className="flex items-center gap-2">
                     <Computer className="h-4 w-4 text-blue-500 dark:text-blue-400" />

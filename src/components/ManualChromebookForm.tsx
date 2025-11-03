@@ -116,7 +116,7 @@ export function ManualChromebookForm({ onRegistrationSuccess }: { onRegistration
   return (
     <GlassCard className="p-6 space-y-6">
       <CardHeader className="p-0">
-        <CardTitle className="text-xl font-bold text-gray-800 flex items-center gap-2">
+        <CardTitle className="text-xl font-bold text-gray-800 dark:text-foreground flex items-center gap-2">
           <Laptop className="h-6 w-6 text-green-600" />
           Cadastro Manual
         </CardTitle>
@@ -129,8 +129,8 @@ export function ManualChromebookForm({ onRegistrationSuccess }: { onRegistration
         <form onSubmit={handleSubmit} className="space-y-6">
           
           {/* Seção 1: Identificação e Modelo */}
-          <div className="space-y-4 p-4 border rounded-lg bg-gray-50/50">
-            <h4 className="font-semibold text-lg text-gray-800 flex items-center gap-2">
+          <div className="space-y-4 p-4 border rounded-lg bg-muted/50 dark:bg-card/50">
+            <h4 className="font-semibold text-lg text-gray-800 dark:text-foreground flex items-center gap-2">
               <Tag className="h-4 w-4 text-blue-600" />
               Identificação e Modelo
             </h4>
@@ -143,7 +143,7 @@ export function ManualChromebookForm({ onRegistrationSuccess }: { onRegistration
                   onValueChange={handleManufacturerChange}
                   required
                 >
-                  <SelectTrigger className="bg-white">
+                  <SelectTrigger className="bg-input dark:bg-card">
                     <SelectValue placeholder="Selecione um fabricante" />
                   </SelectTrigger>
                   <SelectContent>
@@ -164,7 +164,7 @@ export function ManualChromebookForm({ onRegistrationSuccess }: { onRegistration
                   required
                   disabled={!formData.manufacturer || currentModels.length === 0}
                 >
-                  <SelectTrigger className="bg-white">
+                  <SelectTrigger className="bg-input dark:bg-card">
                     <SelectValue placeholder={formData.manufacturer ? "Selecione o modelo" : "Selecione um fabricante primeiro"} />
                   </SelectTrigger>
                   <SelectContent>
@@ -189,7 +189,7 @@ export function ManualChromebookForm({ onRegistrationSuccess }: { onRegistration
                   onChange={(e) => handleFormChange('series', e.target.value)} 
                   placeholder="Número de Série"
                   required 
-                  className="bg-white"
+                  className="bg-input dark:bg-card"
                 />
               </div>
               
@@ -202,7 +202,7 @@ export function ManualChromebookForm({ onRegistrationSuccess }: { onRegistration
                   value={formData.patrimonyNumber} 
                   onChange={(e) => handleFormChange('patrimonyNumber', e.target.value)} 
                   placeholder="Número de Patrimônio"
-                  className="bg-white"
+                  className="bg-input dark:bg-card"
                 />
               </div>
               
@@ -213,15 +213,15 @@ export function ManualChromebookForm({ onRegistrationSuccess }: { onRegistration
                   value={formData.manufacturingYear} 
                   onChange={(e) => handleFormChange('manufacturingYear', e.target.value)} 
                   placeholder="Ex: 2022"
-                  className="bg-white"
+                  className="bg-input dark:bg-card"
                 />
               </div>
             </div>
           </div>
 
           {/* Seção 2: Localização e Provisionamento */}
-          <div className="space-y-4 p-4 border rounded-lg bg-white shadow-sm">
-            <h4 className="font-semibold text-lg text-gray-800 flex items-center gap-2">
+          <div className="space-y-4 p-4 border rounded-lg bg-card shadow-sm dark:bg-card">
+            <h4 className="font-semibold text-lg text-gray-800 dark:text-foreground flex items-center gap-2">
               <MapPin className="h-4 w-4 text-purple-600" />
               Localização e Status
             </h4>
@@ -257,13 +257,13 @@ export function ManualChromebookForm({ onRegistrationSuccess }: { onRegistration
                     onChange={(e) => handleFormChange('classroomLocation', e.target.value)} 
                     placeholder="Ex: Sala 101"
                     required={isFixed} 
-                    className="bg-white"
+                    className="bg-input dark:bg-card"
                   />
                 </div>
               )}
             </div>
 
-            <div className="space-y-2 pt-4 border-t border-gray-100">
+            <div className="space-y-2 pt-4 border-t border-gray-100 dark:border-border">
               <Label className="text-sm font-medium">Status de Provisionamento</Label>
               <RadioGroup
                 value={formData.provisioning_status}
@@ -283,8 +283,8 @@ export function ManualChromebookForm({ onRegistrationSuccess }: { onRegistration
           </div>
 
           {/* Seção 3: Observações */}
-          <div className="space-y-4 p-4 border rounded-lg bg-gray-50/50">
-            <h4 className="font-semibold text-lg text-gray-800 flex items-center gap-2">
+          <div className="space-y-4 p-4 border rounded-lg bg-muted/50 dark:bg-card/50">
+            <h4 className="font-semibold text-lg text-gray-800 dark:text-foreground flex items-center gap-2">
               <AlertTriangle className="h-4 w-4 text-orange-600" />
               Condição e Observações
             </h4>
@@ -295,7 +295,7 @@ export function ManualChromebookForm({ onRegistrationSuccess }: { onRegistration
                 value={formData.observations} 
                 onChange={(e) => handleFormChange('observations', e.target.value)} 
                 placeholder="Ex: Tela trincada, bateria viciada, etc."
-                className="resize-none min-h-[100px] bg-white"
+                className="resize-none min-h-[100px] bg-input dark:bg-card"
               />
             </div>
           </div>

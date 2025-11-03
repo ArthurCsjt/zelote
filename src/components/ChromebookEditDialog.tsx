@@ -251,7 +251,7 @@ export function ChromebookEditDialog({ open, onOpenChange, chromebook }: Chromeb
         <div className="flex-1 overflow-y-auto px-6 py-4 space-y-6">
           
           {/* Seção 1: Identificação e Modelo */}
-          <div className="space-y-4 p-4 border rounded-lg bg-gray-50/50 dark:bg-gray-900/50">
+          <div className="space-y-4 p-4 border rounded-lg bg-muted/50 dark:bg-card/50">
             <h4 className="font-semibold text-lg text-gray-800 dark:text-foreground flex items-center gap-2">
               <Tag className="h-4 w-4 text-blue-600" />
               Identificação e Modelo
@@ -265,7 +265,7 @@ export function ChromebookEditDialog({ open, onOpenChange, chromebook }: Chromeb
                 <Input
                   id="chromebook_id"
                   value={editingChromebook.chromebook_id}
-                  className="h-10 bg-gray-200 cursor-not-allowed font-mono text-sm dark:bg-gray-700 dark:text-gray-200"
+                  className="h-10 bg-input dark:bg-card cursor-not-allowed font-mono text-sm dark:text-gray-200"
                   readOnly
                 />
               </div>
@@ -279,7 +279,7 @@ export function ChromebookEditDialog({ open, onOpenChange, chromebook }: Chromeb
                   value={editingChromebook.patrimony_number || ""}
                   onChange={handleEditChange}
                   placeholder="Número do patrimônio"
-                  className="h-10"
+                  className="h-10 bg-input dark:bg-card"
                 />
               </div>
               
@@ -292,7 +292,7 @@ export function ChromebookEditDialog({ open, onOpenChange, chromebook }: Chromeb
                   value={editingChromebook.serial_number || ""}
                   onChange={handleEditChange}
                   placeholder="Número de série"
-                  className="h-10"
+                  className="h-10 bg-input dark:bg-card"
                 />
               </div>
             </div>
@@ -307,7 +307,7 @@ export function ChromebookEditDialog({ open, onOpenChange, chromebook }: Chromeb
                   value={editingChromebook.manufacturer || ''}
                   onValueChange={(value) => handleSelectChange('manufacturer', value)}
                 >
-                  <SelectTrigger className="h-10 bg-white">
+                  <SelectTrigger className="h-10 bg-input dark:bg-card">
                     <SelectValue placeholder="Selecione o fabricante" />
                   </SelectTrigger>
                   <SelectContent>
@@ -328,7 +328,7 @@ export function ChromebookEditDialog({ open, onOpenChange, chromebook }: Chromeb
                   onValueChange={(value) => handleSelectChange('model', value)}
                   disabled={!editingChromebook.manufacturer || currentModels.length === 0}
                 >
-                  <SelectTrigger className="h-10 bg-white">
+                  <SelectTrigger className="h-10 bg-input dark:bg-card">
                     <SelectValue placeholder={editingChromebook.manufacturer ? "Selecione o modelo" : "Selecione um fabricante primeiro"} />
                   </SelectTrigger>
                   <SelectContent>
@@ -344,7 +344,7 @@ export function ChromebookEditDialog({ open, onOpenChange, chromebook }: Chromeb
           </div>
 
           {/* Seção 2: Status e Localização (REESTRUTURADA) */}
-          <div className="space-y-4 p-4 border rounded-lg bg-white shadow-sm dark:bg-card">
+          <div className="space-y-4 p-4 border rounded-lg bg-card shadow-sm dark:bg-card">
             <h4 className="font-semibold text-lg text-gray-800 dark:text-foreground flex items-center gap-2">
               <MapPin className="h-4 w-4 text-purple-600" />
               Status e Localização
@@ -358,7 +358,7 @@ export function ChromebookEditDialog({ open, onOpenChange, chromebook }: Chromeb
                   onValueChange={handleEditStatusChange}
                   disabled={isEmprestado} // Não permite mudar se estiver emprestado
               >
-                <SelectTrigger className="h-10">
+                <SelectTrigger className="h-10 bg-input dark:bg-card">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -412,7 +412,7 @@ export function ChromebookEditDialog({ open, onOpenChange, chromebook }: Chromeb
                       value={editingChromebook.location || ""}
                       onChange={handleEditChange}
                       placeholder="Ex: Sala de informática"
-                      className="h-10"
+                      className="h-10 bg-input dark:bg-card"
                     />
                 </div>
                 
@@ -423,7 +423,7 @@ export function ChromebookEditDialog({ open, onOpenChange, chromebook }: Chromeb
                       value={editingChromebook.classroom || ''}
                       onChange={handleEditChange}
                       placeholder="Ex.: Sala 21"
-                      className="h-10"
+                      className="h-10 bg-input dark:bg-card"
                       required={isFixed}
                       disabled={!isFixed}
                     />
@@ -461,7 +461,7 @@ export function ChromebookEditDialog({ open, onOpenChange, chromebook }: Chromeb
           </div>
 
           {/* Seção 3: Condição/Observações (Sem Alterações) */}
-          <div className="space-y-4 p-4 border rounded-lg bg-gray-50/50 dark:bg-gray-900/50">
+          <div className="space-y-4 p-4 border rounded-lg bg-muted/50 dark:bg-card/50">
             <h4 className="font-semibold text-lg text-gray-800 dark:text-foreground flex items-center gap-2">
               <AlertTriangle className="h-4 w-4 text-orange-600" />
               Condição e Notas
@@ -474,14 +474,14 @@ export function ChromebookEditDialog({ open, onOpenChange, chromebook }: Chromeb
                 value={editingChromebook.condition || ""}
                 onChange={handleConditionChange}
                 placeholder="Digite observações sobre a condição do equipamento (ex: tela trincada, bateria fraca)"
-                className="resize-none min-h-[100px]"
+                className="resize-none min-h-[100px] bg-input dark:bg-card"
               />
             </div>
           </div>
         </div>
 
         {/* Fixed Footer */}
-        <DialogFooter className="px-6 py-4 border-t bg-white shrink-0 flex-col sm:flex-row gap-2 sm:justify-end dark:bg-card">
+        <DialogFooter className="px-6 py-4 border-t bg-card shrink-0 flex-col sm:flex-row gap-2 sm:justify-end dark:bg-card">
           <Button
             type="button"
             variant="outline"

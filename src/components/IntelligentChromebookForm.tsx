@@ -170,7 +170,7 @@ export function IntelligentChromebookForm({ onRegistrationSuccess }: { onRegistr
   return (
     <GlassCard className="p-6 space-y-6">
       <CardHeader className="p-0">
-        <CardTitle className="text-xl font-bold text-gray-800 flex items-center gap-2">
+        <CardTitle className="text-xl font-bold text-gray-800 dark:text-foreground flex items-center gap-2">
           <QrCode className="h-6 w-6 text-menu-teal" />
           Cadastro Inteligente (QR Code)
         </CardTitle>
@@ -194,8 +194,8 @@ export function IntelligentChromebookForm({ onRegistrationSuccess }: { onRegistr
           <form onSubmit={handleSubmit} className="space-y-6">
             
             {/* Seção 1: Identificação e Modelo */}
-            <div className="space-y-4 p-4 border rounded-lg bg-gray-50/50">
-              <h4 className="font-semibold text-lg text-gray-800 flex items-center gap-2">
+            <div className="space-y-4 p-4 border rounded-lg bg-muted/50 dark:bg-card/50">
+              <h4 className="font-semibold text-lg text-gray-800 dark:text-foreground flex items-center gap-2">
                 <Tag className="h-4 w-4 text-blue-600" />
                 Dados do QR Code (Revise)
               </h4>
@@ -211,7 +211,7 @@ export function IntelligentChromebookForm({ onRegistrationSuccess }: { onRegistr
                     onChange={(e) => handleFormChange('chromebookId', e.target.value)} 
                     placeholder="ID (Ex: CHR001)"
                     required 
-                    className="bg-white font-mono"
+                    className="bg-input dark:bg-card font-mono"
                   />
                 </div>
 
@@ -224,7 +224,7 @@ export function IntelligentChromebookForm({ onRegistrationSuccess }: { onRegistr
                     value={formData.patrimonyNumber} 
                     onChange={(e) => handleFormChange('patrimonyNumber', e.target.value)} 
                     placeholder="Número de Patrimônio"
-                    className="bg-white"
+                    className="bg-input dark:bg-card"
                   />
                 </div>
                 
@@ -238,7 +238,7 @@ export function IntelligentChromebookForm({ onRegistrationSuccess }: { onRegistr
                     onChange={(e) => handleFormChange('serialNumber', e.target.value)} 
                     placeholder="Número de Série"
                     required 
-                    className="bg-white"
+                    className="bg-input dark:bg-card"
                   />
                 </div>
               </div>
@@ -251,7 +251,7 @@ export function IntelligentChromebookForm({ onRegistrationSuccess }: { onRegistr
                     value={formData.manufacturer}
                     onChange={(e) => handleFormChange('manufacturer', e.target.value)}
                     placeholder="Ex: Lenovo"
-                    className="bg-white"
+                    className="bg-input dark:bg-card"
                   />
                 </div>
                 
@@ -263,15 +263,15 @@ export function IntelligentChromebookForm({ onRegistrationSuccess }: { onRegistr
                     onChange={(e) => handleFormChange('model', e.target.value)} 
                     placeholder="Ex: Chromebook 14e"
                     required 
-                    className="bg-white"
+                    className="bg-input dark:bg-card"
                   />
                 </div>
               </div>
             </div>
 
             {/* Seção 2: Localização e Provisionamento (Campos adicionais) */}
-            <div className="space-y-4 p-4 border rounded-lg bg-white shadow-sm">
-              <h4 className="font-semibold text-lg text-gray-800 flex items-center gap-2">
+            <div className="space-y-4 p-4 border rounded-lg bg-card shadow-sm dark:bg-card">
+              <h4 className="font-semibold text-lg text-gray-800 dark:text-foreground flex items-center gap-2">
                 <MapPin className="h-4 w-4 text-purple-600" />
                 Localização e Status
               </h4>
@@ -307,13 +307,13 @@ export function IntelligentChromebookForm({ onRegistrationSuccess }: { onRegistr
                       onChange={(e) => handleFormChange('classroomLocation', e.target.value)} 
                       placeholder="Ex: Sala 101"
                       required={isFixed} 
-                      className="bg-white"
+                      className="bg-input dark:bg-card"
                     />
                   </div>
                 )}
               </div>
 
-              <div className="space-y-2 pt-4 border-t border-gray-100">
+              <div className="space-y-2 pt-4 border-t border-gray-100 dark:border-border">
                 <Label className="text-sm font-medium">Status de Provisionamento</Label>
                 <RadioGroup
                   value={formData.provisioning_status}
@@ -333,8 +333,8 @@ export function IntelligentChromebookForm({ onRegistrationSuccess }: { onRegistr
             </div>
 
             {/* Seção 3: Observações */}
-            <div className="space-y-4 p-4 border rounded-lg bg-gray-50/50">
-              <h4 className="font-semibold text-lg text-gray-800 flex items-center gap-2">
+            <div className="space-y-4 p-4 border rounded-lg bg-muted/50 dark:bg-card/50">
+              <h4 className="font-semibold text-lg text-gray-800 dark:text-foreground flex items-center gap-2">
                 <AlertTriangle className="h-4 w-4 text-orange-600" />
                 Condição e Observações
               </h4>
@@ -345,7 +345,7 @@ export function IntelligentChromebookForm({ onRegistrationSuccess }: { onRegistr
                   value={formData.observations} 
                   onChange={(e) => handleFormChange('observations', e.target.value)} 
                   placeholder="Ex: Tela trincada, bateria viciada, etc."
-                  className="resize-none min-h-[100px] bg-white"
+                  className="resize-none min-h-[100px] bg-input dark:bg-card"
                 />
               </div>
             </div>
