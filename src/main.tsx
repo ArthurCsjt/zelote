@@ -2,7 +2,7 @@ import React from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
-import { toast as sonnerToast, Toaster } from 'sonner' // Usando Sonner
+import { toast as sonnerToast } from 'sonner' // Usando Sonner
 import { ToastAction } from "@/components/ui/toast" // Mantendo o import para o ToastAction se necessário, mas vamos usar o Sonner
 
 // Ensure React is available globally
@@ -65,31 +65,7 @@ function setupServiceWorkerUpdates() {
 
 createRoot(document.getElementById("root")!).render(
   // REMOVENDO React.StrictMode para evitar duplicação de efeitos em desenvolvimento
-  <>
-    {/* Configuração do Sonner para notificações modernas com Glassmorphism */}
-    <Toaster 
-      // Adicionando o atributo theme para Sonner seguir o tema do HTML
-      theme={document.documentElement.classList.contains('dark') ? 'dark' : 'light'}
-      // Usamos top-center para melhor visualização em mobile
-      position="top-center" 
-      richColors 
-      closeButton 
-      className="z-[9999]"
-      toastOptions={{
-        className: 'shadow-xl border-gray-200',
-        style: {
-          padding: '12px 16px',
-          borderRadius: '12px',
-          // Estilos Glassmorphism aprimorados
-          backgroundColor: 'rgba(255, 255, 255, 0.95)', // Mais opaco
-          backdropFilter: 'blur(20px)', // Mais blur
-          WebkitBackdropFilter: 'blur(20px)',
-          border: '1px solid rgba(220, 220, 220, 0.7)', // Borda mais suave
-        },
-      }}
-    />
-    <App />
-  </>
+  <App />
 )
 
 setupServiceWorkerUpdates()
