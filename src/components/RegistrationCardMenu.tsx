@@ -58,7 +58,8 @@ export function RegistrationCardMenu({ onNavigate, currentView }: RegistrationCa
           >
             <CardContent className="p-4 flex flex-col items-center justify-center text-center">
               <Icon className={cn("h-6 w-6 mb-1", item.color)} />
-              <CardTitle className="text-sm font-semibold text-gray-800">
+              {/* CORREÇÃO: Adicionando dark:text-foreground para garantir que o texto seja claro no Dark Mode */}
+              <CardTitle className="text-sm font-semibold text-gray-800 dark:text-foreground">
                 {item.title}
               </CardTitle>
             </CardContent>
