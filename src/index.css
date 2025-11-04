@@ -51,11 +51,11 @@
   }
   
   .dark {
-    /* Fundo principal: Cinza escuro suave (melhor que preto puro) */
+    /* Fundo principal: Cinza escuro suave (L=10%) */
     --background: 220 10% 10%; 
     --foreground: 0 0% 98%;
 
-    /* Cards e Popovers: Um pouco mais claro que o fundo para contraste */
+    /* Cards e Popovers: Um pouco mais claro que o fundo (L=15%) */
     --card: 220 10% 15%; 
     --card-foreground: 0 0% 98%;
  
@@ -77,7 +77,7 @@
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 220 10% 25%; /* Borda visível */
+    --border: 220 10% 25%; /* Borda visível (L=25%) */
     --input: 220 10% 15%;
     --ring: 213 100% 50%;
     
@@ -130,8 +130,10 @@
 /* Dark Mode Glass Card Overrides */
 .dark .glass-card {
   /* Fundo semi-transparente escuro que permite ver o fundo principal */
+  /* Usando --card (L=15%) que é mais claro que --background (L=10%) */
   background: rgba(var(--card), 0.85); 
   /* Aumentando a opacidade da borda para melhor definição */
+  /* Usando --border (L=25%) que é mais claro que o fundo */
   border: 1px solid rgba(var(--border), 0.7); 
   /* Sombra mais forte e escura */
   box-shadow: 0 6px 40px 0 rgba(0, 0, 0, 0.5), 
