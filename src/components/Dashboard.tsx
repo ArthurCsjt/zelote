@@ -1,4 +1,22 @@
-// ... (imports existentes)
+import React, { useState, useEffect, useCallback } from 'react';
+import { useDashboardData, PeriodView } from '@/hooks/useDashboardData';
+import { CollapsibleDashboardFilter } from './CollapsibleDashboardFilter';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Loader2, BarChart3, Waves, TrendingUp, Computer, Clock, Info, Activity } from 'lucide-react';
+import { DashboardDetailDialog } from './DashboardDetailDialog';
+import { format, startOfDay, endOfDay, subDays, startOfMonth, endOfMonth } from 'date-fns';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar } from 'recharts';
+import { GlassCard } from './ui/GlassCard';
+import { LoanHistoryItem, Chromebook } from '@/types/database';
+import { TopLoanContextsPanel } from './TopLoanContextsPanel';
+import { Progress } from './ui/progress';
+import { TooltipProvider, Tooltip as ShadcnTooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
+import { cn } from '@/lib/utils';
+
+interface DashboardProps {
+  onBack?: () => void;
+}
 
 // Componente auxiliar para renderizar o grid de estatísticas
 const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = [], loading, onCardClick, history, isMounted }: any) => {
@@ -52,7 +70,7 @@ const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = []
                   <Info className="h-4 w-4 text-muted-foreground" />
                 </CardTitle>
               </TooltipTrigger>
-              <TooltipContent className="max-w-xs text-xs"> {/* AJUSTADO: max-w-xs */}
+              <TooltipContent className="max-w-xs text-xs">
                 <p>Porcentagem de equipamentos móveis (não fixos) que estão atualmente emprestados.</p>
               </TooltipContent>
             </ShadcnTooltip>
@@ -78,7 +96,7 @@ const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = []
                   <Info className="h-4 w-4 text-muted-foreground" />
                 </CardTitle>
               </TooltipTrigger>
-              <TooltipContent className="max-w-xs text-xs"> {/* AJUSTADO: max-w-xs */}
+              <TooltipContent className="max-w-xs text-xs">
                 <p>O pico de uso (em %) atingido durante o período e horário selecionados no filtro.</p>
               </TooltipContent>
             </ShadcnTooltip>
@@ -117,7 +135,7 @@ const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = []
                   <Info className="h-3 w-3 text-muted-foreground" />
                 </CardTitle>
               </TooltipTrigger>
-              <TooltipContent className="max-w-xs text-xs"> {/* AJUSTADO: max-w-xs */}
+              <TooltipContent className="max-w-xs text-xs">
                 <p>Número de Chromebooks atualmente emprestados (status 'emprestado'). Clique para ver a lista.</p>
               </TooltipContent>
             </ShadcnTooltip>
@@ -144,7 +162,7 @@ const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = []
                   <Info className="h-3 w-3 text-muted-foreground" />
                 </CardTitle>
               </TooltipTrigger>
-              <TooltipContent className="max-w-xs text-xs"> {/* AJUSTADO: max-w-xs */}
+              <TooltipContent className="max-w-xs text-xs">
                 <p>Número de Chromebooks com status 'disponível' no inventário. Clique para ver a lista.</p>
               </TooltipContent>
             </ShadcnTooltip>
@@ -168,7 +186,7 @@ const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = []
                   <Info className="h-3 w-3 text-muted-foreground" />
                 </CardTitle>
               </TooltipTrigger>
-              <TooltipContent className="max-w-xs text-xs"> {/* AJUSTADO: max-w-xs */}
+              <TooltipContent className="max-w-xs text-xs">
                 <p>Duração média (em minutos) dos empréstimos que foram devolvidos no período selecionado.</p>
               </TooltipContent>
             </ShadcnTooltip>
@@ -194,7 +212,7 @@ const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = []
                   <Info className="h-3 w-3 text-muted-foreground" />
                 </CardTitle>
               </TooltipTrigger>
-              <TooltipContent className="max-w-xs text-xs"> {/* AJUSTADO: max-w-xs */}
+              <TooltipContent className="max-w-xs text-xs">
                 <p>Porcentagem de empréstimos realizados no período que já foram devolvidos.</p>
               </TooltipContent>
             </ShadcnTooltip>
@@ -217,4 +235,240 @@ const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = []
   );
 };
 
-// ... (Resto do componente Dashboard)
+// Componente principal Dashboard
+export function Dashboard({ onBack }: DashboardProps) {
+  const [isMounted, setIsMounted] = useState(false);
+  const [startDate, setStartDate] = useState<Date | null>(startOfDay(subDays(new Date(), 6)));
+  const [endDate, setEndDate] = useState<Date | null>(endOfDay(new Date()));
+  const [startHour, setStartHour] = useState(7);
+  const [endHour, setEndHour] = useState(19);
+  const [periodView, setPeriodView] = useState<PeriodView>('history'); // Padrão para 'history'
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [detailModalData, setDetailModalData] = useState<any[] | null>(null);
+  const [detailModalTitle, setDetailModalTitle] = useState('');
+  const [detailModalDescription, setDetailModalDescription] = useState('');
+  const [detailModalType, setDetailModalType] = useState<'chromebooks' | 'loans'>('chromebooks');
+  const [detailModalLoading, setDetailModalLoading] = useState(false);
+  const [chromebookStatusFilter, setChromebookStatusFilter] = useState<Chromebook['status'] | null>(null);
+  
+  const { 
+    loading, 
+    stats, 
+    filteredLoans, 
+    filteredReturns, 
+    periodChartData, 
+    history,
+    chromebooks,
+    refreshData
+  } = useDashboardData(startDate, endDate, startHour, endHour);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  const handleApplyFilter = useCallback(() => {
+    // A chamada a useDashboardData já é re-executada quando startDate/endDate/startHour/endHour mudam.
+    // Apenas forçamos a atualização visual aqui.
+    refreshData();
+  }, [refreshData]);
+
+  const handleCardClick = useCallback(async (title: string, description: string, type: 'chromebooks' | 'loans', data: any[] | null, statusFilter?: Chromebook['status']) => {
+    setDetailModalTitle(title);
+    setDetailModalDescription(description);
+    setDetailModalType(type);
+    setIsDetailModalOpen(true);
+    setDetailModalLoading(true);
+    
+    if (type === 'chromebooks' && statusFilter) {
+      // Se for Chromebooks, filtramos a lista completa localmente
+      const filtered = chromebooks.filter(cb => cb.status === statusFilter).map(cb => ({
+        id: cb.id,
+        chromebook_id: cb.chromebook_id,
+        model: cb.model,
+        status: cb.status,
+      }));
+      setDetailModalData(filtered);
+    } else if (type === 'loans' && data) {
+      // Se for loans, usamos os dados já filtrados e mapeados
+      setDetailModalData(data);
+    } else {
+      setDetailModalData([]);
+    }
+    
+    setDetailModalLoading(false);
+  }, [chromebooks]);
+
+  const PIE_COLORS = ['#8884d8', '#82ca9d', '#ffc658'];
+  const userTypeData = stats?.userTypeData || [];
+  const durationData = stats?.durationData || [];
+
+  return (
+    <div className="space-y-8">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        
+        {/* Coluna de Filtros (1/4) */}
+        <div className="lg:col-span-1 space-y-6">
+          <CollapsibleDashboardFilter
+            startDate={startDate}
+            setStartDate={setStartDate}
+            endDate={endDate}
+            setEndDate={setEndDate}
+            startHour={startHour}
+            setStartHour={setStartHour}
+            endHour={endHour}
+            setEndHour={setEndHour}
+            onApply={handleApplyFilter}
+            loading={loading}
+          />
+          
+          {/* Gráfico de Uso por Tipo de Usuário */}
+          <GlassCard className={cn("dashboard-card", isMounted ? 'animate-fadeIn animation-delay-600' : 'opacity-0')}>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <BarChart3 className="h-5 w-5 text-primary" />
+                Empréstimos por Tipo
+              </CardTitle>
+              <CardDescription>
+                Distribuição dos empréstimos no período.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="h-64 p-0 flex items-center justify-center">
+              {loading ? (
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              ) : userTypeData.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={userTypeData}
+                      dataKey="value"
+                      nameKey="name"
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={80}
+                      fill="#8884d8"
+                      label
+                    >
+                      {userTypeData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                    <Legend layout="horizontal" verticalAlign="bottom" align="center" wrapperStyle={{ fontSize: '12px' }} />
+                  </PieChart>
+                </ResponsiveContainer>
+              ) : (
+                <p className="text-muted-foreground text-sm">Sem dados de empréstimo no período.</p>
+              )}
+            </CardContent>
+          </GlassCard>
+        </div>
+        
+        {/* Coluna de Estatísticas e Gráficos (3/4) */}
+        <div className="lg:col-span-3 space-y-6">
+          
+          {/* Grid de Estatísticas Principais */}
+          <StatsGrid 
+            periodView={periodView} 
+            stats={stats} 
+            filteredLoans={filteredLoans}
+            filteredReturns={filteredReturns}
+            loading={loading}
+            onCardClick={handleCardClick}
+            history={history}
+            isMounted={isMounted}
+          />
+          
+          {/* Gráfico de Linha (Empréstimos e Ocupação) */}
+          <GlassCard className={cn("dashboard-card", isMounted ? 'animate-fadeIn animation-delay-700' : 'opacity-0')}>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <BarChart3 className="h-5 w-5 text-primary" />
+                Atividade e Ocupação por Período
+              </CardTitle>
+              <CardDescription>
+                Visualização horária ou diária da atividade de empréstimo e taxa de ocupação.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="h-80 p-0">
+              {loading ? (
+                <div className="flex justify-center items-center h-full">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              ) : periodChartData.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart
+                    data={periodChartData}
+                    margin={{ top: 20, right: 30, left: 0, bottom: 5 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" vertical={false} />
+                    <XAxis dataKey="label" tick={{ fontSize: 10 }} />
+                    <YAxis yAxisId="left" orientation="left" stroke="#8884d8" label={{ value: 'Empréstimos/Devoluções', angle: -90, position: 'insideLeft', style: { textAnchor: 'middle', fontSize: 12 } }} />
+                    <YAxis yAxisId="right" orientation="right" stroke="#ff7300" domain={[0, 100]} label={{ value: 'Ocupação (%)', angle: 90, position: 'insideRight', style: { textAnchor: 'middle', fontSize: 12 } }} />
+                    <Tooltip contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.9)', border: '1px solid #ccc', borderRadius: '8px', fontSize: '12px' }} />
+                    <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
+                    <Line yAxisId="left" type="monotone" dataKey="empréstimos" stroke="#8884d8" strokeWidth={2} name="Empréstimos" />
+                    <Line yAxisId="left" type="monotone" dataKey="devoluções" stroke="#82ca9d" strokeWidth={2} name="Devoluções" />
+                    <Line yAxisId="right" type="monotone" dataKey="ocupação" stroke="#ff7300" strokeWidth={2} name="Ocupação (%)" dot={false} />
+                  </LineChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="flex justify-center items-center h-full">
+                  <p className="text-muted-foreground text-sm">Selecione um período para visualizar o gráfico.</p>
+                </div>
+              )}
+            </CardContent>
+          </GlassCard>
+          
+          {/* Top Contextos de Empréstimo */}
+          <TopLoanContextsPanel topLoanContexts={stats?.topLoanContexts || []} />
+          
+          {/* Gráfico de Duração Média */}
+          <GlassCard className={cn("dashboard-card", isMounted ? 'animate-fadeIn animation-delay-800' : 'opacity-0')}>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Clock className="h-5 w-5 text-primary" />
+                Duração Média (Minutos)
+              </CardTitle>
+              <CardDescription>
+                Tempo médio que cada tipo de usuário mantém o equipamento.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="h-64 p-0 flex items-center justify-center">
+              {loading ? (
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              ) : durationData.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={durationData}
+                    margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                    layout="vertical"
+                  >
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" horizontal={false} />
+                    <XAxis type="number" label={{ value: 'Minutos', position: 'bottom', style: { fontSize: 12 } }} tick={{ fontSize: 10 }} />
+                    <YAxis type="category" dataKey="name" width={80} tick={{ fontSize: 12 }} />
+                    <Tooltip formatter={(value: number) => [`${value} minutos`, 'Duração Média']} contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.9)', border: '1px solid #ccc', borderRadius: '8px', fontSize: '12px' }} />
+                    <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
+                    <Bar dataKey="minutos" fill="#8884d8" name="Duração Média" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <p className="text-muted-foreground text-sm">Sem dados de devolução no período.</p>
+              )}
+            </CardContent>
+          </GlassCard>
+        </div>
+      </div>
+
+      {/* Modal de Detalhes */}
+      <DashboardDetailDialog
+        open={isDetailModalOpen}
+        onOpenChange={setIsDetailModalOpen}
+        title={detailModalTitle}
+        description={detailModalDescription}
+        data={detailModalData}
+        isLoading={detailModalLoading}
+        dataType={detailModalType}
+      />
+    </div>
+  );
+}
