@@ -141,7 +141,6 @@ export const AuditReportComponent: React.FC<AuditReportProps> = ({ report, audit
     const allItems = statistics.byLocation.flatMap(locStat => 
       // Esta lógica é falha, pois statistics.byLocation não contém os itens detalhados.
       // Para exportar CSV detalhado, precisaríamos dos 'countedItems' originais.
-      // Como não temos acesso a eles aqui, vamos exportar apenas o resumo de localização.
       // Se o usuário quiser detalhes, ele deve usar a auditoria ativa.
       []
     );

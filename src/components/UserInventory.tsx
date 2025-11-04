@@ -10,7 +10,7 @@ import {
   TableRow,
 } from "./ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
-import { toast } from "./ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { Search, Filter, Edit3, Trash2, Users, GraduationCap, UserCheck, Briefcase, Loader2 } from "lucide-react";
 import { 
   Select,

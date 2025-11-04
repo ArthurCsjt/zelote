@@ -6,7 +6,7 @@ import type { LoanHistoryItem, Chromebook } from "@/types/database";
 import { Badge } from "./ui/badge";
 import { Computer, Download, ArrowLeft, BarChart as BarChartIcon, RefreshCw, Info, Zap, Waves, History as HistoryIcon, CalendarRange } from "lucide-react";
 import jsPDF from "jspdf";
-import { useToast } from "./ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { SectionHeader } from "./Shared/SectionHeader";
 import { DashboardDetailDialog } from "./DashboardDetailDialog";

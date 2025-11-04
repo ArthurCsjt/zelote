@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Button } from "./ui/button";
 import { QRCodeSVG } from 'qrcode.react';
 import { CheckCircle, Download, Printer, X, QrCode } from "lucide-react";
-import { toast } from "./ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { supabase } from '@/integrations/supabase/client';
 
 interface QRCodeModalProps {
@@ -126,8 +126,11 @@ export function QRCodeModal({
       
       img.onload = () => {
         const padding = 20; // 0.5cm aproximadamente
-        canvas.width = img.width + (padding * 2);
-        canvas.height = img.height + 60 + (padding * 2);
+        const qrSize = 140; // Tamanho do QR Code SVG
+        const textHeight = 60; // Espaço para o texto
+        
+        canvas.width = qrSize + (padding * 2);
+        canvas.height = qrSize + textHeight + (padding * 2);
         
         // White background
         ctx.fillStyle = "#FFFFFF";
@@ -140,13 +143,13 @@ export function QRCodeModal({
         ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
         
         // Draw QR code with padding
-        ctx.drawImage(img, padding, padding);
+        ctx.drawImage(img, padding, padding, qrSize, qrSize);
         
         // Add ID text below QR code with closer spacing
         ctx.fillStyle = "#000000";
         ctx.font = "16px Arial";
         ctx.textAlign = "center";
-        ctx.fillText(`ID: ${chromebookId}`, canvas.width / 2, img.height + padding + 25);
+        ctx.fillText(`ID: ${chromebookId}`, canvas.width / 2, qrSize + padding + 25);
         
         // Download PNG
         const link = document.createElement('a');
@@ -160,6 +163,13 @@ export function QRCodeModal({
         });
       };
 
+      // Cria um SVG temporário para garantir que o tamanho seja 140x140 para o canvas
+      const tempSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      tempSvg.setAttribute('width', '140');
+      tempSvg.setAttribute('height', '140');
+      tempSvg.innerHTML = element.innerHTML;
+      
+      const svgData = new XMLSerializer().serializeToString(tempSvg);
       img.src = 'data:image/svg+xml;base64,' + btoa(svgData);
     } catch (error) {
       console.error('Erro ao gerar PNG:', error);
