@@ -11,7 +11,7 @@ import { RegistrationHub } from "@/components/RegistrationHub";
 import Layout from "@/components/Layout";
 import { MainMenu } from "@/components/MainMenu";
 import { InventoryHub } from "@/components/InventoryHub";
-import { Dashboard } from "@/components/Dashboard";
+import { DashboardLayout } from "@/components/DashboardLayout"; // RENOMEADO
 import { QRCodeModal } from "@/components/QRCodeModal";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { LoanHub } from "@/components/LoanHub";
@@ -89,7 +89,7 @@ const Index = () => {
       case 'registration':
         return <RegistrationHub onBack={handleBackToMenu} onRegistrationSuccess={handleRegistrationSuccess} />;
       case 'dashboard':
-        return <Dashboard onBack={handleBackToMenu} />;
+        return <DashboardLayout onBack={handleBackToMenu} />;
       case 'inventory':
         return <InventoryHub onBack={handleBackToMenu} onGenerateQrCode={handleGenerateQrCode} />;
       case 'loan':

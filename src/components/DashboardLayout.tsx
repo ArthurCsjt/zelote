@@ -1,0 +1,390 @@
+import { useEffect, useState, useCallback, useMemo } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { format, startOfDay, endOfDay, differenceInMinutes } from "date-fns";
+import type { LoanHistoryItem, Chromebook } from "@/types/database";
+import { Badge } from "./ui/badge";
+import { Computer, Download, ArrowLeft, BarChart as BarChartIcon, RefreshCw, Info, Zap, Waves, History as HistoryIcon } from "lucide-react";
+import jsPDF from "jspdf";
+import { useToast } from "./ui/use-toast";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
+import { SectionHeader } from "./Shared/SectionHeader";
+import { DashboardDetailDialog } from "./DashboardDetailDialog";
+import { cn } from '@/lib/utils';
+import { useDashboardData, PeriodView } from '@/hooks/useDashboardData';
+import { useDatabase } from '@/hooks/useDatabase';
+import { useOverdueLoans } from '@/hooks/useOverdueLoans';
+import { CollapsibleDashboardFilter } from "./CollapsibleDashboardFilter";
+import { DashboardStatsGrid } from "./dashboard/DashboardStatsGrid"; // NOVO IMPORT
+import { DashboardCharts } from "./dashboard/DashboardCharts"; // NOVO IMPORT
+
+interface DashboardProps {
+  onBack?: () => void;
+}
+
+// Tipos para o estado do modal
+type DetailItem = {
+  id: string;
+  chromebook_id: string;
+  model: string;
+  status?: Chromebook['status'];
+  loan_date?: string;
+  expected_return_date?: string;
+  student_name?: string;
+  isOverdue?: boolean;
+};
+
+type DetailModalState = {
+  open: boolean;
+  title: string;
+  description: string;
+  dataType: 'chromebooks' | 'loans';
+  data: DetailItem[] | null;
+  isLoading: boolean;
+};
+
+export function DashboardLayout({
+  onBack
+}: DashboardProps) {
+  const {
+    toast
+  } = useToast();
+  
+  // NOVO ESTADO: Para controlar a animação de montagem
+  const [isMounted, setIsMounted] = useState(false);
+  
+  useEffect(() => {
+    // Ativa a animação após um pequeno delay para garantir que o componente esteja no DOM
+    const timer = setTimeout(() => setIsMounted(true), 50);
+    return () => clearTimeout(timer);
+  }, []);
+  
+  // NOVO ESTADO: Datas de início e fim para o filtro dinâmico
+  const [startDate, setStartDate] = useState<Date | null>(startOfDay(new Date())); // PADRÃO: HOJE
+  const [endDate, setEndDate] = useState<Date | null>(endOfDay(new Date())); // Padrão: Hoje
+  
+  // O PeriodView agora só controla a visualização (Gráficos vs. Histórico)
+  const [periodView, setPeriodView] = useState < PeriodView | 'charts' > ('charts');
+  
+  const [startHour, setStartHour] = useState(7);
+  const [endHour, setEndHour] = useState(19);
+  
+  const { 
+    loading, 
+    history, 
+    chromebooks, 
+    filteredLoans, 
+    filteredReturns, 
+    periodChartData, 
+    stats, 
+    refreshData 
+  } = useDashboardData(
+    periodView === 'charts' ? startDate : null, // Passa datas apenas se estiver em modo 'charts'
+    periodView === 'charts' ? endDate : null,
+    startHour, 
+    endHour
+  );
+  
+  const { getChromebooksByStatus } = useDatabase();
+
+  // ESTADO DO MODAL DE DETALHES
+  const [detailModal, setDetailModal] = useState<DetailModalState>({
+    open: false,
+    title: '',
+    description: '',
+    dataType: 'chromebooks',
+    data: null,
+    isLoading: false,
+  });
+
+  // Função para abrir o modal e carregar dados dinamicamente
+  const handleCardClick = useCallback(async (
+    title: string, 
+    description: string, 
+    dataType: 'chromebooks' | 'loans', 
+    initialData: DetailItem[] | null,
+    statusFilter?: Chromebook['status']
+  ) => {
+    setDetailModal({
+      open: true,
+      title,
+      description,
+      dataType,
+      data: initialData,
+      isLoading: !initialData, // Se não houver dados iniciais (como para status), carrega
+    });
+
+    if (statusFilter && dataType === 'chromebooks') {
+      setDetailModal(prev => ({ ...prev, isLoading: true }));
+      const chromebooksData = await getChromebooksByStatus(statusFilter);
+      
+      const mappedData: DetailItem[] = chromebooksData.map(cb => ({
+        id: cb.id,
+        chromebook_id: cb.chromebook_id,
+        model: cb.model,
+        status: cb.status,
+      }));
+      
+      setDetailModal(prev => ({
+        ...prev,
+        data: mappedData,
+        isLoading: false,
+      }));
+    }
+    
+    // Se for loans, os dados já vêm pré-filtrados (history.filter)
+    if (dataType === 'loans' && initialData) {
+        setDetailModal(prev => ({ ...prev, data: initialData, isLoading: false }));
+    }
+    
+  }, [getChromebooksByStatus]);
+  
+  // NOVO: Função para lidar com o clique no Pico de Uso (agora apenas aplica o filtro)
+  const handleApplyFilter = () => {
+    // O CollapsibleDashboardFilter já atualiza startDate/endDate/startHour/endHour no estado.
+    
+    // VERIFICAÇÃO DE VALIDADE ANTES DE FORMATAR
+    if (!startDate || !endDate || isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+        toast({
+            title: "Erro de Filtro",
+            description: "As datas de início e fim são inválidas.",
+            variant: "destructive"
+        });
+        return;
+    }
+    
+    refreshData();
+    toast({
+      title: "Filtro Aplicado",
+      description: `Análise atualizada para o período de ${format(startDate, 'dd/MM/yyyy')} a ${format(endDate, 'dd/MM/yyyy')} (${startHour}h às ${endHour}h).`,
+      variant: "info"
+    });
+  };
+
+
+  const { overdueLoans, upcomingDueLoans } = useOverdueLoans();
+  
+  // Função para gerar o PDF do relatório
+  const periodText: Record<PeriodView | 'charts', string> = {
+    charts: `Período: ${startDate && endDate ? `${format(startDate, 'dd/MM/yyyy')} - ${format(endDate, 'dd/MM/yyyy')}` : 'N/A'}`,
+    history: 'Histórico Completo',
+    reports: 'Relatórios Inteligentes'
+  };
+
+  const generatePDFContent = (pdf: jsPDF) => {
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    let yPosition = 20;
+    pdf.setFontSize(20);
+    pdf.text(`Relatório de Uso dos Chromebooks - ${periodText[periodView]}`, pageWidth / 2, yPosition, {
+      align: "center"
+    });
+    yPosition += 20;
+    pdf.setFontSize(12);
+    pdf.text(`Gerado em: ${format(new Date(), "dd/MM/yyyy 'às' HH:mm")}`, pageWidth / 2, yPosition, {
+      align: "center"
+    });
+    yPosition += 20;
+    pdf.setFontSize(16);
+    pdf.text(`Estatísticas do Período`, 20, yPosition);
+    yPosition += 10;
+    pdf.setFontSize(12);
+    const periodStats = [
+      `Empréstimos: ${filteredLoans?.length || 0}`, 
+      `Devoluções: ${filteredReturns?.length || 0}`, 
+      `Chromebooks ativos: ${stats?.totalActive || 0} de ${stats?.totalChromebooks || 0}`, 
+      `Taxa de Ocupação Máxima: ${stats?.maxOccupancyRate.toFixed(0) || 0}%`,
+      `Tempo médio de uso: ${Math.round(stats?.averageUsageTime || 0)} minutos`, 
+      `Taxa de devolução: ${stats?.completionRate.toFixed(0) || 0}%`
+    ];
+    periodStats.forEach(stat => {
+      pdf.text(`• ${stat}`, 25, yPosition);
+      yPosition += 7;
+    });
+    yPosition += 13;
+    pdf.setFontSize(16);
+    pdf.text("Empréstimos Ativos", 20, yPosition);
+    yPosition += 10;
+    pdf.setFontSize(12);
+    history.filter(loan => !loan.return_date).forEach(loan => {
+      if (yPosition > pdf.internal.pageSize.getHeight() - 20) {
+        pdf.addPage();
+        yPosition = 20;
+      }
+      pdf.text(`• ${loan.student_name} - ID: ${loan.chromebook_id}`, 25, yPosition);
+      pdf.text(`  Retirada: ${format(new Date(loan.loan_date), "dd/MM/yyyy 'às' HH:mm")}`, 25, yPosition + 5);
+      yPosition += 15;
+    });
+    return pdf;
+  };
+  
+  const handleDownloadPDF = () => {
+    if (periodView !== 'charts') {
+      toast({
+        title: "Atenção",
+        description: "O download de relatórios só está disponível na aba 'Análise de Uso'.",
+        variant: "destructive"
+      });
+      return;
+    }
+    try {
+      const pdf = new jsPDF();
+      generatePDFContent(pdf);
+      pdf.save(`relatorio-chromebooks-personalizado.pdf`);
+      toast({
+        title: "Sucesso",
+        description: `Relatório gerado com sucesso!`
+      });
+    } catch (error) {
+      console.error("Erro ao gerar PDF:", error);
+      toast({
+        title: "Erro",
+        description: "Erro ao gerar o relatório PDF",
+        variant: "destructive"
+      });
+    }
+  };
+  
+  // Quick Win: Badge "Novo"
+  const isNewLoan = (loan: LoanHistoryItem) => {
+    const loanDate = new Date(loan.loan_date);
+    const now = new Date();
+    const diffHours = differenceInMinutes(now, loanDate) / 60;
+    return diffHours <= 24;
+  };
+
+  const periodOptions: { value: PeriodView | 'charts'; label: string; icon: React.ElementType }[] = [
+    { value: 'charts', label: 'Análise de Uso', icon: BarChartIcon },
+    { value: 'history', label: 'Histórico Completo', icon: HistoryIcon },
+    // { value: 'reports', label: 'Relatórios Inteligentes', icon: Brain }, // Mantido como placeholder
+  ];
+  
+  // Badge de Período Ativo
+  const periodBadge = useMemo(() => {
+    if (periodView !== 'charts' || !startDate || !endDate) return null;
+    
+    // Adicionando verificação de validade da data
+    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) return null;
+
+    const startFmt = format(startDate, 'dd/MM');
+    const endFmt = format(endDate, 'dd/MM');
+    const dateRange = startFmt === endFmt ? startFmt : `${startFmt} - ${endFmt}`;
+    
+    return (
+      <Badge variant="secondary" className="bg-blue-100 text-blue-700 border-blue-300 text-sm font-medium dark:bg-blue-900 dark:text-blue-300 dark:border-blue-800">
+        <CalendarRange className="h-3 w-3 mr-1" />
+        {dateRange} | {startHour}h - {endHour}h
+      </Badge>
+    );
+  }, [periodView, startDate, endDate, startHour, endHour]);
+
+
+  return (
+    <div className="space-y-8 relative py-[30px]">
+      { /* Background gradient overlay */ }
+      <div className="absolute inset-0 -z-10 bg-transparent blur-2xl transform scale-110 py-[25px] rounded-3xl bg-[#000a0e]/0" />
+      
+      {/* Header: Title and Download Button */}
+      <div className={cn("flex flex-col sm:flex-row justify-between items-start sm:items-center relative z-10 gap-4", isMounted ? 'animate-fadeIn animation-delay-0' : 'opacity-0')}>
+        <SectionHeader 
+          title="Dashboard" 
+          description="Análise de uso e estatísticas de empréstimos"
+          icon={BarChartIcon}
+          iconColor="text-primary"
+        />
+        <div className="flex items-center gap-3 w-full sm:w-auto">
+          <Button 
+            variant="outline" 
+            onClick={refreshData} 
+            className="flex items-center gap-2 hover:bg-blue-50 dark:bg-card dark:hover:bg-accent" 
+            disabled={loading}
+          >
+            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+            <span className="hidden md:inline">{loading ? 'Atualizando...' : 'Atualizar Dados'}</span>
+          </Button>
+          
+          {/* NOVO: Select para seleção de visualização */}
+          <Select value={periodView} onValueChange={(v) => setPeriodView(v as PeriodView | 'charts')}>
+            <SelectTrigger className="w-full sm:w-[200px] h-10 dark:bg-card dark:border-border">
+              <SelectValue placeholder="Selecione a Visualização" />
+            </SelectTrigger>
+            <SelectContent>
+              {periodOptions.map(option => {
+                const Icon = option.icon;
+                return (
+                  <SelectItem key={option.value} value={option.value} className="flex items-center">
+                    <Icon className="h-4 w-4 mr-2 text-muted-foreground" />
+                    {option.label}
+                  </SelectItem>
+                );
+              })}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      {/* Filtro de Hora (Aparece apenas no modo 'charts') */}
+      {periodView === 'charts' && (
+        <div className={cn("mt-6 space-y-4", isMounted ? 'animate-fadeIn animation-delay-100' : 'opacity-0')}>
+            <CollapsibleDashboardFilter 
+                startDate={startDate}
+                setStartDate={setStartDate}
+                endDate={endDate}
+                setEndDate={setEndDate}
+                startHour={startHour}
+                setStartHour={setStartHour}
+                endHour={endHour}
+                setEndHour={setEndHour}
+                onApply={handleApplyFilter} // USANDO O NOVO HANDLER
+                loading={loading}
+            />
+            {/* Badge de Período Ativo */}
+            {periodBadge && (
+                <div className="flex justify-start">
+                    {periodBadge}
+                </div>
+            )}
+        </div>
+      )}
+
+      {/* Grid de Cards de Estatísticas (Visível apenas no modo 'charts') */}
+      {periodView === 'charts' && (
+        <DashboardStatsGrid 
+          stats={stats}
+          history={history}
+          loading={loading}
+          onCardClick={handleCardClick}
+          isMounted={isMounted}
+        />
+      )}
+
+      {/* Conteúdo Principal (Gráficos ou Histórico) */}
+      <div className="space-y-4 mt-6">
+        <DashboardCharts 
+          periodView={periodView}
+          loading={loading}
+          periodChartData={periodChartData}
+          stats={stats}
+          totalChromebooks={stats?.totalChromebooks || 0}
+          availableChromebooks={stats?.availableChromebooks || 0}
+          userTypeData={stats?.userTypeData || []}
+          durationData={stats?.durationData || []}
+          isNewLoan={isNewLoan}
+          history={history}
+          isMounted={isMounted}
+        />
+      </div>
+      
+      {/* Modal de Detalhes */}
+      <DashboardDetailDialog
+        open={detailModal.open}
+        onOpenChange={(open) => setDetailModal(prev => ({ ...prev, open }))}
+        title={detailModal.title}
+        description={detailModal.description}
+        data={detailModal.data}
+        isLoading={detailModal.isLoading}
+        dataType={detailModal.dataType}
+      />
+      
+    </div>
+  );
+}
