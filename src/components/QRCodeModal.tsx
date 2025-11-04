@@ -121,8 +121,15 @@ export function QRCodeModal({
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
 
-      const svgData = new XMLSerializer().serializeToString(element);
       const img = new Image();
+      
+      // 1. Cria um SVG temporário para garantir que o tamanho seja 140x140 para o canvas
+      const tempSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      tempSvg.setAttribute('width', '140');
+      tempSvg.setAttribute('height', '140');
+      tempSvg.innerHTML = element.innerHTML;
+      
+      const svgDataString = new XMLSerializer().serializeToString(tempSvg); // Declaração única
       
       img.onload = () => {
         const padding = 20; // 0.5cm aproximadamente
@@ -163,14 +170,9 @@ export function QRCodeModal({
         });
       };
 
-      // Cria um SVG temporário para garantir que o tamanho seja 140x140 para o canvas
-      const tempSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-      tempSvg.setAttribute('width', '140');
-      tempSvg.setAttribute('height', '140');
-      tempSvg.innerHTML = element.innerHTML;
+      // 2. Define a fonte da imagem (DEVE SER FEITO APÓS O ONLOAD)
+      img.src = 'data:image/svg+xml;base64,' + btoa(svgDataString);
       
-      const svgData = new XMLSerializer().serializeToString(tempSvg);
-      img.src = 'data:image/svg+xml;base64,' + btoa(svgData);
     } catch (error) {
       console.error('Erro ao gerar PNG:', error);
       toast({
