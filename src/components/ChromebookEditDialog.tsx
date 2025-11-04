@@ -12,7 +12,7 @@ import {
   DialogFooter
 } from "./ui/dialog";
 import { Checkbox } from "./ui/checkbox";
-import { toast } from "./ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { Edit3, Save, Tag, Hash, Factory, MapPin, AlertTriangle, Loader2, Map, CheckCircle, XCircle, Info } from "lucide-react";
 import { 
   Select,
