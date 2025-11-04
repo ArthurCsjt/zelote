@@ -52,8 +52,8 @@ const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = []
   const usageColors = getColorClasses(usageRateColor);
   const picoColors = getColorClasses(occupancyRateColor);
 
-  const getAnimationClass = (delay: number) => 
-    isMounted ? `animate-fadeIn animation-delay-${delay}` : 'opacity-0';
+  // REMOVIDO: Lógica de animação baseada em isMounted
+  const getAnimationClass = (delay: number) => ''; 
 
   return (
     <TooltipProvider>
@@ -237,7 +237,7 @@ const StatsGrid = ({ periodView, stats, filteredLoans = [], filteredReturns = []
 
 // Componente principal Dashboard
 export function Dashboard({ onBack }: DashboardProps) {
-  const [isMounted, setIsMounted] = useState(false);
+  // Removendo isMounted, pois não é mais necessário para a visibilidade
   const [startDate, setStartDate] = useState<Date | null>(startOfDay(subDays(new Date(), 6)));
   const [endDate, setEndDate] = useState<Date | null>(endOfDay(new Date()));
   const [startHour, setStartHour] = useState(7);
@@ -262,10 +262,8 @@ export function Dashboard({ onBack }: DashboardProps) {
     refreshData
   } = useDashboardData(startDate, endDate, startHour, endHour);
 
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
+  // REMOVIDO: useEffect para isMounted
+  
   const handleApplyFilter = useCallback(() => {
     // A chamada a useDashboardData já é re-executada quando startDate/endDate/startHour/endHour mudam.
     // Apenas forçamos a atualização visual aqui.
@@ -322,7 +320,7 @@ export function Dashboard({ onBack }: DashboardProps) {
           />
           
           {/* Gráfico de Uso por Tipo de Usuário */}
-          <GlassCard className={cn("dashboard-card", isMounted ? 'animate-fadeIn animation-delay-600' : 'opacity-0')}>
+          <GlassCard className={cn("dashboard-card")}>
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
                 <BarChart3 className="h-5 w-5 text-primary" />
@@ -375,11 +373,11 @@ export function Dashboard({ onBack }: DashboardProps) {
             loading={loading}
             onCardClick={handleCardClick}
             history={history}
-            isMounted={isMounted}
+            // isMounted removido
           />
           
           {/* Gráfico de Linha (Empréstimos e Ocupação) */}
-          <GlassCard className={cn("dashboard-card", isMounted ? 'animate-fadeIn animation-delay-700' : 'opacity-0')}>
+          <GlassCard className={cn("dashboard-card")}>
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
                 <BarChart3 className="h-5 w-5 text-primary" />
@@ -423,7 +421,7 @@ export function Dashboard({ onBack }: DashboardProps) {
           <TopLoanContextsPanel topLoanContexts={stats?.topLoanContexts || []} />
           
           {/* Gráfico de Duração Média */}
-          <GlassCard className={cn("dashboard-card", isMounted ? 'animate-fadeIn animation-delay-800' : 'opacity-0')}>
+          <GlassCard className={cn("dashboard-card")}>
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
                 <Clock className="h-5 w-5 text-primary" />
