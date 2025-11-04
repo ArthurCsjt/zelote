@@ -10,7 +10,7 @@ import {
 } from "./ui/dialog";
 import { Trash2, Loader2 } from "lucide-react";
 import { useDatabase } from '@/hooks/useDatabase';
-import { toast } from './ui/use-toast';
+import { toast } from '@/hooks/use-toast';
 import type { Chromebook } from "@/types/database";
 
 interface ChromebookDeleteDialogProps {

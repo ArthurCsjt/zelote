@@ -15,6 +15,7 @@ import { AlertTriangle, CheckCircle, Download, TrendingUp, FileText, Printer, Al
 import type { AuditReport } from '@/types/database';
 import jsPDF from 'jspdf';
 import { GlassCard } from '@/components/ui/GlassCard'; // Importando GlassCard
+import { toast } from "@/hooks/use-toast";
 
 interface AuditReportProps {
   report: AuditReport | null;

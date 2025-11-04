@@ -5,7 +5,7 @@ import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
 import { Computer, User, AlertTriangle, CheckCircle, RotateCcw, Loader2 } from "lucide-react";
 import { Checkbox } from "./ui/checkbox";
-import { toast } from "./ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { Card, CardTitle, CardHeader, CardContent } from "./ui/card";
 import UserAutocomplete from "./UserAutocomplete";
 import { DeviceListInput } from "./DeviceListInput";

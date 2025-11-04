@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
-import { toast } from "./ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { CameraOff, Loader2, Keyboard } from "lucide-react";
 
 interface QRCodeReaderProps {
