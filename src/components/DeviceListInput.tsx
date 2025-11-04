@@ -4,7 +4,7 @@ import { Button } from './ui/button';
 import { Label } from './ui/label';
 import { Badge } from './ui/badge';
 import { Computer, Plus, QrCode, Loader2, X, AlertTriangle, Search, Factory, Tag, Hash } from 'lucide-react';
-import { toast } from './ui/use-toast';
+import { toast } from '@/hooks/use-toast';
 import { normalizeChromebookId, sanitizeQRCodeData } from '@/utils/security';
 import { QRCodeReader } from './QRCodeReader';
 import { useChromebookSearch, ChromebookSearchResult } from '@/hooks/useChromebookSearch';
