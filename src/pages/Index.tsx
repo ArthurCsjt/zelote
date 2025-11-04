@@ -15,8 +15,7 @@ import { Dashboard } from "@/components/Dashboard";
 import { QRCodeModal } from "@/components/QRCodeModal";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { LoanHub } from "@/components/LoanHub";
-import { useDatabase } from "@/hooks/useDatabase";
-import { QuickRegisterWrapper } from '@/components/QuickRegisterWrapper';
+import { useDatabase } from "@/contexts/DatabaseContext"; // CORRIGIDO: Importando do contexto
 import { ReturnWrapper } from '@/components/ReturnWrapper'; // NOVO IMPORT
 import { cn } from '@/lib/utils'; // Importando cn
 
