@@ -6,7 +6,7 @@ import { Textarea } from "./ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Checkbox } from "./ui/checkbox";
 import { Laptop, Factory, Tag, Hash, MapPin, AlertTriangle, Loader2, CheckCircle } from "lucide-react";
-import { useDatabase } from '@/contexts/DatabaseContext';
+import { useDatabase } from '@/hooks/useDatabase';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "./ui/card";
 import {
   Select,

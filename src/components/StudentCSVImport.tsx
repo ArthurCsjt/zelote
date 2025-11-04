@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '.
 import { Alert, AlertDescription } from './ui/alert';
 import { Badge } from './ui/badge';
 import { toast } from '@/hooks/use-toast';
-import { useDatabase } from '@/contexts/DatabaseContext';
+import { useDatabase } from '@/hooks/useDatabase';
 import { GlassCard } from './ui/GlassCard'; // Importando GlassCard
 
 interface StudentCSVData {
