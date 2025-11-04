@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { ActiveLoans } from "@/components/ActiveLoans";
 import { LoanForm } from "@/components/LoanForm";
 import { ReturnForm } from "@/components/ReturnForm"; // Mantido o import, mas não usado nas abas
-import { useDatabase } from "@/hooks/useDatabase";
+import { useDatabase } from "@/contexts/DatabaseContext";
 import type { LoanHistoryItem, LoanFormData } from "@/types/database";
 import { TabbedContent } from "./TabbedContent";
 
