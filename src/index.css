@@ -133,8 +133,8 @@
   /* Usando --card (L=15%) que é mais claro que --background (L=10%) */
   background: rgba(var(--card), 0.85); 
   /* Aumentando a opacidade da borda para melhor definição */
-  /* Usando --border (L=25%) que é mais claro que o fundo */
-  border: 1px solid rgba(var(--border), 0.7); 
+  /* AJUSTE AQUI: Usando uma borda mais clara (L=40%) para contraste */
+  border: 1px solid hsl(220 10% 40% / 0.7); 
   /* Sombra mais forte e escura */
   box-shadow: 0 6px 40px 0 rgba(0, 0, 0, 0.5), 
               0 1px 0 0 rgba(var(--border), 0.5) inset,
