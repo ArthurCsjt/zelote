@@ -5,7 +5,6 @@ import { format, startOfDay, endOfDay, differenceInMinutes } from "date-fns";
 import type { LoanHistoryItem, Chromebook } from "@/types/database";
 import { Badge } from "./ui/badge";
 import { Computer, Download, ArrowLeft, BarChart as BarChartIcon, RefreshCw, Info, Zap, Waves, History as HistoryIcon, CalendarRange } from "lucide-react";
-import jsPDF from "jspdf";
 import { useToast } from "@/hooks/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { SectionHeader } from "./Shared/SectionHeader";
@@ -15,8 +14,9 @@ import { useDashboardData, PeriodView } from '@/hooks/useDashboardData';
 import { useDatabase } from '@/hooks/useDatabase';
 import { useOverdueLoans } from '@/hooks/useOverdueLoans';
 import { CollapsibleDashboardFilter } from "./CollapsibleDashboardFilter";
-import { DashboardStatsGrid } from "./dashboard/DashboardStatsGrid"; // NOVO IMPORT
-import { DashboardCharts } from "./dashboard/DashboardCharts"; // NOVO IMPORT
+import { DashboardStatsGrid } from "./dashboard/DashboardStatsGrid";
+import { DashboardCharts } from "./dashboard/DashboardCharts";
+import { useDashboardExport } from "@/hooks/useDashboardExport"; // NOVO IMPORT
 
 interface DashboardProps {
   onBack?: () => void;
@@ -86,6 +86,7 @@ export function DashboardLayout({
   );
   
   const { getChromebooksByStatus } = useDatabase();
+  const { handleDownloadPDF } = useDashboardExport(); // USANDO O NOVO HOOK
 
   // ESTADO DO MODAL DE DETALHES
   const [detailModal, setDetailModal] = useState<DetailModalState>({
@@ -164,60 +165,8 @@ export function DashboardLayout({
 
   const { overdueLoans, upcomingDueLoans } = useOverdueLoans();
   
-  // Função para gerar o PDF do relatório
-  const periodText: Record<PeriodView | 'charts', string> = {
-    charts: `Período: ${startDate && endDate ? `${format(startDate, 'dd/MM/yyyy')} - ${format(endDate, 'dd/MM/yyyy')}` : 'N/A'}`,
-    history: 'Histórico Completo',
-    reports: 'Relatórios Inteligentes'
-  };
-
-  const generatePDFContent = (pdf: jsPDF) => {
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    let yPosition = 20;
-    pdf.setFontSize(20);
-    pdf.text(`Relatório de Uso dos Chromebooks - ${periodText[periodView]}`, pageWidth / 2, yPosition, {
-      align: "center"
-    });
-    yPosition += 20;
-    pdf.setFontSize(12);
-    pdf.text(`Gerado em: ${format(new Date(), "dd/MM/yyyy 'às' HH:mm")}`, pageWidth / 2, yPosition, {
-      align: "center"
-    });
-    yPosition += 20;
-    pdf.setFontSize(16);
-    pdf.text(`Estatísticas do Período`, 20, yPosition);
-    yPosition += 10;
-    pdf.setFontSize(12);
-    const periodStats = [
-      `Empréstimos: ${filteredLoans?.length || 0}`, 
-      `Devoluções: ${filteredReturns?.length || 0}`, 
-      `Chromebooks ativos: ${stats?.totalActive || 0} de ${stats?.totalChromebooks || 0}`, 
-      `Taxa de Ocupação Máxima: ${stats?.maxOccupancyRate.toFixed(0) || 0}%`,
-      `Tempo médio de uso: ${Math.round(stats?.averageUsageTime || 0)} minutos`, 
-      `Taxa de devolução: ${stats?.completionRate.toFixed(0) || 0}%`
-    ];
-    periodStats.forEach(stat => {
-      pdf.text(`• ${stat}`, 25, yPosition);
-      yPosition += 7;
-    });
-    yPosition += 13;
-    pdf.setFontSize(16);
-    pdf.text("Empréstimos Ativos", 20, yPosition);
-    yPosition += 10;
-    pdf.setFontSize(12);
-    history.filter(loan => !loan.return_date).forEach(loan => {
-      if (yPosition > pdf.internal.pageSize.getHeight() - 20) {
-        pdf.addPage();
-        yPosition = 20;
-      }
-      pdf.text(`• ${loan.student_name} - ID: ${loan.chromebook_id}`, 25, yPosition);
-      pdf.text(`  Retirada: ${format(new Date(loan.loan_date), "dd/MM/yyyy 'às' HH:mm")}`, 25, yPosition + 5);
-      yPosition += 15;
-    });
-    return pdf;
-  };
-  
-  const handleDownloadPDF = () => {
+  // Função para gerar o PDF do relatório (AGORA CHAMA O HOOK)
+  const handleExportPDF = () => {
     if (periodView !== 'charts') {
       toast({
         title: "Atenção",
@@ -226,22 +175,15 @@ export function DashboardLayout({
       });
       return;
     }
-    try {
-      const pdf = new jsPDF();
-      generatePDFContent(pdf);
-      pdf.save(`relatorio-chromebooks-personalizado.pdf`);
-      toast({
-        title: "Sucesso",
-        description: `Relatório gerado com sucesso!`
-      });
-    } catch (error) {
-      console.error("Erro ao gerar PDF:", error);
-      toast({
-        title: "Erro",
-        description: "Erro ao gerar o relatório PDF",
-        variant: "destructive"
-      });
-    }
+    
+    handleDownloadPDF({
+        history: history, // Passa o histórico completo para o PDF poder listar ativos
+        stats: stats,
+        startDate: startDate,
+        endDate: endDate,
+        startHour: startHour,
+        endHour: endHour,
+    });
   };
   
   // Quick Win: Badge "Novo"
@@ -292,6 +234,20 @@ export function DashboardLayout({
           iconColor="text-primary"
         />
         <div className="flex items-center gap-3 w-full sm:w-auto">
+          
+          {/* Botão de Download PDF */}
+          {periodView === 'charts' && (
+            <Button 
+              variant="outline" 
+              onClick={handleExportPDF} 
+              className="flex items-center gap-2 hover:bg-blue-50 dark:bg-card dark:hover:bg-accent" 
+              disabled={loading || !stats}
+            >
+              <Download className="h-4 w-4" />
+              <span className="hidden md:inline">Baixar Relatório (PDF)</span>
+            </Button>
+          )}
+          
           <Button 
             variant="outline" 
             onClick={refreshData} 
