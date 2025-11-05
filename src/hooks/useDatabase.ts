@@ -19,6 +19,7 @@ interface StudentData {
   nome_completo: string;
   ra: string;
   email: string;
+  turma: string; // Adicionado turma para consistência
 }
 
 interface StaffData {
@@ -852,6 +853,50 @@ export const useDatabase = () => {
       setLoading(false);
     }
   }, [user]);
+  
+  // NOVO: Bulk Insert Teachers
+  const bulkInsertTeachers = useCallback(async (teachers: TeacherData[]): Promise<boolean> => {
+    if (!user) {
+      toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
+      return false;
+    }
+
+    setLoading(true);
+    try {
+      // Validação de domínio para todos os professores no lote
+      for (const teacher of teachers) {
+        if (!validateEmailDomain(teacher.email, DOMAIN_SUFFIX_PROFESSOR)) {
+            throw new Error(`Email de professor inválido: ${teacher.email}. Deve terminar com ${DOMAIN_SUFFIX_PROFESSOR}`);
+        }
+      }
+      
+      // Mapeia para o formato do DB (nome_completo, email, materia)
+      const teachersToInsert = teachers.map(t => ({
+          nome_completo: t.nome_completo,
+          email: t.email,
+          materia: t.materia || null,
+      }));
+      
+      const { error } = await supabase
+        .from('professores')
+        .insert(teachersToInsert);
+
+      if (error) throw error;
+      return true;
+    } catch (error: any) {
+      console.error('Erro ao importar professores:', error);
+      // Verifica se o erro é de restrição de unicidade (email duplicado)
+      if (error.code === '23505') {
+        toast({ title: "Erro de Importação", description: "Pelo menos um E-mail já está cadastrado.", variant: "destructive" });
+      } else {
+        toast({ title: "Erro", description: error.message, variant: "destructive" });
+      }
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
+
 
   const deleteAllStudents = useCallback(async (): Promise<boolean> => {
     if (!user) {
@@ -944,6 +989,7 @@ export const useDatabase = () => {
     deleteAllStudents,
     createTeacher,
     updateTeacher,
+    bulkInsertTeachers, // EXPORTANDO A NOVA FUNÇÃO
     createStaff,
     updateStaff,
     deleteUserRecord
