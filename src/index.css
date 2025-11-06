@@ -4,84 +4,160 @@
  
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
-
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
- 
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
- 
-    /* Apple-inspired blue */
-    --primary: 213 100% 50%; 
-    --primary-foreground: 0 0% 100%;
- 
+    /* ===== BACKGROUNDS ===== */
+    --background: 0 0% 100%;           /* Branco puro */
+    --background-secondary: 220 13% 97%; /* Cinza muito claro */
+    --foreground: 222.2 84% 4.9%;      /* Texto preto suave */
+    
+    /* ===== CARDS & SURFACES ===== */
+    --card: 0 0% 100%;                 /* Fundo cards light */
+    --card-foreground: 222.2 84% 4.9%; /* Texto cards light */
+    --card-hover: 220 13% 95%;         /* Hover sutil light */
+    
+    /* ===== MODAIS & OVERLAYS ===== */
+    --modal: 0 0% 100%;                /* Fundo modal light */
+    --modal-border: 214 32% 91%;       /* Borda modal light */
+    --overlay: 222.2 84% 4.9% / 0.8;   /* Overlay escuro */
+    
+    /* ===== GLASSMORPHISM ===== */
+    --glass-bg: 0 0% 100% / 0.85;      /* 85% opaco light */
+    --glass-border: 214 32% 91%;       /* Borda suave light */
+    --glass-shadow: 220 13% 70% / 0.1; /* Sombra light */
+    
+    /* ===== INPUTS ===== */
+    --input: 214.3 31.8% 91.4%;        /* Borda input light */
+    --input-bg: 0 0% 100%;             /* Fundo input light */
+    --input-foreground: 222.2 84% 4.9%;/* Texto input light */
+    --input-placeholder: 215.4 16.3% 46.9% / 0.5; /* Placeholder light */
+    
+    /* ===== BUTTONS ===== */
+    --primary: 221.2 83.2% 53.3%;      /* Azul primário */
+    --primary-foreground: 210 40% 98%; /* Texto no primário */
+    --primary-hover: 221.2 83.2% 45%;  /* Hover primário */
+    
+    /* ===== STATES ===== */
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
- 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
- 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
- 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --muted: 210 40% 96.1%;            /* Fundo muted light */
+    --muted-foreground: 215.4 16.3% 46.9%; /* Texto muted light */
+    --accent: 210 40% 96.1%;           /* Accent light */
+    --accent-foreground: 222.2 47.4% 11.2%; /* Texto accent light */
+    
+    /* ===== SEMANTIC COLORS ===== */
+    --success: 142 71% 45%;            /* Verde */
+    --success-foreground: 144 61% 20%; /* Texto verde escuro */
+    --success-bg: 142 76% 95%;         /* Fundo verde claro */
+    
+    --warning: 38 92% 50%;             /* Laranja */
+    --warning-foreground: 26 90% 37%; /* Texto laranja escuro */
+    --warning-bg: 48 96% 95%;          /* Fundo laranja claro */
+    
+    --error: 0 84% 60%;                /* Vermelho */
+    --error-foreground: 0 90% 30%;     /* Texto vermelho escuro */
+    --error-bg: 0 86% 97%;             /* Fundo vermelho claro */
+    
+    --info: 199 89% 48%;               /* Azul info */
+    --info-foreground: 199 100% 20%;   /* Texto azul escuro */
+    --info-bg: 199 95% 95%;            /* Fundo azul claro */
+    
+    /* ===== BORDERS & SHADOWS ===== */
+    --border: 214.3 31.8% 91.4%;       /* Borda padrão light */
+    --border-strong: 214 32% 75%;      /* Borda forte light */
+    --ring: 221.2 83.2% 53.3%;         /* Focus ring */
+    
+    --shadow-sm: 220 13% 70% / 0.05;   /* Sombra pequena */
+    --shadow-md: 220 13% 70% / 0.1;    /* Sombra média */
+    --shadow-lg: 220 13% 70% / 0.15;   /* Sombra grande */
+    
+    /* ===== RADIUS ===== */
+    --radius: 0.75rem;                 /* 12px padrão */
+    --radius-sm: 0.5rem;               /* 8px pequeno */
+    --radius-lg: 1rem;                 /* 16px grande */
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 213 100% 50%;
- 
-    --radius: 1rem;
-
-    /* Menu Button Colors - Sistema consistente */
+    /* Menu Button Colors (PRESERVADO) */
     --menu-green: 142 76% 36%;
     --menu-green-hover: 142 76% 32%;
     --menu-blue: 213 94% 68%;
     --menu-blue-hover: 213 94% 64%;
-    --menu-violet: 258 70% 45%; /* AJUSTADO: Mais escuro */
-    --menu-violet-hover: 258 70% 40%; /* AJUSTADO: Hover mais escuro */
-    --menu-amber: 35 93% 40%; /* AJUSTADO: Laranja mais escuro e vibrante */
-    --menu-amber-hover: 35 93% 35%; /* AJUSTADO: Hover mais escuro */
+    --menu-violet: 258 70% 45%;
+    --menu-violet-hover: 258 70% 40%;
+    --menu-amber: 35 93% 40%;
+    --menu-amber-hover: 35 93% 35%;
     --menu-rose: 348 83% 47%;
     --menu-rose-hover: 348 83% 43%;
-    --menu-teal: 174 70% 40%; /* Cor para Re-Cadastro Rápido */
+    --menu-teal: 174 70% 40%;
     --menu-teal-hover: 174 70% 35%;
+    --menu-dark-blue: 213 90% 35%;
+    --menu-dark-blue-hover: 213 90% 30%;
   }
-  
+
   .dark {
-    /* Fundo principal: Cinza escuro suave (L=10%) */
-    --background: 220 10% 10%; 
-    --foreground: 0 0% 98%;
-
-    /* Cards e Popovers: Um pouco mais claro que o fundo (L=15%) */
-    --card: 220 10% 15%; 
-    --card-foreground: 0 0% 98%;
- 
-    --popover: 220 10% 15%;
-    --popover-foreground: 0 0% 98%;
- 
-    --primary: 213 100% 50%;
-    --primary-foreground: 0 0% 100%;
- 
-    --secondary: 220 10% 20%; /* Cinza escuro para secundário */
-    --secondary-foreground: 0 0% 98%;
- 
-    --muted: 220 10% 20%;
-    --muted-foreground: 217.9 10.6% 64.9%;
- 
-    --accent: 220 10% 20%;
-    --accent-foreground: 0 0% 98%;
- 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-
-    --border: 220 10% 25%; /* Borda visível (L=25%) */
-    --input: 220 10% 15%;
-    --ring: 213 100% 50%;
+    /* ===== BACKGROUNDS ===== */
+    --background: 222.2 84% 4.9%;      /* Preto azulado */
+    --background-secondary: 217.2 32.6% 12%;/* Cinza escuro azulado */
+    --foreground: 210 40% 98%;         /* Texto branco suave */
     
-    /* Menu Button Colors - Dark Mode (mantendo a saturação) */
+    /* ===== CARDS & SURFACES ===== */
+    --card: 217.2 32.6% 15%;           /* Cards dark elevados */
+    --card-foreground: 210 40% 98%;    /* Texto cards dark */
+    --card-hover: 217.2 32.6% 18%;     /* Hover dark */
+    
+    /* ===== MODAIS & OVERLAYS ===== */
+    --modal: 217.2 32.6% 17%;          /* Modal dark MAIS CLARO */
+    --modal-border: 217.2 32.6% 25%;   /* Borda modal VISÍVEL */
+    --overlay: 222.2 84% 4.9% / 0.9;   /* Overlay mais escuro */
+    
+    /* ===== GLASSMORPHISM ===== */
+    --glass-bg: 217.2 32.6% 15% / 0.95; /* 95% opaco dark */
+    --glass-border: 217.2 32.6% 25%;   /* Borda visível dark */
+    --glass-shadow: 220 13% 0% / 0.3;  /* Sombra forte dark */
+    
+    /* ===== INPUTS ===== */
+    --input: 217.2 32.6% 25%;          /* Borda input CLARA */
+    --input-bg: 217.2 32.6% 12%;       /* Fundo input dark */
+    --input-foreground: 210 40% 98%;   /* Texto BRANCO */
+    --input-placeholder: 215.4 16.3% 65% / 0.5; /* Placeholder VISÍVEL */
+    
+    /* ===== BUTTONS ===== */
+    --primary: 217.2 91.2% 59.8%;      /* Azul mais claro no dark */
+    --primary-foreground: 222.2 47.4% 11.2%; /* Texto escuro no primário */
+    --primary-hover: 217.2 91.2% 65%;  /* Hover mais claro */
+    
+    /* ===== STATES ===== */
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;        /* Muted dark */
+    --muted-foreground: 215 20.2% 65.1%; /* Texto muted MAIS CLARO */
+    --accent: 217.2 32.6% 17.5%;       /* Accent dark */
+    --accent-foreground: 210 40% 98%;  /* Texto accent claro */
+    
+    /* ===== SEMANTIC COLORS (MAIS VIBRANTES NO DARK) ===== */
+    --success: 142 76% 55%;            /* Verde mais claro */
+    --success-foreground: 144 61% 90%; /* Texto verde claro */
+    --success-bg: 142 76% 15%;         /* Fundo verde escuro */
+    
+    --warning: 38 92% 60%;             /* Laranja mais claro */
+    --warning-foreground: 48 96% 85%; /* Texto laranja claro */
+    --warning-bg: 38 92% 15%;          /* Fundo laranja escuro */
+    
+    --error: 0 84% 65%;                /* Vermelho mais claro */
+    --error-foreground: 0 86% 90%;     /* Texto vermelho claro */
+    --error-bg: 0 84% 15%;             /* Fundo vermelho escuro */
+    
+    --info: 199 89% 58%;               /* Azul mais claro */
+    --info-foreground: 199 95% 90%;    /* Texto azul claro */
+    --info-bg: 199 89% 15%;            /* Fundo azul escuro */
+    
+    /* ===== BORDERS & SHADOWS ===== */
+    --border: 217.2 32.6% 25%;         /* Borda VISÍVEL dark */
+    --border-strong: 217.2 32.6% 35%;  /* Borda forte dark */
+    --ring: 217.2 91.2% 59.8%;         /* Focus ring claro */
+    
+    --shadow-sm: 220 13% 0% / 0.2;     /* Sombras FORTES no dark */
+    --shadow-md: 220 13% 0% / 0.3;
+    --shadow-lg: 220 13% 0% / 0.5;
+
+    /* Menu Button Colors - Dark Mode (PRESERVADO) */
     --menu-green: 142 76% 46%;
     --menu-green-hover: 142 76% 42%;
     --menu-blue: 213 94% 78%;
@@ -94,6 +170,8 @@
     --menu-rose-hover: 348 83% 53%;
     --menu-teal: 174 70% 50%;
     --menu-teal-hover: 174 70% 45%;
+    --menu-dark-blue: 213 90% 45%;
+    --menu-dark-blue-hover: 213 90% 40%;
   }
 }
  
@@ -114,14 +192,14 @@
 /* Enhanced glass card effect - iPhone style */
 .glass-card {
   /* Light Mode */
-  background: rgba(255, 255, 255, 0.85);
+  background: hsl(var(--glass-bg));
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  box-shadow: 0 4px 30px 0 rgba(0, 0, 0, 0.06), 
-              0 1px 0 0 rgba(255, 255, 255, 0.3) inset,
-              0 -1px 0 0 rgba(0, 0, 0, 0.05) inset;
-  border-radius: 16px;
+  border: 1px solid hsl(var(--glass-border) / 0.4); /* Usando a variável com opacidade */
+  box-shadow: 0 4px 30px 0 hsl(var(--glass-shadow)), 
+              0 1px 0 0 hsl(var(--glass-border) / 0.3) inset, /* Borda interna clara */
+              0 -1px 0 0 hsl(var(--glass-shadow) / 0.05) inset; /* Borda interna escura */
+  border-radius: var(--radius-lg); /* Usando a variável de radius */
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
@@ -130,15 +208,13 @@
 /* Dark Mode Glass Card Overrides */
 .dark .glass-card {
   /* Fundo semi-transparente escuro que permite ver o fundo principal */
-  /* Usando --card (L=15%) que é mais claro que --background (L=10%) */
-  background: rgba(var(--card), 0.85); 
+  background: hsl(var(--glass-bg)); 
   /* Aumentando a opacidade da borda para melhor definição */
-  /* AJUSTE AQUI: Usando uma borda mais clara (L=40%) para contraste */
-  border: 1px solid hsl(220 10% 40% / 0.7); 
+  border: 1px solid hsl(var(--glass-border) / 0.7); 
   /* Sombra mais forte e escura */
-  box-shadow: 0 6px 40px 0 rgba(0, 0, 0, 0.5), 
-              0 1px 0 0 rgba(var(--border), 0.5) inset,
-              0 -1px 0 0 rgba(0, 0, 0, 0.3) inset;
+  box-shadow: 0 6px 40px 0 hsl(var(--glass-shadow)), 
+              0 1px 0 0 hsl(var(--glass-border) / 0.5) inset,
+              0 -1px 0 0 hsl(var(--glass-shadow) / 0.3) inset;
 }
 
 
@@ -206,66 +282,6 @@
 }
 
 /* ======================================================================== */
-/* NOVO: Estilos de Impressão em Lote */
-/* ======================================================================== */
-@media print {
-  /* Esconde o corpo principal e mostra apenas a área de impressão */
-  body * {
-    visibility: hidden;
-  }
-  
-  /* Remove padding e margem do corpo no modo de impressão */
-  body {
-    padding: 0 !important;
-    margin: 0 !important;
-  }
-  
-  /* Mostra apenas a área de impressão e seus filhos */
-  #print-area, #print-area * {
-    visibility: visible;
-  }
-  
-  /* Posiciona a área de impressão no topo da página */
-  #print-area {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    padding: 0 !important; /* Remove padding do container */
-    margin: 0 !important;
-  }
-  
-  /* Remove o botão "Imprimir" e outros controles */
-  .no-print {
-    display: none !important;
-  }
-  
-  /* Garante que as etiquetas não sejam cortadas entre páginas */
-  .print-preview-page {
-    margin: 0;
-    padding: 0;
-  }
-  
-  /* Ajusta o grid para impressão (4 colunas por padrão) */
-  #print-area > div {
-    display: grid;
-    gap: 0.2cm; /* Espaçamento mínimo entre etiquetas */
-    padding: 0.2cm; /* Padding mínimo para a área de corte */
-  }
-  
-  /* Classes de grid dinâmicas para impressão */
-  .print\:grid-cols-2 {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  .print\:grid-cols-3 {
-    grid-template-columns: repeat(3, 1fr);
-  }
-  .print\:grid-cols-4 {
-    grid-template-columns: repeat(4, 1fr);
-  }
-}
-
-/* ======================================================================== */
 /* NOVO: Animação de Fundo para o Menu Principal (Tons de Cinza) */
 /* ======================================================================== */
 
@@ -293,8 +309,8 @@
   background-image: linear-gradient(
     -45deg, 
     hsl(var(--background)) 0%, 
-    hsl(0 0% 95%) 25%, /* Cinza muito claro */
-    hsl(0 0% 90%) 50%, /* Cinza claro */
+    hsl(220 13% 95%) 25%, /* Cinza muito claro */
+    hsl(220 13% 90%) 50%, /* Cinza claro */
     hsl(var(--background)) 100%
   );
 }
@@ -303,9 +319,9 @@
 .dark .animated-menu-bg {
   background-image: linear-gradient(
     -45deg, 
-    hsl(220 10% 10%) 0%, 
-    hsl(220 10% 15%) 25%, /* Cinza escuro */
-    hsl(220 10% 5%) 50%, /* Quase preto */
-    hsl(220 10% 10%) 100%
+    hsl(222.2 84% 4.9%) 0%, 
+    hsl(217.2 32.6% 12%) 25%, /* Cinza escuro */
+    hsl(222.2 84% 3%) 50%, /* Quase preto */
+    hsl(222.2 84% 4.9%) 100%
   );
 }

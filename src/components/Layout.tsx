@@ -118,7 +118,7 @@ const Layout: React.FC<LayoutProps> = ({
                 </button>
               )}
               <div>
-                <h1 className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent text-2xl font-bold text-left">
+                <h1 className="bg-gradient-to-r from-primary to-menu-violet bg-clip-text text-transparent text-2xl font-bold text-left">
                   Zelote
                 </h1>
                 <div className="flex items-center gap-2">
@@ -134,12 +134,12 @@ const Layout: React.FC<LayoutProps> = ({
               <Popover>
                 <PopoverTrigger asChild>
                   <Button variant="ghost" size="icon" className="relative h-9 w-9">
-                    <Bell className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+                    <Bell className="h-5 w-5 text-muted-foreground" />
                     {/* Exemplo de badge de notificação (pode ser ligado a um estado real) */}
-                    <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500" />
+                    <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-error" />
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="p-0 w-auto" align="end">
+                <PopoverContent className="p-0 w-auto bg-card border-border" align="end">
                   <ActivityFeed />
                 </PopoverContent>
               </Popover>
@@ -152,9 +152,9 @@ const Layout: React.FC<LayoutProps> = ({
                 className="h-9 w-9"
               >
                 {theme === 'dark' ? (
-                  <Sun className="h-5 w-5 text-yellow-400" />
+                  <Sun className="h-5 w-5 text-warning" />
                 ) : (
-                  <Moon className="h-5 w-5 text-gray-600" />
+                  <Moon className="h-5 w-5 text-muted-foreground" />
                 )}
               </Button>
               
@@ -165,9 +165,8 @@ const Layout: React.FC<LayoutProps> = ({
                     <Button 
                       variant="outline" 
                       className={cn(
-                        "h-9 px-3 rounded-full border-gray-300 bg-white hover:bg-gray-100 flex items-center gap-2 transition-all duration-300",
+                        "h-9 px-3 rounded-full border-border bg-card hover:bg-card-hover flex items-center gap-2 transition-all duration-300",
                         "shadow-sm hover:shadow-md",
-                        "dark:bg-card dark:border-border dark:hover:bg-accent"
                       )}
                     >
                       {roleLoading ? (
@@ -175,16 +174,16 @@ const Layout: React.FC<LayoutProps> = ({
                       ) : (
                         <User className="w-4 h-4 text-muted-foreground" />
                       )}
-                      <span className="text-sm font-medium hidden sm:inline">
+                      <span className="text-sm font-medium hidden sm:inline text-foreground">
                         {user.email?.substring(0, user.email.indexOf('@'))}
                       </span>
-                      <span className="text-sm font-medium sm:hidden">
+                      <span className="text-sm font-medium sm:hidden text-foreground">
                         Perfil
                       </span>
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-64">
-                    <DropdownMenuLabel className="font-bold text-base truncate">
+                  <DropdownMenuContent align="end" className="w-64 bg-card border-border">
+                    <DropdownMenuLabel className="font-bold text-base truncate text-foreground">
                       {user.email}
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
@@ -194,7 +193,7 @@ const Layout: React.FC<LayoutProps> = ({
                     {role && (role === 'admin' || role === 'super_admin') && (
                       <DropdownMenuItem 
                         onClick={() => navigate('/settings')}
-                        className="cursor-pointer flex items-center gap-2"
+                        className="cursor-pointer flex items-center gap-2 text-foreground hover:bg-accent"
                       >
                         <Settings className="h-4 w-4 text-primary" />
                         Configurações
@@ -205,11 +204,10 @@ const Layout: React.FC<LayoutProps> = ({
                     <DropdownMenuItem 
                       onClick={handleLogout}
                       className={cn(
-                        "cursor-pointer flex items-center gap-2",
-                        isAdmin ? 'text-red-600 focus:text-red-700 focus:bg-red-50' : 'text-red-600 focus:text-red-700 focus:bg-red-50'
+                        "cursor-pointer flex items-center gap-2 text-error-foreground focus:text-error-foreground focus:bg-error-bg hover:bg-error-bg"
                       )}
                     >
-                      <LogOut className="h-4 w-4" />
+                      <LogOut className="h-4 w-4 text-error" />
                       Sair
                     </DropdownMenuItem>
                   </DropdownMenuContent>
@@ -227,6 +225,26 @@ const Layout: React.FC<LayoutProps> = ({
 
       {/* Bottom safe area for standalone mode */}
       {isStandalone && <div className="safe-area-bottom h-16 md:h-24" />}
+      
+      {/* PWA Install Banner (Refatorado para usar cores semânticas) */}
+      {showInstallBanner && (
+        <div className="fixed bottom-0 left-0 right-0 z-50 p-4 bg-background-secondary border-t border-border shadow-lg flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Computer className="h-6 w-6 text-primary" />
+            <p className="text-sm text-foreground">
+              Instale o Zelote como um aplicativo para acesso rápido e offline.
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="sm" onClick={handleInstallBannerDismiss} className="text-muted-foreground">
+              <X className="h-4 w-4" />
+            </Button>
+            <Button onClick={() => { /* Logic to prompt install */ }} size="sm">
+              Instalar
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -212,7 +212,7 @@ export function DashboardLayout({
     const dateRange = startFmt === endFmt ? startFmt : `${startFmt} - ${endFmt}`;
     
     return (
-      <Badge variant="secondary" className="bg-blue-100 text-blue-700 border-blue-300 text-sm font-medium dark:bg-blue-900 dark:text-blue-300 dark:border-blue-800">
+      <Badge variant="info" className="text-sm font-medium">
         <CalendarRange className="h-3 w-3 mr-1" />
         {dateRange} | {startHour}h - {endHour}h
       </Badge>
@@ -240,7 +240,7 @@ export function DashboardLayout({
             <Button 
               variant="outline" 
               onClick={handleExportPDF} 
-              className="flex items-center gap-2 hover:bg-blue-50 dark:bg-card dark:hover:bg-accent" 
+              className="flex items-center gap-2 bg-card hover:bg-card-hover border-border" 
               disabled={loading || !stats}
             >
               <Download className="h-4 w-4" />
@@ -251,7 +251,7 @@ export function DashboardLayout({
           <Button 
             variant="outline" 
             onClick={refreshData} 
-            className="flex items-center gap-2 hover:bg-blue-50 dark:bg-card dark:hover:bg-accent" 
+            className="flex items-center gap-2 bg-card hover:bg-card-hover border-border" 
             disabled={loading}
           >
             <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
@@ -260,7 +260,7 @@ export function DashboardLayout({
           
           {/* NOVO: Select para seleção de visualização */}
           <Select value={periodView} onValueChange={(v) => setPeriodView(v as PeriodView | 'charts')}>
-            <SelectTrigger className="w-full sm:w-[200px] h-10 dark:bg-card dark:border-border">
+            <SelectTrigger className="w-full sm:w-[200px] h-10 bg-card border-border">
               <SelectValue placeholder="Selecione a Visualização" />
             </SelectTrigger>
             <SelectContent>

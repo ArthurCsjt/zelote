@@ -12,6 +12,7 @@ import { GlassCard } from "./ui/GlassCard";
 import { useNavigate } from "react-router-dom"; // Importando useNavigate
 import { ToggleGroup, ToggleGroupItem } from "./ui/toggle-group"; // Importando ToggleGroup
 import { ActiveLoansTable } from "./ActiveLoansTable"; // Importando a nova tabela
+import { cn } from "@/lib/utils";
 
 interface ActiveLoansProps {
   onNavigateToReturn: (chromebookId: string) => void;
@@ -68,7 +69,7 @@ export function ActiveLoans({ onNavigateToReturn }: ActiveLoansProps) {
       <OverdueAlertsPanel />
 
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-        <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+        <h2 className="text-2xl font-bold bg-gradient-to-r from-primary to-menu-violet bg-clip-text text-transparent">
           Empréstimos Ativos ({activeLoans.length})
         </h2>
         <div className="flex items-center gap-3">
@@ -77,12 +78,12 @@ export function ActiveLoans({ onNavigateToReturn }: ActiveLoansProps) {
             type="single" 
             value={viewMode} 
             onValueChange={(value: ViewMode) => value && setViewMode(value)}
-            className="h-9 bg-white dark:bg-card dark:border-border" // Adicionado dark:bg-card
+            className="h-9 bg-card border border-border"
           >
-            <ToggleGroupItem value="cards" aria-label="Visualização em Cards" className="h-9 px-3 dark:data-[state=on]:bg-primary dark:data-[state=on]:text-primary-foreground">
+            <ToggleGroupItem value="cards" aria-label="Visualização em Cards" className="h-9 px-3">
               <LayoutGrid className="h-4 w-4" />
             </ToggleGroupItem>
-            <ToggleGroupItem value="table" aria-label="Visualização em Tabela" className="h-9 px-3 dark:data-[state=on]:bg-primary dark:data-[state=on]:text-primary-foreground">
+            <ToggleGroupItem value="table" aria-label="Visualização em Tabela" className="h-9 px-3">
               <List className="h-4 w-4" />
             </ToggleGroupItem>
           </ToggleGroup>
@@ -91,7 +92,7 @@ export function ActiveLoans({ onNavigateToReturn }: ActiveLoansProps) {
             onClick={fetchActiveLoans}
             variant="outline"
             disabled={loading || dbLoading}
-            className="bg-white hover:bg-gray-50 dark:bg-card dark:hover:bg-accent dark:text-foreground dark:border-border" // Ajustado para Dark Mode
+            className="bg-card hover:bg-card-hover text-foreground border-border"
           >
             <RefreshCw className={`h-4 w-4 mr-2 ${loading || dbLoading ? 'animate-spin' : ''}`} />
             Atualizar
@@ -101,15 +102,15 @@ export function ActiveLoans({ onNavigateToReturn }: ActiveLoansProps) {
 
       {loading ? (
         <div className="text-center py-12">
-          <RefreshCw className="h-16 w-16 mx-auto mb-4 text-gray-300 animate-spin" />
-          <p className="text-gray-500 text-lg">Carregando empréstimos...</p>
+          <RefreshCw className="h-16 w-16 mx-auto mb-4 text-muted" />
+          <p className="text-muted-foreground text-lg">Carregando empréstimos...</p>
         </div>
       ) : activeLoans.length === 0 ? (
         <GlassCard>
           <CardContent className="py-12">
             <div className="text-center">
-              <Computer className="h-16 w-16 mx-auto mb-4 text-gray-300" />
-              <p className="text-gray-500 text-lg">Nenhum empréstimo ativo</p>
+              <Computer className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
+              <p className="text-muted-foreground text-lg">Nenhum empréstimo ativo</p>
             </div>
           </CardContent>
         </GlassCard>
@@ -126,10 +127,10 @@ export function ActiveLoans({ onNavigateToReturn }: ActiveLoansProps) {
             return (
               <GlassCard 
                 key={loan.id} 
-                className={`hover:shadow-lg transition-shadow ${
-                  overdueStatus ? 'border-red-400 bg-red-50/50 dark:bg-red-950/50' : 
-                  dueSoonStatus ? 'border-amber-400 bg-amber-50/50 dark:bg-amber-950/50' : 'border-gray-200/50 dark:border-border/50'
-                }`}
+                className={cn("hover:shadow-lg transition-shadow border-l-4",
+                  overdueStatus ? 'border-l-error bg-error-bg/50' : 
+                  dueSoonStatus ? 'border-l-warning bg-warning-bg/50' : 'border-l-border'
+                )}
               >
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between">
@@ -137,38 +138,38 @@ export function ActiveLoans({ onNavigateToReturn }: ActiveLoansProps) {
                       <div className="flex items-center gap-3">
                         <User className="h-5 w-5 text-primary" />
                         <div>
-                          <h3 className="font-semibold text-lg dark:text-foreground">{loan.student_name}</h3>
+                          <h3 className="font-semibold text-lg text-foreground">{loan.student_name}</h3>
                           <p className="text-sm text-muted-foreground">{loan.student_email}</p>
                         </div>
                       </div>
 
                       <div className="flex flex-wrap gap-2">
                         {loan.student_ra && (
-                          <Badge variant="outline" className="dark:bg-muted dark:text-muted-foreground dark:border-border">
+                          <Badge variant="outline" className="bg-card text-foreground border-border">
                             RA: {loan.student_ra}
                           </Badge>
                         )}
-                        <Badge variant="secondary" className="bg-blue-100 text-blue-700 hover:bg-blue-100 dark:bg-blue-900 dark:text-blue-300">
+                        <Badge variant="secondary" className="bg-info-bg text-info-foreground hover:bg-info-bg">
                           <Monitor className="h-3 w-3 mr-1" />
                           {loan.chromebook_id}
                         </Badge>
-                        <Badge variant="outline" className="capitalize dark:bg-muted dark:text-muted-foreground dark:border-border">
+                        <Badge variant="outline" className="capitalize bg-card text-foreground border-border">
                           {loan.user_type}
                         </Badge>
                         {loan.loan_type === 'lote' && (
-                          <Badge className="bg-orange-100 text-orange-800 hover:bg-orange-100 dark:bg-orange-900 dark:text-orange-300">
+                          <Badge className="bg-warning-bg text-warning-foreground hover:bg-warning-bg">
                             Lote
                           </Badge>
                         )}
                         {/* Status de Atraso */}
                         {overdueStatus && (
-                          <Badge variant="destructive" className="gap-1">
+                          <Badge variant="destructive" className="gap-1 bg-error-bg text-error-foreground">
                             <AlertTriangle className="h-3 w-3" />
                             Em Atraso
                           </Badge>
                         )}
                         {dueSoonStatus && !overdueStatus && (
-                          <Badge variant="outline" className="border-amber-400 text-amber-700 gap-1 bg-amber-100 dark:bg-amber-900 dark:text-amber-300 dark:border-amber-700">
+                          <Badge variant="outline" className="border-warning text-warning-foreground gap-1 bg-warning-bg">
                             <Clock className="h-3 w-3" />
                             Vence em Breve
                           </Badge>
@@ -176,13 +177,13 @@ export function ActiveLoans({ onNavigateToReturn }: ActiveLoansProps) {
                       </div>
 
                       <div className="space-y-2">
-                        <div className="flex items-center gap-2 text-sm dark:text-gray-300">
+                        <div className="flex items-center gap-2 text-sm text-foreground">
                           <Target className="h-4 w-4 text-muted-foreground" />
                           <span className="font-medium">Finalidade:</span>
                           <span>{loan.purpose}</span>
                         </div>
                         
-                        <div className="flex items-center gap-2 text-sm dark:text-gray-300">
+                        <div className="flex items-center gap-2 text-sm text-foreground">
                           <Clock className="h-4 w-4 text-muted-foreground" />
                           <span className="font-medium">Emprestado em:</span>
                           <span>{format(new Date(loan.loan_date), "dd/MM/yyyy 'às' HH:mm")}</span>
@@ -191,10 +192,10 @@ export function ActiveLoans({ onNavigateToReturn }: ActiveLoansProps) {
                         {/* Mostrar data de devolução esperada se existir */}
                         {loan.expected_return_date && (
                           <div className={`flex items-center gap-2 text-sm ${
-                            overdueStatus ? 'text-red-600 dark:text-red-400' : dueSoonStatus ? 'text-amber-600 dark:text-amber-400' : 'dark:text-gray-300'
+                            overdueStatus ? 'text-error-foreground' : dueSoonStatus ? 'text-warning-foreground' : 'text-foreground'
                           }`}>
                             <AlertTriangle className={`h-4 w-4 ${
-                              overdueStatus ? 'text-red-500' : dueSoonStatus ? 'text-amber-500' : 'text-muted-foreground'
+                              overdueStatus ? 'text-error' : dueSoonStatus ? 'text-warning' : 'text-muted-foreground'
                             }`} />
                             <span className="font-medium">
                               {overdueStatus ? 'Deveria ter sido devolvido em:' : 'Prazo de devolução:'}
@@ -206,7 +207,7 @@ export function ActiveLoans({ onNavigateToReturn }: ActiveLoansProps) {
                         )}
 
                         {loan.chromebook_model && (
-                          <div className="flex items-center gap-2 text-sm dark:text-gray-300">
+                          <div className="flex items-center gap-2 text-sm text-foreground">
                             <Monitor className="h-4 w-4 text-muted-foreground" />
                             <span className="font-medium">Modelo:</span>
                             <span>{loan.chromebook_model}</span>

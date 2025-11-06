@@ -24,12 +24,12 @@ export const LoanHistoryTable: React.FC<LoanHistoryTableProps> = ({ history, isN
   const getStatusProps = (status: LoanHistoryItem['status']) => {
     switch (status) {
       case 'devolvido':
-        return { color: 'text-green-700 dark:text-green-300', bg: 'bg-green-100 dark:bg-green-900', icon: CheckCircle, label: 'Devolvido' };
+        return { color: 'text-success-foreground', bg: 'bg-success-bg', icon: CheckCircle, label: 'Devolvido' };
       case 'atrasado':
-        return { color: 'text-red-700 dark:text-red-300', bg: 'bg-red-100 dark:bg-red-900', icon: AlertTriangle, label: 'Atrasado' };
+        return { color: 'text-error-foreground', bg: 'bg-error-bg', icon: AlertTriangle, label: 'Atrasado' };
       case 'ativo':
       default:
-        return { color: 'text-yellow-700 dark:text-yellow-300', bg: 'bg-yellow-100 dark:bg-yellow-900', icon: Clock, label: 'Ativo' };
+        return { color: 'text-warning-foreground', bg: 'bg-warning-bg', icon: Clock, label: 'Ativo' };
     }
   };
 
@@ -37,13 +37,13 @@ export const LoanHistoryTable: React.FC<LoanHistoryTableProps> = ({ history, isN
     <GlassCard className="p-0 overflow-x-auto">
       <Table className="min-w-[900px]">
         <TableHeader>
-          <TableRow>
-            <TableHead className="w-[120px]">Status</TableHead>
-            <TableHead className="w-[150px]">ID Chromebook</TableHead>
-            <TableHead className="w-[200px]">Solicitante</TableHead>
-            <TableHead className="hidden md:table-cell">Finalidade</TableHead>
-            <TableHead className="w-[150px]">Empréstimo</TableHead>
-            <TableHead className="w-[150px]">Devolução</TableHead>
+          <TableRow className="bg-background-secondary">
+            <TableHead className="w-[120px] text-foreground">Status</TableHead>
+            <TableHead className="w-[150px] text-foreground">ID Chromebook</TableHead>
+            <TableHead className="w-[200px] text-foreground">Solicitante</TableHead>
+            <TableHead className="hidden md:table-cell text-foreground">Finalidade</TableHead>
+            <TableHead className="w-[150px] text-foreground">Empréstimo</TableHead>
+            <TableHead className="w-[150px] text-foreground">Devolução</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -56,8 +56,9 @@ export const LoanHistoryTable: React.FC<LoanHistoryTableProps> = ({ history, isN
               <TableRow 
                 key={loan.id} 
                 className={cn(
-                  loan.status === 'atrasado' && 'bg-red-50/50 hover:bg-red-100/50 dark:bg-red-950/50 dark:hover:bg-red-900/50',
-                  isRecent && 'border-l-4 border-blue-500'
+                  "hover:bg-card-hover",
+                  loan.status === 'atrasado' && 'bg-error-bg/50 hover:bg-error-bg/70',
+                  isRecent && 'border-l-4 border-info'
                 )}
               >
                 <TableCell className="font-medium text-sm py-3">
@@ -66,7 +67,7 @@ export const LoanHistoryTable: React.FC<LoanHistoryTableProps> = ({ history, isN
                     {statusInfo.label}
                   </div>
                 </TableCell>
-                <TableCell className="text-sm py-3">
+                <TableCell className="text-sm py-3 text-foreground">
                   <div className="flex items-center gap-1">
                     <Monitor className="h-3 w-3 text-muted-foreground" />
                     {loan.chromebook_id}
@@ -75,21 +76,21 @@ export const LoanHistoryTable: React.FC<LoanHistoryTableProps> = ({ history, isN
                 </TableCell>
                 <TableCell className="py-3">
                   <div className="flex flex-col">
-                    <span className="font-medium text-sm">{loan.student_name}</span>
+                    <span className="font-medium text-sm text-foreground">{loan.student_name}</span>
                     <span className="text-xs text-muted-foreground capitalize">{loan.user_type}</span>
                   </div>
                 </TableCell>
                 <TableCell className="hidden md:table-cell text-xs max-w-[250px] truncate text-muted-foreground">
                   {loan.purpose}
                 </TableCell>
-                <TableCell className="text-xs py-3">
+                <TableCell className="text-xs py-3 text-muted-foreground">
                   {format(new Date(loan.loan_date), "dd/MM/yyyy HH:mm")}
                 </TableCell>
                 <TableCell className="text-xs py-3">
                   {loan.return_date ? (
                     <span className={cn(
                         "font-medium",
-                        loan.status === 'atrasado' ? 'text-red-600 dark:text-red-400' : 'text-gray-700 dark:text-gray-300'
+                        loan.status === 'atrasado' ? 'text-error-foreground' : 'text-foreground'
                     )}>
                         {format(new Date(loan.return_date), "dd/MM/yyyy HH:mm")}
                     </span>

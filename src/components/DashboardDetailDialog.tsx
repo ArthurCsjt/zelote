@@ -40,15 +40,17 @@ export const DashboardDetailDialog: React.FC<DashboardDetailDialogProps> = ({
 
   const getStatusBadge = (status: Chromebook['status'] | undefined, isOverdue: boolean = false) => {
     if (isOverdue) {
-      return <Badge variant="destructive" className="flex items-center gap-1"><AlertTriangle className="h-3 w-3" /> Atrasado</Badge>;
+      return <Badge variant="destructive" className="flex items-center gap-1 bg-error-bg text-error-foreground"><AlertTriangle className="h-3 w-3" /> Atrasado</Badge>;
     }
     switch (status) {
       case 'disponivel':
-        return <Badge className="bg-green-100 text-green-700 hover:bg-green-100">Disponível</Badge>;
+        return <Badge variant="success" className="bg-success-bg text-success-foreground">Disponível</Badge>;
       case 'emprestado':
-        return <Badge className="bg-yellow-100 text-yellow-700 hover:bg-yellow-100">Emprestado</Badge>;
+        return <Badge variant="warning" className="bg-warning-bg text-warning-foreground">Emprestado</Badge>;
       case 'fixo':
-        return <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100">Fixo</Badge>;
+        return <Badge variant="info" className="bg-info-bg text-info-foreground">Fixo</Badge>;
+      case 'manutencao':
+        return <Badge variant="destructive" className="bg-error-bg text-error-foreground">Manutenção</Badge>;
       default:
         return <Badge variant="secondary">N/A</Badge>;
     }
@@ -56,10 +58,10 @@ export const DashboardDetailDialog: React.FC<DashboardDetailDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
+      <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col bg-modal border-modal-border">
         <DialogHeader className="shrink-0">
-          <DialogTitle className="text-2xl font-bold">{title}</DialogTitle>
-          <DialogDescription>{description}</DialogDescription>
+          <DialogTitle className="text-2xl font-bold text-foreground">{title}</DialogTitle>
+          <DialogDescription className="text-muted-foreground">{description}</DialogDescription>
         </DialogHeader>
 
         <div className="flex-1 overflow-y-auto mt-4">
@@ -70,29 +72,29 @@ export const DashboardDetailDialog: React.FC<DashboardDetailDialogProps> = ({
             </div>
           ) : data && data.length > 0 ? (
             <Table>
-              <TableHeader>
+              <TableHeader className="bg-background-secondary">
                 <TableRow>
-                  <TableHead className="w-[150px]">ID Chromebook</TableHead>
-                  <TableHead>Modelo</TableHead>
-                  {isLoans && <TableHead>Solicitante</TableHead>}
-                  <TableHead>{isLoans ? 'Empréstimo' : 'Status'}</TableHead>
-                  {isLoans && <TableHead>Prazo</TableHead>}
+                  <TableHead className="w-[150px] text-foreground">ID Chromebook</TableHead>
+                  <TableHead className="text-foreground">Modelo</TableHead>
+                  {isLoans && <TableHead className="text-foreground">Solicitante</TableHead>}
+                  <TableHead className="text-foreground">{isLoans ? 'Empréstimo' : 'Status'}</TableHead>
+                  {isLoans && <TableHead className="text-foreground">Prazo</TableHead>}
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {data.map((item) => (
-                  <TableRow key={item.id}>
-                    <TableCell className="font-medium text-sm">{item.chromebook_id}</TableCell>
-                    <TableCell className="text-sm">{item.model}</TableCell>
+                  <TableRow key={item.id} className="hover:bg-card-hover">
+                    <TableCell className="font-medium text-sm text-foreground">{item.chromebook_id}</TableCell>
+                    <TableCell className="text-sm text-muted-foreground">{item.model}</TableCell>
                     {isLoans && (
-                      <TableCell className="text-sm flex items-center gap-1">
+                      <TableCell className="text-sm flex items-center gap-1 text-foreground">
                         <User className="h-3 w-3 text-muted-foreground" />
                         {item.student_name}
                       </TableCell>
                     )}
                     <TableCell>
                       {isLoans ? (
-                        <div className="flex items-center gap-1 text-xs">
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
                           <Clock className="h-3 w-3 text-muted-foreground" />
                           {format(new Date(item.loan_date!), 'dd/MM HH:mm')}
                         </div>
@@ -104,7 +106,7 @@ export const DashboardDetailDialog: React.FC<DashboardDetailDialogProps> = ({
                       <TableCell>
                         {item.expected_return_date ? (
                           <div className="flex flex-col">
-                            <span className="text-xs">
+                            <span className="text-xs text-muted-foreground">
                               {format(new Date(item.expected_return_date), 'dd/MM HH:mm')}
                             </span>
                             {item.isOverdue && getStatusBadge(item.status, true)}

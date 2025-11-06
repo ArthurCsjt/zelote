@@ -43,8 +43,8 @@ export const AppBenefits: React.FC = () => {
             <GlassCard 
               key={index} 
               className={cn(
-                "p-2 text-center transition-all duration-300", // Mantém a transição, mas remove os efeitos de hover
-                "border-l-4 border-gray-200 dark:border-gray-700" // Garante que a borda seja visível no dark mode
+                "p-2 text-center transition-all duration-300",
+                "border-l-4 border-border-strong" // USANDO border-strong
               )}
             >
               <CardContent className="p-0 space-y-1">
@@ -53,7 +53,7 @@ export const AppBenefits: React.FC = () => {
                   <Icon className={cn("h-5 w-5", benefit.color)} />
                 </div>
                 {/* Título menor: text-sm */}
-                <CardTitle className="text-sm font-semibold text-gray-800 dark:text-gray-200">
+                <CardTitle className="text-sm font-semibold text-foreground">
                   {benefit.title}
                 </CardTitle>
                 {/* Descrição menor: text-xs */}

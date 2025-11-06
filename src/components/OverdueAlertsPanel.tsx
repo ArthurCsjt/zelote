@@ -47,14 +47,14 @@ export function OverdueAlertsPanel() {
     return (
       <GlassCard>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-green-700 dark:text-green-400">
-            <Clock className="h-5 w-5" />
+          <CardTitle className="flex items-center gap-2 text-success-foreground">
+            <Clock className="h-5 w-5 text-success" />
             Status dos Prazos
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-center py-4">
-            <div className="text-green-600 mb-2">✅</div>
+            <div className="text-success mb-2">✅</div>
             <p className="text-sm text-muted-foreground">
               Todos os empréstimos estão dentro do prazo
             </p>
@@ -67,8 +67,8 @@ export function OverdueAlertsPanel() {
   return (
     <GlassCard className="p-4 space-y-4">
       <div className="flex justify-between items-center">
-        <h3 className="text-lg font-semibold text-gray-800 dark:text-foreground flex items-center gap-2">
-          <AlertTriangle className="h-5 w-5 text-orange-600" />
+        <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+          <AlertTriangle className="h-5 w-5 text-warning" />
           Alertas de Devolução
         </h3>
         <Button 
@@ -76,7 +76,7 @@ export function OverdueAlertsPanel() {
           size="sm" 
           onClick={refresh}
           disabled={loading}
-          className="gap-2 bg-white hover:bg-gray-50 dark:bg-card dark:hover:bg-accent dark:text-foreground dark:border-border"
+          className="gap-2 bg-card hover:bg-card-hover text-foreground border-border"
         >
           <Clock className="h-4 w-4" />
           Atualizar Prazos
@@ -85,29 +85,29 @@ export function OverdueAlertsPanel() {
       
       {/* Empréstimos em Atraso */}
       {overdueLoans.length > 0 && (
-        <Alert variant="destructive" className="border-red-300 bg-red-50/70 dark:bg-red-950/50 dark:border-red-900">
-          <AlertTriangle className="h-5 w-5 text-red-700 dark:text-red-400" />
-          <AlertTitle className="text-red-800 dark:text-red-300">
+        <Alert className="border-error-foreground/50 bg-error-bg dark:bg-error-bg/50">
+          <AlertTriangle className="h-5 w-5 text-error" />
+          <AlertTitle className="text-error-foreground">
             Empréstimos em Atraso ({overdueLoans.length})
           </AlertTitle>
-          <AlertDescription className="text-red-700 dark:text-red-400">
+          <AlertDescription className="text-error-foreground">
             <div className="space-y-3 mt-3">
               {overdueLoans.map((loan) => (
                 <div 
                   key={loan.loan_id} 
-                  className="bg-white rounded-lg p-3 border border-red-200 shadow-sm dark:bg-card dark:border-red-900"
+                  className="bg-card rounded-lg p-3 border border-error-foreground/20 shadow-sm dark:bg-card dark:border-error-bg"
                 >
                   <div className="flex items-start justify-between">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <User className="h-4 w-4 text-red-600 dark:text-red-400" />
-                        <span className="font-medium text-gray-800 dark:text-foreground">{loan.student_name}</span>
+                        <User className="h-4 w-4 text-error" />
+                        <span className="font-medium text-foreground">{loan.student_name}</span>
                       </div>
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <Monitor className="h-3 w-3" />
                         <span>{loan.chromebook_id}</span>
                       </div>
-                      <div className="text-xs text-red-600 mt-1 dark:text-red-400">
+                      <div className="text-xs text-error mt-1">
                         Deveria ter sido devolvido em:{" "}
                         <span className="font-semibold">{format(new Date(loan.expected_return_date), "dd/MM/yyyy 'às' HH:mm")}</span>
                       </div>
@@ -122,7 +122,7 @@ export function OverdueAlertsPanel() {
                                 size="sm" 
                                 onClick={() => handleForceReturn(loan)}
                                 disabled={dbLoading}
-                                className="text-xs text-green-600 hover:bg-green-100 h-6 px-2 dark:hover:bg-green-950 dark:text-green-400"
+                                className="text-xs text-success hover:bg-success-bg h-6 px-2"
                             >
                                 <CheckCircle className="h-3 w-3 mr-1" />
                                 Devolvido
@@ -132,7 +132,7 @@ export function OverdueAlertsPanel() {
                                 size="sm" 
                                 onClick={() => handleSyncStatus(loan.chromebook_id)}
                                 disabled={dbLoading}
-                                className="text-xs text-red-500 hover:bg-red-100 h-6 px-2 dark:hover:bg-red-950 dark:text-red-400"
+                                className="text-xs text-error hover:bg-error-bg h-6 px-2"
                             >
                                 <RefreshCw className={`h-3 w-3 mr-1 ${dbLoading ? 'animate-spin' : ''}`} />
                                 Sincronizar
@@ -149,35 +149,35 @@ export function OverdueAlertsPanel() {
 
       {/* Empréstimos Próximos ao Vencimento */}
       {upcomingDueLoans.length > 0 && (
-        <Alert className="border-amber-300 bg-amber-50/70 dark:bg-amber-950/50 dark:border-amber-900">
-          <CalendarX className="h-5 w-5 text-amber-700 dark:text-amber-400" />
-          <AlertTitle className="text-amber-800 dark:text-amber-300">
+        <Alert className="border-warning-foreground/50 bg-warning-bg dark:bg-warning-bg/50">
+          <CalendarX className="h-5 w-5 text-warning" />
+          <AlertTitle className="text-warning-foreground">
             Empréstimos Vencendo em Breve ({upcomingDueLoans.length})
           </AlertTitle>
-          <AlertDescription className="text-amber-700 dark:text-amber-400">
+          <AlertDescription className="text-warning-foreground">
             <div className="space-y-3 mt-3">
               {upcomingDueLoans.map((loan) => (
                 <div 
                   key={loan.loan_id} 
-                  className="bg-white rounded-lg p-3 border border-amber-200 shadow-sm dark:bg-card dark:border-amber-900"
+                  className="bg-card rounded-lg p-3 border border-warning-foreground/20 shadow-sm dark:bg-card dark:border-warning-bg"
                 >
                   <div className="flex items-start justify-between">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <User className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-                        <span className="font-medium text-gray-800 dark:text-foreground">{loan.student_name}</span>
+                        <User className="h-4 w-4 text-warning" />
+                        <span className="font-medium text-foreground">{loan.student_name}</span>
                       </div>
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <Monitor className="h-3 w-3" />
                         <span>{loan.chromebook_id}</span>
                       </div>
-                      <div className="text-xs text-amber-600 mt-1 dark:text-amber-400">
+                      <div className="text-xs text-warning mt-1">
                         Prazo de devolução:{" "}
                         <span className="font-semibold">{format(new Date(loan.expected_return_date), "dd/MM/yyyy 'às' HH:mm")}</span>
                       </div>
                     </div>
                     <div className="flex flex-col items-end gap-1">
-                        <Badge variant="outline" className="ml-2 border-amber-400 text-amber-700 dark:bg-amber-900 dark:text-amber-300 dark:border-amber-700">
+                        <Badge variant="outline" className="ml-2 border-warning text-warning-foreground bg-warning-bg dark:bg-warning-bg/50 dark:border-warning">
                           {loan.days_until_due === 0 ? 'Hoje' : 
                            loan.days_until_due === 1 ? 'Amanhã' : 
                            `${loan.days_until_due} dias`}
@@ -187,7 +187,7 @@ export function OverdueAlertsPanel() {
                             size="sm" 
                             onClick={() => handleSyncStatus(loan.chromebook_id)}
                             disabled={dbLoading}
-                            className="text-xs text-amber-500 hover:bg-amber-100 h-6 px-2 dark:hover:bg-amber-950 dark:text-amber-400"
+                            className="text-xs text-warning hover:bg-warning-bg h-6 px-2"
                         >
                             <RefreshCw className={`h-3 w-3 mr-1 ${dbLoading ? 'animate-spin' : ''}`} />
                             Sincronizar Status

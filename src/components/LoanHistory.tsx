@@ -73,12 +73,12 @@ export function LoanHistory({ history, isNewLoan }: LoanHistoryProps) {
   const getStatusBadgeProps = (status: LoanHistoryItem['status']) => {
     switch (status) {
       case 'devolvido':
-        return { variant: "default", className: "bg-green-100 text-green-800 hover:bg-green-100 dark:bg-green-900 dark:text-green-300", cardClass: "border-green-200/50" };
+        return { variant: "success", className: "bg-success-bg text-success-foreground hover:bg-success-bg", cardClass: "border-success-bg" };
       case 'atrasado':
-        return { variant: "destructive", className: "", cardClass: "border-red-300 bg-red-50/50 shadow-lg dark:bg-red-950/50 dark:border-red-900" };
+        return { variant: "destructive", className: "bg-error-bg text-error-foreground hover:bg-error-bg", cardClass: "border-error-bg bg-error-bg/50 shadow-lg" };
       case 'ativo':
       default:
-        return { variant: "secondary", className: "bg-yellow-100 text-yellow-800 hover:bg-yellow-100 dark:bg-yellow-900 dark:text-yellow-300", cardClass: "border-yellow-200/50" };
+        return { variant: "warning", className: "bg-warning-bg text-warning-foreground hover:bg-warning-bg", cardClass: "border-warning-bg" };
     }
   };
 
@@ -87,7 +87,7 @@ export function LoanHistory({ history, isNewLoan }: LoanHistoryProps) {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Clock className="h-5 w-5 text-primary" />
-          <h2 className="text-xl font-semibold">Histórico de Empréstimos</h2>
+          <h2 className="text-xl font-semibold text-foreground">Histórico de Empréstimos</h2>
           <Badge variant="secondary">{filteredHistory.length} / {history.length}</Badge>
         </div>
         
@@ -96,7 +96,7 @@ export function LoanHistory({ history, isNewLoan }: LoanHistoryProps) {
           type="single" 
           value={viewMode} 
           onValueChange={(value: ViewMode) => value && setViewMode(value)}
-          className="h-9"
+          className="h-9 bg-card border border-border"
         >
           <ToggleGroupItem value="cards" aria-label="Visualização em Cards" className="h-9 px-3">
             <LayoutGrid className="h-4 w-4" />
@@ -112,18 +112,18 @@ export function LoanHistory({ history, isNewLoan }: LoanHistoryProps) {
         <div className="flex flex-col sm:flex-row gap-3 items-center">
           {/* Busca */}
           <div className="relative flex-1 w-full">
-            <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400 dark:text-muted-foreground" />
+            <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Buscar por nome, email, RA ou ID do Chromebook..."
               value={searchTerm}
               onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
-              className="pl-10 bg-input dark:bg-input dark:border-border"
+              className="pl-10 bg-input-bg border-input"
             />
           </div>
 
           {/* Filtro de Status */}
           <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setCurrentPage(1); }}>
-            <SelectTrigger className="w-full sm:w-[180px] bg-card dark:bg-card dark:border-border">
+            <SelectTrigger className="w-full sm:w-[180px] bg-card border-border">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
@@ -136,7 +136,7 @@ export function LoanHistory({ history, isNewLoan }: LoanHistoryProps) {
 
           {/* Filtro de Tipo de Usuário */}
           <Select value={userTypeFilter} onValueChange={(v) => { setUserTypeFilter(v); setCurrentPage(1); }}>
-            <SelectTrigger className="w-full sm:w-[180px] bg-card dark:bg-card dark:border-border">
+            <SelectTrigger className="w-full sm:w-[180px] bg-card border-border">
               <SelectValue placeholder="Tipo de Usuário" />
             </SelectTrigger>
             <SelectContent>
@@ -157,7 +157,7 @@ export function LoanHistory({ history, isNewLoan }: LoanHistoryProps) {
       </GlassCard>
 
       {filteredHistory.length === 0 ? (
-        <Card>
+        <Card className="bg-card border-border">
           <CardContent className="py-8">
             <div className="text-center text-muted-foreground">
               <Clock className="h-12 w-12 mx-auto mb-4 opacity-50" />
@@ -187,7 +187,7 @@ export function LoanHistory({ history, isNewLoan }: LoanHistoryProps) {
             return (
               <GlassCard 
                 key={loan.id} 
-                className={`hover:shadow-md transition-shadow ${cardClass}`} // Aplicando a classe do card
+                className={`hover:shadow-md transition-shadow border-l-4 border-l-border-strong ${cardClass}`} // Aplicando a classe do card
               >
                 <CardContent className="p-6">
                   <div className="space-y-4">
@@ -196,7 +196,7 @@ export function LoanHistory({ history, isNewLoan }: LoanHistoryProps) {
                       <div className="flex items-center gap-3">
                         <User className="h-5 w-5 text-primary" />
                         <div>
-                          <h3 className="font-semibold text-lg">{loan.student_name}</h3>
+                          <h3 className="font-semibold text-lg text-foreground">{loan.student_name}</h3>
                           <p className="text-sm text-muted-foreground">{loan.student_email}</p>
                         </div>
                       </div>
@@ -208,7 +208,7 @@ export function LoanHistory({ history, isNewLoan }: LoanHistoryProps) {
                           {loan.status.charAt(0).toUpperCase() + loan.status.slice(1)}
                         </Badge>
                         {isRecent && (
-                          <Badge className="bg-blue-500 text-white hover:bg-blue-500 text-xs">
+                          <Badge className="bg-info text-info-foreground hover:bg-info text-xs">
                             NOVO
                           </Badge>
                         )}
@@ -218,31 +218,31 @@ export function LoanHistory({ history, isNewLoan }: LoanHistoryProps) {
                     {/* Info badges */}
                     <div className="flex flex-wrap gap-2">
                       {loan.student_ra && (
-                        <Badge variant="outline">
+                        <Badge variant="outline" className="bg-card text-foreground border-border">
                           RA: {loan.student_ra}
                         </Badge>
                       )}
-                      <Badge variant="secondary">
+                      <Badge variant="secondary" className="bg-info-bg text-info-foreground hover:bg-info-bg">
                         <Monitor className="h-3 w-3 mr-1" />
                         {loan.chromebook_id}
                       </Badge>
                       {loan.chromebook_model && (
-                        <Badge variant="outline">
+                        <Badge variant="outline" className="bg-card text-foreground border-border">
                           {loan.chromebook_model}
                         </Badge>
                       )}
-                      <Badge variant="outline" className="capitalize">
+                      <Badge variant="outline" className="capitalize bg-card text-foreground border-border">
                         {loan.user_type}
                       </Badge>
                       {loan.loan_type === 'lote' && (
-                        <Badge className="bg-orange-100 text-orange-800 hover:bg-orange-100 dark:bg-orange-900 dark:text-orange-300">
+                        <Badge className="bg-warning-bg text-warning-foreground hover:bg-warning-bg">
                           Lote
                         </Badge>
                       )}
                     </div>
 
                     {/* Purpose */}
-                    <div className="text-sm">
+                    <div className="text-sm text-foreground">
                       <span className="font-medium">Finalidade: </span>
                       <span>{loan.purpose}</span>
                     </div>
@@ -250,20 +250,20 @@ export function LoanHistory({ history, isNewLoan }: LoanHistoryProps) {
                     {/* Timeline */}
                     <div className="space-y-3">
                       {/* Empréstimo */}
-                      <div className="bg-green-50 border border-green-200 rounded-lg p-3 dark:bg-green-950/50 dark:border-green-900">
+                      <div className="bg-success-bg border border-success/50 rounded-lg p-3 dark:bg-success-bg/50 dark:border-success/30">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
-                            <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
-                            <span className="font-medium text-green-800 dark:text-green-300">Empréstimo realizado</span>
+                            <CheckCircle className="h-4 w-4 text-success" />
+                            <span className="font-medium text-success-foreground">Empréstimo realizado</span>
                           </div>
-                          <span className="text-sm text-green-700 dark:text-green-400">
+                          <span className="text-sm text-success-foreground">
                             {format(new Date(loan.loan_date), "dd/MM/yyyy 'às' HH:mm")}
                           </span>
                         </div>
                         
                         {/* Prazo Esperado */}
                         {loan.expected_return_date && (
-                          <div className="mt-2 pt-2 border-t border-green-200 dark:border-green-800 flex items-center justify-between text-sm">
+                          <div className="mt-2 pt-2 border-t border-success/30 flex items-center justify-between text-sm">
                             <div className="flex items-center gap-2 text-muted-foreground">
                               <CalendarX className="h-4 w-4" />
                               <span className="font-medium">Prazo Esperado:</span>
@@ -279,24 +279,24 @@ export function LoanHistory({ history, isNewLoan }: LoanHistoryProps) {
                       {isReturned && loan.return_date && (
                         <div className={`border rounded-lg p-3 ${
                           isLateReturn 
-                            ? 'bg-red-50 border-red-200 dark:bg-red-950/50 dark:border-red-900' 
-                            : 'bg-blue-50 border-blue-200 dark:bg-blue-950/50 dark:border-blue-900'
+                            ? 'bg-error-bg border-error/50 dark:bg-error-bg/50 dark:border-error/30' 
+                            : 'bg-info-bg border-info/50 dark:bg-info-bg/50 dark:border-info/30'
                         }`}>
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                               {isLateReturn ? (
-                                <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400" />
+                                <AlertTriangle className="h-4 w-4 text-error" />
                               ) : (
-                                <RotateCcw className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                                <RotateCcw className="h-4 w-4 text-info" />
                               )}
                               <span className={`font-medium ${
-                                isLateReturn ? 'text-red-800 dark:text-red-300' : 'text-blue-800 dark:text-blue-300'
+                                isLateReturn ? 'text-error-foreground' : 'text-info-foreground'
                               }`}>
                                 Devolução realizada
                               </span>
                             </div>
                             <span className={`text-sm ${
-                              isLateReturn ? 'text-red-700 dark:text-red-400' : 'text-blue-700 dark:text-blue-400'
+                              isLateReturn ? 'text-error-foreground' : 'text-info-foreground'
                             }`}>
                               {format(new Date(loan.return_date), "dd/MM/yyyy 'às' HH:mm")}
                             </span>
@@ -304,18 +304,18 @@ export function LoanHistory({ history, isNewLoan }: LoanHistoryProps) {
                           
                           {/* Detalhes da Devolução */}
                           {(returnedByDifferentUser || isLateReturn) && (
-                            <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700 space-y-1">
+                            <div className="mt-2 pt-2 border-t border-border space-y-1">
                               {returnedByDifferentUser && loan.returned_by_name && (
-                                <div className="text-sm text-orange-700 dark:text-orange-400">
+                                <div className="text-sm text-warning-foreground">
                                   <span className="font-medium">Devolvido por: </span>
                                   <span>{loan.returned_by_name}</span>
                                   {loan.returned_by_email && (
-                                    <span className="text-orange-600 dark:text-orange-500"> ({loan.returned_by_email})</span>
+                                    <span className="text-warning"> ({loan.returned_by_email})</span>
                                   )}
                                 </div>
                               )}
                               {isLateReturn && (
-                                <div className="text-sm text-red-700 dark:text-red-400 font-semibold">
+                                <div className="text-sm text-error-foreground font-semibold">
                                   ATRASO: Devolvido após o prazo esperado.
                                 </div>
                               )}
@@ -323,7 +323,7 @@ export function LoanHistory({ history, isNewLoan }: LoanHistoryProps) {
                           )}
 
                           {loan.return_notes && (
-                            <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+                            <div className="mt-2 pt-2 border-t border-border">
                               <div className="text-sm text-muted-foreground">
                                 <span className="font-medium">Observações: </span>
                                 <span>{loan.return_notes}</span>

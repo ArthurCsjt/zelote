@@ -1,16 +1,23 @@
 import * as React from "react"
+import { AlertTriangle, CheckCircle, Info, XCircle } from "lucide-react"
 import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/lib/utils"
 
 const alertVariants = cva(
-  "relative w-full rounded-lg border p-4 [&>svg~*]:pl-7 [&>svg+div]:translate-y-[-3px] [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4 [&>svg]:text-foreground",
+  "relative w-full rounded-lg border p-4 [&>svg~*]:pl-7 [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4 [&>svg]:text-foreground",
   {
     variants: {
       variant: {
         default: "bg-background text-foreground",
         destructive:
-          "border-destructive/50 text-destructive dark:border-destructive [&>svg]:text-destructive",
+          "border-error/50 text-error-foreground dark:border-error [&>svg]:text-error bg-error-bg dark:bg-error-bg",
+        success:
+          "border-success/50 text-success-foreground dark:border-success [&>svg]:text-success bg-success-bg dark:bg-success-bg",
+        warning:
+          "border-warning/50 text-warning-foreground dark:border-warning [&>svg]:text-warning bg-warning-bg dark:bg-warning-bg",
+        info:
+          "border-info/50 text-info-foreground dark:border-info [&>svg]:text-info bg-info-bg dark:bg-info-bg",
       },
     },
     defaultVariants: {
@@ -56,4 +63,4 @@ const AlertDescription = React.forwardRef<
 ))
 AlertDescription.displayName = "AlertDescription"
 
-export { Alert, AlertTitle, AlertDescription }
+export { Alert, AlertTitle, AlertDescription, alertVariants }

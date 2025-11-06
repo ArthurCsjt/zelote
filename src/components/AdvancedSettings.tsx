@@ -47,12 +47,12 @@ export function AdvancedSettings() {
 
   return (
     <div className="space-y-4">
-      <div className="border border-destructive/20 rounded-lg p-4 bg-destructive/5 dark:bg-destructive/10 dark:border-destructive/50">
-        <h3 className="font-semibold text-destructive mb-2 flex items-center gap-2">
-          <AlertTriangle className="h-5 w-5" />
+      <div className="border border-error/20 rounded-lg p-4 bg-error-bg/50 dark:bg-error-bg/70">
+        <h3 className="font-semibold text-error-foreground mb-2 flex items-center gap-2">
+          <AlertTriangle className="h-5 w-5 text-error" />
           Reiniciar Cadastros de Alunos
         </h3>
-        <p className="text-sm text-muted-foreground mb-4">
+        <p className="text-muted-foreground text-sm mb-4">
           Esta operação irá apagar permanentemente todos os alunos cadastrados no sistema. 
           Use esta função com cuidado, geralmente no final do ano letivo, antes de importar 
           a nova lista de matrículas. Esta ação não pode ser desfeita.
@@ -67,23 +67,24 @@ export function AdvancedSettings() {
       </div>
 
       <Dialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
-        <DialogContent className="sm:max-w-[425px] dark:bg-card dark:border-border">
+        <DialogContent className="sm:max-w-[425px] bg-modal border-modal-border">
           <DialogHeader>
-            <DialogTitle className="text-destructive">
+            <DialogTitle className="text-error flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5" />
               Confirmar Exclusão Permanente de Todos os Alunos
             </DialogTitle>
             <DialogDescription className="space-y-2">
-              <div className="p-3 bg-destructive/10 border border-destructive/20 rounded dark:bg-destructive/20 dark:border-destructive/50">
-                <p className="font-semibold text-destructive">
+              <div className="p-3 bg-error-bg border border-error/20 rounded">
+                <p className="font-semibold text-error-foreground">
                   Atenção! Esta é uma ação irreversível.
                 </p>
                 <p className="text-sm text-muted-foreground">
                   Você tem certeza de que deseja apagar todos os registros de alunos do banco de dados?
                 </p>
               </div>
-              <p className="text-sm font-medium dark:text-foreground">
+              <p className="text-sm font-medium text-foreground">
                 Para confirmar, por favor, digite a frase{" "}
-                <code className="bg-muted px-1 py-0.5 rounded text-xs dark:bg-gray-700 dark:text-gray-200">
+                <code className="bg-muted px-1 py-0.5 rounded text-xs text-foreground">
                   APAGAR TODOS OS ALUNOS
                 </code>{" "}
                 no campo abaixo.
@@ -98,7 +99,7 @@ export function AdvancedSettings() {
                 value={confirmationText}
                 onChange={(e) => setConfirmationText(e.target.value)}
                 placeholder="Digite a frase de confirmação"
-                className="mt-1 dark:bg-input dark:border-border"
+                className="mt-1 bg-input-bg border-input"
               />
             </div>
           </div>

@@ -36,61 +36,61 @@ export const AuditMissingItems: React.FC<AuditMissingItemsProps> = ({
   const missingCount = missingItems.length;
 
   return (
-    <GlassCard className="border-orange-200 bg-orange-50/50 dark:bg-card/50 dark:border-orange-900">
+    <GlassCard className="border-warning/50 bg-warning-bg/50">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-orange-800 dark:text-orange-400">
-          <AlertTriangle className="h-5 w-5" />
+        <CardTitle className="flex items-center gap-2 text-warning-foreground">
+          <AlertTriangle className="h-5 w-5 text-warning" />
           Itens Faltantes ({missingCount})
         </CardTitle>
-        <CardDescription className="text-orange-700 dark:text-orange-300">
+        <CardDescription className="text-warning-foreground">
           {totalCounted} de {totalExpected} contados ({completionRate}% de conclusão).
           Estes são os {missingCount} Chromebooks que ainda não foram registrados.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="relative">
-          <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400 dark:text-muted-foreground" />
+          <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Buscar ID, modelo ou localização faltante..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            // CORREÇÃO: Adicionando dark mode classes para o input
-            className="pl-10 bg-white border-orange-300 dark:bg-input dark:border-border dark:text-foreground"
+            // CORREÇÃO: Usando bg-input-bg e border-input
+            className="pl-10 bg-input-bg border-input text-foreground"
           />
           {searchTerm && (
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setSearchTerm('')}
-              className="absolute right-1 top-1 h-8 w-8 p-0 text-gray-500 hover:bg-orange-100 dark:hover:bg-accent"
+              className="absolute right-1 top-1 h-8 w-8 p-0 text-muted-foreground hover:bg-accent"
             >
               <X className="h-4 w-4" />
             </Button>
           )}
         </div>
 
-        <ScrollArea className="h-64 w-full rounded-md border border-orange-300 bg-white dark:bg-card dark:border-border">
+        <ScrollArea className="h-64 w-full rounded-md border border-border bg-card">
           {filteredMissingItems.length > 0 ? (
             <Table>
-              <TableHeader className="bg-gray-200 dark:bg-muted/50">
+              <TableHeader className="bg-background-secondary">
                 <TableRow>
-                  <TableHead className="text-gray-700 dark:text-gray-300">ID</TableHead>
-                  <TableHead className="text-gray-700 dark:text-gray-300">Modelo</TableHead>
-                  <TableHead className="text-gray-700 dark:text-gray-300">Localização Esperada</TableHead>
-                  <TableHead className="text-gray-700 dark:text-gray-300">Status</TableHead>
+                  <TableHead className="text-foreground">ID</TableHead>
+                  <TableHead className="text-foreground">Modelo</TableHead>
+                  <TableHead className="text-foreground">Localização Esperada</TableHead>
+                  <TableHead className="text-foreground">Status</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredMissingItems.map((item) => (
-                  <TableRow key={item.id} className="hover:bg-orange-50/50 dark:hover:bg-muted/50">
-                    <TableCell className="font-medium text-sm">{item.chromebook_id}</TableCell>
-                    <TableCell className="text-xs">{item.model}</TableCell>
-                    <TableCell className="text-xs flex items-center gap-1">
-                      <MapPin className="h-3 w-3 text-orange-500" />
+                  <TableRow key={item.id} className="hover:bg-card-hover">
+                    <TableCell className="font-medium text-sm text-foreground">{item.chromebook_id}</TableCell>
+                    <TableCell className="text-xs text-muted-foreground">{item.model}</TableCell>
+                    <TableCell className="text-xs flex items-center gap-1 text-muted-foreground">
+                      <MapPin className="h-3 w-3 text-warning" />
                       {item.location || 'N/A'}
                     </TableCell>
                     <TableCell>
-                      <Badge variant="secondary" className="bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200">
+                      <Badge variant="secondary">
                         {item.status}
                       </Badge>
                     </TableCell>
@@ -101,8 +101,8 @@ export const AuditMissingItems: React.FC<AuditMissingItemsProps> = ({
           ) : (
             <div className="flex items-center justify-center h-full min-h-[200px]">
               <div className="text-center p-4">
-                <Monitor className="h-12 w-12 text-orange-300 mx-auto mb-4" />
-                <p className="text-sm text-orange-700 dark:text-orange-300">
+                <Monitor className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
+                <p className="text-sm text-muted-foreground">
                   {searchTerm 
                     ? "Nenhum item faltante corresponde à busca."
                     : "Todos os itens foram contados! 🎉"
