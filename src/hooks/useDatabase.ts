@@ -1080,6 +1080,68 @@ export const useDatabase = () => {
       setLoading(false);
     }
   }, [user]);
+  
+  const updateReservation = useCallback(async (id: string, data: Partial<ReservationData>): Promise<boolean> => {
+    if (!user) {
+      toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
+      return false;
+    }
+    
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from('reservations')
+        .update(data)
+        .eq('id', id)
+        .eq('created_by', user.id); // RLS já deve garantir isso, mas é uma boa prática
+
+      if (error) throw error;
+      
+      toast({ title: "Sucesso", description: "Reserva atualizada com sucesso.", variant: "success" });
+      return true;
+    } catch (error: any) {
+      console.error('Erro ao atualizar reserva:', error);
+      toast({ 
+        title: "Erro ao Atualizar", 
+        description: error.message, 
+        variant: "destructive" 
+      });
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
+  
+  const deleteReservation = useCallback(async (id: string): Promise<boolean> => {
+    if (!user) {
+      toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
+      return false;
+    }
+    
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from('reservations')
+        .delete()
+        .eq('id', id)
+        .eq('created_by', user.id); // RLS já deve garantir isso, mas é uma boa prática
+
+      if (error) throw error;
+      
+      toast({ title: "Sucesso", description: "Reserva cancelada com sucesso.", variant: "success" });
+      return true;
+    } catch (error: any) {
+      console.error('Erro ao deletar reserva:', error);
+      toast({ 
+        title: "Erro ao Cancelar", 
+        description: error.message, 
+        variant: "destructive" 
+      });
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
 
 
   return {
@@ -1112,5 +1174,7 @@ export const useDatabase = () => {
     getTotalAvailableChromebooks,
     getReservationsForWeek,
     createReservation,
+    updateReservation, // EXPORTANDO
+    deleteReservation, // EXPORTANDO
   };
 };

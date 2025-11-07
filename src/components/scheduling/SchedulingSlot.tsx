@@ -1,9 +1,10 @@
 import React, { useMemo } from 'react';
 import { cn } from '@/lib/utils';
-import { Plus, Monitor, User, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Plus, Monitor, User, CheckCircle, AlertTriangle, Eye } from 'lucide-react';
 import type { Reservation } from '@/hooks/useDatabase';
 import type { User as AuthUser } from '@supabase/supabase-js';
-import { ReservationDialog } from './ReservationDialog'; // Importaremos na próxima etapa
+import { ReservationDialog } from './ReservationDialog';
+import { ReservationViewDialog } from './ReservationViewDialog'; // NOVO IMPORT
 
 interface SchedulingSlotProps {
   date: Date;
@@ -40,51 +41,73 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
 
   // --- Renderização Condicional ---
   
-  // 1. Minha Reserva
+  // 1. Minha Reserva (AGORA CLICÁVEL PARA VISUALIZAR/EDITAR)
   if (myReservation) {
     return (
-      <div className={cn(
-        "slot my-reservation",
-        "bg-blue-50/80 border-l-4 border-l-blue-500 text-blue-900 dark:bg-blue-950/50 dark:border-l-blue-400 dark:text-blue-200",
-        "p-2 flex flex-col justify-center"
-      )}>
-        <div className="slot-title flex items-center gap-1 text-blue-700 dark:text-blue-400">
-          <CheckCircle className="h-3 w-3" />
-          Minha Reserva
+      <ReservationViewDialog
+        open={false} // Controlado internamente pelo slot
+        onOpenChange={() => {}} // Não é necessário, mas mantido para tipagem
+        reservation={myReservation}
+        professores={professores}
+        totalAvailableChromebooks={totalAvailableChromebooks}
+        allReservationsForSlot={allReservationsForSlot}
+        onReservationUpdate={onReservationSuccess}
+      >
+        <div className={cn(
+          "slot my-reservation cursor-pointer hover:shadow-md",
+          "bg-blue-50/80 border-l-4 border-l-blue-500 text-blue-900 dark:bg-blue-950/50 dark:border-l-blue-400 dark:text-blue-200",
+          "p-2 flex flex-col justify-center"
+        )}>
+          <div className="slot-title flex items-center gap-1 text-blue-700 dark:text-blue-400">
+            <CheckCircle className="h-3 w-3" />
+            Minha Reserva
+          </div>
+          <div className="slot-subtitle text-xs font-medium text-blue-800 dark:text-blue-300">
+            {myReservation.subject}
+          </div>
+          <div className="text-[10px] text-blue-600 dark:text-blue-400 flex items-center gap-1">
+            <Monitor className="h-3 w-3" />
+            {myReservation.quantity_requested} 💻
+          </div>
         </div>
-        <div className="slot-subtitle text-xs font-medium text-blue-800 dark:text-blue-300">
-          {myReservation.subject}
-        </div>
-        <div className="text-[10px] text-blue-600 dark:text-blue-400">
-          {myReservation.quantity_requested} 💻
-        </div>
-      </div>
+      </ReservationViewDialog>
     );
   }
   
-  // 2. Esgotado
+  // 2. Esgotado (AGORA CLICÁVEL PARA VISUALIZAR TODAS AS RESERVAS)
   if (isFull) {
     return (
-      <div className={cn(
-        "slot full",
-        "bg-red-50/80 border-l-4 border-l-red-500 text-red-900 dark:bg-red-950/50 dark:border-l-red-400 dark:text-red-200",
-        "p-2 flex flex-col justify-center"
-      )}>
-        <div className="slot-title flex items-center gap-1 text-red-700 dark:text-red-400">
-          <AlertTriangle className="h-3 w-3" />
-          Esgotado
+      <ReservationViewDialog
+        open={false}
+        onOpenChange={() => {}}
+        reservation={allReservationsForSlot[0]} // Usa a primeira reserva para contexto
+        professores={professores}
+        totalAvailableChromebooks={totalAvailableChromebooks}
+        allReservationsForSlot={allReservationsForSlot}
+        onReservationUpdate={onReservationSuccess}
+      >
+        <div className={cn(
+          "slot full cursor-pointer hover:shadow-md",
+          "bg-red-50/80 border-l-4 border-l-red-500 text-red-900 dark:bg-red-950/50 dark:border-l-red-400 dark:text-red-200",
+          "p-2 flex flex-col justify-center"
+        )}>
+          <div className="slot-title flex items-center gap-1 text-red-700 dark:text-red-400">
+            <AlertTriangle className="h-3 w-3" />
+            Esgotado
+          </div>
+          <div className="slot-subtitle text-xs font-medium text-red-800 dark:text-red-300">
+            {jaReservados}/{totalAvailableChromebooks} 💻
+          </div>
+          <div className="text-[10px] text-red-600 dark:text-red-400 flex items-center gap-1">
+            <Eye className="h-3 w-3" />
+            Ver detalhes
+          </div>
         </div>
-        <div className="slot-subtitle text-xs font-medium text-red-800 dark:text-red-300">
-          {jaReservados}/{totalAvailableChromebooks} 💻
-        </div>
-        <div className="text-[10px] text-red-600 dark:text-red-400">
-          {allReservationsForSlot[0]?.prof_name || 'Múltiplas reservas'}
-        </div>
-      </div>
+      </ReservationViewDialog>
     );
   }
   
-  // 3. Parcialmente Reservado
+  // 3. Parcialmente Reservado (CLICÁVEL PARA RESERVAR OU VER DETALHES)
   if (isPartial) {
     return (
       <ReservationDialog
