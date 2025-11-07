@@ -11,6 +11,7 @@ import { toast } from '@/hooks/use-toast';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { ProfessorAutocomplete } from './ProfessorAutocomplete'; // NOVO IMPORT
 
 interface ReservationDialogProps {
   children: ReactNode;
@@ -123,21 +124,15 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
             </div>
           </div>
           
-          {/* Professor */}
+          {/* Professor (AGORA COM AUTOCOMPLETAR) */}
           <div className="space-y-2">
             <Label htmlFor="professor">Professor *</Label>
-            <Select value={professorId} onValueChange={setProfessorId} disabled={isSaving}>
-              <SelectTrigger id="professor" className="bg-input dark:bg-input">
-                <SelectValue placeholder="Selecione o professor" />
-              </SelectTrigger>
-              <SelectContent>
-                {professores.map(prof => (
-                  <SelectItem key={prof.id} value={prof.id}>
-                    {prof.nome_completo}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <ProfessorAutocomplete
+              professores={professores}
+              selectedProfessorId={professorId}
+              onSelect={setProfessorId}
+              disabled={isSaving}
+            />
           </div>
           
           {/* Matéria/Turma */}
