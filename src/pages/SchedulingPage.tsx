@@ -63,10 +63,6 @@ const SchedulingPage = () => {
     setCurrentWeekStart(prev => changeWeek(prev, direction));
   };
   
-  const handleGoToToday = () => {
-    setCurrentWeekStart(getStartOfWeek(new Date()));
-  };
-  
   const handleReservationSuccess = () => {
     refetch(); // Recarrega as reservas após uma inserção bem-sucedida
   };
@@ -108,25 +104,22 @@ const SchedulingPage = () => {
         
         {/* Card de Status e Navegação */}
         <GlassCard className="p-4 space-y-4">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div className="flex justify-between items-center">
                 {/* Navegação de Semana */}
-                <nav className="flex items-center gap-2 font-semibold text-lg w-full md:w-auto">
+                <nav className="flex items-center gap-4 font-semibold text-lg">
                     <Button variant="outline" size="icon" onClick={() => handleWeekChange('prev')} disabled={isLoading}>
                         <ChevronLeft className="h-5 w-5" />
                     </Button>
-                    <span className="text-base text-foreground min-w-[200px] text-center">
+                    <span className="text-base text-foreground min-w-[250px] text-center">
                         {formatWeekRange(currentWeekStart)}
                     </span>
                     <Button variant="outline" size="icon" onClick={() => handleWeekChange('next')} disabled={isLoading}>
                         <ChevronRight className="h-5 w-5" />
                     </Button>
-                    <Button variant="secondary" size="sm" onClick={handleGoToToday} disabled={isLoading} className="ml-2">
-                        Hoje
-                    </Button>
                 </nav>
                 
                 {/* Status de Disponibilidade */}
-                <div className="flex items-center gap-2 text-lg font-bold text-primary w-full md:w-auto justify-end">
+                <div className="flex items-center gap-2 text-lg font-bold text-primary">
                     <Monitor className="h-5 w-5" />
                     {isLoadingTotal ? (
                         <Loader2 className="h-5 w-5 animate-spin" />
