@@ -93,15 +93,17 @@ const UserAutocomplete: React.FC<UserAutocompleteProps> = ({ selectedUser, onSel
         >
           <div className="flex items-center">
             <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
+            {/* ALTERAÇÃO AQUI: Exibe o nome do usuário selecionado ou o placeholder */}
             {selectedUser ? selectedUser.name : "Buscar nome, RA ou email..."}
           </div>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent 
-        className="w-[350px] p-0 bg-card border-border" // Adicionando bg-card e border-border para garantir opacidade
+        className="w-[350px] p-0 bg-card border-border"
       >
         <Command>
+          {/* ALTERAÇÃO AQUI: O CommandInput é o campo de busca real */}
           <CommandInput 
             placeholder="Buscar usuário..." 
             value={searchTerm}
