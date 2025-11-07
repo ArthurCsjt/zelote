@@ -347,6 +347,12 @@
 }
 
 .time-label {
+    /* Estilos de fundo e borda para destacar */
+    background-color: hsl(var(--background-secondary));
+    border-radius: 8px;
+    border: 1px solid hsl(var(--border));
+    
+    /* Estilos de alinhamento */
     text-align: right;
     font-size: 0.8rem;
     font-weight: 500;
@@ -356,6 +362,12 @@
     display: flex;
     align-items: center;
     justify-content: flex-end;
+    
+    /* Dark Mode Overrides */
+    .dark & {
+        background-color: hsl(var(--background-secondary));
+        border-color: hsl(var(--border-strong));
+    }
 }
 
 /* Estilo base para o slot */
