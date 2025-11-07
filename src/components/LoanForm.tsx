@@ -304,8 +304,14 @@ export function LoanForm({ onBack }: LoanFormProps) {
                   id="returnDeadline"
                   checked={hasReturnDeadline}
                   onCheckedChange={(checked) => {
-                    setHasReturnDeadline(checked as boolean);
-                    if (!checked) {
+                    const isChecked = !!checked;
+                    setHasReturnDeadline(isChecked);
+                    if (isChecked) {
+                      // Pré-define a data e hora atuais se o prazo for ativado
+                      if (!formData.expectedReturnDate) {
+                        setFormData(prev => ({ ...prev, expectedReturnDate: new Date() }));
+                      }
+                    } else {
                       setFormData({ ...formData, expectedReturnDate: undefined });
                     }
                   }}
@@ -349,7 +355,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent 
-                        className="w-auto p-0 bg-card border-border" // CORREÇÃO APLICADA AQUI
+                        className="w-auto p-0 bg-card border-border"
                         align="start"
                       >
                         <CalendarComponent
