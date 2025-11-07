@@ -132,6 +132,7 @@ export function DeviceListInput({ deviceIds, setDeviceIds, disabled, filterStatu
       title: "Dispositivo adicionado",
       description: `ID: ${chromebook.chromebook_id} (${chromebook.model})`,
       variant: "success",
+      duration: 2000, // Duração reduzida para microinteração
     });
   }, [validateAndNormalizeInput, setDeviceIds]);
 
@@ -155,11 +156,21 @@ export function DeviceListInput({ deviceIds, setDeviceIds, disabled, filterStatu
   };
 
   const removeDevice = (deviceId: string) => {
+    const removedItem = deviceList.find(item => item.chromebook_id === deviceId);
+    
     setDeviceList(prev => {
       const newList = prev.filter(item => item.chromebook_id !== deviceId);
       setDeviceIds(newList.map(item => item.chromebook_id)); // Atualiza a lista externa de IDs
       return newList;
     });
+    
+    if (removedItem) {
+        toast({
+            title: "Dispositivo removido",
+            description: `ID: ${removedItem.chromebook_id} removido da lista.`,
+            duration: 2000, // Duração reduzida para microinteração
+        });
+    }
   };
 
   return (

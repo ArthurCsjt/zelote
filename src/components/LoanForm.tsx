@@ -6,7 +6,7 @@ import { Label } from "./ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { Badge } from "./ui/badge";
 import { Checkbox } from "./ui/checkbox";
-import { Computer, Plus, QrCode, Calendar, Clock, Loader2, CheckCircle, User, BookOpen } from "lucide-react";
+import { Computer, Plus, QrCode, Calendar, Clock, Loader2, CheckCircle, User, BookOpen, AlertTriangle } from "lucide-react";
 import { QRCodeReader } from "./QRCodeReader";
 import { format } from "date-fns";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
@@ -114,18 +114,11 @@ export function LoanForm({ onBack }: LoanFormProps) {
       return;
     }
     
-    // 3. Validação de Campos (usando o primeiro dispositivo para validação de formato)
-    const dataToValidate = {
-      ...formData,
-      chromebookId: deviceIds[0], // Usamos o primeiro ID para validar o formato do ID
-    };
-    
-    const validation = validateLoanFormData(dataToValidate);
-    
-    if (!validation.isValid) {
+    // 3. Validação de Finalidade
+    if (!formData.purpose) {
       toast({
-        title: "Erro de Validação",
-        description: validation.errors.join(', '),
+        title: "Erro",
+        description: "Defina a finalidade do empréstimo.",
         variant: "destructive",
       });
       return;
@@ -156,243 +149,323 @@ export function LoanForm({ onBack }: LoanFormProps) {
         variant: "success",
       });
     } else if (errorCount > 0) {
-      toast({
-        title: "Erro no Empréstimo",
-        description: "Nenhum empréstimo foi criado. Verifique os erros acima.",
-        variant: "destructive",
-      });
+      // O bulkCreateLoans já toastou os erros individuais
     }
   };
 
   // Determina o placeholder do campo de finalidade baseado no tipo de usuário
   const purposePlaceholder = selectedUser?.type === 'professor' 
-    ? 'Buscar professor ou digitar aula (Ex: Aula de História)' 
+    ? '🎓 Ex: Aula de Matemática (3º ano)' 
     : selectedUser?.type === 'funcionario' 
-      ? 'Buscar funcionário ou digitar departamento (Ex: Suporte Técnico)' 
-      : 'Ex: Aula de Matemática, Uso Pessoal';
+      ? '💼 Ex: Suporte Técnico, Secretaria' 
+      : '📚 Ex: Atividade em Sala, Pesquisa';
 
   // === RENDERIZAÇÃO DA INTERFACE (UI) ===
   return (
-    <div className="animate-fade-in relative">
-      {/* Gradiente de fundo sutil para a área do formulário */}
-      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-violet-50/30 via-blue-50/20 to-violet-50/30 rounded-3xl blur-2xl transform scale-110" />
-      
-      <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
+    <div className="animate-fade-in">
+      <form onSubmit={handleSubmit} className="space-y-5 relative z-10">
         
-        <div className="grid md:grid-cols-2 gap-6">
-            
-          {/* Coluna Esquerda - Detalhes do Equipamento/Lote (VIOLETA CLARO) */}
-          <GlassCard className="bg-menu-violet/10 border-menu-violet/30 shadow-inner dark:bg-card/50 dark:border-menu-violet/50">
-            <CardHeader className="p-4 pb-0">
-              <CardTitle className="text-lg flex items-center gap-2 text-menu-violet dark:text-violet-400">
-                <Computer className="h-5 w-5" /> Dispositivos para Empréstimo
+        {/* ═══ SEÇÃO 1: SOLICITANTE (PRIORIDADE MÁXIMA) ═══ */}
+        <GlassCard className={cn(
+          "bg-gradient-to-br from-violet-500/5 via-violet-500/3 to-transparent",
+          "border border-violet-500/20",
+          "shadow-lg shadow-violet-500/5"
+        )}>
+          <CardHeader className="p-5 pb-3 border-b border-violet-500/10 dark:border-violet-500/30">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-lg font-semibold flex items-center gap-2 text-foreground">
+                <User className="h-5 w-5 text-violet-500" />
+                Solicitante do Empréstimo
               </CardTitle>
-            </CardHeader>
-            <CardContent className="p-4 space-y-4">
-              
-              {/* Entrada de Dispositivos Unificada */}
-              <DeviceListInput
-                deviceIds={deviceIds}
-                setDeviceIds={setDeviceIds}
+              {selectedUser && (
+                <Badge variant="outline" className={cn(
+                  "text-xs font-medium capitalize",
+                  selectedUser.type === 'aluno' && "bg-blue-500/10 text-blue-600 border-blue-500/30 dark:bg-blue-900/50 dark:text-blue-300 dark:border-blue-800",
+                  selectedUser.type === 'professor' && "bg-purple-500/10 text-purple-600 border-purple-500/30 dark:bg-purple-900/50 dark:text-purple-300 dark:border-purple-800",
+                  selectedUser.type === 'funcionario' && "bg-orange-500/10 text-orange-600 border-orange-500/30 dark:bg-orange-900/50 dark:text-orange-300 dark:border-orange-800"
+                )}>
+                  {selectedUser.type === 'aluno' ? 'Aluno' : 
+                   selectedUser.type === 'professor' ? 'Professor' : 
+                   'Funcionário'}
+                </Badge>
+              )}
+            </div>
+          </CardHeader>
+          
+          <CardContent className="p-5 space-y-4">
+            {/* Busca de Usuário */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium text-foreground flex items-center gap-1">
+                Buscar por Nome, RA ou Email
+                <span className="text-destructive">*</span>
+              </Label>
+              <UserAutocomplete
+                selectedUser={selectedUser}
+                onSelect={handleUserSelect}
+                onClear={handleUserClear}
                 disabled={loading}
-                filterStatus="disponivel"
-                actionLabel="Empréstimo"
               />
-            </CardContent>
-          </GlassCard>
-
-          {/* Coluna Direita - Informações do Solicitante e Finalidade */}
-          <div className="space-y-6">
+              {/* Validação em tempo real para Solicitante */}
+              {!selectedUser && (
+                <p className="text-xs text-destructive flex items-center gap-1 mt-1">
+                  <AlertTriangle className="h-3 w-3" />
+                  Selecione um solicitante para continuar
+                </p>
+              )}
+            </div>
             
-            {/* Card 1: Informações do Solicitante */}
-            <GlassCard className="bg-menu-violet/10 border-menu-violet/30 shadow-inner dark:bg-card/50 dark:border-menu-violet/50">
-              <CardHeader className="p-4 pb-0">
-                <CardTitle className="text-lg flex items-center gap-2 text-menu-violet dark:text-violet-400">
-                  <User className="h-5 w-5" /> Informações do Solicitante
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-4 space-y-4">
-                
-                {/* Seletor de Usuário com Autocompletar */}
-                <div className="space-y-2">
-                  <Label htmlFor="userSearch" className="text-foreground">
-                    Buscar Solicitante (Nome, RA ou Email) *
-                  </Label>
-                  <UserAutocomplete
-                    selectedUser={selectedUser}
-                    onSelect={handleUserSelect}
-                    onClear={handleUserClear}
-                    disabled={loading}
-                  />
-                </div>
-              </CardContent>
-            </GlassCard>
-            
-            {/* Card 2: Finalidade (NOVO CARD SEPARADO) */}
-            <GlassCard className="bg-menu-violet/10 border-menu-violet/30 shadow-inner dark:bg-card/50 dark:border-menu-violet/50">
-              <CardHeader className="p-4 pb-0">
-                <CardTitle className="text-lg flex items-center gap-2 text-menu-violet dark:text-violet-400">
-                  <BookOpen className="h-5 w-5" /> Finalidade do Empréstimo
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-4 space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="purpose" className="text-foreground">
-                    Finalidade (Aula/Professor/Departamento) *
-                  </Label>
-                  <PurposeAutocomplete
-                    value={formData.purpose}
-                    onChange={(value) => setFormData({ ...formData, purpose: value })}
-                    disabled={loading || !selectedUser}
-                    placeholder={purposePlaceholder}
-                    userType={formData.userType}
-                  />
-                </div>
-              </CardContent>
-            </GlassCard>
-          </div>
-        </div>
-
-        {/* Opção para definir prazo de devolução (abaixo das colunas) */}
-        <div className="space-y-4 p-4 bg-muted/50 rounded-xl border border-border dark:bg-card/50">
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="returnDeadline"
-              checked={hasReturnDeadline}
-              onCheckedChange={(checked) => {
-                setHasReturnDeadline(checked as boolean);
-                if (!checked) {
-                  setFormData({ ...formData, expectedReturnDate: undefined });
-                }
-              }}
-              className="border-gray-300"
-            />
-            <Label htmlFor="returnDeadline" className="text-foreground font-medium cursor-pointer">
-              Definir prazo de devolução
-            </Label>
-          </div>
-
-          {hasReturnDeadline && (
-            <div className="space-y-3 pl-6 border-l-2 border-menu-violet/50">
-              <div className="space-y-2">
-                <Label className="text-foreground text-sm font-medium">
-                  Data e Hora de Devolução
+            {/* Finalidade - MOVIDA PARA DENTRO DO MESMO CARD */}
+            {selectedUser && (
+              <div className="space-y-2 pt-3 border-t border-border/50">
+                <Label className="text-sm font-medium text-foreground flex items-center gap-1">
+                  <BookOpen className="h-4 w-4 text-violet-500" />
+                  Finalidade do Empréstimo
+                  <span className="text-destructive">*</span>
                 </Label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <Popover open={isDatePickerOpen} onOpenChange={setIsDatePickerOpen}>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "justify-start text-left font-normal border-gray-200 bg-input dark:bg-card dark:border-border",
-                          !formData.expectedReturnDate && "text-muted-foreground"
-                        )}
-                      >
-                        <Calendar className="mr-2 h-4 w-4" />
-                        {formData.expectedReturnDate ? (
-                          format(formData.expectedReturnDate, "dd/MM/yyyy")
-                        ) : (
-                          <span>Selecionar data</span>
-                        )}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <CalendarComponent
-                        mode="single"
-                        selected={formData.expectedReturnDate}
-                        onSelect={(date) => {
-                          if (date) {
-                            const currentTime = formData.expectedReturnDate || new Date();
-                            const newDateTime = new Date(date);
-                            newDateTime.setHours(currentTime.getHours());
-                            newDateTime.setMinutes(currentTime.getMinutes());
-                            setFormData({ ...formData, expectedReturnDate: newDateTime });
-                          }
-                          setIsDatePickerOpen(false);
-                        }}
-                        disabled={(date) => date < new Date()}
-                        initialFocus
-                        className="pointer-events-auto"
-                      />
-                    </PopoverContent>
-                  </Popover>
+                <PurposeAutocomplete
+                  value={formData.purpose}
+                  onChange={(value) => setFormData({ ...formData, purpose: value })}
+                  disabled={loading}
+                  placeholder={purposePlaceholder}
+                  userType={formData.userType}
+                />
+                {/* Validação em tempo real para Finalidade */}
+                {!formData.purpose && (
+                  <p className="text-xs text-destructive flex items-center gap-1 mt-1">
+                    <AlertTriangle className="h-3 w-3" />
+                    Defina a finalidade do empréstimo
+                  </p>
+                )}
+                {formData.purpose && (
+                  <p className="text-xs text-success flex items-center gap-1 mt-1">
+                    <CheckCircle className="h-3 w-3" />
+                    Finalidade definida
+                  </p>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </GlassCard>
 
-                  <div className="space-y-1">
-                    <div className="flex gap-2">
-                      <div className="flex-1">
-                        <Input
-                          type="number"
-                          placeholder="Hora"
-                          min="0"
-                          max="23"
-                          value={formData.expectedReturnDate ? formData.expectedReturnDate.getHours() : ''}
-                          onChange={(e) => {
-                            const hours = parseInt(e.target.value) || 0;
-                            if (hours >= 0 && hours <= 23) {
-                              const newDate = formData.expectedReturnDate ? 
-                                new Date(formData.expectedReturnDate) : 
-                                new Date();
-                              newDate.setHours(hours);
-                              setFormData({ ...formData, expectedReturnDate: newDate });
-                            }
-                          }}
-                          className="border-gray-200 text-center bg-input dark:bg-card dark:border-border"
-                        />
-                      </div>
-                      <span className="flex items-center text-muted-foreground">:</span>
-                      <div className="flex-1">
-                        <Input
-                          type="number"
-                          placeholder="Min"
-                          min="0"
-                          max="59"
-                          value={formData.expectedReturnDate ? formData.expectedReturnDate.getMinutes() : ''}
-                          onChange={(e) => {
-                            const minutes = parseInt(e.target.value) || 0;
-                            if (minutes >= 0 && minutes <= 59) {
-                              const newDate = formData.expectedReturnDate ? 
-                                new Date(formData.expectedReturnDate) : 
-                                new Date();
-                              newDate.setMinutes(minutes);
-                              setFormData({ ...formData, expectedReturnDate: newDate });
-                            }
-                          }}
-                          className="border-gray-200 text-center bg-input dark:bg-card dark:border-border"
-                        />
-                      </div>
-                    </div>
-                    <div className="flex items-center text-xs text-muted-foreground mt-1">
-                      <Clock className="h-3 w-3 mr-1" />
-                      {formData.expectedReturnDate && (
-                        <span>
-                          Prazo: {format(formData.expectedReturnDate, "dd/MM/yyyy 'às' HH:mm")}
-                        </span>
-                      )}
-                    </div>
-                  </div>
+        {/* ═══ SEÇÃO 2: DISPOSITIVOS ═══ */}
+        <GlassCard className={cn(
+          "bg-gradient-to-br from-blue-500/5 via-blue-500/3 to-transparent",
+          "border border-blue-500/20",
+          "shadow-lg shadow-blue-500/5",
+          !selectedUser && "opacity-50 pointer-events-none" // DESABILITADO SE NÃO TIVER USUÁRIO
+        )}>
+          <CardHeader className="p-5 pb-3 border-b border-blue-500/10 dark:border-blue-500/30">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-lg font-semibold flex items-center gap-2 text-foreground">
+                <Computer className="h-5 w-5 text-blue-500" />
+                Dispositivos para Empréstimo
+              </CardTitle>
+              <Badge variant="outline" className={cn(
+                "text-xs font-medium transition-colors",
+                deviceIds.length === 0 ? "bg-muted text-muted-foreground" : "bg-blue-500/10 text-blue-600 border-blue-500/30 dark:bg-blue-900/50 dark:text-blue-300 dark:border-blue-800"
+              )}>
+                {deviceIds.length === 0 
+                  ? 'Nenhum dispositivo' 
+                  : `${deviceIds.length} ${deviceIds.length === 1 ? 'dispositivo' : 'dispositivos'}`
+                }
+              </Badge>
+            </div>
+          </CardHeader>
+          
+          <CardContent className="p-5">
+            <DeviceListInput
+              deviceIds={deviceIds}
+              setDeviceIds={setDeviceIds}
+              disabled={loading || !selectedUser}
+              filterStatus="disponivel"
+              actionLabel="Empréstimo"
+            />
+            
+            {/* Validação em tempo real para Dispositivos */}
+            {selectedUser && formData.purpose && deviceIds.length === 0 && (
+              <p className="text-xs text-destructive flex items-center gap-1 mt-3">
+                <AlertTriangle className="h-3 w-3" />
+                Adicione pelo menos um dispositivo
+              </p>
+            )}
+          </CardContent>
+        </GlassCard>
+
+        {/* ═══ SEÇÃO 3: OPÇÕES ADICIONAIS (PRAZO) ═══ */}
+        <GlassCard className={cn(
+          "bg-muted/30 border border-border/50",
+          !selectedUser && "opacity-50 pointer-events-none"
+        )}>
+          <CardContent className="p-5">
+            <div className="space-y-4">
+              {/* Checkbox de prazo */}
+              <div className="flex items-start space-x-3">
+                <Checkbox
+                  id="returnDeadline"
+                  checked={hasReturnDeadline}
+                  onCheckedChange={(checked) => {
+                    setHasReturnDeadline(checked as boolean);
+                    if (!checked) {
+                      setFormData({ ...formData, expectedReturnDate: undefined });
+                    }
+                  }}
+                  className="mt-1"
+                  disabled={!selectedUser}
+                />
+                <div className="flex-1">
+                  <Label 
+                    htmlFor="returnDeadline" 
+                    className="text-sm font-medium text-foreground cursor-pointer flex items-center gap-2"
+                  >
+                    <Calendar className="h-4 w-4 text-violet-500" />
+                    Definir prazo de devolução
+                  </Label>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Adicione uma data e hora limite para devolução
+                  </p>
                 </div>
               </div>
+
+              {/* Seletor de data/hora (aparece quando checkbox marcado) */}
+              {hasReturnDeadline && (
+                <div className="pl-7 space-y-3 border-l-2 border-violet-500/30 animate-in slide-in-from-left-5">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {/* Data */}
+                    <Popover open={isDatePickerOpen} onOpenChange={setIsDatePickerOpen}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "justify-start text-left font-normal w-full",
+                            !formData.expectedReturnDate && "text-muted-foreground"
+                          )}
+                        >
+                          <Calendar className="mr-2 h-4 w-4" />
+                          {formData.expectedReturnDate ? (
+                            format(formData.expectedReturnDate, "dd/MM/yyyy")
+                          ) : (
+                            <span>Selecionar data</span>
+                          )}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <CalendarComponent
+                          mode="single"
+                          selected={formData.expectedReturnDate}
+                          onSelect={(date) => {
+                            if (date) {
+                              const currentTime = formData.expectedReturnDate || new Date();
+                              const newDateTime = new Date(date);
+                              newDateTime.setHours(currentTime.getHours());
+                              newDateTime.setMinutes(currentTime.getMinutes());
+                              setFormData({ ...formData, expectedReturnDate: newDateTime });
+                            }
+                            setIsDatePickerOpen(false);
+                          }}
+                          disabled={(date) => date < new Date()}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+
+                    {/* Hora */}
+                    <div className="flex gap-2 items-center">
+                      <Input
+                        type="number"
+                        placeholder="HH"
+                        min="0"
+                        max="23"
+                        value={formData.expectedReturnDate ? String(formData.expectedReturnDate.getHours()).padStart(2, '0') : ''}
+                        onChange={(e) => {
+                          const hours = parseInt(e.target.value) || 0;
+                          if (hours >= 0 && hours <= 23) {
+                            const newDate = formData.expectedReturnDate || new Date();
+                            newDate.setHours(hours);
+                            setFormData({ ...formData, expectedReturnDate: newDate });
+                          }
+                        }}
+                        className="text-center w-16"
+                      />
+                      <span className="text-muted-foreground">:</span>
+                      <Input
+                        type="number"
+                        placeholder="MM"
+                        min="0"
+                        max="59"
+                        value={formData.expectedReturnDate ? String(formData.expectedReturnDate.getMinutes()).padStart(2, '0') : ''}
+                        onChange={(e) => {
+                          const minutes = parseInt(e.target.value) || 0;
+                          if (minutes >= 0 && minutes <= 59) {
+                            const newDate = formData.expectedReturnDate || new Date();
+                            newDate.setMinutes(minutes);
+                            setFormData({ ...formData, expectedReturnDate: newDate });
+                          }
+                        }}
+                        className="text-center w-16"
+                      />
+                    </div>
+                  </div>
+                  
+                  {/* Preview da data/hora */}
+                  {formData.expectedReturnDate && (
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/50 rounded-lg p-3">
+                      <Clock className="h-4 w-4 text-violet-500" />
+                      <span className="font-medium">
+                        Prazo: {format(formData.expectedReturnDate, "dd/MM/yyyy 'às' HH:mm")}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
-          )}
-        </div>
+          </CardContent>
+        </GlassCard>
         
-        {/* Botão de envio do formulário */}
+        {/* ═══ BOTÃO DE SUBMISSÃO ═══ */}
         <Button 
           type="submit" 
-          className="w-full bg-menu-violet hover:bg-menu-violet-hover text-white border-0 shadow-lg hover:shadow-xl transform transition-all duration-300 hover:scale-[1.02]"
+          size="lg"
+          className={cn(
+            "w-full h-12 text-base font-semibold",
+            "bg-gradient-to-r from-violet-600 to-violet-500",
+            "hover:from-violet-700 hover:to-violet-600",
+            "shadow-lg shadow-violet-500/25",
+            "transition-all duration-200",
+            "disabled:opacity-50 disabled:cursor-not-allowed"
+          )}
           disabled={
             loading || 
             deviceIds.length === 0 ||
             !selectedUser ||
-            !formData.purpose // Adicionando validação para purpose
+            !formData.purpose
           }
         >
           {loading ? (
             <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Processando...
+              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+              Processando empréstimo...
             </>
-          ) : `Emprestar ${deviceIds.length} Chromebook${deviceIds.length !== 1 ? 's' : ''}`}
+          ) : deviceIds.length === 0 ? (
+            <>
+              <Computer className="mr-2 h-5 w-5" />
+              Selecione os dispositivos
+            </>
+          ) : !selectedUser ? (
+            <>
+              <User className="mr-2 h-5 w-5" />
+              Selecione o solicitante
+            </>
+          ) : !formData.purpose ? (
+            <>
+              <BookOpen className="mr-2 h-5 w-5" />
+              Defina a finalidade
+            </>
+          ) : (
+            <>
+              <CheckCircle className="mr-2 h-5 w-5" />
+              Emprestar {deviceIds.length} {deviceIds.length === 1 ? 'Chromebook' : 'Chromebooks'}
+            </>
+          )}
         </Button>
       </form>
     </div>
