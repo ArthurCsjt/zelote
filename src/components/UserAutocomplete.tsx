@@ -98,7 +98,9 @@ const UserAutocomplete: React.FC<UserAutocompleteProps> = ({ selectedUser, onSel
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[350px] p-0">
+      <PopoverContent 
+        className="w-[350px] p-0 bg-card border-border" // Adicionando bg-card e border-border para garantir opacidade
+      >
         <Command>
           <CommandInput 
             placeholder="Buscar usuário..." 
