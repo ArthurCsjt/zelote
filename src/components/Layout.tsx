@@ -41,7 +41,8 @@ const Layout: React.FC<LayoutProps> = ({
     loading: roleLoading,
     role
   } = useProfileRole();
-  const [showInstallBanner, setShowInstallBanner] = React.useState(false);
+  // Removendo showInstallBanner e sua lógica
+  // const [showInstallBanner, setShowInstallBanner] = React.useState(false);
   const [isStandalone, setIsStandalone] = React.useState(false);
   
   React.useEffect(() => {
@@ -60,6 +61,8 @@ const Layout: React.FC<LayoutProps> = ({
     };
     const isInstalled = checkStandalone();
 
+    // REMOVIDA A LÓGICA DO BANNER DE INSTALAÇÃO
+    /*
     const dismissedTime = localStorage.getItem('pwa-banner-dismissed');
     const shouldShowBanner = !isInstalled && (!dismissedTime || Date.now() - parseInt(dismissedTime) > 24 * 60 * 60 * 1000);
 
@@ -69,6 +72,7 @@ const Layout: React.FC<LayoutProps> = ({
       }, 2000);
       return () => clearTimeout(timer);
     }
+    */
 
     const displayModeQuery = window.matchMedia('(display-mode: standalone)');
     const handleDisplayModeChange = (e: MediaQueryListEvent) => {
@@ -83,10 +87,13 @@ const Layout: React.FC<LayoutProps> = ({
     return () => displayModeQuery.removeEventListener('change', handleDisplayModeChange);
   }, []);
   
+  // REMOVIDA A FUNÇÃO DE DISMISS
+  /*
   const handleInstallBannerDismiss = () => {
     setShowInstallBanner(false);
     localStorage.setItem('pwa-banner-dismissed', Date.now().toString());
   };
+  */
   
   const handleLogout = async () => {
     await logout();
@@ -226,8 +233,8 @@ const Layout: React.FC<LayoutProps> = ({
       {/* Bottom safe area for standalone mode */}
       {isStandalone && <div className="safe-area-bottom h-16 md:h-24" />}
       
-      {/* PWA Install Banner (Refatorado para usar cores semânticas) */}
-      {showInstallBanner && (
+      {/* PWA Install Banner (REMOVIDO) */}
+      {/* {showInstallBanner && (
         <div className="fixed bottom-0 left-0 right-0 z-50 p-4 bg-background-secondary border-t border-border shadow-lg flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Computer className="h-6 w-6 text-primary" />
@@ -239,12 +246,12 @@ const Layout: React.FC<LayoutProps> = ({
             <Button variant="ghost" size="sm" onClick={handleInstallBannerDismiss} className="text-muted-foreground">
               <X className="h-4 w-4" />
             </Button>
-            <Button onClick={() => { /* Logic to prompt install */ }} size="sm">
+            <Button onClick={() => { // Logic to prompt install } size="sm">
               Instalar
             </Button>
           </div>
         </div>
-      )}
+      )} */}
     </div>
   );
 };
