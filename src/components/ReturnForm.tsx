@@ -14,6 +14,7 @@ import { useDatabase } from '@/hooks/useDatabase';
 import type { UserSearchResult } from '@/hooks/useUserSearch';
 import type { ReturnFormData } from '@/types/database';
 import { cn } from '@/lib/utils';
+import { Badge } from './ui/badge'; // IMPORT CORRIGIDO
 
 interface ReturnFormProps {
   onReturnSuccess?: () => void;
