@@ -27,6 +27,25 @@ interface StaffData {
   email: string;
 }
 
+// NOVO TIPO: Reserva
+export interface ReservationData {
+  date: string; // ISO date string (YYYY-MM-DD)
+  time_slot: string;
+  professor_id: string;
+  subject: string | null;
+  quantity_requested: number;
+}
+
+export interface Reservation extends ReservationData {
+  id: string;
+  created_by: string;
+  created_at: string;
+  // Detalhes do professor (para exibição)
+  prof_name: string;
+  prof_email: string;
+}
+
+
 // --- Validações de Domínio ---
 const DOMAIN_SUFFIX_ALUNO = '@sj.g12.br';
 const DOMAIN_SUFFIX_PROFESSOR = '@sj.pro.br';
@@ -67,7 +86,8 @@ export const useDatabase = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
 
-  // Chromebook operations
+  // --- CHROMEBOOK OPERATIONS ---
+  
   const createChromebook = useCallback(async (data: ChromebookData): Promise<Chromebook | null> => {
     if (!user) {
       toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
@@ -219,7 +239,8 @@ export const useDatabase = () => {
   }, [user]);
 
 
-  // Loan operations
+  // --- LOAN OPERATIONS ---
+
   const createLoan = useCallback(async (data: LoanFormData): Promise<Loan | null> => {
     if (!user) {
       toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
@@ -601,6 +622,8 @@ export const useDatabase = () => {
   }, [user, syncChromebookStatus]);
 
 
+  // --- USER OPERATIONS ---
+
   // Student operations - ATUALIZADO PARA USAR RPC
   const createStudent = useCallback(async (data: StudentData): Promise<any> => {
     if (!user) {
@@ -965,6 +988,98 @@ export const useDatabase = () => {
       setLoading(false);
     }
   }, [user]);
+  
+  // --- SCHEDULING OPERATIONS (NOVAS FUNÇÕES) ---
+  
+  const getTotalAvailableChromebooks = useCallback(async (): Promise<number> => {
+    try {
+      // Conta todos os Chromebooks que não estão 'fora_uso' ou 'manutencao'
+      const { count, error } = await supabase
+        .from('chromebooks')
+        .select('id', { count: 'exact', head: true })
+        .not('status', 'in', ['fora_uso', 'manutencao']);
+
+      if (error) throw error;
+      return count || 0;
+    } catch (error: any) {
+      console.error('Erro ao buscar total de Chromebooks disponíveis:', error);
+      toast({ title: "Erro de Sincronização", description: "Falha ao carregar inventário total.", variant: "destructive" });
+      return 0;
+    }
+  }, []);
+
+  const getReservationsForWeek = useCallback(async (startDate: string, endDate: string): Promise<Reservation[]> => {
+    try {
+      const { data, error } = await supabase
+        .from('reservations')
+        .select(`
+          *,
+          professores (nome_completo, email)
+        `)
+        .gte('date', startDate)
+        .lte('date', endDate)
+        .order('date', { ascending: true })
+        .order('time_slot', { ascending: true });
+
+      if (error) throw error;
+      
+      // Mapeia o resultado para o tipo Reservation
+      return (data || []).map(res => ({
+        ...res,
+        prof_name: res.professores?.nome_completo || 'Professor Desconhecido',
+        prof_email: res.professores?.email || '',
+      })) as Reservation[];
+      
+    } catch (error: any) {
+      console.error('Erro ao buscar reservas:', error);
+      toast({ title: "Erro de Sincronização", description: "Falha ao carregar agendamentos.", variant: "destructive" });
+      return [];
+    }
+  }, []);
+
+  const createReservation = useCallback(async (data: ReservationData): Promise<Reservation | null> => {
+    if (!user) {
+      toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
+      return null;
+    }
+    
+    setLoading(true);
+    try {
+      const { data: result, error } = await supabase
+        .from('reservations')
+        .insert({
+          ...data,
+          created_by: user.id,
+          subject: data.subject || null,
+        })
+        .select(`
+          *,
+          professores (nome_completo, email)
+        `)
+        .single();
+
+      if (error) throw error;
+      
+      toast({ title: "Sucesso", description: "Reserva agendada com sucesso!", variant: "success" });
+      
+      return {
+        ...result,
+        prof_name: result.professores?.nome_completo || 'Professor Desconhecido',
+        prof_email: result.professores?.email || '',
+      } as Reservation;
+      
+    } catch (error: any) {
+      console.error('Erro ao criar reserva:', error);
+      toast({ 
+        title: "Erro ao Agendar", 
+        description: error.message, 
+        variant: "destructive" 
+      });
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
 
 
   return {
@@ -992,6 +1107,10 @@ export const useDatabase = () => {
     bulkInsertTeachers, // EXPORTANDO A NOVA FUNÇÃO
     createStaff,
     updateStaff,
-    deleteUserRecord
+    deleteUserRecord,
+    // NOVAS FUNÇÕES DE AGENDAMENTO
+    getTotalAvailableChromebooks,
+    getReservationsForWeek,
+    createReservation,
   };
 };

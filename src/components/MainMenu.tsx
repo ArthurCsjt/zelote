@@ -2,12 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 // ALTERAÇÃO 1: Adicionado o ícone 'ListChecks' para o novo botão
-import { ClipboardList, BarChart3, PlusCircle, Laptop, RotateCcw, Brain, ListChecks, QrCode } from 'lucide-react';
+import { ClipboardList, BarChart3, PlusCircle, Laptop, RotateCcw, Brain, ListChecks, QrCode, Calendar } from 'lucide-react'; // Adicionado Calendar
 // import { AppBenefits } from './AppBenefits'; // REMOVIDO
 
 interface MainMenuProps {
   // ALTERAÇÃO 2: Reintroduzindo 'return' como rota de nível superior
-  onNavigate: (route: 'registration' | 'dashboard' | 'loan' | 'inventory' | 'audit' | 'quick-register' | 'return', tab?: 'form' | 'active') => void;
+  onNavigate: (route: 'registration' | 'dashboard' | 'loan' | 'inventory' | 'audit' | 'quick-register' | 'return' | 'scheduling', tab?: 'form' | 'active') => void;
 }
 
 const isMobileDevice = () => {
@@ -29,18 +29,6 @@ export function MainMenu({
 
   const menuItemsFinal = [
     {
-      title: 'Cadastros',
-      icon: <PlusCircle className="h-5 w-5" />,
-      action: () => onNavigate('registration'),
-      bgColor: 'bg-menu-green'
-    },
-    {
-      title: 'Inventário',
-      icon: <Laptop className="h-5 w-5" />,
-      action: () => onNavigate('inventory'),
-      bgColor: 'bg-menu-blue'
-    },
-    {
       title: 'Empréstimos',
       icon: <ClipboardList className="h-5 w-5" />,
       action: () => onNavigate('loan', 'form'),
@@ -53,26 +41,35 @@ export function MainMenu({
       bgColor: 'bg-menu-amber' // Laranja
     },
     {
-      title: 'Dashboard',
-      icon: <BarChart3 className="h-5 w-5" />,
-      action: () => onNavigate('dashboard'),
-      bgColor: 'bg-menu-dark-blue' // ALTERADO PARA O NOVO AZUL ESCURO
+      title: 'Agendamento', // NOVO ITEM
+      icon: <Calendar className="h-5 w-5" />,
+      action: () => window.location.href = '/agendamento', // Navegação direta para a rota
+      bgColor: 'bg-menu-dark-blue' // Azul Escuro
     },
-    // REMOVIDO: Re-Cadastro Rápido
-    /*
     {
-      title: 'Re-Cadastro Rápido',
-      icon: <QrCode className="h-5 w-5" />,
-      action: () => onNavigate('quick-register'),
-      bgColor: 'bg-menu-teal' // Verde-Água Claro
+      title: 'Inventário',
+      icon: <Laptop className="h-5 w-5" />,
+      action: () => onNavigate('inventory'),
+      bgColor: 'bg-menu-blue'
     },
-    */
+    {
+      title: 'Cadastros',
+      icon: <PlusCircle className="h-5 w-5" />,
+      action: () => onNavigate('registration'),
+      bgColor: 'bg-menu-green'
+    },
     {
       title: 'Sistema de Contagem',
       icon: <ListChecks className="h-5 w-5" />,
       action: () => onNavigate('audit'),
       bgColor: 'bg-menu-rose' // Rosa/Vermelho
-    }
+    },
+    {
+      title: 'Dashboard',
+      icon: <BarChart3 className="h-5 w-5" />,
+      action: () => onNavigate('dashboard'),
+      bgColor: 'bg-menu-teal' // ALTERADO PARA O NOVO AZUL ESCURO
+    },
   ];
 
 

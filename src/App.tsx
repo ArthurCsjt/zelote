@@ -16,6 +16,7 @@ import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import Settings from "./pages/Settings";
 import { PrintPreviewPage } from "./pages/PrintPreviewPage"; // NOVO IMPORT
+import SchedulingPage from "./pages/SchedulingPage"; // NOVO IMPORT
 import Layout from "./components/Layout"; // Importando Layout
 import { cn } from "./lib/utils"; // IMPORTANDO CN AQUI
 
@@ -85,10 +86,16 @@ const App = () => (
                   </ProtectedRoute>
                 } />
                 
-                {/* NOVA ROTA DE IMPRESSÃO: Envolvida em Layout para usar o cabeçalho */}
                 <Route path="/print-preview" element={
                   <ProtectedRoute>
                     <PrintPreviewPage />
+                  </ProtectedRoute>
+                } />
+                
+                {/* NOVA ROTA DE AGENDAMENTO */}
+                <Route path="/agendamento" element={
+                  <ProtectedRoute>
+                    <SchedulingPage />
                   </ProtectedRoute>
                 } />
                 
