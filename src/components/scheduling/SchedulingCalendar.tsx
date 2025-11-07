@@ -60,7 +60,7 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
       {/* Cabeçalho da Grade (Dias da Semana) */}
       <div></div> {/* Canto superior esquerdo vazio */}
       {weekDays.map((day, index) => (
-        <div key={index} className="grid-header text-center font-semibold text-muted-foreground mb-2">
+        <div key={index} className="grid-header">
           {format(day, 'EEE', { locale: ptBR }).toUpperCase().slice(0, 3)}{' '}
           <span className="font-normal text-sm">{format(day, 'dd/MM')}</span>
         </div>
@@ -70,7 +70,7 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
       {timeSlots.map((timeSlot, timeIndex) => (
         <React.Fragment key={timeIndex}>
           {/* Rótulo da Hora */}
-          <div className="time-label text-right text-sm font-medium text-muted-foreground pr-4 h-[60px] flex items-center justify-end">
+          <div className="time-label">
             {timeSlot}
           </div>
           

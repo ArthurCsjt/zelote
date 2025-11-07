@@ -325,3 +325,111 @@
     hsl(222.2 84% 4.9%) 100%
   );
 }
+
+/* ======================================================================== */
+/* CORREÇÃO VISUAL: Estilos para o Calendário de Agendamento */
+/* ======================================================================== */
+
+.calendar-grid {
+    display: grid;
+    /* A coluna de hora (80px) e 5 colunas de dia (1fr) são definidas no componente React */
+    gap: 10px; /* Espaçamento entre os slots */
+    width: 100%;
+    min-width: 700px; /* Garante que não fique muito apertado em telas menores */
+}
+
+.grid-header {
+    text-align: center;
+    font-weight: 600;
+    color: hsl(var(--muted-foreground));
+    margin-bottom: 10px;
+    padding-top: 5px;
+}
+
+.time-label {
+    text-align: right;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: hsl(var(--muted-foreground));
+    padding-right: 15px;
+    height: 60px; /* Altura fixa do slot */
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+/* Estilo base para o slot */
+.slot {
+    height: 60px;
+    border-radius: 10px;
+    padding: 8px 12px;
+    transition: all 0.2s ease-in-out;
+    border-left: 5px solid transparent;
+    font-size: 0.8rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    overflow: hidden;
+}
+
+/* Estilo para o slot disponível (vazio) */
+.slot.available {
+    background-color: hsl(var(--background-secondary));
+    border: 2px dashed hsl(var(--border-strong));
+    cursor: pointer;
+    text-align: center;
+    align-items: center;
+    justify-content: center;
+}
+
+.slot.available:hover {
+    background-color: hsl(var(--muted));
+    border-color: hsl(var(--muted-foreground));
+}
+
+/* Estilos para os estados de reserva (cores baseadas no Tailwind/Shadcn) */
+
+/* Minha Reserva (Azul) */
+.slot.my-reservation {
+    background-color: hsl(210 40% 96.1% / 0.8); /* secondary/80 */
+    border-left-color: hsl(var(--primary));
+}
+.dark .slot.my-reservation {
+    background-color: hsl(217.2 32.6% 17.5% / 0.8); /* secondary/80 dark */
+    border-left-color: hsl(var(--primary));
+}
+
+/* Parcialmente Reservado (Âmbar/Warning) */
+.slot.partial {
+    background-color: hsl(var(--warning-bg) / 0.8);
+    border-left-color: hsl(var(--warning));
+}
+.dark .slot.partial {
+    background-color: hsl(38 92% 15% / 0.8); /* warning-bg dark */
+    border-left-color: hsl(var(--warning));
+}
+
+/* Esgotado (Vermelho/Error) */
+.slot.full {
+    background-color: hsl(var(--error-bg) / 0.8);
+    border-left-color: hsl(var(--error));
+    opacity: 0.9;
+}
+.dark .slot.full {
+    background-color: hsl(0 84% 15% / 0.8); /* error-bg dark */
+    border-left-color: hsl(var(--error));
+}
+
+/* Estilos de texto dentro dos slots */
+.slot-title {
+    font-weight: 600;
+    font-size: 0.85rem;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.slot-subtitle {
+    font-size: 0.75rem;
+    color: hsl(var(--muted-foreground));
+}
