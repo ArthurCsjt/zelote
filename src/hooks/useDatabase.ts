@@ -993,17 +993,17 @@ export const useDatabase = () => {
   
   const getTotalAvailableChromebooks = useCallback(async (): Promise<number> => {
     try {
-      // Conta todos os Chromebooks que não estão 'fora_uso' ou 'manutencao'
+      // CORREÇÃO: Usando .or() para excluir explicitamente os status que não são móveis/utilizáveis
       const { count, error } = await supabase
         .from('chromebooks')
         .select('id', { count: 'exact', head: true })
-        .not('status', 'in', ['fora_uso', 'manutencao']);
+        .or('status.neq.fora_uso,status.neq.manutencao');
 
       if (error) throw error;
       return count || 0;
     } catch (error: any) {
       console.error('Erro ao buscar total de Chromebooks disponíveis:', error);
-      toast({ title: "Erro de Sincronização", description: "Falha ao carregar inventário total.", variant: "destructive" });
+      // Removendo o toast aqui para evitar spam, o componente chamador (SchedulingPage) já trata o erro.
       return 0;
     }
   }, []);
