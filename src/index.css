@@ -131,7 +131,7 @@
     --accent: 217.2 32.6% 17.5%;       /* Accent dark */
     --accent-foreground: 210 40% 98%;  /* Texto accent claro */
     
-    /* ===== SEMANTIC COLORS (MAIS VIBRANTES NO DARK) ===== */
+    /* ===== SEMANTIC COLORS (MAIS VIBRANTES NO DARK) */
     --success: 142 76% 55%;            /* Verde mais claro */
     --success-foreground: 144 61% 90%; /* Texto verde claro */
     --success-bg: 142 76% 15%;         /* Fundo verde escuro */
@@ -157,21 +157,26 @@
     --shadow-md: 220 13% 0% / 0.3;
     --shadow-lg: 220 13% 0% / 0.5;
 
-    /* Menu Button Colors - Dark Mode (PRESERVADO) */
-    --menu-green: 142 76% 46%;
-    --menu-green-hover: 142 76% 42%;
-    --menu-blue: 213 94% 78%;
-    --menu-blue-hover: 213 94% 74%;
-    --menu-violet: 258 70% 55%;
-    --menu-violet-hover: 258 70% 50%;
-    --menu-amber: 35 93% 50%;
-    --menu-amber-hover: 35 93% 45%;
-    --menu-rose: 348 83% 57%;
-    --menu-rose-hover: 348 83% 53%;
-    --menu-teal: 174 70% 50%;
-    --menu-teal-hover: 174 70% 45%;
-    --menu-dark-blue: 213 90% 45%;
-    --menu-dark-blue-hover: 213 90% 40%;
+    /* ===== RADIUS ===== */
+    --radius: 0.75rem;                 /* 12px padrão */
+    --radius-sm: 0.5rem;               /* 8px pequeno */
+    --radius-lg: 1rem;                 /* 16px grande */
+
+    /* Menu Button Colors (PRESERVADO) */
+    --menu-green: 142 76% 36%;
+    --menu-green-hover: 142 76% 32%;
+    --menu-blue: 213 94% 68%;
+    --menu-blue-hover: 213 94% 64%;
+    --menu-violet: 258 70% 45%;
+    --menu-violet-hover: 258 70% 40%;
+    --menu-amber: 35 93% 40%;
+    --menu-amber-hover: 35 93% 35%;
+    --menu-rose: 348 83% 47%;
+    --menu-rose-hover: 348 83% 43%;
+    --menu-teal: 174 70% 40%;
+    --menu-teal-hover: 174 70% 35%;
+    --menu-dark-blue: 213 90% 35%;
+    --menu-dark-blue-hover: 213 90% 30%;
   }
 }
  
@@ -347,26 +352,28 @@
 }
 
 .time-label {
-    /* Estilos de fundo e borda para destacar */
-    background-color: hsl(var(--background-secondary));
-    border-radius: 8px;
-    border: 1px solid hsl(var(--border));
+    /* Estilos de botão preenchido */
+    background-color: hsl(var(--primary)); /* Fundo primário */
+    border-radius: 12px; /* Mais arredondado */
+    border: 1px solid hsl(var(--primary)); /* Borda sólida */
     
     /* Estilos de alinhamento */
-    text-align: right;
+    text-align: center;
     font-size: 0.8rem;
-    font-weight: 500;
-    color: hsl(var(--muted-foreground));
-    padding-right: 15px;
+    font-weight: 600;
+    color: hsl(var(--primary-foreground)); /* Texto branco/claro */
+    padding: 0 10px; /* Padding horizontal para formato pílula */
     height: 60px; /* Altura fixa do slot */
     display: flex;
     align-items: center;
-    justify-content: flex-end;
+    justify-content: center; /* Centraliza o texto */
     
     /* Dark Mode Overrides */
     .dark & {
-        background-color: hsl(var(--background-secondary));
+        /* Usando um tom mais escuro para o Dark Mode, como o fundo do card */
+        background-color: hsl(var(--card)); 
         border-color: hsl(var(--border-strong));
+        color: hsl(var(--foreground));
     }
 }
 
