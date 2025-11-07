@@ -176,12 +176,10 @@ export function DeviceListInput({ deviceIds, setDeviceIds, disabled, filterStatu
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
+        {/* REMOVIDO: Label e Badge duplicados */}
         <Label htmlFor="deviceInput" className="text-foreground font-semibold">
           Adicionar Dispositivo (Status: {actionLabel === 'Devolução' ? 'Emprestado' : 'Disponível'})
         </Label>
-        <Badge variant="outline" className="bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900 dark:text-blue-300 dark:border-blue-800">
-          {deviceList.length} selecionado(s)
-        </Badge>
       </div>
       
       {/* Busca Visual (ChromebookSearchInput) */}
