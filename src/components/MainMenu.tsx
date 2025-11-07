@@ -3,7 +3,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 // ALTERAÇÃO 1: Adicionado o ícone 'ListChecks' para o novo botão
 import { ClipboardList, BarChart3, PlusCircle, Laptop, RotateCcw, Brain, ListChecks, QrCode } from 'lucide-react';
-import { AppBenefits } from './AppBenefits'; // NOVO IMPORT
+// import { AppBenefits } from './AppBenefits'; // REMOVIDO
 
 interface MainMenuProps {
   // ALTERAÇÃO 2: Reintroduzindo 'return' como rota de nível superior
@@ -11,7 +11,7 @@ interface MainMenuProps {
 }
 
 const isMobileDevice = () => {
-  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
+  return /Android|webOS|iPhone|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
 };
 
 export function MainMenu({
@@ -109,7 +109,7 @@ export function MainMenu({
       </div>
       
       {/* NOVO: Seção de Benefícios */}
-      <AppBenefits />
+      {/* <AppBenefits /> REMOVIDO */}
     </div>
   );
 }
