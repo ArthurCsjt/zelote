@@ -263,7 +263,7 @@ export function DashboardLayout({
             <SelectTrigger className="w-full sm:w-[200px] h-10 bg-card border-border">
               <SelectValue placeholder="Selecione a Visualização" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-card border-border"> {/* ADICIONANDO CLASSES AQUI */}
               {periodOptions.map(option => {
                 const Icon = option.icon;
                 return (
