@@ -348,7 +348,10 @@ export function LoanForm({ onBack }: LoanFormProps) {
                           )}
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
+                      <PopoverContent 
+                        className="w-auto p-0 bg-card border-border" // CORREÇÃO APLICADA AQUI
+                        align="start"
+                      >
                         <CalendarComponent
                           mode="single"
                           selected={formData.expectedReturnDate}
