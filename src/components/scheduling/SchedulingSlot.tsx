@@ -127,7 +127,8 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
               "bg-gradient-to-br from-error-bg/50 to-error-bg/30",
               "border-l-4 border-l-error",
               "border border-error/20",
-              "p-3 flex flex-col justify-center gap-1"
+              "p-3 flex flex-col justify-center gap-1",
+              "opacity-80 cursor-not-allowed" // Adicionando cursor-not-allowed
             )}>
               <div className="flex items-center gap-1.5">
                 <AlertTriangle className="h-4 w-4 text-error dark:text-error-foreground shrink-0" />
@@ -158,7 +159,7 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
             </div>
           </TooltipContent>
         </Tooltip>
-      </ReservationDialog>
+      </TooltipProvider>
     );
   }
   
