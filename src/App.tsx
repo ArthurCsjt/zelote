@@ -9,6 +9,7 @@ import { useTheme } from "./hooks/use-theme"; // Importando useTheme
 // PASSO 1: IMPORTAR O PROVIDER DO BANCO DE DADOS
 import { DatabaseProvider } from './contexts/DatabaseContext'; // Ajuste o caminho se necessário
 import { PrintProvider } from './contexts/PrintContext'; // NOVO IMPORT
+import { AuditProvider } from './providers/AuditProvider'; // NOVO IMPORT AQUI
 
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import Index from "./pages/Index";
@@ -27,7 +28,8 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
-  return <>{children}</>;
+  // Envolve todas as rotas protegidas com o AuditProvider
+  return <AuditProvider>{children}</AuditProvider>;
 };
 
 // Componente Wrapper para o Toaster

@@ -1,6 +1,3 @@
-// ADIÇÃO: Importamos o provedor da nossa nova funcionalidade de auditoria
-import { AuditProvider } from '@/providers/AuditProvider'; 
-
 // ADIÇÃO: Importamos os hooks de autenticação que o Layout precisará
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfileRole } from '@/hooks/use-profile-role';
@@ -39,7 +36,7 @@ const Index = () => {
   const [selectedChromebookId, setSelectedChromebookId] = useState<string | null>(null);
 
   // ATUALIZADO: Removendo 'quick-register' do tipo de rota
-  const handleNavigation = (route: 'registration' | 'dashboard' | 'loan' | 'inventory' | 'audit' | 'return', tab?: 'form' | 'active', chromebookId?: string) => {
+  const handleNavigation = (route: 'registration' | 'dashboard' | 'loan' | 'inventory' | 'audit' | 'return' | 'scheduling', tab?: 'form' | 'active', chromebookId?: string) => {
     
     if (route === 'loan') {
       setLoanTabDefault(tab || 'form');
@@ -146,25 +143,22 @@ const Index = () => {
     : 'bg-background'; // Usa o fundo padrão do tema para outras views
 
   return (
-    // ADIÇÃO: Envolvemos tudo com o AuditProvider
-    <AuditProvider>
-      {/* ADIÇÃO: Passamos as informações para o Layout como props */}
-      <Layout 
-        title={getViewTitle()} 
-        subtitle={getViewSubtitle()} 
-        showBackButton={currentView !== 'menu'} 
-        onBack={handleBackToMenu}
-        user={user}
-        isAdmin={isAdmin}
-        logout={logout}
-        // Passando a classe de fundo para o Layout
-        backgroundClass={menuBackgroundClass} 
-      >
-        {loading && currentView !== 'menu' ? <div className="flex justify-center items-center h-64"><LoadingSpinner/></div> : renderCurrentView()}
-        {/* REMOVIDO: ReturnDialog */}
-      </Layout>
-      <QRCodeModal open={showQRCodeModal} onOpenChange={(open) => setShowQRCodeModal(open)} chromebookId={selectedChromebookId ?? undefined} />
-    </AuditProvider>
+    // REMOVIDO: AuditProvider
+    <Layout 
+      title={getViewTitle()} 
+      subtitle={getViewSubtitle()} 
+      showBackButton={currentView !== 'menu'} 
+      onBack={handleBackToMenu}
+      user={user}
+      isAdmin={isAdmin}
+      logout={logout}
+      // Passando a classe de fundo para o Layout
+      backgroundClass={menuBackgroundClass} 
+    >
+      {loading && currentView !== 'menu' ? <div className="flex justify-center items-center h-64"><LoadingSpinner/></div> : renderCurrentView()}
+      {/* REMOVIDO: ReturnDialog */}
+    </Layout>
+    <QRCodeModal open={showQRCodeModal} onOpenChange={(open) => setShowQRCodeModal(open)} chromebookId={selectedChromebookId ?? undefined} />
   );
 };
 
