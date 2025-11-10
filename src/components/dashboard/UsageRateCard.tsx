@@ -123,8 +123,8 @@ export const UsageRateCard: React.FC<UsageRateCardProps> = ({ stats, isMounted }
             <p className="text-xs text-muted-foreground mt-2">
               Indica o momento de maior demanda no intervalo de tempo selecionado.
             </p>
-          </CardContent>
-        </GlassCard>
+          </div>
+        </CardContent>
       </GlassCard>
     </TooltipProvider>
   );
