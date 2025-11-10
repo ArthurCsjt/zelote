@@ -65,7 +65,7 @@ export const DashboardStatsGrid: React.FC<DashboardStatsGridProps> = ({
   return (
     <TooltipProvider>
       {/* Grid principal com 4 colunas em telas grandes */}
-      <div className="grid gap-4 grid-cols-1 md:grid-cols-4 relative z-10">
+      <div className="grid gap-4 grid-cols-2 md:grid-cols-4 relative z-10">
         
         {/* CARD 1: Empréstimos Ativos (Contagem de ativos) */}
         <GlassCard 
@@ -95,7 +95,7 @@ export const DashboardStatsGrid: React.FC<DashboardStatsGridProps> = ({
             <Computer className="h-4 w-4 sm:h-5 sm:w-5 text-blue-500 dark:text-blue-400" />
           </CardHeader>
           <CardContent className="p-0 pt-2">
-            <div className="text-xl sm:text-3xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">{totalActive}</div>
+            <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">{totalActive}</div>
             <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">
               {filteredLoans.length} empréstimos no período
             </p>
@@ -122,7 +122,7 @@ export const DashboardStatsGrid: React.FC<DashboardStatsGridProps> = ({
             <Computer className="h-4 w-4 sm:h-5 sm:w-5 text-green-500 dark:text-green-400" />
           </CardHeader>
           <CardContent className="p-0 pt-2">
-            <div className="text-xl sm:text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">{availableChromebooks}</div>
+            <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">{availableChromebooks}</div>
             <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">
               de {totalChromebooks} no total
             </p>
@@ -146,7 +146,7 @@ export const DashboardStatsGrid: React.FC<DashboardStatsGridProps> = ({
             <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-purple-500 dark:text-purple-400" />
           </CardHeader>
           <CardContent className="p-0 pt-2">
-            <div className="text-xl sm:text-3xl font-bold bg-gradient-to-r from-purple-600 to-violet-600 bg-clip-text text-transparent">
+            <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-purple-600 to-violet-600 bg-clip-text text-transparent">
               {Math.round(averageUsageTime)} min
             </div>
             <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">
@@ -172,7 +172,7 @@ export const DashboardStatsGrid: React.FC<DashboardStatsGridProps> = ({
             <Activity className="h-4 w-4 sm:h-5 sm:w-5 text-teal-500 dark:text-teal-400" />
           </CardHeader>
           <CardContent className="p-0 pt-2">
-            <div className="text-xl sm:text-3xl font-bold bg-gradient-to-r from-teal-600 to-cyan-600 bg-clip-text text-transparent">
+            <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-teal-600 to-cyan-600 bg-clip-text text-transparent">
               {completionRate.toFixed(0)}%
             </div>
             <div className="flex items-center gap-2 mt-1">
