@@ -1,4 +1,4 @@
-import { startOfWeek, endOfWeek, eachDayOfInterval, format, addWeeks, subWeeks, isSameDay } from 'date-fns';
+import { startOfWeek, endOfWeek, eachDayOfInterval, format, addWeeks, subWeeks, isSameDay, startOfMonth, endOfMonth, addMonths, subMonths } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 /**
@@ -55,6 +55,13 @@ export const formatWeekRange = (date: Date): string => {
  */
 export const changeWeek = (currentDate: Date, direction: 'next' | 'prev'): Date => {
   return direction === 'next' ? addWeeks(currentDate, 1) : subWeeks(currentDate, 1);
+};
+
+/**
+ * Avança ou retrocede um mês.
+ */
+export const changeMonth = (currentDate: Date, direction: 'next' | 'prev'): Date => {
+  return direction === 'next' ? addMonths(currentDate, 1) : subMonths(currentDate, 1);
 };
 
 /**
