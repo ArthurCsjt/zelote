@@ -310,7 +310,7 @@ export function ChromebookEditDialog({ open, onOpenChange, chromebook }: Chromeb
                   <SelectTrigger className="h-10 bg-input dark:bg-input">
                     <SelectValue placeholder="Selecione o fabricante" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-card border-border"> {/* Adicionando classes de fundo e borda */}
                     {AVAILABLE_MANUFACTURERS.map(manufacturer => (
                       <SelectItem key={manufacturer} value={manufacturer}>
                         {manufacturer}
@@ -331,7 +331,7 @@ export function ChromebookEditDialog({ open, onOpenChange, chromebook }: Chromeb
                   <SelectTrigger className="h-10 bg-input dark:bg-input">
                     <SelectValue placeholder={editingChromebook.manufacturer ? "Selecione o modelo" : "Selecione um fabricante primeiro"} />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-card border-border"> {/* Adicionando classes de fundo e borda */}
                     {currentModels.map(model => (
                       <SelectItem key={model} value={model}>
                         {model}
@@ -361,7 +361,7 @@ export function ChromebookEditDialog({ open, onOpenChange, chromebook }: Chromeb
                 <SelectTrigger className="h-10 bg-input dark:bg-input">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-card border-border"> {/* Adicionando classes de fundo e borda */}
                   <SelectItem value="disponivel">Disponível</SelectItem>
                   <SelectItem value="emprestado" disabled>Emprestado</SelectItem>
                   <SelectItem value="fixo">Fixo</SelectItem>

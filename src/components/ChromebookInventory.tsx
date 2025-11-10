@@ -343,7 +343,7 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
               <SelectTrigger className="w-full pl-10 bg-input dark:bg-input">
                 <SelectValue placeholder="Filtrar por status" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-card border-border"> {/* Adicionando classes de fundo e borda */}
                 <SelectItem value="all">Todos os Status</SelectItem>
                 <SelectItem value="disponivel">Disponível</SelectItem>
                 <SelectItem value="emprestado">Emprestado</SelectItem>
@@ -414,7 +414,7 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
                     <SelectTrigger className="w-[70px] h-8 text-xs bg-input dark:bg-input">
                         <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-card border-border"> {/* Adicionando classes de fundo e borda */}
                         <SelectItem value="10">10</SelectItem>
                         <SelectItem value="25">25</SelectItem>
                         <SelectItem value="50">50</SelectItem>
@@ -538,7 +538,7 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
                           <SelectTrigger className="w-[100px] h-8 text-xs bg-input dark:bg-input">
                             <SelectValue />
                           </SelectTrigger>
-                           <SelectContent>
+                           <SelectContent className="bg-card border-border"> {/* Adicionando classes de fundo e borda */}
                              <SelectItem value="disponivel">Disponível</SelectItem>
                              <SelectItem value="emprestado" disabled={chromebook.status !== 'emprestado'}>Emprestado</SelectItem>
                              <SelectItem value="fixo">Fixo</SelectItem>

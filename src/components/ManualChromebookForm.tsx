@@ -146,7 +146,7 @@ export function ManualChromebookForm({ onRegistrationSuccess }: { onRegistration
                   <SelectTrigger className="bg-input dark:bg-input">
                     <SelectValue placeholder="Selecione um fabricante" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-card border-border"> {/* Adicionando classes de fundo e borda */}
                     {AVAILABLE_MANUFACTURERS.map(manufacturer => (
                       <SelectItem key={manufacturer} value={manufacturer}>
                         {manufacturer}
@@ -167,7 +167,7 @@ export function ManualChromebookForm({ onRegistrationSuccess }: { onRegistration
                   <SelectTrigger className="bg-input dark:bg-input">
                     <SelectValue placeholder={formData.manufacturer ? "Selecione o modelo" : "Selecione um fabricante primeiro"} />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-card border-border"> {/* Adicionando classes de fundo e borda */}
                     {currentModels.map(model => (
                       <SelectItem key={model} value={model}>
                         {model}
