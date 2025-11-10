@@ -48,7 +48,7 @@ export const ProfessorAutocomplete: React.FC<ProfessorAutocompleteProps> = ({
           aria-expanded={open}
           className={cn(
             "w-full justify-between h-11",
-            "bg-input dark:bg-input dark:border-border",
+            "bg-card border-border", // Usando classes padrão
             "hover:bg-accent transition-colors",
             !selectedProfessor && "text-muted-foreground"
           )}
