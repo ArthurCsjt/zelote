@@ -3,7 +3,7 @@ import { cn } from '@/lib/utils';
 import { Plus, Monitor, User, CheckCircle, AlertTriangle } from 'lucide-react';
 import type { Reservation } from '@/hooks/useDatabase';
 import type { User as AuthUser } from '@supabase/supabase-js';
-import { ReservationDialog } from './ReservationDialog'; // Importaremos na próxima etapa
+import { ReservationDialog } from './ReservationDialog';
 
 interface SchedulingSlotProps {
   date: Date;
@@ -45,18 +45,19 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
     return (
       <div className={cn(
         "slot my-reservation",
-        "bg-blue-50/80 border-l-4 border-l-blue-500 text-blue-900 dark:bg-blue-950/50 dark:border-l-blue-400 dark:text-blue-200",
+        // Usando cores semânticas para 'info' (azul neutro)
+        "bg-info-bg/80 border-l-4 border-l-info text-info-foreground dark:bg-info-bg/50 dark:border-l-info dark:text-info-foreground",
         "p-2 flex flex-col justify-center"
       )}>
-        <div className="slot-title flex items-center gap-1 text-blue-700 dark:text-blue-400">
+        <div className="slot-title flex items-center gap-1 text-info dark:text-info">
           <CheckCircle className="h-3 w-3" />
           Minha Reserva
         </div>
-        <div className="slot-subtitle text-xs font-medium text-blue-800 dark:text-blue-300">
+        <div className="slot-subtitle text-xs font-medium text-foreground dark:text-info-foreground">
           {myReservation.subject}
         </div>
-        <div className="text-[10px] text-blue-600 dark:text-blue-400">
-          {myReservation.quantity_requested} 💻
+        <div className="text-[10px] text-muted-foreground dark:text-info-foreground/80">
+          {myReservation.prof_name} ({myReservation.quantity_requested} 💻)
         </div>
       </div>
     );
@@ -67,18 +68,19 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
     return (
       <div className={cn(
         "slot full",
-        "bg-red-50/80 border-l-4 border-l-red-500 text-red-900 dark:bg-red-950/50 dark:border-l-red-400 dark:text-red-200",
+        // Usando cores semânticas para 'error' (vermelho)
+        "bg-error-bg/80 border-l-4 border-l-error text-error-foreground dark:bg-error-bg/50 dark:border-l-error dark:text-error-foreground",
         "p-2 flex flex-col justify-center"
       )}>
-        <div className="slot-title flex items-center gap-1 text-red-700 dark:text-red-400">
+        <div className="slot-title flex items-center gap-1 text-error dark:text-error">
           <AlertTriangle className="h-3 w-3" />
           Esgotado
         </div>
-        <div className="slot-subtitle text-xs font-medium text-red-800 dark:text-red-300">
-          {jaReservados}/{totalAvailableChromebooks} 💻
-        </div>
-        <div className="text-[10px] text-red-600 dark:text-red-400">
+        <div className="slot-subtitle text-xs font-medium text-foreground dark:text-error-foreground">
           {allReservationsForSlot[0]?.prof_name || 'Múltiplas reservas'}
+        </div>
+        <div className="text-[10px] text-muted-foreground dark:text-error-foreground/80">
+          {jaReservados}/{totalAvailableChromebooks} 💻
         </div>
       </div>
     );
@@ -98,17 +100,18 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
       >
         <div className={cn(
           "slot partial cursor-pointer hover:shadow-md",
-          "bg-amber-50/80 border-l-4 border-l-amber-500 text-amber-900 dark:bg-amber-950/50 dark:border-l-amber-400 dark:text-amber-200",
+          // Usando cores semânticas para 'warning' (âmbar)
+          "bg-warning-bg/80 border-l-4 border-l-warning text-warning-foreground dark:bg-warning-bg/50 dark:border-l-warning dark:text-warning-foreground",
           "p-2 flex flex-col justify-center"
         )}>
-          <div className="slot-title flex items-center gap-1 text-amber-700 dark:text-amber-400">
+          <div className="slot-title flex items-center gap-1 text-warning dark:text-warning">
             <Monitor className="h-3 w-3" />
             Disponível
           </div>
-          <div className="slot-subtitle text-xs font-medium text-amber-800 dark:text-amber-300">
+          <div className="slot-subtitle text-xs font-medium text-foreground dark:text-warning-foreground">
             {restantes}/{totalAvailableChromebooks} 💻 restantes
           </div>
-          <div className="text-[10px] text-amber-600 dark:text-amber-400">
+          <div className="text-[10px] text-muted-foreground dark:text-warning-foreground/80">
             {jaReservados} reservados
           </div>
         </div>
