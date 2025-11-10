@@ -36,12 +36,17 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
     const isPartial = jaReservados > 0 && restantes > 0;
     const isFull = restantes <= 0 && jaReservados > 0;
     
-    // Verifica se a data é anterior ao dia atual (ignorando a hora)
-    const todayStart = new Date(new Date().setHours(0, 0, 0, 0));
-    const isPast = date < todayStart;
+    // --- NOVO CÁLCULO DE isPast (incluindo hora) ---
+    const [hourStr, minuteStr] = timeSlot.split('h');
+    const slotTime = new Date(date);
+    slotTime.setHours(parseInt(hourStr), parseInt(minuteStr), 0, 0);
+    
+    const now = new Date();
+    const isPast = slotTime < now;
+    // -----------------------------------------------
 
     return { jaReservados, restantes, myReservation, isAvailable, isPartial, isFull, isPast };
-  }, [allReservationsForSlot, totalAvailableChromebooks, currentUser, date]);
+  }, [allReservationsForSlot, totalAvailableChromebooks, currentUser, date, timeSlot]); // Adicionando timeSlot
 
   // DATA PASSADA - BLOQUEADO
   if (isPast) {
@@ -56,10 +61,11 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
               "opacity-40 cursor-not-allowed"
             )}>
               <Clock className="h-4 w-4 text-muted-foreground" />
+              <span className="text-xs text-muted-foreground ml-1">Passado</span>
             </div>
           </TooltipTrigger>
           <TooltipContent>
-            <p className="text-xs">Horário passado</p>
+            <p className="text-xs">Horário de agendamento já expirou.</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
@@ -152,7 +158,7 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
             </div>
           </TooltipContent>
         </Tooltip>
-      </TooltipProvider>
+      </ReservationDialog>
     );
   }
   
