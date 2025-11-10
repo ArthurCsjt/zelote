@@ -13,6 +13,7 @@ import type {
   UserType,
   TeacherData
 } from '@/types/database';
+import { format } from 'date-fns'; // Importando format para formatar a data
 
 // Types for new entities
 interface StudentData {
@@ -24,7 +25,6 @@ interface StudentData {
 
 interface StaffData {
   nome_completo: string;
-  email: string;
 }
 
 // NOVO TIPO: Reserva
@@ -1060,13 +1060,45 @@ export const useDatabase = () => {
 
       if (error) throw error;
       
-      toast({ title: "Sucesso", description: "Reserva agendada com sucesso!", variant: "success" });
-      
-      return {
+      const reservationResult = {
         ...result,
         prof_name: result.professores?.nome_completo || 'Professor Desconhecido',
         prof_email: result.professores?.email || '',
       } as Reservation;
+      
+      // PASSO 3: CHAMAR A EDGE FUNCTION APÓS O SUCESSO
+      const professorEmail = reservationResult.prof_email;
+      const professorName = reservationResult.prof_name;
+      
+      if (professorEmail) {
+        const emailPayload = {
+          toEmail: professorEmail,
+          professorName: professorName,
+          subject: reservationResult.subject,
+          date: format(new Date(reservationResult.date), 'dd/MM/yyyy'),
+          time: reservationResult.time_slot,
+          quantity: reservationResult.quantity_requested,
+        };
+        
+        const { data: emailData, error: emailError } = await supabase.functions.invoke('send-reservation-email', {
+          body: emailPayload,
+          headers: {
+            // Passa o token do usuário logado para a Edge Function (se necessário para auth)
+            'Authorization': `Bearer ${await supabase.auth.getSession().then(s => s.data.session?.access_token)}`,
+          }
+        });
+        
+        if (emailError) {
+          console.error('Erro ao disparar e-mail de confirmação:', emailError);
+          toast({ title: "Aviso", description: "Reserva criada, mas falha ao enviar e-mail de confirmação.", variant: "warning" });
+        } else {
+          console.log('E-mail de confirmação disparado:', emailData);
+        }
+      }
+      
+      toast({ title: "Sucesso", description: "Reserva agendada com sucesso!", variant: "success" });
+      
+      return reservationResult;
       
     } catch (error: any) {
       console.error('Erro ao criar reserva:', error);
