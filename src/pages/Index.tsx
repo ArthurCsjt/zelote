@@ -143,22 +143,23 @@ const Index = () => {
     : 'bg-background'; // Usa o fundo padrão do tema para outras views
 
   return (
-    // REMOVIDO: AuditProvider
-    <Layout 
-      title={getViewTitle()} 
-      subtitle={getViewSubtitle()} 
-      showBackButton={currentView !== 'menu'} 
-      onBack={handleBackToMenu}
-      user={user}
-      isAdmin={isAdmin}
-      logout={logout}
-      // Passando a classe de fundo para o Layout
-      backgroundClass={menuBackgroundClass} 
-    >
-      {loading && currentView !== 'menu' ? <div className="flex justify-center items-center h-64"><LoadingSpinner/></div> : renderCurrentView()}
-      {/* REMOVIDO: ReturnDialog */}
-    </Layout>
-    <QRCodeModal open={showQRCodeModal} onOpenChange={(open) => setShowQRCodeModal(open)} chromebookId={selectedChromebookId ?? undefined} />
+    <>
+      <Layout 
+        title={getViewTitle()} 
+        subtitle={getViewSubtitle()} 
+        showBackButton={currentView !== 'menu'} 
+        onBack={handleBackToMenu}
+        user={user}
+        isAdmin={isAdmin}
+        logout={logout}
+        // Passando a classe de fundo para o Layout
+        backgroundClass={menuBackgroundClass} 
+      >
+        {loading && currentView !== 'menu' ? <div className="flex justify-center items-center h-64"><LoadingSpinner/></div> : renderCurrentView()}
+        {/* REMOVIDO: ReturnDialog */}
+      </Layout>
+      <QRCodeModal open={showQRCodeModal} onOpenChange={(open) => setShowQRCodeModal(open)} chromebookId={selectedChromebookId ?? undefined} />
+    </>
   );
 };
 
