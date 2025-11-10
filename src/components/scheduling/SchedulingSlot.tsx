@@ -36,7 +36,7 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
     const isPartial = jaReservados > 0 && restantes > 0;
     const isFull = restantes <= 0 && jaReservados > 0;
     
-    // --- NOVO CÁLCULO DE isPast (incluindo hora) ---
+    // --- CÁLCULO DE isPast (incluindo hora) ---
     const [hourStr, minuteStr] = timeSlot.split('h');
     const slotTime = new Date(date);
     slotTime.setHours(parseInt(hourStr), parseInt(minuteStr), 0, 0);
@@ -46,33 +46,12 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
     // -----------------------------------------------
 
     return { jaReservados, restantes, myReservation, isAvailable, isPartial, isFull, isPast };
-  }, [allReservationsForSlot, totalAvailableChromebooks, currentUser, date, timeSlot]); // Adicionando timeSlot
+  }, [allReservationsForSlot, totalAvailableChromebooks, currentUser, date, timeSlot]);
 
-  // DATA PASSADA - BLOQUEADO
-  if (isPast) {
-    return (
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <div className={cn(
-              "slot past min-h-[60px] sm:min-h-[70px]",
-              "bg-muted/30 border border-border/30",
-              "flex items-center justify-center",
-              "opacity-40 cursor-not-allowed"
-            )}>
-              <Clock className="h-4 w-4 text-muted-foreground" />
-              <span className="text-xs text-muted-foreground ml-1">Passado</span>
-            </div>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p className="text-xs">Horário de agendamento já expirou.</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-    );
-  }
+  // Estilo base para slots passados que tinham reservas
+  const pastSlotClasses = isPast ? "opacity-40 cursor-not-allowed pointer-events-none" : "";
 
-  // MINHA RESERVA
+  // 1. MINHA RESERVA (Prioridade máxima)
   if (myReservation) {
     return (
       <TooltipProvider>
@@ -84,7 +63,8 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
               "border-l-4 border-l-info",
               "border border-info/20",
               "p-3 flex flex-col justify-center gap-1",
-              "hover:shadow-md transition-shadow"
+              "hover:shadow-md transition-shadow",
+              pastSlotClasses // Aplica opacidade se for passado
             )}>
               <div className="flex items-center gap-1.5">
                 <CheckCircle className="h-4 w-4 text-info dark:text-info-foreground shrink-0" />
@@ -103,20 +83,18 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
               </div>
             </div>
           </TooltipTrigger>
-          <TooltipContent side="top" className="max-w-xs">
-            <div className="space-y-1">
-              <p className="font-semibold text-sm">{myReservation.subject}</p>
-              <p className="text-xs text-muted-foreground">
-                {myReservation.prof_name} · {myReservation.quantity_requested} CB
-              </p>
-            </div>
+          <TooltipContent>
+            <p className="font-semibold text-sm">{myReservation.subject}</p>
+            <p className="text-xs text-muted-foreground">
+              {myReservation.prof_name} · {myReservation.quantity_requested} CB
+            </p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
     );
   }
   
-  // ESGOTADO
+  // 2. ESGOTADO
   if (isFull) {
     return (
       <TooltipProvider>
@@ -128,7 +106,8 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
               "border-l-4 border-l-error",
               "border border-error/20",
               "p-3 flex flex-col justify-center gap-1",
-              "opacity-80 cursor-not-allowed" // Adicionando cursor-not-allowed
+              "opacity-80 cursor-not-allowed", // Mantém opacidade alta para esgotado
+              pastSlotClasses // Aplica opacidade se for passado
             )}>
               <div className="flex items-center gap-1.5">
                 <AlertTriangle className="h-4 w-4 text-error dark:text-error-foreground shrink-0" />
@@ -163,7 +142,7 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
     );
   }
   
-  // PARCIALMENTE RESERVADO
+  // 3. PARCIALMENTE RESERVADO
   if (isPartial) {
     return (
       <ReservationDialog
@@ -185,7 +164,8 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
                 "border border-warning/20",
                 "p-3 flex flex-col justify-center gap-1",
                 "cursor-pointer hover:shadow-lg hover:scale-[1.02]",
-                "group"
+                "group",
+                pastSlotClasses // Aplica opacidade se for passado
               )}>
                 <div className="flex items-center gap-1.5">
                   <Monitor className="h-4 w-4 text-warning dark:text-warning-foreground shrink-0 group-hover:scale-110 transition-transform" />
@@ -219,7 +199,31 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
     );
   }
 
-  // DISPONÍVEL (VAZIO)
+  // 4. DISPONÍVEL (VAZIO) OU PASSADO VAZIO
+  if (isPast) {
+    return (
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className={cn(
+              "slot past min-h-[60px] sm:min-h-[70px]",
+              "bg-muted/30 border border-border/30",
+              "flex items-center justify-center",
+              "opacity-40 cursor-not-allowed"
+            )}>
+              <Clock className="h-4 w-4 text-muted-foreground" />
+              <span className="text-xs text-muted-foreground ml-1">Passado</span>
+            </div>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p className="text-xs">Horário de agendamento já expirou.</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    );
+  }
+  
+  // DISPONÍVEL (VAZIO) - FUTURO
   return (
     <ReservationDialog
       date={date}
