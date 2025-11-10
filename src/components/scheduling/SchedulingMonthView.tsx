@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isPast } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { ptBR } from 'date-fns/locale'; // IMPORT CORRIGIDO
 import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -146,6 +146,7 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
           onSelect={setSelectedDate}
           month={currentDate} // Controla o mês exibido
           className="w-full p-0"
+          locale={ptBR} // ADICIONANDO LOCALE AQUI
           classNames={{
             months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
             month: "space-y-4",
