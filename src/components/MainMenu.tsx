@@ -3,7 +3,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 // ALTERAÇÃO 1: Adicionado o ícone 'ListChecks' para o novo botão
 import { ClipboardList, BarChart3, PlusCircle, Laptop, RotateCcw, Brain, ListChecks, QrCode, Calendar } from 'lucide-react'; // Adicionado Calendar
-// import { AppBenefits } from './AppBenefits'; // REMOVIDO
+import { useProfileRole } from '@/hooks/use-profile-role'; // NOVO IMPORT
 
 interface MainMenuProps {
   // ALTERAÇÃO 2: Reintroduzindo 'return' como rota de nível superior
@@ -17,8 +17,12 @@ const isMobileDevice = () => {
 export function MainMenu({
   onNavigate
 }: MainMenuProps) {
+  const { role, loading: roleLoading } = useProfileRole(); // Obtendo o cargo
   const [isLoaded, setIsLoaded] = useState(false);
   const isMobile = isMobileDevice();
+  
+  const isAdmin = role === 'admin' || role === 'super_admin';
+  const isProfessor = role === 'professor';
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -27,50 +31,63 @@ export function MainMenu({
     return () => clearTimeout(timer);
   }, []);
 
-  const menuItemsFinal = [
+  const allMenuItems = [
+    // Rotas de Empréstimo (Acesso para Admin)
     {
       title: 'Empréstimos',
       icon: <ClipboardList className="h-5 w-5" />,
       action: () => onNavigate('loan', 'form'),
-      bgColor: 'bg-menu-violet' // Roxo
+      bgColor: 'bg-menu-violet', // Roxo
+      roles: ['admin', 'super_admin']
     },
     {
       title: 'Devolução',
       icon: <RotateCcw className="h-5 w-5" />,
       action: () => onNavigate('return'), 
-      bgColor: 'bg-menu-amber' // Laranja
+      bgColor: 'bg-menu-amber', // Laranja
+      roles: ['admin', 'super_admin']
     },
+    // Rotas de Agendamento (Acesso para Admin e Professor)
     {
-      title: 'Agendamento', // NOVO ITEM
+      title: 'Agendamento',
       icon: <Calendar className="h-5 w-5" />,
-      action: () => window.location.href = '/agendamento', // Navegação direta para a rota
-      bgColor: 'bg-menu-dark-blue' // Azul Escuro
+      action: () => onNavigate('scheduling'), 
+      bgColor: 'bg-menu-dark-blue', // Azul Escuro
+      roles: ['admin', 'super_admin', 'professor']
     },
+    // Rotas de Inventário (Acesso para Admin)
     {
       title: 'Inventário',
       icon: <Laptop className="h-5 w-5" />,
       action: () => onNavigate('inventory'),
-      bgColor: 'bg-menu-blue'
+      bgColor: 'bg-menu-blue',
+      roles: ['admin', 'super_admin']
     },
     {
       title: 'Cadastros',
       icon: <PlusCircle className="h-5 w-5" />,
       action: () => onNavigate('registration'),
-      bgColor: 'bg-menu-green'
+      bgColor: 'bg-menu-green',
+      roles: ['admin', 'super_admin']
     },
     {
       title: 'Sistema de Contagem',
       icon: <ListChecks className="h-5 w-5" />,
       action: () => onNavigate('audit'),
-      bgColor: 'bg-menu-rose' // Rosa/Vermelho
+      bgColor: 'bg-menu-rose', // Rosa/Vermelho
+      roles: ['admin', 'super_admin']
     },
     {
       title: 'Dashboard',
       icon: <BarChart3 className="h-5 w-5" />,
       action: () => onNavigate('dashboard'),
-      bgColor: 'bg-menu-teal' // ALTERADO PARA O NOVO AZUL ESCURO
+      bgColor: 'bg-menu-teal', // ALTERADO PARA O NOVO AZUL ESCURO
+      roles: ['admin', 'super_admin']
     },
   ];
+  
+  // Filtra os itens do menu com base no cargo do usuário
+  const menuItemsFinal = allMenuItems.filter(item => item.roles.includes(role || 'user'));
 
 
   const getFadeInStyle = (index: number) => {
@@ -84,6 +101,21 @@ export function MainMenu({
       transition: `all 0.6s cubic-bezier(0.4, 0, 0.2, 1) ${index * 150}ms`
     };
   };
+  
+  if (roleLoading) {
+      return (
+        <div className="flex justify-center items-center h-64">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      );
+  }
+  
+  // Se for professor, ele será redirecionado pelo Index.tsx, mas se por algum motivo cair aqui,
+  // garantimos que ele veja apenas o menu de agendamento.
+  if (isProfessor && menuItemsFinal.length === 1 && menuItemsFinal[0].title === 'Agendamento') {
+      // Se for apenas o agendamento, não precisamos mostrar o menu, o Index.tsx já redireciona.
+      return null;
+  }
 
   return (
     <div className="space-y-8 relative py-[30px]">
@@ -104,9 +136,6 @@ export function MainMenu({
           </div>
         ))}
       </div>
-      
-      {/* NOVO: Seção de Benefícios */}
-      {/* <AppBenefits /> REMOVIDO */}
     </div>
   );
 }

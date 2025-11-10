@@ -19,12 +19,12 @@ import { cn } from '@/lib/utils'; // Importando cn
 // import { DebugPanel } from '@/components/DebugPanel'; // REMOVENDO IMPORT
 
 // ATUALIZADO: Removendo 'quick-register' do tipo de rota
-type AppView = 'menu' | 'registration' | 'dashboard' | 'inventory' | 'loan' | 'audit' | 'return';
+type AppView = 'menu' | 'registration' | 'dashboard' | 'inventory' | 'loan' | 'audit' | 'return' | 'scheduling'; // Adicionando 'scheduling'
 
 const Index = () => {
   // ADIÇÃO: Chamamos os hooks de autenticação aqui, no componente "pai"
   const { user, logout } = useAuth();
-  const { isAdmin, loading: roleLoading } = useProfileRole();
+  const { isAdmin, loading: roleLoading, role } = useProfileRole(); // Pegando o role
   const { loading: dbLoading } = useDatabase();
 
   // ATUALIZADO: Removendo 'quick-register' do tipo de rota
@@ -38,6 +38,13 @@ const Index = () => {
 
   // ATUALIZADO: Removendo 'quick-register' do tipo de rota
   const handleNavigation = (route: 'registration' | 'dashboard' | 'loan' | 'inventory' | 'audit' | 'return' | 'scheduling', tab?: 'form' | 'active', chromebookId?: string) => {
+    
+    // Lógica de restrição de acesso baseada no cargo
+    const adminRoutes: AppView[] = ['registration', 'dashboard', 'inventory', 'audit'];
+    if (adminRoutes.includes(route) && !isAdmin) {
+        // Se não for admin e tentar acessar rota administrativa, ignora ou redireciona
+        return; 
+    }
     
     if (route === 'loan') {
       setLoanTabDefault(tab || 'form');
@@ -83,6 +90,11 @@ const Index = () => {
   };
 
   const renderCurrentView = () => {
+    // Se o usuário for professor, forçamos a navegação para agendamento
+    if (role === 'professor' && currentView === 'menu') {
+        return <Navigate to="/agendamento" replace />;
+    }
+    
     switch (currentView) {
       case 'registration':
         return <RegistrationHub onBack={handleBackToMenu} onRegistrationSuccess={handleRegistrationSuccess} />;
@@ -105,7 +117,10 @@ const Index = () => {
         />;
       case 'audit':
         return <AuditHub />;
-      // REMOVIDO: case 'quick-register':
+      case 'scheduling':
+        // A rota /agendamento já existe e usa o SchedulingPage.
+        // Se o usuário tentar acessar 'scheduling' via handleNavigation, redirecionamos para a rota correta.
+        return <Navigate to="/agendamento" replace />;
       default:
         return (
           <div className="space-y-8">
@@ -128,7 +143,7 @@ const Index = () => {
       case 'loan': return 'Empréstimos';
       case 'return': return 'Registrar Devolução';
       case 'audit': return 'Sistema de Contagem';
-      // REMOVIDO: case 'quick-register': return 'Re-Cadastro Rápido';
+      case 'scheduling': return 'Agendamento';
       default: return 'Zelote';
     }
   };
@@ -140,7 +155,7 @@ const Index = () => {
       case 'loan': return 'Realize novos empréstimos e veja ativos';
       case 'return': return 'Registre a devolução de equipamentos';
       case 'audit': return 'Realize a contagem física do inventário';
-      // REMOVIDO: case 'quick-register': return 'Re-cadastre um Chromebook rapidamente';
+      case 'scheduling': return 'Reserve lotes de equipamentos para suas aulas';
       default: return 'Controle de Chromebooks';
     }
   };
