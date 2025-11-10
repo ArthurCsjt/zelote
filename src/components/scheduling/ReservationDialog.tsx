@@ -3,15 +3,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, Calendar, Clock, User, BookOpen, Save, Monitor, AlertTriangle } from 'lucide-react';
+import { Slider } from '@/components/ui/slider';
+import { Loader2, Calendar, Clock, User, BookOpen, Save, Monitor, AlertTriangle, Info } from 'lucide-react';
 import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 import { useDatabase, ReservationData, Reservation } from '@/hooks/useDatabase';
 import { toast } from '@/hooks/use-toast';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
-import { ProfessorAutocomplete } from './ProfessorAutocomplete'; // NOVO IMPORT
+import { ProfessorAutocomplete } from './ProfessorAutocomplete';
+import { cn } from '@/lib/utils';
 
 interface ReservationDialogProps {
   children: ReactNode;
@@ -23,16 +22,6 @@ interface ReservationDialogProps {
   professores: { id: string; nome_completo: string }[];
   maxQuantity: number;
 }
-
-// Função para buscar a lista de professores (para o Combobox)
-const fetchProfessores = async () => {
-    const { data, error } = await supabase
-        .from('professores')
-        .select('id, nome_completo')
-        .order('nome_completo', { ascending: true });
-    if (error) throw error;
-    return data;
-};
 
 export const ReservationDialog: React.FC<ReservationDialogProps> = ({
   children,
@@ -46,26 +35,33 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
 }) => {
   const [open, setOpen] = useState(false);
   const { createReservation, loading: isSaving } = useDatabase();
-  const { user } = useAuth();
   
   const [professorId, setProfessorId] = useState<string>('');
   const [subject, setSubject] = useState<string>('');
   const [quantity, setQuantity] = useState<number>(1);
   
-  // Resetar estado ao abrir/fechar
+  // Resetar ao abrir
   useEffect(() => {
     if (open) {
-        setProfessorId('');
-        setSubject('');
-        setQuantity(1);
+      setProfessorId('');
+      setSubject('');
+      // Define a quantidade mínima de 1, ou 0 se o máximo for 0
+      setQuantity(Math.min(1, maxQuantity) || 0); 
     }
-  }, [open]);
+  }, [open, maxQuantity]);
 
-  const handleCreateReservation = async (e: React.FormEvent) => {
+  // Bloquear datas passadas (já tratado no SchedulingSlot, mas mantido aqui como fallback)
+  const isPastDate = date < new Date(new Date().setHours(0, 0, 0, 0));
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!professorId || !subject.trim() || quantity <= 0 || quantity > maxQuantity) {
-      toast({ title: "Erro de Validação", description: "Preencha todos os campos corretamente e verifique a quantidade solicitada.", variant: "destructive" });
+      toast({ 
+        title: "Erro de Validação", 
+        description: "Preencha todos os campos corretamente e verifique a quantidade solicitada.", 
+        variant: "destructive" 
+      });
       return;
     }
     
@@ -82,108 +78,200 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
     if (result) {
       setOpen(false);
       onReservationSuccess();
+      toast({
+        title: "Reserva criada!",
+        description: `${quantity} Chromebook${quantity > 1 ? 's' : ''} reservado${quantity > 1 ? 's' : ''} para ${format(date, "dd/MM/yyyy 'às' ", { locale: ptBR })}${timeSlot}`,
+        variant: "success",
+      });
     }
-    // O toast de erro é tratado no useDatabase
   };
   
   const totalReserved = currentReservations.reduce((sum, res) => sum + res.quantity_requested, 0);
   const available = totalAvailableChromebooks - totalReserved;
+  const selectedProfessor = professores.find(p => p.id === professorId);
+
+  // BLOQUEAR SE DATA PASSADA
+  if (isPastDate) {
+    return <div className="opacity-50 cursor-not-allowed">{children}</div>;
+  }
+  
+  // Se não houver mais chromebooks disponíveis
+  if (maxQuantity <= 0) {
+    return <div className="opacity-80 cursor-not-allowed">{children}</div>;
+  }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <div onClick={() => setOpen(true)} className="group">
+      <div onClick={() => setOpen(true)} className="cursor-pointer">
         {children}
       </div>
       
-      <DialogContent className="sm:max-w-[450px] bg-modal border-modal-border">
+      <DialogContent className="sm:max-w-[500px] bg-modal border-modal-border">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-primary">
+          <DialogTitle className="flex items-center gap-2 text-primary text-xl">
             <Calendar className="h-5 w-5" />
-            Agendar Reserva
+            Nova Reserva de Chromebooks
           </DialogTitle>
-          <DialogDescription>
-            Reserve Chromebooks para a aula de {format(date, 'dd/MM/yyyy')} às {timeSlot}.
+          <DialogDescription className="text-base">
+            {format(date, "EEEE, dd 'de' MMMM 'de' yyyy", { locale: ptBR })} às {timeSlot}
           </DialogDescription>
         </DialogHeader>
         
-        <form onSubmit={handleCreateReservation} className="space-y-4 py-4">
+        <form onSubmit={handleSubmit} className="space-y-5 py-4">
           
-          {/* Detalhes do Slot */}
-          <div className="p-3 bg-muted/50 rounded-lg border border-border space-y-1">
-            <div className="flex items-center justify-between text-sm">
-              <span className="font-medium flex items-center gap-1"><Calendar className="h-3 w-3" /> Data:</span>
-              <span>{format(date, 'dd/MM/yyyy')}</span>
-            </div>
-            <div className="flex items-center justify-between text-sm">
-              <span className="font-medium flex items-center gap-1"><Clock className="h-3 w-3" /> Horário:</span>
-              <span>{timeSlot}</span>
-            </div>
-            <div className="flex items-center justify-between text-sm font-bold text-primary">
-              <span className="font-medium flex items-center gap-1"><Monitor className="h-3 w-3" /> Disponível:</span>
-              <span>{available} 💻</span>
-            </div>
-          </div>
-          
-          {/* Professor (AGORA COM AUTOCOMPLETAR) */}
-          <div className="space-y-2">
-            <Label htmlFor="professor">Professor *</Label>
-            <ProfessorAutocomplete
-              professores={professores}
-              selectedProfessorId={professorId}
-              onSelect={setProfessorId}
-              disabled={isSaving}
-            />
-          </div>
-          
-          {/* Matéria/Turma */}
-          <div className="space-y-2">
-            <Label htmlFor="subject">Matéria/Turma (Ex: História 9A) *</Label>
-            <Input 
-              id="subject" 
-              value={subject} 
-              onChange={(e) => setSubject(e.target.value)} 
-              placeholder="Digite a matéria ou turma"
-              disabled={isSaving}
-              required
-              className="bg-input dark:bg-input"
-            />
-          </div>
-          
-          {/* Quantidade */}
-          <div className="space-y-2">
-            <Label htmlFor="quantity">Quantidade de Chromebooks *</Label>
-            <Input 
-              id="quantity" 
-              type="number" 
-              min={1}
-              max={maxQuantity}
-              value={quantity} 
-              onChange={(e) => setQuantity(parseInt(e.target.value) || 1)} 
-              placeholder="1"
-              disabled={isSaving}
-              required
-              className="bg-input dark:bg-input"
-            />
-            <p className="text-xs text-muted-foreground">Máximo disponível: {maxQuantity} Chromebooks</p>
-            {quantity > maxQuantity && (
-                <p className="text-xs text-destructive flex items-center gap-1">
-                    <AlertTriangle className="h-3 w-3" />
-                    A quantidade solicitada excede o limite disponível.
+          {/* CARD DE STATUS DO SLOT */}
+          <div className={cn(
+            "p-4 rounded-xl border",
+            "bg-gradient-to-br from-blue-500/5 to-purple-500/5",
+            "border-blue-500/20 dark:border-blue-900/50"
+          )}>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <p className="text-xs text-muted-foreground font-medium">Disponíveis</p>
+                <p className="text-2xl font-bold text-green-600 dark:text-green-400">
+                  {available}
                 </p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs text-muted-foreground font-medium">Total Reservado</p>
+                <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                  {totalReserved}
+                </p>
+              </div>
+            </div>
+            
+            {/* RESERVAS EXISTENTES */}
+            {currentReservations.length > 0 && (
+              <div className="mt-3 pt-3 border-t border-border/50">
+                <p className="text-xs text-muted-foreground mb-2 font-medium">
+                  Reservas existentes:
+                </p>
+                <div className="space-y-1 max-h-24 overflow-y-auto">
+                  {currentReservations.map((res, idx) => (
+                    <div key={idx} className="flex items-center justify-between text-xs bg-muted/50 rounded px-2 py-1">
+                      <span className="flex items-center gap-1 font-medium text-foreground truncate">
+                        <User className="h-3 w-3 text-purple-500" />
+                        {res.prof_name}
+                      </span>
+                      <span className="font-semibold text-primary">{res.quantity_requested} CB</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
             )}
           </div>
           
-          <DialogFooter className="pt-4">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={isSaving}>
+          {/* FORMULÁRIO EM 2 COLUNAS */}
+          <div className="grid sm:grid-cols-2 gap-4">
+            {/* Professor */}
+            <div className="space-y-2 sm:col-span-2">
+              <Label className="text-sm font-medium flex items-center gap-1">
+                <User className="h-4 w-4 text-purple-500" />
+                Professor
+                <span className="text-destructive">*</span>
+              </Label>
+              <ProfessorAutocomplete
+                professores={professores}
+                selectedProfessorId={professorId}
+                onSelect={setProfessorId}
+                disabled={isSaving}
+              />
+            </div>
+            
+            {/* Matéria/Turma */}
+            <div className="space-y-2 sm:col-span-2">
+              <Label htmlFor="subject" className="text-sm font-medium flex items-center gap-1">
+                <BookOpen className="h-4 w-4 text-blue-500" />
+                Matéria/Turma
+                <span className="text-destructive">*</span>
+              </Label>
+              <Input 
+                id="subject" 
+                value={subject} 
+                onChange={(e) => setSubject(e.target.value)} 
+                placeholder="Ex: História 9A, Matemática Básica"
+                disabled={isSaving}
+                required
+                className="h-11 bg-input dark:bg-input"
+              />
+            </div>
+          </div>
+          
+          {/* QUANTIDADE COM SLIDER */}
+          <div className="space-y-3">
+            <Label className="text-sm font-medium flex items-center justify-between">
+              <span className="flex items-center gap-1">
+                <Monitor className="h-4 w-4 text-green-500" />
+                Quantidade de Chromebooks
+                <span className="text-destructive">*</span>
+              </span>
+              <span className="text-2xl font-bold text-primary">{quantity}</span>
+            </Label>
+            
+            <Slider
+              value={[quantity]}
+              onValueChange={(value) => setQuantity(value[0])}
+              min={1}
+              max={maxQuantity}
+              step={1}
+              disabled={isSaving || maxQuantity <= 0}
+              className="py-4"
+            />
+            
+            <div className="flex justify-between text-xs text-muted-foreground">
+              <span>Mínimo: 1</span>
+              <span>Máximo: {maxQuantity}</span>
+            </div>
+            
+            {quantity > maxQuantity && (
+              <p className="text-xs text-destructive flex items-center gap-1">
+                <AlertTriangle className="h-3 w-3" />
+                Quantidade excede o limite disponível.
+              </p>
+            )}
+          </div>
+          
+          {/* PREVIEW DA RESERVA */}
+          {selectedProfessor && subject && (
+            <div className="p-3 bg-primary/5 border border-primary/20 rounded-lg space-y-1">
+              <p className="text-xs text-muted-foreground font-medium flex items-center gap-1">
+                <Info className="h-3 w-3" />
+                Preview da Reserva:
+              </p>
+              <p className="text-sm font-medium text-foreground">
+                {quantity} Chromebook{quantity > 1 ? 's' : ''} → {selectedProfessor.nome_completo}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {subject} · {format(date, "dd/MM/yyyy")} às {timeSlot}
+              </p>
+            </div>
+          )}
+          
+          <DialogFooter className="pt-2">
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={() => setOpen(false)} 
+              disabled={isSaving}
+            >
               Cancelar
             </Button>
-            <Button type="submit" disabled={isSaving || !professorId || !subject.trim() || quantity <= 0 || quantity > maxQuantity}>
+            <Button 
+              type="submit" 
+              disabled={isSaving || !professorId || !subject.trim() || quantity <= 0 || quantity > maxQuantity}
+              className="bg-primary hover:bg-primary/90"
+            >
               {isSaving ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Salvando...
+                </>
               ) : (
-                <Save className="mr-2 h-4 w-4" />
+                <>
+                  <Save className="mr-2 h-4 w-4" />
+                  Confirmar Reserva
+                </>
               )}
-              Salvar Reserva
             </Button>
           </DialogFooter>
         </form>

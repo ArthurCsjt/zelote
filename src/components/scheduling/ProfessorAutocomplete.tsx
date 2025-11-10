@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Check, ChevronsUpDown, User, Search, Loader2 } from 'lucide-react';
+import { Check, ChevronsUpDown, User, Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
@@ -34,14 +34,10 @@ export const ProfessorAutocomplete: React.FC<ProfessorAutocompleteProps> = ({
   const filteredProfessores = useMemo(() => {
     if (!searchTerm) return professores;
     const lowerCaseSearch = searchTerm.toLowerCase();
-    return professores.filter(p => p.nome_completo.toLowerCase().includes(lowerCaseSearch));
+    return professores.filter(p => 
+      p.nome_completo.toLowerCase().includes(lowerCaseSearch)
+    );
   }, [professores, searchTerm]);
-
-  const handleSelect = (professor: Professor) => {
-    onSelect(professor.id);
-    setOpen(false);
-    setSearchTerm('');
-  };
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -50,44 +46,90 @@ export const ProfessorAutocomplete: React.FC<ProfessorAutocompleteProps> = ({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-full justify-between bg-input dark:bg-input dark:border-border"
+          className={cn(
+            "w-full justify-between h-11",
+            "bg-input dark:bg-input dark:border-border",
+            "hover:bg-accent transition-colors",
+            !selectedProfessor && "text-muted-foreground"
+          )}
           disabled={disabled}
         >
-          <div className="flex items-center truncate">
-            <User className="mr-2 h-4 w-4 shrink-0 opacity-50" />
-            {selectedProfessor ? selectedProfessor.nome_completo : "Selecione o professor"}
-          </div>
+          {selectedProfessor ? (
+            <div className="flex items-center gap-2 truncate">
+              {/* Avatar com inicial */}
+              <div className="w-6 h-6 rounded-full bg-purple-500/10 flex items-center justify-center shrink-0 dark:bg-purple-900/50">
+                <span className="text-xs font-semibold text-purple-600 dark:text-purple-400">
+                  {selectedProfessor.nome_completo.charAt(0).toUpperCase()}
+                </span>
+              </div>
+              <span className="truncate text-foreground">{selectedProfessor.nome_completo}</span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <User className="h-4 w-4 opacity-50" />
+              <span>Selecione o professor</span>
+            </div>
+          )}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
+      
       <PopoverContent 
-        className="w-[350px] p-0 bg-card border-border"
+        className={cn(
+          "w-[var(--radix-popover-trigger-width)] p-0",
+          "bg-card border-border shadow-xl",
+          "max-h-[300px]" // LIMITE DE ALTURA
+        )}
+        align="start"
+        side="bottom"
       >
-        <Command>
+        <Command className="bg-transparent">
           <CommandInput 
             placeholder="Buscar professor..." 
             value={searchTerm}
             onValueChange={setSearchTerm}
+            className="border-b border-border dark:border-border"
           />
-          <CommandList>
-            <CommandEmpty>Nenhum professor encontrado.</CommandEmpty>
+          <CommandList className="max-h-[240px]">
+            <CommandEmpty className="py-6 text-center text-sm text-muted-foreground">
+              Nenhum professor encontrado.
+            </CommandEmpty>
             <CommandGroup>
               {filteredProfessores.map((professor) => (
                 <CommandItem
                   key={professor.id}
                   value={professor.nome_completo}
-                  onSelect={() => handleSelect(professor)}
-                  className="flex items-center justify-between p-3"
+                  onSelect={() => {
+                    onSelect(professor.id);
+                    setOpen(false);
+                  }}
+                  className={cn(
+                    "flex items-center gap-3 px-3 py-2",
+                    "hover:bg-accent cursor-pointer",
+                    "transition-colors"
+                  )}
                 >
-                  <div className="flex items-center gap-3">
-                    <User className="h-4 w-4 text-muted-foreground" />
-                    <span className="font-medium text-sm text-foreground truncate">
-                      {professor.nome_completo}
+                  {/* Avatar */}
+                  <div className={cn(
+                    "w-8 h-8 rounded-full flex items-center justify-center shrink-0",
+                    selectedProfessorId === professor.id 
+                      ? "bg-purple-600 text-white" 
+                      : "bg-purple-500/10 text-purple-600 dark:bg-purple-900/50 dark:text-purple-400"
+                  )}>
+                    <span className="text-sm font-semibold">
+                      {professor.nome_completo.charAt(0).toUpperCase()}
                     </span>
                   </div>
+                  
+                  {/* Nome */}
+                  <span className="flex-1 font-medium text-sm truncate text-foreground">
+                    {professor.nome_completo}
+                  </span>
+                  
+                  {/* Check */}
                   <Check
                     className={cn(
-                      "ml-auto h-4 w-4",
+                      "h-4 w-4 text-primary transition-opacity",
                       selectedProfessorId === professor.id ? "opacity-100" : "opacity-0"
                     )}
                   />
