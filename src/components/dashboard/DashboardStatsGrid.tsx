@@ -97,14 +97,24 @@ export const DashboardStatsGrid: React.FC<DashboardStatsGridProps> = ({
                 <p>Porcentagem de equipamentos móveis (não fixos) que estão atualmente emprestados.</p>
               </TooltipContent>
             </ShadcnTooltip>
-            <Waves className={cn("h-6 w-6 sm:h-8 sm:w-8 animate-pulse", usageColors.text)} />
           </CardHeader>
           <CardContent className="p-0 pt-2">
-            <div className={cn("text-4xl sm:text-6xl font-extrabold bg-clip-text text-transparent", `bg-gradient-to-r ${usageColors.gradient}`)}>
-              {totalInventoryUsageRate.toFixed(0)}%
+            <div className="flex justify-between items-baseline">
+              <div className={cn("text-4xl sm:text-6xl font-extrabold bg-clip-text text-transparent", `bg-gradient-to-r ${usageColors.gradient}`)}>
+                {totalInventoryUsageRate.toFixed(0)}%
+              </div>
+              <Waves className={cn("h-8 w-8", usageColors.text)} />
             </div>
-            <p className="text-sm text-muted-foreground mt-1">
-              Uso atual do inventário móvel
+            
+            {/* NOVO: Medidor de Uso */}
+            <Progress 
+              value={totalInventoryUsageRate} 
+              className="h-3 mt-4 bg-gray-200 dark:bg-gray-700" 
+              indicatorClassName={cn("transition-all duration-1000", `bg-gradient-to-r ${usageColors.gradient}`)}
+            />
+            
+            <p className="text-sm text-muted-foreground mt-2">
+              {totalActive} de {totalChromebooks} equipamentos móveis em uso.
             </p>
           </CardContent>
         </GlassCard>
@@ -123,14 +133,24 @@ export const DashboardStatsGrid: React.FC<DashboardStatsGridProps> = ({
                 <p>O pico de uso (em %) atingido durante o período e horário selecionados no filtro.</p>
               </TooltipContent>
             </ShadcnTooltip>
-            <TrendingUp className={cn("h-6 w-6 sm:h-8 sm:w-8", picoColors.text)} />
           </CardHeader>
           <CardContent className="p-0 pt-2">
-            <div className={cn("text-4xl sm:text-6xl font-extrabold bg-clip-text text-transparent", `bg-gradient-to-r ${picoColors.gradient}`)}>
-              {maxOccupancyRate.toFixed(0)}%
+            <div className="flex justify-between items-baseline">
+              <div className={cn("text-4xl sm:text-6xl font-extrabold bg-clip-text text-transparent", `bg-gradient-to-r ${picoColors.gradient}`)}>
+                {maxOccupancyRate.toFixed(0)}%
+              </div>
+              <TrendingUp className={cn("h-8 w-8", picoColors.text)} />
             </div>
-            <p className="text-sm text-muted-foreground mt-1">
-              Pico de uso no período filtrado
+            
+            {/* NOVO: Medidor de Pico */}
+            <Progress 
+              value={maxOccupancyRate} 
+              className="h-3 mt-4 bg-gray-200 dark:bg-gray-700" 
+              indicatorClassName={cn("transition-all duration-1000", `bg-gradient-to-r ${picoColors.gradient}`)}
+            />
+            
+            <p className="text-sm text-muted-foreground mt-2">
+              Pico de demanda no período filtrado.
             </p>
           </CardContent>
         </GlassCard>
