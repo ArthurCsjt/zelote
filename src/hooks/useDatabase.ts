@@ -993,11 +993,11 @@ export const useDatabase = () => {
   
   const getTotalAvailableChromebooks = useCallback(async (): Promise<number> => {
     try {
-      // CORREÇÃO: Usando .or() para excluir explicitamente os status que não são móveis/utilizáveis
+      // CORREÇÃO: Contar apenas os que estão 'disponivel' ou 'fixo'
       const { count, error } = await supabase
         .from('chromebooks')
         .select('id', { count: 'exact', head: true })
-        .or('status.neq.fora_uso,status.neq.manutencao');
+        .in('status', ['disponivel', 'fixo']); // Apenas estes status são considerados disponíveis para agendamento/uso
 
       if (error) throw error;
       return count || 0;

@@ -6,7 +6,7 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { ChevronLeft, ChevronRight, Calendar, Loader2, Monitor, AlertTriangle } from 'lucide-react';
 import { useDatabase } from '@/hooks/useDatabase';
 import { useAuth } from '@/contexts/AuthContext';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query'; // Importando useQueryClient
 import { format } from 'date-fns';
 import { getStartOfWeek, formatWeekRange, changeWeek, getWeekDays } from '@/utils/scheduling';
 import { SchedulingCalendar } from '@/components/scheduling/SchedulingCalendar';
@@ -28,6 +28,7 @@ const fetchProfessores = async () => {
 const SchedulingPage = () => {
   const { user } = useAuth();
   const { getReservationsForWeek, getTotalAvailableChromebooks } = useDatabase();
+  const queryClient = useQueryClient(); // Inicializando o cliente de query
   
   // Estado para controlar a semana atual (usamos a Segunda-feira como referência)
   const [currentWeekStart, setCurrentWeekStart] = useState(getStartOfWeek(new Date()));
@@ -65,6 +66,8 @@ const SchedulingPage = () => {
   
   const handleReservationSuccess = () => {
     refetch(); // Recarrega as reservas após uma inserção bem-sucedida
+    // NOVO: Invalida o cache do total de Chromebooks para forçar a atualização
+    queryClient.invalidateQueries({ queryKey: ['totalAvailableChromebooks'] });
   };
   
   const isLoading = isLoadingTotal || isLoadingReservations || isLoadingProfessores;
