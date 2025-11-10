@@ -16,6 +16,8 @@ import { useDatabase } from "@/hooks/useDatabase";
 import { QuickRegisterWrapper } from '@/components/QuickRegisterWrapper';
 import { ReturnWrapper } from '@/components/ReturnWrapper'; // NOVO IMPORT
 import { cn } from '@/lib/utils'; // Importando cn
+import { DebugPanel } from '@/components/DebugPanel'; // Importando DebugPanel
+import { TestEmailSender } from '@/components/TestEmailSender'; // NOVO IMPORT
 
 // ATUALIZADO: Removendo 'quick-register' do tipo de rota
 type AppView = 'menu' | 'registration' | 'dashboard' | 'inventory' | 'loan' | 'audit' | 'return';
@@ -106,7 +108,17 @@ const Index = () => {
         return <AuditHub />;
       // REMOVIDO: case 'quick-register':
       default:
-        return <MainMenu onNavigate={handleNavigation} />;
+        return (
+          <div className="space-y-8">
+            <MainMenu onNavigate={handleNavigation} />
+            
+            {/* ADICIONANDO O PAINEL DE TESTE DE E-MAIL */}
+            <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
+                <DebugPanel />
+                <TestEmailSender toEmail="arthur.alencar@colegiosaojudas.com.br" />
+            </div>
+          </div>
+        );
     }
   };
   
