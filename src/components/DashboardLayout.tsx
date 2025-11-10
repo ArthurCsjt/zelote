@@ -310,8 +310,8 @@ export function DashboardLayout({
 
       {/* Grid de Cards de Estatísticas (Agora com 4 colunas em md) */}
       {periodView === 'charts' && (
-        <div className="grid gap-4 grid-cols-1 md:grid-cols-4 relative z-10">
-          {/* CARD 3: Empréstimos Ativos (Contagem de ativos) */}
+        <div className="grid gap-4 grid-cols-2 md:grid-cols-4 relative z-10">
+          {/* Renderiza os 4 cards menores diretamente dentro deste grid */}
           <DashboardStatsGrid 
             stats={stats}
             history={history}
