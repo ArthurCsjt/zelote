@@ -43,7 +43,7 @@ function generateEmailHtml({ professorName, subject, date, time, quantity }: any
             </div>
 
             <p>Por favor, retire os equipamentos no horário agendado. Em caso de dúvidas, entre em contato com a administração.</p>
-            <p>Atenciosamente,<br>Equipe Zelote</p>
+            <p>Atenciosamente,<br>Equipe de TI</p>
         </div>
     </body>
     </html>
