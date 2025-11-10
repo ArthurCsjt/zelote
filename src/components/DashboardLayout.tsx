@@ -16,7 +16,8 @@ import { useOverdueLoans } from '@/hooks/useOverdueLoans';
 import { CollapsibleDashboardFilter } from "./CollapsibleDashboardFilter";
 import { DashboardStatsGrid } from "./dashboard/DashboardStatsGrid";
 import { DashboardCharts } from "./dashboard/DashboardCharts";
-import { useDashboardExport } from "@/hooks/useDashboardExport"; // NOVO IMPORT
+import { useDashboardExport } from "@/hooks/useDashboardExport";
+import { UsageRateCard } from "./dashboard/UsageRateCard"; // NOVO IMPORT
 
 interface DashboardProps {
   onBack?: () => void;
@@ -302,15 +303,23 @@ export function DashboardLayout({
         </div>
       )}
 
-      {/* Grid de Cards de Estatísticas (Visível apenas no modo 'charts') */}
+      {/* NOVO CARD DE USO (Substitui os dois primeiros cards da grade) */}
       {periodView === 'charts' && (
-        <DashboardStatsGrid 
-          stats={stats}
-          history={history}
-          loading={loading}
-          onCardClick={handleCardClick}
-          isMounted={isMounted}
-        />
+        <UsageRateCard stats={stats} isMounted={isMounted} />
+      )}
+
+      {/* Grid de Cards de Estatísticas (Agora com 4 colunas em md) */}
+      {periodView === 'charts' && (
+        <div className="grid gap-4 grid-cols-1 md:grid-cols-4 relative z-10">
+          {/* CARD 3: Empréstimos Ativos (Contagem de ativos) */}
+          <DashboardStatsGrid 
+            stats={stats}
+            history={history}
+            loading={loading}
+            onCardClick={handleCardClick}
+            isMounted={isMounted}
+          />
+        </div>
       )}
 
       {/* Conteúdo Principal (Gráficos ou Histórico) */}

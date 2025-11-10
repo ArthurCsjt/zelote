@@ -47,13 +47,9 @@ export const DashboardStatsGrid: React.FC<DashboardStatsGridProps> = ({
   const { 
     totalActive = 0, 
     totalChromebooks = 0, 
-    totalInventoryUsageRate = 0, 
-    usageRateColor = 'green', 
     availableChromebooks = 0, 
     averageUsageTime = 0, 
     completionRate = 0, 
-    maxOccupancyRate = 0,
-    occupancyRateColor = 'green',
     filteredLoans = [], 
     filteredReturns = [], 
   } = stats || {};
@@ -63,18 +59,6 @@ export const DashboardStatsGrid: React.FC<DashboardStatsGridProps> = ({
     return loan.expected_return_date && new Date(loan.expected_return_date) < new Date();
   };
   
-  const getColorClasses = (color: 'green' | 'yellow' | 'red') => {
-    switch (color) {
-      case 'green': return { text: 'text-green-600 dark:text-green-400', bg: 'bg-green-50 dark:bg-green-950/50', border: 'border-green-500', gradient: 'from-green-600 to-emerald-600' };
-      case 'yellow': return { text: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-50 dark:bg-amber-950/50', border: 'border-amber-500', gradient: 'from-amber-600 to-orange-600' };
-      case 'red': return { text: 'text-red-600 dark:text-red-400', bg: 'bg-red-50 dark:bg-red-950/50', border: 'border-red-500', gradient: 'from-red-600 to-red-800' };
-      default: return { text: 'text-gray-600 dark:text-gray-400', bg: 'bg-gray-50 dark:bg-gray-950/50', border: 'border-gray-500', gradient: 'from-gray-600 to-gray-800' };
-    }
-  };
-  
-  const usageColors = getColorClasses(usageRateColor);
-  const picoColors = getColorClasses(occupancyRateColor);
-
   const getAnimationClass = (delay: number) => 
     isMounted ? `animate-fadeIn animation-delay-${delay}` : 'opacity-0';
 
@@ -83,81 +67,7 @@ export const DashboardStatsGrid: React.FC<DashboardStatsGridProps> = ({
       {/* Grid principal com 4 colunas em telas grandes */}
       <div className="grid gap-4 grid-cols-1 md:grid-cols-4 relative z-10">
         
-        {/* CARD 1: TAXA DE USO (Neste Instante) - DESTAQUE */}
-        <GlassCard className={cn("border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-[1.02] border-l-4 md:col-span-2 p-6", usageColors.border.replace('border-', 'border-l-'), getAnimationClass(0))}>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-0">
-            <ShadcnTooltip delayDuration={300}>
-              <TooltipTrigger asChild>
-                <CardTitle className="text-base font-bold flex items-center gap-1 cursor-help text-gray-700 dark:text-gray-300">
-                  TAXA DE USO (Tempo Real)
-                  <Info className="h-4 w-4 text-muted-foreground" />
-                </CardTitle>
-              </TooltipTrigger>
-              <TooltipContent className="max-w-sm text-xs">
-                <p>Porcentagem de equipamentos móveis (não fixos) que estão atualmente emprestados.</p>
-              </TooltipContent>
-            </ShadcnTooltip>
-          </CardHeader>
-          <CardContent className="p-0 pt-2">
-            <div className="flex justify-between items-baseline">
-              <div className={cn("text-4xl sm:text-6xl font-extrabold bg-clip-text text-transparent", `bg-gradient-to-r ${usageColors.gradient}`)}>
-                {totalInventoryUsageRate.toFixed(0)}%
-              </div>
-              <Waves className={cn("h-8 w-8", usageColors.text)} />
-            </div>
-            
-            {/* NOVO: Medidor de Uso */}
-            <Progress 
-              value={totalInventoryUsageRate} 
-              className="h-3 mt-4 bg-gray-200 dark:bg-gray-700" 
-              indicatorClassName={cn("transition-all duration-1000", `bg-gradient-to-r ${usageColors.gradient}`)}
-            />
-            
-            <p className="text-sm text-muted-foreground mt-2">
-              {totalActive} de {totalChromebooks} equipamentos móveis em uso.
-            </p>
-          </CardContent>
-        </GlassCard>
-
-        {/* CARD 2: TAXA DE USO (Pico no Período) - DESTAQUE */}
-        <GlassCard className={cn("border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-[1.02] border-l-4 md:col-span-2 p-6", picoColors.border.replace('border-', 'border-l-'), getAnimationClass(100))}>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-0">
-            <ShadcnTooltip delayDuration={300}>
-              <TooltipTrigger asChild>
-                <CardTitle className="text-base font-bold flex items-center gap-1 cursor-help text-gray-700 dark:text-gray-300">
-                  TAXA DE USO (Pico no Período)
-                  <Info className="h-4 w-4 text-muted-foreground" />
-                </CardTitle>
-              </TooltipTrigger>
-              <TooltipContent className="max-w-sm text-xs">
-                <p>O pico de uso (em %) atingido durante o período e horário selecionados no filtro.</p>
-              </TooltipContent>
-            </ShadcnTooltip>
-          </CardHeader>
-          <CardContent className="p-0 pt-2">
-            <div className="flex justify-between items-baseline">
-              <div className={cn("text-4xl sm:text-6xl font-extrabold bg-clip-text text-transparent", `bg-gradient-to-r ${picoColors.gradient}`)}>
-                {maxOccupancyRate.toFixed(0)}%
-              </div>
-              <TrendingUp className={cn("h-8 w-8", picoColors.text)} />
-            </div>
-            
-            {/* NOVO: Medidor de Pico */}
-            <Progress 
-              value={maxOccupancyRate} 
-              className="h-3 mt-4 bg-gray-200 dark:bg-gray-700" 
-              indicatorClassName={cn("transition-all duration-1000", `bg-gradient-to-r ${picoColors.gradient}`)}
-            />
-            
-            <p className="text-sm text-muted-foreground mt-2">
-              Pico de demanda no período filtrado.
-            </p>
-          </CardContent>
-        </GlassCard>
-        
-        {/* LINHA 2: Cards Menores (4 colunas em md) */}
-        
-        {/* CARD 3: Empréstimos Ativos (Contagem de ativos) */}
+        {/* CARD 1: Empréstimos Ativos (Contagem de ativos) */}
         <GlassCard 
           className={cn("border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-blue-500 cursor-pointer p-4", getAnimationClass(200))}
           onClick={() => onCardClick('Empréstimos Ativos', 'Lista de todos os Chromebooks atualmente emprestados.', 'loans', history.filter((loan: LoanHistoryItem) => !loan.return_date).map((loan: LoanHistoryItem) => ({
@@ -192,7 +102,7 @@ export const DashboardStatsGrid: React.FC<DashboardStatsGridProps> = ({
           </CardContent>
         </GlassCard>
 
-        {/* CARD 4: Disponíveis (Clicável para ver a lista) */}
+        {/* CARD 2: Disponíveis (Clicável para ver a lista) */}
         <GlassCard 
           className={cn("border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-green-500 cursor-pointer p-4", getAnimationClass(300))}
           onClick={() => onCardClick('Disponíveis', 'Lista de Chromebooks prontos para empréstimo.', 'chromebooks', null, 'disponivel')}
@@ -219,7 +129,7 @@ export const DashboardStatsGrid: React.FC<DashboardStatsGridProps> = ({
           </CardContent>
         </GlassCard>
         
-        {/* CARD 5: Tempo Médio (Não Clicável - Métrica de cálculo) */}
+        {/* CARD 3: Tempo Médio (Não Clicável - Métrica de cálculo) */}
         <GlassCard className={cn("border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-purple-500 p-4", getAnimationClass(400))}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-0">
             <ShadcnTooltip delayDuration={300}>
@@ -245,7 +155,7 @@ export const DashboardStatsGrid: React.FC<DashboardStatsGridProps> = ({
           </CardContent>
         </GlassCard>
 
-        {/* CARD 6: Taxa de Devolução (Linha 2) */}
+        {/* CARD 4: Taxa de Devolução (Linha 2) */}
         <GlassCard className={cn("border-white/30 hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-teal-500 p-4", getAnimationClass(500))}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-0">
             <ShadcnTooltip delayDuration={300}>
