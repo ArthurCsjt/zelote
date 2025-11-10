@@ -1,7 +1,7 @@
 import React from "react";
 import { CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Info, Waves, TrendingUp } from "lucide-react";
+import { Info, Waves, TrendingUp, Activity } from "lucide-react"; // Adicionado Activity
 import { Tooltip as ShadcnTooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { cn } from '@/lib/utils';
@@ -54,7 +54,7 @@ export const UsageRateCard: React.FC<UsageRateCardProps> = ({ stats, isMounted }
         <CardContent className="p-0 pt-4 grid grid-cols-1 md:grid-cols-2 gap-6 border-t border-border/50">
           
           {/* METRICA 1: TEMPO REAL */}
-          <div className="space-y-3 border-r md:border-r-border/50 md:pr-6">
+          <div className="space-y-3 md:pr-6 border-r border-border/50"> {/* Mantendo a borda para separação visual clara */}
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-bold uppercase text-muted-foreground flex items-center gap-1">
                 Uso Atual (Tempo Real)
@@ -67,7 +67,8 @@ export const UsageRateCard: React.FC<UsageRateCardProps> = ({ stats, isMounted }
                   </TooltipContent>
                 </ShadcnTooltip>
               </h3>
-              <Waves className={cn("h-6 w-6", usageColors.text)} />
+              {/* Ícone alterado para Activity */}
+              <Activity className={cn("h-6 w-6", usageColors.text)} /> 
             </div>
             
             <div className="flex items-baseline gap-2">
@@ -90,7 +91,7 @@ export const UsageRateCard: React.FC<UsageRateCardProps> = ({ stats, isMounted }
           </div>
 
           {/* METRICA 2: PICO NO PERÍODO */}
-          <div className="space-y-3 md:pl-6 md:border-l-border/50">
+          <div className="space-y-3 md:pl-6">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-bold uppercase text-muted-foreground flex items-center gap-1">
                 Pico de Demanda (Período Filtrado)
