@@ -36,7 +36,7 @@ export const getWeekDays = (date: Date): Date[] => {
 /**
  * Formata o intervalo de datas da semana para exibição no cabeçalho.
  * @param date A data de referência.
- * @returns String formatada (Ex: "Semana de 15 a 19 de Setembro").
+ * @returns String formatada (Ex: "Semana de 15 a 19 de Setembro de 2024").
  */
 export const formatWeekRange = (date: Date): string => {
   const days = getWeekDays(date);
@@ -45,8 +45,9 @@ export const formatWeekRange = (date: Date): string => {
   const startDay = format(days[0], 'dd', { locale: ptBR });
   const endDay = format(days[days.length - 1], 'dd', { locale: ptBR });
   const month = format(days[0], 'MMMM', { locale: ptBR });
+  const year = format(days[0], 'yyyy', { locale: ptBR });
   
-  return `Semana de ${startDay} a ${endDay} de ${month.charAt(0).toUpperCase() + month.slice(1)}`;
+  return `Semana de ${startDay} a ${endDay} de ${month.charAt(0).toUpperCase() + month.slice(1)} de ${year}`;
 };
 
 /**
