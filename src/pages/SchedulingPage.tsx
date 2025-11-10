@@ -8,6 +8,7 @@ import { useDatabase } from '@/hooks/useDatabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
+import { ptBR } from 'date-fns/locale'; // IMPORT CORRIGIDO AQUI
 import { getStartOfWeek, formatWeekRange, changeWeek, getWeekDays, changeMonth } from '@/utils/scheduling';
 import { SchedulingCalendar } from '@/components/scheduling/SchedulingCalendar';
 import { SchedulingMonthView } from '@/components/scheduling/SchedulingMonthView'; // NOVO IMPORT
@@ -52,6 +53,7 @@ const SchedulingPage = () => {
       return {
         startDate: format(start, 'yyyy-MM-dd'),
         endDate: format(end, 'yyyy-MM-dd'),
+        // CORREÇÃO: Passando ptBR para format
         displayRange: format(currentDate, 'MMMM yyyy', { locale: ptBR }).charAt(0).toUpperCase() + format(currentDate, 'MMMM yyyy', { locale: ptBR }).slice(1),
       };
     }
