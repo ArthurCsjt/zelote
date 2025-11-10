@@ -10,6 +10,7 @@ import { GlassCard } from '@/components/ui/GlassCard';
 import { Button } from '@/components/ui/button';
 import { LogOut, Loader2, Settings as SettingsIcon } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { EmailTestCard } from '@/components/EmailTestCard'; // NOVO IMPORT
 
 const Settings = () => {
   const { isAdmin, loading } = useProfileRole();
@@ -61,7 +62,10 @@ const Settings = () => {
         {/* 2. Manutenção de Dados (Importação e Limpeza) */}
         <DataMaintenance />
         
-        {/* 3. Botão de Sair (Visível para todos, mas colocado aqui para consistência) */}
+        {/* 3. Teste de E-mail */}
+        <EmailTestCard />
+        
+        {/* 4. Botão de Sair (Visível para todos, mas colocado aqui para consistência) */}
         <GlassCard className="border-red-200/50 bg-red-50/50">
           <CardHeader>
             <CardTitle className="text-red-700">Sair do Sistema</CardTitle>

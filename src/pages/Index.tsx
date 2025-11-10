@@ -17,7 +17,7 @@ import { QuickRegisterWrapper } from '@/components/QuickRegisterWrapper';
 import { ReturnWrapper } from '@/components/ReturnWrapper'; // NOVO IMPORT
 import { cn } from '@/lib/utils'; // Importando cn
 import { DebugPanel } from '@/components/DebugPanel'; // Importando DebugPanel
-import { TestEmailSender } from '@/components/TestEmailSender'; // NOVO IMPORT
+// import { TestEmailSender } from '@/components/TestEmailSender'; // REMOVIDO
 
 // ATUALIZADO: Removendo 'quick-register' do tipo de rota
 type AppView = 'menu' | 'registration' | 'dashboard' | 'inventory' | 'loan' | 'audit' | 'return';
@@ -112,10 +112,10 @@ const Index = () => {
           <div className="space-y-8">
             <MainMenu onNavigate={handleNavigation} />
             
-            {/* ADICIONANDO O PAINEL DE TESTE DE E-MAIL */}
+            {/* ADICIONANDO O PAINEL DE DEBUG (MANTIDO) */}
             <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
                 <DebugPanel />
-                <TestEmailSender toEmail="arthur.alencar@colegiosaojudas.com.br" />
+                {/* TestEmailSender REMOVIDO daqui */}
             </div>
           </div>
         );
