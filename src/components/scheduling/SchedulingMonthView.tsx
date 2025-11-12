@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Monitor, Clock, User, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Reservation } from '@/hooks/useDatabase';
+import { GlassCard } from '@/components/ui/GlassCard'; // NOVO IMPORT
 
 interface SchedulingMonthViewProps {
   currentDate: Date;
