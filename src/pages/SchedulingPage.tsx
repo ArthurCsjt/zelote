@@ -16,6 +16,7 @@ import { SectionHeader } from '@/components/Shared/SectionHeader';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
+import { useNavigate } from 'react-router-dom'; // Importando useNavigate
 
 // Função para buscar a lista de professores (para o Combobox)
 const fetchProfessores = async () => {
@@ -31,6 +32,7 @@ const SchedulingPage = () => {
   const { user } = useAuth();
   const { getReservationsForWeek, getTotalAvailableChromebooks } = useDatabase();
   const queryClient = useQueryClient();
+  const navigate = useNavigate(); // Inicializando useNavigate
   
   // Estado para controlar a data de referência (pode ser o início da semana ou o mês atual)
   const [currentDate, setCurrentDate] = useState(getStartOfWeek(new Date()));
@@ -110,7 +112,7 @@ const SchedulingPage = () => {
       title="Agendamento de Chromebooks" 
       subtitle="Reserve lotes de equipamentos para suas aulas" 
       showBackButton 
-      onBack={() => window.history.back()}
+      onBack={() => navigate('/')} // ALTERADO: Navega para a rota raiz (menu principal)
     >
       <div className="space-y-6 max-w-7xl mx-auto">
         
