@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isPast } from 'date-fns';
 import { ptBR } from 'date-fns/locale'; // IMPORT CORRIGIDO
 import { Calendar } from '@/components/ui/calendar';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Monitor, Clock, User, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
