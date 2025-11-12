@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 // ALTERAÇÃO 1: Adicionado o ícone 'ListChecks' para o novo botão
-import { ClipboardList, BarChart3, PlusCircle, Laptop, RotateCcw, Brain, ListChecks, QrCode, Calendar } from 'lucide-react'; // Adicionado Calendar
+import { ClipboardList, BarChart3, PlusCircle, Laptop, RotateCcw, Brain, ListChecks, QrCode, Calendar, Loader2 } from 'lucide-react'; // Adicionado Calendar e Loader2
 import { useProfileRole } from '@/hooks/use-profile-role'; // NOVO IMPORT
 
 interface MainMenuProps {
