@@ -16,6 +16,7 @@ import { useDatabase } from "@/hooks/useDatabase";
 import { QuickRegisterWrapper } from '@/components/QuickRegisterWrapper';
 import { ReturnWrapper } from '@/components/ReturnWrapper'; // NOVO IMPORT
 import { cn } from '@/lib/utils'; // Importando cn
+import { Navigate } from 'react-router-dom'; // IMPORT CORRIGIDO
 // import { DebugPanel } from '@/components/DebugPanel'; // REMOVENDO IMPORT
 
 // ATUALIZADO: Removendo 'quick-register' do tipo de rota
