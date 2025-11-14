@@ -81,27 +81,38 @@ export function useOverdueLoans() {
 
   // Mostrar notificações quando houver atrasos
   useEffect(() => {
+    // 1. Alertas de Atraso (CRÍTICO)
     if (overdueLoans.length > 0) {
       const isPlural = overdueLoans.length > 1;
       const title = `⚠️ ${overdueLoans.length} Empréstimo${isPlural ? 's' : ''} em Atraso`;
       const description = `Há ${overdueLoans.length} empréstimo${isPlural ? 's' : ''} que ${isPlural ? 'passaram' : 'passou'} do prazo de devolução.`;
       
-      toast({
-        title: title,
+      // Usando um ID fixo para garantir que apenas um toast de atraso esteja visível
+      toast.error(title, {
         description: description,
-        variant: "destructive",
+        id: 'overdue-alert', 
+        duration: 1000000, // Manter visível
       });
+    } else {
+      // Se não houver atrasos, dispensa o toast
+      toast.dismiss('overdue-alert');
     }
 
+    // 2. Alertas de Vencimento Próximo (INFO)
     if (upcomingDueLoans.length > 0) {
       const isPlural = upcomingDueLoans.length > 1;
       const title = `📅 ${upcomingDueLoans.length} Empréstimo${isPlural ? 's' : ''} Vencendo`;
       const description = `Há empréstimo${isPlural ? 's' : ''} com prazo próximo ao vencimento.`;
       
-      toast({
-        title: title,
+      // Usando um ID fixo para garantir que apenas um toast de vencimento esteja visível
+      toast.info(title, {
         description: description,
+        id: 'upcoming-due-alert',
+        duration: 1000000, // Manter visível
       });
+    } else {
+      // Se não houver vencimentos próximos, dispensa o toast
+      toast.dismiss('upcoming-due-alert');
     }
   }, [overdueLoans.length, upcomingDueLoans.length]);
 
