@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { AlertTriangle, Clock, Monitor, RefreshCw, Loader2, CalendarX } from 'lucide-react';
+import { AlertTriangle, Clock, Monitor, RefreshCw, Loader2, CalendarX, CheckCircle } from 'lucide-react';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { cn } from '@/lib/utils';
 import { OverdueAlertsPanel } from '@/components/OverdueAlertsPanel';
