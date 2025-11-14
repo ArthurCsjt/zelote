@@ -3,7 +3,7 @@ import { Input } from './ui/input';
 import { Button } from './ui/button';
 import { Label } from './ui/label';
 import { Badge } from './ui/badge';
-import { Computer, Plus, QrCode, Loader2, X, AlertTriangle, Search, Factory, Tag, Hash } from 'lucide-react';
+import { Computer, Plus, QrCode, Loader2, X, AlertTriangle, Search, Factory, Tag, Hash, CheckCircle, Clock } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { normalizeChromebookId, sanitizeQRCodeData } from '@/utils/security';
 import { QRCodeReader } from './QRCodeReader';
@@ -16,6 +16,7 @@ import type { LoanHistoryItem } from '@/types/database'; // Importando o tipo de
 // Novo tipo para armazenar o dispositivo completo na lista
 interface DeviceListItem extends ChromebookSearchResult {
   // Herda id, chromebook_id, model, status, searchable
+  loanStatus: 'ativo' | 'inativo' | 'atrasado' | 'desconhecido'; // Status do empréstimo (para devolução)
 }
 
 interface DeviceListInputProps {
@@ -38,7 +39,8 @@ export function DeviceListInput({ deviceIds, setDeviceIds, disabled, filterStatu
   useEffect(() => {
     const loadLoans = async () => {
       setIsLoanCacheLoading(true);
-      const loans = await getActiveLoans();
+      // Usamos getLoanHistory para ter todos os dados, mas filtramos localmente para ativos
+      const loans = await getActiveLoans(); 
       setActiveLoansCache(loans);
       setIsLoanCacheLoading(false);
     };
@@ -50,18 +52,28 @@ export function DeviceListInput({ deviceIds, setDeviceIds, disabled, filterStatu
   React.useEffect(() => {
     // Mapeia os IDs externos para os objetos internos, se possível
     const initialList = deviceIds
-      .map(id => chromebooks.find(cb => cb.chromebook_id === id))
+      .map(id => {
+        const chromebook = chromebooks.find(cb => cb.chromebook_id === id);
+        if (!chromebook) return null;
+        
+        const activeLoan = activeLoansCache.find(loan => loan.chromebook_id === id);
+        
+        return { 
+            ...chromebook, 
+            loanStatus: activeLoan ? (activeLoan.status === 'atrasado' ? 'atrasado' : 'ativo') : 'inativo'
+        } as DeviceListItem;
+      })
       .filter((cb): cb is DeviceListItem => !!cb);
       
     if (initialList.length !== deviceList.length || initialList.some((item, index) => item.id !== deviceList[index]?.id)) {
         setDeviceList(initialList);
     }
-  }, [deviceIds, chromebooks]);
+  }, [deviceIds, chromebooks, activeLoansCache]);
 
 
   const requiredStatus = filterStatus === 'emprestado' ? 'emprestado' : 'disponivel';
   // SIMPLIFICADO: Apenas 'Ativo' ou 'Disponível'
-  const requiredStatusLabel = requiredStatus === 'emprestado' ? 'Ativo' : 'Disponível'; 
+  const requiredStatusLabel = requiredStatus === 'emprestado' ? 'Emprestado' : 'Disponível'; 
 
   // Função de validação centralizada
   const validateAndNormalizeInput = useCallback(async (rawInput: string) => {
@@ -81,35 +93,32 @@ export function DeviceListInput({ deviceIds, setDeviceIds, disabled, filterStatu
       return { error: `Chromebook ${normalizedInput} não encontrado no inventário.` };
     }
     
-    // 1. Validação de Status (baseada no cache local)
-    // Para empréstimo, o status deve ser 'disponivel'
-    if (actionLabel === 'Empréstimo' && chromebook.status !== 'disponivel') {
-        return { error: `Status Incorreto: ${chromebook.status.toUpperCase()}. Requerido: Disponível.` };
-    }
-    
-    // 2. Validação de Empréstimo Ativo (Verificação de consistência com o DB via loan_history)
     const activeLoan = activeLoansCache.find(loan => loan.chromebook_id === normalizedInput);
+    const loanStatus: DeviceListItem['loanStatus'] = activeLoan ? (activeLoan.status === 'atrasado' ? 'atrasado' : 'ativo') : 'inativo';
     
-    if (actionLabel === 'Devolução') {
-        // Fluxo de Devolução: Deve ter um empréstimo ativo (status 'ativo' ou 'atrasado' no loan_history)
-        if (!activeLoan) {
-            return { error: `O Chromebook ${normalizedInput} não possui um empréstimo ativo registrado no sistema.` };
+    // 1. Validação de Status para Empréstimo
+    if (actionLabel === 'Empréstimo') {
+        if (chromebook.status !== 'disponivel') {
+            return { error: `Status Incorreto: ${chromebook.status.toUpperCase()}. Requerido: Disponível.` };
         }
-        // Se houver um empréstimo ativo, a devolução é permitida, mesmo que o status do CB esteja inconsistente.
-    } else if (actionLabel === 'Empréstimo') {
-        // Fluxo de Empréstimo: Não deve ter um empréstimo ativo
-        if (activeLoan) {
-            // Se o status do CB for 'disponivel' mas houver um empréstimo ativo, é uma inconsistência.
-            // Bloqueamos o empréstimo e sugerimos sincronização.
+        if (loanStatus === 'ativo' || loanStatus === 'atrasado') {
             return { error: `O Chromebook ${normalizedInput} possui um empréstimo ativo no sistema. Tente sincronizar o status no Dashboard.` };
         }
     }
+    
+    // 2. Validação de Status para Devolução
+    if (actionLabel === 'Devolução') {
+        if (loanStatus === 'inativo') {
+            return { error: `O Chromebook ${normalizedInput} não possui um empréstimo ativo registrado no sistema.` };
+        }
+        // Se tiver empréstimo ativo, a devolução é permitida.
+    }
 
-    return { chromebook: chromebook as DeviceListItem };
-  }, [deviceList, chromebooks, actionLabel, activeLoansCache]); // Adicionando activeLoansCache como dependência
+    return { chromebook: { ...chromebook, loanStatus } as DeviceListItem };
+  }, [deviceList, chromebooks, actionLabel, activeLoansCache]);
 
   // Lógica de adição (usada por busca visual e QR code)
-  const addDevice = useCallback(async (chromebook: DeviceListItem) => {
+  const addDevice = useCallback(async (chromebook: ChromebookSearchResult) => {
     // Revalida o item antes de adicionar (necessário para o fluxo de busca visual)
     const validation = await validateAndNormalizeInput(chromebook.chromebook_id);
     
@@ -172,13 +181,34 @@ export function DeviceListInput({ deviceIds, setDeviceIds, disabled, filterStatu
         });
     }
   };
+  
+  const getStatusBadge = (item: DeviceListItem) => {
+    if (actionLabel === 'Devolução') {
+        switch (item.loanStatus) {
+            case 'ativo':
+                return <Badge className="bg-warning-bg text-warning-foreground border-warning">Emprestado</Badge>;
+            case 'atrasado':
+                return <Badge variant="destructive" className="bg-error-bg text-error-foreground border-error">Atrasado</Badge>;
+            default:
+                return <Badge variant="secondary">Inativo</Badge>;
+        }
+    } else { // Empréstimo
+        switch (item.status) {
+            case 'disponivel':
+                return <Badge className="bg-success-bg text-success-foreground border-success">Disponível</Badge>;
+            case 'emprestado':
+                return <Badge className="bg-warning-bg text-warning-foreground border-warning">Emprestado</Badge>;
+            default:
+                return <Badge variant="secondary">{item.status.charAt(0).toUpperCase() + item.status.slice(1)}</Badge>;
+        }
+    }
+  };
 
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        {/* REMOVIDO: Label e Badge duplicados */}
         <Label htmlFor="deviceInput" className="text-foreground font-semibold">
-          Adicionar Dispositivo (Status: {actionLabel === 'Devolução' ? 'Emprestado' : 'Disponível'})
+          Adicionar Dispositivo (Status Requerido: {requiredStatusLabel})
         </Label>
       </div>
       
@@ -203,6 +233,7 @@ export function DeviceListInput({ deviceIds, setDeviceIds, disabled, filterStatu
                   <div className="flex items-center gap-2">
                     <Computer className="h-4 w-4 text-blue-500 dark:text-blue-400" />
                     <span className="text-sm font-medium text-foreground">{chromebook.chromebook_id}</span>
+                    {getStatusBadge(chromebook)}
                   </div>
                   <div className="text-xs text-muted-foreground ml-6">
                     {/* Linha 1: Fabricante e Modelo */}

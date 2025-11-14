@@ -16,7 +16,7 @@ import { useOverdueLoans } from '@/hooks/useOverdueLoans';
 import { CollapsibleDashboardFilter } from "./CollapsibleDashboardFilter";
 import { DashboardStatsGrid } from "./dashboard/DashboardStatsGrid";
 import { DashboardCharts } from "./dashboard/DashboardCharts";
-import { useDashboardExport } from "@/hooks/useDashboardExport";
+import { useDashboardExport } from "../hooks/useDashboardExport";
 import { UsageRateCard } from "./dashboard/UsageRateCard";
 import { SecondaryInsightsGrid } from "./dashboard/SecondaryInsightsGrid"; // NOVO IMPORT
 
@@ -237,12 +237,15 @@ export function DashboardLayout({
         />
         <div className="flex items-center gap-3 w-full sm:w-auto">
           
-          {/* Botão de Download PDF */}
+          {/* Botão de Download PDF (DESIGN MELHORADO) */}
           {periodView === 'charts' && (
             <Button 
-              variant="outline" 
+              variant="default" 
               onClick={handleExportPDF} 
-              className="flex items-center gap-2 bg-card hover:bg-card-hover border-border" 
+              className={cn(
+                "flex items-center gap-2 bg-menu-green hover:bg-menu-green-hover text-white", // Usando cor verde de sucesso
+                "shadow-md shadow-menu-green/30 transition-all duration-300"
+              )} 
               disabled={loading || !stats}
             >
               <Download className="h-4 w-4" />

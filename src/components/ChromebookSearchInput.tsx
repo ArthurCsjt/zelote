@@ -58,13 +58,13 @@ const ChromebookSearchInput: React.FC<ChromebookSearchInputProps> = ({
   const getStatusBadge = (status: ChromebookSearchResult['status']) => {
     switch (status) {
       case 'disponivel':
-        return <Badge className="bg-green-100 text-green-700 hover:bg-green-100 dark:bg-green-900 dark:text-green-300">Disponível</Badge>;
+        return <Badge className="bg-success-bg text-success-foreground hover:bg-success-bg dark:bg-success-bg/50 dark:text-success-foreground">Disponível</Badge>;
       case 'emprestado':
-        return <Badge className="bg-yellow-100 text-yellow-700 hover:bg-yellow-100 dark:bg-yellow-900 dark:text-yellow-300">Emprestado</Badge>;
+        return <Badge className="bg-warning-bg text-warning-foreground hover:bg-warning-bg dark:bg-warning-bg/50 dark:text-warning-foreground">Emprestado</Badge>;
       case 'manutencao':
-        return <Badge variant="destructive">Manutenção</Badge>;
+        return <Badge variant="destructive" className="bg-error-bg text-error-foreground hover:bg-error-bg dark:bg-error-bg/50 dark:text-error-foreground">Manutenção</Badge>;
       case 'fixo':
-        return <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100 dark:bg-blue-900 dark:text-blue-300">Fixo</Badge>;
+        return <Badge className="bg-info-bg text-info-foreground hover:bg-info-bg dark:bg-info-bg/50 dark:text-info-foreground">Fixo</Badge>;
       default:
         return <Badge variant="secondary">Outro</Badge>;
     }
@@ -86,13 +86,13 @@ const ChromebookSearchInput: React.FC<ChromebookSearchInputProps> = ({
     let icon = <CheckCircle className="h-5 w-5 text-green-600" />;
     
     if (filterStatus === 'disponivel' && !isAvailable) {
-        cardClass = "p-3 border-2 border-red-400 bg-red-50/50 shadow-md dark:bg-red-950/50 dark:border-red-900";
-        icon = <AlertTriangle className="h-5 w-5 text-red-600" />;
+        cardClass = "p-3 border-2 border-error/50 bg-error-bg/50 shadow-md dark:bg-error-bg/50 dark:border-error/50";
+        icon = <AlertTriangle className="h-5 w-5 text-error dark:text-error-foreground" />;
     } else if (filterStatus === 'ativo' && !isEmprestado) {
-        cardClass = "p-3 border-2 border-red-400 bg-red-50/50 shadow-md dark:bg-red-950/50 dark:border-red-900";
-        icon = <AlertTriangle className="h-5 w-5 text-red-600" />;
+        cardClass = "p-3 border-2 border-error/50 bg-error-bg/50 shadow-md dark:bg-error-bg/50 dark:border-error/50";
+        icon = <AlertTriangle className="h-5 w-5 text-error dark:text-error-foreground" />;
     } else {
-        cardClass = "p-3 border-2 border-green-400 bg-green-50/50 shadow-md dark:bg-green-950/50 dark:border-green-900";
+        cardClass = "p-3 border-2 border-success/50 bg-success-bg/50 shadow-md dark:bg-success-bg/50 dark:border-success/50";
     }
 
     return (
@@ -135,14 +135,14 @@ const ChromebookSearchInput: React.FC<ChromebookSearchInputProps> = ({
             onChange={(e) => setSearchTerm(e.target.value)}
             onFocus={() => setIsFocused(true)}
             onBlur={() => setTimeout(() => setIsFocused(false), 200)} // Pequeno delay para permitir o clique
-            className="pl-10 w-full bg-input dark:bg-card border-border dark:border-border"
+            className="pl-10 w-full bg-input-bg border-input dark:bg-input-bg dark:border-input" // CORRIGIDO
             disabled={disabled || loading}
           />
         </div>
         <Button 
           type="button" 
           variant="outline" 
-          className="border-border bg-input hover:bg-accent px-3 dark:bg-card dark:border-border dark:hover:bg-accent"
+          className="border-input bg-input-bg hover:bg-accent px-3 dark:bg-input-bg dark:border-input dark:hover:bg-accent" // CORRIGIDO
           onClick={onScanClick}
           disabled={disabled || loading}
         >

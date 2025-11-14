@@ -55,7 +55,7 @@ export const AuditMissingItems: React.FC<AuditMissingItemsProps> = ({
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             // CORREÇÃO: Usando bg-input-bg e border-input
-            className="pl-10 bg-input-bg border-input text-foreground"
+            className="pl-10 bg-input-bg border-input text-foreground dark:bg-input-bg dark:border-input"
           />
           {searchTerm && (
             <Button
