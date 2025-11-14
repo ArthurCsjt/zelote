@@ -109,7 +109,7 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
             </div>
             <BarChartIcon className="h-5 w-5 text-muted-foreground" />
           </CardHeader>
-          <CardContent className="h-[300px]">
+          <CardContent className="h-[350px]"> {/* AUMENTADO PARA 350px */}
             <ChartContainer
               config={{
                 empréstimos: { label: "Empréstimos", color: "hsl(var(--primary))" },
@@ -155,10 +155,10 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
             </div>
             <TrendingUp className="h-5 w-5 text-muted-foreground" />
           </CardHeader>
-          <CardContent className="h-[300px]">
+          <CardContent className="h-[350px]"> {/* AUMENTADO PARA 350px */}
             <ChartContainer
               config={{
-                ocupação: { label: "Ocupação (%)", color: "hsl(var(--destructive))" },
+                ocupação: { label: "Ocupação (%)", color: "hsl(var(--error))" }, // USANDO --error
               }}
               className="w-full h-full"
             >
@@ -178,7 +178,7 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
                   <Line 
                       type="monotone" 
                       dataKey="ocupação" 
-                      stroke="hsl(var(--destructive))" 
+                      stroke="hsl(var(--error))" // USANDO --error
                       strokeWidth={2} 
                       name="Ocupação (%)"
                   />
@@ -200,7 +200,7 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
             </div>
             <PieChartIcon className="h-5 w-5 text-muted-foreground" />
           </CardHeader>
-          <CardContent className="h-[300px] flex items-center justify-center">
+          <CardContent className="h-[350px] flex items-center justify-center"> {/* AUMENTADO PARA 350px */}
             <ChartContainer
               config={{
                 'Em Uso': { label: "Em Uso", color: "hsl(var(--primary))" },
@@ -243,7 +243,7 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
             </div>
             <Users className="h-5 w-5 text-muted-foreground" />
           </CardHeader>
-          <CardContent className="h-[300px]">
+          <CardContent className="h-[350px]"> {/* AUMENTADO PARA 350px */}
             <ChartContainer
               config={{
                 'Aluno': { label: "Aluno", color: "#3B82F6" },
