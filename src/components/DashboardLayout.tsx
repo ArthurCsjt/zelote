@@ -17,7 +17,8 @@ import { CollapsibleDashboardFilter } from "./CollapsibleDashboardFilter";
 import { DashboardStatsGrid } from "./dashboard/DashboardStatsGrid";
 import { DashboardCharts } from "./dashboard/DashboardCharts";
 import { useDashboardExport } from "@/hooks/useDashboardExport";
-import { UsageRateCard } from "./dashboard/UsageRateCard"; // NOVO IMPORT
+import { UsageRateCard } from "./dashboard/UsageRateCard";
+import { SecondaryInsightsGrid } from "./dashboard/SecondaryInsightsGrid"; // NOVO IMPORT
 
 interface DashboardProps {
   onBack?: () => void;
@@ -303,15 +304,14 @@ export function DashboardLayout({
         </div>
       )}
 
-      {/* NOVO CARD DE USO (Substitui os dois primeiros cards da grade) */}
+      {/* Linha 1 (Hero Card) */}
       {periodView === 'charts' && (
         <UsageRateCard stats={stats} isMounted={isMounted} />
       )}
 
-      {/* Grid de Cards de Estatísticas (Agora com 4 colunas em md) */}
+      {/* Linha 2 (KPIs Principais - 4 colunas) */}
       {periodView === 'charts' && (
         <div className="grid gap-4 grid-cols-2 md:grid-cols-4 relative z-10">
-          {/* Renderiza os 4 cards menores diretamente dentro deste grid */}
           <DashboardStatsGrid 
             stats={stats}
             history={history}
@@ -320,6 +320,11 @@ export function DashboardLayout({
             isMounted={isMounted}
           />
         </div>
+      )}
+      
+      {/* Linha 3 (Insights Secundários - 3 colunas) */}
+      {periodView === 'charts' && (
+        <SecondaryInsightsGrid isMounted={isMounted} />
       )}
 
       {/* Conteúdo Principal (Gráficos ou Histórico) */}
