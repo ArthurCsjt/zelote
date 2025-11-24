@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/hooks/use-toast';
+import { toast, dismissToast } from '@/hooks/use-toast';
 
 interface OverdueLoan {
   loan_id: string;
@@ -95,7 +95,7 @@ export function useOverdueLoans() {
       });
     } else {
       // Se não houver atrasos, dispensa o toast
-      toast.dismiss('overdue-alert');
+      dismissToast('overdue-alert');
     }
 
     // 2. Alertas de Vencimento Próximo (INFO)
@@ -112,7 +112,7 @@ export function useOverdueLoans() {
       });
     } else {
       // Se não houver vencimentos próximos, dispensa o toast
-      toast.dismiss('upcoming-due-alert');
+      dismissToast('upcoming-due-alert');
     }
   }, [overdueLoans.length, upcomingDueLoans.length]);
 

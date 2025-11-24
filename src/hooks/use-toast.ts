@@ -45,4 +45,7 @@ function useToast() {
   }
 }
 
-export { useToast, toast }
+// Exportando a função dismiss diretamente
+const dismissToast = sonnerToast.dismiss;
+
+export { useToast, toast, dismissToast }
