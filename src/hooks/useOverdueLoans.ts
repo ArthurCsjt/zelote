@@ -87,9 +87,11 @@ export function useOverdueLoans() {
       const title = `⚠️ ${overdueLoans.length} Empréstimo${isPlural ? 's' : ''} em Atraso`;
       const description = `Há ${overdueLoans.length} empréstimo${isPlural ? 's' : ''} que ${isPlural ? 'passaram' : 'passou'} do prazo de devolução.`;
       
-      // Usando um ID fixo para garantir que apenas um toast de atraso esteja visível
-      toast.error(title, {
+      // CORREÇÃO: Usar a função toast com variant: 'destructive'
+      toast({
+        title: title,
         description: description,
+        variant: 'destructive',
         id: 'overdue-alert', 
         duration: 1000000, // Manter visível
       });
@@ -104,9 +106,11 @@ export function useOverdueLoans() {
       const title = `📅 ${upcomingDueLoans.length} Empréstimo${isPlural ? 's' : ''} Vencendo`;
       const description = `Há empréstimo${isPlural ? 's' : ''} com prazo próximo ao vencimento.`;
       
-      // Usando um ID fixo para garantir que apenas um toast de vencimento esteja visível
-      toast.info(title, {
+      // CORREÇÃO: Usar a função toast com variant: 'info'
+      toast({
+        title: title,
         description: description,
+        variant: 'info',
         id: 'upcoming-due-alert',
         duration: 1000000, // Manter visível
       });
