@@ -169,5 +169,10 @@ export default {
       }
     },
   },
+  // Adicionando classes dinâmicas ao safelist
+  safelist: [
+    'bg-primary/20',
+    'bg-violet-500/20',
+  ],
   plugins: [require("tailwindcss-animate")],
 } satisfies Config;

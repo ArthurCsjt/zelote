@@ -3,7 +3,8 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { GlassCard } from "@/components/ui/GlassCard";
 import { toast } from "@/hooks/use-toast";
 import { Computer, Lock, Mail, ArrowLeft, KeySquare, LockKeyhole, UserPlus, Eye, EyeOff, AlertCircle, User, LogIn, RotateCcw } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -15,15 +16,15 @@ type AuthMode = 'login' | 'register' | 'forgot_password' | 'update_password';
 const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [currentMode, setCurrentMode] = useState<AuthMode>('login');
-  
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false); 
+  const [showPassword, setShowPassword] = useState(false);
 
   const navigate = useNavigate();
   const location = useLocation();
-  const { login, register, resetPassword, verifyEmail } = useAuth(); 
+  const { login, register, resetPassword, verifyEmail } = useAuth();
 
   // Efeito para verificar se o usuário está no fluxo de redefinição/convite
   useEffect(() => {
@@ -51,7 +52,7 @@ const Login = () => {
   // --- Validação de E-mail em Tempo Real ---
   const isEmailValid = email.length > 0 && verifyEmail(email);
   const emailError = email.length > 0 && !isEmailValid ? "O email deve pertencer ao domínio institucional (@colegiosaojudas.com.br)." : null;
-  
+
   // --- Handlers de Submissão ---
 
   const handleLoginSubmit = async (e: React.FormEvent) => {
@@ -141,7 +142,7 @@ const Login = () => {
       if (error) throw error;
 
       toast({ title: "Sucesso!", description: "Sua senha foi definida. Você está logado e será redirecionado." });
-      
+
       navigate("/", { replace: true });
     } catch (error: any) {
       toast({ title: "Erro ao definir senha", description: error.message || "Não foi possível atualizar a senha. Tente novamente.", variant: "destructive" });
@@ -149,7 +150,7 @@ const Login = () => {
       setIsLoading(false);
     }
   };
-  
+
   // Função para limpar campos ao mudar de modo
   const changeMode = (mode: AuthMode) => {
     setEmail('');
@@ -160,15 +161,17 @@ const Login = () => {
   };
 
   // --- Renderização Condicional ---
-  
+
   // NOVO RENDER HEADER MINIMALISTA
   const renderMinimalHeader = (title: string, description: string, Icon: React.ElementType) => (
-    <CardHeader className="space-y-1 text-center pb-6 pt-8">
-      <div className="flex justify-center mb-2">
-        <Icon className="h-8 w-8 text-primary" />
+    <CardHeader className="space-y-2 text-center pb-6 pt-8">
+      <div className="flex justify-center mb-4">
+        <div className="p-3 rounded-2xl bg-primary/10 text-primary ring-1 ring-primary/20 shadow-lg shadow-primary/10">
+          <Icon className="h-8 w-8" />
+        </div>
       </div>
-      <CardTitle className="text-3xl font-extrabold text-foreground">{title}</CardTitle>
-      {description && <CardDescription className="text-sm text-muted-foreground">{description}</CardDescription>}
+      <CardTitle className="text-3xl font-bold tracking-tight text-foreground">{title}</CardTitle>
+      {description && <CardDescription className="text-base text-muted-foreground">{description}</CardDescription>}
     </CardHeader>
   );
 
@@ -176,34 +179,34 @@ const Login = () => {
     switch (currentMode) {
       case 'update_password':
         return (
-          <form onSubmit={handleUpdatePasswordSubmit}>
+          <form onSubmit={handleUpdatePasswordSubmit} className="animate-in fade-in slide-in-from-bottom-4 duration-500">
             {renderMinimalHeader(
               "Definir Nova Senha",
               "Crie uma senha segura para acessar o sistema.",
               LockKeyhole
             )}
-            <CardContent className="space-y-4 pt-6">
+            <CardContent className="space-y-4 pt-2">
               <div className="space-y-2">
-                <Label htmlFor="new-password" className="text-foreground flex items-center gap-1.5"><LockKeyhole className="h-4 w-4" />Nova Senha</Label>
+                <Label htmlFor="new-password">Nova Senha</Label>
                 <div className="relative">
-                  <Input id="new-password" type={showPassword ? "text" : "password"} placeholder="Mínimo 6 caracteres" value={password} onChange={e => setPassword(e.target.value)} className="bg-input-bg border-input pr-10" disabled={isLoading} required />
+                  <Input id="new-password" type={showPassword ? "text" : "password"} placeholder="Mínimo 6 caracteres" value={password} onChange={e => setPassword(e.target.value)} className="bg-white/50 dark:bg-zinc-900/50 pr-10" disabled={isLoading} required />
                   <Button type="button" variant="ghost" size="sm" className="absolute right-0 top-0 h-full px-3 hover:bg-transparent" onClick={() => setShowPassword(prev => !prev)}>
                     {showPassword ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
                   </Button>
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="confirm-password" className="text-foreground flex items-center gap-1.5"><LockKeyhole className="h-4 w-4" />Confirmar Senha</Label>
+                <Label htmlFor="confirm-password">Confirmar Senha</Label>
                 <div className="relative">
-                  <Input id="confirm-password" type={showPassword ? "text" : "password"} placeholder="Confirme sua nova senha" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className="bg-input-bg border-input pr-10" disabled={isLoading} required />
+                  <Input id="confirm-password" type={showPassword ? "text" : "password"} placeholder="Confirme sua nova senha" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className="bg-white/50 dark:bg-zinc-900/50 pr-10" disabled={isLoading} required />
                   <Button type="button" variant="ghost" size="sm" className="absolute right-0 top-0 h-full px-3 hover:bg-transparent" onClick={() => setShowPassword(prev => !prev)}>
                     {showPassword ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
                   </Button>
                 </div>
               </div>
             </CardContent>
-            <CardFooter className="pb-6">
-              <Button type="submit" className="w-full" disabled={isLoading}>
+            <CardFooter className="pb-8">
+              <Button type="submit" className="w-full h-11 text-base shadow-lg shadow-primary/20" disabled={isLoading}>
                 {isLoading ? "Salvando..." : "Definir Senha e Entrar"}
               </Button>
             </CardFooter>
@@ -212,34 +215,34 @@ const Login = () => {
 
       case 'forgot_password':
         return (
-          <form onSubmit={handleRecoverySubmit}>
+          <form onSubmit={handleRecoverySubmit} className="animate-in fade-in slide-in-from-bottom-4 duration-500">
             {renderMinimalHeader(
               "Recuperar Senha",
-              "Digite seu e-mail institucional para receber o link de redefinição.",
+              "Digite seu e-mail institucional para receber o link.",
               RotateCcw
             )}
-            <CardContent className="space-y-4 pt-6">
+            <CardContent className="space-y-4 pt-2">
               <div className="space-y-2">
-                <Label htmlFor="recovery-email" className="text-foreground flex items-center gap-1.5"><Mail className="h-4 w-4" />Email Institucional</Label>
-                <Input 
-                  id="recovery-email" 
-                  type="email" 
-                  placeholder="seu.email@colegiosaojudas.com.br" 
-                  value={email} 
-                  onChange={e => setEmail(e.target.value)} 
-                  className={cn("bg-input-bg border-input", emailError && "border-destructive")} 
-                  disabled={isLoading} 
+                <Label htmlFor="recovery-email">Email Institucional</Label>
+                <Input
+                  id="recovery-email"
+                  type="email"
+                  placeholder="seu.email@colegiosaojudas.com.br"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  className={cn("bg-white/50 dark:bg-zinc-900/50", emailError && "border-destructive focus-visible:ring-destructive")}
+                  disabled={isLoading}
                   required
                 />
                 {emailError && <p className="text-xs text-destructive flex items-center gap-1 mt-1"><AlertCircle className="h-3 w-3" />{emailError}</p>}
               </div>
             </CardContent>
-            <CardFooter className="flex flex-col space-y-4 pb-6">
-              <Button type="submit" className="w-full" disabled={isLoading || !isEmailValid}>
+            <CardFooter className="flex flex-col space-y-4 pb-8">
+              <Button type="submit" className="w-full h-11 text-base shadow-lg shadow-primary/20" disabled={isLoading || !isEmailValid}>
                 {isLoading ? "Enviando..." : "Enviar Link de Redefinição"}
               </Button>
-              <Button type="button" variant="link" className="text-sm text-muted-foreground p-0 h-auto" onClick={() => changeMode('login')} disabled={isLoading}>
-                <ArrowLeft className="h-3.5 w-3.5 mr-1" />
+              <Button type="button" variant="link" className="text-sm text-muted-foreground hover:text-primary transition-colors" onClick={() => changeMode('login')} disabled={isLoading}>
+                <ArrowLeft className="h-4 w-4 mr-2" />
                 Voltar ao login
               </Button>
             </CardFooter>
@@ -248,52 +251,52 @@ const Login = () => {
 
       case 'register':
         return (
-          <form onSubmit={handleRegisterSubmit}>
+          <form onSubmit={handleRegisterSubmit} className="animate-in fade-in slide-in-from-bottom-4 duration-500">
             {renderMinimalHeader(
               "Novo Cadastro",
               "Crie sua conta usando seu email institucional.",
               UserPlus
             )}
-            <CardContent className="space-y-4 pt-6">
+            <CardContent className="space-y-4 pt-2">
               <div className="space-y-2">
-                <Label htmlFor="register-email" className="text-foreground flex items-center gap-1.5"><Mail className="h-4 w-4" />Email Institucional</Label>
-                <Input 
-                  id="register-email" 
-                  type="email" 
-                  placeholder="seu.email@colegiosaojudas.com.br" 
-                  value={email} 
-                  onChange={e => setEmail(e.target.value)} 
-                  className={cn("bg-input-bg border-input", emailError && "border-destructive")} 
-                  disabled={isLoading} 
+                <Label htmlFor="register-email">Email Institucional</Label>
+                <Input
+                  id="register-email"
+                  type="email"
+                  placeholder="seu.email@colegiosaojudas.com.br"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  className={cn("bg-white/50 dark:bg-zinc-900/50", emailError && "border-destructive focus-visible:ring-destructive")}
+                  disabled={isLoading}
                   required
                 />
                 {emailError && <p className="text-xs text-destructive flex items-center gap-1 mt-1"><AlertCircle className="h-3 w-3" />{emailError}</p>}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="register-password" className="text-foreground flex items-center gap-1.5"><Lock className="h-4 w-4" />Senha</Label>
+                <Label htmlFor="register-password">Senha</Label>
                 <div className="relative">
-                  <Input id="register-password" type={showPassword ? "text" : "password"} placeholder="Mínimo 6 caracteres" value={password} onChange={e => setPassword(e.target.value)} className="bg-input-bg border-input pr-10" disabled={isLoading} required />
+                  <Input id="register-password" type={showPassword ? "text" : "password"} placeholder="Mínimo 6 caracteres" value={password} onChange={e => setPassword(e.target.value)} className="bg-white/50 dark:bg-zinc-900/50 pr-10" disabled={isLoading} required />
                   <Button type="button" variant="ghost" size="sm" className="absolute right-0 top-0 h-full px-3 hover:bg-transparent" onClick={() => setShowPassword(prev => !prev)}>
                     {showPassword ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
                   </Button>
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="register-confirm-password" className="text-foreground flex items-center gap-1.5"><Lock className="h-4 w-4" />Confirmar Senha</Label>
+                <Label htmlFor="register-confirm-password">Confirmar Senha</Label>
                 <div className="relative">
-                  <Input id="register-confirm-password" type={showPassword ? "text" : "password"} placeholder="Confirme sua senha" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className="bg-input-bg border-input pr-10" disabled={isLoading} required />
+                  <Input id="register-confirm-password" type={showPassword ? "text" : "password"} placeholder="Confirme sua senha" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className="bg-white/50 dark:bg-zinc-900/50 pr-10" disabled={isLoading} required />
                   <Button type="button" variant="ghost" size="sm" className="absolute right-0 top-0 h-full px-3 hover:bg-transparent" onClick={() => setShowPassword(prev => !prev)}>
                     {showPassword ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
                   </Button>
                 </div>
               </div>
             </CardContent>
-            <CardFooter className="flex flex-col space-y-4 pb-6">
-              <Button type="submit" className="w-full" disabled={isLoading || !isEmailValid || password.length < 6 || password !== confirmPassword}>
+            <CardFooter className="flex flex-col space-y-4 pb-8">
+              <Button type="submit" className="w-full h-11 text-base shadow-lg shadow-primary/20" disabled={isLoading || !isEmailValid || password.length < 6 || password !== confirmPassword}>
                 {isLoading ? "Registrando..." : <><UserPlus className="h-4 w-4 mr-2" />Cadastrar</>}
               </Button>
-              <Button type="button" variant="link" className="text-sm text-muted-foreground p-0 h-auto" onClick={() => changeMode('login')} disabled={isLoading}>
-                <ArrowLeft className="h-3.5 w-3.5 mr-1" />
+              <Button type="button" variant="link" className="text-sm text-muted-foreground hover:text-primary transition-colors" onClick={() => changeMode('login')} disabled={isLoading}>
+                <ArrowLeft className="h-4 w-4 mr-2" />
                 Voltar ao login
               </Button>
             </CardFooter>
@@ -303,49 +306,52 @@ const Login = () => {
       case 'login':
       default:
         return (
-          <form onSubmit={handleLoginSubmit}>
+          <form onSubmit={handleLoginSubmit} className="animate-in fade-in slide-in-from-bottom-4 duration-500">
             {renderMinimalHeader(
               "Zelote",
-              "", // Removendo a descrição aqui
+              "Entre com suas credenciais para continuar.",
               Computer
             )}
-            <CardContent className="space-y-4 pt-6">
+            <CardContent className="space-y-4 pt-2">
               <div className="space-y-2">
-                <Label htmlFor="login-email" className="text-foreground flex items-center gap-1.5"><Mail className="h-4 w-4" />Email Institucional</Label>
-                <Input 
-                  id="login-email" 
-                  type="email" 
-                  placeholder="seu.email@colegiosaojudas.com.br" 
-                  value={email} 
-                  onChange={e => setEmail(e.target.value)} 
-                  className={cn("bg-input-bg border-input", emailError && "border-destructive")} 
-                  disabled={isLoading} 
+                <Label htmlFor="login-email">Email Institucional</Label>
+                <Input
+                  id="login-email"
+                  type="email"
+                  placeholder="seu.email@colegiosaojudas.com.br"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  className={cn("bg-white/50 dark:bg-zinc-900/50", emailError && "border-destructive focus-visible:ring-destructive")}
+                  disabled={isLoading}
                   required
                 />
                 {emailError && <p className="text-xs text-destructive flex items-center gap-1 mt-1"><AlertCircle className="h-3 w-3" />{emailError}</p>}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="login-password" className="text-foreground flex items-center gap-1.5"><Lock className="h-4 w-4" />Senha</Label>
+                <div className="flex justify-between items-center">
+                  <Label htmlFor="login-password">Senha</Label>
+                  <Button type="button" variant="link" className="text-xs text-muted-foreground hover:text-primary p-0 h-auto font-normal" onClick={() => changeMode('forgot_password')} disabled={isLoading}>
+                    Esqueceu a senha?
+                  </Button>
+                </div>
                 <div className="relative">
-                  <Input id="login-password" type={showPassword ? "text" : "password"} placeholder="Digite sua senha" value={password} onChange={e => setPassword(e.target.value)} className="bg-input-bg border-input pr-10" disabled={isLoading} required />
+                  <Input id="login-password" type={showPassword ? "text" : "password"} placeholder="Digite sua senha" value={password} onChange={e => setPassword(e.target.value)} className="bg-white/50 dark:bg-zinc-900/50 pr-10" disabled={isLoading} required />
                   <Button type="button" variant="ghost" size="sm" className="absolute right-0 top-0 h-full px-3 hover:bg-transparent" onClick={() => setShowPassword(prev => !prev)}>
                     {showPassword ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
                   </Button>
                 </div>
               </div>
             </CardContent>
-            <CardFooter className="flex flex-col space-y-4 pb-6">
-              <Button type="submit" className="w-full" disabled={isLoading || !isEmailValid}>
+            <CardFooter className="flex flex-col space-y-4 pb-8">
+              <Button type="submit" className="w-full h-11 text-base shadow-lg shadow-primary/20" disabled={isLoading || !isEmailValid}>
                 {isLoading ? "Entrando..." : <><LogIn className="h-4 w-4 mr-2" />Entrar</>}
               </Button>
-              <Button type="button" variant="link" className="text-sm text-muted-foreground p-0 h-auto" onClick={() => changeMode('forgot_password')} disabled={isLoading}>
-                <KeySquare className="h-3.5 w-3.5 mr-1" />
-                Esqueci minha senha
-              </Button>
-              <Button type="button" variant="link" className="text-sm text-primary p-0 h-auto" onClick={() => changeMode('register')} disabled={isLoading}>
-                <User className="h-3.5 w-3.5 mr-1" />
-                Cadastrar-se
-              </Button>
+              <div className="text-center text-sm text-muted-foreground">
+                Não tem uma conta?{" "}
+                <Button type="button" variant="link" className="text-primary hover:text-primary/80 p-0 h-auto font-semibold" onClick={() => changeMode('register')} disabled={isLoading}>
+                  Cadastre-se
+                </Button>
+              </div>
             </CardFooter>
           </form>
         );
@@ -353,10 +359,17 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background-secondary p-4 transition-colors duration-500">
-      <Card className="w-full max-w-md shadow-xl glass-card border-0 overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-background">
+      {/* Animated Background */}
+      <div className="absolute inset-0 animated-menu-bg opacity-30 pointer-events-none" />
+
+      {/* Gradient Orbs */}
+      <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-primary/20 rounded-full blur-[120px] animate-pulse" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-violet-500/20 rounded-full blur-[120px] animate-pulse delay-1000" />
+
+      <GlassCard className="w-full max-w-md border-white/20 dark:border-white/10 shadow-2xl backdrop-blur-2xl relative z-10">
         {renderForm()}
-      </Card>
+      </GlassCard>
     </div>
   );
 };
