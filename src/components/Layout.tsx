@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, LogOut, ArrowLeft, Bell, Settings, Sun, Moon, Loader2, Computer, X } from 'lucide-react';
+import { User, LogOut, ArrowLeft, Bell, Settings, Sun, Moon, Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/hooks/use-theme';
 import { useNavigate } from 'react-router-dom';
@@ -10,43 +10,31 @@ import { ActivityFeed } from './ActivityFeed';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 
+
 interface LayoutProps {
   children: React.ReactNode;
   title: string;
   subtitle?: string;
   showBackButton?: boolean;
-  onBack?: () => void; // Função de callback para o botão de voltar
-  // NOVO: Propriedade para classe de fundo
-  backgroundClass?: string; 
+  onBack?: () => void;
+  backgroundClass?: string;
 }
+
 const Layout: React.FC<LayoutProps> = ({
   children,
   title,
   subtitle,
   showBackButton,
   onBack,
-  backgroundClass = 'bg-background' // Padrão para bg-background
+  backgroundClass = 'bg-background'
 }) => {
-  const {
-    user,
-    logout
-  } = useAuth();
-  const {
-    theme,
-    setTheme
-  } = useTheme();
+  const { user, logout } = useAuth();
+  const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
-  const {
-    isAdmin,
-    loading: roleLoading,
-    role
-  } = useProfileRole();
-  // Removendo showInstallBanner e sua lógica
-  // const [showInstallBanner, setShowInstallBanner] = React.useState(false);
+  const { role, loading: roleLoading } = useProfileRole();
   const [isStandalone, setIsStandalone] = React.useState(false);
-  
+
   React.useEffect(() => {
-    // Lógica PWA (mantida)
     const checkStandalone = () => {
       const isStandaloneMode = window.matchMedia('(display-mode: standalone)').matches;
       const isInWebAppiOS = (window.navigator as any).standalone === true;
@@ -59,20 +47,7 @@ const Layout: React.FC<LayoutProps> = ({
       }
       return isInstalled;
     };
-    const isInstalled = checkStandalone();
-
-    // REMOVIDA A LÓGICA DO BANNER DE INSTALAÇÃO
-    /*
-    const dismissedTime = localStorage.getItem('pwa-banner-dismissed');
-    const shouldShowBanner = !isInstalled && (!dismissedTime || Date.now() - parseInt(dismissedTime) > 24 * 60 * 60 * 1000);
-
-    if (shouldShowBanner) {
-      const timer = setTimeout(() => {
-        setShowInstallBanner(true);
-      }, 2000);
-      return () => clearTimeout(timer);
-    }
-    */
+    checkStandalone();
 
     const displayModeQuery = window.matchMedia('(display-mode: standalone)');
     const handleDisplayModeChange = (e: MediaQueryListEvent) => {
@@ -86,21 +61,12 @@ const Layout: React.FC<LayoutProps> = ({
     displayModeQuery.addEventListener('change', handleDisplayModeChange);
     return () => displayModeQuery.removeEventListener('change', handleDisplayModeChange);
   }, []);
-  
-  // REMOVIDA A FUNÇÃO DE DISMISS
-  /*
-  const handleInstallBannerDismiss = () => {
-    setShowInstallBanner(false);
-    localStorage.setItem('pwa-banner-dismissed', Date.now().toString());
-  };
-  */
-  
+
   const handleLogout = async () => {
     await logout();
     navigate('/login', { replace: true });
   };
-  
-  // NOVO: Função para lidar com o clique no botão de voltar
+
   const handleBackClick = () => {
     if (onBack) {
       onBack();
@@ -111,110 +77,111 @@ const Layout: React.FC<LayoutProps> = ({
 
   return (
     <div className={cn(`min-h-screen text-foreground ${isStandalone ? 'safe-area-top safe-area-bottom safe-area-left safe-area-right' : ''}`, backgroundClass)}>
+
       {/* Status Bar Overlay for iOS in standalone mode */}
       {isStandalone && <div className="status-bar-overlay" />}
 
       {/* Header */}
-      <header className={`bg-card/95 backdrop-blur-xl shadow-sm border-b border-border fixed top-0 left-0 right-0 z-50 ${isStandalone ? 'safe-area-top' : ''}`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isStandalone ? 'safe-area-top' : ''}`}>
+        {/* Glassmorphism Header Background */}
+        <div className="absolute inset-0 bg-white/70 dark:bg-zinc-950/70 backdrop-blur-xl border-b border-white/20 dark:border-zinc-800/50 shadow-sm" />
+
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center gap-4">
               {showBackButton && (
-                <button onClick={handleBackClick} className="p-2 rounded-full hover:bg-accent transition-colors duration-200 touch-manipulation text-inherit">
-                  <ArrowLeft className="w-5 h-5 text-muted-foreground rounded-none bg-inherit" />
+                <button
+                  onClick={handleBackClick}
+                  className="p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors duration-200 touch-manipulation text-muted-foreground hover:text-foreground"
+                >
+                  <ArrowLeft className="w-5 h-5" />
                 </button>
               )}
               <div>
-                <h1 className="bg-gradient-to-r from-primary to-menu-violet bg-clip-text text-transparent text-2xl font-bold text-left">
+                <h1 className="bg-gradient-to-r from-primary to-blue-500 bg-clip-text text-transparent text-2xl font-bold text-left tracking-tight">
                   Zelote
                 </h1>
                 <div className="flex items-center gap-2">
-                  <p className="text-sm text-muted-foreground hidden sm:block">Controle de empréstimos e devoluções</p>
-                  <span className="text-xs text-muted-foreground/60 hidden sm:block">v1.0.0</span>
+                  <p className="text-sm text-muted-foreground hidden sm:block font-medium">Controle de empréstimos</p>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-semibold hidden sm:block">v1.0.0</span>
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center space-x-4">
-              
-              {/* Botão de Notificações (Sino) */}
+            <div className="flex items-center space-x-3">
+
+              {/* Botão de Notificações */}
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button variant="ghost" size="icon" className="relative h-9 w-9">
+                  <Button variant="ghost" size="icon" className="relative h-9 w-9 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800">
                     <Bell className="h-5 w-5 text-muted-foreground" />
-                    {/* Exemplo de badge de notificação (pode ser ligado a um estado real) */}
-                    <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-error" />
+                    <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-primary ring-2 ring-background" />
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="p-0 w-auto bg-card border-border" align="end">
+                <PopoverContent className="p-0 w-80 sm:w-96 bg-card/95 backdrop-blur-xl border-border shadow-xl rounded-2xl overflow-hidden" align="end">
                   <ActivityFeed />
                 </PopoverContent>
               </Popover>
-              
+
               {/* Botão de Alternância de Tema */}
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                className="h-9 w-9"
+                className="h-9 w-9 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
               >
                 {theme === 'dark' ? (
-                  <Sun className="h-5 w-5 text-warning" />
+                  <Sun className="h-5 w-5 text-amber-400" />
                 ) : (
-                  <Moon className="h-5 w-5 text-muted-foreground" />
+                  <Moon className="h-5 w-5 text-zinc-600" />
                 )}
               </Button>
-              
-              {/* Dropdown de Perfil (Email Clicável) */}
+
+              {/* Dropdown de Perfil */}
               {user && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="ghost"
                       className={cn(
-                        "h-9 px-3 rounded-full border-border bg-card hover:bg-card-hover flex items-center gap-2 transition-all duration-300",
-                        "shadow-sm hover:shadow-md",
+                        "h-9 pl-2 pr-3 rounded-full border border-border/50 bg-white/50 dark:bg-zinc-900/50 hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center gap-2 transition-all duration-300",
+                        "hover:shadow-md hover:border-primary/20",
                       )}
                     >
-                      {roleLoading ? (
-                        <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
-                      ) : (
-                        <User className="w-4 h-4 text-muted-foreground" />
-                      )}
-                      <span className="text-sm font-medium hidden sm:inline text-foreground">
-                        {user.email?.substring(0, user.email.indexOf('@'))}
-                      </span>
-                      <span className="text-sm font-medium sm:hidden text-foreground">
-                        Perfil
+                      <div className="h-6 w-6 rounded-full bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center text-white text-xs font-bold">
+                        {roleLoading ? (
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                        ) : (
+                          user.email?.charAt(0).toUpperCase()
+                        )}
+                      </div>
+                      <span className="text-sm font-medium hidden sm:inline text-foreground/90">
+                        {user.email?.split('@')[0]}
                       </span>
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-64 bg-card border-border">
-                    <DropdownMenuLabel className="font-bold text-base truncate text-foreground">
-                      {user.email}
-                    </DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    
-                    {/* Item Configurações (Apenas para Admin) */}
-                    {/* Usando a verificação explícita do role */}
+                  <DropdownMenuContent align="end" className="w-60 bg-card/95 backdrop-blur-xl border-border shadow-xl rounded-xl p-1">
+                    <div className="px-2 py-1.5">
+                      <p className="text-sm font-semibold text-foreground truncate">{user.email}</p>
+                      <p className="text-xs text-muted-foreground capitalize">{role || 'Usuário'}</p>
+                    </div>
+                    <DropdownMenuSeparator className="bg-border/50" />
+
                     {role && (role === 'admin' || role === 'super_admin') && (
-                      <DropdownMenuItem 
+                      <DropdownMenuItem
                         onClick={() => navigate('/settings')}
-                        className="cursor-pointer flex items-center gap-2 text-foreground hover:bg-accent"
+                        className="cursor-pointer rounded-lg focus:bg-zinc-100 dark:focus:bg-zinc-800"
                       >
-                        <Settings className="h-4 w-4 text-primary" />
+                        <Settings className="h-4 w-4 mr-2 text-primary" />
                         Configurações
                       </DropdownMenuItem>
                     )}
-                    
-                    {/* Item Sair (Para todos) */}
-                    <DropdownMenuItem 
+
+                    <DropdownMenuItem
                       onClick={handleLogout}
-                      className={cn(
-                        "cursor-pointer flex items-center gap-2 text-error-foreground focus:text-error-foreground focus:bg-error-bg hover:bg-error-bg"
-                      )}
+                      className="cursor-pointer rounded-lg text-red-600 focus:text-red-600 focus:bg-red-50 dark:focus:bg-red-950/30"
                     >
-                      <LogOut className="h-4 w-4 text-error" />
+                      <LogOut className="h-4 w-4 mr-2" />
                       Sair
                     </DropdownMenuItem>
                   </DropdownMenuContent>
@@ -226,32 +193,16 @@ const Layout: React.FC<LayoutProps> = ({
       </header>
 
       {/* Main Content */}
-      <main className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 no-bounce pt-24 md:pt-28 bg-transparent ${isStandalone ? 'ios-bottom-safe' : ''}`}>
-        {children}
+      <main className={`relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 no-bounce pt-24 md:pt-28 ${isStandalone ? 'ios-bottom-safe' : ''}`}>
+        {/* Background Gradient Spot */}
+        <div className="fixed top-20 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-primary/5 rounded-full blur-[100px] -z-10 pointer-events-none" />
+
+        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+          {children}
+        </div>
       </main>
 
-      {/* Bottom safe area for standalone mode */}
       {isStandalone && <div className="safe-area-bottom h-16 md:h-24" />}
-      
-      {/* PWA Install Banner (REMOVIDO) */}
-      {/* {showInstallBanner && (
-        <div className="fixed bottom-0 left-0 right-0 z-50 p-4 bg-background-secondary border-t border-border shadow-lg flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Computer className="h-6 w-6 text-primary" />
-            <p className="text-sm text-foreground">
-              Instale o Zelote como um aplicativo para acesso rápido e offline.
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" onClick={handleInstallBannerDismiss} className="text-muted-foreground">
-              <X className="h-4 w-4" />
-            </Button>
-            <Button onClick={() => { // Logic to prompt install } size="sm">
-              Instalar
-            </Button>
-          </div>
-        </div>
-      )} */}
     </div>
   );
 };

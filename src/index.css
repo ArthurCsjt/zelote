@@ -1,78 +1,74 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
  
 @layer base {
   :root {
-    /* ===== BACKGROUNDS ===== */
+    /* ===== BASE COLORS (ZINC) ===== */
     --background: 0 0% 100%;           /* Branco puro */
-    --background-secondary: 220 13% 97%; /* Cinza muito claro */
-    --foreground: 222.2 84% 4.9%;      /* Texto preto suave */
+    --foreground: 240 10% 3.9%;        /* Texto preto suave */
+    --background-secondary: 240 4.8% 95.9%; /* Cinza muito claro (Zinc 100) */
     
     /* ===== CARDS & SURFACES ===== */
     --card: 0 0% 100%;                 /* Fundo cards light */
-    --card-foreground: 222.2 84% 4.9%; /* Texto cards light */
-    --card-hover: 220 13% 95%;         /* Hover sutil light */
+    --card-foreground: 240 10% 3.9%;   /* Texto cards light */
+    --card-hover: 240 4.8% 95.9%;      /* Hover sutil light (Zinc 100) */
     
-    /* ===== MODAIS & OVERLAYS ===== */
-    --modal: 0 0% 100%;                /* Fundo modal light */
-    --modal-border: 214 32% 91%;       /* Borda modal light */
-    --overlay: 222.2 84% 4.9% / 0.8;   /* Overlay escuro */
+    /* ===== MODAIS & OVERLAYS (Ajustado para Zinc) ===== */
+    --modal: 0 0% 100%;
+    --modal-border: 240 5.9% 90%;      /* Zinc 200 */
+    --overlay: 240 10% 3.9% / 0.8;     /* Foreground com opacidade */
     
-    /* ===== GLASSMORPHISM ===== */
-    --glass-bg: 0 0% 100% / 0.85;      /* 85% opaco light */
-    --glass-border: 214 32% 91%;       /* Borda suave light */
-    --glass-shadow: 220 13% 70% / 0.1; /* Sombra light */
+    /* ===== INPUTS & BORDERS (Ajustado para Zinc) ===== */
+    --border: 240 5.9% 90%;            /* Zinc 200 */
+    --border-strong: 240 5.9% 80%;     /* Zinc 300 */
+    --ring: 217 91% 60%;               /* Primary Blue */
+    --input: 240 5.9% 90%;             /* Zinc 200 */
+    --input-bg: 0 0% 100%;             /* Branco */
+    --input-foreground: 240 10% 3.9%;  /* Foreground */
+    --input-placeholder: 240 3.8% 46.1% / 0.5; /* Muted Foreground */
     
-    /* ===== INPUTS ===== */
-    --input: 214.3 31.8% 91.4%;        /* Borda input light */
-    --input-bg: 0 0% 100%;             /* Fundo input light */
-    --input-foreground: 222.2 84% 4.9%;/* Texto input light */
-    --input-placeholder: 215.4 16.3% 46.9% / 0.5; /* Placeholder light */
-    
-    /* ===== BUTTONS ===== */
-    --primary: 221.2 83.2% 53.3%;      /* Azul primário */
+    /* ===== PRIMARY & SECONDARY (Ajustado para Blue/Zinc) ===== */
+    --primary: 217 91% 60%;            /* Azul primário */
     --primary-foreground: 210 40% 98%; /* Texto no primário */
-    --primary-hover: 221.2 83.2% 45%;  /* Hover primário */
+    --primary-hover: 217 91% 50%;      /* Hover primário */
     
-    /* ===== STATES ===== */
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;            /* Fundo muted light */
-    --muted-foreground: 215.4 16.3% 46.9%; /* Texto muted light */
-    --accent: 210 40% 96.1%;           /* Accent light */
-    --accent-foreground: 222.2 47.4% 11.2%; /* Texto accent light */
+    --secondary: 240 4.8% 95.9%;       /* Zinc 100 */
+    --secondary-foreground: 240 5.9% 10%; /* Zinc 900 */
     
-    /* ===== SEMANTIC COLORS ===== */
-    --success: 142 71% 45%;            /* Verde */
+    --muted: 240 4.8% 95.9%;           /* Zinc 100 */
+    --muted-foreground: 240 3.8% 46.1%;/* Zinc 500 */
+    --accent: 240 4.8% 95.9%;          /* Zinc 100 */
+    --accent-foreground: 240 5.9% 10%; /* Zinc 900 */
+    
+    /* ===== SEMANTIC COLORS (Mantendo a funcionalidade BG/FG) ===== */
+    --success: 142.1 76.2% 36.3%;      /* Verde */
     --success-foreground: 144 61% 20%; /* Texto verde escuro */
     --success-bg: 142 76% 95%;         /* Fundo verde claro */
     
     --warning: 38 92% 50%;             /* Laranja */
-    --warning-foreground: 26 90% 37%; /* Texto laranja escuro */
+    --warning-foreground: 26 90% 37%;  /* Texto laranja escuro */
     --warning-bg: 48 96% 95%;          /* Fundo laranja claro */
     
-    --error: 0 84% 60%;                /* Vermelho */
+    --error: 0 84.2% 60.2%;            /* Vermelho */
     --error-foreground: 0 90% 30%;     /* Texto vermelho escuro */
     --error-bg: 0 86% 97%;             /* Fundo vermelho claro */
     
-    --info: 199 89% 48%;               /* Azul info */
+    --info: 221.2 83.2% 53.3%;         /* Azul info */
     --info-foreground: 199 100% 20%;   /* Texto azul escuro */
     --info-bg: 199 95% 95%;            /* Fundo azul claro */
     
     /* ===== BORDERS & SHADOWS ===== */
-    --border: 214.3 31.8% 91.4%;       /* Borda padrão light */
-    --border-strong: 214 32% 75%;      /* Borda forte light */
-    --ring: 221.2 83.2% 53.3%;         /* Focus ring */
-    
-    --shadow-sm: 220 13% 70% / 0.05;   /* Sombra pequena */
-    --shadow-md: 220 13% 70% / 0.1;    /* Sombra média */
-    --shadow-lg: 220 13% 70% / 0.15;   /* Sombra grande */
+    --shadow-sm: 240 10% 3.9% / 0.05;
+    --shadow-md: 240 10% 3.9% / 0.1;
+    --shadow-lg: 240 10% 3.9% / 0.15;
     
     /* ===== RADIUS ===== */
-    --radius: 0.75rem;                 /* 12px padrão */
-    --radius-sm: 0.5rem;               /* 8px pequeno */
-    --radius-lg: 1rem;                 /* 16px grande */
+    --radius: 0.75rem;
+    --radius-sm: 0.5rem;
+    --radius-lg: 1rem;
 
     /* Menu Button Colors (PRESERVADO) */
     --menu-green: 142 76% 36%;
@@ -92,75 +88,64 @@
   }
 
   .dark {
-    /* ===== BACKGROUNDS ===== */
-    --background: 222.2 84% 4.9%;      /* Preto azulado */
-    --background-secondary: 217.2 32.6% 12%;/* Cinza escuro azulado */
-    --foreground: 210 40% 98%;         /* Texto branco suave */
+    /* ===== BASE COLORS (ZINC) ===== */
+    --background: 240 10% 3.9%;        /* Preto azulado (Zinc 950) */
+    --foreground: 0 0% 98%;            /* Texto branco suave */
+    --background-secondary: 240 3.7% 15.9%; /* Zinc 800 */
     
     /* ===== CARDS & SURFACES ===== */
-    --card: 217.2 32.6% 15%;           /* Cards dark elevados */
-    --card-foreground: 210 40% 98%;    /* Texto cards dark */
-    --card-hover: 217.2 32.6% 18%;     /* Hover dark */
+    --card: 240 10% 3.9%;              /* Zinc 950 */
+    --card-foreground: 0 0% 98%;       /* Foreground */
+    --card-hover: 240 3.7% 15.9%;      /* Zinc 800 */
     
-    /* ===== MODAIS & OVERLAYS ===== */
-    --modal: 217.2 32.6% 17%;          /* Modal dark MAIS CLARO */
-    --modal-border: 217.2 32.6% 25%;   /* Borda modal VISÍVEL */
-    --overlay: 222.2 84% 4.9% / 0.9;   /* Overlay mais escuro */
+    /* ===== MODAIS & OVERLAYS (Ajustado para Zinc) ===== */
+    --modal: 240 10% 3.9%;
+    --modal-border: 240 3.7% 25%;      /* Zinc 700 */
+    --overlay: 240 10% 3.9% / 0.9;     /* Foreground com opacidade */
     
-    /* ===== GLASSMORPHISM ===== */
-    --glass-bg: 217.2 32.6% 15% / 0.95; /* 95% opaco dark */
-    --glass-border: 217.2 32.6% 25%;   /* Borda visível dark */
-    --glass-shadow: 220 13% 0% / 0.3;  /* Sombra forte dark */
+    /* ===== INPUTS & BORDERS (Ajustado para Zinc) ===== */
+    --border: 240 3.7% 25%;            /* Zinc 700 */
+    --border-strong: 240 3.7% 35%;     /* Zinc 600 */
+    --ring: 217 91% 60%;               /* Primary Blue */
+    --input: 240 3.7% 25%;             /* Zinc 700 */
+    --input-bg: 240 10% 3.9%;          /* Background */
+    --input-foreground: 0 0% 98%;      /* Foreground */
+    --input-placeholder: 240 5% 64.9% / 0.5; /* Muted Foreground */
     
-    /* ===== INPUTS ===== */
-    --input: 217.2 32.6% 25%;          /* Borda input CLARA */
-    --input-bg: 217.2 32.6% 12%;       /* Fundo input dark */
-    --input-foreground: 210 40% 98%;   /* Texto BRANCO */
-    --input-placeholder: 215.4 16.3% 65% / 0.5; /* Placeholder VISÍVEL */
+    /* ===== PRIMARY & SECONDARY (Ajustado para Blue/Zinc) ===== */
+    --primary: 217 91% 60%;            /* Azul primário */
+    --primary-foreground: 222 47.4% 11.2%; /* Texto escuro no primário */
+    --primary-hover: 217 91% 65%;      /* Hover mais claro */
     
-    /* ===== BUTTONS ===== */
-    --primary: 217.2 91.2% 59.8%;      /* Azul mais claro no dark */
-    --primary-foreground: 222.2 47.4% 11.2%; /* Texto escuro no primário */
-    --primary-hover: 217.2 91.2% 65%;  /* Hover mais claro */
+    --secondary: 240 3.7% 15.9%;       /* Zinc 800 */
+    --secondary-foreground: 0 0% 98%;  /* Foreground */
     
-    /* ===== STATES ===== */
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;        /* Muted dark */
-    --muted-foreground: 215 20.2% 65.1%; /* Texto muted MAIS CLARO */
-    --accent: 217.2 32.6% 17.5%;       /* Accent dark */
-    --accent-foreground: 210 40% 98%;  /* Texto accent claro */
+    --muted: 240 3.7% 15.9%;           /* Zinc 800 */
+    --muted-foreground: 240 5% 64.9%;  /* Zinc 400 */
+    --accent: 240 3.7% 15.9%;          /* Zinc 800 */
+    --accent-foreground: 0 0% 98%;     /* Foreground */
     
-    /* ===== SEMANTIC COLORS (MAIS VIBRANTES NO DARK) */
-    --success: 142 76% 55%;            /* Verde mais claro */
-    --success-foreground: 144 61% 90%; /* Texto verde claro */
-    --success-bg: 142 76% 15%;         /* Fundo verde escuro */
+    /* ===== SEMANTIC COLORS (Mantendo a funcionalidade BG/FG) ===== */
+    --success: 142.1 70.6% 45.3%;
+    --success-foreground: 144 61% 90%;
+    --success-bg: 142 76% 15%;
     
-    --warning: 38 92% 60%;             /* Laranja mais claro */
-    --warning-foreground: 48 96% 85%; /* Texto laranja claro */
-    --warning-bg: 38 92% 15%;          /* Fundo laranja escuro */
+    --warning: 38 92% 60%;
+    --warning-foreground: 48 96% 85%;
+    --warning-bg: 38 92% 15%;
     
-    --error: 0 84% 65%;                /* Vermelho mais claro */
-    --error-foreground: 0 86% 90%;     /* Texto vermelho claro */
-    --error-bg: 0 84% 15%;             /* Fundo vermelho escuro */
+    --error: 0 84% 65%;
+    --error-foreground: 0 86% 90%;
+    --error-bg: 0 84% 15%;
     
-    --info: 199 89% 58%;               /* Azul mais claro */
-    --info-foreground: 199 95% 90%;    /* Texto azul claro */
-    --info-bg: 199 89% 15%;            /* Fundo azul escuro */
+    --info: 217.2 91.2% 59.8%;
+    --info-foreground: 199 95% 90%;
+    --info-bg: 199 89% 15%;
     
     /* ===== BORDERS & SHADOWS ===== */
-    --border: 217.2 32.6% 25%;         /* Borda VISÍVEL dark */
-    --border-strong: 217.2 32.6% 35%;  /* Borda forte dark */
-    --ring: 217.2 91.2% 59.8%;         /* Focus ring claro */
-    
-    --shadow-sm: 220 13% 0% / 0.2;     /* Sombras FORTES no dark */
-    --shadow-md: 220 13% 0% / 0.3;
-    --shadow-lg: 220 13% 0% / 0.5;
-
-    /* ===== RADIUS ===== */
-    --radius: 0.75rem;                 /* 12px padrão */
-    --radius-sm: 0.5rem;               /* 8px pequeno */
-    --radius-lg: 1rem;                 /* 16px grande */
+    --shadow-sm: 240 10% 0% / 0.2;
+    --shadow-md: 240 10% 0% / 0.3;
+    --shadow-lg: 240 10% 0% / 0.5;
 
     /* Menu Button Colors (PRESERVADO) */
     --menu-green: 142 76% 36%;
@@ -185,43 +170,72 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
-    font-family: -apple-system, BlinkMacSystemFont, "San Francisco", "Helvetica Neue", sans-serif;
-    
-    /* REMOVIDO: Gradiente. Voltando ao fundo padrão (bg-background) */
-    background: none;
-    background-attachment: fixed; 
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: 'Inter', sans-serif;
   }
 }
 
-/* Enhanced glass card effect - iPhone style */
+/* --- Glassmorphism Utilities --- */
 .glass-card {
-  /* Light Mode */
-  background: hsl(var(--glass-bg));
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid hsl(var(--glass-border) / 0.4); /* Usando a variável com opacidade */
-  box-shadow: 0 4px 30px 0 hsl(var(--glass-shadow)), 
-              0 1px 0 0 hsl(var(--glass-border) / 0.3) inset, /* Borda interna clara */
-              0 -1px 0 0 hsl(var(--glass-shadow) / 0.05) inset; /* Borda interna escura */
-  border-radius: var(--radius-lg); /* Usando a variável de radius */
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
+  @apply bg-white/70 dark:bg-zinc-950/70 backdrop-blur-xl border border-white/20 dark:border-zinc-800/50 shadow-xl;
+}
+
+.glass-panel {
+  @apply bg-white/50 dark:bg-zinc-950/50 backdrop-blur-md border border-white/10 dark:border-zinc-800/30;
+}
+
+/* --- Animation Utilities --- */
+.animate-in {
+  animation: fade-in 0.3s ease-out forwards;
+}
+
+.hover-lift {
+  @apply transition-transform duration-200 hover:-translate-y-1;
+}
+
+.hover-scale {
+  @apply transition-transform duration-200 hover:scale-[1.02];
+}
+
+/* --- Custom Scrollbar --- */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-zinc-300 dark:bg-zinc-700 rounded-full hover:bg-zinc-400 dark:hover:bg-zinc-600 transition-colors;
+}
+
+/* --- QR Scanner Fixes --- */
+#qr-code-reader {
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+  aspect-ratio: 1/1;
+  border-radius: var(--radius);
   overflow: hidden;
+  position: relative;
 }
 
-/* Dark Mode Glass Card Overrides */
-.dark .glass-card {
-  /* Fundo semi-transparente escuro que permite ver o fundo principal */
-  background: hsl(var(--glass-bg)); 
-  /* Aumentando a opacidade da borda para melhor definição */
-  border: 1px solid hsl(var(--glass-border) / 0.7); 
-  /* Sombra mais forte e escura */
-  box-shadow: 0 6px 40px 0 hsl(var(--glass-shadow)), 
-              0 1px 0 0 hsl(var(--glass-border) / 0.5) inset,
-              0 -1px 0 0 hsl(var(--glass-shadow) / 0.3) inset;
+#qr-code-reader video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
+/* PWA and Layout specific styles */
+.safe-area-top {
+  padding-top: env(safe-area-inset-top);
+}
+
+.ios-bottom-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
 
 /* ======================================================================== */
 /* ADIÇÃO: Classes de Delay para Animação Sequencial */
@@ -239,108 +253,15 @@
 .animation-delay-1000 { animation-delay: 1000ms; }
 .animation-delay-1100 { animation-delay: 1100ms; }
 
-
-/* PWA and Layout specific styles */
-.safe-area-top {
-  padding-top: env(safe-area-inset-top);
-}
-
-/* ... (resto do seu CSS) ... */
-
-.stat-card-gradient-green {
-  background: linear-gradient(135deg, #bbf7d0 0%, #dcfce7 100%);
-  border: none;
-}
-
-
-/* ======================================================================== */
-/* ADIÇÃO: Estilos para corrigir o enquadramento do QR Scanner (`html5-qrcode`)  */
-/* ======================================================================== */
-
-/* Este é o 'palco' do scanner, o <div id="qr-code-reader"> que está no seu QRCodeScanner.tsx. */
-#qr-code-reader {
-  width: 100%;             /* Faz o scanner ocupar toda a largura do modal */
-  max-width: 400px;        /* Limita o tamanho em telas maiores */
-  margin: 1rem auto;       /* Centraliza e dá um espaçamento */
-
-  /* A PARTE MAIS IMPORTANTE: Força um formato quadrado, crucial para o enquadramento */
-  aspect-ratio: 1 / 1;
-  
-  position: relative;      /* Necessário para o posicionamento interno do vídeo */
-  overflow: hidden;        /* Esconde as partes do vídeo que 'vazam' para fora do quadrado */
-  border-radius: 12px;     /* Apenas para um visual mais agradável */
-}
-
-/* O elemento de vídeo que a biblioteca 'html5-qrcode' cria DENTRO do #qr-code-reader */
-#qr-code-reader video {
-  width: 100%;
-  height: 100%;
-  
-  /* A CORREÇÃO PRINCIPAL: Faz o vídeo preencher o espaço sem distorcer, cortando o excesso */
-  object-fit: cover; 
-}
-
-/* A 'caixa de scan' que a própria biblioteca desenha. 
-   Este CSS ajuda a garantir que ela não fique com bordas estranhas. */
-#qr-code-reader__scan_region {
-  border-radius: 8px;
-}
-
-/* ======================================================================== */
-/* NOVO: Animação de Fundo para o Menu Principal (Tons de Cinza) */
-/* ======================================================================== */
-
-@keyframes bg-pan {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
-}
-
-.animated-menu-bg {
-  /* Mantendo o tamanho grande para o fade amplo */
-  background-size: 400% 400%; 
-  /* Mantendo a velocidade moderada */
-  animation: bg-pan 20s linear infinite;
-}
-
-/* Light Mode Gradient (Tons de cinza muito claros) */
-.light .animated-menu-bg {
-  background-image: linear-gradient(
-    -45deg, 
-    hsl(var(--background)) 0%, 
-    hsl(220 13% 95%) 25%, /* Cinza muito claro */
-    hsl(220 13% 90%) 50%, /* Cinza claro */
-    hsl(var(--background)) 100%
-  );
-}
-
-/* Dark Mode Gradient (Tons de cinza escuro e preto) */
-.dark .animated-menu-bg {
-  background-image: linear-gradient(
-    -45deg, 
-    hsl(222.2 84% 4.9%) 0%, 
-    hsl(217.2 32.6% 12%) 25%, /* Cinza escuro */
-    hsl(222.2 84% 3%) 50%, /* Quase preto */
-    hsl(222.2 84% 4.9%) 100%
-  );
-}
-
 /* ======================================================================== */
 /* CORREÇÃO VISUAL: Estilos para o Calendário de Agendamento */
 /* ======================================================================== */
 
 .calendar-grid {
     display: grid;
-    /* A coluna de hora (80px) e 5 colunas de dia (1fr) são definidas no componente React */
-    gap: 10px; /* Espaçamento entre os slots */
+    gap: 10px;
     width: 100%;
-    min-width: 700px; /* Garante que não fique muito apertado em telas menores */
+    min-width: 700px;
 }
 
 .grid-header {
@@ -352,32 +273,26 @@
 }
 
 .time-label {
-    /* Estilos de botão preenchido */
-    background-color: hsl(var(--primary)); /* Fundo primário */
-    border-radius: 12px; /* Mais arredondado */
-    border: 1px solid hsl(var(--primary)); /* Borda sólida */
-    
-    /* Estilos de alinhamento */
+    background-color: hsl(var(--primary));
+    border-radius: 12px;
+    border: 1px solid hsl(var(--primary));
     text-align: center;
     font-size: 0.8rem;
     font-weight: 600;
-    color: hsl(var(--primary-foreground)); /* Texto branco/claro */
-    padding: 0 10px; /* Padding horizontal para formato pílula */
-    height: 60px; /* Altura fixa do slot */
+    color: hsl(var(--primary-foreground));
+    padding: 0 10px;
+    height: 60px;
     display: flex;
     align-items: center;
-    justify-content: center; /* Centraliza o texto */
+    justify-content: center;
     
-    /* Dark Mode Overrides */
     .dark & {
-        /* Usando um tom mais escuro para o Dark Mode, como o fundo do card */
         background-color: hsl(var(--card)); 
         border-color: hsl(var(--border-strong));
         color: hsl(var(--foreground));
     }
 }
 
-/* Estilo base para o slot */
 .slot {
     height: 60px;
     border-radius: 10px;
@@ -391,7 +306,6 @@
     overflow: hidden;
 }
 
-/* Estilo para o slot disponível (vazio) */
 .slot.available {
     background-color: hsl(var(--background-secondary));
     border: 2px dashed hsl(var(--border-strong));
@@ -406,16 +320,14 @@
     border-color: hsl(var(--muted-foreground));
 }
 
-/* Estilos para os estados de reserva (cores baseadas no Tailwind/Shadcn) */
-
 /* Minha Reserva (Azul) */
 .slot.my-reservation {
-    background-color: hsl(210 40% 96.1% / 0.8); /* secondary/80 */
-    border-left-color: hsl(var(--primary));
+    background-color: hsl(var(--info-bg) / 0.8);
+    border-left-color: hsl(var(--info));
 }
 .dark .slot.my-reservation {
-    background-color: hsl(217.2 32.6% 17.5% / 0.8); /* secondary/80 dark */
-    border-left-color: hsl(var(--primary));
+    background-color: hsl(199 89% 15% / 0.8); /* info-bg dark */
+    border-left-color: hsl(var(--info));
 }
 
 /* Parcialmente Reservado (Âmbar/Warning) */
@@ -439,7 +351,6 @@
     border-left-color: hsl(var(--error));
 }
 
-/* Estilos de texto dentro dos slots */
 .slot-title {
     font-weight: 600;
     font-size: 0.85rem;

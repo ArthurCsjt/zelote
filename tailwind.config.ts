@@ -19,20 +19,37 @@ export default {
     },
     extend: {
       colors: {
-        // --- NEW SEMANTIC COLORS ---
+        // --- BASE COLORS (ZINC) ---
         background: "hsl(var(--background))",
         'background-secondary': "hsl(var(--background-secondary))",
         foreground: "hsl(var(--foreground))",
         
+        // --- CARDS & SURFACES ---
+        card: {
+          DEFAULT: "hsl(var(--card))",
+          foreground: "hsl(var(--card-foreground))",
+          hover: "hsl(var(--card-hover))",
+        },
+        popover: {
+          DEFAULT: "hsl(var(--popover))",
+          foreground: "hsl(var(--popover-foreground))",
+        },
+        modal: {
+          DEFAULT: "hsl(var(--modal))",
+          border: "hsl(var(--modal-border))",
+        },
+        overlay: "hsl(var(--overlay))",
+        
+        // --- INPUTS & BORDERS ---
         border: "hsl(var(--border))",
         'border-strong': "hsl(var(--border-strong))",
         ring: "hsl(var(--ring))",
-        
         input: "hsl(var(--input))",
         'input-bg': "hsl(var(--input-bg))",
         'input-foreground': "hsl(var(--input-foreground))",
         'input-placeholder': "hsl(var(--input-placeholder))",
 
+        // --- PRIMARY & SECONDARY ---
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
@@ -42,10 +59,6 @@ export default {
           DEFAULT: "hsl(var(--secondary))",
           foreground: "hsl(var(--secondary-foreground))",
         },
-        destructive: {
-          DEFAULT: "hsl(var(--error))", // Mapeando destructive para error
-          foreground: "hsl(var(--error-foreground))",
-        },
         muted: {
           DEFAULT: "hsl(var(--muted))",
           foreground: "hsl(var(--muted-foreground))",
@@ -54,22 +67,12 @@ export default {
           DEFAULT: "hsl(var(--accent))",
           foreground: "hsl(var(--accent-foreground))",
         },
-        popover: {
-          DEFAULT: "hsl(var(--popover))",
-          foreground: "hsl(var(--popover-foreground))",
-        },
-        card: {
-          DEFAULT: "hsl(var(--card))",
-          foreground: "hsl(var(--card-foreground))",
-          hover: "hsl(var(--card-hover))",
-        },
-        modal: {
-          DEFAULT: "hsl(var(--modal))",
-          border: "hsl(var(--modal-border))",
-        },
-        overlay: "hsl(var(--overlay))",
         
-        // Semantic States
+        // --- SEMANTIC STATES ---
+        destructive: {
+          DEFAULT: "hsl(var(--error))",
+          foreground: "hsl(var(--error-foreground))",
+        },
         success: {
           DEFAULT: "hsl(var(--success))",
           foreground: "hsl(var(--success-foreground))",
@@ -85,7 +88,7 @@ export default {
           foreground: "hsl(var(--info-foreground))",
           bg: "hsl(var(--info-bg))",
         },
-        error: { // Adicionando 'error' para mapear diretamente
+        error: {
           DEFAULT: "hsl(var(--error))",
           foreground: "hsl(var(--error-foreground))",
           bg: "hsl(var(--error-bg))",
@@ -122,9 +125,9 @@ export default {
         },
       },
       borderRadius: {
-        lg: "var(--radius-lg)", // Usando a nova variável
+        lg: "var(--radius-lg)",
         md: "var(--radius)",
-        sm: "var(--radius-sm)", // Usando a nova variável
+        sm: "var(--radius-sm)",
       },
       keyframes: {
         "accordion-down": {
@@ -143,19 +146,26 @@ export default {
           "0%": { transform: "translateX(-100%)" },
           "100%": { transform: "translateX(0)" },
         },
+        // NOVO: Keyframes para a animação de entrada do conteúdo
+        'fade-in': {
+          '0%': { opacity: '0', transform: 'translateY(16px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         fadeIn: "fadeIn 0.5s ease-out",
         slideIn: "slideIn 0.3s ease-out",
+        // NOVO: Animação de entrada
+        'fade-in': 'fade-in 0.5s ease-out forwards',
       },
       boxShadow: {
         'sm': 'var(--shadow-sm)',
         'md': 'var(--shadow-md)',
         'lg': 'var(--shadow-lg)',
-        'xl': 'var(--shadow-lg)', // Usando lg para xl para consistência
-        '2xl': 'var(--shadow-lg)', // Usando lg para 2xl para consistência
+        'xl': 'var(--shadow-lg)',
+        '2xl': 'var(--shadow-lg)',
       }
     },
   },
