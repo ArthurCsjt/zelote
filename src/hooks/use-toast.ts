@@ -9,13 +9,15 @@ type ToastProps = {
   description?: React.ReactNode;
   variant?: ToastVariant;
   duration?: number;
+  id?: string | number;
 };
 
 // Função toast que mapeia para o Sonner
-function toast({ title, description, variant = 'default', duration = 4000 }: ToastProps) {
+function toast({ title, description, variant = 'default', duration = 4000, id }: ToastProps) {
   const options: any = {
     description: description,
     duration: duration,
+    id: id,
     // Removemos os estilos inline e confiamos no richColors do Sonner
   };
 
@@ -41,7 +43,7 @@ function useToast() {
   return {
     toast,
     dismiss: sonnerToast.dismiss,
-    toasts: [], 
+    toasts: [],
   }
 }
 
