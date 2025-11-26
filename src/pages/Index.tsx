@@ -165,8 +165,8 @@ const Index = () => {
 
   // NOVO: Classe de fundo para o menu principal
   const menuBackgroundClass = currentView === 'menu' 
-    ? 'animated-menu-bg' // APLICANDO A CLASSE DE ANIMAÇÃO
-    : 'bg-background'; // Usa o fundo padrão do tema para outras views
+    ? 'bg-background' // USANDO O FUNDO PADRÃO (Dark Mode: escuro)
+    : 'bg-background'; 
 
   return (
     <>
