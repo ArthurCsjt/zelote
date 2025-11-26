@@ -254,6 +254,42 @@
 .animation-delay-1100 { animation-delay: 1100ms; }
 
 /* ======================================================================== */
+/* NOVO: Fundo Animado para o Menu Principal */
+/* ======================================================================== */
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animated-menu-bg {
+  /* Gradiente sutil usando cores do tema */
+  background: linear-gradient(135deg, 
+    hsl(var(--background-secondary)) 0%, 
+    hsl(var(--primary) / 0.05) 25%, 
+    hsl(var(--background-secondary)) 50%, 
+    hsl(var(--primary) / 0.05) 75%, 
+    hsl(var(--background-secondary)) 100%
+  );
+  background-size: 400% 400%;
+  animation: gradient-shift 30s ease infinite;
+  transition: background-color 0.5s ease;
+  
+  .dark & {
+    background: linear-gradient(135deg, 
+      hsl(var(--background-secondary)) 0%, 
+      hsl(var(--primary) / 0.1) 25%, 
+      hsl(var(--background-secondary)) 50%, 
+      hsl(var(--primary) / 0.1) 75%, 
+      hsl(var(--background-secondary)) 100%
+    );
+    background-size: 400% 400%;
+    animation: gradient-shift 30s ease infinite;
+  }
+}
+
+
+/* ======================================================================== */
 /* CORREÇÃO VISUAL: Estilos para o Calendário de Agendamento */
 /* ======================================================================== */
 
