@@ -313,8 +313,7 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
 
   return (
     <div className="p-0 glass-morphism animate-fade-in relative">
-      {/* Background gradient overlay */}
-      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-blue-50/30 via-purple-50/20 to-pink-50/30 rounded-3xl blur-2xl transform scale-110" />
+      {/* Background gradient overlay REMOVIDO */}
       
       {/* Estatísticas e Gráfico */}
       <InventoryStats chromebooks={chromebooks} />
