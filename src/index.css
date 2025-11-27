@@ -177,9 +177,8 @@
 
 /* --- Glassmorphism Utilities --- */
 .glass-card {
-  /* Aumentando a opacidade do fundo para dar mais contraste com a sombra */
-  /* ADICIONANDO BORDER-STRONG AQUI */
-  @apply bg-white/80 dark:bg-zinc-950/80 backdrop-blur-xl border border-border-strong dark:border-zinc-800/50 shadow-xl;
+  /* Revertendo a borda para a definição original (mais sutil) */
+  @apply bg-white/80 dark:bg-zinc-950/80 backdrop-blur-xl border border-white/20 dark:border-zinc-800/50 shadow-xl;
 }
 
 .glass-panel {

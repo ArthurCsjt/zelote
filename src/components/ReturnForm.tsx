@@ -125,7 +125,8 @@ export function ReturnForm({ onReturnSuccess, initialChromebookId }: ReturnFormP
             <GlassCard className={cn(
                 "bg-gradient-to-br from-amber-500/5 via-amber-500/3 to-transparent",
                 "border border-amber-500/20",
-                "shadow-xl shadow-amber-500/5" // ADICIONANDO shadow-xl
+                "shadow-xl shadow-amber-500/5",
+                "border-border-strong" // ADICIONANDO BORDA DISCRETA
             )}>
                 <CardHeader className="p-5 pb-3 border-b border-amber-500/10 dark:border-amber-500/30">
                     <div className="flex items-center justify-between">
@@ -163,7 +164,7 @@ export function ReturnForm({ onReturnSuccess, initialChromebookId }: ReturnFormP
             </GlassCard>
             
             {/* ═══ SEÇÃO 2: OBSERVAÇÕES ═══ */}
-            <GlassCard className="bg-muted/30 border border-border/50 shadow-xl"> {/* ADICIONANDO shadow-xl */}
+            <GlassCard className="bg-muted/30 border border-border/50 shadow-xl border-border-strong"> {/* ADICIONANDO shadow-xl e BORDA DISCRETA */}
                 <CardHeader className="p-5 pb-3 border-b border-border/50">
                     <CardTitle className="text-lg font-semibold flex items-center gap-2 text-foreground">
                         <BookOpen className="h-5 w-5 text-muted-foreground" /> 
@@ -194,7 +195,8 @@ export function ReturnForm({ onReturnSuccess, initialChromebookId }: ReturnFormP
             <GlassCard className={cn(
                 "bg-gradient-to-br from-amber-500/5 via-amber-500/3 to-transparent",
                 "border border-amber-500/20",
-                "shadow-xl shadow-amber-500/5" // ADICIONANDO shadow-xl
+                "shadow-xl shadow-amber-500/5",
+                "border-border-strong" // ADICIONANDO BORDA DISCRETA
             )}>
                 <CardHeader className="p-5 pb-3 border-b border-amber-500/10 dark:border-amber-500/30">
                     <CardTitle className="text-lg font-semibold flex items-center gap-2 text-foreground">
@@ -236,7 +238,7 @@ export function ReturnForm({ onReturnSuccess, initialChromebookId }: ReturnFormP
             </GlassCard>
             
             {/* ═══ SEÇÃO 4: CONFIRMAÇÃO OBRIGATÓRIA ═══ */}
-            <div className="p-5 rounded-xl border bg-amber-50/50 border-amber-200 dark:bg-amber-950/50 dark:border-amber-900 shadow-xl"> {/* ADICIONANDO shadow-xl */}
+            <div className="p-5 rounded-xl border bg-amber-50/50 border-amber-200 dark:bg-amber-950/50 dark:border-amber-900 shadow-xl border-border-strong"> {/* ADICIONANDO shadow-xl e BORDA DISCRETA */}
                 <div className="flex items-start gap-3">
                     <Checkbox 
                         id="confirmChecked" 

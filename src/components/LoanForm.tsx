@@ -169,7 +169,8 @@ export function LoanForm({ onBack }: LoanFormProps) {
         <GlassCard className={cn(
           "bg-gradient-to-br from-violet-500/5 via-violet-500/3 to-transparent",
           "border border-violet-500/20",
-          "shadow-xl shadow-violet-500/5" // ADICIONANDO shadow-xl
+          "shadow-xl shadow-violet-500/5",
+          "border-border-strong" // ADICIONANDO BORDA DISCRETA
         )}>
           <CardHeader className="p-5 pb-3 border-b border-violet-500/10 dark:border-violet-500/30">
             <div className="flex items-center justify-between">
@@ -252,6 +253,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
           "bg-gradient-to-br from-blue-500/5 via-blue-500/3 to-transparent",
           "border border-blue-500/20",
           "shadow-xl shadow-blue-500/5", // ADICIONANDO shadow-xl
+          "border-border-strong", // ADICIONANDO BORDA DISCRETA
           !selectedUser && "opacity-50 pointer-events-none" // DESABILITADO SE NÃO TIVER USUÁRIO
         )}>
           <CardHeader className="p-5 pb-3 border-b border-blue-500/10 dark:border-blue-500/30">
@@ -295,6 +297,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
         <GlassCard className={cn(
           "bg-muted/30 border border-border/50",
           "shadow-xl", // ADICIONANDO shadow-xl
+          "border-border-strong", // ADICIONANDO BORDA DISCRETA
           !selectedUser && "opacity-50 pointer-events-none"
         )}>
           <CardContent className="p-5">
