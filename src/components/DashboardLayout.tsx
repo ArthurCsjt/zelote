@@ -237,14 +237,14 @@ export function DashboardLayout({
         />
         <div className="flex items-center gap-3 w-full sm:w-auto">
           
-          {/* Botão de Download PDF (DESIGN MELHORADO) */}
+          {/* Botão de Download PDF (AGORA OUTLINE) */}
           {periodView === 'charts' && (
             <Button 
-              variant="default" 
+              variant="outline" // ALTERADO PARA OUTLINE
               onClick={handleExportPDF} 
               className={cn(
-                "flex items-center gap-2 bg-menu-green hover:bg-menu-green-hover text-white", // Usando cor verde de sucesso
-                "shadow-md shadow-menu-green/30 transition-all duration-300"
+                "flex items-center gap-2 text-primary border-border bg-card hover:bg-card-hover", // Estilo mais discreto
+                "transition-all duration-300"
               )} 
               disabled={loading || !stats}
             >
@@ -253,10 +253,11 @@ export function DashboardLayout({
             </Button>
           )}
           
+          {/* Botão de Atualizar Dados (AGORA GHOST) */}
           <Button 
-            variant="outline" 
+            variant="ghost" // ALTERADO PARA GHOST
             onClick={refreshData} 
-            className="flex items-center gap-2 bg-card hover:bg-card-hover border-border" 
+            className="flex items-center gap-2 text-primary hover:bg-accent" // Estilo mais discreto
             disabled={loading}
           >
             <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
