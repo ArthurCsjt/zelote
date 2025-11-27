@@ -113,7 +113,7 @@ export function MainMenu({
               >
                 <div className={cn(
                   "p-3 rounded-full bg-zinc-50 dark:bg-zinc-800 group-hover:scale-110 transition-transform duration-300",
-                  "shadow-md group-hover:shadow-lg" // AUMENTANDO A SOMBRA AQUI
+                  // Removida a sombra extra do ícone
                 )}>
                   <Icon className={cn("h-6 w-6", item.color)} />
                 </div>

@@ -21,7 +21,7 @@
     --modal-border: 240 5.9% 90%;      /* Zinc 200 */
     --overlay: 240 10% 3.9% / 0.8;     /* Foreground com opacidade */
     
-    /* ===== INPUTS & BORDERS (Ajustado para Zinc) ===== */
+    /* ===== INPUTS & BORDERS (Ajustado para Zinc) */
     --border: 240 5.9% 90%;            /* Zinc 200 */
     --border-strong: 240 5.9% 80%;     /* Zinc 300 */
     --ring: 217 91% 60%;               /* Primary Blue */
@@ -60,10 +60,10 @@
     --info-foreground: 199 100% 20%;   /* Texto azul escuro */
     --info-bg: 199 95% 95%;            /* Fundo azul claro */
     
-    /* ===== BORDERS & SHADOWS ===== */
-    --shadow-sm: 240 10% 3.9% / 0.05;
-    --shadow-md: 240 10% 3.9% / 0.1;
-    --shadow-lg: 240 10% 3.9% / 0.15;
+    /* ===== BORDERS & SHADOWS (AJUSTADO PARA SOMBRA MAIS SUAVE) ===== */
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -4px rgba(0, 0, 0, 0.05); /* Sombra mais suave e difusa */
     
     /* ===== RADIUS ===== */
     --radius: 0.75rem;
@@ -103,7 +103,7 @@
     --modal-border: 240 3.7% 25%;      /* Zinc 700 */
     --overlay: 240 10% 3.9% / 0.9;     /* Foreground com opacidade */
     
-    /* ===== INPUTS & BORDERS (Ajustado para Zinc) ===== */
+    /* ===== INPUTS & BORDERS (Ajustado para Zinc) */
     --border: 240 3.7% 25%;            /* Zinc 700 */
     --border-strong: 240 3.7% 35%;     /* Zinc 600 */
     --ring: 217 91% 60%;               /* Primary Blue */
@@ -145,7 +145,7 @@
     /* ===== BORDERS & SHADOWS ===== */
     --shadow-sm: 240 10% 0% / 0.2;
     --shadow-md: 240 10% 0% / 0.3;
-    --shadow-lg: 240 10% 0% / 0.5;
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1); /* Sombra mais suave e difusa */
 
     /* Menu Button Colors (PRESERVADO) */
     --menu-green: 142 76% 36%;
