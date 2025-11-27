@@ -60,10 +60,10 @@
     --info-foreground: 199 100% 20%;   /* Texto azul escuro */
     --info-bg: 199 95% 95%;            /* Fundo azul claro */
     
-    /* ===== BORDERS & SHADOWS (AJUSTADO PARA SOMBRA MAIS EVIDENTE) ===== */
-    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.1);
-    --shadow-md: 0 4px 10px -1px rgba(0, 0, 0, 0.15), 0 2px 4px -2px rgba(0, 0, 0, 0.08);
-    --shadow-lg: 0 15px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1); /* Sombra mais forte e difusa */
+    /* ===== BORDERS & SHADOWS (AJUSTADO PARA SOMBRA MAIS DENSA) ===== */
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.15);
+    --shadow-md: 0 6px 15px -3px rgba(0, 0, 0, 0.2), 0 3px 6px -3px rgba(0, 0, 0, 0.15);
+    --shadow-lg: 0 20px 30px -10px rgba(0, 0, 0, 0.2), 0 10px 15px -7px rgba(0, 0, 0, 0.15); /* Sombra muito mais forte e difusa */
     
     /* ===== RADIUS ===== */
     --radius: 0.75rem;
@@ -177,7 +177,8 @@
 
 /* --- Glassmorphism Utilities --- */
 .glass-card {
-  @apply bg-white/70 dark:bg-zinc-950/70 backdrop-blur-xl border border-white/20 dark:border-zinc-800/50 shadow-xl;
+  /* Aumentando a opacidade do fundo para dar mais contraste com a sombra */
+  @apply bg-white/80 dark:bg-zinc-950/80 backdrop-blur-xl border border-white/20 dark:border-zinc-800/50 shadow-xl;
 }
 
 .glass-panel {
