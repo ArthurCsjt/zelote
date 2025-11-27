@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,12 +6,101 @@ import { Label } from "@/components/ui/label";
 import { CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { toast } from "@/hooks/use-toast";
-import { Computer, Lock, Mail, ArrowLeft, KeySquare, LockKeyhole, UserPlus, Eye, EyeOff, AlertCircle, User, LogIn, RotateCcw } from "lucide-react";
+import { Computer, Lock, Mail, ArrowLeft, KeySquare, LockKeyhole, UserPlus, Eye, EyeOff, AlertCircle, User, LogIn, RotateCcw, Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 
 type AuthMode = 'login' | 'register' | 'forgot_password' | 'update_password';
+
+// Função auxiliar para renderizar o cabeçalho minimalista
+const renderMinimalHeader = (title: string, description: string, Icon: React.ElementType) => (
+  <CardHeader className="space-y-2 text-center pb-6 pt-8">
+    <div className="flex justify-center mb-4">
+      <div className="p-3 rounded-2xl bg-primary/10 text-primary ring-1 ring-primary/20 shadow-lg shadow-primary/10">
+        <Icon className="h-8 w-8" />
+      </div>
+    </div>
+    <CardTitle className="text-3xl font-bold tracking-tight text-foreground">{title}</CardTitle>
+    {description && <CardDescription className="text-base text-muted-foreground">{description}</CardDescription>}
+  </CardHeader>
+);
+
+// Componente dedicado para a atualização de senha
+const UpdatePasswordForm: React.FC<{ isLoading: boolean, setIsLoading: (loading: boolean) => void }> = ({ isLoading, setIsLoading }) => {
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate();
+
+  const handleUpdatePasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    if (password !== confirmPassword) {
+      toast({ title: "Erro", description: "As senhas não coincidem.", variant: "destructive" });
+      setIsLoading(false);
+      return;
+    }
+    if (password.length < 6) {
+      toast({ title: "Erro", description: "A senha deve ter pelo menos 6 caracteres.", variant: "destructive" });
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      // A sessão já foi definida pelo useEffect do Login.tsx
+      const { error } = await supabase.auth.updateUser({ password: password });
+
+      if (error) throw error;
+
+      toast({ title: "Sucesso!", description: "Sua senha foi definida. Você está logado e será redirecionado." });
+
+      // Redireciona para a página principal APENAS após a atualização bem-sucedida
+      navigate("/", { replace: true });
+    } catch (error: any) {
+      toast({ title: "Erro ao definir senha", description: error.message || "Não foi possível atualizar a senha. Tente novamente.", variant: "destructive" });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleUpdatePasswordSubmit} className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+      {renderMinimalHeader(
+        "Definir Nova Senha",
+        "Crie uma senha segura para acessar o sistema.",
+        LockKeyhole
+      )}
+      <CardContent className="space-y-4 pt-2">
+        <div className="space-y-2">
+          <Label htmlFor="new-password">Nova Senha</Label>
+          <div className="relative">
+            <Input id="new-password" type={showPassword ? "text" : "password"} placeholder="Mínimo 6 caracteres" value={password} onChange={e => setPassword(e.target.value)} className="bg-white/50 dark:bg-zinc-900/50 pr-10" disabled={isLoading} required />
+            <Button type="button" variant="ghost" size="sm" className="absolute right-0 top-0 h-full px-3 hover:bg-transparent" onClick={() => setShowPassword(prev => !prev)}>
+              {showPassword ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
+            </Button>
+          </div>
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="confirm-password">Confirmar Senha</Label>
+          <div className="relative">
+            <Input id="confirm-password" type={showPassword ? "text" : "password"} placeholder="Confirme sua nova senha" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className="bg-white/50 dark:bg-zinc-900/50 pr-10" disabled={isLoading} required />
+            <Button type="button" variant="ghost" size="sm" className="absolute right-0 top-0 h-full px-3 hover:bg-transparent" onClick={() => setShowPassword(prev => !prev)}>
+              {showPassword ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
+            </Button>
+          </div>
+        </div>
+      </CardContent>
+      <CardFooter className="pb-8">
+        <Button type="submit" className="w-full h-11 text-base shadow-lg shadow-primary/20" disabled={isLoading || password.length < 6 || password !== confirmPassword}>
+          {isLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : "Definir Senha e Entrar"}
+        </Button>
+      </CardFooter>
+    </form>
+  );
+};
+
 
 const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -130,98 +219,21 @@ const Login = () => {
     setIsLoading(false);
   };
 
-  const handleUpdatePasswordSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-
-    if (password !== confirmPassword) {
-      toast({ title: "Erro", description: "As senhas não coincidem.", variant: "destructive" });
-      setIsLoading(false);
-      return;
-    }
-    if (password.length < 6) {
-      toast({ title: "Erro", description: "A senha deve ter pelo menos 6 caracteres.", variant: "destructive" });
-      setIsLoading(false);
-      return;
-    }
-
-    try {
-      const { error } = await supabase.auth.updateUser({ password: password });
-
-      if (error) throw error;
-
-      toast({ title: "Sucesso!", description: "Sua senha foi definida. Você está logado e será redirecionado." });
-
-      // Redireciona para a página principal APENAS após a atualização bem-sucedida
-      navigate("/", { replace: true });
-    } catch (error: any) {
-      toast({ title: "Erro ao definir senha", description: error.message || "Não foi possível atualizar a senha. Tente novamente.", variant: "destructive" });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   // Função para limpar campos ao mudar de modo
-  const changeMode = (mode: AuthMode) => {
+  const changeMode = useCallback((mode: AuthMode) => {
     setEmail('');
     setPassword('');
     setConfirmPassword('');
     setShowPassword(false);
     setCurrentMode(mode);
-  };
+  }, []);
 
   // --- Renderização Condicional ---
-
-  // NOVO RENDER HEADER MINIMALISTA
-  const renderMinimalHeader = (title: string, description: string, Icon: React.ElementType) => (
-    <CardHeader className="space-y-2 text-center pb-6 pt-8">
-      <div className="flex justify-center mb-4">
-        <div className="p-3 rounded-2xl bg-primary/10 text-primary ring-1 ring-primary/20 shadow-lg shadow-primary/10">
-          <Icon className="h-8 w-8" />
-        </div>
-      </div>
-      <CardTitle className="text-3xl font-bold tracking-tight text-foreground">{title}</CardTitle>
-      {description && <CardDescription className="text-base text-muted-foreground">{description}</CardDescription>}
-    </CardHeader>
-  );
 
   const renderForm = () => {
     switch (currentMode) {
       case 'update_password':
-        return (
-          <form onSubmit={handleUpdatePasswordSubmit} className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-            {renderMinimalHeader(
-              "Definir Nova Senha",
-              "Crie uma senha segura para acessar o sistema.",
-              LockKeyhole
-            )}
-            <CardContent className="space-y-4 pt-2">
-              <div className="space-y-2">
-                <Label htmlFor="new-password">Nova Senha</Label>
-                <div className="relative">
-                  <Input id="new-password" type={showPassword ? "text" : "password"} placeholder="Mínimo 6 caracteres" value={password} onChange={e => setPassword(e.target.value)} className="bg-white/50 dark:bg-zinc-900/50 pr-10" disabled={isLoading} required />
-                  <Button type="button" variant="ghost" size="sm" className="absolute right-0 top-0 h-full px-3 hover:bg-transparent" onClick={() => setShowPassword(prev => !prev)}>
-                    {showPassword ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
-                  </Button>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="confirm-password">Confirmar Senha</Label>
-                <div className="relative">
-                  <Input id="confirm-password" type={showPassword ? "text" : "password"} placeholder="Confirme sua nova senha" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className="bg-white/50 dark:bg-zinc-900/50 pr-10" disabled={isLoading} required />
-                  <Button type="button" variant="ghost" size="sm" className="absolute right-0 top-0 h-full px-3 hover:bg-transparent" onClick={() => setShowPassword(prev => !prev)}>
-                    {showPassword ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-            <CardFooter className="pb-8">
-              <Button type="submit" className="w-full h-11 text-base shadow-lg shadow-primary/20" disabled={isLoading}>
-                {isLoading ? "Salvando..." : "Definir Senha e Entrar"}
-              </Button>
-            </CardFooter>
-          </form>
-        );
+        return <UpdatePasswordForm isLoading={isLoading} setIsLoading={setIsLoading} />;
 
       case 'forgot_password':
         return (
@@ -305,10 +317,12 @@ const Login = () => {
               <Button type="submit" className="w-full h-11 text-base shadow-lg shadow-primary/20" disabled={isLoading || !isEmailValid || password.length < 6 || password !== confirmPassword}>
                 {isLoading ? "Registrando..." : <><UserPlus className="h-4 w-4 mr-2" />Cadastrar</>}
               </Button>
-              <Button type="button" variant="link" className="text-sm text-muted-foreground hover:text-primary transition-colors" onClick={() => changeMode('login')} disabled={isLoading}>
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Voltar ao login
-              </Button>
+              <div className="text-center text-sm text-muted-foreground">
+                Não tem uma conta?{" "}
+                <Button type="button" variant="link" className="text-primary hover:text-primary/80 p-0 h-auto font-semibold" onClick={() => changeMode('login')} disabled={isLoading}>
+                  Voltar ao login
+                </Button>
+              </div>
             </CardFooter>
           </form>
         );
