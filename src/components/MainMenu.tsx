@@ -4,6 +4,7 @@ import { ClipboardList, BarChart3, PlusCircle, Laptop, RotateCcw, ListChecks, Ca
 import { useProfileRole } from '@/hooks/use-profile-role';
 import { cn } from '@/lib/utils';
 import { GlassCard } from './ui/GlassCard';
+import { Badge } from './ui/badge'; // Importando Badge
 
 interface MainMenuProps {
   onNavigate: (route: 'registration' | 'dashboard' | 'loan' | 'inventory' | 'audit' | 'quick-register' | 'return' | 'scheduling', tab?: 'form' | 'active') => void;
@@ -44,7 +45,8 @@ export function MainMenu({
       icon: Calendar,
       action: () => onNavigate('scheduling'),
       color: 'text-blue-600 dark:text-blue-400',
-      roles: ['admin', 'super_admin', 'professor']
+      roles: ['admin', 'super_admin', 'professor'],
+      badge: { label: 'BETA', variant: 'info' } // NOVO: Badge de aviso
     },
     {
       title: 'Inventário',
@@ -117,9 +119,19 @@ export function MainMenu({
                 )}>
                   <Icon className={cn("h-6 w-6", item.color)} />
                 </div>
-                <span className="font-medium text-sm text-foreground/80 group-hover:text-foreground transition-colors">
-                  {item.title}
-                </span>
+                <div className="flex items-center gap-2">
+                    <span className="font-medium text-sm text-foreground/80 group-hover:text-foreground transition-colors">
+                      {item.title}
+                    </span>
+                    {item.badge && (
+                        <Badge 
+                            variant={item.badge.variant as any} 
+                            className="text-[10px] h-4 px-1.5 py-0.5 bg-info-bg text-info-foreground dark:bg-info-bg/50 dark:text-info-foreground"
+                        >
+                            {item.badge.label}
+                        </Badge>
+                    )}
+                </div>
               </GlassCard>
             </div>
           );
