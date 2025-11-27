@@ -287,10 +287,10 @@ export function UserInventory() {
         <div className="relative">
           <Filter className="absolute left-3 top-3 h-4 w-4 text-gray-400 dark:text-muted-foreground" />
           <Select value={typeFilter} onValueChange={setTypeFilter}>
-            <SelectTrigger className="w-[180px] pl-10 bg-card dark:bg-card dark:border-border">
+            <SelectTrigger className="w-full sm:w-[180px] pl-10 bg-card dark:bg-card dark:border-border">
               <SelectValue placeholder="Tipo de usuário" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-card border-border"> {/* ADICIONANDO bg-card border-border */}
               <SelectItem value="all">Todos</SelectItem>
               <SelectItem value="Aluno">Alunos</SelectItem>
               <SelectItem value="Professor">Professores</SelectItem>
@@ -303,10 +303,10 @@ export function UserInventory() {
           <div className="relative">
             <Filter className="absolute left-3 top-3 h-4 w-4 text-gray-400 dark:text-muted-foreground" />
             <Select value={classFilter} onValueChange={setClassFilter}>
-              <SelectTrigger className="w-[180px] pl-10 bg-card dark:bg-card dark:border-border">
+              <SelectTrigger className="w-full sm:w-[180px] pl-10 bg-card dark:bg-card dark:border-border">
                 <SelectValue placeholder="Filtrar por turma" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-card border-border"> {/* ADICIONANDO bg-card border-border */}
                 <SelectItem value="all">Todas as Turmas</SelectItem>
                 {availableClasses.map(turma => (
                   <SelectItem key={turma} value={turma}>{turma}</SelectItem>
