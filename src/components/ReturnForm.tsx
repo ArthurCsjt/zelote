@@ -114,8 +114,7 @@ export function ReturnForm({ onReturnSuccess, initialChromebookId }: ReturnFormP
 
   return (
     <form onSubmit={handleConfirmReturn} className="space-y-5 relative">
-      {/* Gradiente de fundo sutil para a área do formulário */}
-      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-amber-50/30 via-orange-50/20 to-amber-50/30 rounded-3xl blur-2xl transform scale-110" />
+      {/* Gradiente de fundo removido */}
       
       <div className="grid md:grid-cols-2 gap-5 relative z-10">
         
