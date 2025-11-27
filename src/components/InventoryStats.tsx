@@ -19,7 +19,7 @@ export function InventoryStats({ chromebooks }: InventoryStatsProps) {
 
   // Contagem de Inativos (fora_uso) e Desprovisionados
   const totalForaUso = stats.fora_uso || 0;
-  const totalDeprovisioned = chromebooks.filter(cb => cb.is_deprovisioned).length;
+  // const totalDeprovisioned = chromebooks.filter(cb => cb.is_deprovisioned).length; // Removido o cálculo
   
   // Contagem de mobilidade
   const totalFixo = stats.fixo || 0;
@@ -68,14 +68,7 @@ export function InventoryStats({ chromebooks }: InventoryStatsProps) {
       color: 'text-gray-600',
       description: 'Marcados como fora de uso'
     },
-    // Usando Unlock para Desprovisionados
-    {
-      title: 'Desprovisionados',
-      value: totalDeprovisioned,
-      icon: Unlock, // Ícone alterado para Unlock
-      color: 'text-orange-500', // Cor alterada para laranja para diferenciar
-      description: 'Removidos do gerenciamento'
-    },
+    // O card 'Desprovisionados' foi removido daqui
   ];
 
   return (
