@@ -16,6 +16,8 @@ type AuthMode = 'login' | 'register' | 'forgot_password' | 'update_password';
 const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [currentMode, setCurrentMode] = useState<AuthMode>('login');
+  // NOVO ESTADO: Para rastrear se estamos no fluxo de redefinição/convite
+  const [isAuthFlowActive, setIsAuthFlowActive] = useState(false); 
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -34,6 +36,7 @@ const Login = () => {
 
     if (type === 'recovery' || type === 'invite') {
       if (accessToken) {
+        setIsAuthFlowActive(true); // Ativa o rastreamento do fluxo
         supabase.auth.setSession({ access_token: accessToken, refresh_token: params.get('refresh_token')! })
           .then(({ data, error }) => {
             if (error) {
@@ -41,9 +44,15 @@ const Login = () => {
               toast({ title: "Erro de acesso", description: "Token inválido ou expirado.", variant: "destructive" });
               navigate('/login', { replace: true });
             } else if (data.session) {
+              // Se a sessão for definida, forçamos o modo de atualização de senha
               setCurrentMode('update_password');
-              navigate(location.pathname, { replace: true });
+              // Limpa o hash da URL para evitar loops, mas mantém o modo
+              navigate(location.pathname, { replace: true }); 
             }
+          })
+          .finally(() => {
+            // Desativa o rastreamento do fluxo após a tentativa de setSession
+            setIsAuthFlowActive(false); 
           });
       }
     }
@@ -143,6 +152,7 @@ const Login = () => {
 
       toast({ title: "Sucesso!", description: "Sua senha foi definida. Você está logado e será redirecionado." });
 
+      // Redireciona para a página principal APENAS após a atualização bem-sucedida
       navigate("/", { replace: true });
     } catch (error: any) {
       toast({ title: "Erro ao definir senha", description: error.message || "Não foi possível atualizar a senha. Tente novamente.", variant: "destructive" });
@@ -368,7 +378,8 @@ const Login = () => {
       <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-violet-500/20 rounded-full blur-[120px] animate-pulse delay-1000" />
 
       <GlassCard className="w-full max-w-md border-white/20 dark:border-white/10 shadow-2xl backdrop-blur-2xl relative z-10">
-        {renderForm()}
+        {/* Se estiver no fluxo de auth e o modo for update_password, renderiza o formulário. Caso contrário, renderiza o formulário normal. */}
+        {isAuthFlowActive || currentMode === 'update_password' ? renderForm() : renderForm()}
       </GlassCard>
     </div>
   );
