@@ -11,7 +11,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 
-type AuthMode = 'login' | 'register' | 'forgot_password' | 'update_password';
+type AuthMode = 'login' | 'register' | 'forgot_password'; // Removido 'update_password'
 
 // Função auxiliar para renderizar o cabeçalho minimalista
 const renderMinimalHeader = (title: string, description: string, Icon: React.ElementType) => (
@@ -26,88 +26,10 @@ const renderMinimalHeader = (title: string, description: string, Icon: React.Ele
   </CardHeader>
 );
 
-// Componente dedicado para a atualização de senha
-const UpdatePasswordForm: React.FC<{ isLoading: boolean, setIsLoading: (loading: boolean) => void }> = ({ isLoading, setIsLoading }) => {
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const navigate = useNavigate();
-
-  const handleUpdatePasswordSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-
-    if (password !== confirmPassword) {
-      toast({ title: "Erro", description: "As senhas não coincidem.", variant: "destructive" });
-      setIsLoading(false);
-      return;
-    }
-    if (password.length < 6) {
-      toast({ title: "Erro", description: "A senha deve ter pelo menos 6 caracteres.", variant: "destructive" });
-      setIsLoading(false);
-      return;
-    }
-
-    try {
-      // A sessão já foi definida pelo useEffect do Login.tsx
-      const { error } = await supabase.auth.updateUser({ password: password });
-
-      if (error) throw error;
-
-      toast({ title: "Sucesso!", description: "Sua senha foi definida. Você está logado e será redirecionado." });
-
-      // Redireciona para a página principal APENAS após a atualização bem-sucedida
-      navigate("/", { replace: true });
-    } catch (error: any) {
-      toast({ title: "Erro ao definir senha", description: error.message || "Não foi possível atualizar a senha. Tente novamente.", variant: "destructive" });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  return (
-    <form onSubmit={handleUpdatePasswordSubmit} className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-      {renderMinimalHeader(
-        "Definir Nova Senha",
-        "Crie uma senha segura para acessar o sistema.",
-        LockKeyhole
-      )}
-      <CardContent className="space-y-4 pt-2">
-        <div className="space-y-2">
-          <Label htmlFor="new-password">Nova Senha</Label>
-          <div className="relative">
-            <Input id="new-password" type={showPassword ? "text" : "password"} placeholder="Mínimo 6 caracteres" value={password} onChange={e => setPassword(e.target.value)} className="bg-white/50 dark:bg-zinc-900/50 pr-10" disabled={isLoading} required />
-            <Button type="button" variant="ghost" size="sm" className="absolute right-0 top-0 h-full px-3 hover:bg-transparent" onClick={() => setShowPassword(prev => !prev)}>
-              {showPassword ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
-            </Button>
-          </div>
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="confirm-password">Confirmar Senha</Label>
-          <div className="relative">
-            <Input id="confirm-password" type={showPassword ? "text" : "password"} placeholder="Confirme sua nova senha" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className="bg-white/50 dark:bg-zinc-900/50 pr-10" disabled={isLoading} required />
-            <Button type="button" variant="ghost" size="sm" className="absolute right-0 top-0 h-full px-3 hover:bg-transparent" onClick={() => setShowPassword(prev => !prev)}>
-              {showPassword ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
-            </Button>
-          </div>
-        </div>
-      </CardContent>
-      <CardFooter className="pb-8">
-        <Button type="submit" className="w-full h-11 text-base shadow-lg shadow-primary/20" disabled={isLoading || password.length < 6 || password !== confirmPassword}>
-          {isLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : "Definir Senha e Entrar"}
-        </Button>
-      </CardFooter>
-    </form>
-  );
-};
-
-
 const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [currentMode, setCurrentMode] = useState<AuthMode>('login');
-  // NOVO ESTADO: Para rastrear se estamos no fluxo de redefinição/convite
-  const [isAuthFlowActive, setIsAuthFlowActive] = useState(false); 
-
+  
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -125,24 +47,9 @@ const Login = () => {
 
     if (type === 'recovery' || type === 'invite') {
       if (accessToken) {
-        setIsAuthFlowActive(true); // Ativa o rastreamento do fluxo
-        supabase.auth.setSession({ access_token: accessToken, refresh_token: params.get('refresh_token')! })
-          .then(({ data, error }) => {
-            if (error) {
-              console.error("Erro ao definir sessão com token:", error);
-              toast({ title: "Erro de acesso", description: "Token inválido ou expirado.", variant: "destructive" });
-              navigate('/login', { replace: true });
-            } else if (data.session) {
-              // Se a sessão for definida, forçamos o modo de atualização de senha
-              setCurrentMode('update_password');
-              // Limpa o hash da URL para evitar loops, mas mantém o modo
-              navigate(location.pathname, { replace: true }); 
-            }
-          })
-          .finally(() => {
-            // Desativa o rastreamento do fluxo após a tentativa de setSession
-            setIsAuthFlowActive(false); 
-          });
+        // REDIRECIONA PARA A NOVA TELA DE ATUALIZAÇÃO DE SENHA
+        // Passamos o hash completo para que a nova tela possa processar os tokens
+        navigate(`/update-password${location.hash}`, { replace: true });
       }
     }
   }, [location, navigate]);
@@ -232,9 +139,6 @@ const Login = () => {
 
   const renderForm = () => {
     switch (currentMode) {
-      case 'update_password':
-        return <UpdatePasswordForm isLoading={isLoading} setIsLoading={setIsLoading} />;
-
       case 'forgot_password':
         return (
           <form onSubmit={handleRecoverySubmit} className="animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -318,7 +222,7 @@ const Login = () => {
                 {isLoading ? "Registrando..." : <><UserPlus className="h-4 w-4 mr-2" />Cadastrar</>}
               </Button>
               <div className="text-center text-sm text-muted-foreground">
-                Não tem uma conta?{" "}
+                Já tem uma conta?{" "}
                 <Button type="button" variant="link" className="text-primary hover:text-primary/80 p-0 h-auto font-semibold" onClick={() => changeMode('login')} disabled={isLoading}>
                   Voltar ao login
                 </Button>
@@ -392,8 +296,7 @@ const Login = () => {
       <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-violet-500/20 rounded-full blur-[120px] animate-pulse delay-1000" />
 
       <GlassCard className="w-full max-w-md border-white/20 dark:border-white/10 shadow-2xl backdrop-blur-2xl relative z-10">
-        {/* Se estiver no fluxo de auth e o modo for update_password, renderiza o formulário. Caso contrário, renderiza o formulário normal. */}
-        {isAuthFlowActive || currentMode === 'update_password' ? renderForm() : renderForm()}
+        {renderForm()}
       </GlassCard>
     </div>
   );

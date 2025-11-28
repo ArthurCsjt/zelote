@@ -18,6 +18,7 @@ import NotFound from "./pages/NotFound";
 import Settings from "./pages/Settings";
 import { PrintPreviewPage } from "./pages/PrintPreviewPage"; // NOVO IMPORT
 import SchedulingPage from "./pages/SchedulingPage"; // NOVO IMPORT
+import UpdatePasswordPage from "./pages/UpdatePassword"; // NOVO IMPORT
 import Layout from "./components/Layout"; // Importando Layout
 import { cn } from "./lib/utils"; // IMPORTANDO CN AQUI
 
@@ -75,6 +76,9 @@ const App = () => (
             <BrowserRouter>
               <Routes>
                 <Route path="/login" element={<Login />} />
+                
+                {/* NOVA ROTA DE ATUALIZAÇÃO DE SENHA */}
+                <Route path="/update-password" element={<UpdatePasswordPage />} />
                 
                 <Route path="/" element={
                   <ProtectedRoute>
