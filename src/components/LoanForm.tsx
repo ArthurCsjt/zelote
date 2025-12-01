@@ -237,7 +237,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
                     "border border-blue-500/20",
                     "shadow-xl shadow-blue-500/5",
                     "border-border-strong",
-                    !isUserSelected && "opacity-50 pointer-events-none" // DESABILITADO SE NÃO TIVER USUÁRIO
+                    !isUserSelected && "opacity-30 pointer-events-none" // ALTERADO PARA OPACITY-30
                 )}>
                     <CardHeader className="p-5 pb-3 border-b border-blue-500/10 dark:border-blue-500/30">
                         <CardTitle className="text-lg font-semibold flex items-center gap-2 text-foreground">
@@ -279,7 +279,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
                     "border border-amber-500/20",
                     "shadow-xl shadow-amber-500/5",
                     "border-border-strong",
-                    (!isUserSelected || !isPurposeDefined) && "opacity-50 pointer-events-none" // DESABILITADO SE NÃO TIVER FINALIDADE
+                    (!isUserSelected || !isPurposeDefined) && "opacity-30 pointer-events-none" // ALTERADO PARA OPACITY-30
                 )}>
                     <CardHeader className="p-5 pb-3 border-b border-amber-500/10 dark:border-amber-500/30">
                         <div className="flex items-center justify-between">
@@ -323,7 +323,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
                     "bg-muted/30 border border-border/50",
                     "shadow-xl",
                     "border-border-strong",
-                    (!isUserSelected || !isPurposeDefined || !isDevicesAdded) && "opacity-50 pointer-events-none"
+                    (!isUserSelected || !isPurposeDefined || !isDevicesAdded) && "opacity-30 pointer-events-none" // ALTERADO PARA OPACITY-30
                 )}>
                     <CardHeader className="p-5 pb-3 border-b border-border/50">
                         <CardTitle className="text-lg font-semibold flex items-center gap-2 text-foreground">
