@@ -14,6 +14,7 @@ const steps = [
     id: 1,
     title: 'Solicitante',
     icon: User,
+    // Passo 1 está completo se o usuário E a finalidade estiverem definidos
     check: (props: LoanStepsHeaderProps) => props.isUserSelected && props.isPurposeDefined,
     color: 'text-violet-500',
     progressColor: 'bg-violet-500',
@@ -22,6 +23,7 @@ const steps = [
     id: 2,
     title: 'Dispositivos',
     icon: Computer,
+    // Passo 2 está completo se houver dispositivos adicionados
     check: (props: LoanStepsHeaderProps) => props.isDevicesAdded,
     color: 'text-blue-500',
     progressColor: 'bg-blue-500',
@@ -30,6 +32,7 @@ const steps = [
     id: 3,
     title: 'Emprestar',
     icon: CheckCircle,
+    // Passo 3 só é marcado como completo após a submissão, mas o check aqui é para indicar que está pronto para submeter
     check: (props: LoanStepsHeaderProps) => props.isUserSelected && props.isDevicesAdded && props.isPurposeDefined,
     color: 'text-green-500',
     progressColor: 'bg-green-500',
@@ -38,7 +41,8 @@ const steps = [
 
 export const LoanStepsHeader: React.FC<LoanStepsHeaderProps> = (props) => {
   const totalSteps = steps.length;
-  const completedSteps = steps.filter(step => step.check(props)).length;
+  
+  // Calcula o progresso baseado no passo atual
   const progressPercentage = (props.currentStep - 1) / (totalSteps - 1) * 100;
   
   // Determina a cor da barra de progresso com base no passo atual
@@ -64,8 +68,13 @@ export const LoanStepsHeader: React.FC<LoanStepsHeaderProps> = (props) => {
 
         {steps.map((step, index) => {
           const Icon = step.icon;
-          const isCompleted = step.check(props);
+          // O passo está completo se o check for verdadeiro E o ID do passo for menor que o passo atual
+          // Ou se o check for verdadeiro E o passo atual for o último (Passo 3)
+          const isCompleted = step.check(props) && (step.id < props.currentStep || (step.id === 3 && props.currentStep === 3));
           const isActive = props.currentStep === step.id;
+          
+          // Se o passo 1 estiver completo, mas o usuário estiver no passo 2, ele deve ser marcado como completo.
+          const isPastCompleted = step.check(props) && step.id < props.currentStep;
           
           return (
             <div 
@@ -80,11 +89,11 @@ export const LoanStepsHeader: React.FC<LoanStepsHeaderProps> = (props) => {
                 "h-10 w-10 rounded-full flex items-center justify-center mb-2 transition-all duration-300 ring-4",
                 isActive 
                   ? `bg-primary text-primary-foreground ring-primary/30 dark:ring-primary/20`
-                  : isCompleted 
+                  : isPastCompleted 
                     ? "bg-success text-success-foreground ring-success/30 dark:ring-success/20"
                     : "bg-muted text-muted-foreground ring-muted/30 dark:ring-muted/20"
               )}>
-                {isCompleted && !isActive ? <CheckCircle className="h-5 w-5" /> : <span className="font-bold text-base">{step.id}</span>}
+                {isPastCompleted ? <CheckCircle className="h-5 w-5" /> : <span className="font-bold text-base">{step.id}</span>}
               </div>
               
               {/* Título */}
@@ -98,9 +107,9 @@ export const LoanStepsHeader: React.FC<LoanStepsHeaderProps> = (props) => {
               {/* Status */}
               <p className={cn(
                 "text-xs mt-0.5",
-                isActive ? currentStepData.color : isCompleted ? 'text-success' : 'text-muted-foreground'
+                isActive ? currentStepData.color : isPastCompleted ? 'text-success' : 'text-muted-foreground'
               )}>
-                {isActive ? 'Atual' : isCompleted ? 'Completo' : 'Pendente'}
+                {isActive ? 'Atual' : isPastCompleted ? 'Completo' : 'Pendente'}
               </p>
             </div>
           );
