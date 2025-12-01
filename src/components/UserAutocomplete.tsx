@@ -133,7 +133,7 @@ const UserAutocomplete: React.FC<UserAutocompleteProps> = ({ selectedUser, onSel
         </Button>
       </PopoverTrigger>
       <PopoverContent 
-        className="w-[350px] p-0 bg-card border-border"
+        className="w-[350px] p-0 bg-card border-border shadow-xl border-border-strong" // ADICIONADO shadow-xl e border-border-strong
       >
         <Command>
           <CommandInput 
