@@ -92,14 +92,14 @@ export const LoanStepsHeader: React.FC<LoanStepsHeaderProps> = (props) => {
             >
               {/* Círculo do Passo */}
               <div className={cn(
-                "h-10 w-10 rounded-full flex items-center justify-center mb-2 transition-all duration-300 ring-4",
+                "h-8 w-8 rounded-full flex items-center justify-center mb-2 transition-all duration-300 ring-4",
                 isActive 
-                  ? `bg-primary text-primary-foreground ring-primary/30 dark:ring-primary/20`
+                  ? 'loan-step-active ring-primary/30 dark:ring-primary/20'
                   : isPastCompleted 
-                    ? "bg-success text-success-foreground ring-success/30 dark:ring-success/20"
-                    : "bg-muted text-muted-foreground ring-muted/30 dark:ring-muted/20"
+                    ? 'loan-step-completed ring-success/30 dark:ring-success/20'
+                    : 'loan-step-pending ring-muted/30 dark:ring-muted/20'
               )}>
-                {isPastCompleted ? <CheckCircle className="h-5 w-5" /> : <span className="font-bold text-base">{step.id}</span>}
+                {isPastCompleted ? <CheckCircle className="h-4 w-4" /> : <span className="font-bold text-sm">{step.id}</span>}
               </div>
               
               {/* Título */}

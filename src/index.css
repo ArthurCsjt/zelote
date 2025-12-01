@@ -43,7 +43,7 @@
     --accent: 240 4.8% 95.9%;          /* Zinc 100 */
     --accent-foreground: 240 5.9% 10%; /* Zinc 900 */
     
-    /* ===== SEMANTIC COLORS (Mantendo a funcionalidade BG/FG) ===== */
+    /* ===== SEMANTIC STATES (Mantendo a funcionalidade BG/FG) ===== */
     --success: 142.1 76.2% 36.3%;      /* Verde */
     --success-foreground: 144 61% 20%; /* Texto verde escuro */
     --success-bg: 142 76% 95%;         /* Fundo verde claro */
@@ -399,4 +399,53 @@
 .slot-subtitle {
     font-size: 0.75rem;
     color: hsl(var(--muted-foreground));
+}
+
+/* ======================================================================== */
+/* NOVO: Estilos para o LoanStepsHeader */
+/* ======================================================================== */
+
+/* Estilo para o círculo de passo COMPLETO */
+.loan-step-completed {
+    /* Fundo mais claro para o modo light */
+    background-color: hsl(var(--success-bg)); 
+    color: hsl(var(--success-foreground));
+    border: 2px solid hsl(var(--success));
+    
+    /* Ajuste para o modo dark */
+    .dark & {
+        background-color: hsl(var(--success));
+        color: hsl(var(--success-foreground));
+        border-color: hsl(var(--success));
+    }
+}
+
+/* Estilo para o círculo de passo ATUAL */
+.loan-step-active {
+    /* Fundo primário (azul) */
+    background-color: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+    border: 2px solid hsl(var(--primary));
+    
+    /* Ajuste para o modo dark */
+    .dark & {
+        background-color: hsl(var(--primary));
+        color: hsl(var(--primary-foreground));
+        border-color: hsl(var(--primary));
+    }
+}
+
+/* Estilo para o círculo de passo PENDENTE */
+.loan-step-pending {
+    /* Fundo cinza claro e borda cinza para o modo light */
+    background-color: hsl(var(--background-secondary));
+    color: hsl(var(--muted-foreground));
+    border: 2px solid hsl(var(--border));
+    
+    /* Ajuste para o modo dark */
+    .dark & {
+        background-color: hsl(var(--muted));
+        color: hsl(var(--muted-foreground));
+        border-color: hsl(var(--border-strong));
+    }
 }
