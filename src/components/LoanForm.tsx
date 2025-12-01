@@ -209,7 +209,8 @@ export function LoanForm({ onBack }: LoanFormProps) {
                     <CardContent className="p-5 space-y-4">
                         {/* Busca de Usuário */}
                         <div className="space-y-2">
-                            <Label className="text-sm font-medium text-foreground flex items-center gap-1">
+                            {/* REMOVIDA A LABEL REDUNDANTE */}
+                            <Label className="text-sm font-medium text-foreground flex items-center gap-1 sr-only">
                                 Buscar por Nome, RA ou Email
                                 <span className="text-destructive">*</span>
                             </Label>
