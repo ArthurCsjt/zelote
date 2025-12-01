@@ -20,7 +20,6 @@ interface PurposeAutocompleteProps {
 const PurposeAutocomplete: React.FC<PurposeAutocompleteProps> = ({ value, onChange, disabled, placeholder, userType }) => {
   const [open, setOpen] = useState(false);
   const { users, loading } = useUserSearch();
-  // Usamos o estado interno para a busca dentro do popover
   const [searchTerm, setSearchTerm] = useState(''); 
 
   // 1. Filtra apenas Professores e Funcionários para sugestões de finalidade
@@ -53,92 +52,10 @@ const PurposeAutocomplete: React.FC<PurposeAutocompleteProps> = ({ value, onChan
     setSearchTerm(''); // Limpa o termo de busca após a seleção
   };
   
-  const handleClear = () => {
-    onChange('');
-    setSearchTerm('');
-  };
-  
   const commandPlaceholder = userType === 'aluno' 
     ? 'Buscar professor ou digitar aula...' 
     : 'Buscar departamento ou digitar finalidade...';
 
-  // Se um valor foi selecionado/digitado E o popover está fechado, exibe o GlassCard de confirmação
-  if (value && !open) {
-    // Tenta identificar se o valor é um usuário formatado (ex: Professor: Nome)
-    const isUserSelection = value.includes(': ');
-    const displayValue = isUserSelection ? value.split(': ')[1] : value;
-    const displayType = isUserSelection ? value.split(': ')[0] : 'Finalidade';
-    
-    return (
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          {/* O trigger é o cartão de confirmação */}
-          <GlassCard 
-            className={cn(
-              "p-3 border-2 border-green-400 bg-green-50/50 shadow-md dark:bg-green-950/50 dark:border-green-900 cursor-pointer",
-              disabled && "opacity-50 cursor-not-allowed"
-            )}
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <CheckCircle className="h-5 w-5 text-green-600" />
-                <div>
-                  <p className="font-semibold text-sm text-foreground">{displayValue}</p>
-                  <p className="text-xs text-muted-foreground">{displayType}</p>
-                </div>
-              </div>
-              <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); handleClear(); }} disabled={disabled}>
-                <X className="h-4 w-4 text-red-500" />
-              </Button>
-            </div>
-            <div className="flex flex-wrap gap-2 mt-2 pt-2 border-t border-green-200 dark:border-green-900">
-              <Badge variant="secondary" className="capitalize">{displayType}</Badge>
-            </div>
-          </GlassCard>
-        </PopoverTrigger>
-        <PopoverContent 
-          className="w-[350px] p-0 bg-card border-border shadow-xl border-border-strong"
-        >
-          <Command>
-            <CommandInput 
-              placeholder={commandPlaceholder} 
-              value={searchTerm}
-              onValueChange={setSearchTerm}
-            />
-            <CommandList>
-              <CommandEmpty>Nenhuma sugestão encontrada. Digite a finalidade.</CommandEmpty>
-              <CommandGroup heading="Sugestões (Professores/Funcionários)">
-                {filteredSuggestions.map((user) => (
-                  <CommandItem
-                    key={user.id}
-                    value={user.searchable}
-                    onSelect={() => handleSelectUser(user)}
-                    className="flex items-center justify-between"
-                  >
-                    <div className="flex items-center">
-                      {getUserIcon(user.type)}
-                      <div className="flex flex-col">
-                        <span className="font-medium text-sm text-foreground">{user.name}</span>
-                        <span className="text-xs text-muted-foreground capitalize">{user.type}</span>
-                      </div>
-                    </div>
-                    <Check
-                      className={cn(
-                        "ml-auto h-4 w-4",
-                        value === `${user.type.charAt(0).toUpperCase() + user.type.slice(1)}: ${user.name}` ? "opacity-100" : "opacity-0"
-                      )}
-                    />
-                  </CommandItem>
-                ))}
-              </CommandGroup>
-            </CommandList>
-          </Command>
-        </PopoverContent>
-      </Popover>
-    );
-  }
-
-  // Se nenhum valor estiver selecionado OU o popover estiver aberto, mostra o campo de input
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <div className="relative">

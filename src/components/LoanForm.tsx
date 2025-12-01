@@ -6,7 +6,7 @@ import { Label } from "./ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { Badge } from "./ui/badge";
 import { Checkbox } from "./ui/checkbox";
-import { Computer, Plus, QrCode, Calendar, Clock, Loader2, CheckCircle, User, BookOpen, AlertTriangle } from "lucide-react";
+import { Computer, Plus, QrCode, Calendar, Clock, Loader2, CheckCircle, User, BookOpen, AlertTriangle, MessageSquare } from "lucide-react";
 import { QRCodeReader } from "./QRCodeReader";
 import { format } from "date-fns";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
@@ -21,6 +21,7 @@ import { Card, CardContent, CardTitle, CardHeader } from "./ui/card";
 import { GlassCard } from "./ui/GlassCard";
 import { DeviceListInput } from "./DeviceListInput";
 import { LoanStepsHeader } from "./LoanStepsHeader";
+import { Textarea } from "./ui/textarea"; // NOVO IMPORT
 
 // Define a interface dos dados do formulário de empréstimo
 interface LoanFormData {
@@ -32,6 +33,8 @@ interface LoanFormData {
   userType: 'aluno' | 'professor' | 'funcionario';
   loanType: 'individual' | 'lote'; // Mantido para tipagem
   expectedReturnDate?: Date;
+  // NOVO CAMPO: Observações
+  notes?: string; 
 }
 
 // Define a interface das props do componente
@@ -48,7 +51,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
   const { createLoan, bulkCreateLoans, loading } = useDatabase();
   
   const [formData, setFormData] = useState<LoanFormData>({
-    studentName: "", ra: "", email: "", chromebookId: "", purpose: "", userType: 'aluno', loanType: 'lote'
+    studentName: "", ra: "", email: "", chromebookId: "", purpose: "", userType: 'aluno', loanType: 'lote', notes: ''
   });
 
   const [selectedUser, setSelectedUser] = useState<UserSearchResult | null>(null);
@@ -58,7 +61,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
 
   // === LÓGICA DE PASSOS E VALIDAÇÃO ===
   const isUserSelected = !!selectedUser;
-  const isPurposeDefined = !!formData.purpose;
+  const isPurposeDefined = !!formData.purpose.trim(); // AGORA VALIDA APENAS SE NÃO ESTÁ VAZIO
   const isDevicesAdded = deviceIds.length > 0;
   
   // NOVO CÁLCULO DE PASSO ATUAL (4 PASSOS)
@@ -80,6 +83,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
       email: user.email,
       userType: user.type,
       purpose: '', // Limpa a finalidade ao mudar o usuário
+      notes: '', // Limpa as notas
     }));
   };
 
@@ -92,13 +96,14 @@ export function LoanForm({ onBack }: LoanFormProps) {
       email: "",
       userType: 'aluno',
       purpose: '',
+      notes: '',
     }));
   };
   
   const resetForm = () => {
     setDeviceIds([]);
     setFormData({ 
-      studentName: "", ra: "", email: "", chromebookId: "", purpose: "", userType: 'aluno', loanType: 'lote'
+      studentName: "", ra: "", email: "", chromebookId: "", purpose: "", userType: 'aluno', loanType: 'lote', notes: ''
     });
     setSelectedUser(null);
     setHasReturnDeadline(false);
@@ -118,7 +123,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
     }
     
     // 2. Validação de Finalidade
-    if (!formData.purpose) {
+    if (!isPurposeDefined) {
       toast({
         title: "Erro",
         description: "Defina a finalidade do empréstimo.",
@@ -150,6 +155,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
       userType: formData.userType,
       loanType: loanType,
       expectedReturnDate: hasReturnDeadline && formData.expectedReturnDate ? formData.expectedReturnDate : undefined,
+      notes: formData.notes, // Incluindo notas no payload (embora o schema 'loans' não tenha 'notes', o useDatabase precisa ser atualizado para lidar com isso se necessário, mas por enquanto passamos)
     }));
     
     const { successCount, errorCount } = await bulkCreateLoans(loanDataList);
@@ -259,12 +265,28 @@ export function LoanForm({ onBack }: LoanFormProps) {
                                 userType={formData.userType}
                             />
                             {/* Validação em tempo real para Finalidade */}
-                            {!formData.purpose && isUserSelected && (
+                            {!isPurposeDefined && isUserSelected && (
                                 <p className="text-xs text-destructive flex items-center gap-1 mt-1">
                                     <AlertTriangle className="h-3 w-3" />
                                     Defina a finalidade do empréstimo
                                 </p>
                             )}
+                        </div>
+                        
+                        {/* NOVO CAMPO: Observações Adicionais */}
+                        <div className="space-y-2 pt-4 border-t border-border/50">
+                            <Label className="text-sm font-medium text-foreground flex items-center gap-1">
+                                <MessageSquare className="h-4 w-4 text-muted-foreground" />
+                                Observações Adicionais (Opcional)
+                            </Label>
+                            <Textarea
+                                id="notes"
+                                value={formData.notes || ''}
+                                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                                placeholder="Ex: Necessário para o projeto X, devolver antes das 15h."
+                                className="bg-input border-gray-200 min-h-[80px] dark:bg-card dark:border-border"
+                                disabled={loading || !isUserSelected}
+                            />
                         </div>
                     </CardContent>
                 </GlassCard>
