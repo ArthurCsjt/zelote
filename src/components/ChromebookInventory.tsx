@@ -154,17 +154,41 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
   const getStatusInfo = (status: string) => {
     switch (status) {
       case 'disponivel':
-        return { color: 'text-green-600 bg-green-50', icon: CheckCircle, label: 'Disponível' };
+        return { 
+          color: 'text-green-600 bg-green-50 dark:text-success dark:bg-success-bg/30', 
+          icon: CheckCircle, 
+          label: 'Disponível' 
+        };
       case 'emprestado':
-        return { color: 'text-yellow-600 bg-yellow-50', icon: Clock, label: 'Emprestado' };
+        return { 
+          color: 'text-purple-600 bg-purple-50 dark:text-purple-400 dark:bg-purple-900/30', 
+          icon: Clock, 
+          label: 'Emprestado' 
+        };
       case 'fixo':
-        return { color: 'text-blue-600 bg-blue-50', icon: MapPin, label: 'Fixo' };
+        return { 
+          color: 'text-blue-600 bg-blue-50 dark:text-blue-400 dark:bg-blue-900/30', 
+          icon: MapPin, 
+          label: 'Fixo' 
+        };
       case 'manutencao':
-        return { color: 'text-red-600 bg-red-50', icon: AlertTriangle, label: 'Manutenção' };
+        return { 
+          color: 'text-red-600 bg-red-50 dark:text-error dark:bg-error-bg/30', 
+          icon: AlertTriangle, 
+          label: 'Manutenção' 
+        };
       case 'fora_uso':
-        return { color: 'text-gray-600 bg-gray-200', icon: XCircle, label: 'Inativo' };
+        return { 
+          color: 'text-gray-600 bg-gray-200 dark:text-muted-foreground dark:bg-muted/30', 
+          icon: XCircle, 
+          label: 'Inativo' 
+        };
       default:
-        return { color: 'text-gray-600 bg-gray-50', icon: XCircle, label: 'Desconhecido' };
+        return { 
+          color: 'text-gray-600 bg-gray-50 dark:text-muted-foreground dark:bg-muted/30', 
+          icon: XCircle, 
+          label: 'Desconhecido' 
+        };
     }
   };
 
@@ -487,7 +511,10 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
                     </TableCell>
                     <TableCell className="py-2 align-top w-[120px]">
                       <div className={`inline-flex flex-col items-start gap-1 text-xs font-medium`}>
-                        <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full ${statusInfo.color} dark:text-foreground dark:bg-card/50`}>
+                        <div className={cn(
+                          "inline-flex items-center gap-1 px-2 py-1 rounded-full", 
+                          statusInfo.color
+                        )}>
                           <StatusIcon className="w-3 h-3" />
                           <span className="text-[10px]">{statusInfo.label}</span>
                         </div>
