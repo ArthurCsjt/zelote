@@ -16,6 +16,7 @@ const steps = [
     icon: User,
     check: (props: LoanStepsHeaderProps) => props.isUserSelected && props.isPurposeDefined,
     color: 'text-violet-500',
+    progressColor: 'bg-violet-500',
   },
   {
     id: 2,
@@ -23,57 +24,88 @@ const steps = [
     icon: Computer,
     check: (props: LoanStepsHeaderProps) => props.isDevicesAdded,
     color: 'text-blue-500',
+    progressColor: 'bg-blue-500',
   },
   {
     id: 3,
-    title: 'Revisar e Emprestar',
+    title: 'Emprestar',
     icon: CheckCircle,
     check: (props: LoanStepsHeaderProps) => props.isUserSelected && props.isDevicesAdded && props.isPurposeDefined,
     color: 'text-green-500',
+    progressColor: 'bg-green-500',
   },
 ];
 
 export const LoanStepsHeader: React.FC<LoanStepsHeaderProps> = (props) => {
+  const totalSteps = steps.length;
+  const completedSteps = steps.filter(step => step.check(props)).length;
+  const progressPercentage = (props.currentStep - 1) / (totalSteps - 1) * 100;
+  
+  // Determina a cor da barra de progresso com base no passo atual
+  const currentStepData = steps.find(s => s.id === props.currentStep) || steps[0];
+  const progressColorClass = currentStepData.progressColor;
+
   return (
-    <div className="grid grid-cols-3 gap-4 mb-6">
-      {steps.map((step, index) => {
-        const Icon = step.icon;
-        const isCompleted = step.check(props);
-        const isActive = props.currentStep === step.id;
+    <div className="mb-8 space-y-4">
+      {/* Linha do Tempo Visual */}
+      <div className="flex justify-between items-center relative">
         
-        return (
-          <div 
-            key={step.id} 
-            className={cn(
-              "flex flex-col items-center text-center p-3 rounded-xl transition-all duration-300 border-2",
-              "bg-card shadow-md",
-              isActive 
-                ? `border-primary dark:border-primary/50 shadow-lg ${step.color}`
-                : isCompleted 
-                  ? "border-success/50 dark:border-success/30"
-                  : "border-border dark:border-border-strong opacity-60"
-            )}
-          >
-            <div className={cn(
-              "h-8 w-8 rounded-full flex items-center justify-center mb-1 transition-all duration-300",
-              isActive 
-                ? `bg-primary text-primary-foreground scale-110`
-                : isCompleted 
-                  ? "bg-success text-success-foreground"
-                  : "bg-muted text-muted-foreground"
-            )}>
-              {isCompleted && !isActive ? <CheckCircle className="h-4 w-4" /> : <span className="font-bold text-sm">{step.id}</span>}
+        {/* Barra de Progresso (Fundo) */}
+        <div className="absolute top-1/2 left-0 right-0 h-1 bg-border dark:bg-border-strong -translate-y-1/2 mx-10" />
+        
+        {/* Barra de Progresso (Preenchimento) */}
+        <div 
+          className={cn(
+            "absolute top-1/2 left-10 h-1 -translate-y-1/2 transition-all duration-500 ease-in-out rounded-full",
+            progressColorClass
+          )}
+          style={{ width: `calc(${progressPercentage}% - 40px)` }}
+        />
+
+        {steps.map((step, index) => {
+          const Icon = step.icon;
+          const isCompleted = step.check(props);
+          const isActive = props.currentStep === step.id;
+          
+          return (
+            <div 
+              key={step.id} 
+              className={cn(
+                "flex flex-col items-center text-center z-10 transition-all duration-300 w-1/3 px-2",
+                isActive ? 'scale-105' : 'opacity-70'
+              )}
+            >
+              {/* Círculo do Passo */}
+              <div className={cn(
+                "h-10 w-10 rounded-full flex items-center justify-center mb-2 transition-all duration-300 ring-4",
+                isActive 
+                  ? `bg-primary text-primary-foreground ring-primary/30 dark:ring-primary/20`
+                  : isCompleted 
+                    ? "bg-success text-success-foreground ring-success/30 dark:ring-success/20"
+                    : "bg-muted text-muted-foreground ring-muted/30 dark:ring-muted/20"
+              )}>
+                {isCompleted && !isActive ? <CheckCircle className="h-5 w-5" /> : <span className="font-bold text-base">{step.id}</span>}
+              </div>
+              
+              {/* Título */}
+              <h4 className={cn(
+                "text-sm font-semibold whitespace-nowrap",
+                isActive ? 'text-foreground' : 'text-muted-foreground'
+              )}>
+                {step.title}
+              </h4>
+              
+              {/* Status */}
+              <p className={cn(
+                "text-xs mt-0.5",
+                isActive ? currentStepData.color : isCompleted ? 'text-success' : 'text-muted-foreground'
+              )}>
+                {isActive ? 'Atual' : isCompleted ? 'Completo' : 'Pendente'}
+              </p>
             </div>
-            <h4 className="text-sm font-semibold text-foreground/90">{step.title}</h4>
-            <p className={cn(
-              "text-xs mt-0.5",
-              isActive ? step.color : "text-muted-foreground"
-            )}>
-              {isActive ? 'Atual' : isCompleted ? 'Completo' : 'Pendente'}
-            </p>
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
     </div>
   );
 };
