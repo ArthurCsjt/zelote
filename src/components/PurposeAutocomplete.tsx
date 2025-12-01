@@ -15,9 +15,11 @@ interface PurposeAutocompleteProps {
   disabled: boolean;
   placeholder: string;
   userType: 'aluno' | 'professor' | 'funcionario';
+  /** NOVO: Função chamada ao selecionar um item ou confirmar a digitação */
+  onConfirm: (value: string) => void; 
 }
 
-const PurposeAutocomplete: React.FC<PurposeAutocompleteProps> = ({ value, onChange, disabled, placeholder, userType }) => {
+const PurposeAutocomplete: React.FC<PurposeAutocompleteProps> = ({ value, onChange, disabled, placeholder, userType, onConfirm }) => {
   const [open, setOpen] = useState(false);
   const { users, loading } = useUserSearch();
   const [searchTerm, setSearchTerm] = useState(''); 
@@ -48,8 +50,17 @@ const PurposeAutocomplete: React.FC<PurposeAutocompleteProps> = ({ value, onChan
     // Formata o valor para ser claro no campo de finalidade
     const purposeValue = `${user.type.charAt(0).toUpperCase() + user.type.slice(1)}: ${user.name}`;
     onChange(purposeValue);
+    onConfirm(purposeValue); // Confirma imediatamente após a seleção
     setOpen(false);
     setSearchTerm(''); // Limpa o termo de busca após a seleção
+  };
+  
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && value.trim()) {
+        e.preventDefault();
+        onConfirm(value.trim()); // Confirma a digitação ao pressionar Enter
+        setOpen(false);
+    }
   };
   
   const commandPlaceholder = userType === 'aluno' 
@@ -65,6 +76,7 @@ const PurposeAutocomplete: React.FC<PurposeAutocompleteProps> = ({ value, onChan
           value={value}
           onChange={(e) => onChange(e.target.value)} // Permite digitação direta
           onFocus={() => setSearchTerm(value)} // Define o termo de busca ao focar
+          onKeyDown={handleKeyDown} // Adiciona o handler de Enter
           className="w-full pr-10 bg-input-bg border-input dark:bg-input-bg dark:border-input"
           disabled={disabled}
         />
@@ -102,16 +114,13 @@ const PurposeAutocomplete: React.FC<PurposeAutocompleteProps> = ({ value, onChan
                   <div className="flex items-center">
                     {getUserIcon(user.type)}
                     <div className="flex flex-col">
-                      <span className="font-medium text-sm text-foreground">{user.name}</span>
+                      <span className="font-medium text-sm text-foreground truncate">
+                        {user.name}
+                      </span>
                       <span className="text-xs text-muted-foreground capitalize">{user.type}</span>
                     </div>
                   </div>
-                  <Check
-                    className={cn(
-                      "ml-auto h-4 w-4",
-                      value === `${user.type.charAt(0).toUpperCase() + user.type.slice(1)}: ${user.name}` ? "opacity-100" : "opacity-0"
-                    )}
-                  />
+                  {/* Removido o Check, pois a confirmação é feita no onSelect */}
                 </CommandItem>
               ))}
             </CommandGroup>
