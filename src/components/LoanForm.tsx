@@ -58,10 +58,14 @@ export function LoanForm({ onBack }: LoanFormProps) {
   const [hasReturnDeadline, setHasReturnDeadline] = useState(false);
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
   const [deviceIds, setDeviceIds] = useState<string[]>([]); // Lista de IDs de dispositivos
+  
+  // NOVO ESTADO: Confirmação manual da finalidade
+  const [isPurposeConfirmed, setIsPurposeConfirmed] = useState(false);
 
   // === LÓGICA DE PASSOS E VALIDAÇÃO ===
   const isUserSelected = !!selectedUser;
-  const isPurposeDefined = !!formData.purpose.trim(); // AGORA VALIDA APENAS SE NÃO ESTÁ VAZIO
+  // A finalidade só é definida se o campo não estiver vazio E o usuário tiver confirmado
+  const isPurposeDefined = !!formData.purpose.trim() && isPurposeConfirmed; 
   const isDevicesAdded = deviceIds.length > 0;
   
   // NOVO CÁLCULO DE PASSO ATUAL (4 PASSOS)
@@ -76,6 +80,8 @@ export function LoanForm({ onBack }: LoanFormProps) {
 
   const handleUserSelect = (user: UserSearchResult) => {
     setSelectedUser(user);
+    // Reseta a confirmação da finalidade ao mudar o usuário
+    setIsPurposeConfirmed(false); 
     setFormData(prev => ({
       ...prev,
       studentName: user.name,
@@ -89,6 +95,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
 
   const handleUserClear = () => {
     setSelectedUser(null);
+    setIsPurposeConfirmed(false); // Reseta a confirmação
     setFormData(prev => ({
       ...prev,
       studentName: "",
@@ -105,6 +112,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
       ...prev,
       purpose: '',
     }));
+    setIsPurposeConfirmed(false); // Permite re-edição
   };
   
   const resetForm = () => {
@@ -114,13 +122,14 @@ export function LoanForm({ onBack }: LoanFormProps) {
     });
     setSelectedUser(null);
     setHasReturnDeadline(false);
+    setIsPurposeConfirmed(false); // Reseta a confirmação
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // 1. Validação de Usuário
-    if (!selectedUser) {
+    if (!isUserSelected) {
         toast({
             title: "Erro de Validação",
             description: "Selecione o solicitante usando a busca automática.",
@@ -129,11 +138,11 @@ export function LoanForm({ onBack }: LoanFormProps) {
         return;
     }
     
-    // 2. Validação de Finalidade
+    // 2. Validação de Finalidade (Agora depende de isPurposeDefined)
     if (!isPurposeDefined) {
       toast({
         title: "Erro",
-        description: "Defina a finalidade do empréstimo.",
+        description: "Confirme a finalidade do empréstimo no Passo 2.",
         variant: "destructive",
       });
       return;
@@ -187,49 +196,36 @@ export function LoanForm({ onBack }: LoanFormProps) {
       : '📚 Ex: Atividade em Sala, Pesquisa';
       
   // Lógica para exibir o cartão de confirmação da finalidade
-  const renderPurposeInput = () => {
-    if (isPurposeDefined) {
-        // Tenta identificar se o valor é um usuário formatado (ex: Professor: Nome)
-        const isUserSelection = formData.purpose.includes(': ');
-        const displayValue = isUserSelection ? formData.purpose.split(': ')[1] : formData.purpose;
-        const displayType = isUserSelection ? formData.purpose.split(': ')[0] : 'Finalidade Livre';
-        
-        return (
-            <GlassCard 
-                className={cn(
-                    "p-3 border-2 shadow-md cursor-pointer",
-                    "border-green-600/50 bg-green-50/80 dark:bg-green-950/50 dark:border-green-900"
-                )}
-                onClick={handlePurposeClear} // Permite clicar para limpar e editar
-            >
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                        <CheckCircle className="h-5 w-5 text-green-600" />
-                        <div>
-                            <p className="font-semibold text-sm text-foreground">{displayValue}</p>
-                            <p className="text-xs text-muted-foreground">{displayType}</p>
-                        </div>
-                    </div>
-                    <Button variant="ghost" size="sm" onClick={handlePurposeClear} disabled={loading}>
-                        <X className="h-4 w-4 text-red-500" />
-                    </Button>
-                </div>
-                <div className="flex flex-wrap gap-2 mt-2 pt-2 border-t border-green-200 dark:border-green-900">
-                    <Badge variant="secondary" className="capitalize">{displayType}</Badge>
-                </div>
-            </GlassCard>
-        );
-    }
+  const renderPurposeConfirmation = () => {
+    // Tenta identificar se o valor é um usuário formatado (ex: Professor: Nome)
+    const isUserSelection = formData.purpose.includes(': ');
+    const displayValue = isUserSelection ? formData.purpose.split(': ')[1] : formData.purpose;
+    const displayType = isUserSelection ? formData.purpose.split(': ')[0] : 'Finalidade Livre';
     
-    // Se não estiver definido, mostra o campo de busca/input
     return (
-        <PurposeAutocomplete
-            value={formData.purpose}
-            onChange={(value) => setFormData({ ...formData, purpose: value })}
-            disabled={loading || !isUserSelected}
-            placeholder={purposePlaceholder}
-            userType={formData.userType}
-        />
+        <GlassCard 
+            className={cn(
+                "p-3 border-2 shadow-md cursor-pointer",
+                "border-green-600/50 bg-green-50/80 dark:bg-green-950/50 dark:border-green-900"
+            )}
+            onClick={handlePurposeClear} // Permite clicar para limpar e editar
+        >
+            <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                    <CheckCircle className="h-5 w-5 text-green-600" />
+                    <div>
+                        <p className="font-semibold text-sm text-foreground">{displayValue}</p>
+                        <p className="text-xs text-muted-foreground">{displayType}</p>
+                    </div>
+                </div>
+                <Button variant="ghost" size="sm" onClick={handlePurposeClear} disabled={loading}>
+                    <X className="h-4 w-4 text-red-500" />
+                </Button>
+            </div>
+            <div className="flex flex-wrap gap-2 mt-2 pt-2 border-t border-green-200 dark:border-green-900">
+                <Badge variant="secondary" className="capitalize">{displayType}</Badge>
+            </div>
+        </GlassCard>
     );
   };
 
@@ -313,13 +309,43 @@ export function LoanForm({ onBack }: LoanFormProps) {
                                 <span className="text-destructive">*</span>
                             </Label>
                             
-                            {renderPurposeInput()}
+                            {isPurposeConfirmed ? (
+                                renderPurposeConfirmation()
+                            ) : (
+                                <div className="flex gap-2 items-start">
+                                    <div className="flex-1">
+                                        <PurposeAutocomplete
+                                            value={formData.purpose}
+                                            onChange={(value) => setFormData({ ...formData, purpose: value })}
+                                            disabled={loading || !isUserSelected}
+                                            placeholder={purposePlaceholder}
+                                            userType={formData.userType}
+                                        />
+                                    </div>
+                                    <Button 
+                                        type="button" 
+                                        size="icon" 
+                                        onClick={() => {
+                                            if (formData.purpose.trim()) {
+                                                setIsPurposeConfirmed(true);
+                                            } else {
+                                                toast({ title: "Atenção", description: "O campo de finalidade não pode estar vazio.", variant: "destructive" });
+                                            }
+                                        }}
+                                        disabled={loading || !formData.purpose.trim()}
+                                        className="h-10 w-10 shrink-0 bg-green-600 hover:bg-green-700"
+                                        title="Confirmar Finalidade"
+                                    >
+                                        <CheckCircle className="h-5 w-5" />
+                                    </Button>
+                                </div>
+                            )}
                             
                             {/* Validação em tempo real para Finalidade */}
                             {!isPurposeDefined && isUserSelected && (
                                 <p className="text-xs text-destructive flex items-center gap-1 mt-1">
                                     <AlertTriangle className="h-3 w-3" />
-                                    Defina a finalidade do empréstimo
+                                    {isPurposeConfirmed ? "Finalidade confirmada, mas o campo está vazio." : "Defina e confirme a finalidade do empréstimo."}
                                 </p>
                             )}
                         </div>
