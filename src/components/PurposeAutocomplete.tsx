@@ -20,26 +20,10 @@ interface PurposeAutocompleteProps {
 const PurposeAutocomplete: React.FC<PurposeAutocompleteProps> = ({ value, onChange, disabled, placeholder, userType }) => {
   const [open, setOpen] = useState(false);
   const { users, loading } = useUserSearch();
-  // Use internal state for typing/searching
-  const [searchTerm, setSearchTerm] = useState(value); 
+  // Usamos o estado interno para a busca dentro do popover
+  const [searchTerm, setSearchTerm] = useState(''); 
 
-  // 1. Sync external value to internal search term when component mounts or value changes externally (e.g., form reset)
-  useEffect(() => {
-    if (!open) {
-        setSearchTerm(value);
-    }
-  }, [value, open]);
-
-  // 2. Commit internal search term to external value when popover closes
-  const handleOpenChange = (newOpen: boolean) => {
-    setOpen(newOpen);
-    if (!newOpen) {
-      // Commit the final typed value when closing
-      onChange(searchTerm);
-    }
-  };
-
-  // Filtra apenas Professores e Funcionários para sugestões de finalidade
+  // 1. Filtra apenas Professores e Funcionários para sugestões de finalidade
   const filteredSuggestions = useMemo(() => {
     if (!searchTerm) return [];
     
@@ -66,7 +50,7 @@ const PurposeAutocomplete: React.FC<PurposeAutocompleteProps> = ({ value, onChan
     const purposeValue = `${user.type.charAt(0).toUpperCase() + user.type.slice(1)}: ${user.name}`;
     onChange(purposeValue);
     setOpen(false);
-    setSearchTerm(purposeValue);
+    setSearchTerm(''); // Limpa o termo de busca após a seleção
   };
   
   const handleClear = () => {
@@ -86,7 +70,7 @@ const PurposeAutocomplete: React.FC<PurposeAutocompleteProps> = ({ value, onChan
     const displayType = isUserSelection ? value.split(': ')[0] : 'Finalidade';
     
     return (
-      <Popover open={open} onOpenChange={handleOpenChange}>
+      <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           {/* O trigger é o cartão de confirmação */}
           <GlassCard 
@@ -113,13 +97,13 @@ const PurposeAutocomplete: React.FC<PurposeAutocompleteProps> = ({ value, onChan
           </GlassCard>
         </PopoverTrigger>
         <PopoverContent 
-          className="w-[350px] p-0 bg-card border-border" // Adicionando bg-card e border-border para garantir opacidade
+          className="w-[350px] p-0 bg-card border-border shadow-xl border-border-strong"
         >
           <Command>
             <CommandInput 
-              placeholder="Buscar professor/departamento ou digitar aula..." 
+              placeholder={commandPlaceholder} 
               value={searchTerm}
-              onValueChange={setSearchTerm} // FIX: Apenas atualiza o estado interno
+              onValueChange={setSearchTerm}
             />
             <CommandList>
               <CommandEmpty>Nenhuma sugestão encontrada. Digite a finalidade.</CommandEmpty>
@@ -154,32 +138,39 @@ const PurposeAutocomplete: React.FC<PurposeAutocompleteProps> = ({ value, onChan
     );
   }
 
-  // Se nenhum valor estiver selecionado OU o popover estiver aberto, mostra o botão padrão
+  // Se nenhum valor estiver selecionado OU o popover estiver aberto, mostra o campo de input
   return (
-    <Popover open={open} onOpenChange={handleOpenChange}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          role="combobox"
-          aria-expanded={open}
-          className="w-full justify-between bg-white border-gray-200 dark:bg-card dark:border-border"
+    <Popover open={open} onOpenChange={setOpen}>
+      <div className="relative">
+        <Input
+          id="purpose-input"
+          placeholder={placeholder}
+          value={value}
+          onChange={(e) => onChange(e.target.value)} // Permite digitação direta
+          onFocus={() => setSearchTerm(value)} // Define o termo de busca ao focar
+          className="w-full pr-10 bg-input-bg border-input dark:bg-input-bg dark:border-input"
           disabled={disabled}
-        >
-          <div className="flex items-center truncate">
-            <BookOpen className="mr-2 h-4 w-4 shrink-0 opacity-50" />
-            {value ? value : placeholder}
-          </div>
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-        </Button>
-      </PopoverTrigger>
+        />
+        <PopoverTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+            disabled={disabled}
+          >
+            <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50" />
+          </Button>
+        </PopoverTrigger>
+      </div>
+      
       <PopoverContent 
-        className="w-[350px] p-0 bg-card border-border" // Adicionando bg-card e border-border para garantir opacidade
+        className="w-[350px] p-0 bg-card border-border shadow-xl border-border-strong"
       >
         <Command>
           <CommandInput 
-            placeholder="Buscar professor/departamento ou digitar aula..." 
+            placeholder={commandPlaceholder} 
             value={searchTerm}
-            onValueChange={setSearchTerm} // FIX: Apenas atualiza o estado interno
+            onValueChange={setSearchTerm}
           />
           <CommandList>
             <CommandEmpty>Nenhuma sugestão encontrada. Digite a finalidade.</CommandEmpty>
