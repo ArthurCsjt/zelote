@@ -31,6 +31,7 @@ import Papa from 'papaparse';
 import { useNavigate } from "react-router-dom";
 import { usePrintContext } from "@/contexts/PrintContext";
 import { Checkbox } from "./ui/checkbox"; // NOVO IMPORT
+import { cn } from "@/lib/utils"; // IMPORTAÇÃO CORRIGIDA
 
 // Interface para o estado interno do formulário de edição (mantida para consistência)
 interface ChromebookDataExtended extends Chromebook {
