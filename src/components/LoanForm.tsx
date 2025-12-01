@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { toast } from "@/hooks/use-toast";
@@ -20,6 +20,7 @@ import type { UserSearchResult } from '@/hooks/useUserSearch';
 import { Card, CardContent, CardTitle, CardHeader } from "./ui/card"; // Adicionado CardHeader
 import { GlassCard } from "./ui/GlassCard";
 import { DeviceListInput } from "./DeviceListInput"; // NOVO IMPORT
+import { LoanStepsHeader } from "./LoanStepsHeader"; // NOVO IMPORT
 
 // Define a interface dos dados do formulário de empréstimo
 interface LoanFormData {
@@ -54,6 +55,17 @@ export function LoanForm({ onBack }: LoanFormProps) {
   const [hasReturnDeadline, setHasReturnDeadline] = useState(false);
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
   const [deviceIds, setDeviceIds] = useState<string[]>([]); // Lista de IDs de dispositivos
+
+  // === LÓGICA DE PASSOS E VALIDAÇÃO ===
+  const isUserSelected = !!selectedUser;
+  const isPurposeDefined = !!formData.purpose;
+  const isDevicesAdded = deviceIds.length > 0;
+  
+  const currentStep: 1 | 2 | 3 = useMemo(() => {
+    if (!isUserSelected || !isPurposeDefined) return 1;
+    if (!isDevicesAdded) return 2;
+    return 3;
+  }, [isUserSelected, isPurposeDefined, isDevicesAdded]);
 
   // === FUNÇÕES DE MANIPULAÇÃO (HANDLERS) ===
 
@@ -163,6 +175,15 @@ export function LoanForm({ onBack }: LoanFormProps) {
   // === RENDERIZAÇÃO DA INTERFACE (UI) ===
   return (
     <div className="animate-fade-in">
+      
+      {/* NOVO: Cabeçalho de Passos */}
+      <LoanStepsHeader 
+        currentStep={currentStep}
+        isUserSelected={isUserSelected}
+        isDevicesAdded={isDevicesAdded}
+        isPurposeDefined={isPurposeDefined}
+      />
+      
       <form onSubmit={handleSubmit} className="space-y-5 relative z-10">
         
         {/* ═══ SEÇÃO 1: SOLICITANTE (PRIORIDADE MÁXIMA) ═══ */}
@@ -176,7 +197,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
             <div className="flex items-center justify-between">
               <CardTitle className="text-lg font-semibold flex items-center gap-2 text-foreground">
                 <User className="h-5 w-5 text-violet-500" />
-                Solicitante do Empréstimo
+                Passo 1: Solicitante e Finalidade
               </CardTitle>
               {selectedUser && (
                 <Badge variant="outline" className={cn(
@@ -254,13 +275,13 @@ export function LoanForm({ onBack }: LoanFormProps) {
           "border border-blue-500/20",
           "shadow-xl shadow-blue-500/5", // ADICIONANDO shadow-xl
           "border-border-strong", // ADICIONANDO BORDA DISCRETA
-          !selectedUser && "opacity-50 pointer-events-none" // DESABILITADO SE NÃO TIVER USUÁRIO
+          (!isUserSelected || !isPurposeDefined) && "opacity-50 pointer-events-none" // DESABILITADO SE NÃO TIVER USUÁRIO/FINALIDADE
         )}>
           <CardHeader className="p-5 pb-3 border-b border-blue-500/10 dark:border-blue-500/30">
             <div className="flex items-center justify-between">
               <CardTitle className="text-lg font-semibold flex items-center gap-2 text-foreground">
                 <Computer className="h-5 w-5 text-blue-500" />
-                Dispositivos para Empréstimo
+                Passo 2: Dispositivos para Empréstimo
               </CardTitle>
               <Badge variant="outline" className={cn(
                 "text-xs font-medium transition-colors",
@@ -278,13 +299,13 @@ export function LoanForm({ onBack }: LoanFormProps) {
             <DeviceListInput
               deviceIds={deviceIds}
               setDeviceIds={setDeviceIds}
-              disabled={loading || !selectedUser}
+              disabled={loading || !isUserSelected || !isPurposeDefined}
               filterStatus="disponivel"
               actionLabel="Empréstimo"
             />
             
             {/* Validação em tempo real para Dispositivos */}
-            {selectedUser && formData.purpose && deviceIds.length === 0 && (
+            {isUserSelected && isPurposeDefined && deviceIds.length === 0 && (
               <p className="text-xs text-destructive flex items-center gap-1 mt-3">
                 <AlertTriangle className="h-3 w-3" />
                 Adicione pelo menos um dispositivo
@@ -298,8 +319,14 @@ export function LoanForm({ onBack }: LoanFormProps) {
           "bg-muted/30 border border-border/50",
           "shadow-xl", // ADICIONANDO shadow-xl
           "border-border-strong", // ADICIONANDO BORDA DISCRETA
-          !selectedUser && "opacity-50 pointer-events-none"
+          (!isUserSelected || !isPurposeDefined || !isDevicesAdded) && "opacity-50 pointer-events-none"
         )}>
+          <CardHeader className="p-5 pb-3 border-b border-border/50">
+            <CardTitle className="text-lg font-semibold flex items-center gap-2 text-foreground">
+                <Clock className="h-5 w-5 text-violet-500" />
+                Passo 3: Prazo de Devolução (Opcional)
+            </CardTitle>
+          </CardHeader>
           <CardContent className="p-5">
             <div className="space-y-4">
               {/* Checkbox de prazo */}
@@ -320,7 +347,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
                     }
                   }}
                   className="mt-1"
-                  disabled={!selectedUser}
+                  disabled={!isUserSelected || !isPurposeDefined || !isDevicesAdded}
                 />
                 <div className="flex-1">
                   <Label 
@@ -461,17 +488,12 @@ export function LoanForm({ onBack }: LoanFormProps) {
           ) : deviceIds.length === 0 ? (
             <>
               <Computer className="mr-2 h-5 w-5" />
-              Selecione os dispositivos
+              Passo 2 Pendente: Selecione os dispositivos
             </>
-          ) : !selectedUser ? (
+          ) : !selectedUser || !formData.purpose ? (
             <>
               <User className="mr-2 h-5 w-5" />
-              Selecione o solicitante
-            </>
-          ) : !formData.purpose ? (
-            <>
-              <BookOpen className="mr-2 h-5 w-5" />
-              Defina a finalidade
+              Passo 1 Pendente: Solicitante/Finalidade
             </>
           ) : (
             <>
