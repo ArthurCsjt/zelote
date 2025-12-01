@@ -68,10 +68,11 @@ export function ActiveLoans({ onNavigateToReturn }: ActiveLoansProps) {
       {/* Painel de Alertas de Atraso */}
       <OverdueAlertsPanel />
 
+      {/* Título e Botão de Atualizar (REMOVIDO O H2, MANTIDO O DIV DE CONTROLE) */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-        <h2 className="text-2xl font-bold bg-gradient-to-r from-primary to-menu-violet bg-clip-text text-transparent">
+        <h3 className="text-xl font-bold text-foreground">
           Empréstimos Ativos ({activeLoans.length})
-        </h2>
+        </h3>
         <div className="flex items-center gap-3">
           {/* Seletor de Visualização */}
           <ToggleGroup 
