@@ -221,12 +221,10 @@ const Login = () => {
               <Button type="submit" className="w-full h-11 text-base shadow-lg shadow-primary/20" disabled={isLoading || !isEmailValid || password.length < 6 || password !== confirmPassword}>
                 {isLoading ? "Registrando..." : <><UserPlus className="h-4 w-4 mr-2" />Cadastrar</>}
               </Button>
-              <div className="text-center text-sm text-muted-foreground">
-                Já tem uma conta?{" "}
-                <Button type="button" variant="link" className="text-primary hover:text-primary/80 p-0 h-auto font-semibold" onClick={() => changeMode('login')} disabled={isLoading}>
-                  Voltar ao login
-                </Button>
-              </div>
+              <Button type="button" variant="link" className="text-sm text-muted-foreground hover:text-primary transition-colors" onClick={() => changeMode('login')} disabled={isLoading}>
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Voltar ao login
+              </Button>
             </CardFooter>
           </form>
         );
