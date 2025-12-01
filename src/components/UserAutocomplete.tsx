@@ -85,7 +85,13 @@ const UserAutocomplete: React.FC<UserAutocompleteProps> = ({ selectedUser, onSel
 
   if (selectedUser) {
     return (
-      <GlassCard className="p-3 border-2 border-green-400 bg-green-50/50 shadow-md dark:bg-green-950/50 dark:border-green-900">
+      <GlassCard 
+        className={cn(
+          "p-3 border-2 shadow-md",
+          // Ajuste para maior contraste no modo claro
+          "border-green-600/50 bg-green-50/80 dark:bg-green-950/50 dark:border-green-900"
+        )}
+      >
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <CheckCircle className="h-5 w-5 text-green-600" />
