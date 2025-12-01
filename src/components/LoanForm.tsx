@@ -15,12 +15,12 @@ import { cn } from "@/lib/utils";
 import { validateLoanFormData, sanitizeQRCodeData, normalizeChromebookId } from "@/utils/security";
 import { useDatabase } from '@/hooks/useDatabase';
 import UserAutocomplete from "./UserAutocomplete";
-import PurposeAutocomplete from "./PurposeAutocomplete"; // NOVO IMPORT
+import PurposeAutocomplete from "./PurposeAutocomplete";
 import type { UserSearchResult } from '@/hooks/useUserSearch';
-import { Card, CardContent, CardTitle, CardHeader } from "./ui/card"; // Adicionado CardHeader
+import { Card, CardContent, CardTitle, CardHeader } from "./ui/card";
 import { GlassCard } from "./ui/GlassCard";
-import { DeviceListInput } from "./DeviceListInput"; // NOVO IMPORT
-import { LoanStepsHeader } from "./LoanStepsHeader"; // NOVO IMPORT
+import { DeviceListInput } from "./DeviceListInput";
+import { LoanStepsHeader } from "./LoanStepsHeader";
 
 // Define a interface dos dados do formulário de empréstimo
 interface LoanFormData {
@@ -48,7 +48,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
   const { createLoan, bulkCreateLoans, loading } = useDatabase();
   
   const [formData, setFormData] = useState<LoanFormData>({
-    studentName: "", ra: "", email: "", chromebookId: "", purpose: "", userType: 'aluno', loanType: 'lote' // PADRÃO: LOTE
+    studentName: "", ra: "", email: "", chromebookId: "", purpose: "", userType: 'aluno', loanType: 'lote'
   });
 
   const [selectedUser, setSelectedUser] = useState<UserSearchResult | null>(null);
@@ -61,10 +61,12 @@ export function LoanForm({ onBack }: LoanFormProps) {
   const isPurposeDefined = !!formData.purpose;
   const isDevicesAdded = deviceIds.length > 0;
   
-  const currentStep: 1 | 2 | 3 = useMemo(() => {
-    if (!isUserSelected || !isPurposeDefined) return 1;
-    if (!isDevicesAdded) return 2;
-    return 3;
+  // NOVO CÁLCULO DE PASSO ATUAL (4 PASSOS)
+  const currentStep: 1 | 2 | 3 | 4 = useMemo(() => {
+    if (!isUserSelected) return 1;
+    if (!isPurposeDefined) return 2;
+    if (!isDevicesAdded) return 3;
+    return 4;
   }, [isUserSelected, isPurposeDefined, isDevicesAdded]);
 
   // === FUNÇÕES DE MANIPULAÇÃO (HANDLERS) ===
@@ -77,8 +79,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
       ra: user.ra || '',
       email: user.email,
       userType: user.type,
-      // Limpa a finalidade ao mudar o usuário, pois a finalidade pode mudar
-      purpose: '', 
+      purpose: '', // Limpa a finalidade ao mudar o usuário
     }));
   };
 
@@ -90,7 +91,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
       ra: "",
       email: "",
       userType: 'aluno',
-      purpose: '', // Limpa a finalidade
+      purpose: '',
     }));
   };
   
@@ -116,21 +117,21 @@ export function LoanForm({ onBack }: LoanFormProps) {
         return;
     }
     
-    // 2. Validação de Dispositivos
-    if (deviceIds.length === 0) {
+    // 2. Validação de Finalidade
+    if (!formData.purpose) {
       toast({
         title: "Erro",
-        description: "Adicione pelo menos um dispositivo para empréstimo.",
+        description: "Defina a finalidade do empréstimo.",
         variant: "destructive",
       });
       return;
     }
     
-    // 3. Validação de Finalidade
-    if (!formData.purpose) {
+    // 3. Validação de Dispositivos
+    if (deviceIds.length === 0) {
       toast({
         title: "Erro",
-        description: "Defina a finalidade do empréstimo.",
+        description: "Adicione pelo menos um dispositivo para empréstimo.",
         variant: "destructive",
       });
       return;
@@ -147,7 +148,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
       chromebookId: deviceId,
       purpose: formData.purpose,
       userType: formData.userType,
-      loanType: loanType, // USANDO O TIPO CORRETO
+      loanType: loanType,
       expectedReturnDate: hasReturnDeadline && formData.expectedReturnDate ? formData.expectedReturnDate : undefined,
     }));
     
@@ -161,7 +162,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
         variant: "success",
       });
     } else if (errorCount > 0) {
-      // O bulkCreateLoans já toastou os erros individuais
+      // Erros já são toastados dentro do useDatabase
     }
   };
 
@@ -186,281 +187,285 @@ export function LoanForm({ onBack }: LoanFormProps) {
       
       <form onSubmit={handleSubmit} className="space-y-5 relative z-10">
         
-        {/* ═══ SEÇÃO 1: SOLICITANTE (PRIORIDADE MÁXIMA) ═══ */}
-        <GlassCard className={cn(
-          "bg-gradient-to-br from-violet-500/5 via-violet-500/3 to-transparent",
-          "border border-violet-500/20",
-          "shadow-xl shadow-violet-500/5",
-          "border-border-strong" // ADICIONANDO BORDA DISCRETA
-        )}>
-          <CardHeader className="p-5 pb-3 border-b border-violet-500/10 dark:border-violet-500/30">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-lg font-semibold flex items-center gap-2 text-foreground">
-                <User className="h-5 w-5 text-violet-500" />
-                Passo 1: Solicitante e Finalidade
-              </CardTitle>
-              {selectedUser && (
-                <Badge variant="outline" className={cn(
-                  "text-xs font-medium capitalize",
-                  selectedUser.type === 'aluno' && "bg-blue-500/10 text-blue-600 border-blue-500/30 dark:bg-blue-900/50 dark:text-blue-300 dark:border-blue-800",
-                  selectedUser.type === 'professor' && "bg-purple-500/10 text-purple-600 border-purple-500/30 dark:bg-purple-900/50 dark:text-purple-300 dark:border-purple-800",
-                  selectedUser.type === 'funcionario' && "bg-orange-500/10 text-orange-600 border-orange-500/30 dark:bg-orange-900/50 dark:text-orange-300 dark:border-orange-800"
+        <div className="grid md:grid-cols-2 gap-5">
+            
+            {/* ═══ COLUNA ESQUERDA ═══ */}
+            <div className="space-y-5">
+                
+                {/* ═══ SEÇÃO 1: SOLICITANTE ═══ */}
+                <GlassCard className={cn(
+                    "bg-gradient-to-br from-violet-500/5 via-violet-500/3 to-transparent",
+                    "border border-violet-500/20",
+                    "shadow-xl shadow-violet-500/5",
+                    "border-border-strong"
                 )}>
-                  {selectedUser.type === 'aluno' ? 'Aluno' : 
-                   selectedUser.type === 'professor' ? 'Professor' : 
-                   'Funcionário'}
-                </Badge>
-              )}
+                    <CardHeader className="p-5 pb-3 border-b border-violet-500/10 dark:border-violet-500/30">
+                        <CardTitle className="text-lg font-semibold flex items-center gap-2 text-foreground">
+                            <User className="h-5 w-5 text-violet-500" />
+                            Passo 1: Solicitante
+                        </CardTitle>
+                    </CardHeader>
+                    
+                    <CardContent className="p-5 space-y-4">
+                        {/* Busca de Usuário */}
+                        <div className="space-y-2">
+                            <Label className="text-sm font-medium text-foreground flex items-center gap-1">
+                                Buscar por Nome, RA ou Email
+                                <span className="text-destructive">*</span>
+                            </Label>
+                            <UserAutocomplete
+                                selectedUser={selectedUser}
+                                onSelect={handleUserSelect}
+                                onClear={handleUserClear}
+                                disabled={loading}
+                            />
+                            {/* Validação em tempo real para Solicitante */}
+                            {!selectedUser && (
+                                <p className="text-xs text-destructive flex items-center gap-1 mt-1">
+                                    <AlertTriangle className="h-3 w-3" />
+                                    Selecione um solicitante para continuar
+                                </p>
+                            )}
+                        </div>
+                    </CardContent>
+                </GlassCard>
+                
+                {/* ═══ SEÇÃO 2: FINALIDADE ═══ */}
+                <GlassCard className={cn(
+                    "bg-gradient-to-br from-blue-500/5 via-blue-500/3 to-transparent",
+                    "border border-blue-500/20",
+                    "shadow-xl shadow-blue-500/5",
+                    "border-border-strong",
+                    !isUserSelected && "opacity-50 pointer-events-none" // DESABILITADO SE NÃO TIVER USUÁRIO
+                )}>
+                    <CardHeader className="p-5 pb-3 border-b border-blue-500/10 dark:border-blue-500/30">
+                        <CardTitle className="text-lg font-semibold flex items-center gap-2 text-foreground">
+                            <BookOpen className="h-5 w-5 text-blue-500" />
+                            Passo 2: Finalidade
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-5 space-y-4">
+                        <div className="space-y-2">
+                            <Label className="text-sm font-medium text-foreground flex items-center gap-1">
+                                Finalidade do Empréstimo
+                                <span className="text-destructive">*</span>
+                            </Label>
+                            <PurposeAutocomplete
+                                value={formData.purpose}
+                                onChange={(value) => setFormData({ ...formData, purpose: value })}
+                                disabled={loading || !isUserSelected}
+                                placeholder={purposePlaceholder}
+                                userType={formData.userType}
+                            />
+                            {/* Validação em tempo real para Finalidade */}
+                            {!formData.purpose && isUserSelected && (
+                                <p className="text-xs text-destructive flex items-center gap-1 mt-1">
+                                    <AlertTriangle className="h-3 w-3" />
+                                    Defina a finalidade do empréstimo
+                                </p>
+                            )}
+                        </div>
+                    </CardContent>
+                </GlassCard>
             </div>
-          </CardHeader>
-          
-          <CardContent className="p-5 space-y-4">
-            {/* Busca de Usuário */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium text-foreground flex items-center gap-1">
-                Buscar por Nome, RA ou Email
-                <span className="text-destructive">*</span>
-              </Label>
-              <UserAutocomplete
-                selectedUser={selectedUser}
-                onSelect={handleUserSelect}
-                onClear={handleUserClear}
-                disabled={loading}
-              />
-              {/* Validação em tempo real para Solicitante */}
-              {!selectedUser && (
-                <p className="text-xs text-destructive flex items-center gap-1 mt-1">
-                  <AlertTriangle className="h-3 w-3" />
-                  Selecione um solicitante para continuar
-                </p>
-              )}
-            </div>
-            
-            {/* Finalidade - MOVIDA PARA DENTRO DO MESMO CARD */}
-            {selectedUser && (
-              <div className="space-y-2 pt-3 border-t border-border/50">
-                <Label className="text-sm font-medium text-foreground flex items-center gap-1">
-                  <BookOpen className="h-4 w-4 text-violet-500" />
-                  Finalidade do Empréstimo
-                  <span className="text-destructive">*</span>
-                </Label>
-                <PurposeAutocomplete
-                  value={formData.purpose}
-                  onChange={(value) => setFormData({ ...formData, purpose: value })}
-                  disabled={loading}
-                  placeholder={purposePlaceholder}
-                  userType={formData.userType}
-                />
-                {/* Validação em tempo real para Finalidade */}
-                {!formData.purpose && (
-                  <p className="text-xs text-destructive flex items-center gap-1 mt-1">
-                    <AlertTriangle className="h-3 w-3" />
-                    Defina a finalidade do empréstimo
-                  </p>
-                )}
-                {formData.purpose && (
-                  <p className="text-xs text-success flex items-center gap-1 mt-1">
-                    <CheckCircle className="h-3 w-3" />
-                    Finalidade definida
-                  </p>
-                )}
-              </div>
-            )}
-          </CardContent>
-        </GlassCard>
 
-        {/* ═══ SEÇÃO 2: DISPOSITIVOS ═══ */}
-        <GlassCard className={cn(
-          "bg-gradient-to-br from-blue-500/5 via-blue-500/3 to-transparent",
-          "border border-blue-500/20",
-          "shadow-xl shadow-blue-500/5", // ADICIONANDO shadow-xl
-          "border-border-strong", // ADICIONANDO BORDA DISCRETA
-          (!isUserSelected || !isPurposeDefined) && "opacity-50 pointer-events-none" // DESABILITADO SE NÃO TIVER USUÁRIO/FINALIDADE
-        )}>
-          <CardHeader className="p-5 pb-3 border-b border-blue-500/10 dark:border-blue-500/30">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-lg font-semibold flex items-center gap-2 text-foreground">
-                <Computer className="h-5 w-5 text-blue-500" />
-                Passo 2: Dispositivos para Empréstimo
-              </CardTitle>
-              <Badge variant="outline" className={cn(
-                "text-xs font-medium transition-colors",
-                deviceIds.length === 0 ? "bg-muted text-muted-foreground" : "bg-blue-500/10 text-blue-600 border-blue-500/30 dark:bg-blue-900/50 dark:text-blue-300 dark:border-blue-800"
-              )}>
-                {deviceIds.length === 0 
-                  ? 'Nenhum dispositivo' 
-                  : `${deviceIds.length} ${deviceIds.length === 1 ? 'dispositivo' : 'dispositivos'}`
-                }
-              </Badge>
-            </div>
-          </CardHeader>
-          
-          <CardContent className="p-5">
-            <DeviceListInput
-              deviceIds={deviceIds}
-              setDeviceIds={setDeviceIds}
-              disabled={loading || !isUserSelected || !isPurposeDefined}
-              filterStatus="disponivel"
-              actionLabel="Empréstimo"
-            />
-            
-            {/* Validação em tempo real para Dispositivos */}
-            {isUserSelected && isPurposeDefined && deviceIds.length === 0 && (
-              <p className="text-xs text-destructive flex items-center gap-1 mt-3">
-                <AlertTriangle className="h-3 w-3" />
-                Adicione pelo menos um dispositivo
-              </p>
-            )}
-          </CardContent>
-        </GlassCard>
-
-        {/* ═══ SEÇÃO 3: OPÇÕES ADICIONAIS (PRAZO) ═══ */}
-        <GlassCard className={cn(
-          "bg-muted/30 border border-border/50",
-          "shadow-xl", // ADICIONANDO shadow-xl
-          "border-border-strong", // ADICIONANDO BORDA DISCRETA
-          (!isUserSelected || !isPurposeDefined || !isDevicesAdded) && "opacity-50 pointer-events-none"
-        )}>
-          <CardHeader className="p-5 pb-3 border-b border-border/50">
-            <CardTitle className="text-lg font-semibold flex items-center gap-2 text-foreground">
-                <Clock className="h-5 w-5 text-violet-500" />
-                Passo 3: Prazo de Devolução (Opcional)
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-5">
-            <div className="space-y-4">
-              {/* Checkbox de prazo */}
-              <div className="flex items-start space-x-3">
-                <Checkbox
-                  id="returnDeadline"
-                  checked={hasReturnDeadline}
-                  onCheckedChange={(checked) => {
-                    const isChecked = !!checked;
-                    setHasReturnDeadline(isChecked);
-                    if (isChecked) {
-                      // Pré-define a data e hora atuais se o prazo for ativado
-                      if (!formData.expectedReturnDate) {
-                        setFormData(prev => ({ ...prev, expectedReturnDate: new Date() }));
-                      }
-                    } else {
-                      setFormData({ ...formData, expectedReturnDate: undefined });
-                    }
-                  }}
-                  className="mt-1"
-                  disabled={!isUserSelected || !isPurposeDefined || !isDevicesAdded}
-                />
-                <div className="flex-1">
-                  <Label 
-                    htmlFor="returnDeadline" 
-                    className="text-sm font-medium text-foreground cursor-pointer flex items-center gap-2"
-                  >
-                    <Calendar className="h-4 w-4 text-violet-500" />
-                    Definir prazo de devolução
-                  </Label>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Adicione uma data e hora limite para devolução
-                  </p>
-                </div>
-              </div>
-
-              {/* Seletor de data/hora (aparece quando checkbox marcado) */}
-              {hasReturnDeadline && (
-                <div className="pl-7 space-y-3 border-l-2 border-violet-500/30 animate-in slide-in-from-left-5">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {/* Data */}
-                    <Popover open={isDatePickerOpen} onOpenChange={setIsDatePickerOpen}>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className={cn(
-                            "justify-start text-left font-normal w-full",
-                            !formData.expectedReturnDate && "text-muted-foreground"
-                          )}
-                        >
-                          <Calendar className="mr-2 h-4 w-4" />
-                          {formData.expectedReturnDate ? (
-                            format(formData.expectedReturnDate, "dd/MM/yyyy")
-                          ) : (
-                            <span>Selecionar data</span>
-                          )}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent 
-                        className="w-auto p-0 bg-card border-border"
-                        align="start"
-                      >
-                        <CalendarComponent
-                          mode="single"
-                          selected={formData.expectedReturnDate}
-                          onSelect={(date) => {
-                            if (date) {
-                              const currentTime = formData.expectedReturnDate || new Date();
-                              const newDateTime = new Date(date);
-                              newDateTime.setHours(currentTime.getHours());
-                              newDateTime.setMinutes(currentTime.getMinutes());
-                              setFormData({ ...formData, expectedReturnDate: newDateTime });
-                            }
-                            setIsDatePickerOpen(false);
-                          }}
-                          disabled={(date) => date < new Date()}
-                          initialFocus
+            {/* ═══ COLUNA DIREITA ═══ */}
+            <div className="space-y-5">
+                
+                {/* ═══ SEÇÃO 3: DISPOSITIVOS ═══ */}
+                <GlassCard className={cn(
+                    "bg-gradient-to-br from-amber-500/5 via-amber-500/3 to-transparent",
+                    "border border-amber-500/20",
+                    "shadow-xl shadow-amber-500/5",
+                    "border-border-strong",
+                    (!isUserSelected || !isPurposeDefined) && "opacity-50 pointer-events-none" // DESABILITADO SE NÃO TIVER FINALIDADE
+                )}>
+                    <CardHeader className="p-5 pb-3 border-b border-amber-500/10 dark:border-amber-500/30">
+                        <div className="flex items-center justify-between">
+                            <CardTitle className="text-lg font-semibold flex items-center gap-2 text-foreground">
+                                <Computer className="h-5 w-5 text-menu-amber" />
+                                Passo 3: Equipamento
+                            </CardTitle>
+                            <Badge variant="outline" className={cn(
+                                "text-xs font-medium transition-colors",
+                                deviceIds.length === 0 ? "bg-muted text-muted-foreground" : "bg-amber-500/10 text-amber-600 border-amber-500/30 dark:bg-amber-900/50 dark:text-amber-300 dark:border-amber-800"
+                            )}>
+                                {deviceIds.length === 0 
+                                ? 'Nenhum dispositivo' 
+                                : `${deviceIds.length} ${deviceIds.length === 1 ? 'dispositivo' : 'dispositivos'}`
+                                }
+                            </Badge>
+                        </div>
+                    </CardHeader>
+                    
+                    <CardContent className="p-5">
+                        <DeviceListInput
+                            deviceIds={deviceIds}
+                            setDeviceIds={setDeviceIds}
+                            disabled={loading || !isUserSelected || !isPurposeDefined}
+                            filterStatus="disponivel"
+                            actionLabel="Empréstimo"
                         />
-                      </PopoverContent>
-                    </Popover>
+                        
+                        {/* Validação em tempo real para Dispositivos */}
+                        {isUserSelected && isPurposeDefined && deviceIds.length === 0 && (
+                            <p className="text-xs text-destructive flex items-center gap-1 mt-3">
+                                <AlertTriangle className="h-3 w-3" />
+                                Adicione pelo menos um dispositivo
+                            </p>
+                        )}
+                    </CardContent>
+                </GlassCard>
 
-                    {/* Hora */}
-                    <div className="flex gap-2 items-center">
-                      <Input
-                        type="number"
-                        placeholder="HH"
-                        min="0"
-                        max="23"
-                        value={formData.expectedReturnDate ? String(formData.expectedReturnDate.getHours()).padStart(2, '0') : ''}
-                        onChange={(e) => {
-                          const hours = parseInt(e.target.value) || 0;
-                          if (hours >= 0 && hours <= 23) {
-                            const newDate = formData.expectedReturnDate || new Date();
-                            newDate.setHours(hours);
-                            setFormData({ ...formData, expectedReturnDate: newDate });
-                          }
-                        }}
-                        className="text-center w-16"
-                      />
-                      <span className="text-muted-foreground">:</span>
-                      <Input
-                        type="number"
-                        placeholder="MM"
-                        min="0"
-                        max="59"
-                        value={formData.expectedReturnDate ? String(formData.expectedReturnDate.getMinutes()).padStart(2, '0') : ''}
-                        onChange={(e) => {
-                          const minutes = parseInt(e.target.value) || 0;
-                          if (minutes >= 0 && minutes <= 59) {
-                            const newDate = formData.expectedReturnDate || new Date();
-                            newDate.setMinutes(minutes);
-                            setFormData({ ...formData, expectedReturnDate: newDate });
-                          }
-                        }}
-                        className="text-center w-16"
-                      />
-                    </div>
-                  </div>
-                  
-                  {/* Preview da data/hora */}
-                  {formData.expectedReturnDate && (
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/50 rounded-lg p-3">
-                      <Clock className="h-4 w-4 text-violet-500" />
-                      <span className="font-medium">
-                        Prazo: {format(formData.expectedReturnDate, "dd/MM/yyyy 'às' HH:mm")}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              )}
+                {/* ═══ SEÇÃO 4: PRAZO E CONFIRMAÇÃO ═══ */}
+                <GlassCard className={cn(
+                    "bg-muted/30 border border-border/50",
+                    "shadow-xl",
+                    "border-border-strong",
+                    (!isUserSelected || !isPurposeDefined || !isDevicesAdded) && "opacity-50 pointer-events-none"
+                )}>
+                    <CardHeader className="p-5 pb-3 border-b border-border/50">
+                        <CardTitle className="text-lg font-semibold flex items-center gap-2 text-foreground">
+                            <Clock className="h-5 w-5 text-green-500" />
+                            Passo 4: Prazo de Devolução (Opcional)
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-5">
+                        <div className="space-y-4">
+                            {/* Checkbox de prazo */}
+                            <div className="flex items-start space-x-3">
+                                <Checkbox
+                                    id="returnDeadline"
+                                    checked={hasReturnDeadline}
+                                    onCheckedChange={(checked) => {
+                                        const isChecked = !!checked;
+                                        setHasReturnDeadline(isChecked);
+                                        if (isChecked) {
+                                            // Pré-define a data e hora atuais se o prazo for ativado
+                                            if (!formData.expectedReturnDate) {
+                                                setFormData(prev => ({ ...prev, expectedReturnDate: new Date() }));
+                                            }
+                                        } else {
+                                            setFormData({ ...formData, expectedReturnDate: undefined });
+                                        }
+                                    }}
+                                    className="mt-1"
+                                    disabled={!isUserSelected || !isPurposeDefined || !isDevicesAdded}
+                                />
+                                <div className="flex-1">
+                                    <Label 
+                                        htmlFor="returnDeadline" 
+                                        className="text-sm font-medium text-foreground cursor-pointer flex items-center gap-2"
+                                    >
+                                        <Calendar className="h-4 w-4 text-violet-500" />
+                                        Definir prazo de devolução
+                                    </Label>
+                                    <p className="text-xs text-muted-foreground mt-1">
+                                        Adicione uma data e hora limite para devolução
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* Seletor de data/hora (aparece quando checkbox marcado) */}
+                            {hasReturnDeadline && (
+                                <div className="pl-7 space-y-3 border-l-2 border-violet-500/30 animate-in slide-in-from-left-5">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                        {/* Data */}
+                                        <Popover open={isDatePickerOpen} onOpenChange={setIsDatePickerOpen}>
+                                            <PopoverTrigger asChild>
+                                                <Button
+                                                    variant="outline"
+                                                    className={cn(
+                                                        "justify-start text-left font-normal w-full",
+                                                        !formData.expectedReturnDate && "text-muted-foreground"
+                                                    )}
+                                                >
+                                                    <Calendar className="mr-2 h-4 w-4" />
+                                                    {formData.expectedReturnDate ? (
+                                                        format(formData.expectedReturnDate, "dd/MM/yyyy")
+                                                    ) : (
+                                                        <span>Selecionar data</span>
+                                                    )}
+                                                </Button>
+                                            </PopoverTrigger>
+                                            <PopoverContent 
+                                                className="w-auto p-0 bg-card border-border"
+                                                align="start"
+                                            >
+                                                <CalendarComponent
+                                                    mode="single"
+                                                    selected={formData.expectedReturnDate}
+                                                    onSelect={(date) => {
+                                                        if (date) {
+                                                            const currentTime = formData.expectedReturnDate || new Date();
+                                                            const newDateTime = new Date(date);
+                                                            newDateTime.setHours(currentTime.getHours());
+                                                            newDateTime.setMinutes(currentTime.getMinutes());
+                                                            setFormData({ ...formData, expectedReturnDate: newDateTime });
+                                                        }
+                                                        setIsDatePickerOpen(false);
+                                                    }}
+                                                    disabled={(date) => date < new Date()}
+                                                    initialFocus
+                                                />
+                                            </PopoverContent>
+                                        </Popover>
+
+                                        {/* Hora */}
+                                        <div className="flex gap-2 items-center">
+                                            <Input
+                                                type="number"
+                                                placeholder="HH"
+                                                min="0"
+                                                max="23"
+                                                value={formData.expectedReturnDate ? String(formData.expectedReturnDate.getHours()).padStart(2, '0') : ''}
+                                                onChange={(e) => {
+                                                    const hours = parseInt(e.target.value) || 0;
+                                                    if (hours >= 0 && hours <= 23) {
+                                                        const newDate = formData.expectedReturnDate || new Date();
+                                                        newDate.setHours(hours);
+                                                        setFormData({ ...formData, expectedReturnDate: newDate });
+                                                    }
+                                                }}
+                                                className="text-center w-16"
+                                            />
+                                            <span className="text-muted-foreground">:</span>
+                                            <Input
+                                                type="number"
+                                                placeholder="MM"
+                                                min="0"
+                                                max="59"
+                                                value={formData.expectedReturnDate ? String(formData.expectedReturnDate.getMinutes()).padStart(2, '0') : ''}
+                                                onChange={(e) => {
+                                                    const minutes = parseInt(e.target.value) || 0;
+                                                    if (minutes >= 0 && minutes <= 59) {
+                                                        const newDate = formData.expectedReturnDate || new Date();
+                                                        newDate.setMinutes(minutes);
+                                                        setFormData({ ...formData, expectedReturnDate: newDate });
+                                                    }
+                                                }}
+                                                className="text-center w-16"
+                                            />
+                                        </div>
+                                    </div>
+                                    
+                                    {/* Preview da data/hora */}
+                                    {formData.expectedReturnDate && (
+                                        <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/50 rounded-lg p-3">
+                                            <Clock className="h-4 w-4 text-violet-500" />
+                                            <span className="font-medium">
+                                                Prazo: {format(formData.expectedReturnDate, "dd/MM/yyyy 'às' HH:mm")}
+                                            </span>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    </CardContent>
+                </GlassCard>
             </div>
-          </CardContent>
-        </GlassCard>
-        
+        </div>
+
         {/* ═══ BOTÃO DE SUBMISSÃO ═══ */}
         <Button 
           type="submit" 
@@ -475,9 +480,9 @@ export function LoanForm({ onBack }: LoanFormProps) {
           )}
           disabled={
             loading || 
-            deviceIds.length === 0 ||
-            !selectedUser ||
-            !formData.purpose
+            !isDevicesAdded ||
+            !isUserSelected ||
+            !isPurposeDefined
           }
         >
           {loading ? (
@@ -485,15 +490,20 @@ export function LoanForm({ onBack }: LoanFormProps) {
               <Loader2 className="mr-2 h-5 w-5 animate-spin" />
               Processando empréstimo...
             </>
-          ) : deviceIds.length === 0 ? (
-            <>
-              <Computer className="mr-2 h-5 w-5" />
-              Passo 2 Pendente: Selecione os dispositivos
-            </>
-          ) : !selectedUser || !formData.purpose ? (
+          ) : !isUserSelected ? (
             <>
               <User className="mr-2 h-5 w-5" />
-              Passo 1 Pendente: Solicitante/Finalidade
+              Passo 1 Pendente: Selecione o Solicitante
+            </>
+          ) : !isPurposeDefined ? (
+            <>
+              <BookOpen className="mr-2 h-5 w-5" />
+              Passo 2 Pendente: Defina a Finalidade
+            </>
+          ) : !isDevicesAdded ? (
+            <>
+              <Computer className="mr-2 h-5 w-5" />
+              Passo 3 Pendente: Adicione os Equipamentos
             </>
           ) : (
             <>

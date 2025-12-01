@@ -1,9 +1,9 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
-import { CheckCircle, User, Computer, BookOpen } from 'lucide-react';
+import { CheckCircle, User, Computer, BookOpen, Clock } from 'lucide-react';
 
 interface LoanStepsHeaderProps {
-  currentStep: 1 | 2 | 3;
+  currentStep: 1 | 2 | 3 | 4;
   isUserSelected: boolean;
   isDevicesAdded: boolean;
   isPurposeDefined: boolean;
@@ -14,26 +14,35 @@ const steps = [
     id: 1,
     title: 'Solicitante',
     icon: User,
-    // Passo 1 está completo se o usuário E a finalidade estiverem definidos
-    check: (props: LoanStepsHeaderProps) => props.isUserSelected && props.isPurposeDefined,
+    // Completo se o usuário estiver selecionado
+    check: (props: LoanStepsHeaderProps) => props.isUserSelected,
     color: 'text-violet-500',
     progressColor: 'bg-violet-500',
   },
   {
     id: 2,
-    title: 'Dispositivos',
-    icon: Computer,
-    // Passo 2 está completo se houver dispositivos adicionados
-    check: (props: LoanStepsHeaderProps) => props.isDevicesAdded,
+    title: 'Finalidade',
+    icon: BookOpen,
+    // Completo se a finalidade estiver definida
+    check: (props: LoanStepsHeaderProps) => props.isPurposeDefined,
     color: 'text-blue-500',
     progressColor: 'bg-blue-500',
   },
   {
     id: 3,
-    title: 'Emprestar',
+    title: 'Equipamento',
+    icon: Computer,
+    // Completo se houver dispositivos adicionados
+    check: (props: LoanStepsHeaderProps) => props.isDevicesAdded,
+    color: 'text-amber-500',
+    progressColor: 'bg-amber-500',
+  },
+  {
+    id: 4,
+    title: 'Confirmação',
     icon: CheckCircle,
-    // Passo 3 só é marcado como completo após a submissão, mas o check aqui é para indicar que está pronto para submeter
-    check: (props: LoanStepsHeaderProps) => props.isUserSelected && props.isDevicesAdded && props.isPurposeDefined,
+    // Completo se todos os passos anteriores estiverem prontos para submissão
+    check: (props: LoanStepsHeaderProps) => props.isUserSelected && props.isPurposeDefined && props.isDevicesAdded,
     color: 'text-green-500',
     progressColor: 'bg-green-500',
   },
@@ -43,6 +52,7 @@ export const LoanStepsHeader: React.FC<LoanStepsHeaderProps> = (props) => {
   const totalSteps = steps.length;
   
   // Calcula o progresso baseado no passo atual
+  // Usamos (props.currentStep - 1) para que o passo 1 seja 0% e o passo 4 seja 100%
   const progressPercentage = (props.currentStep - 1) / (totalSteps - 1) * 100;
   
   // Determina a cor da barra de progresso com base no passo atual
@@ -68,19 +78,15 @@ export const LoanStepsHeader: React.FC<LoanStepsHeaderProps> = (props) => {
 
         {steps.map((step, index) => {
           const Icon = step.icon;
-          // O passo está completo se o check for verdadeiro E o ID do passo for menor que o passo atual
-          // Ou se o check for verdadeiro E o passo atual for o último (Passo 3)
-          const isCompleted = step.check(props) && (step.id < props.currentStep || (step.id === 3 && props.currentStep === 3));
-          const isActive = props.currentStep === step.id;
-          
-          // Se o passo 1 estiver completo, mas o usuário estiver no passo 2, ele deve ser marcado como completo.
+          // Um passo é considerado "completo" se o check for verdadeiro E o ID do passo for menor que o passo atual
           const isPastCompleted = step.check(props) && step.id < props.currentStep;
+          const isActive = props.currentStep === step.id;
           
           return (
             <div 
               key={step.id} 
               className={cn(
-                "flex flex-col items-center text-center z-10 transition-all duration-300 w-1/3 px-2",
+                "flex flex-col items-center text-center z-10 transition-all duration-300 w-1/4 px-2", // 4 passos, 1/4 da largura
                 isActive ? 'scale-105' : 'opacity-70'
               )}
             >
