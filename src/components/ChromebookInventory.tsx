@@ -294,14 +294,21 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
     }
   };
   
-  // NOVO: Handler para impressão em lote
+  // NOVO: Handler para impressão em lote (USANDO NOVA ABORDAGEM)
   const handleBatchPrint = () => {
     if (printItems.length === 0) {
       toast({ title: "Atenção", description: "Selecione pelo menos um Chromebook para imprimir.", variant: "info" });
       return;
     }
     
-    navigate('/print-preview');
+    // 1. Salva os itens selecionados no LocalStorage
+    localStorage.setItem('print_queue', JSON.stringify(printItems));
+    
+    // 2. Abre a rota de impressão em uma nova aba
+    window.open('/print-preview', '_blank');
+    
+    // 3. Limpa a seleção local (opcional, mas boa prática)
+    clearPrintItems();
   };
   
   // Lógica de seleção de item

@@ -22,20 +22,23 @@ export const QRCodeSticker: React.FC<QRCodeStickerProps> = ({ item, className })
       className={cn(
         // Estilos de tela
         "p-2 border border-gray-300 rounded-md flex flex-col items-center text-center bg-white shadow-sm",
-        // Estilos de impressão: Fundo branco, texto preto, borda tracejada
+        // Estilos de impressão: Fundo branco, texto preto, borda tracejada, dimensões fixas
         "print:w-[4cm] print:h-[4.5cm] print:p-1 print:border-dashed print:border-gray-500 print:break-inside-avoid print:bg-white print:text-black",
         className
       )}
+      // Adicionando dimensões fixas para a visualização em tela para simular o tamanho de impressão
+      style={{ width: '100%', maxWidth: '150px', height: '168px' }} 
     >
       <div className="flex-shrink-0">
         <QRCodeSVG 
           value={qrData}
-          size={100}
+          // Reduzindo o tamanho do QR Code para caber no adesivo de 4cm
+          size={80} 
           level="H"
           includeMargin={false}
           bgColor="#FFFFFF"
           fgColor="#000000"
-          style={{ width: '100px', height: '100px' }}
+          style={{ width: '80px', height: '80px' }}
         />
       </div>
       
@@ -43,7 +46,6 @@ export const QRCodeSticker: React.FC<QRCodeStickerProps> = ({ item, className })
         <h3 className="text-sm font-bold text-gray-900 truncate w-full print:text-black">
           {item.chromebook_id}
         </h3>
-        {/* REMOVIDO: Linha do Modelo */}
         <p className="text-[9px] text-gray-600 leading-tight mt-0.5 truncate w-full print:text-black/80">
           S/N: {item.serial_number || 'N/A'}
         </p>
