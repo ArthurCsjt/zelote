@@ -451,54 +451,13 @@
 }
 
 /* ======================================================================== */
-/* NOVO: Estilos de Impressão (FORÇANDO VISIBILIDADE) */
+/* REMOVIDO: Estilos de Impressão (MOVIDO PARA PrintPreviewPage.tsx) */
 /* ======================================================================== */
 
 @media print {
-    /* 1. Oculta tudo no corpo da página */
-    body * {
-        visibility: hidden;
-    }
-    
-    /* 2. Torna a área de impressão visível */
-    #print-area, #print-area * {
-        visibility: visible;
-    }
-    
-    /* 3. Posiciona a área de impressão no topo da página */
-    #print-area {
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 100% !important;
-        max-width: none !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        box-shadow: none !important;
-        background-color: white !important;
-        display: block !important; /* Garante que não seja hidden */
-    }
-    
     /* Oculta elementos marcados como no-print */
     .no-print {
         display: none !important;
-    }
-    
-    /* Garante que o corpo da página de impressão não tenha margens/padding */
-    body, html {
-        margin: 0 !important;
-        padding: 0 !important;
-        background-color: white !important;
-        -webkit-print-color-adjust: exact; /* Força a impressão de cores/fundos */
-        print-color-adjust: exact;
-    }
-    
-    /* Garante que o conteúdo principal da página de preview seja o único visível */
-    #root {
-        padding: 0 !important;
-        margin: 0 !important;
-        width: 100% !important;
-        max-width: none !important;
     }
     
     /* Garante que os adesivos não sejam quebrados entre páginas */

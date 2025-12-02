@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Printer, QrCode, AlertTriangle, ListChecks } from 'lucide-react';
+import { ArrowLeft, Printer, QrCode, AlertTriangle, ListChecks, Loader2 } from 'lucide-react';
 import { usePrintContext } from '@/contexts/PrintContext';
 import { useNavigate } from 'react-router-dom';
 import { QRCodeSticker } from '@/components/QRCodeSticker';
@@ -18,9 +18,9 @@ export const PrintPreviewPage: React.FC = () => {
   useEffect(() => {
     // Redireciona se não houver itens para imprimir
     if (printItems.length === 0) {
-      navigate('/', { replace: true });
+      // Não redireciona imediatamente, mas exibe a mensagem de erro
     }
-  }, [printItems.length, navigate]);
+  }, [printItems.length]);
 
   const handlePrint = () => {
     window.print();
@@ -28,16 +28,24 @@ export const PrintPreviewPage: React.FC = () => {
   
   const handleBack = () => {
     clearPrintItems(); // Limpa a seleção ao voltar
-    navigate('/inventory', { replace: true }); // Volta para a página de inventário
+    navigate(-1); // Volta para a página anterior (Inventário)
   };
 
+  // 2. Verificação de Dados (Debug Visual)
   if (printItems.length === 0) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
-          <p className="text-muted-foreground">Carregando itens para impressão...</p>
-        </div>
+      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+        <GlassCard className="w-full max-w-md text-center p-8 space-y-4">
+          <AlertTriangle className="h-12 w-12 text-destructive mx-auto" />
+          <h1 className="text-xl font-bold text-foreground">Nenhum Item Selecionado</h1>
+          <p className="text-muted-foreground">
+            Nenhum Chromebook foi selecionado para impressão. Volte ao inventário para escolher os itens.
+          </p>
+          <Button onClick={handleBack} className="w-full">
+            <ArrowLeft className="w-5 h-5 mr-2" />
+            Voltar ao Inventário
+          </Button>
+        </GlassCard>
       </div>
     );
   }
@@ -53,6 +61,40 @@ export const PrintPreviewPage: React.FC = () => {
   return (
     // Container principal que será ocultado na impressão
     <div className="min-h-screen bg-background print:hidden">
+      
+      {/* 1. CSS Global de Impressão (Inline Style) */}
+      <style>
+        {`
+          @media print {
+            @page { margin: 1cm; size: auto; }
+            body, html, #root {
+              height: auto !important;
+              overflow: visible !important;
+              background: white !important;
+              color: black !important;
+            }
+            /* Esconde tudo que não seja a área de impressão */
+            body * {
+              visibility: hidden;
+            }
+            /* Mostra a área de impressão e seus filhos */
+            #print-area, #print-area * {
+              visibility: visible;
+            }
+            /* Posiciona a área de impressão no topo absoluto */
+            #print-area {
+              position: absolute;
+              left: 0;
+              top: 0;
+              width: 100%;
+              height: auto;
+              margin: 0;
+              padding: 0;
+              background: white;
+            }
+          }
+        `}
+      </style>
       
       {/* Área de Controle (Não Imprimível) */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
