@@ -38,11 +38,33 @@ const PurposeAutocomplete: React.FC<PurposeAutocompleteProps> = ({ value, onChan
   const getUserIcon = (type: string) => {
     switch (type) {
       case 'professor':
-        return <GraduationCap className="mr-2 h-4 w-4 text-purple-500" />;
+        return <GraduationCap className="h-5 w-5 text-purple-600 dark:text-purple-400" />;
       case 'funcionario':
-        return <Briefcase className="mr-2 h-4 w-4 text-orange-500" />;
+        return <Briefcase className="h-5 w-5 text-orange-600 dark:text-orange-400" />;
       default:
-        return <User className="mr-2 h-4 w-4 text-gray-500" />;
+        return <User className="h-5 w-5 text-gray-600 dark:text-gray-400" />;
+    }
+  };
+  
+  const getUserAvatarClasses = (type: string) => {
+    switch (type) {
+      case 'professor':
+        return "bg-purple-500/10 dark:bg-purple-900/50";
+      case 'funcionario':
+        return "bg-orange-500/10 dark:bg-orange-900/50";
+      default:
+        return "bg-gray-100 dark:bg-gray-700/50";
+    }
+  };
+  
+  const getUserBadgeClasses = (type: string) => {
+    switch (type) {
+      case 'professor':
+        return "bg-purple-500/10 text-purple-600 border-purple-500/30 dark:bg-purple-900/50 dark:text-purple-300 dark:border-purple-800";
+      case 'funcionario':
+        return "bg-orange-500/10 text-orange-600 border-orange-500/30 dark:bg-orange-900/50 dark:text-orange-300 dark:border-orange-800";
+      default:
+        return "bg-gray-100 text-gray-600 border-gray-300 dark:bg-gray-700/50 dark:text-gray-300 dark:border-gray-600";
     }
   };
   
@@ -75,11 +97,7 @@ const PurposeAutocomplete: React.FC<PurposeAutocompleteProps> = ({ value, onChan
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className={cn(
-            "w-full justify-between bg-white border-gray-200 dark:bg-card dark:border-border h-10 px-3",
-            "text-left font-normal",
-            !value && "text-muted-foreground"
-          )}
+          className="w-full justify-between bg-white border-gray-200 dark:bg-card dark:border-border h-10 px-3 text-left font-normal"
           disabled={disabled}
         >
           <div className="flex items-center flex-1 min-w-0">
@@ -115,10 +133,10 @@ const PurposeAutocomplete: React.FC<PurposeAutocompleteProps> = ({ value, onChan
                   className="flex items-center justify-between p-3"
                 >
                   <div className="flex items-center gap-3">
-                    {/* Avatar */}
+                    {/* Avatar com cores sutis */}
                     <div className={cn(
                       "w-8 h-8 rounded-lg flex items-center justify-center shrink-0",
-                      "bg-gradient-to-br from-purple-500 to-purple-600"
+                      getUserAvatarClasses(user.type)
                     )}>
                       {getUserIcon(user.type)}
                     </div>
@@ -137,7 +155,7 @@ const PurposeAutocomplete: React.FC<PurposeAutocompleteProps> = ({ value, onChan
                   {/* Badge do tipo */}
                   <Badge variant="outline" className={cn(
                     "text-xs shrink-0 capitalize",
-                    user.type === 'professor' ? "bg-purple-500/10 text-purple-600" : "bg-orange-500/10 text-orange-600"
+                    getUserBadgeClasses(user.type)
                   )}>
                     {user.type}
                   </Badge>

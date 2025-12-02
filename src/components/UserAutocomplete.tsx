@@ -30,15 +30,15 @@ const UserAutocomplete: React.FC<UserAutocompleteProps> = ({ selectedUser, onSel
   const getUserIcon = (type: string) => {
     switch (type) {
       case 'aluno':
-        return <GraduationCap className="h-5 w-5 text-white" />;
+        return <GraduationCap className="h-5 w-5 text-blue-600 dark:text-blue-400" />;
       case 'professor':
       case 'super_admin':
       case 'admin':
-        return <User className="h-5 w-5 text-white" />;
+        return <User className="h-5 w-5 text-purple-600 dark:text-purple-400" />;
       case 'funcionario':
-        return <Briefcase className="h-5 w-5 text-white" />;
+        return <Briefcase className="h-5 w-5 text-orange-600 dark:text-orange-400" />;
       default:
-        return <User className="h-5 w-5 text-white" />;
+        return <User className="h-5 w-5 text-gray-600 dark:text-gray-400" />;
     }
   };
   
@@ -58,13 +58,13 @@ const UserAutocomplete: React.FC<UserAutocompleteProps> = ({ selectedUser, onSel
   const getUserAvatarClasses = (type: string) => {
     switch (type) {
       case 'aluno':
-        return "from-blue-500 to-blue-600";
+        return "bg-blue-500/10 dark:bg-blue-900/50";
       case 'professor':
-        return "from-purple-500 to-purple-600";
+        return "bg-purple-500/10 dark:bg-purple-900/50";
       case 'funcionario':
-        return "from-orange-500 to-orange-600";
+        return "bg-orange-500/10 dark:bg-orange-900/50";
       default:
-        return "from-gray-500 to-gray-600";
+        return "bg-gray-100 dark:bg-gray-700/50";
     }
   };
 
@@ -152,10 +152,9 @@ const UserAutocomplete: React.FC<UserAutocompleteProps> = ({ selectedUser, onSel
                   className="flex items-center justify-between p-3"
                 >
                   <div className="flex items-center gap-3">
-                    {/* Avatar com gradiente */}
+                    {/* Avatar com cores sutis */}
                     <div className={cn(
                       "w-8 h-8 rounded-lg flex items-center justify-center shrink-0",
-                      "bg-gradient-to-br",
                       getUserAvatarClasses(user.type)
                     )}>
                       {getUserIcon(user.type)}
