@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Printer, QrCode, AlertTriangle, ListChecks, Loader2 } from 'lucide-react';
+import { ArrowLeft, Printer, QrCode, AlertTriangle, ListChecks, Loader2, X } from 'lucide-react';
 import type { Chromebook } from '@/types/database';
 import { QRCodeSticker } from '@/components/QRCodeSticker';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -13,10 +13,11 @@ import { cn } from '@/lib/utils';
 
 export const PrintPreviewPage: React.FC = () => {
   const [printItems, setPrintItems] = useState<Chromebook[]>([]);
-  const [columns, setColumns] = useState<'2' | '3' | '4'>('4');
+  // Alterando o tipo de estado para 2 ou 4, conforme solicitado
+  const [columns, setColumns] = useState<2 | 4>(4); 
   const [isLoading, setIsLoading] = useState(true);
 
-  // 1. Recuperação de Dados e Auto-Print
+  // 1. Recuperação de Dados (Sem Auto-Print)
   useEffect(() => {
     try {
       const queue = localStorage.getItem('print_queue');
@@ -30,22 +31,11 @@ export const PrintPreviewPage: React.FC = () => {
     }
   }, []);
 
-  // 2. Auto-Print com Delay
-  useEffect(() => {
-    if (printItems.length > 0) {
-      // Espera 500ms para o QR Code gerar antes de chamar o print
-      const timer = setTimeout(() => {
-        window.print();
-      }, 500);
-      return () => clearTimeout(timer);
-    }
-  }, [printItems]);
-
   const handlePrint = () => {
     window.print();
   };
   
-  const handleBack = () => {
+  const handleClose = () => {
     // Limpa o localStorage e fecha a aba
     localStorage.removeItem('print_queue');
     window.close();
@@ -60,7 +50,7 @@ export const PrintPreviewPage: React.FC = () => {
     );
   }
 
-  // 3. Verificação de Dados (Debug Visual)
+  // 2. Verificação de Dados (Debug Visual)
   if (printItems.length === 0) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white p-4">
@@ -70,7 +60,7 @@ export const PrintPreviewPage: React.FC = () => {
           <p className="text-muted-foreground">
             A fila de impressão está vazia. Por favor, volte ao inventário e selecione os itens.
           </p>
-          <Button onClick={handleBack} className="w-full bg-primary hover:bg-primary/90">
+          <Button onClick={handleClose} className="w-full bg-primary hover:bg-primary/90">
             <ArrowLeft className="w-5 h-5 mr-2" />
             Fechar Janela
           </Button>
@@ -79,93 +69,111 @@ export const PrintPreviewPage: React.FC = () => {
     );
   }
   
-  const gridClass = columns === '2' 
-    ? 'grid-cols-2 sm:grid-cols-2' 
-    : columns === '3' 
-      ? 'grid-cols-2 sm:grid-cols-3' 
-      : 'grid-cols-2 sm:grid-cols-4';
+  // Classes dinâmicas para o grid
+  const gridClass = columns === 2 
+    ? 'grid-cols-2' 
+    : 'grid-cols-4';
       
-  const printGridClass = `print:grid-cols-${columns}`;
+  const printGridClass = columns === 2 ? 'print:grid-cols-2' : 'print:grid-cols-4';
 
   return (
     // Container principal com estilos de fundo limpos
-    <div className="bg-white text-black min-h-screen p-8">
+    <div className="min-h-screen bg-gray-50 text-black p-8 print:p-0 print:bg-white">
       
-      {/* Área de Controle (Não Imprimível) */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 no-print">
-        
-        {/* Cabeçalho de Navegação (no-print) */}
-        <div className="flex items-center justify-between mb-6 no-print">
-            <Button variant="ghost" onClick={handleBack} className="text-muted-foreground hover:text-foreground">
-                <ArrowLeft className="w-5 h-5 mr-2" />
-                Fechar Janela
-            </Button>
-            <h1 className="text-2xl font-bold text-foreground">
-                Pré-visualização de Impressão ({printItems.length} itens)
-            </h1>
-            <Button onClick={handlePrint} className="bg-menu-green hover:bg-menu-green-hover">
-                <Printer className="h-4 w-4 mr-2" />
-                Imprimir Etiquetas
-            </Button>
+      {/* --- CONTROLES (Não aparecem na impressão) --- */}
+      <div className="max-w-5xl mx-auto mb-8 bg-gray-900 text-white p-6 rounded-xl shadow-lg print:hidden flex flex-col md:flex-row items-center justify-between gap-6">
+        <div>
+          <h1 className="text-xl font-bold flex items-center gap-2">
+            <Printer size={24} /> Configuração de Impressão
+          </h1>
+          <p className="text-gray-400 text-sm mt-1">
+            {printItems.length} itens selecionados. Ajuste as colunas antes de imprimir.
+          </p>
         </div>
-        
-        <GlassCard className="no-print max-w-4xl mx-auto mb-8 p-4 sm:p-6">
-          <CardHeader className="p-0 pb-4">
-            <CardTitle className="flex items-center gap-2 text-primary">
-              <QrCode className="h-6 w-6" />
-              Configurações de Impressão
-            </CardTitle>
-            <CardDescription>
-              Ajuste o layout antes de imprimir. A impressão será acionada automaticamente.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col sm:flex-row gap-4 p-0">
-            
-            {/* Seletor de Colunas */}
-            <div className="flex items-center gap-3">
-              <Label htmlFor="columns" className="text-sm font-medium flex items-center gap-1">
-                  <ListChecks className="h-4 w-4" /> Layout:
-              </Label>
-              <Select value={columns} onValueChange={(v) => setColumns(v as '2' | '3' | '4')}>
-                <SelectTrigger className="w-[120px]">
-                  <SelectValue placeholder="Colunas" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="2">2 Colunas</SelectItem>
-                  <SelectItem value="3">3 Colunas</SelectItem>
-                  <SelectItem value="4">4 Colunas</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="flex gap-4 mt-2 sm:mt-0">
-              <Button onClick={handlePrint} className="bg-menu-green hover:bg-menu-green-hover">
-                <Printer className="h-4 w-4 mr-2" />
-                Imprimir Agora
-              </Button>
-            </div>
-          </CardContent>
-        </GlassCard>
 
-        {/* Área de Impressão (Visualização em Tela) */}
-        <div className="max-w-4xl mx-auto bg-white p-2 sm:p-4 border rounded-lg shadow-lg"> 
-          <div className={cn("grid gap-2", gridClass)}>
-            {printItems.map((item) => (
-              <QRCodeSticker key={item.id} item={item} />
-            ))}
+        <div className="flex items-center gap-4">
+          {/* Seletor de Colunas */}
+          <div className="flex items-center gap-2 bg-gray-800 p-1 rounded-lg">
+            <button
+              onClick={() => setColumns(2)}
+              className={`px-3 py-1.5 rounded-md text-sm transition-all ${
+                columns === 2 ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              2 Colunas
+            </button>
+            <button
+              onClick={() => setColumns(4)}
+              className={`px-3 py-1.5 rounded-md text-sm transition-all ${
+                columns === 4 ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              4 Colunas
+            </button>
           </div>
+
+          <button
+            onClick={handlePrint}
+            className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-semibold flex items-center gap-2 transition-colors"
+          >
+            <Printer size={18} /> Imprimir Agora
+          </button>
+          
+           <button
+            onClick={handleClose} // Fecha a aba
+            className="bg-red-500/10 hover:bg-red-500/20 text-red-500 p-2 rounded-lg transition-colors"
+            title="Fechar Janela"
+          >
+            <X size={20} />
+          </button>
         </div>
       </div>
-      
-      {/* ÁREA DE IMPRESSÃO REAL (print-only) */}
-      {/* Este div só aparece na impressão e contém apenas os adesivos */}
-      <div id="print-area" className={cn("hidden print:block print:w-full print:max-w-none print:p-0 print:m-0 print:bg-white", printGridClass)}>
-        <div className={cn("grid gap-2 print:gap-2", printGridClass)}>
+
+      {/* --- ÁREA DE IMPRESSÃO --- */}
+      {/* Usando max-w-none para garantir que o container ocupe a largura total do papel na impressão */}
+      <div id="print-area" className="max-w-5xl mx-auto bg-white p-4 shadow-sm print:shadow-none print:m-0 print:w-full">
+        {/* O segredo está aqui: classes dinâmicas que funcionam no print */}
+        <div 
+          className={cn(
+            "grid gap-4", 
+            gridClass,
+            // Aplicando as classes de impressão diretamente no container
+            "print:grid print:gap-2", 
+            printGridClass
+          )}
+        >
           {printItems.map((item) => (
             <QRCodeSticker key={item.id} item={item} />
           ))}
         </div>
       </div>
+      
+      {/* CSS Global para forçar o layout de impressão */}
+      <style>{`
+        @media print {
+          @page { margin: 0.5cm; size: auto; }
+          body { -webkit-print-color-adjust: exact; }
+          
+          /* Força o reset do layout principal do SPA */
+          body, html, #root {
+            height: auto !important;
+            overflow: visible !important;
+            background: white !important;
+            color: black !important;
+          }
+          
+          /* Garante que o conteúdo da área de impressão seja visível */
+          #print-area, #print-area * {
+            visibility: visible;
+          }
+          
+          /* Remove margens e padding do corpo na impressão */
+          body {
+            margin: 0;
+            padding: 0;
+          }
+        }
+      `}</style>
     </div>
   );
 };
