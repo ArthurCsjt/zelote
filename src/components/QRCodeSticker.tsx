@@ -20,10 +20,10 @@ export const QRCodeSticker: React.FC<QRCodeStickerProps> = ({ item, className })
   return (
     <div 
       className={cn(
-        // Removidas as classes w-full max-w-[200px] mx-auto h-[180px]
+        // Estilos de tela
         "p-2 border border-gray-300 rounded-md flex flex-col items-center text-center bg-white shadow-sm",
-        // Estilos de impressão (mantidos)
-        "print:w-[4cm] print:h-[4.5cm] print:p-1 print:border-dashed print:border-gray-500 print:break-inside-avoid",
+        // Estilos de impressão: Fundo branco, texto preto, borda tracejada
+        "print:w-[4cm] print:h-[4.5cm] print:p-1 print:border-dashed print:border-gray-500 print:break-inside-avoid print:bg-white print:text-black",
         className
       )}
     >
@@ -40,11 +40,11 @@ export const QRCodeSticker: React.FC<QRCodeStickerProps> = ({ item, className })
       </div>
       
       <div className="mt-1 flex-1 flex flex-col justify-center min-h-0">
-        <h3 className="text-sm font-bold text-gray-900 truncate w-full">
+        <h3 className="text-sm font-bold text-gray-900 truncate w-full print:text-black">
           {item.chromebook_id}
         </h3>
         {/* REMOVIDO: Linha do Modelo */}
-        <p className="text-[9px] text-gray-600 leading-tight mt-0.5 truncate w-full">
+        <p className="text-[9px] text-gray-600 leading-tight mt-0.5 truncate w-full print:text-black/80">
           S/N: {item.serial_number || 'N/A'}
         </p>
       </div>

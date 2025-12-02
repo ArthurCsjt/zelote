@@ -455,11 +455,6 @@
 /* ======================================================================== */
 
 @media print {
-    /* Oculta tudo que não tem a classe 'print-only' ou não está na área de impressão */
-    body > *:not(#root) {
-        display: none !important;
-    }
-    
     /* Oculta elementos marcados como no-print */
     .no-print {
         display: none !important;
