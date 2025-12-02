@@ -1,12 +1,12 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { Check, ChevronsUpDown, User, GraduationCap, Briefcase, Search, Loader2, CheckCircle, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Input } from '@/components/ui/input';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { useUserSearch, UserSearchResult } from '@/hooks/useUserSearch';
 import { Badge } from './ui/badge';
-import { Card } from './ui/card';
 import { GlassCard } from './ui/GlassCard'; // Importando GlassCard
 
 interface UserAutocompleteProps {
@@ -17,15 +17,16 @@ interface UserAutocompleteProps {
 }
 
 const UserAutocomplete: React.FC<UserAutocompleteProps> = ({ selectedUser, onSelect, onClear, disabled }) => {
-  const [open, setOpen] = useState(false);
   const { users, loading } = useUserSearch();
   const [searchTerm, setSearchTerm] = useState('');
+  const [isFocused, setIsFocused] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const filteredUsers = useMemo(() => {
-    if (!searchTerm) return users;
+    if (!searchTerm || !isFocused) return [];
     const lowerCaseSearch = searchTerm.toLowerCase();
     return users.filter(user => user.searchable.includes(lowerCaseSearch));
-  }, [users, searchTerm]);
+  }, [users, searchTerm, isFocused]);
 
   const getUserIcon = (type: string) => {
     switch (type) {
@@ -70,8 +71,9 @@ const UserAutocomplete: React.FC<UserAutocompleteProps> = ({ selectedUser, onSel
 
   const handleSelect = (user: UserSearchResult) => {
     onSelect(user);
-    setOpen(false);
     setSearchTerm('');
+    setIsFocused(false);
+    inputRef.current?.blur();
   };
 
   if (loading) {
@@ -88,7 +90,6 @@ const UserAutocomplete: React.FC<UserAutocompleteProps> = ({ selectedUser, onSel
       <GlassCard 
         className={cn(
           "p-3 border-2 shadow-md",
-          // Ajuste para maior contraste no modo claro
           "border-green-600/50 bg-green-50/80 dark:bg-green-950/50 dark:border-green-900"
         )}
       >
@@ -116,75 +117,85 @@ const UserAutocomplete: React.FC<UserAutocompleteProps> = ({ selectedUser, onSel
   }
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          role="combobox"
-          aria-expanded={open}
-          className="w-full justify-between bg-white border-gray-200 dark:bg-card dark:border-border"
+    <div className="relative">
+      <div className="relative">
+        <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+        <Input
+          ref={inputRef}
+          placeholder="Buscar nome, RA ou email..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          onFocus={() => setIsFocused(true)}
+          // Pequeno delay para permitir o clique na sugestão antes de fechar
+          onBlur={() => setTimeout(() => setIsFocused(false), 200)} 
+          className="w-full pl-10 bg-input-bg border-input dark:bg-input-bg dark:border-input"
           disabled={disabled}
-        >
-          <div className="flex items-center">
-            <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
-            {"Buscar nome, RA ou email..."}
-          </div>
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent 
-        className="w-[350px] p-0 bg-card border-border shadow-xl border-border-strong" // ADICIONADO shadow-xl e border-border-strong
-      >
-        <Command>
-          <CommandInput 
-            placeholder="Buscar usuário..." 
-            value={searchTerm}
-            onValueChange={setSearchTerm}
-          />
-          <CommandList>
-            <CommandEmpty>Nenhum usuário encontrado.</CommandEmpty>
-            <CommandGroup>
-              {filteredUsers.map((user) => (
-                <CommandItem
-                  key={user.id}
-                  value={user.searchable}
-                  onSelect={() => handleSelect(user)}
-                  className="flex items-center justify-between p-3"
-                >
-                  <div className="flex items-center gap-3">
-                    {/* Avatar com cores sutis */}
-                    <div className={cn(
-                      "w-8 h-8 rounded-lg flex items-center justify-center shrink-0",
-                      getUserAvatarClasses(user.type)
-                    )}>
-                      {getUserIcon(user.type)}
+        />
+      </div>
+      
+      {/* Lista de Sugestões (aparece abaixo do input) */}
+      {isFocused && searchTerm && filteredUsers.length > 0 && (
+        <ScrollArea className="absolute z-20 w-full max-h-60 rounded-md border bg-card shadow-lg dark:bg-card dark:border-border mt-1">
+          <Command className="bg-transparent">
+            <CommandList>
+              {loading && (
+                <div className="flex items-center justify-center p-2 text-sm text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  Buscando...
+                </div>
+              )}
+              
+              {filteredUsers.length === 0 && !loading && (
+                <CommandEmpty className="py-6 text-center text-sm text-muted-foreground">
+                  Nenhum usuário encontrado.
+                </CommandEmpty>
+              )}
+              
+              <CommandGroup>
+                {filteredUsers.map((user) => (
+                  <CommandItem
+                    key={user.id}
+                    value={user.searchable}
+                    onSelect={() => handleSelect(user)}
+                    className="flex items-center justify-between p-3"
+                    // Usar onMouseDown para garantir que o clique funcione antes do onBlur
+                    onMouseDown={(e) => { e.preventDefault(); handleSelect(user); }}
+                  >
+                    <div className="flex items-center gap-3">
+                      {/* Avatar com cores sutis */}
+                      <div className={cn(
+                        "w-8 h-8 rounded-lg flex items-center justify-center shrink-0",
+                        getUserAvatarClasses(user.type)
+                      )}>
+                        {getUserIcon(user.type)}
+                      </div>
+                      
+                      {/* Info */}
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-sm text-foreground truncate">
+                          {user.name}
+                        </p>
+                        <p className="text-xs text-muted-foreground truncate">
+                          {user.email}
+                        </p>
+                      </div>
                     </div>
                     
-                    {/* Info */}
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-sm text-foreground truncate">
-                        {user.name}
-                      </p>
-                      <p className="text-xs text-muted-foreground truncate">
-                        {user.email}
-                      </p>
-                    </div>
-                  </div>
-                  
-                  {/* Badge do tipo */}
-                  <Badge variant="outline" className={cn(
-                    "text-xs shrink-0 capitalize",
-                    getUserBadgeClasses(user.type)
-                  )}>
-                    {user.type}
-                  </Badge>
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
+                    {/* Badge do tipo */}
+                    <Badge variant="outline" className={cn(
+                      "text-xs shrink-0 capitalize",
+                      getUserBadgeClasses(user.type)
+                    )}>
+                      {user.type}
+                    </Badge>
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            </CommandList>
+          </Command>
+        </ScrollArea>
+      )}
+    </div>
   );
 };
 
