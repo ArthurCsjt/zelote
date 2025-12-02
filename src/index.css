@@ -451,10 +451,34 @@
 }
 
 /* ======================================================================== */
-/* NOVO: Estilos de Impressão */
+/* NOVO: Estilos de Impressão (FORÇANDO VISIBILIDADE) */
 /* ======================================================================== */
 
 @media print {
+    /* 1. Oculta tudo no corpo da página */
+    body * {
+        visibility: hidden;
+    }
+    
+    /* 2. Torna a área de impressão visível */
+    #print-area, #print-area * {
+        visibility: visible;
+    }
+    
+    /* 3. Posiciona a área de impressão no topo da página */
+    #print-area {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100% !important;
+        max-width: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+        background-color: white !important;
+        display: block !important; /* Garante que não seja hidden */
+    }
+    
     /* Oculta elementos marcados como no-print */
     .no-print {
         display: none !important;
@@ -475,16 +499,6 @@
         margin: 0 !important;
         width: 100% !important;
         max-width: none !important;
-    }
-    
-    /* Estiliza a área de impressão para ocupar a página inteira */
-    #print-area {
-        width: 100% !important;
-        max-width: none !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        box-shadow: none !important;
-        background-color: white !important;
     }
     
     /* Garante que os adesivos não sejam quebrados entre páginas */
