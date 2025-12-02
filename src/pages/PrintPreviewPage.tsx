@@ -9,7 +9,6 @@ import { GlassCard } from '@/components/ui/GlassCard';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
-import Layout from '@/components/Layout'; // Importando Layout
 
 export const PrintPreviewPage: React.FC = () => {
   const { printItems, clearPrintItems } = usePrintContext();
@@ -19,13 +18,11 @@ export const PrintPreviewPage: React.FC = () => {
   useEffect(() => {
     // Redireciona se não houver itens para imprimir
     if (printItems.length === 0) {
-      // Navega para a rota raiz se não houver itens
       navigate('/', { replace: true });
     }
   }, [printItems.length, navigate]);
 
   const handlePrint = () => {
-    // Oculta o Layout e mostra apenas o conteúdo da div #print-area
     window.print();
   };
   
@@ -36,16 +33,15 @@ export const PrintPreviewPage: React.FC = () => {
 
   if (printItems.length === 0) {
     return (
-      <Layout title="Pré-visualização" subtitle="Carregando..." showBackButton onBack={handleBack}>
-        <div className="flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
           <p className="text-muted-foreground">Carregando itens para impressão...</p>
         </div>
-      </Layout>
+      </div>
     );
   }
   
-  // Ajuste: Usamos grid-cols-2 por padrão (mobile) e aplicamos o grid selecionado a partir de 'sm'
-  // Reduzindo o gap para gap-2 (0.5rem) para otimizar o espaço em tela.
   const gridClass = columns === '2' 
     ? 'grid-cols-2 sm:grid-cols-2' 
     : columns === '3' 
@@ -55,18 +51,27 @@ export const PrintPreviewPage: React.FC = () => {
   const printGridClass = `print:grid-cols-${columns}`;
 
   return (
-    <Layout 
-      title="Pré-visualização de Impressão" 
-      subtitle={`Etiquetas para ${printItems.length} Chromebooks`} 
-      showBackButton 
-      onBack={handleBack} // Usando o handler que limpa o contexto e navega
-      // Adicionando classe para ocultar o Layout na impressão
-      backgroundClass="print:hidden" 
-    >
-      {/* O conteúdo principal da página de impressão deve ser renderizado sem o padding padrão do Layout */}
-      <div className="p-0 -mt-6 sm:-mt-8"> {/* Remove o padding superior do main do Layout */}
+    // Container principal que será ocultado na impressão
+    <div className="min-h-screen bg-background print:hidden">
+      
+      {/* Área de Controle (Não Imprimível) */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         
-        {/* Área de Controle (Não Imprimível) */}
+        {/* Cabeçalho de Navegação (no-print) */}
+        <div className="flex items-center justify-between mb-6 no-print">
+            <Button variant="ghost" onClick={handleBack} className="text-muted-foreground hover:text-foreground">
+                <ArrowLeft className="w-5 h-5 mr-2" />
+                Voltar ao Inventário
+            </Button>
+            <h1 className="text-2xl font-bold text-foreground">
+                Pré-visualização de Impressão
+            </h1>
+            <Button onClick={handlePrint} className="bg-menu-green hover:bg-menu-green-hover">
+                <Printer className="h-4 w-4 mr-2" />
+                Imprimir Etiquetas
+            </Button>
+        </div>
+        
         <GlassCard className="no-print max-w-4xl mx-auto mb-8 p-4 sm:p-6">
           <CardHeader className="p-0 pb-4">
             <CardTitle className="flex items-center gap-2 text-primary">
@@ -105,17 +110,25 @@ export const PrintPreviewPage: React.FC = () => {
           </CardContent>
         </GlassCard>
 
-        {/* Área de Impressão */}
-        {/* Reduzindo o padding na visualização em tela para p-2 (0.5rem) */}
-        <div id="print-area" className="max-w-4xl mx-auto bg-white p-2 sm:p-4 print:p-0 print:m-0 print:shadow-none print:bg-white"> 
-          {/* Aplicando gap-2 para a visualização em tela */}
-          <div className={cn("grid gap-2 print:gap-2", gridClass, printGridClass)}>
+        {/* Área de Impressão (Visualização em Tela) */}
+        <div className="max-w-4xl mx-auto bg-white p-2 sm:p-4 border rounded-lg shadow-lg"> 
+          <div className={cn("grid gap-2", gridClass)}>
             {printItems.map((item) => (
               <QRCodeSticker key={item.id} item={item} />
             ))}
           </div>
         </div>
       </div>
-    </Layout>
+      
+      {/* ÁREA DE IMPRESSÃO REAL (print-only) */}
+      {/* Este div só aparece na impressão e contém apenas os adesivos */}
+      <div id="print-area" className="hidden print:block print:w-full print:max-w-none print:p-0 print:m-0 print:bg-white">
+        <div className={cn("grid gap-2 print:gap-2", printGridClass)}>
+          {printItems.map((item) => (
+            <QRCodeSticker key={item.id} item={item} />
+          ))}
+        </div>
+      </div>
+    </div>
   );
 };

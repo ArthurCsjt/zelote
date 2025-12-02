@@ -92,11 +92,8 @@ const App = () => (
                   </ProtectedRoute>
                 } />
                 
-                <Route path="/print-preview" element={
-                  <ProtectedRoute>
-                    <PrintPreviewPage />
-                  </ProtectedRoute>
-                } />
+                {/* ROTA DE IMPRESSÃO: Não usa ProtectedRoute nem Layout */}
+                <Route path="/print-preview" element={<PrintPreviewPage />} />
                 
                 {/* NOVA ROTA DE AGENDAMENTO */}
                 <Route path="/agendamento" element={
