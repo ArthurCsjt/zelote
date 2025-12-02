@@ -239,7 +239,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
         );
     }
     
-    // Se não estiver definido, mostra o campo de busca/input com o botão de confirmação
+    // Se não estiver definido, mostra o campo de busca/input
     return (
         <div className="flex gap-2 items-start">
             <div className="flex-1">
@@ -252,16 +252,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
                     onConfirm={handlePurposeConfirm} // Passa a função de confirmação
                 />
             </div>
-            <Button 
-                type="button" 
-                size="icon" 
-                onClick={() => handlePurposeConfirm(formData.purpose)}
-                disabled={loading || !formData.purpose.trim()}
-                className="h-10 w-10 shrink-0 bg-green-600 hover:bg-green-700"
-                title="Confirmar Finalidade"
-            >
-                <CheckCircle className="h-5 w-5" />
-            </Button>
+            {/* Removido o botão de check manual, pois a confirmação é feita via Enter ou seleção no Autocomplete */}
         </div>
     );
   };

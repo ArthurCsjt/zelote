@@ -69,37 +69,40 @@ const PurposeAutocomplete: React.FC<PurposeAutocompleteProps> = ({ value, onChan
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <div className="relative">
-        <Input
-          id="purpose-input"
-          placeholder={placeholder}
-          value={value}
-          onChange={(e) => onChange(e.target.value)} // Permite digitação direta
-          onFocus={() => setSearchTerm(value)} // Define o termo de busca ao focar
-          onKeyDown={handleKeyDown} // Adiciona o handler de Enter
-          className="w-full pr-10 bg-input-bg border-input dark:bg-input-bg dark:border-input"
+      <PopoverTrigger asChild>
+        {/* Usamos um Button como trigger para replicar o estilo de input com ícone de seta */}
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className={cn(
+            "w-full justify-between bg-white border-gray-200 dark:bg-card dark:border-border h-10 px-3",
+            "text-left font-normal",
+            !value && "text-muted-foreground"
+          )}
           disabled={disabled}
-        />
-        <PopoverTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
-            disabled={disabled}
-          >
-            <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50" />
-          </Button>
-        </PopoverTrigger>
-      </div>
+        >
+          <div className="flex items-center flex-1 min-w-0">
+            <BookOpen className="mr-2 h-4 w-4 shrink-0 opacity-50" />
+            <span className="truncate text-foreground/80 dark:text-foreground/90">
+              {value || placeholder}
+            </span>
+          </div>
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
       
       <PopoverContent 
         className="w-[350px] p-0 bg-card border-border shadow-xl border-border-strong"
       >
         <Command>
+          {/* O input de busca agora está dentro do Command */}
           <CommandInput 
             placeholder={commandPlaceholder} 
             value={searchTerm}
             onValueChange={setSearchTerm}
+            // Adicionando o valor do campo principal para permitir a confirmação por Enter
+            onKeyDown={handleKeyDown} 
           />
           <CommandList>
             <CommandEmpty>Nenhuma sugestão encontrada. Digite a finalidade.</CommandEmpty>
@@ -109,18 +112,35 @@ const PurposeAutocomplete: React.FC<PurposeAutocompleteProps> = ({ value, onChan
                   key={user.id}
                   value={user.searchable}
                   onSelect={() => handleSelectUser(user)}
-                  className="flex items-center justify-between"
+                  className="flex items-center justify-between p-3"
                 >
-                  <div className="flex items-center">
-                    {getUserIcon(user.type)}
-                    <div className="flex flex-col">
-                      <span className="font-medium text-sm text-foreground truncate">
+                  <div className="flex items-center gap-3">
+                    {/* Avatar */}
+                    <div className={cn(
+                      "w-8 h-8 rounded-lg flex items-center justify-center shrink-0",
+                      "bg-gradient-to-br from-purple-500 to-purple-600"
+                    )}>
+                      {getUserIcon(user.type)}
+                    </div>
+                    
+                    {/* Info */}
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-sm text-foreground truncate">
                         {user.name}
-                      </span>
-                      <span className="text-xs text-muted-foreground capitalize">{user.type}</span>
+                      </p>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {user.email}
+                      </p>
                     </div>
                   </div>
-                  {/* Removido o Check, pois a confirmação é feita no onSelect */}
+                  
+                  {/* Badge do tipo */}
+                  <Badge variant="outline" className={cn(
+                    "text-xs shrink-0 capitalize",
+                    user.type === 'professor' ? "bg-purple-500/10 text-purple-600" : "bg-orange-500/10 text-orange-600"
+                  )}>
+                    {user.type}
+                  </Badge>
                 </CommandItem>
               ))}
             </CommandGroup>
