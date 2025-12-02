@@ -252,7 +252,6 @@ export function LoanForm({ onBack }: LoanFormProps) {
                     onConfirm={handlePurposeConfirm} // Passa a função de confirmação
                 />
             </div>
-            {/* Removido o botão de check manual, pois a confirmação é feita via Enter ou seleção no Autocomplete */}
         </div>
     );
   };
