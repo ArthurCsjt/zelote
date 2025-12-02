@@ -25,12 +25,13 @@ export const PrintPreviewPage: React.FC = () => {
   }, [printItems.length, navigate]);
 
   const handlePrint = () => {
+    // Oculta o Layout e mostra apenas o conteúdo da div #print-area
     window.print();
   };
   
   const handleBack = () => {
     clearPrintItems(); // Limpa a seleção ao voltar
-    navigate('/'); // Volta para a rota raiz (/)
+    navigate('/inventory', { replace: true }); // Volta para a página de inventário
   };
 
   if (printItems.length === 0) {
@@ -59,6 +60,8 @@ export const PrintPreviewPage: React.FC = () => {
       subtitle={`Etiquetas para ${printItems.length} Chromebooks`} 
       showBackButton 
       onBack={handleBack} // Usando o handler que limpa o contexto e navega
+      // Adicionando classe para ocultar o Layout na impressão
+      backgroundClass="print:hidden" 
     >
       {/* O conteúdo principal da página de impressão deve ser renderizado sem o padding padrão do Layout */}
       <div className="p-0 -mt-6 sm:-mt-8"> {/* Remove o padding superior do main do Layout */}
@@ -104,7 +107,7 @@ export const PrintPreviewPage: React.FC = () => {
 
         {/* Área de Impressão */}
         {/* Reduzindo o padding na visualização em tela para p-2 (0.5rem) */}
-        <div id="print-area" className="max-w-4xl mx-auto bg-white p-2 sm:p-4"> 
+        <div id="print-area" className="max-w-4xl mx-auto bg-white p-2 sm:p-4 print:p-0 print:m-0 print:shadow-none print:bg-white"> 
           {/* Aplicando gap-2 para a visualização em tela */}
           <div className={cn("grid gap-2 print:gap-2", gridClass, printGridClass)}>
             {printItems.map((item) => (

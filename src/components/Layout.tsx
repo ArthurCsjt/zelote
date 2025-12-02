@@ -82,7 +82,7 @@ const Layout: React.FC<LayoutProps> = ({
       {isStandalone && <div className="status-bar-overlay" />}
 
       {/* Header */}
-      <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isStandalone ? 'safe-area-top' : ''}`}>
+      <header className={cn("fixed top-0 left-0 right-0 z-50 transition-all duration-300 no-print", isStandalone ? 'safe-area-top' : '')}>
         {/* Glassmorphism Header Background */}
         <div className="absolute inset-0 bg-white/70 dark:bg-zinc-950/70 backdrop-blur-xl border-b border-white/20 dark:border-zinc-800/50 shadow-sm" />
 
@@ -195,14 +195,14 @@ const Layout: React.FC<LayoutProps> = ({
       {/* Main Content */}
       <main className={`relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 no-bounce pt-24 md:pt-28 ${isStandalone ? 'ios-bottom-safe' : ''}`}>
         {/* Background Gradient Spot */}
-        <div className="fixed top-20 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-primary/5 rounded-full blur-[100px] -z-10 pointer-events-none" />
+        <div className="fixed top-20 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-primary/5 rounded-full blur-[100px] -z-10 pointer-events-none no-print" />
 
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
           {children}
         </div>
       </main>
 
-      {isStandalone && <div className="safe-area-bottom h-16 md:h-24" />}
+      {isStandalone && <div className="safe-area-bottom h-16 md:h-24 no-print" />}
     </div>
   );
 };
