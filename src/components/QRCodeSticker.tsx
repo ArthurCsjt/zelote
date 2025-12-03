@@ -18,30 +18,30 @@ export const QRCodeSticker: React.FC<QRCodeStickerProps> = ({ item, className })
   });
 
   return (
-    <div 
+    <div
       className={cn(
         // Estilos de tela
         "p-2 border border-gray-300 rounded-md flex flex-col items-center text-center bg-white shadow-sm",
         // Estilos de impressão: Fundo branco, texto preto, borda tracejada, dimensões fixas
-        "print:w-[4cm] print:h-[4.5cm] print:p-1 print:border-dashed print:border-gray-500 print:break-inside-avoid print:bg-white print:text-black",
+        "print:w-[5cm] print:h-[5.5cm] print:p-2 print:border-dashed print:border-gray-500 print:break-inside-avoid print:bg-white print:text-black",
         className
       )}
       // Adicionando dimensões fixas para a visualização em tela para simular o tamanho de impressão
-      style={{ width: '100%', maxWidth: '150px', height: '168px' }} 
+      style={{ width: '100%', maxWidth: '190px', height: '208px' }}
     >
       <div className="flex-shrink-0">
-        <QRCodeSVG 
+        <QRCodeSVG
           value={qrData}
-          // Reduzindo o tamanho do QR Code para caber no adesivo de 4cm
-          size={80} 
+          // Tamanho otimizado para leitura confiável por câmeras (120px)
+          size={120}
           level="H"
           includeMargin={false}
           bgColor="#FFFFFF"
           fgColor="#000000"
-          style={{ width: '80px', height: '80px' }}
+          style={{ width: '120px', height: '120px' }}
         />
       </div>
-      
+
       <div className="mt-1 flex-1 flex flex-col justify-center min-h-0">
         <h3 className="text-sm font-bold text-gray-900 truncate w-full print:text-black">
           {item.chromebook_id}
