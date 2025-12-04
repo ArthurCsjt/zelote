@@ -11,7 +11,7 @@ import {
 } from "./ui/table";
 import { toast } from "@/hooks/use-toast";
 import { Search, Filter, Edit3, QrCode, CheckCircle, AlertCircle, XCircle, Clock, RefreshCw, Download, Trash2, MapPin, FileText, Loader2, AlertTriangle, Printer, ListChecks, X } from "lucide-react";
-import { 
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -50,17 +50,17 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
   const { getChromebooks, updateChromebook } = useDatabase();
   const navigate = useNavigate();
   const { printItems, addItemToPrint, removeItemFromPrint, clearPrintItems } = usePrintContext(); // USANDO NOVAS FUNÇÕES
-  
+
   const [chromebooks, setChromebooks] = useState<ChromebookDataExtended[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  
+
   // Estados para Diálogos
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [editingChromebook, setEditingChromebook] = useState<ChromebookDataExtended | null>(null);
   const [chromebookToDelete, setChromebookToDelete] = useState<ChromebookDataExtended | null>(null);
-  
+
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10); // ALTERADO: Agora é um estado
   const [isFetching, setIsFetching] = useState(false);
@@ -97,17 +97,17 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
         },
         (payload) => {
           console.log('Realtime change received:', payload);
-          
+
           if (payload.eventType === 'INSERT') {
             setChromebooks(prev => [payload.new as ChromebookDataExtended, ...prev]);
           } else if (payload.eventType === 'UPDATE') {
-            setChromebooks(prev => 
-              prev.map(cb => 
+            setChromebooks(prev =>
+              prev.map(cb =>
                 cb.id === payload.new.id ? payload.new as ChromebookDataExtended : cb
               )
             );
           } else if (payload.eventType === 'DELETE') {
-            setChromebooks(prev => 
+            setChromebooks(prev =>
               prev.filter(cb => cb.id !== payload.old.id)
             );
           }
@@ -123,8 +123,8 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
   // Filter Chromebooks based on search term and status
   const filteredChromebooks = chromebooks.filter((chromebook) => {
     const lowerCaseSearch = searchTerm.toLowerCase();
-    
-    const matchesSearch = 
+
+    const matchesSearch =
       chromebook.chromebook_id.toLowerCase().includes(lowerCaseSearch) ||
       String(chromebook.patrimony_number || '').toLowerCase().includes(lowerCaseSearch) ||
       chromebook.model.toLowerCase().includes(lowerCaseSearch) ||
@@ -132,7 +132,7 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
       String(chromebook.location || '').toLowerCase().includes(lowerCaseSearch) ||
       String(chromebook.manufacturer || '').toLowerCase().includes(lowerCaseSearch) ||
       String(chromebook.classroom || '').toLowerCase().includes(lowerCaseSearch);
-    
+
     const matchesStatus = statusFilter === 'all' || chromebook.status === statusFilter;
 
     return matchesSearch && matchesStatus;
@@ -155,40 +155,40 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
   const getStatusInfo = (status: string) => {
     switch (status) {
       case 'disponivel':
-        return { 
-          color: 'text-green-600 bg-green-50 dark:text-success dark:bg-success-bg/30', 
-          icon: CheckCircle, 
-          label: 'Disponível' 
+        return {
+          color: 'text-green-600 bg-green-50 dark:text-success dark:bg-success-bg/30',
+          icon: CheckCircle,
+          label: 'Disponível'
         };
       case 'emprestado':
-        return { 
-          color: 'text-purple-600 bg-purple-50 dark:text-purple-400 dark:bg-purple-900/30', 
-          icon: Clock, 
-          label: 'Emprestado' 
+        return {
+          color: 'text-purple-600 bg-purple-50 dark:text-purple-400 dark:bg-purple-900/30',
+          icon: Clock,
+          label: 'Emprestado'
         };
       case 'fixo':
-        return { 
-          color: 'text-blue-600 bg-blue-50 dark:text-blue-400 dark:bg-blue-900/30', 
-          icon: MapPin, 
-          label: 'Fixo' 
+        return {
+          color: 'text-blue-600 bg-blue-50 dark:text-blue-400 dark:bg-blue-900/30',
+          icon: MapPin,
+          label: 'Fixo'
         };
       case 'manutencao':
-        return { 
-          color: 'text-red-600 bg-red-50 dark:text-error dark:bg-error-bg/30', 
-          icon: AlertTriangle, 
-          label: 'Manutenção' 
+        return {
+          color: 'text-red-600 bg-red-50 dark:text-error dark:bg-error-bg/30',
+          icon: AlertTriangle,
+          label: 'Manutenção'
         };
       case 'fora_uso':
-        return { 
-          color: 'text-gray-600 bg-gray-200 dark:text-muted-foreground dark:bg-muted/30', 
-          icon: XCircle, 
-          label: 'Inativo' 
+        return {
+          color: 'text-gray-600 bg-gray-200 dark:text-muted-foreground dark:bg-muted/30',
+          icon: XCircle,
+          label: 'Inativo'
         };
       default:
-        return { 
-          color: 'text-gray-600 bg-gray-50 dark:text-muted-foreground dark:bg-muted/30', 
-          icon: XCircle, 
-          label: 'Desconhecido' 
+        return {
+          color: 'text-gray-600 bg-gray-50 dark:text-muted-foreground dark:bg-muted/30',
+          icon: XCircle,
+          label: 'Desconhecido'
         };
     }
   };
@@ -208,8 +208,8 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
       toast({ title: 'Permissão negada', description: 'Apenas administradores podem marcar como Fixo ou Inativo.', variant: 'destructive' });
       return;
     }
-    
-    const success = await updateChromebook(chromebookId, { 
+
+    const success = await updateChromebook(chromebookId, {
       status: newStatus as any,
     });
 
@@ -236,20 +236,20 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
     setChromebookToDelete(chromebook);
     setIsDeleteDialogOpen(true);
   };
-  
+
   // Função de callback para o diálogo de exclusão
   const handleDeleteSuccess = () => {
     // O Real-time já cuida da atualização, mas limpamos o estado do modal
     setChromebookToDelete(null);
   };
-  
+
   // Função para exportar dados para CSV
   const handleExportCSV = async () => {
     setIsExporting(true);
     try {
       // 1. Buscar todos os dados (sem paginação ou filtros de UI)
       const allData = await getChromebooks();
-      
+
       if (allData.length === 0) {
         toast({ title: "Atenção", description: "Nenhum dado para exportar.", variant: "info" });
         return;
@@ -283,7 +283,7 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
       a.download = `inventario_chromebooks_${new Date().toISOString().split('T')[0]}.csv`;
       a.click();
       window.URL.revokeObjectURL(url);
-      
+
       toast({ title: "Sucesso", description: "Inventário exportado para CSV." });
 
     } catch (e: any) {
@@ -293,27 +293,27 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
       setIsExporting(false);
     }
   };
-  
+
   // NOVO: Handler para impressão em lote (USANDO NOVA ABORDAGEM)
   const handleBatchPrint = () => {
     if (printItems.length === 0) {
       toast({ title: "Atenção", description: "Selecione pelo menos um Chromebook para imprimir.", variant: "info" });
       return;
     }
-    
+
     // 1. Salva os itens selecionados no LocalStorage
     localStorage.setItem('print_queue', JSON.stringify(printItems));
-    
+
     // 2. Abre a rota de impressão em uma nova aba
     window.open('/print-preview', '_blank');
-    
+
     // 3. Limpa a seleção local (opcional, mas boa prática)
     clearPrintItems();
   };
-  
+
   // Lógica de seleção de item
   const isItemSelected = (chromebookId: string) => printItems.some(item => item.id === chromebookId);
-  
+
   const handleToggleItem = (chromebook: ChromebookDataExtended) => {
     if (isItemSelected(chromebook.id)) {
       removeItemFromPrint(chromebook.id);
@@ -321,11 +321,11 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
       addItemToPrint(chromebook);
     }
   };
-  
+
   // Lógica de seleção de todos os itens da página
   const handleToggleAllOnPage = () => {
     const allOnPageSelected = paginatedChromebooks.every(cb => isItemSelected(cb.id));
-    
+
     if (allOnPageSelected) {
       // Desseleciona todos da página
       paginatedChromebooks.forEach(cb => removeItemFromPrint(cb.id));
@@ -338,7 +338,7 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
       });
     }
   };
-  
+
   // Verifica se todos os itens da página estão selecionados
   const isAllOnPageSelected = paginatedChromebooks.length > 0 && paginatedChromebooks.every(cb => isItemSelected(cb.id));
 
@@ -346,14 +346,14 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
   return (
     <div className="p-0 glass-morphism animate-fade-in relative">
       {/* Background gradient overlay REMOVIDO */}
-      
+
       {/* Estatísticas e Gráfico */}
       <InventoryStats chromebooks={chromebooks} />
 
       {/* Painel de Busca e Filtros */}
       <GlassCard className="mb-6 p-4 relative z-10">
         <div className="flex flex-col sm:flex-row gap-4 items-center">
-          
+
           {/* Campo de Busca */}
           <div className="relative flex-1 w-full">
             <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400 dark:text-muted-foreground" />
@@ -362,10 +362,10 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               // CORREÇÃO: Usando bg-input para o fundo do input
-              className="pl-10 bg-input dark:bg-input" 
+              className="pl-10 bg-input dark:bg-input"
             />
           </div>
-          
+
           {/* Filtro de Status */}
           <div className="relative w-full sm:w-[180px]">
             <Filter className="absolute left-3 top-3 h-4 w-4 text-gray-400 dark:text-muted-foreground" />
@@ -384,11 +384,11 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
               </SelectContent>
             </Select>
           </div>
-          
+
           {/* Botões de Ação */}
           <div className="flex gap-2 w-full sm:w-auto">
             {/* Botão de Impressão em Lote */}
-            <Button 
+            <Button
               onClick={handleBatchPrint}
               variant="outline"
               title={`Imprimir QR Codes em Lote (${printItems.length} itens)`}
@@ -403,8 +403,8 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
                 </span>
               )}
             </Button>
-            
-            <Button 
+
+            <Button
               onClick={fetchChromebooks}
               variant="outline"
               disabled={isFetching || isExporting}
@@ -414,7 +414,7 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
             >
               <RefreshCw className={`h-4 w-4 text-primary dark:text-primary ${isFetching ? 'animate-spin' : ''}`} />
             </Button>
-            <Button 
+            <Button
               onClick={handleExportCSV}
               variant="outline"
               title="Fazer backup (Exportar CSV)"
@@ -433,25 +433,25 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
         <div className="flex justify-between items-center mt-4">
           <div className="text-sm text-gray-500 flex items-center gap-4">
             Resultados: {filteredChromebooks.length} Chromebooks
-            
+
             {/* NOVO: Seletor de Itens por Página */}
             <div className="flex items-center gap-2">
-                <span className="text-xs">Itens por página:</span>
-                <Select 
-                    value={String(itemsPerPage)} 
-                    onValueChange={(value) => setItemsPerPage(Number(value))}
-                >
-                    {/* CORREÇÃO: Usando bg-input para o fundo do select trigger */}
-                    <SelectTrigger className="w-[70px] h-8 text-xs bg-input dark:bg-input">
-                        <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="bg-card border-border"> {/* Adicionando classes de fundo e borda */}
-                        <SelectItem value="10">10</SelectItem>
-                        <SelectItem value="25">25</SelectItem>
-                        <SelectItem value="50">50</SelectItem>
-                        <SelectItem value="100">100</SelectItem>
-                    </SelectContent>
-                </Select>
+              <span className="text-xs">Itens por página:</span>
+              <Select
+                value={String(itemsPerPage)}
+                onValueChange={(value) => setItemsPerPage(Number(value))}
+              >
+                {/* CORREÇÃO: Usando bg-input para o fundo do select trigger */}
+                <SelectTrigger className="w-[70px] h-8 text-xs bg-input dark:bg-input">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-card border-border"> {/* Adicionando classes de fundo e borda */}
+                  <SelectItem value="10">10</SelectItem>
+                  <SelectItem value="25">25</SelectItem>
+                  <SelectItem value="50">50</SelectItem>
+                  <SelectItem value="100">100</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
           {printItems.length > 0 && (
@@ -469,7 +469,7 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
           <TableHeader className="bg-gray-100 border-b border-gray-300 dark:bg-muted/50 dark:border-border"> {/* Adicionando borda inferior */}
             <TableRow className="bg-gray-50/80 dark:bg-muted/50"> {/* Fundo mais claro para a linha do cabeçalho */}
               <TableHead className="w-[50px] text-center">
-                <Checkbox 
+                <Checkbox
                   checked={isAllOnPageSelected}
                   onCheckedChange={handleToggleAllOnPage}
                   aria-label="Selecionar todos na página"
@@ -479,7 +479,7 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
               <TableHead className="w-[120px] text-xs font-extrabold text-gray-700 uppercase tracking-wider dark:text-gray-300">Fabricante</TableHead>
               <TableHead className="w-[200px] text-xs font-extrabold text-gray-700 uppercase tracking-wider dark:text-gray-300">Modelo</TableHead>
               <TableHead className="w-[150px] text-xs font-extrabold text-gray-700 uppercase tracking-wider dark:text-gray-300">Série</TableHead>
-              <TableHead className="w-[120px] text-xs font-extrabold text-gray-700 uppercase tracking-wider dark:text-gray-300">Status</TableHead> 
+              <TableHead className="w-[120px] text-xs font-extrabold text-gray-700 uppercase tracking-wider dark:text-gray-300">Status</TableHead>
               <TableHead className="w-[180px] text-center text-xs font-extrabold text-gray-700 uppercase tracking-wider dark:text-gray-300">Ações</TableHead>
             </TableRow>
           </TableHeader>
@@ -489,11 +489,11 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
                 const statusInfo = getStatusInfo(chromebook.status);
                 const StatusIcon = statusInfo.icon;
                 const isSelected = isItemSelected(chromebook.id);
-                
+
                 return (
                   <TableRow key={chromebook.id} className={isSelected ? 'bg-blue-50/50 hover:bg-blue-100/50 dark:bg-blue-950/50 dark:hover:bg-blue-900/50' : ''}>
                     <TableCell className="text-center py-2 align-top">
-                      <Checkbox 
+                      <Checkbox
                         checked={isSelected}
                         onCheckedChange={() => handleToggleItem(chromebook)}
                       />
@@ -520,7 +520,7 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
                     <TableCell className="py-2 align-top w-[120px]">
                       <div className={`inline-flex flex-col items-start gap-1 text-xs font-medium`}>
                         <div className={cn(
-                          "inline-flex items-center gap-1 px-2 py-1 rounded-full", 
+                          "inline-flex items-center gap-1 px-2 py-1 rounded-full",
                           statusInfo.color
                         )}>
                           <StatusIcon className="w-3 h-3" />
@@ -554,31 +554,31 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
                         >
                           <Edit3 className="h-4 w-4" />
                         </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDeleteClick(chromebook)}
-                          title="Excluir"
-                          className="h-8 w-8 p-0 text-red-600 hover:text-red-800"
-                          disabled={!isAdmin}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                        <Select 
-                          value={chromebook.status} 
+                        {isAdmin && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleDeleteClick(chromebook)}
+                            title="Excluir"
+                            className="h-8 w-8 p-0 text-red-600 hover:text-red-800"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        )}
+                        <Select
+                          value={chromebook.status}
                           onValueChange={(value) => handleStatusChange(chromebook.id, value)}
                         >
-                          {/* CORREÇÃO: Usando bg-input para o fundo do select trigger */}
                           <SelectTrigger className="w-[100px] h-8 text-xs bg-input dark:bg-input">
                             <SelectValue />
                           </SelectTrigger>
-                           <SelectContent className="bg-card border-border"> {/* Adicionando classes de fundo e borda */}
-                             <SelectItem value="disponivel">Disponível</SelectItem>
-                             <SelectItem value="emprestado" disabled={chromebook.status !== 'emprestado'}>Emprestado</SelectItem>
-                             <SelectItem value="fixo">Fixo</SelectItem>
-                             <SelectItem value="manutencao">Manutenção</SelectItem>
-                             <SelectItem value="fora_uso">Inativo</SelectItem>
-                           </SelectContent>
+                          <SelectContent className="bg-card border-border">
+                            <SelectItem value="disponivel">Disponível</SelectItem>
+                            <SelectItem value="emprestado" disabled={chromebook.status !== 'emprestado'}>Emprestado</SelectItem>
+                            <SelectItem value="fixo">Fixo</SelectItem>
+                            <SelectItem value="manutencao">Manutenção</SelectItem>
+                            <SelectItem value="fora_uso">Inativo</SelectItem>
+                          </SelectContent>
                         </Select>
                       </div>
                     </TableCell>
@@ -599,46 +599,48 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
             )}
           </TableBody>
         </Table>
-      </GlassCard>
+      </GlassCard >
 
       {/* Pagination */}
-      {totalPages > 1 && (
-        <Pagination className="mt-6">
-          <PaginationContent>
-            <PaginationItem>
-              <PaginationPrevious
-                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
-              />
-            </PaginationItem>
-
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-              <PaginationItem key={page}>
-                <PaginationLink
-                  isActive={currentPage === page}
-                  onClick={() => setCurrentPage(page)}
-                  className="cursor-pointer"
-                >
-                  {page}
-                </PaginationLink>
+      {
+        totalPages > 1 && (
+          <Pagination className="mt-6">
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious
+                  onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                  className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                />
               </PaginationItem>
-            ))}
 
-            <PaginationItem>
-              <PaginationNext
-                onClick={() =>
-                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-                }
-                className={
-                  currentPage === totalPages
-                    ? "pointer-events-none opacity-50"
-                    : "cursor-pointer"
-                }
-              />
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
-      )}
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <PaginationItem key={page}>
+                  <PaginationLink
+                    isActive={currentPage === page}
+                    onClick={() => setCurrentPage(page)}
+                    className="cursor-pointer"
+                  >
+                    {page}
+                  </PaginationLink>
+                </PaginationItem>
+              ))}
+
+              <PaginationItem>
+                <PaginationNext
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                  }
+                  className={
+                    currentPage === totalPages
+                      ? "pointer-events-none opacity-50"
+                      : "cursor-pointer"
+                  }
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        )
+      }
 
       {/* Edit Dialog (Agora um componente externo) */}
       <ChromebookEditDialog
@@ -654,6 +656,6 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
         chromebook={chromebookToDelete}
         onDeleteSuccess={handleDeleteSuccess}
       />
-    </div>
+    </div >
   );
 }

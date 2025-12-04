@@ -2,6 +2,7 @@
 -- Data: 2025-12-03
 -- Problema: Usuários não conseguem ver seus próprios perfis devido a políticas RLS restritivas
 --           e a função get_my_role() não existe
+-- ATUALIZAÇÃO: Adicionar políticas RLS para inventory_audits e audit_items
 
 -- 1. Criar função get_my_role() para retornar o role do usuário autenticado
 CREATE OR REPLACE FUNCTION public.get_my_role()
@@ -63,9 +64,102 @@ CREATE TRIGGER on_auth_user_created
 -- 4. Garantir que a tabela profiles tem RLS habilitado
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
--- 5. Comentários para documentação
+-- 5. NOVO: Adicionar políticas RLS para inventory_audits
+-- Permite que usuários vejam apenas suas próprias auditorias
+DROP POLICY IF EXISTS "Users can view own audits" ON public.inventory_audits;
+CREATE POLICY "Users can view own audits" 
+  ON public.inventory_audits 
+  FOR SELECT 
+  USING (auth.uid() = created_by);
+
+-- Permite que usuários criem suas próprias auditorias
+DROP POLICY IF EXISTS "Users can create own audits" ON public.inventory_audits;
+CREATE POLICY "Users can create own audits" 
+  ON public.inventory_audits 
+  FOR INSERT 
+  WITH CHECK (auth.uid() = created_by);
+
+-- Permite que usuários atualizem suas próprias auditorias
+DROP POLICY IF EXISTS "Users can update own audits" ON public.inventory_audits;
+CREATE POLICY "Users can update own audits" 
+  ON public.inventory_audits 
+  FOR UPDATE 
+  USING (auth.uid() = created_by);
+
+-- Permite que usuários deletem suas próprias auditorias
+DROP POLICY IF EXISTS "Users can delete own audits" ON public.inventory_audits;
+CREATE POLICY "Users can delete own audits" 
+  ON public.inventory_audits 
+  FOR DELETE 
+  USING (auth.uid() = created_by);
+
+-- 6. NOVO: Adicionar políticas RLS para audit_items
+-- Permite que usuários vejam itens de suas próprias auditorias
+DROP POLICY IF EXISTS "Users can view own audit items" ON public.audit_items;
+CREATE POLICY "Users can view own audit items" 
+  ON public.audit_items 
+  FOR SELECT 
+  USING (
+    EXISTS (
+      SELECT 1 FROM public.inventory_audits 
+      WHERE id = audit_items.audit_id 
+      AND created_by = auth.uid()
+    )
+  );
+
+-- Permite que usuários criem itens em suas próprias auditorias
+DROP POLICY IF EXISTS "Users can create own audit items" ON public.audit_items;
+CREATE POLICY "Users can create own audit items" 
+  ON public.audit_items 
+  FOR INSERT 
+  WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM public.inventory_audits 
+      WHERE id = audit_items.audit_id 
+      AND created_by = auth.uid()
+    )
+  );
+
+-- Permite que usuários atualizem itens de suas próprias auditorias
+DROP POLICY IF EXISTS "Users can update own audit items" ON public.audit_items;
+CREATE POLICY "Users can update own audit items" 
+  ON public.audit_items 
+  FOR UPDATE 
+  USING (
+    EXISTS (
+      SELECT 1 FROM public.inventory_audits 
+      WHERE id = audit_items.audit_id 
+      AND created_by = auth.uid()
+    )
+  );
+
+-- Permite que usuários deletem itens de suas próprias auditorias
+DROP POLICY IF EXISTS "Users can delete own audit items" ON public.audit_items;
+CREATE POLICY "Users can delete own audit items" 
+  ON public.audit_items 
+  FOR DELETE 
+  USING (
+    EXISTS (
+      SELECT 1 FROM public.inventory_audits 
+      WHERE id = audit_items.audit_id 
+      AND created_by = auth.uid()
+    )
+  );
+
+-- 7. Garantir que as tabelas têm RLS habilitado
+ALTER TABLE public.inventory_audits ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.audit_items ENABLE ROW LEVEL SECURITY;
+
+-- 8. Comentários para documentação
 COMMENT ON POLICY "Users can view own profile" ON public.profiles IS 
   'Permite que usuários autenticados vejam seu próprio perfil. Necessário para o funcionamento do hook useProfileRole.';
 
 COMMENT ON TRIGGER on_auth_user_created ON auth.users IS 
   'Cria automaticamente um perfil na tabela profiles quando um novo usuário é criado no auth.users.';
+
+COMMENT ON POLICY "Users can view own audits" ON public.inventory_audits IS 
+  'Permite que usuários vejam apenas suas próprias auditorias de inventário.';
+
+COMMENT ON POLICY "Users can view own audit items" ON public.audit_items IS 
+  'Permite que usuários vejam apenas itens de auditorias que eles criaram.';
+

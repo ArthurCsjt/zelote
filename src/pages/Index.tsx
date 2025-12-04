@@ -8,94 +8,66 @@ import { RegistrationHub } from "@/components/RegistrationHub";
 import Layout from "@/components/Layout";
 import { MainMenu } from "@/components/MainMenu";
 import { InventoryHub } from "@/components/InventoryHub";
-import { DashboardLayout } from "@/components/DashboardLayout"; // RENOMEADO
+import { DashboardLayout } from "@/components/DashboardLayout";
 import { QRCodeModal } from "@/components/QRCodeModal";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { LoanHub } from "@/components/LoanHub";
 import { useDatabase } from "@/hooks/useDatabase";
-import { QuickRegisterWrapper } from '@/components/QuickRegisterWrapper';
-import { ReturnWrapper } from '@/components/ReturnWrapper'; // NOVO IMPORT
-import { cn } from '@/lib/utils'; // Importando cn
-import { Navigate } from 'react-router-dom'; // IMPORT CORRIGIDO
-// import { DebugPanel } from '@/components/DebugPanel'; // REMOVENDO IMPORT
+import { ReturnWrapper } from '@/components/ReturnWrapper';
+import { Navigate } from 'react-router-dom';
 
-// ATUALIZADO: Removendo 'quick-register' do tipo de rota
-type AppView = 'menu' | 'registration' | 'dashboard' | 'inventory' | 'loan' | 'audit' | 'return' | 'scheduling'; // Adicionando 'scheduling'
+type AppView = 'menu' | 'registration' | 'dashboard' | 'inventory' | 'loan' | 'audit' | 'return' | 'scheduling';
 
 const Index = () => {
-  // ADIÇÃO: Chamamos os hooks de autenticação aqui, no componente "pai"
   const { user, logout } = useAuth();
-  const { isAdmin, loading: roleLoading, role } = useProfileRole(); // Pegando o role
+  const { isAdmin, loading: roleLoading, role } = useProfileRole();
   const { loading: dbLoading } = useDatabase();
 
-  // ATUALIZADO: Removendo 'quick-register' do tipo de rota
   const [currentView, setCurrentView] = useState<AppView>('menu');
-  // ATUALIZADO: O LoanHub agora aceita 'form' ou 'active'
-  const [loanTabDefault, setLoanTabDefault] = useState<'form' | 'active'>('form'); 
-  const [selectedChromebookIdForReturn, setSelectedChromebookIdForReturn] = useState<string | undefined>(undefined); // NOVO ESTADO para pré-seleção
-  
+  const [loanTabDefault, setLoanTabDefault] = useState<'form' | 'active'>('form');
+  const [selectedChromebookIdForReturn, setSelectedChromebookIdForReturn] = useState<string | undefined>(undefined);
   const [showQRCodeModal, setShowQRCodeModal] = useState(false);
   const [selectedChromebookId, setSelectedChromebookId] = useState<string | null>(null);
 
-  // ATUALIZADO: Removendo 'quick-register' do tipo de rota
-  const handleNavigation = (route: 'registration' | 'dashboard' | 'loan' | 'inventory' | 'audit' | 'return' | 'scheduling', tab?: 'form' | 'active', chromebookId?: string) => {
-    
-    // Lógica de restrição de acesso baseada no cargo
-    const adminRoutes: AppView[] = ['registration', 'dashboard', 'inventory', 'audit'];
-    if (adminRoutes.includes(route) && !isAdmin) {
-        // Se não for admin e tentar acessar rota administrativa, ignora ou redireciona
-        return; 
-    }
-    
-    if (route === 'loan') {
-      setLoanTabDefault(tab || 'form');
-    }
-    
-    if (route === 'return' && chromebookId) {
+  const handleNavigation = (view: AppView, tab?: 'form' | 'active', chromebookId?: string) => {
+    setCurrentView(view);
+    if (tab) setLoanTabDefault(tab);
+    if (chromebookId && view === 'return') {
       setSelectedChromebookIdForReturn(chromebookId);
-    } else {
-      setSelectedChromebookIdForReturn(undefined);
     }
-    
-    setCurrentView(route);
   };
 
   const handleBackToMenu = () => {
     setCurrentView('menu');
-    setLoanTabDefault('form'); // Reseta para o padrão ao voltar
+    setLoanTabDefault('form');
     setSelectedChromebookIdForReturn(undefined);
   };
 
   const handleGenerateQrCode = (chromebookId: string) => {
     setSelectedChromebookId(chromebookId);
     setShowQRCodeModal(true);
-    // REMOVIDO: Lógica de QuickRegister
     setCurrentView('inventory');
   };
 
   const handleRegistrationSuccess = (newChromebook: any) => {
     setSelectedChromebookId(newChromebook.chromebook_id);
     setShowQRCodeModal(true);
-    // REMOVIDO: Lógica de QuickRegister
     setCurrentView('inventory');
   };
-  
+
   const handleReturnSuccess = () => {
-    // Após a devolução, volta para o menu principal
     handleBackToMenu();
   };
-  
-  // Função para ser passada para ActiveLoans via LoanHub
+
   const handleNavigateToReturnView = (chromebookId: string) => {
     handleNavigation('return', undefined, chromebookId);
   };
 
   const renderCurrentView = () => {
-    // Se o usuário for professor, forçamos a navegação para agendamento
-    if (role === 'professor' && currentView === 'menu') {
-        return <Navigate to="/agendamento" replace />;
+    if (role === 'teacher' && currentView === 'menu') {
+      return <Navigate to="/agendamento" replace />;
     }
-    
+
     switch (currentView) {
       case 'registration':
         return <RegistrationHub onBack={handleBackToMenu} onRegistrationSuccess={handleRegistrationSuccess} />;
@@ -104,39 +76,31 @@ const Index = () => {
       case 'inventory':
         return <InventoryHub onBack={handleBackToMenu} onGenerateQrCode={handleGenerateQrCode} />;
       case 'loan':
-        // PASSANDO A FUNÇÃO DE NAVEGAÇÃO PARA DEVOLUÇÃO
-        return <LoanHub 
-          onBack={handleBackToMenu} 
-          defaultTab={loanTabDefault} 
+        return <LoanHub
+          onBack={handleBackToMenu}
+          defaultTab={loanTabDefault}
           onNavigateToReturnView={handleNavigateToReturnView}
         />;
       case 'return':
-        return <ReturnWrapper 
-          onBack={handleBackToMenu} 
+        return <ReturnWrapper
+          onBack={handleBackToMenu}
           initialChromebookId={selectedChromebookIdForReturn}
           onReturnSuccess={handleReturnSuccess}
         />;
       case 'audit':
         return <AuditHub />;
       case 'scheduling':
-        // A rota /agendamento já existe e usa o SchedulingPage.
-        // Se o usuário tentar acessar 'scheduling' via handleNavigation, redirecionamos para a rota correta.
         return <Navigate to="/agendamento" replace />;
       default:
         return (
           <div className="space-y-8">
             <MainMenu onNavigate={handleNavigation} />
-            
-            {/* REMOVIDO: DebugPanel e TestEmailSender */}
-            {/* <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
-                <DebugPanel />
-            </div> */}
           </div>
         );
     }
   };
-  
-  const getViewTitle = (): string => { 
+
+  const getViewTitle = (): string => {
     switch (currentView) {
       case 'registration': return 'Hub de Cadastros';
       case 'dashboard': return 'Dashboard';
@@ -148,7 +112,8 @@ const Index = () => {
       default: return 'Zelote';
     }
   };
-  const getViewSubtitle = (): string => { 
+
+  const getViewSubtitle = (): string => {
     switch (currentView) {
       case 'registration': return 'Gerencie o cadastro de equipamentos e usuários';
       case 'dashboard': return 'Análise de uso e estatísticas';
@@ -160,29 +125,23 @@ const Index = () => {
       default: return 'Controle de Chromebooks';
     }
   };
-  
+
   const loading = dbLoading || roleLoading;
 
-  // NOVO: Classe de fundo para o menu principal
-  const menuBackgroundClass = currentView === 'menu' 
-    ? 'bg-background' // USANDO O FUNDO PADRÃO (Dark Mode: escuro)
-    : 'bg-background'; 
+  const menuBackgroundClass = currentView === 'menu'
+    ? 'bg-background'
+    : 'bg-background';
 
   return (
     <>
-      <Layout 
-        title={getViewTitle()} 
-        subtitle={getViewSubtitle()} 
-        showBackButton={currentView !== 'menu'} 
+      <Layout
+        title={getViewTitle()}
+        subtitle={getViewSubtitle()}
+        showBackButton={currentView !== 'menu'}
         onBack={handleBackToMenu}
-        user={user}
-        isAdmin={isAdmin}
-        logout={logout}
-        // Passando a classe de fundo para o Layout
-        backgroundClass={menuBackgroundClass} 
+        backgroundClass={menuBackgroundClass}
       >
-        {loading && currentView !== 'menu' ? <div className="flex justify-center items-center h-64"><LoadingSpinner/></div> : renderCurrentView()}
-        {/* REMOVIDO: ReturnDialog */}
+        {loading && currentView !== 'menu' ? <div className="flex justify-center items-center h-64"><LoadingSpinner /></div> : renderCurrentView()}
       </Layout>
       <QRCodeModal open={showQRCodeModal} onOpenChange={(open) => setShowQRCodeModal(open)} chromebookId={selectedChromebookId ?? undefined} />
     </>

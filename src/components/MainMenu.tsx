@@ -31,36 +31,36 @@ export function MainMenu({
       icon: ClipboardList,
       action: () => onNavigate('loan', 'form'),
       color: 'text-blue-600 dark:text-blue-400',
-      roles: ['admin', 'super_admin']
+      roles: ['admin', 'super_admin', 'user']
     },
     {
       title: 'Devolução',
       icon: RotateCcw,
       action: () => onNavigate('return'),
       color: 'text-amber-600 dark:text-amber-400',
-      roles: ['admin', 'super_admin']
+      roles: ['admin', 'super_admin', 'user']
     },
     {
       title: 'Agendamento',
       icon: Calendar,
       action: () => onNavigate('scheduling'),
       color: 'text-blue-600 dark:text-blue-400',
-      roles: ['admin', 'super_admin', 'professor'],
-      badge: { label: 'BETA', variant: 'info' } // NOVO: Badge de aviso
+      roles: ['admin', 'super_admin', 'professor', 'user'],
+      badge: { label: 'BETA', variant: 'info' }
     },
     {
       title: 'Inventário',
       icon: Laptop,
       action: () => onNavigate('inventory'),
       color: 'text-cyan-600 dark:text-cyan-400',
-      roles: ['admin', 'super_admin']
+      roles: ['admin', 'super_admin', 'user']
     },
     {
       title: 'Cadastros',
       icon: PlusCircle,
       action: () => onNavigate('registration'),
       color: 'text-emerald-600 dark:text-emerald-400',
-      roles: ['admin', 'super_admin']
+      roles: ['admin', 'super_admin', 'user']
     },
     {
       title: 'Contagem',
@@ -120,17 +120,17 @@ export function MainMenu({
                   <Icon className={cn("h-5 w-5", item.color)} />
                 </div>
                 <div className="flex items-center gap-2">
-                    <span className="font-medium text-sm text-foreground/80 group-hover:text-foreground transition-colors">
-                      {item.title}
-                    </span>
-                    {item.badge && (
-                        <Badge 
-                            variant={item.badge.variant as any} 
-                            className="text-[10px] h-4 px-1.5 py-0.5 bg-info-bg text-info-foreground dark:bg-info-bg/50 dark:text-info-foreground"
-                        >
-                            {item.badge.label}
-                        </Badge>
-                    )}
+                  <span className="font-medium text-sm text-foreground/80 group-hover:text-foreground transition-colors">
+                    {item.title}
+                  </span>
+                  {item.badge && (
+                    <Badge
+                      variant={item.badge.variant as any}
+                      className="text-[10px] h-4 px-1.5 py-0.5 bg-info-bg text-info-foreground dark:bg-info-bg/50 dark:text-info-foreground"
+                    >
+                      {item.badge.label}
+                    </Badge>
+                  )}
                 </div>
               </GlassCard>
             </div>
