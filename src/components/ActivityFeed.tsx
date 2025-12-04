@@ -53,24 +53,24 @@ export function ActivityFeed() {
   return (
     // O Card agora tem uma altura máxima e usa flex-col
     <Card className="w-[350px] md:w-[400px] shadow-2xl border-none flex flex-col max-h-[90vh] bg-card border-border">
-      
+
       {/* Cabeçalho Fixo e Aprimorado (shrink-0 para não encolher) */}
-      <CardHeader className="p-4 border-b bg-card/90 backdrop-blur-sm sticky top-0 z-10 flex flex-row items-center justify-between shrink-0 border-border">
-        <CardTitle className="text-lg flex items-center gap-2 text-foreground">
-          <Clock className="h-5 w-5 text-primary" />
-          Atividade Recente
+      <CardHeader className="p-4 border-b bg-card/90 backdrop-blur-sm sticky top-0 z-10 flex flex-row items-center justify-between gap-2 shrink-0 border-border">
+        <CardTitle className="text-lg flex items-center gap-2 text-foreground flex-1 min-w-0">
+          <Clock className="h-5 w-5 text-primary shrink-0" />
+          <span className="truncate">Atividade Recente</span>
         </CardTitle>
-        <Button 
-          variant="ghost" 
-          size="sm" 
+        <Button
+          variant="ghost"
+          size="sm"
           onClick={() => refetch()}
           disabled={isLoading}
-          className="h-8 w-8 p-0 text-muted-foreground hover:bg-accent"
+          className="h-8 w-8 p-0 text-muted-foreground hover:bg-accent shrink-0"
         >
           <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
         </Button>
       </CardHeader>
-      
+
       {/* Área de Rolagem: Definindo uma altura máxima para garantir que a rolagem funcione */}
       <ScrollArea className="w-full max-h-[calc(90vh-100px)]"> {/* 90vh menos o espaço do header e padding */}
         <CardContent className="p-0">
@@ -82,14 +82,14 @@ export function ActivityFeed() {
                 const color = isLoan ? 'text-success' : 'text-info';
                 const badgeBg = isLoan ? 'bg-success' : 'bg-info';
                 const creatorName = activity.creator_name || activity.creator_email?.split('@')[0] || 'Sistema';
-                
+
                 return (
                   <div key={activity.activity_id} className="p-4 hover:bg-card-hover transition-colors">
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-3">
                         {/* Número da Atividade */}
                         <div className={`flex items-center justify-center h-6 w-6 rounded-full text-xs font-bold text-primary-foreground shrink-0 ${badgeBg}`}>
-                            {index + 1}
+                          {index + 1}
                         </div>
                         <div>
                           <p className="font-medium text-sm text-foreground flex items-center gap-2">
@@ -111,7 +111,7 @@ export function ActivityFeed() {
                         </p>
                       </div>
                     </div>
-                    
+
                     {/* Detalhes do Solicitante e Criador */}
                     <div className="mt-2 pt-2 border-t border-border/50 space-y-1">
                       <p className="text-xs text-foreground flex items-center gap-1">
@@ -119,7 +119,7 @@ export function ActivityFeed() {
                         <span className="font-medium">Solicitante:</span>
                         {activity.user_name}
                       </p>
-                      
+
                       <p className="text-xs text-muted-foreground flex items-center gap-1">
                         <UserCheck className="h-3 w-3 text-primary" />
                         <span className="font-medium">Registrado por:</span>
