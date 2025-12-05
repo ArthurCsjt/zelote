@@ -54,12 +54,14 @@ export function RegistrationHub({ onBack, onRegistrationSuccess }: RegistrationH
       <div className="container mx-auto p-0">
 
         {/* Cabeçalho do Hub: Centralizado e Preto */}
+        {/* Cabeçalho do Hub: Centralizado e Preto */}
         <div className="mb-6 text-center">
-          title="Hub de Cadastros"
-          description="Selecione o tipo de item ou usuário para cadastrar"
-          icon={PlusCircle}
-          iconColor="text-black"
-          className="flex flex-col items-center bg-yellow-300 border-4 border-black p-6 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]"
+          <SectionHeader
+            title="Hub de Cadastros"
+            description="Selecione o tipo de item ou usuário para cadastrar"
+            icon={PlusCircle}
+            iconColor="text-black"
+            className="flex flex-col items-center bg-yellow-300 border-4 border-black p-6 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]"
           />
         </div>
 

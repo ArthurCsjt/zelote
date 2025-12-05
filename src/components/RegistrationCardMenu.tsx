@@ -48,7 +48,6 @@ export function RegistrationCardMenu({ onNavigate, currentView }: RegistrationCa
         const isActive = item.view === currentView;
 
         return (
-        return (
           <div
             key={item.view}
             className={cn(

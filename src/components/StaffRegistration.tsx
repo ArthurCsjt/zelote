@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Users, Loader2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
@@ -93,67 +94,78 @@ export function StaffRegistration() {
     }
   };
 
+  // A variável isFormValid já garante que o botão esteja desabilitado se os campos estiverem vazios
   const isFormValid = formData.nomeCompleto && formData.email && !emailError;
 
   return (
-    <GlassCard className="border-blue-200/50 shadow-lg">
-      {/* CardHeader removido */}
-      <CardContent className="pt-6">
+    <div className="space-y-6">
+      <div className="bg-white dark:bg-zinc-950 border-4 border-black dark:border-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.2)] p-6">
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <h4 className="font-black uppercase text-sm flex items-center gap-2 border-b-2 border-black dark:border-white pb-2 mb-6">
+            <span className="bg-black text-white dark:bg-white dark:text-black px-1.5 py-0.5 text-xs font-mono">01</span>
+            Dados do Funcionário
+          </h4>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Nome Completo */}
-            <div className="space-y-2">
-              <Label htmlFor="nomeCompleto">Nome Completo *</Label>
+            <div className="space-y-1.5">
+              <Label htmlFor="nomeCompleto" className="text-xs font-bold uppercase dark:text-white">Nome Completo *</Label>
               <Input
                 id="nomeCompleto"
                 value={formData.nomeCompleto}
                 onChange={handleInputChange('nomeCompleto')}
-                placeholder="Digite o nome completo"
+                placeholder="DIGITE O NOME COMPLETO"
                 required
-                className="dark:bg-input dark:border-border"
+                className="h-10 border-2 border-black dark:border-white rounded-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] focus-visible:ring-0 uppercase placeholder:normal-case font-bold"
               />
             </div>
 
             {/* E-mail */}
-            <div className="space-y-2">
-              <Label htmlFor="email">E-mail *</Label>
+            <div className="space-y-1.5">
+              <Label htmlFor="email" className="text-xs font-bold uppercase dark:text-white">E-mail Institucional *</Label>
               <div className="relative">
                 <Input
                   id="email"
                   type="email"
                   value={formData.email}
                   onChange={handleEmailChange}
-                  placeholder={`exemplo${DOMAIN_SUFFIX}`}
+                  placeholder={`EX: EXEMPLO${DOMAIN_SUFFIX}`}
                   required
-                  className={emailError ? 'border-destructive focus-visible:ring-destructive dark:bg-input dark:border-destructive' : 'dark:bg-input dark:border-border'}
+                  className={cn(
+                    "h-10 border-2 border-black dark:border-white rounded-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] focus-visible:ring-0 placeholder:normal-case font-bold",
+                    emailError ? "border-red-600 dark:border-red-500 bg-red-50 dark:bg-red-900/20" : ""
+                  )}
                 />
                 {/* Exibe o sufixo do domínio como um helper visual */}
-                <span className="absolute right-2 top-1/2 transform -translate-y-1/2 text-xs text-muted-foreground pointer-events-none hidden sm:block">
+                <span className="absolute right-2 top-1/2 transform -translate-y-1/2 text-[10px] font-bold text-gray-400 dark:text-white/50 pointer-events-none hidden sm:block">
                   {DOMAIN_SUFFIX}
                 </span>
               </div>
-              {emailError && <p className="text-sm text-destructive flex items-center gap-1 mt-1">
+              {emailError && <p className="text-[10px] font-bold uppercase text-red-600 flex items-center gap-1 mt-1 bg-red-50 p-1 border border-red-200 w-fit">
                 {emailError}
               </p>}
             </div>
           </div>
 
-          <div className="flex justify-end pt-4">
+          <div className="flex justify-end pt-6 border-t-2 border-dashed border-black/20 dark:border-white/20">
             <Button
               type="submit"
               disabled={loading || !isFormValid}
-              className="min-w-32 bg-blue-600 hover:bg-blue-700"
+              className="w-full sm:w-auto h-12 border-2 border-black dark:border-white rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:shadow-none bg-black hover:bg-gray-800 text-white font-black uppercase tracking-wide transition-all"
             >
               {loading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Cadastrando...
-                </>
-              ) : 'Cadastrar Funcionário'}
+                <span className="flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" /> Cadastrando...
+                </span>
+              ) : (
+                <span className="flex items-center gap-2">
+                  <Users className="h-4 w-4" /> Cadastrar Funcionário
+                </span>
+              )}
             </Button>
           </div>
         </form>
-      </CardContent>
-    </GlassCard>
+      </div>
+    </div>
   );
 }

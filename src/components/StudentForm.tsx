@@ -8,6 +8,8 @@ import { useDatabase } from '@/hooks/useDatabase';
 import { GlassCard } from './ui/GlassCard'; // Importando GlassCard
 import logger from '@/utils/logger';
 import { validateEmail } from '@/utils/emailValidation';
+import { cn } from '@/lib/utils';
+import { Loader2, Users } from 'lucide-react';
 
 interface StudentFormData {
   nomeCompleto: string;
@@ -110,37 +112,41 @@ export function StudentForm() {
 
   const isFormValid = formData.nomeCompleto.trim() && formData.ra.trim() && formData.email.trim() && formData.turma.trim() && !emailError;
 
-  return <GlassCard>
-    {/* CardHeader removido */}
-    <CardContent>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="nomeCompleto">Nome Completo *</Label>
+  return (
+    <div className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <h4 className="font-black uppercase text-sm flex items-center gap-2 border-b-2 border-black dark:border-white pb-2 mb-6">
+          <span className="bg-black text-white dark:bg-white dark:text-black px-1.5 py-0.5 text-xs font-mono">01</span>
+          Dados Pessoais
+        </h4>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-1.5">
+            <Label htmlFor="nomeCompleto" className="text-xs font-bold uppercase dark:text-white">Nome Completo *</Label>
             <Input
               id="nomeCompleto"
               value={formData.nomeCompleto}
               onChange={handleInputChange('nomeCompleto')}
-              placeholder="Digite o nome completo"
+              placeholder="DIGITE O NOME COMPLETO"
               required
-              className="dark:bg-input dark:border-border"
+              className="h-10 border-2 border-black dark:border-white rounded-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] focus-visible:ring-0 uppercase placeholder:normal-case font-bold"
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="ra">RA (Registro do Aluno) *</Label>
+          <div className="space-y-1.5">
+            <Label htmlFor="ra" className="text-xs font-bold uppercase dark:text-white">RA (Registro do Aluno) *</Label>
             <Input
               id="ra"
               value={formData.ra}
               onChange={handleInputChange('ra')}
-              placeholder="Digite o RA"
+              placeholder="DIGITE O RA"
               required
-              className="dark:bg-input dark:border-border"
+              className="h-10 border-2 border-black dark:border-white rounded-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] focus-visible:ring-0 uppercase placeholder:normal-case font-bold"
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="email">E-mail *</Label>
+          <div className="space-y-1.5">
+            <Label htmlFor="email" className="text-xs font-bold uppercase dark:text-white">E-mail Institucional *</Label>
             <Input
               id="email"
               type="email"
@@ -148,30 +154,45 @@ export function StudentForm() {
               onChange={handleEmailChange}
               placeholder="aluno@sj.g12.br"
               required
-              className={emailError ? 'border-destructive dark:bg-input dark:border-destructive' : 'dark:bg-input dark:border-border'}
+              className={cn(
+                "h-10 border-2 border-black dark:border-white rounded-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] focus-visible:ring-0 placeholder:normal-case font-bold",
+                emailError ? "border-red-600 dark:border-red-500 bg-red-50 dark:bg-red-900/20" : ""
+              )}
             />
-            {emailError && <p className="text-sm text-destructive">{emailError}</p>}
+            {emailError && <p className="text-[10px] font-bold uppercase text-red-600 flex items-center gap-1 mt-1 bg-red-50 p-1 border border-red-200 w-fit">{emailError}</p>}
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="turma">Turma *</Label>
+          <div className="space-y-1.5">
+            <Label htmlFor="turma" className="text-xs font-bold uppercase dark:text-white">Turma *</Label>
             <Input
               id="turma"
               value={formData.turma}
               onChange={handleInputChange('turma')}
-              placeholder="Digite a turma"
+              placeholder="DIGITE A TURMA (EX: 3A)"
               required
-              className="dark:bg-input dark:border-border"
+              className="h-10 border-2 border-black dark:border-white rounded-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] focus-visible:ring-0 uppercase placeholder:normal-case font-bold"
             />
           </div>
         </div>
 
-        <div className="flex justify-end pt-4">
-          <Button type="submit" disabled={loading || !isFormValid} className="min-w-32">
-            {loading ? 'Cadastrando...' : 'Cadastrar Aluno'}
+        <div className="flex justify-end pt-6 border-t-2 border-dashed border-black/20 dark:border-white/20">
+          <Button
+            type="submit"
+            disabled={loading || !isFormValid}
+            className="w-full sm:w-auto h-12 border-2 border-black dark:border-white rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:shadow-none bg-black hover:bg-gray-800 text-white font-black uppercase tracking-wide transition-all"
+          >
+            {loading ? (
+              <span className="flex items-center gap-2">
+                <Loader2 className="h-4 w-4 animate-spin" /> Cadastrando...
+              </span>
+            ) : (
+              <span className="flex items-center gap-2">
+                <Users className="h-4 w-4" /> Cadastrar Aluno
+              </span>
+            )}
           </Button>
         </div>
       </form>
-    </CardContent>
-  </GlassCard>;
+    </div>
+  );
 }

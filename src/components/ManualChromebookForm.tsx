@@ -4,10 +4,8 @@ import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Textarea } from "./ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Checkbox } from "./ui/checkbox";
 import { Laptop, Factory, Tag, Hash, MapPin, AlertTriangle, Loader2, CheckCircle } from "lucide-react";
 import { useDatabase } from '@/hooks/useDatabase';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "./ui/card";
 import {
   Select,
   SelectContent,
@@ -16,7 +14,6 @@ import {
   SelectValue,
 } from "./ui/select";
 import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
-import { GlassCard } from "./ui/GlassCard"; // Importando GlassCard
 
 interface FormData {
   manufacturer: string;
@@ -42,11 +39,11 @@ const AVAILABLE_MANUFACTURERS = Object.keys(MANUFACTURER_MODELS);
 export function ManualChromebookForm({ onRegistrationSuccess }: { onRegistrationSuccess: (newChromebook: any) => void }) {
   const { createChromebook, loading } = useDatabase();
   const { toast } = useToast();
-  
+
   const [formData, setFormData] = useState<FormData>({
     manufacturer: "", model: "", series: "",
     manufacturingYear: "",
-    patrimonyNumber: "", 
+    patrimonyNumber: "",
     mobilityStatus: 'movel', // PADRÃO: MÓVEL
     classroomLocation: "", observations: "", provisioning_status: 'provisioned',
   });
@@ -55,7 +52,7 @@ export function ManualChromebookForm({ onRegistrationSuccess }: { onRegistration
     setFormData({
       manufacturer: "", model: "", series: "",
       manufacturingYear: "",
-      patrimonyNumber: "", 
+      patrimonyNumber: "",
       mobilityStatus: 'movel', // PADRÃO: MÓVEL
       classroomLocation: "", observations: "", provisioning_status: 'provisioned',
     });
@@ -64,11 +61,11 @@ export function ManualChromebookForm({ onRegistrationSuccess }: { onRegistration
   const handleFormChange = (field: keyof FormData, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value as any }));
   };
-  
+
   const handleManufacturerChange = (value: string) => {
-    setFormData(prev => ({ 
-      ...prev, 
-      manufacturer: value, 
+    setFormData(prev => ({
+      ...prev,
+      manufacturer: value,
       model: '' // Limpa o modelo ao mudar o fabricante
     }));
   };
@@ -79,7 +76,7 @@ export function ManualChromebookForm({ onRegistrationSuccess }: { onRegistration
       toast({ title: "Erro de Validação", description: "Preencha os campos Fabricante, Modelo e Série.", variant: "destructive" });
       return;
     }
-    
+
     const isFixed = formData.mobilityStatus === 'fixo';
     if (isFixed && !formData.classroomLocation) {
       toast({ title: "Erro de Validação", description: "A localização da sala é obrigatória para equipamentos fixos.", variant: "destructive" });
@@ -87,20 +84,20 @@ export function ManualChromebookForm({ onRegistrationSuccess }: { onRegistration
     }
 
     const chromebookData = {
-      model: formData.model, 
+      model: formData.model,
       serialNumber: formData.series,
       patrimonyNumber: formData.patrimonyNumber || null,
       manufacturer: formData.manufacturer,
       // manufacturingYear não é mapeado diretamente para o DB, mas pode ser incluído em 'condition' se necessário
-      condition: formData.observations || 'novo', 
+      condition: formData.observations || 'novo',
       location: isFixed ? formData.classroomLocation : null,
       // O status é definido pela mobilidade, e não pelo provisionamento
       status: isFixed ? 'fixo' as const : 'disponivel' as const,
       is_deprovisioned: formData.provisioning_status === 'deprovisioned', // PASSANDO O VALOR
     };
-    
+
     const result = await createChromebook(chromebookData);
-    
+
     if (result) {
       toast({ title: "Sucesso", description: `Chromebook ${result.chromebook_id} cadastrado.` });
       onRegistrationSuccess(result);
@@ -114,212 +111,214 @@ export function ManualChromebookForm({ onRegistrationSuccess }: { onRegistration
   const isFixed = formData.mobilityStatus === 'fixo';
 
   return (
-    <GlassCard className="p-6 space-y-6">
-      <CardHeader className="p-0">
-        <CardTitle className="text-xl font-bold text-gray-800 dark:text-foreground flex items-center gap-2">
-          <Laptop className="h-6 w-6 text-green-600" />
+    <div className="space-y-6">
+      <div className="border-b-2 border-black dark:border-white pb-4 mb-6">
+        <h4 className="font-black uppercase text-lg flex items-center gap-2 text-black dark:text-white">
+          <Laptop className="h-6 w-6" />
           Cadastro Manual
-        </CardTitle>
-        <CardDescription>
-          Preencha os detalhes para registrar um novo Chromebook no inventário.
-        </CardDescription>
-      </CardHeader>
-      
-      <CardContent className="p-0">
-        <form onSubmit={handleSubmit} className="space-y-6">
-          
-          {/* Seção 1: Identificação e Modelo */}
-          <div className="space-y-4 p-4 border rounded-lg bg-muted/50 dark:bg-card/50">
-            <h4 className="font-semibold text-lg text-gray-800 dark:text-foreground flex items-center gap-2">
-              <Tag className="h-4 w-4 text-blue-600" />
-              Identificação e Modelo
-            </h4>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="manufacturer" className="dark:text-muted-foreground">Fabricante *</Label>
-                <Select
-                  value={formData.manufacturer}
-                  onValueChange={handleManufacturerChange}
-                  required
-                >
-                  <SelectTrigger className="bg-input dark:bg-input">
-                    <SelectValue placeholder="Selecione um fabricante" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-card border-border"> {/* Adicionando classes de fundo e borda */}
-                    {AVAILABLE_MANUFACTURERS.map(manufacturer => (
-                      <SelectItem key={manufacturer} value={manufacturer}>
-                        {manufacturer}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="model" className="dark:text-muted-foreground">Modelo *</Label>
-                <Select
-                  value={formData.model}
-                  onValueChange={(value) => handleFormChange('model', value)}
-                  required
-                  disabled={!formData.manufacturer || currentModels.length === 0}
-                >
-                  <SelectTrigger className="bg-input dark:bg-input">
-                    <SelectValue placeholder={formData.manufacturer ? "Selecione o modelo" : "Selecione um fabricante primeiro"} />
-                  </SelectTrigger>
-                  <SelectContent className="bg-card border-border"> {/* Adicionando classes de fundo e borda */}
-                    {currentModels.map(model => (
-                      <SelectItem key={model} value={model}>
-                        {model}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+        </h4>
+        <p className="text-xs font-bold uppercase text-gray-500 dark:text-gray-400 mt-1">
+          Preencha os detalhes para registrar um novo Chromebook.
+        </p>
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-8">
+
+        {/* Seção 1: Identificação e Modelo */}
+        <div className="space-y-4 p-5 border-2 border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-white dark:bg-zinc-950">
+          <h4 className="font-black uppercase text-sm flex items-center gap-2 border-b-2 border-black dark:border-white pb-2 mb-4">
+            <Tag className="h-4 w-4" />
+            Identificação e Modelo
+          </h4>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-1.5">
+              <Label htmlFor="manufacturer" className="text-xs font-bold uppercase dark:text-white">Fabricante *</Label>
+              <Select
+                value={formData.manufacturer}
+                onValueChange={handleManufacturerChange}
+                required
+              >
+                <SelectTrigger className="h-10 border-2 border-black dark:border-white rounded-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] focus:ring-0 font-bold uppercase">
+                  <SelectValue placeholder="SELECIONE" />
+                </SelectTrigger>
+                <SelectContent className="border-2 border-black dark:border-white rounded-none bg-white dark:bg-zinc-900 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                  {AVAILABLE_MANUFACTURERS.map(manufacturer => (
+                    <SelectItem key={manufacturer} value={manufacturer} className="font-bold uppercase text-xs">
+                      {manufacturer}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="series" className="dark:text-muted-foreground">
-                  Série *
-                </Label>
-                <Input 
-                  id="series" 
-                  value={formData.series} 
-                  onChange={(e) => handleFormChange('series', e.target.value)} 
-                  placeholder="Número de Série"
-                  required 
-                  className="bg-input dark:bg-input"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="patrimonyNumber" className="dark:text-muted-foreground">
-                  Patrimônio
-                </Label>
-                <Input 
-                  id="patrimonyNumber" 
-                  value={formData.patrimonyNumber} 
-                  onChange={(e) => handleFormChange('patrimonyNumber', e.target.value)} 
-                  placeholder="Número de Patrimônio"
-                  className="bg-input dark:bg-input"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="manufacturingYear" className="dark:text-muted-foreground">Ano de Fabricação</Label>
-                <Input 
-                  id="manufacturingYear" 
-                  value={formData.manufacturingYear} 
-                  onChange={(e) => handleFormChange('manufacturingYear', e.target.value)} 
-                  placeholder="Ex: 2022"
-                  className="bg-input dark:bg-input"
-                />
-              </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="model" className="text-xs font-bold uppercase dark:text-white">Modelo *</Label>
+              <Select
+                value={formData.model}
+                onValueChange={(value) => handleFormChange('model', value)}
+                required
+                disabled={!formData.manufacturer || currentModels.length === 0}
+              >
+                <SelectTrigger className="h-10 border-2 border-black dark:border-white rounded-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] focus:ring-0 font-bold uppercase">
+                  <SelectValue placeholder={formData.manufacturer ? "SELECIONE O MODELO" : "FABRICANTE PRIMEIRO"} />
+                </SelectTrigger>
+                <SelectContent className="border-2 border-black dark:border-white rounded-none bg-white dark:bg-zinc-900 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                  {currentModels.map(model => (
+                    <SelectItem key={model} value={model} className="font-bold uppercase text-xs">
+                      {model}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
-          {/* Seção 2: Localização e Provisionamento */}
-          <div className="space-y-4 p-4 border rounded-lg bg-card shadow-sm dark:bg-card">
-            <h4 className="font-semibold text-lg text-gray-800 dark:text-foreground flex items-center gap-2">
-              <MapPin className="h-4 w-4 text-purple-600" />
-              Localização e Status
-            </h4>
-            
-            <div className="space-y-4">
-              <Label className="text-sm font-medium dark:text-muted-foreground">Status de Mobilidade</Label>
-              <RadioGroup
-                value={formData.mobilityStatus}
-                onValueChange={(value: 'movel' | 'fixo') => {
-                  handleFormChange('mobilityStatus', value);
-                  if (value === 'movel') {
-                    handleFormChange('classroomLocation', ''); // Limpa localização se for móvel
-                  }
-                }}
-                className="flex space-x-4"
-              >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="movel" id="movel" />
-                  <Label htmlFor="movel" className="dark:text-foreground">Móvel (Disponível para Empréstimo)</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="fixo" id="fixo" />
-                  <Label htmlFor="fixo" className="dark:text-foreground">Fixo em Sala de Aula</Label>
-                </div>
-              </RadioGroup>
-              
-              {isFixed && (
-                <div className="space-y-2 pl-6 border-l-2 border-purple-200">
-                  <Label htmlFor="classroomLocation" className="dark:text-muted-foreground">Localização da Sala *</Label>
-                  <Input 
-                    id="classroomLocation" 
-                    value={formData.classroomLocation} 
-                    onChange={(e) => handleFormChange('classroomLocation', e.target.value)} 
-                    placeholder="Ex: Sala 101"
-                    required={isFixed} 
-                    className="bg-input dark:bg-input"
-                  />
-                </div>
-              )}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="space-y-1.5">
+              <Label htmlFor="series" className="text-xs font-bold uppercase flex items-center gap-1 dark:text-white">
+                <Hash className="h-3 w-3" /> Série *
+              </Label>
+              <Input
+                id="series"
+                value={formData.series}
+                onChange={(e) => handleFormChange('series', e.target.value)}
+                placeholder="NÚMERO DE SÉRIE"
+                required
+                className="h-10 border-2 border-black dark:border-white rounded-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] focus-visible:ring-0 uppercase placeholder:normal-case font-bold"
+              />
             </div>
 
-            <div className="space-y-2 pt-4 border-t border-gray-100 dark:border-border">
-              <Label className="text-sm font-medium dark:text-muted-foreground">Status de Provisionamento</Label>
-              <RadioGroup
-                value={formData.provisioning_status}
-                onValueChange={(value) => handleFormChange('provisioning_status', value)}
-                className="flex space-x-4"
-              >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="provisioned" id="provisioned" />
-                  <Label htmlFor="provisioned" className="dark:text-foreground">Provisionado</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="deprovisioned" id="deprovisioned" />
-                  <Label htmlFor="deprovisioned" className="dark:text-foreground">Desprovisionado</Label>
-                </div>
-              </RadioGroup>
+            <div className="space-y-1.5">
+              <Label htmlFor="patrimonyNumber" className="text-xs font-bold uppercase flex items-center gap-1 dark:text-white">
+                <Hash className="h-3 w-3" /> Patrimônio
+              </Label>
+              <Input
+                id="patrimonyNumber"
+                value={formData.patrimonyNumber}
+                onChange={(e) => handleFormChange('patrimonyNumber', e.target.value)}
+                placeholder="NÚMERO DE PATRIMÔNIO"
+                className="h-10 border-2 border-black dark:border-white rounded-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] focus-visible:ring-0 uppercase placeholder:normal-case font-bold"
+              />
             </div>
-          </div>
 
-          {/* Seção 3: Observações */}
-          <div className="space-y-4 p-4 border rounded-lg bg-muted/50 dark:bg-card/50">
-            <h4 className="font-semibold text-lg text-gray-800 dark:text-foreground flex items-center gap-2">
-              <AlertTriangle className="h-4 w-4 text-orange-600" />
-              Condição e Observações
-            </h4>
-            <div className="space-y-2">
-              <Label htmlFor="observations" className="dark:text-muted-foreground">Observações (Condição)</Label>
-              <Textarea 
-                id="observations" 
-                value={formData.observations} 
-                onChange={(e) => handleFormChange('observations', e.target.value)} 
-                placeholder="Ex: Tela trincada, bateria viciada, etc."
-                className="resize-none min-h-[100px] bg-input dark:bg-input"
+            <div className="space-y-1.5">
+              <Label htmlFor="manufacturingYear" className="text-xs font-bold uppercase dark:text-white">Ano de Fabricação</Label>
+              <Input
+                id="manufacturingYear"
+                value={formData.manufacturingYear}
+                onChange={(e) => handleFormChange('manufacturingYear', e.target.value)}
+                placeholder="EX: 2022"
+                className="h-10 border-2 border-black dark:border-white rounded-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] focus-visible:ring-0 uppercase placeholder:normal-case font-bold"
               />
             </div>
           </div>
-          
-          {/* Botão de Submissão */}
-          <Button 
-            type="submit" 
+        </div>
+
+        {/* Seção 2: Localização e Provisionamento */}
+        <div className="space-y-4 p-5 border-2 border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-white dark:bg-zinc-950">
+          <h4 className="font-black uppercase text-sm flex items-center gap-2 border-b-2 border-black dark:border-white pb-2 mb-4">
+            <MapPin className="h-4 w-4" />
+            Localização e Status
+          </h4>
+
+          <div className="space-y-4">
+            <Label className="text-xs font-bold uppercase dark:text-white">Status de Mobilidade</Label>
+            <RadioGroup
+              value={formData.mobilityStatus}
+              onValueChange={(value: 'movel' | 'fixo') => {
+                handleFormChange('mobilityStatus', value);
+                if (value === 'movel') {
+                  handleFormChange('classroomLocation', ''); // Limpa localização se for móvel
+                }
+              }}
+              className="flex space-x-6"
+            >
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="movel" id="movel" className="border-2 border-black text-black" />
+                <Label htmlFor="movel" className="font-bold text-xs uppercase cursor-pointer dark:text-white">Móvel (Disponível)</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="fixo" id="fixo" className="border-2 border-black text-black" />
+                <Label htmlFor="fixo" className="font-bold text-xs uppercase cursor-pointer dark:text-white">Fixo em Sala</Label>
+              </div>
+            </RadioGroup>
+
+            {isFixed && (
+              <div className="space-y-1.5 pt-2">
+                <Label htmlFor="classroomLocation" className="text-xs font-bold uppercase dark:text-white">Localização da Sala *</Label>
+                <Input
+                  id="classroomLocation"
+                  value={formData.classroomLocation}
+                  onChange={(e) => handleFormChange('classroomLocation', e.target.value)}
+                  placeholder="EX: SALA 101"
+                  required={isFixed}
+                  className="h-10 border-2 border-black dark:border-white rounded-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] focus-visible:ring-0 uppercase placeholder:normal-case font-bold"
+                />
+              </div>
+            )}
+          </div>
+
+          <div className="space-y-2 pt-4 border-t-2 border-dashed border-black/20 dark:border-white/20">
+            <Label className="text-xs font-bold uppercase dark:text-white">Status de Provisionamento</Label>
+            <RadioGroup
+              value={formData.provisioning_status}
+              onValueChange={(value) => handleFormChange('provisioning_status', value)}
+              className="flex space-x-6"
+            >
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="provisioned" id="provisioned" className="border-2 border-black text-black" />
+                <Label htmlFor="provisioned" className="flex items-center gap-1 font-bold text-xs uppercase cursor-pointer dark:text-white">
+                  <CheckCircle className="h-3 w-3 text-green-600" /> Provisionado
+                </Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="deprovisioned" id="deprovisioned" className="border-2 border-black text-black" />
+                <Label htmlFor="deprovisioned" className="flex items-center gap-1 font-bold text-xs uppercase cursor-pointer dark:text-white">
+                  <AlertTriangle className="h-3 w-3 text-red-600" /> Desprovisionado
+                </Label>
+              </div>
+            </RadioGroup>
+          </div>
+        </div>
+
+        {/* Seção 3: Observações */}
+        <div className="space-y-4 p-5 border-2 border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-white dark:bg-zinc-950">
+          <h4 className="font-black uppercase text-sm flex items-center gap-2 border-b-2 border-black dark:border-white pb-2 mb-4">
+            <AlertTriangle className="h-4 w-4" />
+            Condição e Observações
+          </h4>
+          <div className="space-y-1.5">
+            <Label htmlFor="observations" className="text-xs font-bold uppercase dark:text-white">Observações (Condição)</Label>
+            <Textarea
+              id="observations"
+              value={formData.observations}
+              onChange={(e) => handleFormChange('observations', e.target.value)}
+              placeholder="EX: TELA TRINCADA, BATERIA VICIADA, ETC."
+              className="resize-none min-h-[100px] border-2 border-black dark:border-white rounded-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] focus-visible:ring-0 bg-white dark:bg-zinc-950 uppercase placeholder:normal-case font-mono text-sm"
+            />
+          </div>
+        </div>
+
+        {/* Botão de Submissão */}
+        <div className="flex justify-end pt-4">
+          <Button
+            type="submit"
             disabled={loading || !isFormValid}
-            className="w-full bg-green-600 hover:bg-green-700"
+            className="w-full sm:w-auto h-12 border-2 border-black dark:border-white rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:shadow-none bg-black hover:bg-gray-800 text-white font-black uppercase tracking-wide transition-all"
           >
             {loading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Cadastrando...
-              </>
+              <span className="flex items-center gap-2">
+                <Loader2 className="h-4 w-4 animate-spin" /> Cadastrando...
+              </span>
             ) : (
-              <>
-                <CheckCircle className="mr-2 h-4 w-4" />
-                Cadastrar Chromebook
-              </>
+              <span className="flex items-center gap-2">
+                <CheckCircle className="h-4 w-4" /> Cadastrar Chromebook
+              </span>
             )}
           </Button>
-        </form>
-      </CardContent>
-    </GlassCard>
+        </div>
+      </form>
+    </div>
   );
 }
