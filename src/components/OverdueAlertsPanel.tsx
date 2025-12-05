@@ -16,17 +16,17 @@ export function OverdueAlertsPanel() {
     await syncChromebookStatus(chromebookId);
     refresh(); // Atualiza a lista de empréstimos após a sincronização
   };
-  
+
   const handleForceReturn = async (loan: any) => {
     // CRÍTICO: Mapear loan_id para id, pois forceReturnLoan espera LoanHistoryItem
     const loanToReturn = {
-        ...loan,
-        id: loan.loan_id, // Garante que o ID do empréstimo esteja na propriedade 'id'
+      ...loan,
+      id: loan.loan_id, // Garante que o ID do empréstimo esteja na propriedade 'id'
     };
-    
+
     const success = await forceReturnLoan(loanToReturn);
     if (success) {
-        refresh(); // Atualiza a lista para remover o item devolvido
+      refresh(); // Atualiza a lista para remover o item devolvido
     }
   };
 
@@ -71,9 +71,9 @@ export function OverdueAlertsPanel() {
           <AlertTriangle className="h-5 w-5 text-warning" />
           Alertas de Devolução
         </h3>
-        <Button 
-          variant="outline" 
-          size="sm" 
+        <Button
+          variant="outline"
+          size="sm"
           onClick={refresh}
           disabled={loading}
           className="gap-2 bg-card hover:bg-card-hover text-foreground border-border"
@@ -82,7 +82,7 @@ export function OverdueAlertsPanel() {
           Atualizar Prazos
         </Button>
       </div>
-      
+
       {/* Empréstimos em Atraso */}
       {overdueLoans.length > 0 && (
         <Alert className="border-error-foreground/50 bg-error-bg dark:bg-error-bg/50">
@@ -93,8 +93,8 @@ export function OverdueAlertsPanel() {
           <AlertDescription className="text-error-foreground">
             <div className="space-y-3 mt-3">
               {overdueLoans.map((loan) => (
-                <div 
-                  key={loan.loan_id} 
+                <div
+                  key={loan.loan_id}
                   className="bg-card rounded-lg p-3 border border-error-foreground/20 shadow-sm dark:bg-card dark:border-error-bg"
                 >
                   <div className="flex items-start justify-between">
@@ -113,31 +113,19 @@ export function OverdueAlertsPanel() {
                       </div>
                     </div>
                     <div className="flex flex-col items-end gap-1">
-                        <Badge variant="destructive" className="ml-2">
-                          {loan.days_overdue} {loan.days_overdue === 1 ? 'dia' : 'dias'} atrasado
-                        </Badge>
-                        <div className="flex gap-1 mt-1">
-                            <Button 
-                                variant="ghost" 
-                                size="sm" 
-                                onClick={() => handleForceReturn(loan)}
-                                disabled={dbLoading}
-                                className="text-xs text-success hover:bg-success-bg h-6 px-2"
-                            >
-                                <CheckCircle className="h-3 w-3 mr-1" />
-                                Devolvido
-                            </Button>
-                            <Button 
-                                variant="ghost" 
-                                size="sm" 
-                                onClick={() => handleSyncStatus(loan.chromebook_id)}
-                                disabled={dbLoading}
-                                className="text-xs text-error hover:bg-error-bg h-6 px-2"
-                            >
-                                <RefreshCw className={`h-3 w-3 mr-1 ${dbLoading ? 'animate-spin' : ''}`} />
-                                Sincronizar
-                            </Button>
-                        </div>
+                      <Badge variant="destructive" className="ml-2">
+                        {loan.days_overdue} {loan.days_overdue === 1 ? 'dia' : 'dias'} atrasado
+                      </Badge>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleSyncStatus(loan.chromebook_id)}
+                        disabled={dbLoading}
+                        className="text-xs text-error hover:bg-error-bg h-6 px-2 mt-1"
+                      >
+                        <RefreshCw className={`h-3 w-3 mr-1 ${dbLoading ? 'animate-spin' : ''}`} />
+                        Sincronizar
+                      </Button>
                     </div>
                   </div>
                 </div>
@@ -157,8 +145,8 @@ export function OverdueAlertsPanel() {
           <AlertDescription className="text-warning-foreground">
             <div className="space-y-3 mt-3">
               {upcomingDueLoans.map((loan) => (
-                <div 
-                  key={loan.loan_id} 
+                <div
+                  key={loan.loan_id}
                   className="bg-card rounded-lg p-3 border border-warning-foreground/20 shadow-sm dark:bg-card dark:border-warning-bg"
                 >
                   <div className="flex items-start justify-between">
@@ -177,21 +165,21 @@ export function OverdueAlertsPanel() {
                       </div>
                     </div>
                     <div className="flex flex-col items-end gap-1">
-                        <Badge variant="outline" className="ml-2 border-warning text-warning-foreground bg-warning-bg dark:bg-warning-bg/50 dark:border-warning">
-                          {loan.days_until_due === 0 ? 'Hoje' : 
-                           loan.days_until_due === 1 ? 'Amanhã' : 
-                           `${loan.days_until_due} dias`}
-                        </Badge>
-                        <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            onClick={() => handleSyncStatus(loan.chromebook_id)}
-                            disabled={dbLoading}
-                            className="text-xs text-warning hover:bg-warning-bg h-6 px-2"
-                        >
-                            <RefreshCw className={`h-3 w-3 mr-1 ${dbLoading ? 'animate-spin' : ''}`} />
-                            Sincronizar Status
-                        </Button>
+                      <Badge variant="outline" className="ml-2 border-warning text-warning-foreground bg-warning-bg dark:bg-warning-bg/50 dark:border-warning">
+                        {loan.days_until_due === 0 ? 'Hoje' :
+                          loan.days_until_due === 1 ? 'Amanhã' :
+                            `${loan.days_until_due} dias`}
+                      </Badge>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleSyncStatus(loan.chromebook_id)}
+                        disabled={dbLoading}
+                        className="text-xs text-warning hover:bg-warning-bg h-6 px-2"
+                      >
+                        <RefreshCw className={`h-3 w-3 mr-1 ${dbLoading ? 'animate-spin' : ''}`} />
+                        Sincronizar Status
+                      </Button>
                     </div>
                   </div>
                 </div>

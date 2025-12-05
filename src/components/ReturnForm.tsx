@@ -14,7 +14,10 @@ import { useDatabase } from '@/hooks/useDatabase';
 import type { UserSearchResult } from '@/hooks/useUserSearch';
 import type { ReturnFormData } from '@/types/database';
 import { cn } from '@/lib/utils';
-import { Badge } from './ui/badge'; // IMPORT CORRIGIDO
+import { Badge } from './ui/badge';
+import { ConfirmReturnDialog } from './ConfirmReturnDialog'; // NOVO IMPORT
+import type { LoanHistoryItem } from '@/types/database';
+import { isOverdue, calculateOverdueDays, formatDetailedDuration } from '@/utils/loanCalculations'; // NOVO IMPORT
 
 interface ReturnFormProps {
   onReturnSuccess?: () => void;
@@ -22,8 +25,8 @@ interface ReturnFormProps {
 }
 
 export function ReturnForm({ onReturnSuccess, initialChromebookId }: ReturnFormProps) {
-  const { bulkReturnChromebooks, loading: dbLoading } = useDatabase();
-  
+  const { bulkReturnChromebooks, getLoanDetailsByChromebookId, loading: dbLoading } = useDatabase();
+
   // Inicializa a lista de dispositivos com o ID inicial, se houver
   const [deviceIds, setDeviceIds] = useState<string[]>(initialChromebookId ? [initialChromebookId] : []);
   const [confirmChecked, setConfirmChecked] = useState(false);
@@ -37,15 +40,49 @@ export function ReturnForm({ onReturnSuccess, initialChromebookId }: ReturnFormP
     notes: ''
   });
 
+  // NOVO ESTADO: Detalhes dos empréstimos
+  const [loanDetails, setLoanDetails] = useState<Map<string, LoanHistoryItem>>(new Map());
+
+  // NOVO ESTADO: Modal de confirmação
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+
   // Efeito para limpar o formulário ao montar/resetar
   useEffect(() => {
     // Se a lista de IDs estiver vazia, garante que o usuário e a confirmação também estejam limpos
     if (deviceIds.length === 0) {
-        setSelectedUser(null);
-        setConfirmChecked(false);
-        setReturnData({ name: "", ra: "", email: "", type: 'lote', userType: 'aluno', notes: '' });
+      setSelectedUser(null);
+      setConfirmChecked(false);
+      setReturnData({ name: "", ra: "", email: "", type: 'lote', userType: 'aluno', notes: '' });
     }
   }, [deviceIds.length]);
+
+  // NOVO EFEITO: Buscar detalhes do empréstimo quando dispositivos são adicionados
+  useEffect(() => {
+    const fetchLoanDetails = async () => {
+      const newLoanDetails = new Map<string, LoanHistoryItem>();
+
+      for (const deviceId of deviceIds) {
+        // Só busca se ainda não temos os detalhes
+        if (!loanDetails.has(deviceId)) {
+          const details = await getLoanDetailsByChromebookId(deviceId);
+          if (details) {
+            newLoanDetails.set(deviceId, details);
+          }
+        } else {
+          // Mantém os detalhes existentes
+          newLoanDetails.set(deviceId, loanDetails.get(deviceId)!);
+        }
+      }
+
+      setLoanDetails(newLoanDetails);
+    };
+
+    if (deviceIds.length > 0) {
+      fetchLoanDetails();
+    } else {
+      setLoanDetails(new Map());
+    }
+  }, [deviceIds, getLoanDetailsByChromebookId]);
 
   const handleUserSelect = (user: UserSearchResult) => {
     setSelectedUser(user);
@@ -73,33 +110,42 @@ export function ReturnForm({ onReturnSuccess, initialChromebookId }: ReturnFormP
 
   const handleConfirmReturn = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!selectedUser) {
       toast({ title: "Erro", description: "Selecione o solicitante da devolução.", variant: "destructive" });
       return;
     }
-    
+
     if (deviceIds.length === 0) {
       toast({ title: "Erro", description: "Adicione pelo menos um dispositivo para devolução.", variant: "destructive" });
       return;
     }
-    
+
     if (!confirmChecked) {
       toast({ title: "Erro", description: "Confirme a verificação do estado físico do equipamento.", variant: "destructive" });
       return;
     }
 
+    // Abrir modal de confirmação ao invés de enviar direto
+    setShowConfirmDialog(true);
+  }, [selectedUser, deviceIds.length, confirmChecked]);
+
+  // NOVA FUNÇÃO: Confirmar e enviar após revisão
+  const handleConfirmReturnSubmit = useCallback(async () => {
+    setShowConfirmDialog(false);
+
     try {
       const result = await bulkReturnChromebooks(deviceIds, returnData);
       const { successCount, errorCount } = result;
-      
+
       if (successCount > 0) {
         // Resetar formulário
         setDeviceIds([]);
         setSelectedUser(null);
         setConfirmChecked(false);
         setReturnData({ name: "", ra: "", email: "", type: 'lote', userType: 'aluno', notes: '' });
-        
+        setLoanDetails(new Map());
+
         onReturnSuccess?.();
       } else if (errorCount > 0) {
         // Erros já são toastados dentro do useDatabase
@@ -108,172 +154,228 @@ export function ReturnForm({ onReturnSuccess, initialChromebookId }: ReturnFormP
       console.error('Erro ao processar devolução:', error);
       toast({ title: "Erro", description: "Falha ao processar devolução", variant: "destructive" });
     }
-  }, [deviceIds, selectedUser, confirmChecked, returnData, bulkReturnChromebooks, onReturnSuccess]);
+  }, [deviceIds, returnData, bulkReturnChromebooks, onReturnSuccess]);
 
   const isFormValid = selectedUser && deviceIds.length > 0 && confirmChecked;
 
   return (
     <form onSubmit={handleConfirmReturn} className="space-y-5 relative">
       {/* Gradiente de fundo removido */}
-      
+
       <div className="grid md:grid-cols-2 gap-5 relative z-10">
-        
+
         {/* COLUNA ESQUERDA */}
         <div className="space-y-5">
-            {/* ═══ SEÇÃO 1: DISPOSITIVOS (Cor 1: Âmbar) ═══ */}
-            <GlassCard className={cn(
-                "bg-gradient-to-br from-amber-500/5 via-amber-500/3 to-transparent",
-                "border border-amber-500/20",
-                "shadow-xl shadow-amber-500/5",
-                "border-border-strong" // ADICIONANDO BORDA DISCRETA
-            )}>
-                <CardHeader className="p-5 pb-3 border-b border-amber-500/10 dark:border-amber-500/30">
-                    <div className="flex items-center justify-between">
-                        <CardTitle className="text-lg font-semibold flex items-center gap-2 text-foreground">
-                            <Computer className="h-5 w-5 text-menu-amber" /> 
-                            Dispositivos para Devolução
-                        </CardTitle>
-                        <Badge variant="outline" className={cn(
-                            "text-xs font-medium transition-colors",
-                            deviceIds.length === 0 ? "bg-muted text-muted-foreground" : "bg-amber-500/10 text-amber-600 border-amber-500/30 dark:bg-amber-900/50 dark:text-amber-300 dark:border-amber-800"
-                        )}>
-                            {deviceIds.length === 0 
-                            ? 'Nenhum dispositivo' 
-                            : `${deviceIds.length} ${deviceIds.length === 1 ? 'dispositivo' : 'dispositivos'}`
-                            }
-                        </Badge>
-                    </div>
-                </CardHeader>
-                <CardContent className="p-5">
-                    <DeviceListInput
-                        deviceIds={deviceIds}
-                        setDeviceIds={setDeviceIds}
-                        disabled={dbLoading}
-                        filterStatus="emprestado" // Filtra por emprestado
-                        actionLabel="Devolução"
-                    />
-                    {/* Validação em tempo real para Dispositivos */}
-                    {deviceIds.length === 0 && (
-                        <p className="text-xs text-destructive flex items-center gap-1 mt-3">
-                            <AlertTriangle className="h-3 w-3" />
-                            Adicione pelo menos um dispositivo para devolução.
-                        </p>
-                    )}
-                </CardContent>
-            </GlassCard>
-            
-            {/* ═══ SEÇÃO 2: OBSERVAÇÕES ═══ */}
-            <GlassCard className="bg-muted/30 border border-border/50 shadow-xl border-border-strong"> {/* ADICIONANDO shadow-xl e BORDA DISCRETA */}
-                <CardHeader className="p-5 pb-3 border-b border-border/50">
-                    <CardTitle className="text-lg font-semibold flex items-center gap-2 text-foreground">
-                        <BookOpen className="h-5 w-5 text-muted-foreground" /> 
-                        Observações
-                    </CardTitle>
-                </CardHeader>
-                <CardContent className="p-5 space-y-4">
-                    <div className="space-y-2">
-                        <Label htmlFor="notes" className="text-foreground">
-                            Condição do equipamento ou notas (Opcional)
-                        </Label>
-                        <Textarea
-                            id="notes"
-                            value={returnData.notes || ''}
-                            onChange={(e) => setReturnData({ ...returnData, notes: e.target.value })}
-                            placeholder="Ex: O Chromebook foi devolvido com a tela trincada."
-                            className="bg-input border-gray-200 min-h-[80px] dark:bg-card dark:border-border"
-                            disabled={dbLoading}
-                        />
-                    </div>
-                </CardContent>
-            </GlassCard>
+          {/* ═══ SEÇÃO 1: DISPOSITIVOS (Cor 1: Âmbar) ═══ */}
+          <GlassCard className={cn(
+            "bg-gradient-to-br from-amber-500/5 via-amber-500/3 to-transparent",
+            "border border-amber-500/20",
+            "shadow-xl shadow-amber-500/5",
+            "border-border-strong" // ADICIONANDO BORDA DISCRETA
+          )}>
+            <CardHeader className="p-5 pb-3 border-b border-amber-500/10 dark:border-amber-500/30">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg font-semibold flex items-center gap-2 text-foreground">
+                  <Computer className="h-5 w-5 text-menu-amber" />
+                  Dispositivos para Devolução
+                </CardTitle>
+                <Badge variant="outline" className={cn(
+                  "text-xs font-medium transition-colors",
+                  deviceIds.length === 0 ? "bg-muted text-muted-foreground" : "bg-amber-500/10 text-amber-600 border-amber-500/30 dark:bg-amber-900/50 dark:text-amber-300 dark:border-amber-800"
+                )}>
+                  {deviceIds.length === 0
+                    ? 'Nenhum dispositivo'
+                    : `${deviceIds.length} ${deviceIds.length === 1 ? 'dispositivo' : 'dispositivos'}`
+                  }
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent className="p-5">
+              <DeviceListInput
+                deviceIds={deviceIds}
+                setDeviceIds={setDeviceIds}
+                disabled={dbLoading}
+                filterStatus="emprestado" // Filtra por emprestado
+                actionLabel="Devolução"
+              />
+              {/* Validação em tempo real para Dispositivos */}
+              {deviceIds.length === 0 && (
+                <p className="text-xs text-destructive flex items-center gap-1 mt-3">
+                  <AlertTriangle className="h-3 w-3" />
+                  Adicione pelo menos um dispositivo para devolução.
+                </p>
+              )}
+
+              {/* NOVO: Detalhes dos Empréstimos */}
+              {deviceIds.length > 0 && loanDetails.size > 0 && (
+                <div className="mt-4 space-y-2">
+                  <p className="text-xs font-medium text-muted-foreground mb-2">
+                    Detalhes dos Empréstimos
+                  </p>
+                  {deviceIds.map(deviceId => {
+                    const loan = loanDetails.get(deviceId);
+                    if (!loan) return null;
+
+                    const overdue = isOverdue(loan.expected_return_date);
+                    const overdueDays = overdue ? calculateOverdueDays(loan.expected_return_date!) : 0;
+                    const duration = formatDetailedDuration(loan.loan_date);
+
+                    return (
+                      <GlassCard
+                        key={deviceId}
+                        className={cn(
+                          "p-3 border-l-4",
+                          overdue
+                            ? "border-l-destructive bg-red-50/50 dark:bg-red-950/20"
+                            : "border-l-blue-500 bg-blue-50/50 dark:bg-blue-950/20"
+                        )}
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <p className="font-bold text-sm text-gray-900 dark:text-foreground">{deviceId}</p>
+                              {overdue && (
+                                <Badge variant="destructive" className="text-[10px] h-5 px-2 animate-pulse font-bold border-2">
+                                  {overdueDays}d atraso
+                                </Badge>
+                              )}
+                            </div>
+                            <p className="text-xs text-gray-700 dark:text-muted-foreground truncate font-medium">
+                              <User className="h-3 w-3 inline mr-1" />
+                              {loan.student_name}
+                            </p>
+                            <p className="text-xs text-gray-700 dark:text-muted-foreground truncate mt-1 font-medium">
+                              <BookOpen className="h-3 w-3 inline mr-1" />
+                              {loan.purpose}
+                            </p>
+                          </div>
+                          <div className="text-right shrink-0">
+                            <p className="text-xs font-bold text-gray-900 dark:text-foreground">{duration}</p>
+                            <p className="text-[10px] text-gray-600 dark:text-muted-foreground mt-0.5 font-semibold">
+                              emprestado
+                            </p>
+                          </div>
+                        </div>
+                      </GlassCard>
+                    );
+                  })}
+                </div>
+              )}
+            </CardContent>
+          </GlassCard>
+
+          {/* ═══ SEÇÃO 2: OBSERVAÇÕES ═══ */}
+          <GlassCard className="bg-muted/30 border border-border/50 shadow-xl border-border-strong"> {/* ADICIONANDO shadow-xl e BORDA DISCRETA */}
+            <CardHeader className="p-5 pb-3 border-b border-border/50">
+              <CardTitle className="text-lg font-semibold flex items-center gap-2 text-foreground">
+                <BookOpen className="h-5 w-5 text-muted-foreground" />
+                Observações
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-5 space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="notes" className="text-foreground">
+                  Condição do equipamento ou notas (Opcional)
+                </Label>
+                <Textarea
+                  id="notes"
+                  value={returnData.notes || ''}
+                  onChange={(e) => setReturnData({ ...returnData, notes: e.target.value })}
+                  placeholder="Ex: O Chromebook foi devolvido com a tela trincada."
+                  className="bg-input border-gray-200 min-h-[80px] dark:bg-card dark:border-border"
+                  disabled={dbLoading}
+                />
+              </div>
+            </CardContent>
+          </GlassCard>
         </div>
 
         {/* COLUNA DIREITA */}
         <div className="space-y-5">
-            {/* ═══ SEÇÃO 3: SOLICITANTE DA DEVOLUÇÃO ═══ */}
-            <GlassCard className={cn(
-                "bg-gradient-to-br from-amber-500/5 via-amber-500/3 to-transparent",
-                "border border-amber-500/20",
-                "shadow-xl shadow-amber-500/5",
-                "border-border-strong" // ADICIONANDO BORDA DISCRETA
-            )}>
-                <CardHeader className="p-5 pb-3 border-b border-amber-500/10 dark:border-amber-500/30">
-                    <CardTitle className="text-lg font-semibold flex items-center gap-2 text-foreground">
-                        <User className="h-5 w-5 text-menu-amber" /> 
-                        Solicitante da Devolução
-                    </CardTitle>
-                </CardHeader>
-                <CardContent className="p-5 space-y-4">
-                    <div className="space-y-2">
-                        <Label htmlFor="userSearch" className="text-foreground">
-                            Buscar Solicitante (Nome, RA ou Email) *
-                        </Label>
-                        <UserAutocomplete
-                            selectedUser={selectedUser}
-                            onSelect={handleUserSelect}
-                            onClear={handleUserClear}
-                            disabled={dbLoading}
-                        />
-                    </div>
-                    
-                    {/* Validação em tempo real para Solicitante */}
-                    {!selectedUser && (
-                        <p className="text-xs text-destructive flex items-center gap-1 mt-1">
-                            <AlertTriangle className="h-3 w-3" />
-                            Selecione o solicitante para prosseguir.
-                        </p>
-                    )}
-                    
-                    {selectedUser && (
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/50 rounded-lg p-3 mt-2">
-                            <CheckCircle className="h-4 w-4 text-green-500" />
-                            <div className="flex-1">
-                                <p className="font-medium text-foreground">{selectedUser.name}</p>
-                                <p>{selectedUser.email}</p>
-                            </div>
-                        </div>
-                    )}
-                </CardContent>
-            </GlassCard>
-            
-            {/* ═══ SEÇÃO 4: CONFIRMAÇÃO OBRIGATÓRIA ═══ */}
-            <div className="p-5 rounded-xl border bg-amber-50/50 border-amber-200 dark:bg-amber-950/50 dark:border-amber-900 shadow-xl border-border-strong"> {/* ADICIONANDO shadow-xl e BORDA DISCRETA */}
-                <div className="flex items-start gap-3">
-                    <Checkbox 
-                        id="confirmChecked" 
-                        checked={confirmChecked} 
-                        onCheckedChange={(v) => setConfirmChecked(!!v)} 
-                        className="mt-1 border-amber-500 shrink-0" 
-                        disabled={dbLoading}
-                    />
-                    <Label htmlFor="confirmChecked" className="text-sm text-foreground leading-5 cursor-pointer">
-                        <div className="flex items-center gap-1 font-semibold text-amber-800 dark:text-amber-400">
-                            <AlertTriangle className="h-4 w-4" />
-                            Verificação Obrigatória *
-                        </div>
-                        Confirmo que verifiquei o estado físico do(s) equipamento(s) (danos, acessórios) no momento da devolução.
-                    </Label>
+          {/* ═══ SEÇÃO 3: SOLICITANTE DA DEVOLUÇÃO ═══ */}
+          <GlassCard className={cn(
+            "bg-gradient-to-br from-amber-500/5 via-amber-500/3 to-transparent",
+            "border border-amber-500/20",
+            "shadow-xl shadow-amber-500/5",
+            "border-border-strong" // ADICIONANDO BORDA DISCRETA
+          )}>
+            <CardHeader className="p-5 pb-3 border-b border-amber-500/10 dark:border-amber-500/30">
+              <CardTitle className="text-lg font-semibold flex items-center gap-2 text-foreground">
+                <User className="h-5 w-5 text-menu-amber" />
+                Solicitante da Devolução
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-5 space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="userSearch" className="text-foreground">
+                  Buscar Solicitante (Nome, RA ou Email) *
+                </Label>
+                <UserAutocomplete
+                  selectedUser={selectedUser}
+                  onSelect={handleUserSelect}
+                  onClear={handleUserClear}
+                  disabled={dbLoading}
+                />
+              </div>
+
+              {/* Validação em tempo real para Solicitante */}
+              {!selectedUser && (
+                <p className="text-xs text-destructive flex items-center gap-1 mt-1">
+                  <AlertTriangle className="h-3 w-3" />
+                  Selecione o solicitante para prosseguir.
+                </p>
+              )}
+
+              {selectedUser && (
+                <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/50 rounded-lg p-3 mt-2">
+                  <CheckCircle className="h-4 w-4 text-green-500" />
+                  <div className="flex-1">
+                    <p className="font-medium text-foreground">{selectedUser.name}</p>
+                    <p>{selectedUser.email}</p>
+                  </div>
                 </div>
-                {!confirmChecked && (
-                    <p className="text-xs text-destructive flex items-center gap-1 mt-3 ml-7">
-                        <AlertTriangle className="h-3 w-3" />
-                        A confirmação é obrigatória para registrar a devolução.
-                    </p>
-                )}
+              )}
+            </CardContent>
+          </GlassCard>
+
+          {/* ═══ SEÇÃO 4: CONFIRMAÇÃO OBRIGATÓRIA ═══ */}
+          <div className="p-5 rounded-xl border bg-amber-50/50 border-amber-200 dark:bg-amber-950/50 dark:border-amber-900 shadow-xl border-border-strong"> {/* ADICIONANDO shadow-xl e BORDA DISCRETA */}
+            <div className="flex items-start gap-3">
+              <Checkbox
+                id="confirmChecked"
+                checked={confirmChecked}
+                onCheckedChange={(v) => setConfirmChecked(!!v)}
+                className="mt-1 border-amber-500 shrink-0"
+                disabled={dbLoading}
+              />
+              <Label htmlFor="confirmChecked" className="text-sm text-foreground leading-5 cursor-pointer">
+                <div className="flex items-center gap-1 font-semibold text-amber-800 dark:text-amber-400">
+                  <AlertTriangle className="h-4 w-4" />
+                  Verificação Obrigatória *
+                </div>
+                Confirmo que verifiquei o estado físico do(s) equipamento(s) (danos, acessórios) no momento da devolução.
+              </Label>
             </div>
+            {!confirmChecked && (
+              <p className="text-xs text-destructive flex items-center gap-1 mt-3 ml-7">
+                <AlertTriangle className="h-3 w-3" />
+                A confirmação é obrigatória para registrar a devolução.
+              </p>
+            )}
+          </div>
         </div>
       </div>
 
       {/* ═══ BOTÃO FINAL ═══ */}
-      <Button 
+      <Button
         type="submit"
         size="lg"
         className={cn(
-            "w-full h-12 text-base font-semibold",
-            "bg-menu-amber hover:bg-menu-amber-hover",
-            "shadow-lg shadow-amber-500/25",
-            "transition-all duration-200",
-            "disabled:opacity-50 disabled:cursor-not-allowed"
+          "w-full h-12 text-base font-semibold",
+          "bg-menu-amber hover:bg-menu-amber-hover",
+          "shadow-lg shadow-amber-500/25",
+          "transition-all duration-200",
+          "disabled:opacity-50 disabled:cursor-not-allowed"
         )}
         disabled={dbLoading || !isFormValid}
       >
@@ -289,6 +391,17 @@ export function ReturnForm({ onReturnSuccess, initialChromebookId }: ReturnFormP
           </>
         )}
       </Button>
+
+      {/* Modal de Confirmação */}
+      <ConfirmReturnDialog
+        open={showConfirmDialog}
+        onOpenChange={setShowConfirmDialog}
+        deviceIds={deviceIds}
+        loanDetails={loanDetails}
+        returnData={returnData}
+        onConfirm={handleConfirmReturnSubmit}
+        loading={dbLoading}
+      />
     </form>
   );
 }

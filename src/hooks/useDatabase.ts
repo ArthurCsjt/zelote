@@ -430,6 +430,36 @@ export const useDatabase = () => {
     }
   }, []);
 
+  /**
+   * Busca detalhes do empréstimo ativo/atrasado por ID do Chromebook
+   * Útil para exibir informações contextuais na devolução
+   */
+  const getLoanDetailsByChromebookId = useCallback(async (chromebookId: string): Promise<LoanHistoryItem | null> => {
+    try {
+      const { data, error } = await supabase
+        .from('loan_history')
+        .select('*')
+        .eq('chromebook_id', chromebookId)
+        .in('status', ['ativo', 'atrasado'])
+        .single();
+
+      if (error) {
+        // Se não encontrar, retorna null silenciosamente (não é erro crítico)
+        if (error.code === 'PGRST116') return null;
+        throw error;
+      }
+
+      return data ? {
+        ...data,
+        status: data.status as 'ativo' | 'devolvido' | 'atrasado'
+      } : null;
+    } catch (error: any) {
+      logger.error('Erro ao buscar detalhes do empréstimo', error, { chromebookId });
+      return null;
+    }
+  }, []);
+
+
   const createReturn = useCallback(async (loanId: string, data: ReturnFormData & { notes?: string }): Promise<Return | null> => {
     if (!user) {
       toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
@@ -1147,6 +1177,7 @@ export const useDatabase = () => {
     bulkCreateLoans,
     getActiveLoans,
     getLoanHistory,
+    getLoanDetailsByChromebookId, // NOVA FUNÇÃO PARA BUSCAR DETALHES DO EMPRÉSTIMO
     createReturn,
     returnChromebookById,
     bulkReturnChromebooks,
