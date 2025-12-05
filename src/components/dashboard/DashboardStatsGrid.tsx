@@ -27,39 +27,39 @@ interface DashboardStatsGridProps {
   loading: boolean;
   isMounted: boolean;
   onCardClick: (
-    title: string, 
-    description: string, 
-    dataType: 'chromebooks' | 'loans', 
+    title: string,
+    description: string,
+    dataType: 'chromebooks' | 'loans',
     initialData: DetailItem[] | null,
     statusFilter?: Chromebook['status']
   ) => void;
 }
 
-export const DashboardStatsGrid: React.FC<DashboardStatsGridProps> = ({ 
-  stats, 
-  history, 
-  loading, 
-  isMounted, 
-  onCardClick 
+export const DashboardStatsGrid: React.FC<DashboardStatsGridProps> = ({
+  stats,
+  history,
+  loading,
+  isMounted,
+  onCardClick
 }) => {
-  
+
   // Desestruturação segura, usando valores padrão se stats for null/undefined
-  const { 
-    totalActive = 0, 
-    totalChromebooks = 0, 
-    availableChromebooks = 0, 
-    averageUsageTime = 0, 
-    completionRate = 0, 
-    filteredLoans = [], 
-    filteredReturns = [], 
+  const {
+    totalActive = 0,
+    totalChromebooks = 0,
+    availableChromebooks = 0,
+    averageUsageTime = 0,
+    completionRate = 0,
+    filteredLoans = [],
+    filteredReturns = [],
   } = stats || {};
 
   // Função para determinar se o empréstimo está em atraso
   const isOverdue = (loan: LoanHistoryItem) => {
     return loan.expected_return_date && new Date(loan.expected_return_date) < new Date();
   };
-  
-  const getAnimationClass = (delay: number) => 
+
+  const getAnimationClass = (delay: number) =>
     isMounted ? `animate-fadeIn animation-delay-${delay}` : 'opacity-0';
 
   // Dados para os cards
@@ -101,7 +101,7 @@ export const DashboardStatsGrid: React.FC<DashboardStatsGridProps> = ({
       icon: Clock,
       color: 'purple',
       gradient: 'from-purple-600 to-violet-600',
-      onClick: () => {}, // Não clicável
+      onClick: () => { }, // Não clicável
       tooltip: 'Duração média (em minutos) dos empréstimos que foram devolvidos no período selecionado.',
       delay: 400,
     },
@@ -112,7 +112,7 @@ export const DashboardStatsGrid: React.FC<DashboardStatsGridProps> = ({
       icon: RotateCcw,
       color: 'teal',
       gradient: 'from-teal-600 to-cyan-600',
-      onClick: () => {}, // Não clicável
+      onClick: () => { }, // Não clicável
       tooltip: 'Porcentagem de empréstimos realizados no período que já foram devolvidos.',
       delay: 500,
     },
@@ -123,43 +123,67 @@ export const DashboardStatsGrid: React.FC<DashboardStatsGridProps> = ({
       {cardData.map((item, index) => {
         const Icon = item.icon;
         const isClickable = !!item.onClick;
-        
+
         return (
-          <GlassCard 
+          <GlassCard
             key={index}
             className={cn(
-              "border-white/30 transition-all duration-300 border-l-4 p-4", 
-              "hover:shadow-lg hover:scale-[1.02]",
+              "border-2 transition-all duration-300 border-l-4 p-4",
+              "border-gray-300 dark:border-border/40",
+              "bg-white dark:bg-card/50",
+              "hover:shadow-2xl hover:scale-[1.03]",
               isClickable ? 'cursor-pointer' : 'cursor-default',
-              `border-l-${item.color}-500`, // Border-left color
+              `border-l-${item.color}-600 dark:border-l-${item.color}-500`,
               getAnimationClass(item.delay)
             )}
             onClick={isClickable ? item.onClick : undefined}
           >
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-0">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 p-0">
               <ShadcnTooltip delayDuration={300}>
                 <TooltipTrigger asChild>
-                  <CardTitle className="text-xs sm:text-sm font-medium flex items-center gap-1 cursor-help">
+                  <CardTitle className="text-xs sm:text-sm font-semibold flex items-center gap-1.5 cursor-help text-gray-900 dark:text-foreground">
                     {item.title}
-                    <Info className="h-3 w-3 text-muted-foreground" />
+                    <Info className="h-3 w-3 text-gray-500 dark:text-muted-foreground" />
                   </CardTitle>
                 </TooltipTrigger>
                 <TooltipContent className="max-w-sm text-xs">
                   <p>{item.tooltip}</p>
                 </TooltipContent>
               </ShadcnTooltip>
-              <Icon className={cn("h-4 w-4 sm:h-5 sm:w-5", `text-${item.color}-500 dark:text-${item.color}-400`)} />
+
+              {/* Ícone com background */}
+              <div className={cn(
+                "p-2.5 rounded-xl transition-all duration-300",
+                "bg-gradient-to-br",
+                item.color === 'blue' && "from-blue-100 to-blue-50 dark:from-blue-900/20 dark:to-blue-900/10",
+                item.color === 'green' && "from-green-100 to-green-50 dark:from-green-900/20 dark:to-green-900/10",
+                item.color === 'purple' && "from-purple-100 to-purple-50 dark:from-purple-900/20 dark:to-purple-900/10",
+                item.color === 'teal' && "from-teal-100 to-teal-50 dark:from-teal-900/20 dark:to-teal-900/10",
+                "group-hover:scale-110"
+              )}>
+                <Icon className={cn(
+                  "h-5 w-5 sm:h-6 sm:w-6",
+                  item.color === 'blue' && "text-blue-700 dark:text-blue-400",
+                  item.color === 'green' && "text-green-700 dark:text-green-400",
+                  item.color === 'purple' && "text-purple-700 dark:text-purple-400",
+                  item.color === 'teal' && "text-teal-700 dark:text-teal-400"
+                )} />
+              </div>
             </CardHeader>
-            <CardContent className="p-0 pt-2">
-              <div className={cn("text-2xl sm:text-3xl font-bold bg-clip-text text-transparent", `bg-gradient-to-r ${item.gradient}`)}>
+
+            <CardContent className="p-0 pt-3">
+              <div className={cn(
+                "text-3xl sm:text-4xl font-extrabold bg-clip-text text-transparent",
+                `bg-gradient-to-r ${item.gradient}`
+              )}>
                 {item.value}
               </div>
-              <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">
+              <p className="text-xs sm:text-sm text-gray-700 dark:text-muted-foreground mt-2 font-medium">
                 {item.description}
               </p>
               {item.title === 'Taxa de Devolução' && (
-                <div className="flex items-center gap-2 mt-1">
-                  <Progress value={completionRate} className="h-1.5 sm:h-2" />
+                <div className="flex items-center gap-2 mt-2">
+                  <Progress value={completionRate} className="h-2 sm:h-2.5" />
                 </div>
               )}
             </CardContent>

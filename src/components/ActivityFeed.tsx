@@ -114,16 +114,16 @@ export function ActivityFeed() {
 
                     {/* Detalhes do Solicitante e Criador */}
                     <div className="mt-2 pt-2 border-t border-border/50 space-y-1">
-                      <p className="text-xs text-foreground flex items-center gap-1">
-                        <User className="h-3 w-3 text-muted-foreground" />
-                        <span className="font-medium">Solicitante:</span>
-                        {activity.user_name}
+                      <p className="text-xs text-foreground flex items-start gap-1">
+                        <User className="h-3 w-3 text-muted-foreground mt-0.5 shrink-0" />
+                        <span className="font-medium shrink-0">Solicitante:</span>
+                        <span className="break-words">{activity.user_name}</span>
                       </p>
 
-                      <p className="text-xs text-muted-foreground flex items-center gap-1">
-                        <UserCheck className="h-3 w-3 text-primary" />
-                        <span className="font-medium">Registrado por:</span>
-                        {creatorName}
+                      <p className="text-xs text-muted-foreground flex items-start gap-1 mt-1">
+                        <UserCheck className="h-3 w-3 text-primary mt-0.5 shrink-0" />
+                        <span className="font-medium shrink-0">Registrado por:</span>
+                        <span className="break-words">{creatorName}</span>
                       </p>
                     </div>
                   </div>

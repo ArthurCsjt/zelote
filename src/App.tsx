@@ -36,11 +36,13 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 const ToasterWrapper = () => {
   const { theme } = useTheme();
 
-  // Definindo estilos baseados no tema para o efeito Glassmorphism
+  // Definindo estilos baseados no tema com melhor contraste no modo claro
   const toastClass = cn(
-    "shadow-xl border",
-    "bg-card/90 backdrop-blur-md",
-    theme === 'dark' ? "dark:border-gray-700 dark:bg-gray-800/90" : "border-gray-200 bg-white/90"
+    "shadow-2xl border-2",
+    "backdrop-blur-md font-medium",
+    theme === 'dark'
+      ? "dark:border-gray-700 dark:bg-gray-800/90 dark:text-gray-100"
+      : "border-gray-400 bg-white text-gray-900"
   );
 
   return (
@@ -53,8 +55,10 @@ const ToasterWrapper = () => {
       toastOptions={{
         className: toastClass,
         style: {
-          padding: '12px 16px',
+          padding: '14px 18px',
           borderRadius: '12px',
+          fontSize: '14px',
+          fontWeight: '500',
         },
       }}
     />
