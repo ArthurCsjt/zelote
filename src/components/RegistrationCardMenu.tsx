@@ -46,24 +46,28 @@ export function RegistrationCardMenu({ onNavigate, currentView }: RegistrationCa
       {menuItems.map((item) => {
         const Icon = item.icon;
         const isActive = item.view === currentView;
-        
+
         return (
-          <GlassCard
+        return (
+          <div
             key={item.view}
             className={cn(
-              "cursor-pointer transition-all duration-300 hover:shadow-xl transform hover:scale-[1.02] bg-white/80",
-              isActive ? `border-2 ${item.activeBorder} shadow-lg` : 'border-gray-200'
+              "cursor-pointer transition-all duration-300 hover:translate-x-[-4px] hover:translate-y-[-4px] bg-white dark:bg-zinc-900",
+              isActive
+                ? `border-4 border-black dark:border-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.2)]`
+                : 'border-2 border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.2)]'
             )}
             onClick={() => onNavigate(item.view as any)}
           >
-            <CardContent className="p-4 flex flex-col items-center justify-center text-center">
-              <Icon className={cn("h-6 w-6 mb-1", item.color)} />
-              {/* CORREÇÃO: Adicionando dark:text-foreground para garantir que o texto seja claro no Dark Mode */}
-              <CardTitle className="text-sm font-semibold text-gray-800 dark:text-foreground">
+            <CardContent className="p-4 flex flex-col items-center justify-center text-center h-full">
+              <div className={cn("p-3 border-2 border-black dark:border-white mb-3 bg-white dark:bg-black w-fit mx-auto shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]")}>
+                <Icon className={cn("h-6 w-6 text-black dark:text-white")} />
+              </div>
+              <CardTitle className="text-sm font-black uppercase tracking-tight text-black dark:text-white">
                 {item.title}
               </CardTitle>
             </CardContent>
-          </GlassCard>
+          </div>
         );
       })}
     </div>
