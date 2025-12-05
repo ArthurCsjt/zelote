@@ -14,6 +14,9 @@ import type {
   TeacherData
 } from '@/types/database';
 import { format } from 'date-fns'; // Importando format para formatar a data
+import logger from '@/utils/logger';
+import { validateEmailDomain, EMAIL_DOMAINS } from '@/utils/emailValidation';
+import { isNetworkError, getSupabaseErrorMessage, handleSupabaseError } from '@/utils/networkErrors';
 
 // Types for new entities
 interface StudentData {
@@ -46,14 +49,8 @@ export interface Reservation extends ReservationData {
 }
 
 
-// --- Validações de Domínio ---
-const DOMAIN_SUFFIX_ALUNO = '@sj.g12.br';
-const DOMAIN_SUFFIX_PROFESSOR = '@sj.pro.br';
-const DOMAIN_SUFFIX_FUNCIONARIO = '@colegiosaojudas.com.br';
-
-const validateEmailDomain = (email: string, expectedSuffix: string): boolean => {
-  return email.endsWith(expectedSuffix);
-};
+// REMOVIDO: Validações de domínio movidas para @/utils/emailValidation
+// Usar: validateEmailDomain(email, userType) do utilitário
 
 // Função auxiliar para mapear ChromebookData (camelCase) para o formato do DB (snake_case)
 const mapChromebookDataToDb = (data: Partial<ChromebookData>, userId: string | undefined) => {
@@ -345,7 +342,7 @@ export const useDatabase = () => {
           .insert(loansToInsert);
 
         if (insertError) {
-          console.error('Erro de inserção em lote:', insertError);
+          logger.error('Erro de inserção em lote:', insertError);
           throw new Error(`Falha ao inserir ${loansToInsert.length} empréstimos.`);
         } else {
           successCount = loansToInsert.length;
@@ -480,7 +477,7 @@ export const useDatabase = () => {
         .single();
         
       if (cbError || !chromebookData) {
-          console.warn(`Chromebook ID ${loan.chromebook_id} não encontrado para sincronização após devolução forçada.`);
+          logger.warn(`Chromebook ID ${loan.chromebook_id} não encontrado para sincronização após devolução forçada.`);
       } else {
           await supabase.rpc('sync_chromebook_status', { cb_id: chromebookData.chromebook_id });
       }
@@ -593,7 +590,7 @@ export const useDatabase = () => {
           .insert(returnsToInsert);
 
         if (insertError) {
-          console.error('Erro de inserção de devolução em lote:', insertError);
+          logger.error('Erro de inserção de devolução em lote:', insertError);
           throw new Error(`Falha ao inserir ${returnsToInsert.length} devoluções.`);
         } else {
           successCount = returnsToInsert.length;
@@ -632,8 +629,8 @@ export const useDatabase = () => {
     }
 
     // Validação de domínio para aluno
-    if (!validateEmailDomain(data.email, DOMAIN_SUFFIX_ALUNO)) {
-        toast({ title: "Erro de Validação", description: `Email de aluno deve terminar com ${DOMAIN_SUFFIX_ALUNO}`, variant: "destructive" });
+    if (!validateEmailDomain(data.email, 'aluno')) {
+        toast({ title: "Erro de Validação", description: `Email de aluno deve terminar com ${EMAIL_DOMAINS.ALUNO}`, variant: "destructive" });
         return null;
     }
 
@@ -651,7 +648,7 @@ export const useDatabase = () => {
       // REMOVIDO: toast({ title: "Sucesso", description: "Aluno cadastrado com sucesso" });
       return result;
     } catch (error: any) {
-      console.error('Erro ao criar aluno via RPC:', error);
+      logger.error('Erro ao criar aluno via RPC:', error);
       // Verifica se o erro é de restrição de unicidade (email ou RA duplicado)
       if (error.message.includes('RA ou E-mail informado já está em uso')) {
         toast({ title: "Erro de Cadastro", description: "RA ou E-mail já cadastrado.", variant: "destructive" });
@@ -670,8 +667,8 @@ export const useDatabase = () => {
       return false;
     }
     // Validação de domínio para aluno, se o email estiver sendo atualizado
-    if (data.email && !validateEmailDomain(data.email, DOMAIN_SUFFIX_ALUNO)) {
-        toast({ title: "Erro de Validação", description: `Email de aluno deve terminar com ${DOMAIN_SUFFIX_ALUNO}`, variant: "destructive" });
+    if (data.email && !validateEmailDomain(data.email, 'aluno')) {
+        toast({ title: "Erro de Validação", description: `Email de aluno deve terminar com ${EMAIL_DOMAINS.ALUNO}`, variant: "destructive" });
         return false;
     }
     setLoading(true);
@@ -706,8 +703,8 @@ export const useDatabase = () => {
     }
 
     // Validação de domínio para professor
-    if (!validateEmailDomain(data.email, DOMAIN_SUFFIX_PROFESSOR)) {
-        toast({ title: "Erro de Validação", description: `Email de professor deve terminar com ${DOMAIN_SUFFIX_PROFESSOR}`, variant: "destructive" });
+    if (!validateEmailDomain(data.email, 'professor')) {
+        toast({ title: "Erro de Validação", description: `Email de professor deve terminar com ${EMAIL_DOMAINS.PROFESSOR}`, variant: "destructive" });
         return null;
     }
 
@@ -724,7 +721,7 @@ export const useDatabase = () => {
       // REMOVIDO: toast({ title: "Sucesso", description: "Professor cadastrado com sucesso" });
       return result;
     } catch (error: any) {
-      console.error('Erro ao criar professor via RPC:', error);
+      logger.error('Erro ao criar professor via RPC:', error);
       // Verifica se o erro é de restrição de unicidade (email duplicado)
       if (error.message.includes('O e-mail informado já está em uso')) {
         toast({ title: "Erro de Cadastro", description: "E-mail já cadastrado para outro professor.", variant: "destructive" });
@@ -743,8 +740,8 @@ export const useDatabase = () => {
       return false;
     }
     // Validação de domínio para professor, se o email estiver sendo atualizado
-    if (data.email && !validateEmailDomain(data.email, DOMAIN_SUFFIX_PROFESSOR)) {
-        toast({ title: "Erro de Validação", description: `Email de professor deve terminar com ${DOMAIN_SUFFIX_PROFESSOR}`, variant: "destructive" });
+    if (data.email && !validateEmailDomain(data.email, 'professor')) {
+        toast({ title: "Erro de Validação", description: `Email de professor deve terminar com ${EMAIL_DOMAINS.PROFESSOR}`, variant: "destructive" });
         return false;
     }
     setLoading(true);
@@ -779,8 +776,8 @@ export const useDatabase = () => {
     }
 
     // Validação de domínio para funcionário
-    if (!validateEmailDomain(data.email, DOMAIN_SUFFIX_FUNCIONARIO)) {
-        toast({ title: "Erro de Validação", description: `Email de funcionário deve terminar com ${DOMAIN_SUFFIX_FUNCIONARIO}`, variant: "destructive" });
+    if (!validateEmailDomain(data.email, 'funcionario')) {
+        toast({ title: "Erro de Validação", description: `Email de funcionário deve terminar com ${EMAIL_DOMAINS.FUNCIONARIO}`, variant: "destructive" });
         return null;
     }
 
@@ -796,7 +793,7 @@ export const useDatabase = () => {
       // REMOVIDO: toast({ title: "Sucesso", description: "Funcionário cadastrado com sucesso" });
       return result;
     } catch (error: any) {
-      console.error('Erro ao criar funcionário via RPC:', error);
+      logger.error('Erro ao criar funcionário via RPC:', error);
       // Verifica se o erro é de restrição de unicidade (email duplicado)
       if (error.message.includes('O e-mail informado já está em uso')) {
         toast({ title: "Erro de Cadastro", description: "E-mail já cadastrado para outro funcionário.", variant: "destructive" });
@@ -815,8 +812,8 @@ export const useDatabase = () => {
       return false;
     }
     // Validação de domínio para funcionário, se o email estiver sendo atualizado
-    if (data.email && !validateEmailDomain(data.email, DOMAIN_SUFFIX_FUNCIONARIO)) {
-        toast({ title: "Erro de Validação", description: `Email de funcionário deve terminar com ${DOMAIN_SUFFIX_FUNCIONARIO}`, variant: "destructive" });
+    if (data.email && !validateEmailDomain(data.email, 'funcionario')) {
+        toast({ title: "Erro de Validação", description: `Email de funcionário deve terminar com ${EMAIL_DOMAINS.FUNCIONARIO}`, variant: "destructive" });
         return false;
     }
     setLoading(true);
@@ -853,8 +850,8 @@ export const useDatabase = () => {
     try {
       // Validação de domínio para todos os alunos no lote
       for (const student of students) {
-        if (!validateEmailDomain(student.email, DOMAIN_SUFFIX_ALUNO)) {
-            throw new Error(`Email de aluno inválido: ${student.email}. Deve terminar com ${DOMAIN_SUFFIX_ALUNO}`);
+        if (!validateEmailDomain(student.email, 'aluno')) {
+            throw new Error(`Email de aluno inválido: ${student.email}. Deve terminar com ${EMAIL_DOMAINS.ALUNO}`);
         }
       }
       const { error } = await supabase
@@ -864,7 +861,7 @@ export const useDatabase = () => {
       if (error) throw error;
       return true;
     } catch (error: any) {
-      console.error('Erro ao importar alunos:', error);
+      logger.error('Erro ao importar alunos:', error);
       // Verifica se o erro é de restrição de unicidade (email ou RA duplicado)
       if (error.code === '23505') {
         toast({ title: "Erro de Importação", description: "Pelo menos um RA ou E-mail já está cadastrado.", variant: "destructive" });
@@ -888,8 +885,8 @@ export const useDatabase = () => {
     try {
       // Validação de domínio para todos os professores no lote
       for (const teacher of teachers) {
-        if (!validateEmailDomain(teacher.email, DOMAIN_SUFFIX_PROFESSOR)) {
-            throw new Error(`Email de professor inválido: ${teacher.email}. Deve terminar com ${DOMAIN_SUFFIX_PROFESSOR}`);
+        if (!validateEmailDomain(teacher.email, 'professor')) {
+            throw new Error(`Email de professor inválido: ${teacher.email}. Deve terminar com ${EMAIL_DOMAINS.PROFESSOR}`);
         }
       }
       
@@ -907,7 +904,7 @@ export const useDatabase = () => {
       if (error) throw error;
       return true;
     } catch (error: any) {
-      console.error('Erro ao importar professores:', error);
+      logger.error('Erro ao importar professores:', error);
       // Verifica se o erro é de restrição de unicidade (email duplicado)
       if (error.code === '23505') {
         toast({ title: "Erro de Importação", description: "Pelo menos um E-mail já está cadastrado.", variant: "destructive" });
@@ -943,7 +940,7 @@ export const useDatabase = () => {
       });
       return true;
     } catch (error: any) {
-      console.error('Erro ao excluir alunos:', error);
+      logger.error('Erro ao excluir alunos:', error);
       toast({ 
         title: "Erro", 
         description: "Erro ao excluir os alunos do sistema.", 
@@ -977,7 +974,7 @@ export const useDatabase = () => {
       toast({ title: "Sucesso", description: `${userType.charAt(0).toUpperCase() + userType.slice(1)} excluído com sucesso.`, variant: "success" });
       return true;
     } catch (error: any) {
-      console.error(`Erro ao excluir ${userType}:`, error);
+      logger.error(`Erro ao excluir ${userType}:`, error);
       toast({ 
         title: "Erro", 
         description: `Falha ao excluir ${userType}: ${error.message}`, 
@@ -1002,7 +999,7 @@ export const useDatabase = () => {
       if (error) throw error;
       return count || 0;
     } catch (error: any) {
-      console.error('Erro ao buscar total de Chromebooks disponíveis:', error);
+      logger.error('Erro ao buscar total de Chromebooks disponíveis:', error);
       // Removendo o toast aqui para evitar spam, o componente chamador (SchedulingPage) já trata o erro.
       return 0;
     }
@@ -1031,7 +1028,7 @@ export const useDatabase = () => {
       })) as Reservation[];
       
     } catch (error: any) {
-      console.error('Erro ao buscar reservas:', error);
+      logger.error('Erro ao buscar reservas:', error);
       toast({ title: "Erro de Sincronização", description: "Falha ao carregar agendamentos.", variant: "destructive" });
       return [];
     }
@@ -1089,10 +1086,10 @@ export const useDatabase = () => {
         });
         
         if (emailError) {
-          console.error('Erro ao disparar e-mail de confirmação:', emailError);
+          logger.error('Erro ao disparar e-mail de confirmação:', emailError);
           toast({ title: "Aviso", description: "Reserva criada, mas falha ao enviar e-mail de confirmação.", variant: "warning" });
         } else {
-          console.log('E-mail de confirmação disparado:', emailData);
+          logger.debug('E-mail de confirmação disparado:', emailData);
         }
       }
       
@@ -1101,7 +1098,7 @@ export const useDatabase = () => {
       return reservationResult;
       
     } catch (error: any) {
-      console.error('Erro ao criar reserva:', error);
+      logger.error('Erro ao criar reserva:', error);
       toast({ 
         title: "Erro ao Agendar", 
         description: error.message, 
