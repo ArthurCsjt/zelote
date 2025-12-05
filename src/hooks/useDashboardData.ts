@@ -16,7 +16,7 @@ interface TopLoanContext {
   userType: string;
 }
 
-interface DashboardStats {
+export interface DashboardStats {
   totalChromebooks: number;
   availableChromebooks: number;
   totalActive: number;

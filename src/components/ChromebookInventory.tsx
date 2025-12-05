@@ -351,54 +351,62 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
       <InventoryStats chromebooks={chromebooks} />
 
       {/* Painel de Busca e Filtros */}
-      <GlassCard className="mb-6 p-4 relative z-10">
-        <div className="flex flex-col sm:flex-row gap-4 items-center">
+      {/* Painel de Busca e Filtros - ESTILO NEO-BRUTALISM */}
+      <div className="mb-8 p-6 border-4 border-black dark:border-white bg-white dark:bg-zinc-900 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.2)] relative z-10 animate-fadeIn animation-delay-300">
+        <h3 className="text-sm font-black uppercase mb-4 flex items-center gap-2">
+          <Filter className="h-4 w-4" /> Filtros e Ações
+        </h3>
+
+        <div className="flex flex-col sm:flex-row gap-4 items-end">
 
           {/* Campo de Busca */}
-          <div className="relative flex-1 w-full">
-            <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400 dark:text-muted-foreground" />
-            <Input
-              placeholder="Buscar por ID, patrimônio, modelo, série, fabricante ou localização..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              // CORREÇÃO: Usando bg-input para o fundo do input
-              className="pl-10 bg-input dark:bg-input"
-            />
+          <div className="relative flex-1 w-full space-y-1">
+            <span className="text-xs font-bold uppercase text-gray-500">Buscar Equipamento</span>
+            <div className="relative">
+              <Search className="absolute left-3 top-3 h-5 w-5 text-black dark:text-white" />
+              <Input
+                placeholder="ID, PATRIMÔNIO, MODELO, SÉRIE..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 uppercase font-mono text-sm border-2 border-black dark:border-white rounded-none h-12 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] bg-white dark:bg-zinc-950 focus-visible:ring-0"
+              />
+            </div>
           </div>
 
           {/* Filtro de Status */}
-          <div className="relative w-full sm:w-[180px]">
-            <Filter className="absolute left-3 top-3 h-4 w-4 text-gray-400 dark:text-muted-foreground" />
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              {/* CORREÇÃO: Usando bg-input para o fundo do select trigger */}
-              <SelectTrigger className="w-full pl-10 bg-input dark:bg-input">
-                <SelectValue placeholder="Filtrar por status" />
-              </SelectTrigger>
-              <SelectContent className="bg-card border-border"> {/* Adicionando classes de fundo e borda */}
-                <SelectItem value="all">Todos os Status</SelectItem>
-                <SelectItem value="disponivel">Disponível</SelectItem>
-                <SelectItem value="emprestado">Emprestado</SelectItem>
-                <SelectItem value="fixo">Fixo</SelectItem>
-                <SelectItem value="manutencao">Manutenção</SelectItem>
-                <SelectItem value="fora_uso">Inativo</SelectItem>
-              </SelectContent>
-            </Select>
+          <div className="relative w-full sm:w-[220px] space-y-1">
+            <span className="text-xs font-bold uppercase text-gray-500">Status</span>
+            <div className="relative">
+              <Filter className="absolute left-3 top-3 h-5 w-5 text-black dark:text-white pointer-events-none z-10" />
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-full pl-10 border-2 border-black dark:border-white rounded-none h-12 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] bg-white dark:bg-zinc-950 font-bold uppercase text-xs focus:ring-0">
+                  <SelectValue placeholder="STATUS" />
+                </SelectTrigger>
+                <SelectContent className="border-2 border-black dark:border-white rounded-none bg-white dark:bg-zinc-900 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                  <SelectItem value="all" className="uppercase font-bold text-xs">Todos</SelectItem>
+                  <SelectItem value="disponivel" className="uppercase font-bold text-xs">Disponível</SelectItem>
+                  <SelectItem value="emprestado" className="uppercase font-bold text-xs">Emprestado</SelectItem>
+                  <SelectItem value="fixo" className="uppercase font-bold text-xs">Fixo</SelectItem>
+                  <SelectItem value="manutencao" className="uppercase font-bold text-xs">Manutenção</SelectItem>
+                  <SelectItem value="fora_uso" className="uppercase font-bold text-xs">Inativo</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           {/* Botões de Ação */}
-          <div className="flex gap-2 w-full sm:w-auto">
+          <div className="flex gap-3 w-full sm:w-auto pb-0.5">
             {/* Botão de Impressão em Lote */}
             <Button
               onClick={handleBatchPrint}
               variant="outline"
-              title={`Imprimir QR Codes em Lote (${printItems.length} itens)`}
+              title={`IMPRIMIR (${printItems.length})`}
               disabled={printItems.length === 0 || isFetching || isExporting}
-              // CORREÇÃO: Usando bg-card/hover:bg-accent e garantindo cor do ícone
-              className="px-3 bg-card hover:bg-accent dark:bg-card dark:hover:bg-accent relative"
+              className="h-12 w-12 p-0 border-2 border-black dark:border-white rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:shadow-none bg-blue-100 hover:bg-blue-200 dark:bg-blue-900"
             >
-              <Printer className="h-4 w-4 text-primary dark:text-primary" />
+              <Printer className="h-5 w-5 text-black dark:text-white" />
               {printItems.length > 0 && (
-                <span className="absolute -top-2 -right-2 h-5 w-5 rounded-full bg-red-500 text-white text-xs flex items-center justify-center">
+                <span className="absolute -top-2 -right-2 h-6 w-6 rounded-none border-2 border-black bg-red-500 text-white text-xs font-bold flex items-center justify-center shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
                   {printItems.length}
                 </span>
               )}
@@ -408,208 +416,230 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
               onClick={fetchChromebooks}
               variant="outline"
               disabled={isFetching || isExporting}
-              title="Atualizar dados"
-              // CORREÇÃO: Usando bg-card/hover:bg-accent e garantindo cor do ícone
-              className="px-3 bg-card hover:bg-accent dark:bg-card dark:hover:bg-accent"
+              title="ATUALIZAR"
+              className="h-12 w-12 p-0 border-2 border-black dark:border-white rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:shadow-none bg-yellow-300 hover:bg-yellow-400"
             >
-              <RefreshCw className={`h-4 w-4 text-primary dark:text-primary ${isFetching ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`h-5 w-5 text-black ${isFetching ? 'animate-spin' : ''}`} />
             </Button>
+
             <Button
               onClick={handleExportCSV}
               variant="outline"
-              title="Fazer backup (Exportar CSV)"
+              title="EXPORTAR CSV"
               disabled={isExporting || isFetching}
-              // CORREÇÃO: Usando bg-card/hover:bg-accent e garantindo cor do ícone
-              className="px-3 bg-card hover:bg-accent dark:bg-card dark:hover:bg-accent"
+              className="h-12 w-12 p-0 border-2 border-black dark:border-white rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:shadow-none bg-white hover:bg-gray-100 dark:bg-zinc-800"
             >
               {isExporting ? (
-                <Loader2 className="h-4 w-4 animate-spin text-primary dark:text-primary" />
+                <Loader2 className="h-5 w-5 animate-spin text-black dark:text-white" />
               ) : (
-                <FileText className="h-4 w-4 text-primary dark:text-primary" />
+                <FileText className="h-5 w-5 text-black dark:text-white" />
               )}
             </Button>
           </div>
         </div>
-        <div className="flex justify-between items-center mt-4">
-          <div className="text-sm text-gray-500 flex items-center gap-4">
-            Resultados: {filteredChromebooks.length} Chromebooks
 
-            {/* NOVO: Seletor de Itens por Página */}
+        <div className="flex justify-between items-center mt-6 pt-4 border-t-2 border-black/10 dark:border-white/10">
+          <div className="text-xs font-black uppercase text-gray-500 flex items-center gap-4">
+            Resultados: {filteredChromebooks.length} Equipamentos
+
+            <span className="h-4 w-px bg-gray-300"></span>
+
+            {/* Seletor de Itens por Página */}
             <div className="flex items-center gap-2">
-              <span className="text-xs">Itens por página:</span>
+              <span className="text-xs">Exibir:</span>
               <Select
                 value={String(itemsPerPage)}
                 onValueChange={(value) => setItemsPerPage(Number(value))}
               >
-                {/* CORREÇÃO: Usando bg-input para o fundo do select trigger */}
-                <SelectTrigger className="w-[70px] h-8 text-xs bg-input dark:bg-input">
+                <SelectTrigger className="w-[70px] h-8 text-xs font-bold border-2 border-black dark:border-white rounded-none bg-white dark:bg-zinc-900 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] focus:ring-0">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-card border-border"> {/* Adicionando classes de fundo e borda */}
-                  <SelectItem value="10">10</SelectItem>
-                  <SelectItem value="25">25</SelectItem>
-                  <SelectItem value="50">50</SelectItem>
-                  <SelectItem value="100">100</SelectItem>
+                <SelectContent className="border-2 border-black dark:border-white rounded-none bg-white dark:bg-zinc-900 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                  <SelectItem value="10" className="font-bold">10</SelectItem>
+                  <SelectItem value="25" className="font-bold">25</SelectItem>
+                  <SelectItem value="50" className="font-bold">50</SelectItem>
+                  <SelectItem value="100" className="font-bold">100</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
           {printItems.length > 0 && (
-            <Button variant="link" size="sm" onClick={clearPrintItems} className="text-red-600 h-auto p-0 text-xs">
-              <X className="h-3 w-3 mr-1" />
+            <Button variant="link" size="sm" onClick={clearPrintItems} className="text-red-600 font-bold uppercase tracking-wider text-xs h-auto p-0 hover:no-underline hover:text-red-800">
+              <X className="h-4 w-4 mr-1 border-2 border-red-600 text-red-600 bg-red-100 p-0.5" />
               Limpar Seleção ({printItems.length})
             </Button>
           )}
         </div>
-      </GlassCard>
+      </div>
 
-      {/* Table of Chromebooks */}
-      <GlassCard className="border-white/30 rounded-2xl overflow-x-auto relative z-10 p-0">
-        <Table className="min-w-[800px] md:min-w-full"> {/* Garante largura mínima para mobile */}
-          <TableHeader className="bg-gray-100 border-b border-gray-300 dark:bg-muted/50 dark:border-border"> {/* Adicionando borda inferior */}
-            <TableRow className="bg-gray-50/80 dark:bg-muted/50"> {/* Fundo mais claro para a linha do cabeçalho */}
-              <TableHead className="w-[50px] text-center">
-                <Checkbox
-                  checked={isAllOnPageSelected}
-                  onCheckedChange={handleToggleAllOnPage}
-                  aria-label="Selecionar todos na página"
-                />
-              </TableHead>
-              <TableHead className="w-[100px] text-xs font-extrabold text-gray-700 uppercase tracking-wider dark:text-gray-300">ID</TableHead>
-              <TableHead className="w-[120px] text-xs font-extrabold text-gray-700 uppercase tracking-wider dark:text-gray-300">Fabricante</TableHead>
-              <TableHead className="w-[200px] text-xs font-extrabold text-gray-700 uppercase tracking-wider dark:text-gray-300">Modelo</TableHead>
-              <TableHead className="w-[150px] text-xs font-extrabold text-gray-700 uppercase tracking-wider dark:text-gray-300">Série</TableHead>
-              <TableHead className="w-[120px] text-xs font-extrabold text-gray-700 uppercase tracking-wider dark:text-gray-300">Status</TableHead>
-              <TableHead className="w-[180px] text-center text-xs font-extrabold text-gray-700 uppercase tracking-wider dark:text-gray-300">Ações</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {paginatedChromebooks.length > 0 ? (
-              paginatedChromebooks.map((chromebook) => {
-                const statusInfo = getStatusInfo(chromebook.status);
-                const StatusIcon = statusInfo.icon;
-                const isSelected = isItemSelected(chromebook.id);
+      {/* Table of Chromebooks - ESTILO NEO-BRUTALISM */}
+      <div className="border-4 border-black dark:border-white bg-white dark:bg-zinc-900 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.2)] p-0 mb-8 animate-fadeIn animation-delay-500 overflow-hidden">
+        <div className="overflow-x-auto">
+          <Table className="min-w-[900px]">
+            <TableHeader className="bg-yellow-300 dark:bg-yellow-900/50 border-b-4 border-black dark:border-white">
+              <TableRow className="hover:bg-transparent border-none">
+                <TableHead className="w-[50px] text-center border-r-2 border-black dark:border-white p-0">
+                  <div className="flex items-center justify-center h-full w-full">
+                    <Checkbox
+                      checked={isAllOnPageSelected}
+                      onCheckedChange={handleToggleAllOnPage}
+                      aria-label="Selecionar todos na página"
+                      className="border-2 border-black rounded-none data-[state=checked]:bg-black data-[state=checked]:text-white h-5 w-5"
+                    />
+                  </div>
+                </TableHead>
+                <TableHead className="w-[100px] text-xs font-black text-black dark:text-white uppercase tracking-tight border-r-2 border-black dark:border-white">ID</TableHead>
+                <TableHead className="w-[120px] text-xs font-black text-black dark:text-white uppercase tracking-tight border-r-2 border-black dark:border-white">Fabricante</TableHead>
+                <TableHead className="w-[200px] text-xs font-black text-black dark:text-white uppercase tracking-tight border-r-2 border-black dark:border-white">Modelo</TableHead>
+                <TableHead className="w-[150px] text-xs font-black text-black dark:text-white uppercase tracking-tight border-r-2 border-black dark:border-white">Série</TableHead>
+                <TableHead className="w-[140px] text-xs font-black text-black dark:text-white uppercase tracking-tight border-r-2 border-black dark:border-white">Status</TableHead>
+                <TableHead className="w-[180px] text-center text-xs font-black text-black dark:text-white uppercase tracking-tight">Ações</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {paginatedChromebooks.length > 0 ? (
+                paginatedChromebooks.map((chromebook) => {
+                  const statusInfo = getStatusInfo(chromebook.status);
+                  const StatusIcon = statusInfo.icon;
+                  const isSelected = isItemSelected(chromebook.id);
 
-                return (
-                  <TableRow key={chromebook.id} className={isSelected ? 'bg-blue-50/50 hover:bg-blue-100/50 dark:bg-blue-950/50 dark:hover:bg-blue-900/50' : ''}>
-                    <TableCell className="text-center py-2 align-top">
-                      <Checkbox
-                        checked={isSelected}
-                        onCheckedChange={() => handleToggleItem(chromebook)}
-                      />
-                    </TableCell>
-                    <TableCell className="font-medium text-xs py-2 align-top w-[100px]">
-                      {chromebook.chromebook_id}
-                    </TableCell>
-                    <TableCell className="text-xs py-2 align-top w-[120px]">
-                      {chromebook.manufacturer || 'N/A'}
-                    </TableCell>
-                    <TableCell className="py-2 align-top w-[200px]">
-                      <div className="flex flex-col gap-0.5">
-                        <span className="font-medium text-xs leading-tight">{chromebook.model}</span>
-                        {chromebook.patrimony_number && (
-                          <span className="text-[10px] text-muted-foreground leading-tight">
-                            Patrimônio: {chromebook.patrimony_number}
-                          </span>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-xs py-2 align-top w-[150px]">
-                      {chromebook.serial_number || 'N/A'}
-                    </TableCell>
-                    <TableCell className="py-2 align-top w-[120px]">
-                      <div className={`inline-flex flex-col items-start gap-1 text-xs font-medium`}>
-                        <div className={cn(
-                          "inline-flex items-center gap-1 px-2 py-1 rounded-full",
-                          statusInfo.color
-                        )}>
-                          <StatusIcon className="w-3 h-3" />
-                          <span className="text-[10px]">{statusInfo.label}</span>
+                  return (
+                    <TableRow
+                      key={chromebook.id}
+                      className={cn(
+                        "border-b-2 border-black/10 dark:border-white/10 hover:bg-yellow-50 dark:hover:bg-yellow-900/10 transition-colors",
+                        isSelected && "bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/30"
+                      )}
+                    >
+                      <TableCell className="text-center py-3 align-middle border-r-2 border-black/10 dark:border-white/10 p-0">
+                        <div className="flex items-center justify-center h-full w-full">
+                          <Checkbox
+                            checked={isSelected}
+                            onCheckedChange={() => handleToggleItem(chromebook)}
+                            className="border-2 border-black rounded-none data-[state=checked]:bg-black data-[state=checked]:text-white h-5 w-5"
+                          />
                         </div>
-                        {chromebook.status === 'fixo' && chromebook.classroom && (
-                          <span className="ml-1 text-[10px] text-blue-700 dark:text-blue-400 flex items-center gap-0.5">
-                            <MapPin className="h-3 w-3" />
-                            {chromebook.classroom}
-                          </span>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-center py-2 align-top w-[180px]">
-                      <div className="flex items-center justify-center space-x-1">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => onGenerateQrCode(chromebook.chromebook_id)}
-                          title="Ver QR Code"
-                          className="h-8 w-8 p-0"
-                        >
-                          <QrCode className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleEditClick(chromebook)}
-                          title="Editar"
-                          className="h-8 w-8 p-0"
-                        >
-                          <Edit3 className="h-4 w-4" />
-                        </Button>
-                        {isAdmin && (
+                      </TableCell>
+                      <TableCell className="font-mono font-bold text-xs py-3 align-middle border-r-2 border-black/10 dark:border-white/10">
+                        {chromebook.chromebook_id}
+                      </TableCell>
+                      <TableCell className="text-xs font-bold uppercase py-3 align-middle border-r-2 border-black/10 dark:border-white/10">
+                        {chromebook.manufacturer || 'N/A'}
+                      </TableCell>
+                      <TableCell className="py-3 align-middle border-r-2 border-black/10 dark:border-white/10">
+                        <div className="flex flex-col gap-0.5">
+                          <span className="font-bold text-xs uppercase leading-tight">{chromebook.model}</span>
+                          {chromebook.patrimony_number && (
+                            <span className="text-[10px] font-mono font-bold text-gray-500 leading-tight">
+                              PAT: {chromebook.patrimony_number}
+                            </span>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-xs font-mono font-bold py-3 align-middle border-r-2 border-black/10 dark:border-white/10">
+                        {chromebook.serial_number || 'N/A'}
+                      </TableCell>
+                      <TableCell className="py-3 align-middle border-r-2 border-black/10 dark:border-white/10">
+                        <div className={`inline-flex flex-col items-start gap-1 text-xs font-bold`}>
+                          <div className={cn(
+                            "inline-flex items-center gap-1.5 px-2 py-0.5 border-2 border-black dark:border-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]",
+                            chromebook.status === 'disponivel' && "bg-green-200 text-green-900",
+                            chromebook.status === 'emprestado' && "bg-purple-200 text-purple-900",
+                            chromebook.status === 'fixo' && "bg-blue-200 text-blue-900",
+                            chromebook.status === 'manutencao' && "bg-red-200 text-red-900",
+                            chromebook.status === 'fora_uso' && "bg-gray-200 text-gray-900",
+                          )}>
+                            <StatusIcon className="w-3 h-3" />
+                            <span className="text-[10px] uppercase tracking-wide">{statusInfo.label}</span>
+                          </div>
+                          {chromebook.status === 'fixo' && chromebook.classroom && (
+                            <span className="ml-0.5 text-[10px] font-black uppercase text-blue-700 dark:text-blue-400 flex items-center gap-0.5">
+                              <MapPin className="h-3 w-3" />
+                              {chromebook.classroom}
+                            </span>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-center py-3 align-middle">
+                        <div className="flex items-center justify-center gap-2">
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => handleDeleteClick(chromebook)}
-                            title="Excluir"
-                            className="h-8 w-8 p-0 text-red-600 hover:text-red-800"
+                            onClick={() => onGenerateQrCode(chromebook.chromebook_id)}
+                            title="QR Code"
+                            className="h-8 w-8 p-0 border-2 border-black dark:border-white rounded-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] active:shadow-none bg-white dark:bg-zinc-800"
                           >
-                            <Trash2 className="h-4 w-4" />
+                            <QrCode className="h-4 w-4" />
                           </Button>
-                        )}
-                        <Select
-                          value={chromebook.status}
-                          onValueChange={(value) => handleStatusChange(chromebook.id, value)}
-                        >
-                          <SelectTrigger className="w-[100px] h-8 text-xs bg-input dark:bg-input">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent className="bg-card border-border">
-                            <SelectItem value="disponivel">Disponível</SelectItem>
-                            <SelectItem value="emprestado" disabled={chromebook.status !== 'emprestado'}>Emprestado</SelectItem>
-                            <SelectItem value="fixo">Fixo</SelectItem>
-                            <SelectItem value="manutencao">Manutenção</SelectItem>
-                            <SelectItem value="fora_uso">Inativo</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                );
-              })
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={7}
-                  className="h-32 text-center text-gray-500"
-                >
-                  {searchTerm || statusFilter !== 'all'
-                    ? "Nenhum resultado encontrado. Tente uma busca diferente."
-                    : "Nenhum Chromebook cadastrado ainda."}
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </GlassCard >
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleEditClick(chromebook)}
+                            title="Editar"
+                            className="h-8 w-8 p-0 border-2 border-black dark:border-white rounded-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] active:shadow-none bg-white dark:bg-zinc-800"
+                          >
+                            <Edit3 className="h-4 w-4" />
+                          </Button>
+                          {isAdmin && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleDeleteClick(chromebook)}
+                              title="Excluir"
+                              className="h-8 w-8 p-0 border-2 border-black dark:border-white rounded-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] active:shadow-none bg-red-100 hover:bg-red-200 text-red-700 border-red-900"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          )}
+                          <Select
+                            value={chromebook.status}
+                            onValueChange={(value) => handleStatusChange(chromebook.id, value)}
+                          >
+                            <SelectTrigger className="w-[32px] h-8 p-0 text-xs bg-white dark:bg-zinc-800 border-2 border-black dark:border-white rounded-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] flex justify-center items-center">
+                              <RefreshCw className="h-3 w-3" />
+                            </SelectTrigger>
+                            <SelectContent className="border-2 border-black dark:border-white rounded-none bg-white dark:bg-zinc-900 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                              <SelectItem value="disponivel" className="text-xs font-bold uppercase">Disponível</SelectItem>
+                              <SelectItem value="emprestado" disabled={chromebook.status !== 'emprestado'} className="text-xs font-bold uppercase">Emprestado</SelectItem>
+                              <SelectItem value="fixo" className="text-xs font-bold uppercase">Fixo</SelectItem>
+                              <SelectItem value="manutencao" className="text-xs font-bold uppercase">Manutenção</SelectItem>
+                              <SelectItem value="fora_uso" className="text-xs font-bold uppercase">Inativo</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
+              ) : (
+                <TableRow>
+                  <TableCell
+                    colSpan={7}
+                    className="h-32 text-center text-gray-500 font-mono uppercase"
+                  >
+                    {searchTerm || statusFilter !== 'all'
+                      ? "Nenhum resultado encontrado."
+                      : "Inventário Vazio."}
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
+      </div>
 
-      {/* Pagination */}
+      {/* Pagination - ESTILO NEO-BRUTALISM */}
       {
         totalPages > 1 && (
-          <Pagination className="mt-6">
-            <PaginationContent>
+          <Pagination className="mt-8 justify-center">
+            <PaginationContent className="gap-2">
               <PaginationItem>
                 <PaginationPrevious
                   onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                  className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                  className={cn(
+                    "border-2 border-black dark:border-white rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:shadow-none bg-white dark:bg-zinc-900 font-bold uppercase text-xs h-10 px-4",
+                    currentPage === 1 ? "pointer-events-none opacity-50 shadow-none" : "cursor-pointer"
+                  )}
                 />
               </PaginationItem>
 
@@ -618,7 +648,12 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
                   <PaginationLink
                     isActive={currentPage === page}
                     onClick={() => setCurrentPage(page)}
-                    className="cursor-pointer"
+                    className={cn(
+                      "cursor-pointer border-2 border-black dark:border-white rounded-none h-10 w-10 font-bold",
+                      currentPage === page
+                        ? "bg-black text-white dark:bg-white dark:text-black shadow-none"
+                        : "bg-white dark:bg-zinc-900 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:shadow-none"
+                    )}
                   >
                     {page}
                   </PaginationLink>
@@ -630,11 +665,12 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
                   onClick={() =>
                     setCurrentPage((prev) => Math.min(prev + 1, totalPages))
                   }
-                  className={
+                  className={cn(
+                    "border-2 border-black dark:border-white rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:shadow-none bg-white dark:bg-zinc-900 font-bold uppercase text-xs h-10 px-4",
                     currentPage === totalPages
-                      ? "pointer-events-none opacity-50"
+                      ? "pointer-events-none opacity-50 shadow-none"
                       : "cursor-pointer"
-                  }
+                  )}
                 />
               </PaginationItem>
             </PaginationContent>

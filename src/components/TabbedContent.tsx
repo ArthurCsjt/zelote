@@ -27,9 +27,13 @@ export const TabbedContent: React.FC<TabbedContentProps> = ({
 
   return (
     <Tabs defaultValue={defaultValue} className={cn("w-full", className)}>
-      <TabsList className={cn(`grid w-full ${gridCols}`, listClassName)}>
+      <TabsList className={cn(`grid w-full ${gridCols} p-1 h-auto rounded-none gap-1 bg-gray-100 dark:bg-zinc-800 border-2 border-black dark:border-white`, listClassName)}>
         {tabs.map((tab) => (
-          <TabsTrigger key={tab.value} value={tab.value}>
+          <TabsTrigger
+            key={tab.value}
+            value={tab.value}
+            className="data-[state=active]:bg-black data-[state=active]:text-white dark:data-[state=active]:bg-white dark:data-[state=active]:text-black rounded-none border-2 border-transparent data-[state=active]:border-black dark:data-[state=active]:border-white font-black uppercase tracking-tight py-2 transition-all duration-200"
+          >
             {tab.title}
           </TabsTrigger>
         ))}

@@ -42,7 +42,7 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
   if (loading) {
     return <div className="flex justify-center items-center h-64"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
   }
-  
+
   if (periodView === 'charts' && periodChartData.length === 0) {
     return (
       <GlassCard className="p-8 text-center">
@@ -55,195 +55,209 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
 
   // Cores para o gráfico de pizza de Status
   const COLORS = ['#2563EB', '#22C55E'];
-  
+
   // Renderiza o histórico completo
   if (periodView === 'history') {
     return <LoanHistory history={history} isNewLoan={isNewLoan} />;
   }
-  
+
   // Renderiza os gráficos para o intervalo de tempo selecionado
-  
+
   const chartTitle = periodChartData.length > 2 ? 'Atividade Diária' : 'Atividade Horária';
   const chartDescription = periodChartData.length > 2 ? 'Movimentação ao longo dos dias selecionados' : 'Movimentação ao longo das horas selecionadas';
   const chartDataKey = 'label';
 
   // Desestruturação segura para stats
-  const { 
-    totalActive = 0, 
+  const {
+    totalActive = 0,
     loansByUserType = {},
-    filteredLoans = [], 
-    topLoanContexts = [], 
+    filteredLoans = [],
+    topLoanContexts = [],
   } = stats || {};
 
   // Garante que filteredLoans.length seja seguro para divisão
   const totalLoansInPeriod = filteredLoans.length || 1;
-  
+
   // Mapeamento de cores para o gráfico de duração
   const DURATION_COLORS: Record<string, string> = {
     Aluno: '#3B82F6', // Azul (menu-blue)
     Professor: '#10B981', // Verde (menu-green)
     Funcionario: '#F59E0B', // Laranja (menu-amber)
   };
-  
+
   // Mapeamento de dados para o gráfico de duração (garantindo que o nome seja a chave)
   const durationChartData = durationData.map((d: any) => ({
-      name: d.name,
-      minutos: d.minutos,
-      color: DURATION_COLORS[d.name] || '#9CA3AF',
+    name: d.name,
+    minutos: d.minutos,
+    color: DURATION_COLORS[d.name] || '#9CA3AF',
   }));
-  
-  const getAnimationClass = (delay: number) => 
+
+  const getAnimationClass = (delay: number) =>
     isMounted ? `animate-fadeIn animation-delay-${delay}` : 'opacity-0';
 
 
   return (
     <>
-      <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
-        <GlassCard className={cn("dashboard-card", getAnimationClass(600))}>
-          <CardHeader className="flex flex-row items-center justify-between">
+      <div className="grid gap-8 grid-cols-1 lg:grid-cols-2">
+        <div className={cn("border-4 border-black dark:border-white bg-white dark:bg-zinc-900 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.2)]", getAnimationClass(600))}>
+          <CardHeader className="flex flex-row items-center justify-between border-b-4 border-black dark:border-white bg-gray-50 dark:bg-zinc-900/50 p-6">
             <div>
-              <CardTitle className="text-lg">Gráfico de Atividade</CardTitle>
-              <CardDescription>
+              <CardTitle className="text-xl font-black uppercase">Gráfico de Atividade</CardTitle>
+              <CardDescription className="font-mono text-xs font-bold text-gray-500 mt-1">
                 {chartDescription}
               </CardDescription>
             </div>
-            <BarChartIcon className="h-5 w-5 text-muted-foreground" />
+            <div className="p-2 border-2 border-black dark:border-white bg-white dark:bg-zinc-900 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)]">
+              <BarChartIcon className="h-5 w-5 text-black dark:text-white" />
+            </div>
           </CardHeader>
-          <CardContent className="h-[350px]"> {/* AUMENTADO PARA 350px */}
+          <CardContent className="h-[350px] p-6">
             <ChartContainer
               config={{
-                empréstimos: { label: "Empréstimos", color: "hsl(var(--primary))" },
-                devoluções: { label: "Devoluções", color: "hsl(var(--menu-green))" },
+                empréstimos: { label: "Empréstimos", color: "#2563EB" },
+                devoluções: { label: "Devoluções", color: "#22C55E" },
               }}
               className="w-full h-full"
             >
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={periodChartData} margin={{ top: 5, right: 0, left: -20, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
-                  <XAxis dataKey={chartDataKey} tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
-                  <YAxis tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
-                  <Tooltip content={<ChartTooltipContent />} />
-                  <Legend content={<ChartLegendContent />} wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
-                  
-                  <Bar 
-                    dataKey="empréstimos" 
-                    fill="#2563EB" 
-                    radius={[4, 4, 0, 0]} 
+                <BarChart data={periodChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+                  <XAxis dataKey={chartDataKey} tick={{ fontSize: 11, fontWeight: 'bold' }} stroke="#000" />
+                  <YAxis tick={{ fontSize: 11, fontWeight: 'bold' }} stroke="#000" />
+                  <Tooltip content={<ChartTooltipContent className="border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-none" />} />
+                  <Legend content={<ChartLegendContent />} wrapperStyle={{ fontSize: '12px', paddingTop: '20px', fontWeight: 'bold' }} />
+
+                  <Bar
+                    dataKey="empréstimos"
+                    fill="#2563EB"
+                    radius={[0, 0, 0, 0]}
                     name="Empréstimos"
+                    stroke="#000"
+                    strokeWidth={2}
                   />
-                  
-                  <Bar 
-                    dataKey="devoluções" 
-                    fill="#22C55E" 
-                    radius={[4, 4, 0, 0]} 
+
+                  <Bar
+                    dataKey="devoluções"
+                    fill="#22C55E"
+                    radius={[0, 0, 0, 0]}
                     name="Devoluções"
+                    stroke="#000"
+                    strokeWidth={2}
                   />
                 </BarChart>
               </ResponsiveContainer>
             </ChartContainer>
           </CardContent>
-        </GlassCard>
+        </div>
 
         {/* NOVO GRÁFICO: Ocupação Horária */}
-        <GlassCard className={cn("dashboard-card", getAnimationClass(700))}>
-          <CardHeader className="flex flex-row items-center justify-between">
+        <div className={cn("border-4 border-black dark:border-white bg-white dark:bg-zinc-900 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.2)]", getAnimationClass(700))}>
+          <CardHeader className="flex flex-row items-center justify-between border-b-4 border-black dark:border-white bg-gray-50 dark:bg-zinc-900/50 p-6">
             <div>
-              <CardTitle className="text-lg">Taxa de Ocupação Horária</CardTitle>
-              <CardDescription>
-                Ocupação do inventário móvel no período selecionado
+              <CardTitle className="text-xl font-black uppercase">Taxa de Ocupação Horária</CardTitle>
+              <CardDescription className="font-mono text-xs font-bold text-gray-500 mt-1">
+                Ocupação do inventário móvel no período
               </CardDescription>
             </div>
-            <TrendingUp className="h-5 w-5 text-muted-foreground" />
+            <div className="p-2 border-2 border-black dark:border-white bg-white dark:bg-zinc-900 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)]">
+              <TrendingUp className="h-5 w-5 text-black dark:text-white" />
+            </div>
           </CardHeader>
-          <CardContent className="h-[350px]"> {/* AUMENTADO PARA 350px */}
+          <CardContent className="h-[350px] p-6">
             <ChartContainer
               config={{
-                ocupação: { label: "Ocupação (%)", color: "hsl(var(--error))" }, // USANDO --error
+                ocupação: { label: "Ocupação (%)", color: "#EF4444" },
               }}
               className="w-full h-full"
             >
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={periodChartData} margin={{ top: 5, right: 0, left: -20, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
-                  <XAxis dataKey={chartDataKey} tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
-                  <YAxis 
-                      tick={{ fontSize: 10 }} 
-                      domain={[0, 100]} 
-                      tickFormatter={(value) => `${value}%`}
-                      stroke="hsl(var(--muted-foreground))" 
+                <LineChart data={periodChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+                  <XAxis dataKey={chartDataKey} tick={{ fontSize: 11, fontWeight: 'bold' }} stroke="#000" />
+                  <YAxis
+                    tick={{ fontSize: 11, fontWeight: 'bold' }}
+                    domain={[0, 100]}
+                    tickFormatter={(value) => `${value}%`}
+                    stroke="#000"
                   />
-                  <Tooltip content={<ChartTooltipContent />} />
-                  <Legend content={<ChartLegendContent />} wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
-                  
-                  <Line 
-                      type="monotone" 
-                      dataKey="ocupação" 
-                      stroke="hsl(var(--error))" // USANDO --error
-                      strokeWidth={2} 
-                      name="Ocupação (%)"
+                  <Tooltip content={<ChartTooltipContent className="border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-none" />} />
+                  <Legend content={<ChartLegendContent />} wrapperStyle={{ fontSize: '12px', paddingTop: '20px', fontWeight: 'bold' }} />
+
+                  <Line
+                    type="monotone"
+                    dataKey="ocupação"
+                    stroke="#EF4444"
+                    strokeWidth={3}
+                    dot={{ stroke: '#000', strokeWidth: 2, r: 4, fill: '#EF4444' }}
+                    activeDot={{ stroke: '#000', strokeWidth: 2, r: 6, fill: '#EF4444' }}
+                    name="Ocupação (%)"
                   />
                 </LineChart>
               </ResponsiveContainer>
             </ChartContainer>
           </CardContent>
-        </GlassCard>
+        </div>
       </div>
 
-      <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
-        <GlassCard className={cn("dashboard-card", getAnimationClass(800))}>
-          <CardHeader className="flex flex-row items-center justify-between">
+      <div className="grid gap-8 grid-cols-1 md:grid-cols-2 mt-8">
+        <div className={cn("border-4 border-black dark:border-white bg-white dark:bg-zinc-900 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.2)]", getAnimationClass(800))}>
+          <CardHeader className="flex flex-row items-center justify-between border-b-4 border-black dark:border-white bg-gray-50 dark:bg-zinc-900/50 p-6">
             <div>
-              <CardTitle className="text-lg">Status dos Chromebooks</CardTitle>
-              <CardDescription>
+              <CardTitle className="text-xl font-black uppercase">Status dos Chromebooks</CardTitle>
+              <CardDescription className="font-mono text-xs font-bold text-gray-500 mt-1">
                 Total de {totalChromebooks} equipamentos
               </CardDescription>
             </div>
-            <PieChartIcon className="h-5 w-5 text-muted-foreground" />
+            <div className="p-2 border-2 border-black dark:border-white bg-white dark:bg-zinc-900 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)]">
+              <PieChartIcon className="h-5 w-5 text-black dark:text-white" />
+            </div>
           </CardHeader>
-          <CardContent className="h-[350px] flex items-center justify-center"> {/* AUMENTADO PARA 350px */}
+          <CardContent className="h-[350px] flex items-center justify-center p-6">
             <ChartContainer
               config={{
-                'Em Uso': { label: "Em Uso", color: "hsl(var(--primary))" },
-                'Disponíveis': { label: "Disponíveis", color: "hsl(var(--menu-green))" },
+                'Em Uso': { label: "Em Uso", color: "#3B82F6" },
+                'Disponíveis': { label: "Disponíveis", color: "#22C55E" },
               }}
               className="w-full h-full"
             >
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
-                  <Pie data={[{
-                    name: "Em Uso",
-                    value: totalActive
-                  }, {
-                    name: "Disponíveis",
-                    value: availableChromebooks
-                  }]} cx="50%" cy="50%" innerRadius={40} outerRadius={70} fill="#8884d8" paddingAngle={5} dataKey="value" label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}>
-                    {[{
-                      name: "Em Uso",
-                      value: totalActive
-                    }, {
-                      name: "Disponíveis",
-                      value: availableChromebooks
-                    }].map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index]} />)}
+                  <Pie
+                    data={[{ name: "Em Uso", value: totalActive }, { name: "Disponíveis", value: availableChromebooks }]}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={90}
+                    fill="#8884d8"
+                    paddingAngle={2}
+                    dataKey="value"
+                    stroke="#000"
+                    strokeWidth={2}
+                    label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
+                  >
+                    {[{ name: "Em Uso", value: totalActive }, { name: "Disponíveis", value: availableChromebooks }].map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index]} stroke="#000" strokeWidth={2} />)}
                   </Pie>
-                  <Tooltip content={<ChartTooltipContent />} />
-                  <Legend content={<ChartLegendContent />} wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
+                  <Tooltip content={<ChartTooltipContent className="border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-none" />} />
+                  <Legend content={<ChartLegendContent />} wrapperStyle={{ fontSize: '12px', paddingTop: '20px', fontWeight: 'bold' }} />
                 </PieChart>
               </ResponsiveContainer>
             </ChartContainer>
           </CardContent>
-        </GlassCard>
+        </div>
 
-        <GlassCard className={cn("dashboard-card", getAnimationClass(900))}>
-          <CardHeader className="flex flex-row items-center justify-between">
+        <div className={cn("border-4 border-black dark:border-white bg-white dark:bg-zinc-900 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.2)]", getAnimationClass(900))}>
+          <CardHeader className="flex flex-row items-center justify-between border-b-4 border-black dark:border-white bg-gray-50 dark:bg-zinc-900/50 p-6">
             <div>
-              <CardTitle className="text-lg">Uso por Tipo de Usuário</CardTitle>
-              <CardDescription>
-                Distribuição dos empréstimos no período
+              <CardTitle className="text-xl font-black uppercase">Uso por Tipo de Usuário</CardTitle>
+              <CardDescription className="font-mono text-xs font-bold text-gray-500 mt-1">
+                Distribuição dos empréstimos
               </CardDescription>
             </div>
-            <Users className="h-5 w-5 text-muted-foreground" />
+            <div className="p-2 border-2 border-black dark:border-white bg-white dark:bg-zinc-900 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)]">
+              <Users className="h-5 w-5 text-black dark:text-white" />
+            </div>
           </CardHeader>
-          <CardContent className="h-[350px]"> {/* AUMENTADO PARA 350px */}
+          <CardContent className="h-[350px] p-6">
             <ChartContainer
               config={{
                 'Aluno': { label: "Aluno", color: "#3B82F6" },
@@ -254,69 +268,80 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
             >
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
-                  <Pie data={userTypeData} cx="50%" cy="50%" innerRadius={40} outerRadius={70} fill="#8884d8" paddingAngle={5} dataKey="value" label={({
-                      name,
-                      value
-                    }) => value > 0 ? `${name}: ${value}` : ''}>
-                    {userTypeData.map((entry, index) => <Cell key={`cell-${index}`} fill={['#3B82F6', '#10B981', '#F59E0B'][index % 3]} />)}
+                  <Pie
+                    data={userTypeData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={90}
+                    fill="#8884d8"
+                    paddingAngle={2}
+                    dataKey="value"
+                    stroke="#000"
+                    strokeWidth={2}
+                    label={({ name, value }) => value > 0 ? `${name}: ${value}` : ''}
+                  >
+                    {userTypeData.map((entry, index) => <Cell key={`cell-${index}`} fill={['#3B82F6', '#10B981', '#F59E0B'][index % 3]} stroke="#000" strokeWidth={2} />)}
                   </Pie>
-                  <Tooltip content={<ChartTooltipContent />} />
-                  <Legend content={<ChartLegendContent />} wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
+                  <Tooltip content={<ChartTooltipContent className="border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-none" />} />
+                  <Legend content={<ChartLegendContent />} wrapperStyle={{ fontSize: '12px', paddingTop: '20px', fontWeight: 'bold' }} />
                 </PieChart>
               </ResponsiveContainer>
             </ChartContainer>
           </CardContent>
-        </GlassCard>
+        </div>
       </div>
-      
-      <div className="grid gap-4 grid-cols-1 md:grid-cols-2 mt-4">
+
+      <div className="grid gap-8 grid-cols-1 md:grid-cols-2 mt-8">
         {/* NOVO PAINEL: Top Contextos de Empréstimo */}
         <div className={getAnimationClass(1000)}>
-            <TopLoanContextsPanel topLoanContexts={topLoanContexts} />
+          <TopLoanContextsPanel topLoanContexts={topLoanContexts} />
         </div>
 
-        <GlassCard className={cn("dashboard-card", getAnimationClass(1100))}>
-          <CardHeader className="flex flex-row items-center justify-between">
+        <div className={cn("border-4 border-black dark:border-white bg-white dark:bg-zinc-900 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.2)]", getAnimationClass(1100))}>
+          <CardHeader className="flex flex-row items-center justify-between border-b-4 border-black dark:border-white bg-gray-50 dark:bg-zinc-900/50 p-6">
             <div>
-              <CardTitle className="text-lg">Estatísticas Rápidas</CardTitle>
-              <CardDescription>
+              <CardTitle className="text-xl font-black uppercase">Estatísticas Rápidas</CardTitle>
+              <CardDescription className="font-mono text-xs font-bold text-gray-500 mt-1">
                 Resumo do período
               </CardDescription>
             </div>
-            <Activity className="h-5 w-5 text-muted-foreground" />
+            <div className="p-2 border-2 border-black dark:border-white bg-white dark:bg-zinc-900 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)]">
+              <Activity className="h-5 w-5 text-black dark:text-white" />
+            </div>
           </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="space-y-2">
+          <CardContent className="space-y-6 p-6">
+            <div className="space-y-3">
               <div className="flex justify-between items-center">
-                <span className="text-sm font-medium flex items-center gap-1"><GraduationCap className="h-4 w-4 text-blue-600" /> Alunos</span>
-                <Badge variant="secondary" className="bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
-                  {loansByUserType.aluno || 0} empréstimos
-                </Badge>
+                <span className="text-sm font-bold flex items-center gap-2 uppercase"><GraduationCap className="h-4 w-4" /> Alunos</span>
+                <span className="font-mono text-sm font-bold bg-blue-100 px-2 py-1 border border-black">{loansByUserType.aluno || 0}</span>
               </div>
-              <Progress value={((loansByUserType.aluno || 0) / totalLoansInPeriod) * 100} className="h-2" />
+              <div className="h-3 w-full bg-gray-100 border border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] overflow-hidden">
+                <div className="h-full bg-blue-500" style={{ width: `${Math.min(((loansByUserType.aluno || 0) / totalLoansInPeriod) * 100, 100)}%` }} />
+              </div>
             </div>
-            
-            <div className="space-y-2">
+
+            <div className="space-y-3">
               <div className="flex justify-between items-center">
-                <span className="text-sm font-medium flex items-center gap-1"><UserCheck className="h-4 w-4 text-green-600" /> Professores</span>
-                <Badge variant="secondary" className="bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300">
-                  {loansByUserType.professor || 0} empréstimos
-                </Badge>
+                <span className="text-sm font-bold flex items-center gap-2 uppercase"><UserCheck className="h-4 w-4" /> Professores</span>
+                <span className="font-mono text-sm font-bold bg-green-100 px-2 py-1 border border-black">{loansByUserType.professor || 0}</span>
               </div>
-              <Progress value={((loansByUserType.professor || 0) / totalLoansInPeriod) * 100} className="h-2" />
+              <div className="h-3 w-full bg-gray-100 border border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] overflow-hidden">
+                <div className="h-full bg-green-500" style={{ width: `${Math.min(((loansByUserType.professor || 0) / totalLoansInPeriod) * 100, 100)}%` }} />
+              </div>
             </div>
-            
-            <div className="space-y-2">
+
+            <div className="space-y-3">
               <div className="flex justify-between items-center">
-                <span className="text-sm font-medium flex items-center gap-1"><Briefcase className="h-4 w-4 text-orange-600" /> Funcionários</span>
-                <Badge variant="secondary" className="bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300">
-                  {loansByUserType.funcionario || 0} empréstimos
-                </Badge>
+                <span className="text-sm font-bold flex items-center gap-2 uppercase"><Briefcase className="h-4 w-4" /> Funcionários</span>
+                <span className="font-mono text-sm font-bold bg-orange-100 px-2 py-1 border border-black">{loansByUserType.funcionario || 0}</span>
               </div>
-              <Progress value={((loansByUserType.funcionario || 0) / totalLoansInPeriod) * 100} className="h-2" />
+              <div className="h-3 w-full bg-gray-100 border border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] overflow-hidden">
+                <div className="h-full bg-orange-500" style={{ width: `${Math.min(((loansByUserType.funcionario || 0) / totalLoansInPeriod) * 100, 100)}%` }} />
+              </div>
             </div>
           </CardContent>
-        </GlassCard>
+        </div>
       </div>
     </>
   );

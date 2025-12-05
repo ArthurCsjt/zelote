@@ -121,69 +121,76 @@ export function UserEditDialog({ open, onOpenChange, user, onSuccess }: UserEdit
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Icon className="h-5 w-5 text-primary" />
-            Editar {user.tipo}
+      <DialogContent className="sm:max-w-[500px] border-4 border-black dark:border-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.2)] rounded-none sm:rounded-none bg-white dark:bg-zinc-900 p-0 overflow-hidden">
+        <DialogHeader className="bg-yellow-300 dark:bg-yellow-900/50 p-6 border-b-4 border-black dark:border-white">
+          <DialogTitle className="flex items-center gap-3 text-xl font-black uppercase text-black dark:text-white">
+            <div className="p-1.5 border-2 border-black dark:border-white bg-white dark:bg-black">
+              <Icon className="h-5 w-5 text-black dark:text-white" />
+            </div>
+            Editar <span className="bg-white dark:bg-black px-2 border-2 border-black dark:border-white">{user.tipo}</span>
           </DialogTitle>
-          <DialogDescription>
-            Atualize os dados de {user.nome_completo}.
+          <DialogDescription className="text-black/70 dark:text-white/70 font-bold text-xs uppercase tracking-wide mt-2">
+            Atualize os dados de <span className="font-black text-black dark:text-white">{user.nome_completo}</span>.
           </DialogDescription>
         </DialogHeader>
-        
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="nome_completo">Nome Completo *</Label>
-            <Input 
-              id="nome_completo" 
-              value={formData.nome_completo || ''} 
-              onChange={handleInputChange('nome_completo')} 
-              required 
-            />
+
+        <form onSubmit={handleSubmit} className="p-6 space-y-6 bg-white dark:bg-zinc-900">
+          <div className="space-y-4 p-4 border-2 border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-white dark:bg-zinc-950">
+            <div className="space-y-1.5">
+              <Label htmlFor="nome_completo" className="text-xs font-bold uppercase dark:text-white">Nome Completo *</Label>
+              <Input
+                id="nome_completo"
+                value={formData.nome_completo || ''}
+                onChange={handleInputChange('nome_completo')}
+                required
+                className="h-10 border-2 border-black dark:border-white rounded-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] focus-visible:ring-0 uppercase placeholder:normal-case font-bold"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="email" className="text-xs font-bold uppercase dark:text-white">E-mail *</Label>
+              <Input
+                id="email"
+                type="email"
+                value={formData.email || ''}
+                onChange={handleInputChange('email')}
+                required
+                className={`h-10 border-2 border-black dark:border-white rounded-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] focus-visible:ring-0 font-mono text-sm ${emailError ? 'border-red-600 bg-red-50' : ''}`}
+              />
+              {emailError && <p className="text-xs font-bold uppercase text-red-600 border border-red-600 p-1 bg-red-100 w-fit">{emailError}</p>}
+            </div>
+
+            {user.tipo === 'Aluno' && (
+              <>
+                <div className="space-y-1.5">
+                  <Label htmlFor="ra" className="text-xs font-bold uppercase dark:text-white">RA (Registro do Aluno)</Label>
+                  <Input
+                    id="ra"
+                    value={formData.ra || ''}
+                    onChange={handleInputChange('ra')}
+                    placeholder="RA"
+                    className="h-10 border-2 border-black dark:border-white rounded-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] focus-visible:ring-0 uppercase placeholder:normal-case"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="turma" className="text-xs font-bold uppercase dark:text-white">Turma</Label>
+                  <Input
+                    id="turma"
+                    value={formData.turma || ''}
+                    onChange={handleInputChange('turma')}
+                    placeholder="TURMA"
+                    className="h-10 border-2 border-black dark:border-white rounded-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] focus-visible:ring-0 uppercase placeholder:normal-case"
+                  />
+                </div>
+              </>
+            )}
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="email">E-mail *</Label>
-            <Input 
-              id="email" 
-              type="email" 
-              value={formData.email || ''} 
-              onChange={handleInputChange('email')} 
-              required 
-              className={emailError ? 'border-destructive' : ''}
-            />
-            {emailError && <p className="text-sm text-destructive">{emailError}</p>}
-          </div>
-
-          {user.tipo === 'Aluno' && (
-            <>
-              <div className="space-y-2">
-                <Label htmlFor="ra">RA (Registro do Aluno)</Label>
-                <Input 
-                  id="ra" 
-                  value={formData.ra || ''} 
-                  onChange={handleInputChange('ra')} 
-                  placeholder="RA"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="turma">Turma</Label>
-                <Input 
-                  id="turma" 
-                  value={formData.turma || ''} 
-                  onChange={handleInputChange('turma')} 
-                  placeholder="Turma"
-                />
-              </div>
-            </>
-          )}
-
-          <DialogFooter className="pt-4">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
+          <DialogFooter className="pt-2 gap-3 sm:gap-3">
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={loading} className="w-full sm:w-auto h-10 border-2 border-black dark:border-white rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:shadow-none bg-white font-bold uppercase text-xs">
               Cancelar
             </Button>
-            <Button type="submit" disabled={loading || !!emailError}>
+            <Button type="submit" disabled={loading || !!emailError} className="w-full sm:w-auto h-10 border-2 border-black dark:border-white rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:shadow-none bg-black hover:bg-gray-800 text-white font-bold uppercase text-xs">
               {loading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
