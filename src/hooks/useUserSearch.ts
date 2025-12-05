@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import type { UserType } from '@/types/database';
+import logger from '@/utils/logger';
 
 export interface UserSearchResult {
   id: string;
@@ -73,7 +74,7 @@ export function useUserSearch() {
 
       setUsers(allUsers);
     } catch (e: any) {
-      console.error('Erro no useUserSearch:', e);
+      logger.error('Erro no useUserSearch', e);
       toast({
         title: 'Erro de Sincronização',
         description: 'Não foi possível carregar a lista de usuários para autocompletar.',

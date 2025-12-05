@@ -3,6 +3,7 @@ import { useDatabase } from '@/hooks/useDatabase';
 import { toast } from '@/hooks/use-toast';
 import type { LoanHistoryItem, Chromebook } from '@/types/database';
 import { format, startOfDay, isToday, isWithinInterval, subDays, differenceInMinutes, startOfWeek, endOfWeek, startOfMonth, endOfMonth, addDays, endOfDay } from "date-fns";
+import logger from '@/utils/logger';
 
 // O PeriodView agora só terá 'history' e 'reports'
 export type PeriodView = 'history' | 'reports';
@@ -34,8 +35,8 @@ interface DashboardStats {
 export function useDashboardData(
   startDate: Date | null, // NOVO: Data de início explícita
   endDate: Date | null,   // NOVO: Data de fim explícita
-  startHour: number = 7, 
-  endHour: number = 19 
+  startHour: number = 7,
+  endHour: number = 19
 ) {
   const { getLoanHistory, getChromebooks } = useDatabase();
   const [history, setHistory] = useState<LoanHistoryItem[]>([]);
@@ -53,7 +54,7 @@ export function useDashboardData(
       setHistory(historyData);
       setChromebooks(chromebooksData);
     } catch (error) {
-      console.error('Erro ao buscar dados do dashboard:', error);
+      logger.error('Erro ao buscar dados do dashboard', error);
       toast({ title: "Erro de Sincronização", description: "Falha ao carregar dados do inventário/empréstimos.", variant: "destructive" });
     } finally {
       setLoading(false);
@@ -67,16 +68,16 @@ export function useDashboardData(
   // --- Filtering by Period ---
   const { filteredLoans, filteredReturns } = useMemo(() => {
     if (!startDate || !endDate) {
-        // Se não houver datas definidas, retorna o histórico completo (comportamento padrão para 'history' view)
-        return { filteredLoans: history, filteredReturns: history.filter(loan => loan.return_date) };
+      // Se não houver datas definidas, retorna o histórico completo (comportamento padrão para 'history' view)
+      return { filteredLoans: history, filteredReturns: history.filter(loan => loan.return_date) };
     }
-    
+
     const loans = history.filter(loan => {
-        const loanDate = new Date(loan.loan_date);
-        // Filtra empréstimos que começaram dentro do intervalo [startDate, endDate]
-        return isWithinInterval(loanDate, { start: startDate, end: endDate });
+      const loanDate = new Date(loan.loan_date);
+      // Filtra empréstimos que começaram dentro do intervalo [startDate, endDate]
+      return isWithinInterval(loanDate, { start: startDate, end: endDate });
     });
-    
+
     const returns = loans.filter(loan => loan.return_date);
 
     return { filteredLoans: loans, filteredReturns: returns };
@@ -85,29 +86,29 @@ export function useDashboardData(
   // --- Calculations ---
   const stats = useMemo((): DashboardStats => {
     const totalChromebooks = chromebooks.length;
-    
+
     // Chromebooks que podem ser emprestados (exclui 'fixo' e 'fora_uso')
-    const availableForLoan = chromebooks.filter(cb => 
+    const availableForLoan = chromebooks.filter(cb =>
       cb.status !== 'fixo' && cb.status !== 'fora_uso'
     ).length;
-    
+
     const availableChromebooks = chromebooks.filter(cb => cb.status === 'disponivel').length;
     const activeLoans = history.filter(loan => !loan.return_date);
     const totalActive = activeLoans.length;
 
     // Taxa de Uso do Inventário (ativos / total de móveis)
     const totalInventoryUsageRate = availableForLoan > 0 ? (totalActive / availableForLoan) * 100 : 0;
-    
+
     // Cor semafórica para Taxa de Uso (Tempo Real)
-    const usageRateColor: 'green' | 'yellow' | 'red' = 
-        totalInventoryUsageRate < 60 ? 'green' : 
+    const usageRateColor: 'green' | 'yellow' | 'red' =
+      totalInventoryUsageRate < 60 ? 'green' :
         totalInventoryUsageRate < 85 ? 'yellow' : 'red';
 
 
     // Estatísticas de Devolução
     const completedLoans = filteredLoans.filter(loan => loan.return_date);
     const completionRate = filteredLoans.length > 0 ? completedLoans.length / filteredLoans.length * 100 : 0;
-    
+
     const averageUsageTime = completedLoans.reduce((acc, loan) => {
       if (loan.return_date) {
         const duration = differenceInMinutes(new Date(loan.return_date), new Date(loan.loan_date));
@@ -145,78 +146,78 @@ export function useDashboardData(
       name: type.charAt(0).toUpperCase() + type.slice(1),
       minutos: Math.round(data.total / data.count)
     }));
-    
+
     // CÁLCULO: Taxa de Ocupação Máxima no Período Filtrado (startHour a endHour)
     let maxOccupancyRate = 0;
-    
-    if (availableForLoan > 0 && startDate && endDate && startHour <= endHour) {
-        let maxConcurrentLoans = 0;
-        
-        // 1. Definir o intervalo de tempo para checagem
-        const checkPoints: Date[] = [];
-        let currentDate = startOfDay(startDate);
-        const endLimitDate = endOfDay(endDate);
 
-        while (currentDate <= endLimitDate) {
-            for (let hour = startHour; hour <= endHour; hour++) {
-                const checkTime = new Date(currentDate);
-                checkTime.setHours(hour, 30, 0, 0); // Checa no meio da hora
-                
-                // Garante que o ponto de checagem esteja dentro do intervalo [startDate, endDate]
-                if (checkTime >= startDate && checkTime <= endDate) {
-                    checkPoints.push(checkTime);
-                }
-            }
-            currentDate = addDays(currentDate, 1);
+    if (availableForLoan > 0 && startDate && endDate && startHour <= endHour) {
+      let maxConcurrentLoans = 0;
+
+      // 1. Definir o intervalo de tempo para checagem
+      const checkPoints: Date[] = [];
+      let currentDate = startOfDay(startDate);
+      const endLimitDate = endOfDay(endDate);
+
+      while (currentDate <= endLimitDate) {
+        for (let hour = startHour; hour <= endHour; hour++) {
+          const checkTime = new Date(currentDate);
+          checkTime.setHours(hour, 30, 0, 0); // Checa no meio da hora
+
+          // Garante que o ponto de checagem esteja dentro do intervalo [startDate, endDate]
+          if (checkTime >= startDate && checkTime <= endDate) {
+            checkPoints.push(checkTime);
+          }
         }
-        
-        // 2. Calcular o pico de empréstimos ativos em cada ponto de checagem
-        checkPoints.forEach(checkTime => {
-            let concurrentLoans = 0;
-            
-            history.forEach(loan => {
-                const loanStart = new Date(loan.loan_date);
-                // Se o empréstimo não foi devolvido, consideramos que ele está ativo até agora
-                const loanEnd = loan.return_date ? new Date(loan.return_date) : new Date(); 
-                
-                // Verifica se o empréstimo estava ativo no checkTime
-                if (checkTime >= loanStart && checkTime <= loanEnd) {
-                    concurrentLoans++;
-                }
-            });
-            
-            if (concurrentLoans > maxConcurrentLoans) {
-                maxConcurrentLoans = concurrentLoans;
-            }
+        currentDate = addDays(currentDate, 1);
+      }
+
+      // 2. Calcular o pico de empréstimos ativos em cada ponto de checagem
+      checkPoints.forEach(checkTime => {
+        let concurrentLoans = 0;
+
+        history.forEach(loan => {
+          const loanStart = new Date(loan.loan_date);
+          // Se o empréstimo não foi devolvido, consideramos que ele está ativo até agora
+          const loanEnd = loan.return_date ? new Date(loan.return_date) : new Date();
+
+          // Verifica se o empréstimo estava ativo no checkTime
+          if (checkTime >= loanStart && checkTime <= loanEnd) {
+            concurrentLoans++;
+          }
         });
-        
-        maxOccupancyRate = (maxConcurrentLoans / availableForLoan) * 100;
+
+        if (concurrentLoans > maxConcurrentLoans) {
+          maxConcurrentLoans = concurrentLoans;
+        }
+      });
+
+      maxOccupancyRate = (maxConcurrentLoans / availableForLoan) * 100;
     }
-    
+
     // Cor semafórica para Taxa de Ocupação (Pico)
-    const occupancyRateColor: 'green' | 'yellow' | 'red' = 
-        maxOccupancyRate < 60 ? 'green' : 
+    const occupancyRateColor: 'green' | 'yellow' | 'red' =
+      maxOccupancyRate < 60 ? 'green' :
         maxOccupancyRate < 85 ? 'yellow' : 'red';
-    
+
     // CÁLCULO: Top Contextos de Empréstimo (Solicitante + Finalidade)
     const contextCounts = filteredLoans.reduce((acc, loan) => {
-        const contextKey = `${loan.student_email}:${loan.purpose}`;
-        if (!acc[contextKey]) {
-            acc[contextKey] = {
-                context: `${loan.student_name} (${loan.purpose})`,
-                name: loan.student_name,
-                purpose: loan.purpose,
-                count: 0,
-                userType: loan.user_type,
-            };
-        }
-        acc[contextKey].count += 1;
-        return acc;
+      const contextKey = `${loan.student_email}:${loan.purpose}`;
+      if (!acc[contextKey]) {
+        acc[contextKey] = {
+          context: `${loan.student_name} (${loan.purpose})`,
+          name: loan.student_name,
+          purpose: loan.purpose,
+          count: 0,
+          userType: loan.user_type,
+        };
+      }
+      acc[contextKey].count += 1;
+      return acc;
     }, {} as Record<string, TopLoanContext>);
-    
+
     const topLoanContexts = Object.values(contextCounts)
-        .sort((a, b) => b.count - a.count)
-        .slice(0, 10); // ALTERADO DE 5 PARA 10
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 10); // ALTERADO DE 5 PARA 10
 
 
     return {
@@ -239,108 +240,108 @@ export function useDashboardData(
   // --- Period Data for Charts (Hourly/Daily) ---
   const periodChartData = useMemo(() => {
     if (!startDate || !endDate) return [];
-    
-    const availableForLoan = chromebooks.filter(cb => 
+
+    const availableForLoan = chromebooks.filter(cb =>
       cb.status !== 'fixo' && cb.status !== 'fora_uso'
     ).length;
-    
+
     const diffDays = differenceInMinutes(endDate, startDate) / (60 * 24);
-    
+
     // Se o período for menor ou igual a 2 dias, mostramos por hora
     if (diffDays <= 2) {
-        const data: any[] = [];
-        let currentHour = new Date(startDate);
-        currentHour.setMinutes(0, 0, 0);
-        
-        const endLimit = new Date(endDate);
-        endLimit.setHours(endHour, 59, 59, 999);
+      const data: any[] = [];
+      let currentHour = new Date(startDate);
+      currentHour.setMinutes(0, 0, 0);
 
-        while (currentHour <= endLimit) {
-            const hour = currentHour.getHours();
-            const day = format(currentHour, 'dd/MM');
-            const label = `${day} ${hour}h`;
-            
-            // Filtra empréstimos que começaram na hora atual
-            const hourLoans = history.filter(loan => {
-                const loanDate = new Date(loan.loan_date);
-                return isWithinInterval(loanDate, { start: currentHour, end: new Date(currentHour.getTime() + 3600000) });
-            });
-            
-            // CÁLCULO DE OCUPAÇÃO HORÁRIA
-            let concurrentLoans = 0;
-            const checkTime = new Date(currentHour);
-            checkTime.setMinutes(30); 
-            
-            history.forEach(loan => {
-                const loanStart = new Date(loan.loan_date);
-                const loanEnd = loan.return_date ? new Date(loan.return_date) : new Date();
-                
-                if (checkTime >= loanStart && checkTime <= loanEnd) {
-                    concurrentLoans++;
-                }
-            });
-            
-            const occupancy = availableForLoan > 0 ? (concurrentLoans / availableForLoan) * 100 : 0;
+      const endLimit = new Date(endDate);
+      endLimit.setHours(endHour, 59, 59, 999);
 
-            data.push({
-                label: label,
-                empréstimos: hourLoans.length,
-                devoluções: hourLoans.filter(loan => loan.return_date).length,
-                ocupação: Math.min(100, occupancy),
-            });
-            
-            // Avança para a próxima hora
-            currentHour = new Date(currentHour.getTime() + 3600000);
-            
-            // Se ultrapassarmos o endLimit, paramos
-            if (currentHour > endLimit) break;
-        }
-        return data;
-    } 
-    
+      while (currentHour <= endLimit) {
+        const hour = currentHour.getHours();
+        const day = format(currentHour, 'dd/MM');
+        const label = `${day} ${hour}h`;
+
+        // Filtra empréstimos que começaram na hora atual
+        const hourLoans = history.filter(loan => {
+          const loanDate = new Date(loan.loan_date);
+          return isWithinInterval(loanDate, { start: currentHour, end: new Date(currentHour.getTime() + 3600000) });
+        });
+
+        // CÁLCULO DE OCUPAÇÃO HORÁRIA
+        let concurrentLoans = 0;
+        const checkTime = new Date(currentHour);
+        checkTime.setMinutes(30);
+
+        history.forEach(loan => {
+          const loanStart = new Date(loan.loan_date);
+          const loanEnd = loan.return_date ? new Date(loan.return_date) : new Date();
+
+          if (checkTime >= loanStart && checkTime <= loanEnd) {
+            concurrentLoans++;
+          }
+        });
+
+        const occupancy = availableForLoan > 0 ? (concurrentLoans / availableForLoan) * 100 : 0;
+
+        data.push({
+          label: label,
+          empréstimos: hourLoans.length,
+          devoluções: hourLoans.filter(loan => loan.return_date).length,
+          ocupação: Math.min(100, occupancy),
+        });
+
+        // Avança para a próxima hora
+        currentHour = new Date(currentHour.getTime() + 3600000);
+
+        // Se ultrapassarmos o endLimit, paramos
+        if (currentHour > endLimit) break;
+      }
+      return data;
+    }
+
     // Se o período for maior que 2 dias, mostramos por dia
     else {
-        const data: any[] = [];
-        let currentDate = startOfDay(startDate);
-        const endLimit = startOfDay(endDate);
+      const data: any[] = [];
+      let currentDate = startOfDay(startDate);
+      const endLimit = startOfDay(endDate);
 
-        while (currentDate <= endLimit) {
-            const dailyLoans = history.filter(loan => isWithinInterval(new Date(loan.loan_date), {
-                start: startOfDay(currentDate),
-                end: new Date(currentDate.setHours(23, 59, 59, 999))
-            }));
-            
-            // CÁLCULO DE OCUPAÇÃO DIÁRIA MÁXIMA
-            let maxDailyOccupancy = 0;
-            if (availableForLoan > 0) {
-                for (let h = startHour; h <= endHour; h++) {
-                    let concurrentLoans = 0;
-                    const checkTime = new Date(currentDate);
-                    checkTime.setHours(h, 30, 0, 0);
-                    
-                    history.forEach(loan => {
-                        const loanStart = new Date(loan.loan_date);
-                        const loanEnd = loan.return_date ? new Date(loan.return_date) : new Date();
-                        
-                        if (checkTime >= loanStart && checkTime <= loanEnd) {
-                            concurrentLoans++;
-                        }
-                    });
-                    maxDailyOccupancy = Math.max(maxDailyOccupancy, concurrentLoans);
-                }
-            }
-            const occupancyRate = availableForLoan > 0 ? (maxDailyOccupancy / availableForLoan) * 100 : 0;
+      while (currentDate <= endLimit) {
+        const dailyLoans = history.filter(loan => isWithinInterval(new Date(loan.loan_date), {
+          start: startOfDay(currentDate),
+          end: new Date(currentDate.setHours(23, 59, 59, 999))
+        }));
 
-            data.push({
-                label: format(currentDate, "dd/MM"),
-                empréstimos: dailyLoans.length,
-                devoluções: dailyLoans.filter(loan => loan.return_date).length,
-                ocupação: Math.min(100, occupancyRate),
+        // CÁLCULO DE OCUPAÇÃO DIÁRIA MÁXIMA
+        let maxDailyOccupancy = 0;
+        if (availableForLoan > 0) {
+          for (let h = startHour; h <= endHour; h++) {
+            let concurrentLoans = 0;
+            const checkTime = new Date(currentDate);
+            checkTime.setHours(h, 30, 0, 0);
+
+            history.forEach(loan => {
+              const loanStart = new Date(loan.loan_date);
+              const loanEnd = loan.return_date ? new Date(loan.return_date) : new Date();
+
+              if (checkTime >= loanStart && checkTime <= loanEnd) {
+                concurrentLoans++;
+              }
             });
-            
-            currentDate = addDays(currentDate, 1);
+            maxDailyOccupancy = Math.max(maxDailyOccupancy, concurrentLoans);
+          }
         }
-        return data;
+        const occupancyRate = availableForLoan > 0 ? (maxDailyOccupancy / availableForLoan) * 100 : 0;
+
+        data.push({
+          label: format(currentDate, "dd/MM"),
+          empréstimos: dailyLoans.length,
+          devoluções: dailyLoans.filter(loan => loan.return_date).length,
+          ocupação: Math.min(100, occupancyRate),
+        });
+
+        currentDate = addDays(currentDate, 1);
+      }
+      return data;
     }
   }, [chromebooks, history, startDate, endDate, startHour, endHour]);
 

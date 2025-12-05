@@ -2,12 +2,12 @@ import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
-import type { 
-  Chromebook, 
-  Loan, 
-  Return, 
-  LoanFormData, 
-  ReturnFormData, 
+import type {
+  Chromebook,
+  Loan,
+  Return,
+  LoanFormData,
+  ReturnFormData,
   LoanHistoryItem,
   ChromebookData,
   UserType,
@@ -16,7 +16,7 @@ import type {
 import { format } from 'date-fns'; // Importando format para formatar a data
 import logger from '@/utils/logger';
 import { validateEmailDomain, EMAIL_DOMAINS } from '@/utils/emailValidation';
-import { isNetworkError, getSupabaseErrorMessage, handleSupabaseError } from '@/utils/networkErrors';
+import { isNetworkError, getSupabaseErrorMessage, handleSupabaseError, retryWithBackoff } from '@/utils/networkErrors';
 
 // Types for new entities
 interface StudentData {
@@ -54,28 +54,28 @@ export interface Reservation extends ReservationData {
 
 // Função auxiliar para mapear ChromebookData (camelCase) para o formato do DB (snake_case)
 const mapChromebookDataToDb = (data: Partial<ChromebookData>, userId: string | undefined) => {
-    const payload: any = {
-        chromebook_id: data.chromebookId,
-        model: data.model,
-        serial_number: data.serialNumber,
-        patrimony_number: data.patrimonyNumber,
-        manufacturer: data.manufacturer,
-        status: data.status,
-        condition: data.condition,
-        location: data.location,
-        classroom: data.classroom,
-        is_deprovisioned: data.is_deprovisioned ?? false,
-    };
-    
-    // Adiciona created_by apenas se estiver criando
-    if (userId && !data.id) {
-        payload.created_by = userId;
-    }
-    
-    // Remove chaves com valor undefined para evitar erros de Supabase
-    Object.keys(payload).forEach(key => payload[key] === undefined && delete payload[key]);
-    
-    return payload;
+  const payload: any = {
+    chromebook_id: data.chromebookId,
+    model: data.model,
+    serial_number: data.serialNumber,
+    patrimony_number: data.patrimonyNumber,
+    manufacturer: data.manufacturer,
+    status: data.status,
+    condition: data.condition,
+    location: data.location,
+    classroom: data.classroom,
+    is_deprovisioned: data.is_deprovisioned ?? false,
+  };
+
+  // Adiciona created_by apenas se estiver criando
+  if (userId && !data.id) {
+    payload.created_by = userId;
+  }
+
+  // Remove chaves com valor undefined para evitar erros de Supabase
+  Object.keys(payload).forEach(key => payload[key] === undefined && delete payload[key]);
+
+  return payload;
 };
 
 
@@ -84,7 +84,7 @@ export const useDatabase = () => {
   const [loading, setLoading] = useState(false);
 
   // --- CHROMEBOOK OPERATIONS ---
-  
+
   const createChromebook = useCallback(async (data: ChromebookData): Promise<Chromebook | null> => {
     if (!user) {
       toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
@@ -106,10 +106,10 @@ export const useDatabase = () => {
       // REMOVIDO: toast({ title: "Sucesso", description: "Chromebook cadastrado com sucesso" });
       return result as Chromebook;
     } catch (error: any) {
-      toast({ 
-        title: "Erro ao cadastrar Chromebook", 
-        description: error.message.includes('duplicate key') ? "ID, Série ou Patrimônio já cadastrado." : error.message, 
-        variant: "destructive" 
+      toast({
+        title: "Erro ao cadastrar Chromebook",
+        description: error.message.includes('duplicate key') ? "ID, Série ou Patrimônio já cadastrado." : error.message,
+        variant: "destructive"
       });
       return null;
     } finally {
@@ -120,21 +120,34 @@ export const useDatabase = () => {
   const getChromebooks = useCallback(async (): Promise<Chromebook[]> => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('chromebooks')
-        .select('*')
-        .order('chromebook_id', { ascending: false }); // ALTERADO PARA ORDENAR POR ID DECRESCENTE
+      // Retry automático para erros de rede
+      const result = await retryWithBackoff(async () => {
+        const { data, error } = await supabase
+          .from('chromebooks')
+          .select('*')
+          .order('chromebook_id', { ascending: false });
 
-      if (error) throw error;
-      return (data || []) as Chromebook[];
+        if (error) throw error;
+        return data || [];
+      }, 3, 1000); // 3 tentativas, 1s de delay base
+
+      return result as Chromebook[];
     } catch (error: any) {
-      toast({ title: "Erro de Sincronização", description: "Falha ao carregar inventário.", variant: "destructive" });
+      const errorInfo = handleSupabaseError(error);
+
+      toast({
+        title: errorInfo.isNetwork ? "Erro de Conexão" : "Erro de Sincronização",
+        description: errorInfo.message,
+        variant: "destructive"
+      });
+
+      logger.error('Erro ao carregar chromebooks', error, { errorInfo });
       return [];
     } finally {
       setLoading(false);
     }
   }, []);
-  
+
   // NOVO: Função para buscar Chromebooks por status
   const getChromebooksByStatus = useCallback(async (status: Chromebook['status']): Promise<Chromebook[]> => {
     setLoading(true);
@@ -173,14 +186,14 @@ export const useDatabase = () => {
         .eq('id', id);
 
       if (error) throw error;
-      
+
       // REMOVIDO: toast({ title: "Sucesso", description: "Chromebook atualizado com sucesso" });
       return true;
     } catch (error: any) {
-      toast({ 
-        title: "Erro ao atualizar Chromebook", 
-        description: error.message.includes('duplicate key') ? "ID, Série ou Patrimônio já cadastrado." : error.message, 
-        variant: "destructive" 
+      toast({
+        title: "Erro ao atualizar Chromebook",
+        description: error.message.includes('duplicate key') ? "ID, Série ou Patrimônio já cadastrado." : error.message,
+        variant: "destructive"
       });
       return false;
     } finally {
@@ -202,7 +215,7 @@ export const useDatabase = () => {
         .eq('id', id);
 
       if (error) throw error;
-      
+
       toast({ title: "Sucesso", description: "Chromebook excluído com sucesso", variant: "success" });
       return true;
     } catch (error: any) {
@@ -212,7 +225,7 @@ export const useDatabase = () => {
       setLoading(false);
     }
   }, [user]);
-  
+
   const syncChromebookStatus = useCallback(async (chromebookId: string): Promise<string | null> => {
     if (!user) {
       toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
@@ -220,15 +233,26 @@ export const useDatabase = () => {
     }
     setLoading(true);
     try {
-      const { data, error } = await supabase.rpc('sync_chromebook_status', { cb_id: chromebookId });
-      
-      if (error) throw error;
-      
+      // Retry automático para erros de rede
+      const data = await retryWithBackoff(async () => {
+        const { data, error } = await supabase.rpc('sync_chromebook_status', { cb_id: chromebookId });
+        if (error) throw error;
+        return data;
+      }, 2, 500); // 2 tentativas, 500ms de delay base
+
       // MANTIDO: Este toast é específico e útil para o painel de alertas.
       toast({ title: "Sincronização Concluída", description: data, variant: "info" });
       return data;
     } catch (error: any) {
-      toast({ title: "Erro de Sincronização", description: error.message, variant: "destructive" });
+      const errorInfo = handleSupabaseError(error);
+
+      toast({
+        title: errorInfo.isNetwork ? "Erro de Conexão" : "Erro de Sincronização",
+        description: errorInfo.message,
+        variant: "destructive"
+      });
+
+      logger.error('Erro ao sincronizar status do chromebook', error, { chromebookId, errorInfo });
       return null;
     } finally {
       setLoading(false);
@@ -274,7 +298,7 @@ export const useDatabase = () => {
         .single();
 
       if (error) throw error;
-      
+
       // REMOVIDO: Toast de sucesso genérico. O componente chamador fará o toast de sucesso em lote.
       return result;
     } catch (error: any) {
@@ -284,7 +308,7 @@ export const useDatabase = () => {
       setLoading(false);
     }
   }, [user]);
-  
+
   const bulkCreateLoans = useCallback(async (loanDataList: LoanFormData[]): Promise<{ successCount: number, errorCount: number }> => {
     if (!user) {
       toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
@@ -294,7 +318,7 @@ export const useDatabase = () => {
     setLoading(true);
     let successCount = 0;
     let errorCount = 0;
-    
+
     try {
       const chromebookIds = loanDataList.map(d => d.chromebookId);
       const { data: chromebooks, error: cbError } = await supabase
@@ -311,14 +335,14 @@ export const useDatabase = () => {
 
       for (const data of loanDataList) {
         const chromebook = chromebookMap.get(data.chromebookId);
-        
+
         if (!chromebook || chromebook.status !== 'disponivel') {
           errorCount++;
           // Toast específico para o item que falhou
-          toast({ 
-            title: "Erro no Lote", 
-            description: `Chromebook ${data.chromebookId} não encontrado ou não está disponível.`, 
-            variant: "destructive" 
+          toast({
+            title: "Erro no Lote",
+            description: `Chromebook ${data.chromebookId} não encontrado ou não está disponível.`,
+            variant: "destructive"
           });
           continue;
         }
@@ -335,7 +359,7 @@ export const useDatabase = () => {
           created_by: user.id
         });
       }
-      
+
       if (loansToInsert.length > 0) {
         const { error: insertError } = await supabase
           .from('loans')
@@ -349,10 +373,10 @@ export const useDatabase = () => {
         }
       }
     } catch (e: any) {
-      toast({ 
-        title: "Erro de Processamento", 
-        description: e.message, 
-        variant: "destructive" 
+      toast({
+        title: "Erro de Processamento",
+        description: e.message,
+        variant: "destructive"
       });
       errorCount = loanDataList.length - successCount;
     } finally {
@@ -428,22 +452,22 @@ export const useDatabase = () => {
         .single();
 
       if (error) throw error;
-      
+
       return result;
     } catch (error: any) {
       throw error;
     }
   }, [user]);
-  
+
   const forceReturnLoan = useCallback(async (loan: LoanHistoryItem): Promise<boolean> => {
     if (!user) {
       toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
       return false;
     }
-    
+
     if (!loan.id) {
-        toast({ title: "Erro de Dados", description: "ID do empréstimo não encontrado. Não é possível forçar a devolução.", variant: "destructive" });
-        return false;
+      toast({ title: "Erro de Dados", description: "ID do empréstimo não encontrado. Não é possível forçar a devolução.", variant: "destructive" });
+      return false;
     }
 
     setLoading(true);
@@ -455,7 +479,7 @@ export const useDatabase = () => {
         userType: 'funcionario',
         notes: `Devolução forçada pelo administrador para corrigir inconsistência. Empréstimo original para: ${loan.student_name} (${loan.student_email}).`
       };
-      
+
       const { error: returnError } = await supabase
         .from('returns')
         .insert({
@@ -469,23 +493,23 @@ export const useDatabase = () => {
         });
 
       if (returnError) throw returnError;
-      
+
       const { data: chromebookData, error: cbError } = await supabase
         .from('chromebooks')
         .select('chromebook_id')
         .eq('id', loan.chromebook_id)
         .single();
-        
+
       if (cbError || !chromebookData) {
-          logger.warn(`Chromebook ID ${loan.chromebook_id} não encontrado para sincronização após devolução forçada.`);
+        logger.warn(`Chromebook ID ${loan.chromebook_id} não encontrado para sincronização após devolução forçada.`);
       } else {
-          await supabase.rpc('sync_chromebook_status', { cb_id: chromebookData.chromebook_id });
+        await supabase.rpc('sync_chromebook_status', { cb_id: chromebookData.chromebook_id });
       }
 
-      toast({ 
-        title: "Devolução Forçada", 
-        description: `Empréstimo do Chromebook ${loan.chromebook_id} marcado como devolvido.`, 
-        variant: "success" 
+      toast({
+        title: "Devolução Forçada",
+        description: `Empréstimo do Chromebook ${loan.chromebook_id} marcado como devolvido.`,
+        variant: "success"
       });
       return true;
     } catch (error: any) {
@@ -513,16 +537,16 @@ export const useDatabase = () => {
       }
 
       const result = await createReturn(activeLoan.id, data);
-      
+
       if (result) {
         // Sincroniza o status do Chromebook após a devolução
         await syncChromebookStatus(chromebookId);
-        
+
         // TOAST DE SUCESSO ESPECÍFICO PARA DEVOLUÇÃO
-        toast({ 
-          title: "Devolução registrada", 
-          description: `Chromebook ${chromebookId} devolvido com sucesso.`, 
-          variant: "success" 
+        toast({
+          title: "Devolução registrada",
+          description: `Chromebook ${chromebookId} devolvido com sucesso.`,
+          variant: "success"
         });
         return true;
       }
@@ -534,7 +558,7 @@ export const useDatabase = () => {
       setLoading(false);
     }
   }, [createReturn, syncChromebookStatus]);
-  
+
   const bulkReturnChromebooks = useCallback(async (chromebookIds: string[], data: ReturnFormData & { notes?: string }): Promise<{ successCount: number, errorCount: number }> => {
     if (!user) {
       toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
@@ -556,19 +580,19 @@ export const useDatabase = () => {
       if (loanError) {
         throw new Error("Falha ao buscar empréstimos ativos.");
       }
-      
+
       const loanMap = new Map(activeLoans.map(loan => [loan.chromebook_id, loan.id]));
       const returnsToInsert = [];
 
       for (const chromebookId of chromebookIds) {
         const loanId = loanMap.get(chromebookId);
-        
+
         if (!loanId) {
           errorCount++;
-          toast({ 
-            title: "Erro no Lote", 
-            description: `Chromebook ${chromebookId} não possui um empréstimo ativo/atrasado registrado no sistema.`, 
-            variant: "destructive" 
+          toast({
+            title: "Erro no Lote",
+            description: `Chromebook ${chromebookId} não possui um empréstimo ativo/atrasado registrado no sistema.`,
+            variant: "destructive"
           });
           continue;
         }
@@ -583,7 +607,7 @@ export const useDatabase = () => {
           created_by: user.id
         });
       }
-      
+
       if (returnsToInsert.length > 0) {
         const { error: insertError } = await supabase
           .from('returns')
@@ -594,21 +618,21 @@ export const useDatabase = () => {
           throw new Error(`Falha ao inserir ${returnsToInsert.length} devoluções.`);
         } else {
           successCount = returnsToInsert.length;
-          
+
           // 2. Sincroniza o status de todos os Chromebooks devolvidos
           const successfullyReturnedIds = returnsToInsert.map(r => {
             const loan = activeLoans.find(l => l.id === r.loan_id);
             return loan?.chromebook_id;
           }).filter((id): id is string => !!id);
-          
+
           await Promise.all(successfullyReturnedIds.map(id => syncChromebookStatus(id)));
         }
       }
     } catch (e: any) {
-      toast({ 
-        title: "Erro de Processamento", 
-        description: e.message, 
-        variant: "destructive" 
+      toast({
+        title: "Erro de Processamento",
+        description: e.message,
+        variant: "destructive"
       });
       errorCount = chromebookIds.length - successCount;
     } finally {
@@ -630,8 +654,8 @@ export const useDatabase = () => {
 
     // Validação de domínio para aluno
     if (!validateEmailDomain(data.email, 'aluno')) {
-        toast({ title: "Erro de Validação", description: `Email de aluno deve terminar com ${EMAIL_DOMAINS.ALUNO}`, variant: "destructive" });
-        return null;
+      toast({ title: "Erro de Validação", description: `Email de aluno deve terminar com ${EMAIL_DOMAINS.ALUNO}`, variant: "destructive" });
+      return null;
     }
 
     setLoading(true);
@@ -660,7 +684,7 @@ export const useDatabase = () => {
       setLoading(false);
     }
   }, [user]);
-  
+
   const updateStudent = useCallback(async (id: string, data: Partial<StudentData>): Promise<boolean> => {
     if (!user) {
       toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
@@ -668,8 +692,8 @@ export const useDatabase = () => {
     }
     // Validação de domínio para aluno, se o email estiver sendo atualizado
     if (data.email && !validateEmailDomain(data.email, 'aluno')) {
-        toast({ title: "Erro de Validação", description: `Email de aluno deve terminar com ${EMAIL_DOMAINS.ALUNO}`, variant: "destructive" });
-        return false;
+      toast({ title: "Erro de Validação", description: `Email de aluno deve terminar com ${EMAIL_DOMAINS.ALUNO}`, variant: "destructive" });
+      return false;
     }
     setLoading(true);
     try {
@@ -704,8 +728,8 @@ export const useDatabase = () => {
 
     // Validação de domínio para professor
     if (!validateEmailDomain(data.email, 'professor')) {
-        toast({ title: "Erro de Validação", description: `Email de professor deve terminar com ${EMAIL_DOMAINS.PROFESSOR}`, variant: "destructive" });
-        return null;
+      toast({ title: "Erro de Validação", description: `Email de professor deve terminar com ${EMAIL_DOMAINS.PROFESSOR}`, variant: "destructive" });
+      return null;
     }
 
     setLoading(true);
@@ -733,7 +757,7 @@ export const useDatabase = () => {
       setLoading(false);
     }
   }, [user]);
-  
+
   const updateTeacher = useCallback(async (id: string, data: Partial<TeacherData>): Promise<boolean> => {
     if (!user) {
       toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
@@ -741,8 +765,8 @@ export const useDatabase = () => {
     }
     // Validação de domínio para professor, se o email estiver sendo atualizado
     if (data.email && !validateEmailDomain(data.email, 'professor')) {
-        toast({ title: "Erro de Validação", description: `Email de professor deve terminar com ${EMAIL_DOMAINS.PROFESSOR}`, variant: "destructive" });
-        return false;
+      toast({ title: "Erro de Validação", description: `Email de professor deve terminar com ${EMAIL_DOMAINS.PROFESSOR}`, variant: "destructive" });
+      return false;
     }
     setLoading(true);
     try {
@@ -777,8 +801,8 @@ export const useDatabase = () => {
 
     // Validação de domínio para funcionário
     if (!validateEmailDomain(data.email, 'funcionario')) {
-        toast({ title: "Erro de Validação", description: `Email de funcionário deve terminar com ${EMAIL_DOMAINS.FUNCIONARIO}`, variant: "destructive" });
-        return null;
+      toast({ title: "Erro de Validação", description: `Email de funcionário deve terminar com ${EMAIL_DOMAINS.FUNCIONARIO}`, variant: "destructive" });
+      return null;
     }
 
     setLoading(true);
@@ -805,7 +829,7 @@ export const useDatabase = () => {
       setLoading(false);
     }
   }, [user]);
-  
+
   const updateStaff = useCallback(async (id: string, data: Partial<StaffData>): Promise<boolean> => {
     if (!user) {
       toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
@@ -813,8 +837,8 @@ export const useDatabase = () => {
     }
     // Validação de domínio para funcionário, se o email estiver sendo atualizado
     if (data.email && !validateEmailDomain(data.email, 'funcionario')) {
-        toast({ title: "Erro de Validação", description: `Email de funcionário deve terminar com ${EMAIL_DOMAINS.FUNCIONARIO}`, variant: "destructive" });
-        return false;
+      toast({ title: "Erro de Validação", description: `Email de funcionário deve terminar com ${EMAIL_DOMAINS.FUNCIONARIO}`, variant: "destructive" });
+      return false;
     }
     setLoading(true);
     try {
@@ -851,7 +875,7 @@ export const useDatabase = () => {
       // Validação de domínio para todos os alunos no lote
       for (const student of students) {
         if (!validateEmailDomain(student.email, 'aluno')) {
-            throw new Error(`Email de aluno inválido: ${student.email}. Deve terminar com ${EMAIL_DOMAINS.ALUNO}`);
+          throw new Error(`Email de aluno inválido: ${student.email}. Deve terminar com ${EMAIL_DOMAINS.ALUNO}`);
         }
       }
       const { error } = await supabase
@@ -873,7 +897,7 @@ export const useDatabase = () => {
       setLoading(false);
     }
   }, [user]);
-  
+
   // NOVO: Bulk Insert Teachers
   const bulkInsertTeachers = useCallback(async (teachers: TeacherData[]): Promise<boolean> => {
     if (!user) {
@@ -886,17 +910,17 @@ export const useDatabase = () => {
       // Validação de domínio para todos os professores no lote
       for (const teacher of teachers) {
         if (!validateEmailDomain(teacher.email, 'professor')) {
-            throw new Error(`Email de professor inválido: ${teacher.email}. Deve terminar com ${EMAIL_DOMAINS.PROFESSOR}`);
+          throw new Error(`Email de professor inválido: ${teacher.email}. Deve terminar com ${EMAIL_DOMAINS.PROFESSOR}`);
         }
       }
-      
+
       // Mapeia para o formato do DB (nome_completo, email, materia)
       const teachersToInsert = teachers.map(t => ({
-          nome_completo: t.nome_completo,
-          email: t.email,
-          materia: t.materia || null,
+        nome_completo: t.nome_completo,
+        email: t.email,
+        materia: t.materia || null,
       }));
-      
+
       const { error } = await supabase
         .from('professores')
         .insert(teachersToInsert);
@@ -932,35 +956,35 @@ export const useDatabase = () => {
         .neq('id', '00000000-0000-0000-0000-000000000000');
 
       if (error) throw error;
-      
-      toast({ 
-        title: "Sucesso", 
+
+      toast({
+        title: "Sucesso",
         description: "Todos os alunos foram excluídos com sucesso.",
         variant: "success"
       });
       return true;
     } catch (error: any) {
       logger.error('Erro ao excluir alunos:', error);
-      toast({ 
-        title: "Erro", 
-        description: "Erro ao excluir os alunos do sistema.", 
-        variant: "destructive" 
+      toast({
+        title: "Erro",
+        description: "Erro ao excluir os alunos do sistema.",
+        variant: "destructive"
       });
       return false;
     } finally {
       setLoading(false);
     }
   }, [user]);
-  
+
   const deleteUserRecord = useCallback(async (id: string, userType: UserType): Promise<boolean> => {
     if (!user) {
       toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
       return false;
     }
 
-    const tableName = userType === 'aluno' ? 'alunos' : 
-                     userType === 'professor' ? 'professores' : 
-                     'funcionarios';
+    const tableName = userType === 'aluno' ? 'alunos' :
+      userType === 'professor' ? 'professores' :
+        'funcionarios';
 
     setLoading(true);
     try {
@@ -970,24 +994,24 @@ export const useDatabase = () => {
         .eq('id', id);
 
       if (error) throw error;
-      
+
       toast({ title: "Sucesso", description: `${userType.charAt(0).toUpperCase() + userType.slice(1)} excluído com sucesso.`, variant: "success" });
       return true;
     } catch (error: any) {
       logger.error(`Erro ao excluir ${userType}:`, error);
-      toast({ 
-        title: "Erro", 
-        description: `Falha ao excluir ${userType}: ${error.message}`, 
-        variant: "destructive" 
+      toast({
+        title: "Erro",
+        description: `Falha ao excluir ${userType}: ${error.message}`,
+        variant: "destructive"
       });
       return false;
     } finally {
       setLoading(false);
     }
   }, [user]);
-  
+
   // --- SCHEDULING OPERATIONS (NOVAS FUNÇÕES) ---
-  
+
   const getTotalAvailableChromebooks = useCallback(async (): Promise<number> => {
     try {
       // CORREÇÃO: Contar apenas os que estão 'disponivel' ou 'fixo'
@@ -1019,14 +1043,14 @@ export const useDatabase = () => {
         .order('time_slot', { ascending: true });
 
       if (error) throw error;
-      
+
       // Mapeia o resultado para o tipo Reservation
       return (data || []).map(res => ({
         ...res,
         prof_name: res.professores?.nome_completo || 'Professor Desconhecido',
         prof_email: res.professores?.email || '',
       })) as Reservation[];
-      
+
     } catch (error: any) {
       logger.error('Erro ao buscar reservas:', error);
       toast({ title: "Erro de Sincronização", description: "Falha ao carregar agendamentos.", variant: "destructive" });
@@ -1039,7 +1063,7 @@ export const useDatabase = () => {
       toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
       return null;
     }
-    
+
     setLoading(true);
     try {
       const { data: result, error } = await supabase
@@ -1056,17 +1080,17 @@ export const useDatabase = () => {
         .single();
 
       if (error) throw error;
-      
+
       const reservationResult = {
         ...result,
         prof_name: result.professores?.nome_completo || 'Professor Desconhecido',
         prof_email: result.professores?.email || '',
       } as Reservation;
-      
+
       // PASSO 3: CHAMAR A EDGE FUNCTION APÓS O SUCESSO
       const professorEmail = reservationResult.prof_email;
       const professorName = reservationResult.prof_name;
-      
+
       if (professorEmail) {
         const emailPayload = {
           toEmail: professorEmail,
@@ -1076,7 +1100,7 @@ export const useDatabase = () => {
           time: reservationResult.time_slot,
           quantity: reservationResult.quantity_requested,
         };
-        
+
         const { data: emailData, error: emailError } = await supabase.functions.invoke('send-reservation-email', {
           body: emailPayload,
           headers: {
@@ -1084,7 +1108,7 @@ export const useDatabase = () => {
             'Authorization': `Bearer ${await supabase.auth.getSession().then(s => s.data.session?.access_token)}`,
           }
         });
-        
+
         if (emailError) {
           logger.error('Erro ao disparar e-mail de confirmação:', emailError);
           toast({ title: "Aviso", description: "Reserva criada, mas falha ao enviar e-mail de confirmação.", variant: "warning" });
@@ -1092,17 +1116,17 @@ export const useDatabase = () => {
           logger.debug('E-mail de confirmação disparado:', emailData);
         }
       }
-      
+
       toast({ title: "Sucesso", description: "Reserva agendada com sucesso!", variant: "success" });
-      
+
       return reservationResult;
-      
+
     } catch (error: any) {
       logger.error('Erro ao criar reserva:', error);
-      toast({ 
-        title: "Erro ao Agendar", 
-        description: error.message, 
-        variant: "destructive" 
+      toast({
+        title: "Erro ao Agendar",
+        description: error.message,
+        variant: "destructive"
       });
       return null;
     } finally {

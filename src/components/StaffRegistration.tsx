@@ -7,6 +7,8 @@ import { Card, CardContent } from './ui/card'; // Removido CardHeader, CardTitle
 import { toast } from '@/hooks/use-toast';
 import { useDatabase } from '@/hooks/useDatabase';
 import { GlassCard } from './ui/GlassCard'; // Importando GlassCard
+import logger from '@/utils/logger';
+import { validateEmail, EMAIL_DOMAINS } from '@/utils/emailValidation';
 
 interface StaffFormData {
   nomeCompleto: string;
@@ -21,25 +23,23 @@ export function StaffRegistration() {
   const [emailError, setEmailError] = useState<string>('');
   const { createStaff, loading } = useDatabase();
 
-  const DOMAIN_SUFFIX = '@colegiosaojudas.com.br';
+  const DOMAIN_SUFFIX = EMAIL_DOMAINS.FUNCIONARIO;
 
-  const validateEmail = (email: string) => {
+  const handleEmailValidation = (email: string) => {
     if (!email) {
       setEmailError('');
       return true;
     }
-    if (!email.endsWith(DOMAIN_SUFFIX)) {
-      setEmailError(`E-mail deve terminar com ${DOMAIN_SUFFIX}`);
-      return false;
-    }
-    setEmailError('');
-    return true;
+
+    const result = validateEmail(email, 'funcionario');
+    setEmailError(result.valid ? '' : result.message || '');
+    return result.valid;
   };
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const email = e.target.value;
     setFormData(prev => ({ ...prev, email }));
-    validateEmail(email);
+    handleEmailValidation(email);
   };
 
   const handleInputChange = (field: keyof StaffFormData) => (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -57,7 +57,7 @@ export function StaffRegistration() {
       });
       return;
     }
-    if (!validateEmail(formData.email)) {
+    if (!handleEmailValidation(formData.email)) {
       return;
     }
 
@@ -66,7 +66,7 @@ export function StaffRegistration() {
         nome_completo: formData.nomeCompleto,
         email: formData.email
       };
-      
+
       const result = await createStaff(staffData);
 
       if (result) {
@@ -84,7 +84,7 @@ export function StaffRegistration() {
         });
       }
     } catch (error) {
-      console.error('Erro ao cadastrar funcionário:', error);
+      logger.error('Erro ao cadastrar funcionário', error);
       toast({
         title: "Erro",
         description: "Erro interno do sistema.",
@@ -104,12 +104,12 @@ export function StaffRegistration() {
             {/* Nome Completo */}
             <div className="space-y-2">
               <Label htmlFor="nomeCompleto">Nome Completo *</Label>
-              <Input 
-                id="nomeCompleto" 
-                value={formData.nomeCompleto} 
-                onChange={handleInputChange('nomeCompleto')} 
-                placeholder="Digite o nome completo" 
-                required 
+              <Input
+                id="nomeCompleto"
+                value={formData.nomeCompleto}
+                onChange={handleInputChange('nomeCompleto')}
+                placeholder="Digite o nome completo"
+                required
                 className="dark:bg-input dark:border-border"
               />
             </div>
@@ -118,13 +118,13 @@ export function StaffRegistration() {
             <div className="space-y-2">
               <Label htmlFor="email">E-mail *</Label>
               <div className="relative">
-                <Input 
-                  id="email" 
-                  type="email" 
-                  value={formData.email} 
-                  onChange={handleEmailChange} 
-                  placeholder={`exemplo${DOMAIN_SUFFIX}`} 
-                  required 
+                <Input
+                  id="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={handleEmailChange}
+                  placeholder={`exemplo${DOMAIN_SUFFIX}`}
+                  required
                   className={emailError ? 'border-destructive focus-visible:ring-destructive dark:bg-input dark:border-destructive' : 'dark:bg-input dark:border-border'}
                 />
                 {/* Exibe o sufixo do domínio como um helper visual */}
@@ -139,9 +139,9 @@ export function StaffRegistration() {
           </div>
 
           <div className="flex justify-end pt-4">
-            <Button 
-              type="submit" 
-              disabled={loading || !isFormValid} 
+            <Button
+              type="submit"
+              disabled={loading || !isFormValid}
               className="min-w-32 bg-blue-600 hover:bg-blue-700"
             >
               {loading ? (

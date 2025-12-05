@@ -4,6 +4,7 @@ import App from './App.tsx'
 import './index.css'
 import { toast as sonnerToast } from 'sonner' // Usando Sonner
 import { ToastAction } from "@/components/ui/toast" // Mantendo o import para o ToastAction se necessário, mas vamos usar o Sonner
+import logger from '@/utils/logger';
 
 // Ensure React is available globally
 // Expose React for devtools in iframe
@@ -57,7 +58,7 @@ function setupServiceWorkerUpdates() {
           })
         })
         .catch((err) => {
-          console.error('SW registration failed:', err)
+          logger.error('SW registration failed', err);
         })
     })
   }

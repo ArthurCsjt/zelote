@@ -1,6 +1,7 @@
 
 import { useLocation } from "react-router-dom";
 import { useEffect } from "react";
+import logger from '@/utils/logger';
 
 /**
  * Componente de página não encontrada (404)
@@ -10,12 +11,9 @@ const NotFound = () => {
   // Obtém informações sobre a localização atual (URL)
   const location = useLocation();
 
-  // Efeito que registra um erro no console quando a página é carregada
+  // Efeito que registra um erro no logger quando a página é carregada
   useEffect(() => {
-    console.error(
-      "404 Error: User attempted to access non-existent route:",
-      location.pathname
-    );
+    logger.error('404 Error: User attempted to access non-existent route', { pathname: location.pathname });
   }, [location.pathname]);
 
   // Renderiza a página de erro 404

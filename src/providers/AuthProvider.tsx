@@ -2,6 +2,7 @@ import { useState, useEffect, ReactNode, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { AuthContext, AuthContextType } from "@/contexts/AuthContext";
 import type { User } from "@supabase/supabase-js";
+import logger from '@/utils/logger';
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -11,7 +12,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const refreshSession = useCallback(async () => {
     const { data: { session }, error } = await supabase.auth.refreshSession();
     if (error) {
-      console.error("Erro ao atualizar sessão:", error);
+      logger.error('Erro ao atualizar sessão', error);
       // Se falhar, tenta obter a sessão atual
       const { data: { session: currentSession } } = await supabase.auth.getSession();
       setUser(currentSession?.user ?? null);
@@ -66,7 +67,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const verifyEmail = (email: string) => /@colegiosaojudas\.com\.br$/i.test(email);
-  
+
   const isAuthenticated = !!user;
   const email = user?.email || null;
   const username = user?.email?.split('@')[0] || null;

@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import type { Chromebook } from '@/types/database';
+import logger from '@/utils/logger';
 
 export interface ChromebookSearchResult {
   id: string;
@@ -45,7 +46,7 @@ export function useChromebookSearch() {
 
       setChromebooks(results);
     } catch (e: any) {
-      console.error('Erro no useChromebookSearch:', e);
+      logger.error('Erro no useChromebookSearch', e);
       toast({
         title: 'Erro de Sincronização',
         description: 'Não foi possível carregar a lista de Chromebooks para autocompletar.',
@@ -60,9 +61,9 @@ export function useChromebookSearch() {
     fetchChromebooks();
   }, [fetchChromebooks]);
 
-  return { 
-    chromebooks, 
-    loading, 
-    fetchChromebooks 
+  return {
+    chromebooks,
+    loading,
+    fetchChromebooks
   };
 }

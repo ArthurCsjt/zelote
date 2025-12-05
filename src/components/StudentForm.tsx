@@ -6,6 +6,8 @@ import { Card, CardContent } from './ui/card'; // Removido CardHeader, CardTitle
 import { toast } from '@/hooks/use-toast';
 import { useDatabase } from '@/hooks/useDatabase';
 import { GlassCard } from './ui/GlassCard'; // Importando GlassCard
+import logger from '@/utils/logger';
+import { validateEmail } from '@/utils/emailValidation';
 
 interface StudentFormData {
   nomeCompleto: string;
@@ -25,25 +27,25 @@ export function StudentForm() {
     createStudent,
     loading
   } = useDatabase();
-  const validateEmail = (email: string) => {
+
+  const handleEmailValidation = (email: string) => {
     if (!email) {
       setEmailError('');
       return true;
     }
-    if (!email.endsWith('@sj.g12.br')) {
-      setEmailError('E-mail deve terminar com @sj.g12.br');
-      return false;
-    }
-    setEmailError('');
-    return true;
+
+    const result = validateEmail(email, 'aluno');
+    setEmailError(result.valid ? '' : result.message || '');
+    return result.valid;
   };
+
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const email = e.target.value;
     setFormData(prev => ({
       ...prev,
       email
     }));
-    validateEmail(email);
+    handleEmailValidation(email);
   };
   const handleInputChange = (field: keyof StudentFormData) => (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({
@@ -63,12 +65,12 @@ export function StudentForm() {
       });
       return;
     }
-    if (!validateEmail(formData.email)) {
+    if (!handleEmailValidation(formData.email)) {
       return;
     }
-    
+
     // Se já estiver carregando, ignora o clique (proteção extra contra cliques rápidos)
-    if (loading) return; 
+    if (loading) return;
 
     try {
       const studentData = {
@@ -77,9 +79,9 @@ export function StudentForm() {
         email: formData.email.trim(),
         turma: formData.turma.trim()
       };
-      
+
       const result = await createStudent(studentData);
-      
+
       if (result) {
         toast({
           title: "Sucesso!",
@@ -97,7 +99,7 @@ export function StudentForm() {
         // O erro já é tratado no useDatabase, mas garantimos que o fluxo pare aqui se falhar
       }
     } catch (error) {
-      console.error('Erro ao cadastrar aluno:', error);
+      logger.error('Erro ao cadastrar aluno', error);
       toast({
         title: "Erro",
         description: "Erro interno do sistema.",
@@ -105,71 +107,71 @@ export function StudentForm() {
       });
     }
   };
-  
+
   const isFormValid = formData.nomeCompleto.trim() && formData.ra.trim() && formData.email.trim() && formData.turma.trim() && !emailError;
-  
+
   return <GlassCard>
-      {/* CardHeader removido */}
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="nomeCompleto">Nome Completo *</Label>
-              <Input 
-                id="nomeCompleto" 
-                value={formData.nomeCompleto} 
-                onChange={handleInputChange('nomeCompleto')} 
-                placeholder="Digite o nome completo" 
-                required 
-                className="dark:bg-input dark:border-border"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="ra">RA (Registro do Aluno) *</Label>
-              <Input 
-                id="ra" 
-                value={formData.ra} 
-                onChange={handleInputChange('ra')} 
-                placeholder="Digite o RA" 
-                required 
-                className="dark:bg-input dark:border-border"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="email">E-mail *</Label>
-              <Input 
-                id="email" 
-                type="email" 
-                value={formData.email} 
-                onChange={handleEmailChange} 
-                placeholder="aluno@sj.g12.br" 
-                required 
-                className={emailError ? 'border-destructive dark:bg-input dark:border-destructive' : 'dark:bg-input dark:border-border'} 
-              />
-              {emailError && <p className="text-sm text-destructive">{emailError}</p>}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="turma">Turma *</Label>
-              <Input 
-                id="turma" 
-                value={formData.turma} 
-                onChange={handleInputChange('turma')} 
-                placeholder="Digite a turma" 
-                required 
-                className="dark:bg-input dark:border-border"
-              />
-            </div>
+    {/* CardHeader removido */}
+    <CardContent>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="nomeCompleto">Nome Completo *</Label>
+            <Input
+              id="nomeCompleto"
+              value={formData.nomeCompleto}
+              onChange={handleInputChange('nomeCompleto')}
+              placeholder="Digite o nome completo"
+              required
+              className="dark:bg-input dark:border-border"
+            />
           </div>
 
-          <div className="flex justify-end pt-4">
-            <Button type="submit" disabled={loading || !isFormValid} className="min-w-32">
-              {loading ? 'Cadastrando...' : 'Cadastrar Aluno'}
-            </Button>
+          <div className="space-y-2">
+            <Label htmlFor="ra">RA (Registro do Aluno) *</Label>
+            <Input
+              id="ra"
+              value={formData.ra}
+              onChange={handleInputChange('ra')}
+              placeholder="Digite o RA"
+              required
+              className="dark:bg-input dark:border-border"
+            />
           </div>
-        </form>
-      </CardContent>
-    </GlassCard>;
+
+          <div className="space-y-2">
+            <Label htmlFor="email">E-mail *</Label>
+            <Input
+              id="email"
+              type="email"
+              value={formData.email}
+              onChange={handleEmailChange}
+              placeholder="aluno@sj.g12.br"
+              required
+              className={emailError ? 'border-destructive dark:bg-input dark:border-destructive' : 'dark:bg-input dark:border-border'}
+            />
+            {emailError && <p className="text-sm text-destructive">{emailError}</p>}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="turma">Turma *</Label>
+            <Input
+              id="turma"
+              value={formData.turma}
+              onChange={handleInputChange('turma')}
+              placeholder="Digite a turma"
+              required
+              className="dark:bg-input dark:border-border"
+            />
+          </div>
+        </div>
+
+        <div className="flex justify-end pt-4">
+          <Button type="submit" disabled={loading || !isFormValid} className="min-w-32">
+            {loading ? 'Cadastrando...' : 'Cadastrar Aluno'}
+          </Button>
+        </div>
+      </form>
+    </CardContent>
+  </GlassCard>;
 }

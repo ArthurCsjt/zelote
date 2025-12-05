@@ -1,4 +1,5 @@
 import { Component, ErrorInfo, ReactNode } from "react";
+import logger from '@/utils/logger';
 
 interface Props {
   children?: ReactNode;
@@ -19,7 +20,7 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('ErrorBoundary caught an error:', error, errorInfo);
+    logger.error('ErrorBoundary caught an error', error, { errorInfo });
   }
 
   public render() {
@@ -31,7 +32,7 @@ export class ErrorBoundary extends Component<Props, State> {
             <p className="text-muted-foreground mb-4">
               Ocorreu um erro inesperado. Tente recarregar a página.
             </p>
-            <button 
+            <button
               onClick={() => window.location.reload()}
               className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
             >

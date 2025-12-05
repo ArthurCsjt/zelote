@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast, dismissToast } from '@/hooks/use-toast';
+import logger from '@/utils/logger';
 
 interface OverdueLoan {
   loan_id: string;
@@ -31,15 +32,15 @@ export function useOverdueLoans() {
     setLoading(true);
     try {
       const { data, error } = await supabase.rpc('get_overdue_loans');
-      
+
       if (error) {
-        console.error('Erro ao buscar empréstimos em atraso:', error);
+        logger.error('Erro ao buscar empréstimos em atraso', error);
         return;
       }
 
       setOverdueLoans(data || []);
     } catch (error) {
-      console.error('Erro ao buscar empréstimos em atraso:', error);
+      logger.error('Erro ao buscar empréstimos em atraso', error);
     } finally {
       setLoading(false);
     }
@@ -49,15 +50,15 @@ export function useOverdueLoans() {
     setLoading(true);
     try {
       const { data, error } = await supabase.rpc('get_upcoming_due_loans');
-      
+
       if (error) {
-        console.error('Erro ao buscar empréstimos próximos ao vencimento:', error);
+        logger.error('Erro ao buscar empréstimos próximos ao vencimento', error);
         return;
       }
 
       setUpcomingDueLoans(data || []);
     } catch (error) {
-      console.error('Erro ao buscar empréstimos próximos ao vencimento:', error);
+      logger.error('Erro ao buscar empréstimos próximos ao vencimento', error);
     } finally {
       setLoading(false);
     }
@@ -71,7 +72,7 @@ export function useOverdueLoans() {
   // Verificar automaticamente a cada 30 minutos
   useEffect(() => {
     checkAndNotifyOverdue();
-    
+
     const interval = setInterval(() => {
       checkAndNotifyOverdue();
     }, 30 * 60 * 1000); // 30 minutos
@@ -86,13 +87,13 @@ export function useOverdueLoans() {
       const isPlural = overdueLoans.length > 1;
       const title = `⚠️ ${overdueLoans.length} Empréstimo${isPlural ? 's' : ''} em Atraso`;
       const description = `Há ${overdueLoans.length} empréstimo${isPlural ? 's' : ''} que ${isPlural ? 'passaram' : 'passou'} do prazo de devolução.`;
-      
+
       // CORREÇÃO: Usar a função toast com variant: 'destructive'
       toast({
         title: title,
         description: description,
         variant: 'destructive',
-        id: 'overdue-alert', 
+        id: 'overdue-alert',
         duration: 1000000, // Manter visível
       });
     } else {
@@ -105,7 +106,7 @@ export function useOverdueLoans() {
       const isPlural = upcomingDueLoans.length > 1;
       const title = `📅 ${upcomingDueLoans.length} Empréstimo${isPlural ? 's' : ''} Vencendo`;
       const description = `Há empréstimo${isPlural ? 's' : ''} com prazo próximo ao vencimento.`;
-      
+
       // CORREÇÃO: Usar a função toast com variant: 'info'
       toast({
         title: title,

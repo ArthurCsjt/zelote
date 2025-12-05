@@ -8,13 +8,14 @@ import { GlassCard } from '@/components/ui/GlassCard';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
+import logger from '@/utils/logger';
 
 // Este componente não deve usar useNavigate ou usePrintContext, pois está em uma nova aba.
 
 export const PrintPreviewPage: React.FC = () => {
   const [printItems, setPrintItems] = useState<Chromebook[]>([]);
   // Alterando o tipo de estado para 2 ou 4, conforme solicitado
-  const [columns, setColumns] = useState<2 | 4>(4); 
+  const [columns, setColumns] = useState<2 | 4>(4);
   const [isLoading, setIsLoading] = useState(true);
 
   // 1. Recuperação de Dados (Sem Auto-Print)
@@ -24,7 +25,7 @@ export const PrintPreviewPage: React.FC = () => {
       const data: Chromebook[] = queue ? JSON.parse(queue) : [];
       setPrintItems(data);
     } catch (e) {
-      console.error("Erro ao carregar fila de impressão:", e);
+      logger.error('Erro ao carregar fila de impressão', e);
       setPrintItems([]);
     } finally {
       setIsLoading(false);
@@ -34,7 +35,7 @@ export const PrintPreviewPage: React.FC = () => {
   const handlePrint = () => {
     window.print();
   };
-  
+
   const handleClose = () => {
     // Limpa o localStorage e fecha a aba
     localStorage.removeItem('print_queue');
@@ -68,18 +69,18 @@ export const PrintPreviewPage: React.FC = () => {
       </div>
     );
   }
-  
+
   // Classes dinâmicas para o grid
-  const gridClass = columns === 2 
-    ? 'grid-cols-2' 
+  const gridClass = columns === 2
+    ? 'grid-cols-2'
     : 'grid-cols-4';
-      
+
   const printGridClass = columns === 2 ? 'print:grid-cols-2' : 'print:grid-cols-4';
 
   return (
     // Container principal com estilos de fundo limpos
     <div className="min-h-screen bg-gray-50 text-black p-8 print:p-0 print:bg-white">
-      
+
       {/* --- CONTROLES (Não aparecem na impressão) --- */}
       <div className="max-w-5xl mx-auto mb-8 bg-gray-900 text-white p-6 rounded-xl shadow-lg print:hidden flex flex-col md:flex-row items-center justify-between gap-6">
         <div>
@@ -96,17 +97,15 @@ export const PrintPreviewPage: React.FC = () => {
           <div className="flex items-center gap-2 bg-gray-800 p-1 rounded-lg">
             <button
               onClick={() => setColumns(2)}
-              className={`px-3 py-1.5 rounded-md text-sm transition-all ${
-                columns === 2 ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white'
-              }`}
+              className={`px-3 py-1.5 rounded-md text-sm transition-all ${columns === 2 ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white'
+                }`}
             >
               2 Colunas
             </button>
             <button
               onClick={() => setColumns(4)}
-              className={`px-3 py-1.5 rounded-md text-sm transition-all ${
-                columns === 4 ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white'
-              }`}
+              className={`px-3 py-1.5 rounded-md text-sm transition-all ${columns === 4 ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white'
+                }`}
             >
               4 Colunas
             </button>
@@ -118,8 +117,8 @@ export const PrintPreviewPage: React.FC = () => {
           >
             <Printer size={18} /> Imprimir Agora
           </button>
-          
-           <button
+
+          <button
             onClick={handleClose} // Fecha a aba
             className="bg-red-500/10 hover:bg-red-500/20 text-red-500 p-2 rounded-lg transition-colors"
             title="Fechar Janela"
@@ -133,12 +132,12 @@ export const PrintPreviewPage: React.FC = () => {
       {/* Usando max-w-none para garantir que o container ocupe a largura total do papel na impressão */}
       <div id="print-area" className="max-w-5xl mx-auto bg-white p-4 shadow-sm print:shadow-none print:m-0 print:w-full">
         {/* O segredo está aqui: classes dinâmicas que funcionam no print */}
-        <div 
+        <div
           className={cn(
-            "grid gap-4", 
+            "grid gap-4",
             gridClass,
             // Aplicando as classes de impressão diretamente no container
-            "print:grid print:gap-2", 
+            "print:grid print:gap-2",
             printGridClass
           )}
         >
@@ -147,7 +146,7 @@ export const PrintPreviewPage: React.FC = () => {
           ))}
         </div>
       </div>
-      
+
       {/* CSS Global para forçar o layout de impressão */}
       <style>{`
         @media print {

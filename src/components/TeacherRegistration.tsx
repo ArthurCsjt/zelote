@@ -8,6 +8,8 @@ import { toast } from '@/hooks/use-toast';
 import { useDatabase } from '@/hooks/useDatabase';
 import { GlassCard } from './ui/GlassCard'; // Importando GlassCard
 import type { TeacherData } from '@/types/database'; // Importando o tipo atualizado
+import logger from '@/utils/logger';
+import { validateEmail } from '@/utils/emailValidation';
 
 interface TeacherFormData extends TeacherData {
   // Herda nomeCompleto, email e materia
@@ -25,17 +27,15 @@ export function TeacherRegistration() {
     loading
   } = useDatabase();
 
-  const validateEmail = (email: string) => {
+  const handleEmailValidation = (email: string) => {
     if (!email) {
       setEmailError('');
       return true;
     }
-    if (!email.endsWith('@sj.pro.br')) {
-      setEmailError('E-mail deve terminar com @sj.pro.br');
-      return false;
-    }
-    setEmailError('');
-    return true;
+
+    const result = validateEmail(email, 'professor');
+    setEmailError(result.valid ? '' : result.message || '');
+    return result.valid;
   };
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -44,7 +44,7 @@ export function TeacherRegistration() {
       ...prev,
       email
     }));
-    validateEmail(email);
+    handleEmailValidation(email);
   };
 
   const handleInputChange = (field: keyof TeacherFormData) => (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -66,7 +66,7 @@ export function TeacherRegistration() {
       });
       return;
     }
-    if (!validateEmail(formData.email)) {
+    if (!handleEmailValidation(formData.email)) {
       return;
     }
     try {
@@ -93,7 +93,7 @@ export function TeacherRegistration() {
         // O erro 400 Bad Request provavelmente está sendo capturado aqui se a validação de domínio falhar no backend
       }
     } catch (error) {
-      console.error('Erro ao cadastrar professor:', error);
+      logger.error('Erro ao cadastrar professor', error);
       toast({
         title: "Erro",
         description: "Erro interno do sistema.",
@@ -113,38 +113,38 @@ export function TeacherRegistration() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="nomeCompleto">Nome Completo *</Label>
-              <Input 
-                id="nomeCompleto" 
-                value={formData.nome_completo} 
-                onChange={handleInputChange('nome_completo')} 
-                placeholder="Digite o nome completo" 
-                required 
+              <Input
+                id="nomeCompleto"
+                value={formData.nome_completo}
+                onChange={handleInputChange('nome_completo')}
+                placeholder="Digite o nome completo"
+                required
                 className="dark:bg-input dark:border-border"
               />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="email">E-mail *</Label>
-              <Input 
-                id="email" 
-                type="email" 
-                value={formData.email} 
-                onChange={handleEmailChange} 
-                placeholder="professor@sj.pro.br" 
-                required 
-                className={emailError ? 'border-destructive dark:bg-input dark:border-destructive' : 'dark:bg-input dark:border-border'} 
+              <Input
+                id="email"
+                type="email"
+                value={formData.email}
+                onChange={handleEmailChange}
+                placeholder="professor@sj.pro.br"
+                required
+                className={emailError ? 'border-destructive dark:bg-input dark:border-destructive' : 'dark:bg-input dark:border-border'}
               />
               {emailError && <p className="text-sm text-destructive">{emailError}</p>}
             </div>
-            
+
             {/* NOVO CAMPO: Matéria */}
             <div className="space-y-2">
               <Label htmlFor="materia">Matéria (Opcional)</Label>
-              <Input 
-                id="materia" 
-                value={formData.materia} 
-                onChange={handleInputChange('materia')} 
-                placeholder="Ex: Matemática, História, Inglês" 
+              <Input
+                id="materia"
+                value={formData.materia}
+                onChange={handleInputChange('materia')}
+                placeholder="Ex: Matemática, História, Inglês"
                 className="dark:bg-input dark:border-border"
               />
             </div>
