@@ -17,6 +17,7 @@ export type Database = {
       alunos: {
         Row: {
           created_at: string
+          deleted_at: string | null
           email: string
           id: string
           nome_completo: string
@@ -25,6 +26,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          deleted_at?: string | null
           email: string
           id?: string
           nome_completo: string
@@ -33,6 +35,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          deleted_at?: string | null
           email?: string
           id?: string
           nome_completo?: string
@@ -41,16 +44,101 @@ export type Database = {
         }
         Relationships: []
       }
+      audit_items: {
+        Row: {
+          audit_id: string
+          chromebook_id: string
+          condition_found: string | null
+          count_method: string | null
+          counted_at: string
+          counted_by: string | null
+          created_at: string
+          expected_location: string | null
+          id: string
+          location_confirmed: boolean | null
+          location_found: string | null
+          model_found: string | null
+          notes: string | null
+          physical_status: string | null
+          scan_method: string
+        }
+        Insert: {
+          audit_id: string
+          chromebook_id: string
+          condition_found?: string | null
+          count_method?: string | null
+          counted_at?: string
+          counted_by?: string | null
+          created_at?: string
+          expected_location?: string | null
+          id?: string
+          location_confirmed?: boolean | null
+          location_found?: string | null
+          model_found?: string | null
+          notes?: string | null
+          physical_status?: string | null
+          scan_method: string
+        }
+        Update: {
+          audit_id?: string
+          chromebook_id?: string
+          condition_found?: string | null
+          count_method?: string | null
+          counted_at?: string
+          counted_by?: string | null
+          created_at?: string
+          expected_location?: string | null
+          id?: string
+          location_confirmed?: boolean | null
+          location_found?: string | null
+          model_found?: string | null
+          notes?: string | null
+          physical_status?: string | null
+          scan_method?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_items_audit_id_fkey"
+            columns: ["audit_id"]
+            isOneToOne: false
+            referencedRelation: "audit_analysis"
+            referencedColumns: ["audit_id"]
+          },
+          {
+            foreignKeyName: "audit_items_audit_id_fkey"
+            columns: ["audit_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_audits"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "audit_items_chromebook_id_fkey"
+            columns: ["chromebook_id"]
+            isOneToOne: false
+            referencedRelation: "active_chromebooks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "audit_items_chromebook_id_fkey"
+            columns: ["chromebook_id"]
+            isOneToOne: false
+            referencedRelation: "chromebooks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chromebooks: {
         Row: {
           chromebook_id: string
-          manufacturer: string | null
           classroom: string | null
           condition: string | null
           created_at: string
           created_by: string | null
+          deleted_at: string | null
           id: string
+          is_deprovisioned: boolean | null
           location: string | null
+          manufacturer: string | null
           model: string
           patrimony_number: string | null
           serial_number: string | null
@@ -59,13 +147,15 @@ export type Database = {
         }
         Insert: {
           chromebook_id: string
-          manufacturer?: string | null
           classroom?: string | null
           condition?: string | null
           created_at?: string
           created_by?: string | null
+          deleted_at?: string | null
           id?: string
+          is_deprovisioned?: boolean | null
           location?: string | null
+          manufacturer?: string | null
           model: string
           patrimony_number?: string | null
           serial_number?: string | null
@@ -74,13 +164,15 @@ export type Database = {
         }
         Update: {
           chromebook_id?: string
-          manufacturer?: string | null
           classroom?: string | null
           condition?: string | null
           created_at?: string
           created_by?: string | null
+          deleted_at?: string | null
           id?: string
+          is_deprovisioned?: boolean | null
           location?: string | null
+          manufacturer?: string | null
           model?: string
           patrimony_number?: string | null
           serial_number?: string | null
@@ -100,21 +192,66 @@ export type Database = {
       funcionarios: {
         Row: {
           created_at: string
+          deleted_at: string | null
           email: string
           id: string
           nome_completo: string
         }
         Insert: {
           created_at?: string
+          deleted_at?: string | null
           email: string
           id?: string
           nome_completo: string
         }
         Update: {
           created_at?: string
+          deleted_at?: string | null
           email?: string
           id?: string
           nome_completo?: string
+        }
+        Relationships: []
+      }
+      inventory_audits: {
+        Row: {
+          audit_name: string
+          completed_at: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          notes: string | null
+          start_at: string | null
+          started_at: string
+          status: string
+          total_counted: number | null
+          total_expected: number | null
+        }
+        Insert: {
+          audit_name: string
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          notes?: string | null
+          start_at?: string | null
+          started_at?: string
+          status?: string
+          total_counted?: number | null
+          total_expected?: number | null
+        }
+        Update: {
+          audit_name?: string
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          notes?: string | null
+          start_at?: string | null
+          started_at?: string
+          status?: string
+          total_counted?: number | null
+          total_expected?: number | null
         }
         Relationships: []
       }
@@ -123,6 +260,7 @@ export type Database = {
           chromebook_id: string
           created_at: string
           created_by: string | null
+          deleted_at: string | null
           expected_return_date: string | null
           id: string
           loan_date: string
@@ -138,6 +276,7 @@ export type Database = {
           chromebook_id: string
           created_at?: string
           created_by?: string | null
+          deleted_at?: string | null
           expected_return_date?: string | null
           id?: string
           loan_date?: string
@@ -153,6 +292,7 @@ export type Database = {
           chromebook_id?: string
           created_at?: string
           created_by?: string | null
+          deleted_at?: string | null
           expected_return_date?: string | null
           id?: string
           loan_date?: string
@@ -165,6 +305,13 @@ export type Database = {
           user_type?: Database["public"]["Enums"]["user_type"]
         }
         Relationships: [
+          {
+            foreignKeyName: "loans_chromebook_id_fkey"
+            columns: ["chromebook_id"]
+            isOneToOne: false
+            referencedRelation: "active_chromebooks"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "loans_chromebook_id_fkey"
             columns: ["chromebook_id"]
@@ -184,24 +331,27 @@ export type Database = {
       professores: {
         Row: {
           created_at: string
+          deleted_at: string | null
           email: string
           id: string
+          materia: string | null
           nome_completo: string
-          materia: string | null // ADICIONADO
         }
         Insert: {
           created_at?: string
+          deleted_at?: string | null
           email: string
           id?: string
+          materia?: string | null
           nome_completo: string
-          materia?: string | null // ADICIONADO
         }
         Update: {
           created_at?: string
+          deleted_at?: string | null
           email?: string
           id?: string
+          materia?: string | null
           nome_completo?: string
-          materia?: string | null // ADICIONADO
         }
         Relationships: []
       }
@@ -235,10 +385,62 @@ export type Database = {
         }
         Relationships: []
       }
+      reservations: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          date: string
+          deleted_at: string | null
+          id: string
+          professor_id: string | null
+          quantity_requested: number
+          subject: string | null
+          time_slot: string
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          date: string
+          deleted_at?: string | null
+          id?: string
+          professor_id?: string | null
+          quantity_requested: number
+          subject?: string | null
+          time_slot: string
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          date?: string
+          deleted_at?: string | null
+          id?: string
+          professor_id?: string | null
+          quantity_requested?: number
+          subject?: string | null
+          time_slot?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reservations_professor_id_fkey"
+            columns: ["professor_id"]
+            isOneToOne: false
+            referencedRelation: "active_professores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reservations_professor_id_fkey"
+            columns: ["professor_id"]
+            isOneToOne: false
+            referencedRelation: "professores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       returns: {
         Row: {
           created_at: string
           created_by: string | null
+          deleted_at: string | null
           id: string
           loan_id: string
           notes: string | null
@@ -251,6 +453,7 @@ export type Database = {
         Insert: {
           created_at?: string
           created_by?: string | null
+          deleted_at?: string | null
           id?: string
           loan_id: string
           notes?: string | null
@@ -263,6 +466,7 @@ export type Database = {
         Update: {
           created_at?: string
           created_by?: string | null
+          deleted_at?: string | null
           id?: string
           loan_id?: string
           notes?: string | null
@@ -298,6 +502,164 @@ export type Database = {
       }
     }
     Views: {
+      active_alunos: {
+        Row: {
+          created_at: string | null
+          deleted_at: string | null
+          email: string | null
+          id: string | null
+          nome_completo: string | null
+          ra: string | null
+          turma: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          deleted_at?: string | null
+          email?: string | null
+          id?: string | null
+          nome_completo?: string | null
+          ra?: string | null
+          turma?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          deleted_at?: string | null
+          email?: string | null
+          id?: string | null
+          nome_completo?: string | null
+          ra?: string | null
+          turma?: string | null
+        }
+        Relationships: []
+      }
+      active_chromebooks: {
+        Row: {
+          chromebook_id: string | null
+          classroom: string | null
+          condition: string | null
+          created_at: string | null
+          created_by: string | null
+          deleted_at: string | null
+          id: string | null
+          is_deprovisioned: boolean | null
+          location: string | null
+          manufacturer: string | null
+          model: string | null
+          patrimony_number: string | null
+          serial_number: string | null
+          status: Database["public"]["Enums"]["chromebook_status"] | null
+          updated_at: string | null
+        }
+        Insert: {
+          chromebook_id?: string | null
+          classroom?: string | null
+          condition?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          deleted_at?: string | null
+          id?: string | null
+          is_deprovisioned?: boolean | null
+          location?: string | null
+          manufacturer?: string | null
+          model?: string | null
+          patrimony_number?: string | null
+          serial_number?: string | null
+          status?: Database["public"]["Enums"]["chromebook_status"] | null
+          updated_at?: string | null
+        }
+        Update: {
+          chromebook_id?: string | null
+          classroom?: string | null
+          condition?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          deleted_at?: string | null
+          id?: string | null
+          is_deprovisioned?: boolean | null
+          location?: string | null
+          manufacturer?: string | null
+          model?: string | null
+          patrimony_number?: string | null
+          serial_number?: string | null
+          status?: Database["public"]["Enums"]["chromebook_status"] | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chromebooks_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      active_funcionarios: {
+        Row: {
+          created_at: string | null
+          deleted_at: string | null
+          email: string | null
+          id: string | null
+          nome_completo: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          deleted_at?: string | null
+          email?: string | null
+          id?: string | null
+          nome_completo?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          deleted_at?: string | null
+          email?: string | null
+          id?: string | null
+          nome_completo?: string | null
+        }
+        Relationships: []
+      }
+      active_professores: {
+        Row: {
+          created_at: string | null
+          deleted_at: string | null
+          email: string | null
+          id: string | null
+          materia: string | null
+          nome_completo: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          deleted_at?: string | null
+          email?: string | null
+          id?: string | null
+          materia?: string | null
+          nome_completo?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          deleted_at?: string | null
+          email?: string | null
+          id?: string | null
+          materia?: string | null
+          nome_completo?: string | null
+        }
+        Relationships: []
+      }
+      audit_analysis: {
+        Row: {
+          audit_id: string | null
+          audit_name: string | null
+          chromebooks_counted: number | null
+          completed_at: string | null
+          completion_percentage: number | null
+          scanned_manually: number | null
+          scanned_via_qr: number | null
+          started_at: string | null
+          status: string | null
+          total_expected: number | null
+        }
+        Relationships: []
+      }
       loan_history: {
         Row: {
           chromebook_id: string | null
@@ -322,12 +684,56 @@ export type Database = {
       }
     }
     Functions: {
-      execute_sql: {
-        Args: { query: string }
-        Returns: Json
+      create_staff: {
+        Args: { p_email: string; p_nome_completo: string }
+        Returns: {
+          created_at: string
+          email: string
+          id: string
+          nome_completo: string
+        }[]
       }
+      create_student: {
+        Args: {
+          p_email: string
+          p_nome_completo: string
+          p_ra: string
+          p_turma: string
+        }
+        Returns: {
+          created_at: string
+          email: string
+          id: string
+          nome_completo: string
+          ra: string
+          turma: string
+        }[]
+      }
+      create_teacher: {
+        Args: { p_email: string; p_materia?: string; p_nome_completo: string }
+        Returns: {
+          created_at: string
+          email: string
+          id: string
+          materia: string
+          nome_completo: string
+        }[]
+      }
+      execute_sql: { Args: { query: string }; Returns: Json }
+      generate_new_chromebook_id: { Args: never; Returns: string }
+      get_all_users: {
+        Args: never
+        Returns: {
+          email: string
+          id: string
+          last_sign_in_at: string
+          name: string
+          role: string
+        }[]
+      }
+      get_my_role: { Args: never; Returns: string }
       get_overdue_loans: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           chromebook_id: string
           days_overdue: number
@@ -338,8 +744,21 @@ export type Database = {
           student_name: string
         }[]
       }
+      get_recent_loan_activities: {
+        Args: never
+        Returns: {
+          activity_id: string
+          activity_time: string
+          activity_type: string
+          chromebook_id: string
+          creator_email: string
+          creator_name: string
+          user_email: string
+          user_name: string
+        }[]
+      }
       get_upcoming_due_loans: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           chromebook_id: string
           days_until_due: number
@@ -357,10 +776,12 @@ export type Database = {
         }
         Returns: boolean
       }
-      is_super_admin: {
-        Args: { _user_id: string }
+      is_super_admin: { Args: { _user_id: string }; Returns: boolean }
+      restore_record: {
+        Args: { p_record_id: string; p_table_name: string }
         Returns: boolean
       }
+      sync_chromebook_status: { Args: { cb_id: string }; Returns: string }
     }
     Enums: {
       chromebook_status:
@@ -370,7 +791,7 @@ export type Database = {
         | "fora_uso"
         | "fixo"
       loan_type: "individual" | "lote"
-      user_role: "super_admin" | "admin" | "user"
+      user_role: "super_admin" | "admin" | "user" | "professor"
       user_type: "aluno" | "professor" | "funcionario"
     }
     CompositeTypes: {
@@ -507,7 +928,7 @@ export const Constants = {
         "fixo",
       ],
       loan_type: ["individual", "lote"],
-      user_role: ["super_admin", "admin", "user"],
+      user_role: ["super_admin", "admin", "user", "professor"],
       user_type: ["aluno", "professor", "funcionario"],
     },
   },

@@ -3,28 +3,12 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { GlassCard } from "@/components/ui/GlassCard";
 import { toast } from "@/hooks/use-toast";
-import { Computer, Lock, Mail, ArrowLeft, KeySquare, LockKeyhole, UserPlus, Eye, EyeOff, AlertCircle, User, LogIn, RotateCcw, Loader2 } from "lucide-react";
+import { Computer, ArrowLeft, UserPlus, Eye, EyeOff, AlertCircle, LogIn, RotateCcw, Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 
-type AuthMode = 'login' | 'register' | 'forgot_password'; // Removido 'update_password'
-
-// Função auxiliar para renderizar o cabeçalho minimalista
-const renderMinimalHeader = (title: string, description: string, Icon: React.ElementType) => (
-  <CardHeader className="space-y-2 text-center pb-6 pt-8">
-    <div className="flex justify-center mb-4">
-      <div className="p-3 rounded-2xl bg-primary/10 text-primary ring-1 ring-primary/20 shadow-lg shadow-primary/10">
-        <Icon className="h-8 w-8" />
-      </div>
-    </div>
-    <CardTitle className="text-3xl font-bold tracking-tight text-foreground">{title}</CardTitle>
-    {description && <CardDescription className="text-base text-muted-foreground">{description}</CardDescription>}
-  </CardHeader>
-);
+type AuthMode = 'login' | 'register' | 'forgot_password';
 
 const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -39,7 +23,6 @@ const Login = () => {
   const location = useLocation();
   const { login, register, resetPassword, verifyEmail } = useAuth();
 
-  // Efeito para verificar se o usuário está no fluxo de redefinição/convite
   useEffect(() => {
     const params = new URLSearchParams(location.hash.substring(1));
     const type = params.get('type');
@@ -47,18 +30,13 @@ const Login = () => {
 
     if (type === 'recovery' || type === 'invite') {
       if (accessToken) {
-        // REDIRECIONA PARA A NOVA TELA DE ATUALIZAÇÃO DE SENHA
-        // Passamos o hash completo para que a nova tela possa processar os tokens
         navigate(`/update-password${location.hash}`, { replace: true });
       }
     }
   }, [location, navigate]);
 
-  // --- Validação de E-mail em Tempo Real ---
   const isEmailValid = email.length > 0 && verifyEmail(email);
   const emailError = email.length > 0 && !isEmailValid ? "O email deve pertencer ao domínio institucional (@colegiosaojudas.com.br)." : null;
-
-  // --- Handlers de Submissão ---
 
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -105,7 +83,6 @@ const Login = () => {
     setIsLoading(false);
   };
 
-
   const handleRecoverySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -126,7 +103,6 @@ const Login = () => {
     setIsLoading(false);
   };
 
-  // Função para limpar campos ao mudar de modo
   const changeMode = useCallback((mode: AuthMode) => {
     setEmail('');
     setPassword('');
@@ -135,167 +111,279 @@ const Login = () => {
     setCurrentMode(mode);
   }, []);
 
-  // --- Renderização Condicional ---
-
-  const renderForm = () => {
+  const getModeConfig = () => {
     switch (currentMode) {
       case 'forgot_password':
-        return (
-          <form onSubmit={handleRecoverySubmit} className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-            {renderMinimalHeader(
-              "Recuperar Senha",
-              "Digite seu e-mail institucional para receber o link.",
-              RotateCcw
-            )}
-            <CardContent className="space-y-4 pt-2">
-              <div className="space-y-2">
-                <Label htmlFor="recovery-email">Email Institucional</Label>
-                <Input
-                  id="recovery-email"
-                  type="email"
-                  placeholder="seu.email@colegiosaojudas.com.br"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  className={cn("bg-white/50 dark:bg-zinc-900/50", emailError && "border-destructive focus-visible:ring-destructive")}
-                  disabled={isLoading}
-                  required
-                />
-                {emailError && <p className="text-xs text-destructive flex items-center gap-1 mt-1"><AlertCircle className="h-3 w-3" />{emailError}</p>}
-              </div>
-            </CardContent>
-            <CardFooter className="flex flex-col space-y-4 pb-8">
-              <Button type="submit" className="w-full h-11 text-base shadow-lg shadow-primary/20" disabled={isLoading || !isEmailValid}>
-                {isLoading ? "Enviando..." : "Enviar Link de Redefinição"}
-              </Button>
-              <Button type="button" variant="link" className="text-sm text-muted-foreground hover:text-primary transition-colors" onClick={() => changeMode('login')} disabled={isLoading}>
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Voltar ao login
-              </Button>
-            </CardFooter>
-          </form>
-        );
-
+        return { title: 'Recuperar', subtitle: 'Senha', description: 'Digite seu e-mail institucional', Icon: RotateCcw };
       case 'register':
-        return (
-          <form onSubmit={handleRegisterSubmit} className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-            {renderMinimalHeader(
-              "Novo Cadastro",
-              "Crie sua conta usando seu email institucional.",
-              UserPlus
-            )}
-            <CardContent className="space-y-4 pt-2">
-              <div className="space-y-2">
-                <Label htmlFor="register-email">Email Institucional</Label>
-                <Input
-                  id="register-email"
-                  type="email"
-                  placeholder="seu.email@colegiosaojudas.com.br"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  className={cn("bg-white/50 dark:bg-zinc-900/50", emailError && "border-destructive focus-visible:ring-destructive")}
-                  disabled={isLoading}
-                  required
-                />
-                {emailError && <p className="text-xs text-destructive flex items-center gap-1 mt-1"><AlertCircle className="h-3 w-3" />{emailError}</p>}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="register-password">Senha</Label>
-                <div className="relative">
-                  <Input id="register-password" type={showPassword ? "text" : "password"} placeholder="Mínimo 6 caracteres" value={password} onChange={e => setPassword(e.target.value)} className="bg-white/50 dark:bg-zinc-900/50 pr-10" disabled={isLoading} required />
-                  <Button type="button" variant="ghost" size="sm" className="absolute right-0 top-0 h-full px-3 hover:bg-transparent" onClick={() => setShowPassword(prev => !prev)}>
-                    {showPassword ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
-                  </Button>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="register-confirm-password">Confirmar Senha</Label>
-                <div className="relative">
-                  <Input id="register-confirm-password" type={showPassword ? "text" : "password"} placeholder="Confirme sua senha" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className="bg-white/50 dark:bg-zinc-900/50 pr-10" disabled={isLoading} required />
-                  <Button type="button" variant="ghost" size="sm" className="absolute right-0 top-0 h-full px-3 hover:bg-transparent" onClick={() => setShowPassword(prev => !prev)}>
-                    {showPassword ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-            <CardFooter className="flex flex-col space-y-4 pb-8">
-              <Button type="submit" className="w-full h-11 text-base shadow-lg shadow-primary/20" disabled={isLoading || !isEmailValid || password.length < 6 || password !== confirmPassword}>
-                {isLoading ? "Registrando..." : <><UserPlus className="h-4 w-4 mr-2" />Cadastrar</>}
-              </Button>
-              <Button type="button" variant="link" className="text-sm text-muted-foreground hover:text-primary transition-colors" onClick={() => changeMode('login')} disabled={isLoading}>
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Voltar ao login
-              </Button>
-            </CardFooter>
-          </form>
-        );
-
-      case 'login':
+        return { title: 'Criar', subtitle: 'Conta', description: 'Use seu email institucional', Icon: UserPlus };
       default:
-        return (
-          <form onSubmit={handleLoginSubmit} className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-            {renderMinimalHeader(
-              "Zelote",
-              "Entre com suas credenciais para continuar.",
-              Computer
-            )}
-            <CardContent className="space-y-4 pt-2">
-              <div className="space-y-2">
-                <Label htmlFor="login-email">Email Institucional</Label>
-                <Input
-                  id="login-email"
-                  type="email"
-                  placeholder="seu.email@colegiosaojudas.com.br"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  className={cn("bg-white/50 dark:bg-zinc-900/50", emailError && "border-destructive focus-visible:ring-destructive")}
-                  disabled={isLoading}
-                  required
-                />
-                {emailError && <p className="text-xs text-destructive flex items-center gap-1 mt-1"><AlertCircle className="h-3 w-3" />{emailError}</p>}
-              </div>
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <Label htmlFor="login-password">Senha</Label>
-                  <Button type="button" variant="link" className="text-xs text-muted-foreground hover:text-primary p-0 h-auto font-normal" onClick={() => changeMode('forgot_password')} disabled={isLoading}>
-                    Esqueceu a senha?
-                  </Button>
-                </div>
-                <div className="relative">
-                  <Input id="login-password" type={showPassword ? "text" : "password"} placeholder="Digite sua senha" value={password} onChange={e => setPassword(e.target.value)} className="bg-white/50 dark:bg-zinc-900/50 pr-10" disabled={isLoading} required />
-                  <Button type="button" variant="ghost" size="sm" className="absolute right-0 top-0 h-full px-3 hover:bg-transparent" onClick={() => setShowPassword(prev => !prev)}>
-                    {showPassword ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-            <CardFooter className="flex flex-col space-y-4 pb-8">
-              <Button type="submit" className="w-full h-11 text-base shadow-lg shadow-primary/20" disabled={isLoading || !isEmailValid}>
-                {isLoading ? "Entrando..." : <><LogIn className="h-4 w-4 mr-2" />Entrar</>}
-              </Button>
-              <div className="text-center text-sm text-muted-foreground">
-                Não tem uma conta?{" "}
-                <Button type="button" variant="link" className="text-primary hover:text-primary/80 p-0 h-auto font-semibold" onClick={() => changeMode('register')} disabled={isLoading}>
-                  Cadastre-se
-                </Button>
-              </div>
-            </CardFooter>
-          </form>
-        );
+        return { title: 'Zelote', subtitle: 'Sistema', description: 'Entre com suas credenciais', Icon: Computer };
     }
   };
 
+  const config = getModeConfig();
+
   return (
     <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-background">
-      {/* Animated Background */}
-      <div className="absolute inset-0 animated-menu-bg opacity-30 pointer-events-none" />
+      {/* Neo-Brutalist Background Pattern */}
+      <div className="absolute inset-0 neo-brutal-grid opacity-[0.03] dark:opacity-[0.05]" />
+      
+      {/* Floating Geometric Shapes */}
+      <div className="absolute top-20 left-10 w-20 h-20 bg-primary rotate-12 neo-brutal-shadow animate-float" />
+      <div className="absolute bottom-32 right-16 w-16 h-16 bg-warning rotate-45 neo-brutal-shadow animate-float-delayed" />
+      <div className="absolute top-1/3 right-20 w-12 h-12 bg-success rotate-6 neo-brutal-shadow animate-float" />
+      <div className="absolute bottom-20 left-24 w-14 h-14 bg-error -rotate-12 neo-brutal-shadow animate-float-delayed" />
+      
+      {/* Main Card */}
+      <div className="w-full max-w-md relative z-10 animate-in fade-in slide-in-from-bottom-8 duration-700">
+        {/* Neo-Brutal Card */}
+        <div className="neo-brutal-card bg-card p-0 overflow-hidden">
+          {/* Header Section */}
+          <div className="neo-brutal-header bg-primary text-primary-foreground p-6 relative overflow-hidden">
+            {/* Header Pattern */}
+            <div className="absolute inset-0 neo-brutal-dots opacity-20" />
+            
+            <div className="relative z-10 flex items-center gap-4">
+              <div className="neo-brutal-icon-box bg-card text-foreground">
+                <config.Icon className="h-8 w-8" strokeWidth={2.5} />
+              </div>
+              <div>
+                <h1 className="text-4xl font-black tracking-tight leading-none">
+                  {config.title}
+                </h1>
+                <p className="text-2xl font-bold opacity-80">{config.subtitle}</p>
+              </div>
+            </div>
+          </div>
 
-      {/* Gradient Orbs */}
-      <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-primary/20 rounded-full blur-[120px] animate-pulse" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-violet-500/20 rounded-full blur-[120px] animate-pulse delay-1000" />
+          {/* Form Section */}
+          <div className="p-6 pt-8">
+            <p className="text-muted-foreground font-medium mb-6 text-center">
+              {config.description}
+            </p>
 
-      <GlassCard className="w-full max-w-md border-white/20 dark:border-white/10 shadow-2xl backdrop-blur-2xl relative z-10">
-        {renderForm()}
-      </GlassCard>
+            {currentMode === 'login' && (
+              <form onSubmit={handleLoginSubmit} className="space-y-5">
+                <div className="space-y-2">
+                  <Label htmlFor="login-email" className="neo-brutal-label">Email Institucional</Label>
+                  <Input
+                    id="login-email"
+                    type="email"
+                    placeholder="seu.email@colegiosaojudas.com.br"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    className={cn("neo-brutal-input", emailError && "border-error")}
+                    disabled={isLoading}
+                    required
+                  />
+                  {emailError && (
+                    <p className="text-xs text-error flex items-center gap-1 font-medium">
+                      <AlertCircle className="h-3 w-3" />{emailError}
+                    </p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <Label htmlFor="login-password" className="neo-brutal-label">Senha</Label>
+                    <button
+                      type="button"
+                      className="text-xs font-bold text-primary hover:underline underline-offset-4"
+                      onClick={() => changeMode('forgot_password')}
+                      disabled={isLoading}
+                    >
+                      Esqueceu?
+                    </button>
+                  </div>
+                  <div className="relative">
+                    <Input
+                      id="login-password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Digite sua senha"
+                      value={password}
+                      onChange={e => setPassword(e.target.value)}
+                      className="neo-brutal-input pr-12"
+                      disabled={isLoading}
+                      required
+                    />
+                    <button
+                      type="button"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                      onClick={() => setShowPassword(prev => !prev)}
+                    >
+                      {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                    </button>
+                  </div>
+                </div>
+
+                <Button
+                  type="submit"
+                  className="neo-brutal-button w-full"
+                  disabled={isLoading || !isEmailValid}
+                >
+                  {isLoading ? (
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                  ) : (
+                    <>
+                      <LogIn className="h-5 w-5 mr-2" strokeWidth={2.5} />
+                      Entrar
+                    </>
+                  )}
+                </Button>
+
+                <div className="text-center pt-2">
+                  <span className="text-muted-foreground">Não tem conta? </span>
+                  <button
+                    type="button"
+                    className="font-bold text-primary hover:underline underline-offset-4"
+                    onClick={() => changeMode('register')}
+                    disabled={isLoading}
+                  >
+                    Cadastre-se
+                  </button>
+                </div>
+              </form>
+            )}
+
+            {currentMode === 'register' && (
+              <form onSubmit={handleRegisterSubmit} className="space-y-5">
+                <div className="space-y-2">
+                  <Label htmlFor="register-email" className="neo-brutal-label">Email Institucional</Label>
+                  <Input
+                    id="register-email"
+                    type="email"
+                    placeholder="seu.email@colegiosaojudas.com.br"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    className={cn("neo-brutal-input", emailError && "border-error")}
+                    disabled={isLoading}
+                    required
+                  />
+                  {emailError && (
+                    <p className="text-xs text-error flex items-center gap-1 font-medium">
+                      <AlertCircle className="h-3 w-3" />{emailError}
+                    </p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="register-password" className="neo-brutal-label">Senha</Label>
+                  <div className="relative">
+                    <Input
+                      id="register-password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Mínimo 6 caracteres"
+                      value={password}
+                      onChange={e => setPassword(e.target.value)}
+                      className="neo-brutal-input pr-12"
+                      disabled={isLoading}
+                      required
+                    />
+                    <button
+                      type="button"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                      onClick={() => setShowPassword(prev => !prev)}
+                    >
+                      {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="register-confirm" className="neo-brutal-label">Confirmar Senha</Label>
+                  <Input
+                    id="register-confirm"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Confirme sua senha"
+                    value={confirmPassword}
+                    onChange={e => setConfirmPassword(e.target.value)}
+                    className="neo-brutal-input"
+                    disabled={isLoading}
+                    required
+                  />
+                </div>
+
+                <Button
+                  type="submit"
+                  className="neo-brutal-button w-full"
+                  disabled={isLoading || !isEmailValid || password.length < 6 || password !== confirmPassword}
+                >
+                  {isLoading ? (
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                  ) : (
+                    <>
+                      <UserPlus className="h-5 w-5 mr-2" strokeWidth={2.5} />
+                      Cadastrar
+                    </>
+                  )}
+                </Button>
+
+                <button
+                  type="button"
+                  className="w-full flex items-center justify-center gap-2 text-muted-foreground hover:text-foreground font-bold transition-colors py-2"
+                  onClick={() => changeMode('login')}
+                  disabled={isLoading}
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  Voltar ao login
+                </button>
+              </form>
+            )}
+
+            {currentMode === 'forgot_password' && (
+              <form onSubmit={handleRecoverySubmit} className="space-y-5">
+                <div className="space-y-2">
+                  <Label htmlFor="recovery-email" className="neo-brutal-label">Email Institucional</Label>
+                  <Input
+                    id="recovery-email"
+                    type="email"
+                    placeholder="seu.email@colegiosaojudas.com.br"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    className={cn("neo-brutal-input", emailError && "border-error")}
+                    disabled={isLoading}
+                    required
+                  />
+                  {emailError && (
+                    <p className="text-xs text-error flex items-center gap-1 font-medium">
+                      <AlertCircle className="h-3 w-3" />{emailError}
+                    </p>
+                  )}
+                </div>
+
+                <Button
+                  type="submit"
+                  className="neo-brutal-button w-full"
+                  disabled={isLoading || !isEmailValid}
+                >
+                  {isLoading ? (
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                  ) : (
+                    "Enviar Link"
+                  )}
+                </Button>
+
+                <button
+                  type="button"
+                  className="w-full flex items-center justify-center gap-2 text-muted-foreground hover:text-foreground font-bold transition-colors py-2"
+                  onClick={() => changeMode('login')}
+                  disabled={isLoading}
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  Voltar ao login
+                </button>
+              </form>
+            )}
+          </div>
+
+          {/* Footer Accent */}
+          <div className="h-2 bg-gradient-to-r from-primary via-warning to-success" />
+        </div>
+
+        {/* Decorative Shadow Element */}
+        <div className="absolute -bottom-3 -right-3 w-full h-full bg-foreground/10 dark:bg-foreground/5 -z-10 rounded-none" />
+      </div>
     </div>
   );
 };
