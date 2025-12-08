@@ -1,5 +1,7 @@
+// ADIÇÃO: Importamos os hooks de autenticação que o Layout precisará
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfileRole } from '@/hooks/use-profile-role';
+
 import { AuditHub } from '@/components/audit/AuditHub';
 import { useState } from "react";
 import { RegistrationHub } from "@/components/RegistrationHub";
@@ -13,8 +15,6 @@ import { LoanHub } from "@/components/LoanHub";
 import { useDatabase } from "@/hooks/useDatabase";
 import { ReturnWrapper } from '@/components/ReturnWrapper';
 import { Navigate } from 'react-router-dom';
-import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
-import { AppSidebar } from '@/components/AppSidebar';
 
 type AppView = 'menu' | 'registration' | 'dashboard' | 'inventory' | 'loan' | 'audit' | 'return' | 'scheduling';
 
@@ -30,10 +30,6 @@ const Index = () => {
   const [selectedChromebookId, setSelectedChromebookId] = useState<string | null>(null);
 
   const handleNavigation = (view: AppView, tab?: 'form' | 'active', chromebookId?: string) => {
-    if (view === 'scheduling') {
-      // Handle scheduling separately as it has its own page
-      return;
-    }
     setCurrentView(view);
     if (tab) setLoanTabDefault(tab);
     if (chromebookId && view === 'return') {
@@ -137,33 +133,18 @@ const Index = () => {
     : 'bg-background';
 
   return (
-    <SidebarProvider defaultOpen={true}>
-      <div className="min-h-screen flex w-full">
-        <AppSidebar currentView={currentView} onNavigate={handleNavigation} />
-        <SidebarInset>
-          <Layout
-            title={getViewTitle()}
-            subtitle={getViewSubtitle()}
-            showBackButton={currentView !== 'menu'}
-            onBack={handleBackToMenu}
-            backgroundClass={menuBackgroundClass}
-          >
-            {loading && currentView !== 'menu' ? (
-              <div className="flex justify-center items-center h-64">
-                <LoadingSpinner />
-              </div>
-            ) : (
-              renderCurrentView()
-            )}
-          </Layout>
-        </SidebarInset>
-      </div>
-      <QRCodeModal 
-        open={showQRCodeModal} 
-        onOpenChange={(open) => setShowQRCodeModal(open)} 
-        chromebookId={selectedChromebookId ?? undefined} 
-      />
-    </SidebarProvider>
+    <>
+      <Layout
+        title={getViewTitle()}
+        subtitle={getViewSubtitle()}
+        showBackButton={currentView !== 'menu'}
+        onBack={handleBackToMenu}
+        backgroundClass={menuBackgroundClass}
+      >
+        {loading && currentView !== 'menu' ? <div className="flex justify-center items-center h-64"><LoadingSpinner /></div> : renderCurrentView()}
+      </Layout>
+      <QRCodeModal open={showQRCodeModal} onOpenChange={(open) => setShowQRCodeModal(open)} chromebookId={selectedChromebookId ?? undefined} />
+    </>
   );
 };
 
