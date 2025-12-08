@@ -135,117 +135,122 @@ export const AuditHub = () => {
           </TabsList>
 
           <TabsContent value="current" className="space-y-6 mt-6">
-            <div className="neo-container">
-              <CardHeader className="border-b-4 border-black dark:border-white bg-yellow-300 dark:bg-yellow-900/50 p-6">
-                <CardTitle className="flex items-center gap-2 text-black dark:text-white font-black uppercase tracking-tight">
-                  <Plus className="h-5 w-5" />
-                  Iniciar Nova Auditoria
-                </CardTitle>
-                <CardDescription className="text-black/70 dark:text-white/70 font-bold text-xs uppercase tracking-wide">
-                  Comece uma nova sessão de contagem de inventário para verificar a localização e o estado dos equipamentos.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="p-6">
-                <AlertDialog onOpenChange={(open) => !open && setNewAuditName('')}>
-                  <AlertDialogTrigger asChild>
-                    <Button disabled={isProcessing} className="w-full neo-btn bg-menu-teal hover:bg-menu-teal-hover h-12 text-base">
-                      {isProcessing ? (
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      ) : (
-                        <>
-                          <ListChecks className="mr-2 h-4 w-4" />
-                          Iniciar Nova Contagem
-                        </>
-                      )}
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent className="border-4 border-black dark:border-white rounded-none shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] bg-white dark:bg-zinc-900 max-w-md">
-                    <AlertDialogHeader>
-                      <AlertDialogTitle className="font-black uppercase text-xl">Iniciar Nova Contagem</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        Dê um nome para esta sessão de auditoria. Ex: "Contagem Mensal - Outubro"
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <div className="grid gap-4 py-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="audit-name" className="font-bold uppercase text-xs">Nome da Auditoria</Label>
-                        <Input
-                          id="audit-name"
-                          value={newAuditName}
-                          onChange={(e) => setNewAuditName(e.target.value)}
-                          className="neo-input"
-                          placeholder="Contagem Semanal"
-                          autoComplete="off"
-                        />
+            {/* NOVO: Grid para colocar os dois cards lado a lado em telas maiores */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              
+              {/* Card 1: Iniciar Nova Auditoria */}
+              <div className="neo-container">
+                <CardHeader className="border-b-4 border-black dark:border-white bg-yellow-300 dark:bg-yellow-900/50 p-6">
+                  <CardTitle className="flex items-center gap-2 text-black dark:text-white font-black uppercase tracking-tight">
+                    <Plus className="h-5 w-5" />
+                    Iniciar Nova Auditoria
+                  </CardTitle>
+                  <CardDescription className="text-black/70 dark:text-white/70 font-bold text-xs uppercase tracking-wide">
+                    Comece uma nova sessão de contagem de inventário para verificar a localização e o estado dos equipamentos.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="p-6">
+                  <AlertDialog onOpenChange={(open) => !open && setNewAuditName('')}>
+                    <AlertDialogTrigger asChild>
+                      <Button disabled={isProcessing} className="w-full neo-btn bg-menu-teal hover:bg-menu-teal-hover h-12 text-base">
+                        {isProcessing ? (
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                          <>
+                            <ListChecks className="mr-2 h-4 w-4" />
+                            Iniciar Nova Contagem
+                          </>
+                        )}
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent className="border-4 border-black dark:border-white rounded-none shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] bg-white dark:bg-zinc-900 max-w-md">
+                      <AlertDialogHeader>
+                        <AlertDialogTitle className="font-black uppercase text-xl">Iniciar Nova Contagem</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Dê um nome para esta sessão de auditoria. Ex: "Contagem Mensal - Outubro"
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <div className="grid gap-4 py-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="audit-name" className="font-bold uppercase text-xs">Nome da Auditoria</Label>
+                          <Input
+                            id="audit-name"
+                            value={newAuditName}
+                            onChange={(e) => setNewAuditName(e.target.value)}
+                            className="neo-input"
+                            placeholder="Contagem Semanal"
+                            autoComplete="off"
+                          />
+                        </div>
                       </div>
-                    </div>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel className="neo-btn bg-white hover:bg-gray-100 text-black border-2 border-black h-10">Cancelar</AlertDialogCancel>
-                      <AlertDialogAction onClick={handleStartAudit} disabled={!newAuditName.trim() || isProcessing} className="neo-btn bg-menu-teal hover:bg-menu-teal-hover h-10">
-                        Confirmar e Iniciar
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              </CardContent>
-            </div>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel className="neo-btn bg-white hover:bg-gray-100 text-black border-2 border-black h-10">Cancelar</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleStartAudit} disabled={!newAuditName.trim() || isProcessing} className="neo-btn bg-menu-teal hover:bg-menu-teal-hover h-10">
+                          Confirmar e Iniciar
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </CardContent>
+              </div>
 
-            {/* Últimas Auditorias Concluídas (Resumo) */}
-            <div className="neo-container">
-              <CardHeader className="border-b-4 border-black dark:border-white bg-gray-50 dark:bg-zinc-900/50 p-6">
-                <CardTitle className="flex items-center gap-2 font-black uppercase tracking-tight">
-                  <History className="h-5 w-5" />
-                  Últimas Auditorias Concluídas
-                </CardTitle>
-                <CardDescription className="text-black/70 dark:text-white/70 font-bold text-xs uppercase tracking-wide">
-                  Visualize rapidamente as últimas auditorias concluídas.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="p-6">
-                {completedAudits && completedAudits.length > 0 ? (
-                  <div className="overflow-x-auto">
-                    <Table className="min-w-[600px]">
-                      <TableHeader>
-                        <TableRow className="bg-gray-100 dark:bg-zinc-800">
-                          <TableHead className="font-black text-black dark:text-white uppercase text-xs">Nome</TableHead>
-                          <TableHead className="text-right font-black text-black dark:text-white uppercase text-xs">Finalizada</TableHead>
-                          <TableHead className="text-right font-black text-black dark:text-white uppercase text-xs">Itens</TableHead>
-                          <TableHead className="text-right font-black text-black dark:text-white uppercase text-xs">Conclusão</TableHead>
-                          <TableHead className="text-right font-black text-black dark:text-white uppercase text-xs">Ações</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {completedAudits.slice(0, 5).map((audit) => (
-                          <TableRow key={audit.id} className="hover:bg-yellow-50 dark:hover:bg-yellow-900/10 transition-colors border-b-2 border-black/10 dark:border-white/10">
-                            <TableCell className="font-medium text-sm">{audit.audit_name}</TableCell>
-                            <TableCell className="text-right text-xs">
-                              {audit.completed_at
-                                ? format(new Date(audit.completed_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })
-                                : 'N/A'}
-                            </TableCell>
-                            <TableCell className="text-right text-sm font-mono">{audit.total_counted ?? 'N/A'}</TableCell>
-                            <TableCell className="text-right text-sm font-mono">
-                              {audit.total_expected && audit.total_counted
-                                ? `${((audit.total_counted / audit.total_expected) * 100).toFixed(1)}%`
-                                : 'N/A'}
-                            </TableCell>
-                            <TableCell className="text-right">
-                              <Button variant="ghost" size="sm" onClick={() => handleViewReport(audit)} title="Ver Relatório Detalhado" className="h-8 w-8 p-0 border-2 border-black dark:border-white rounded-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] active:shadow-none bg-white dark:bg-zinc-800">
-                                <Eye className="h-4 w-4" />
-                              </Button>
-                            </TableCell>
+              {/* Card 2: Últimas Auditorias Concluídas (Resumo) */}
+              <div className="neo-container">
+                <CardHeader className="border-b-4 border-black dark:border-white bg-gray-50 dark:bg-zinc-900/50 p-6">
+                  <CardTitle className="flex items-center gap-2 font-black uppercase tracking-tight">
+                    <History className="h-5 w-5" />
+                    Últimas Auditorias Concluídas
+                  </CardTitle>
+                  <CardDescription className="text-black/70 dark:text-white/70 font-bold text-xs uppercase tracking-wide">
+                    Visualize rapidamente as últimas auditorias concluídas.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="p-6">
+                  {completedAudits && completedAudits.length > 0 ? (
+                    <div className="overflow-x-auto">
+                      <Table className="min-w-[600px]">
+                        <TableHeader>
+                          <TableRow className="bg-gray-100 dark:bg-zinc-800">
+                            <TableHead className="font-black text-black dark:text-white uppercase text-xs">Nome</TableHead>
+                            <TableHead className="text-right font-black text-black dark:text-white uppercase text-xs">Finalizada</TableHead>
+                            <TableHead className="text-right font-black text-black dark:text-white uppercase text-xs">Itens</TableHead>
+                            <TableHead className="text-right font-black text-black dark:text-white uppercase text-xs">Conclusão</TableHead>
+                            <TableHead className="text-right font-black text-black dark:text-white uppercase text-xs">Ações</TableHead>
                           </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
+                        </TableHeader>
+                        <TableBody>
+                          {completedAudits.slice(0, 5).map((audit) => (
+                            <TableRow key={audit.id} className="hover:bg-yellow-50 dark:hover:bg-yellow-900/10 transition-colors border-b-2 border-black/10 dark:border-white/10">
+                              <TableCell className="font-medium text-sm">{audit.audit_name}</TableCell>
+                              <TableCell className="text-right text-xs">
+                                {audit.completed_at
+                                  ? format(new Date(audit.completed_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })
+                                  : 'N/A'}
+                              </TableCell>
+                              <TableCell className="text-right text-sm font-mono">{audit.total_counted ?? 'N/A'}</TableCell>
+                              <TableCell className="text-right text-sm font-mono">
+                                {audit.total_expected && audit.total_counted
+                                  ? `${((audit.total_counted / audit.total_expected) * 100).toFixed(1)}%`
+                                  : 'N/A'}
+                              </TableCell>
+                              <TableCell className="text-right">
+                                <Button variant="ghost" size="sm" onClick={() => handleViewReport(audit)} title="Ver Relatório Detalhado" className="h-8 w-8 p-0 border-2 border-black dark:border-white rounded-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] active:shadow-none bg-white dark:bg-zinc-800">
+                                  <Eye className="h-4 w-4" />
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">Nenhuma auditoria concluída para exibir.</p>
+                  )}
+                  <div className="mt-4 flex justify-end">
+                    <Button variant="secondary" onClick={() => handleTabChange('history')} className="neo-btn bg-gray-200 hover:bg-gray-300 text-black border-2 border-black h-10">Ver histórico completo</Button>
                   </div>
-                ) : (
-                  <p className="text-sm text-muted-foreground">Nenhuma auditoria concluída para exibir.</p>
-                )}
-                <div className="mt-4 flex justify-end">
-                  <Button variant="secondary" onClick={() => handleTabChange('history')} className="neo-btn bg-gray-200 hover:bg-gray-300 text-black border-2 border-black h-10">Ver histórico completo</Button>
-                </div>
-              </CardContent>
+                </CardContent>
+              </div>
             </div>
           </TabsContent>
 
