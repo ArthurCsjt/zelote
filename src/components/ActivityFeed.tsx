@@ -36,7 +36,7 @@ export function ActivityFeed() {
 
   if (isLoading) {
     return (
-      <div className="p-4 flex justify-center items-center h-32 w-[350px] md:w-[400px] neo-card">
+      <div className="p-4 flex justify-center items-center h-32 neo-card">
         <Loader2 className="h-6 w-6 animate-spin text-primary" />
       </div>
     );
@@ -44,7 +44,7 @@ export function ActivityFeed() {
 
   if (error) {
     return (
-      <div className="p-4 text-center text-sm text-error-foreground w-[350px] md:w-[400px] neo-card border-l-4 border-l-error">
+      <div className="p-4 text-center text-sm text-error-foreground neo-card border-l-4 border-l-error">
         <AlertTriangle className="h-5 w-5 mx-auto mb-2 text-error" />
         Erro ao carregar atividades: {error.message}
       </div>
@@ -54,7 +54,7 @@ export function ActivityFeed() {
   return (
     // Aplicando o estilo neo-brutalista ao Card principal
     <Card className={cn(
-      "w-[350px] md:w-[400px] flex flex-col max-h-[90vh] p-0",
+      "flex flex-col max-h-[90vh] p-0", // Removida largura fixa
       "border-4 border-black dark:border-white bg-white dark:bg-zinc-900 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.2)]"
     )}>
 

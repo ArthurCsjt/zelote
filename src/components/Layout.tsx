@@ -118,7 +118,10 @@ const Layout: React.FC<LayoutProps> = ({
                     <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-primary ring-2 ring-background" />
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="p-0 w-80 sm:w-96 bg-card/95 backdrop-blur-xl border-border shadow-xl rounded-2xl overflow-hidden" align="end">
+                <PopoverContent 
+                  className="p-0 w-80 sm:w-96 bg-card/95 backdrop-blur-xl border-border shadow-xl rounded-xl overflow-hidden" 
+                  align="end"
+                >
                   <ActivityFeed />
                 </PopoverContent>
               </Popover>
