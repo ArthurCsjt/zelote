@@ -125,11 +125,30 @@ export const AuditHub = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 neo-card p-0 gap-0 border-b-0">
-            <TabsTrigger value="current" className="font-black uppercase tracking-tight py-3 data-[state=active]:bg-black data-[state=active]:text-white dark:data-[state=active]:bg-white dark:data-[state=active]:text-black rounded-none border-2 border-transparent data-[state=active]:border-black dark:data-[state=active]:border-white">
+          {/* APLICANDO ESTILO NEO-BRUTALISTA NO TABS LIST */}
+          <TabsList className={cn(
+            "grid w-full grid-cols-2 p-0 h-auto rounded-none gap-0",
+            "border-4 border-black dark:border-white bg-white dark:bg-zinc-900 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.2)]"
+          )}>
+            <TabsTrigger 
+              value="current" 
+              className={cn(
+                "font-black uppercase tracking-tight py-3 transition-all duration-200 rounded-none",
+                "border-r-4 border-black dark:border-white",
+                "bg-white dark:bg-zinc-900 text-muted-foreground dark:text-muted-foreground",
+                "data-[state=active]:bg-black data-[state=active]:text-white dark:data-[state=active]:bg-white dark:data-[state=active]:text-black"
+              )}
+            >
               <Plus className="h-4 w-4 mr-2" /> Iniciar Contagem
             </TabsTrigger>
-            <TabsTrigger value="history" className="font-black uppercase tracking-tight py-3 data-[state=active]:bg-black data-[state=active]:text-white dark:data-[state=active]:bg-white dark:data-[state=active]:text-black rounded-none border-2 border-transparent data-[state=active]:border-black dark:data-[state=active]:border-white">
+            <TabsTrigger 
+              value="history" 
+              className={cn(
+                "font-black uppercase tracking-tight py-3 transition-all duration-200 rounded-none",
+                "bg-white dark:bg-zinc-900 text-muted-foreground dark:text-muted-foreground",
+                "data-[state=active]:bg-black data-[state=active]:text-white dark:data-[state=active]:bg-white dark:data-[state=active]:text-black"
+              )}
+            >
               <History className="h-4 w-4 mr-2" /> Histórico
             </TabsTrigger>
           </TabsList>
