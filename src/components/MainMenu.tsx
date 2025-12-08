@@ -30,21 +30,24 @@ export function MainMenu({
       title: 'Empréstimos',
       icon: ClipboardList,
       action: () => onNavigate('loan', 'form'),
-      color: 'text-blue-600 dark:text-blue-400',
+      color: 'text-menu-blue', // Azul
+      bg: 'bg-blue-300 dark:bg-blue-900/50',
       roles: ['admin', 'super_admin', 'user']
     },
     {
       title: 'Devolução',
       icon: RotateCcw,
       action: () => onNavigate('return'),
-      color: 'text-amber-600 dark:text-amber-400',
+      color: 'text-menu-amber', // Âmbar
+      bg: 'bg-amber-300 dark:bg-amber-900/50',
       roles: ['admin', 'super_admin', 'user']
     },
     {
       title: 'Agendamento',
       icon: Calendar,
       action: () => onNavigate('scheduling'),
-      color: 'text-blue-600 dark:text-blue-400',
+      color: 'text-menu-violet', // Violeta
+      bg: 'bg-violet-300 dark:bg-violet-900/50',
       roles: ['admin', 'super_admin', 'professor', 'user'],
       badge: { label: 'BETA', variant: 'info' }
     },
@@ -52,28 +55,32 @@ export function MainMenu({
       title: 'Inventário',
       icon: Laptop,
       action: () => onNavigate('inventory'),
-      color: 'text-cyan-600 dark:text-cyan-400',
+      color: 'text-menu-teal', // Teal
+      bg: 'bg-teal-300 dark:bg-teal-900/50',
       roles: ['admin', 'super_admin', 'user']
     },
     {
       title: 'Cadastros',
       icon: PlusCircle,
       action: () => onNavigate('registration'),
-      color: 'text-emerald-600 dark:text-emerald-400',
+      color: 'text-menu-green', // Verde
+      bg: 'bg-green-300 dark:bg-green-900/50',
       roles: ['admin', 'super_admin', 'user']
     },
     {
       title: 'Contagem',
       icon: ListChecks,
       action: () => onNavigate('audit'),
-      color: 'text-rose-600 dark:text-rose-400',
+      color: 'text-menu-rose', // Rosa/Vermelho
+      bg: 'bg-rose-300 dark:bg-rose-900/50',
       roles: ['admin', 'super_admin']
     },
     {
       title: 'Dashboard',
       icon: BarChart3,
       action: () => onNavigate('dashboard'),
-      color: 'text-indigo-600 dark:text-indigo-400',
+      color: 'text-menu-dark-blue', // Azul Escuro
+      bg: 'bg-blue-500 dark:bg-blue-900/50',
       roles: ['admin', 'super_admin', 'user']
     },
   ];
@@ -114,9 +121,10 @@ export function MainMenu({
                 onClick={item.action}
               >
                 <div className={cn(
-                  "p-2 border-2 border-black dark:border-white bg-white dark:bg-zinc-800 transition-transform duration-300 shadow-[2px_2px_0px_0px_#000] group-hover:scale-110",
+                  "p-2 border-2 border-black dark:border-white transition-transform duration-300 shadow-[2px_2px_0px_0px_#000] group-hover:scale-110",
+                  item.bg // Aplica a cor de fundo do item
                 )}>
-                  <Icon className={cn("h-5 w-5 text-black dark:text-white")} />
+                  <Icon className={cn("h-5 w-5 text-black dark:text-white", item.color)} />
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="font-black text-sm text-black dark:text-white uppercase tracking-tight">
