@@ -64,7 +64,7 @@ export function ActiveLoans({ onNavigateToReturn }: ActiveLoansProps) {
 
   return (
     <div className="space-y-6 relative">
-      
+
       {/* Painel de Alertas de Atraso */}
       <OverdueAlertsPanel />
 
@@ -75,9 +75,9 @@ export function ActiveLoans({ onNavigateToReturn }: ActiveLoansProps) {
         </h3>
         <div className="flex items-center gap-3">
           {/* Seletor de Visualização */}
-          <ToggleGroup 
-            type="single" 
-            value={viewMode} 
+          <ToggleGroup
+            type="single"
+            value={viewMode}
             onValueChange={(value: ViewMode) => value && setViewMode(value)}
             className="h-9 bg-card border border-border"
           >
@@ -88,8 +88,8 @@ export function ActiveLoans({ onNavigateToReturn }: ActiveLoansProps) {
               <List className="h-4 w-4" />
             </ToggleGroupItem>
           </ToggleGroup>
-          
-          <Button 
+
+          <Button
             onClick={fetchActiveLoans}
             variant="outline"
             disabled={loading || dbLoading}
@@ -124,94 +124,77 @@ export function ActiveLoans({ onNavigateToReturn }: ActiveLoansProps) {
           {activeLoans.map((loan) => {
             const overdueStatus = isOverdue(loan);
             const dueSoonStatus = isDueSoon(loan);
-            
+
             return (
-              <GlassCard 
-                key={loan.id} 
-                className={cn("hover:shadow-lg transition-shadow border-l-4",
-                  overdueStatus ? 'border-l-error bg-error-bg/50' : 
-                  dueSoonStatus ? 'border-l-warning bg-warning-bg/50' : 'border-l-border'
+              <div
+                key={loan.id}
+                className={cn("neo-card hover:translate-x-[-4px] hover:translate-y-[-4px] hover:shadow-[8px_8px_0px_0px_#000] dark:hover:shadow-[8px_8px_0px_0px_#fff] border-l-4 transition-all duration-200",
+                  overdueStatus ? 'border-l-error bg-error-bg/20' :
+                    dueSoonStatus ? 'border-l-warning bg-warning-bg/20' : 'border-l-black dark:border-l-white'
                 )}
               >
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between">
                     <div className="space-y-3 flex-1">
                       <div className="flex items-center gap-3">
-                        <User className="h-5 w-5 text-primary" />
+                        <User className="h-6 w-6 text-black dark:text-white" />
                         <div>
-                          <h3 className="font-semibold text-lg text-foreground">{loan.student_name}</h3>
-                          <p className="text-sm text-muted-foreground">{loan.student_email}</p>
+                          <h3 className="font-black text-lg text-foreground uppercase tracking-tight">{loan.student_name}</h3>
+                          <p className="text-sm font-mono text-muted-foreground">{loan.student_email}</p>
                         </div>
                       </div>
 
                       <div className="flex flex-wrap gap-2">
                         {loan.student_ra && (
-                          <Badge variant="outline" className="bg-card text-foreground border-border">
+                          <Badge variant="outline" className="rounded-none border-2 border-black dark:border-white font-bold">
                             RA: {loan.student_ra}
                           </Badge>
                         )}
-                        <Badge variant="secondary" className="bg-info-bg text-info-foreground hover:bg-info-bg">
+                        <Badge variant="secondary" className="rounded-none bg-blue-100 text-blue-800 border-2 border-blue-800 font-bold">
                           <Monitor className="h-3 w-3 mr-1" />
                           {loan.chromebook_id}
                         </Badge>
-                        <Badge variant="outline" className="capitalize bg-card text-foreground border-border">
+                        <Badge variant="outline" className="capitalize rounded-none border-dashed border-2 border-black dark:border-white font-bold">
                           {loan.user_type}
                         </Badge>
                         {loan.loan_type === 'lote' && (
-                          <Badge className="bg-warning-bg text-warning-foreground hover:bg-warning-bg">
+                          <Badge className="rounded-none bg-yellow-300 text-black border-2 border-black font-bold">
                             Lote
                           </Badge>
                         )}
                         {/* Status de Atraso */}
                         {overdueStatus && (
-                          <Badge variant="destructive" className="gap-1 bg-error-bg text-error-foreground">
+                          <Badge variant="destructive" className="gap-1 rounded-none border-2 border-black font-bold">
                             <AlertTriangle className="h-3 w-3" />
-                            Em Atraso
-                          </Badge>
-                        )}
-                        {dueSoonStatus && !overdueStatus && (
-                          <Badge variant="outline" className="border-warning text-warning-foreground gap-1 bg-warning-bg">
-                            <Clock className="h-3 w-3" />
-                            Vence em Breve
+                            EM ATRASO
                           </Badge>
                         )}
                       </div>
 
-                      <div className="space-y-2">
+                      <div className="space-y-2 pt-2 border-t-2 border-black/10 dark:border-white/10">
                         <div className="flex items-center gap-2 text-sm text-foreground">
-                          <Target className="h-4 w-4 text-muted-foreground" />
-                          <span className="font-medium">Finalidade:</span>
-                          <span>{loan.purpose}</span>
+                          <Target className="h-4 w-4" />
+                          <span className="font-black uppercase">Finalidade:</span>
+                          <span className="font-mono">{loan.purpose}</span>
                         </div>
-                        
+
                         <div className="flex items-center gap-2 text-sm text-foreground">
-                          <Clock className="h-4 w-4 text-muted-foreground" />
-                          <span className="font-medium">Emprestado em:</span>
-                          <span>{format(new Date(loan.loan_date), "dd/MM/yyyy 'às' HH:mm")}</span>
+                          <Clock className="h-4 w-4" />
+                          <span className="font-black uppercase">Emprestado:</span>
+                          <span className="font-mono">{format(new Date(loan.loan_date), "dd/MM/yyyy HH:mm")}</span>
                         </div>
 
                         {/* Mostrar data de devolução esperada se existir */}
                         {loan.expected_return_date && (
-                          <div className={`flex items-center gap-2 text-sm ${
-                            overdueStatus ? 'text-error-foreground' : dueSoonStatus ? 'text-warning-foreground' : 'text-foreground'
-                          }`}>
-                            <AlertTriangle className={`h-4 w-4 ${
-                              overdueStatus ? 'text-error' : dueSoonStatus ? 'text-warning' : 'text-muted-foreground'
-                            }`} />
-                            <span className="font-medium">
-                              {overdueStatus ? 'Deveria ter sido devolvido em:' : 'Prazo de devolução:'}
+                          <div className={`flex items-center gap-2 text-sm font-bold ${overdueStatus ? 'text-red-600 dark:text-red-400' : dueSoonStatus ? 'text-amber-600 dark:text-amber-400' : 'text-foreground'
+                            }`}>
+                            <AlertTriangle className={`h-4 w-4`} />
+                            <span className="uppercase">
+                              {overdueStatus ? 'Limite:' : 'Prazo:'}
                             </span>
-                            <span className="font-medium">
-                              {format(new Date(loan.expected_return_date), "dd/MM/yyyy 'às' HH:mm")}
+                            <span className="font-mono">
+                              {format(new Date(loan.expected_return_date), "dd/MM/yyyy HH:mm")}
                             </span>
-                          </div>
-                        )}
-
-                        {loan.chromebook_model && (
-                          <div className="flex items-center gap-2 text-sm text-foreground">
-                            <Monitor className="h-4 w-4 text-muted-foreground" />
-                            <span className="font-medium">Modelo:</span>
-                            <span>{loan.chromebook_model}</span>
                           </div>
                         )}
                       </div>
@@ -221,13 +204,13 @@ export function ActiveLoans({ onNavigateToReturn }: ActiveLoansProps) {
                   <Button
                     onClick={() => handleReturnClick(loan)}
                     disabled={loading || dbLoading}
-                    className={`w-full mt-4 bg-menu-amber hover:bg-menu-amber-hover`}
+                    className="w-full mt-4 neo-btn bg-menu-amber hover:bg-menu-amber-hover border-black dark:border-white text-white"
                   >
-                    <CheckCircle className="h-4 w-4 mr-2" />
-                    {overdueStatus ? 'Devolver (Atrasado)' : 'Devolver'}
+                    <CheckCircle className="h-5 w-5 mr-2" />
+                    {overdueStatus ? 'REGISTRAR DEVOLUÇÃO (ATRASO)' : 'REGISTRAR DEVOLUÇÃO'}
                   </Button>
                 </CardContent>
-              </GlassCard>
+              </div>
             );
           })}
         </div>

@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from 'sonner';
@@ -9,6 +10,7 @@ import { useTheme } from "./hooks/use-theme";
 // REMOVIDO: DatabaseProvider (código duplicado - usar apenas useDatabase hook)
 import { PrintProvider } from './contexts/PrintContext';
 import { AuditProvider } from './providers/AuditProvider';
+import logger from "@/utils/logger";
 
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import Index from "./pages/Index";
@@ -66,48 +68,54 @@ const ToasterWrapper = () => {
 };
 
 
-const App = () => (
-  <ErrorBoundary>
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        {/* REMOVIDO: DatabaseProvider - usar useDatabase hook diretamente nos componentes */}
-        <PrintProvider>
-          <BrowserRouter>
-            <Routes>
-              <Route path="/login" element={<Login />} />
+const App = () => {
+  useEffect(() => {
+    logger.info("Application mounted");
+  }, []);
 
-              <Route path="/update-password" element={<UpdatePasswordPage />} />
+  return (
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          {/* REMOVIDO: DatabaseProvider - usar useDatabase hook diretamente nos componentes */}
+          <PrintProvider>
+            <BrowserRouter>
+              <Routes>
+                <Route path="/login" element={<Login />} />
 
-              <Route path="/" element={
-                <ProtectedRoute>
-                  <Index />
-                </ProtectedRoute>
-              } />
+                <Route path="/update-password" element={<UpdatePasswordPage />} />
 
-              <Route path="/settings" element={
-                <ProtectedRoute>
-                  <Settings />
-                </ProtectedRoute>
-              } />
+                <Route path="/" element={
+                  <ProtectedRoute>
+                    <Index />
+                  </ProtectedRoute>
+                } />
 
-              {/* ROTA DE IMPRESSÃO: Não usa ProtectedRoute nem Layout */}
-              <Route path="/print-preview" element={<PrintPreviewPage />} />
+                <Route path="/settings" element={
+                  <ProtectedRoute>
+                    <Settings />
+                  </ProtectedRoute>
+                } />
 
-              {/* ROTA DE AGENDAMENTO */}
-              <Route path="/agendamento" element={
-                <ProtectedRoute>
-                  <SchedulingPage />
-                </ProtectedRoute>
-              } />
+                {/* ROTA DE IMPRESSÃO: Não usa ProtectedRoute nem Layout */}
+                <Route path="/print-preview" element={<PrintPreviewPage />} />
 
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-          <ToasterWrapper />
-        </PrintProvider>
-      </AuthProvider>
-    </QueryClientProvider>
-  </ErrorBoundary>
-);
+                {/* ROTA DE AGENDAMENTO */}
+                <Route path="/agendamento" element={
+                  <ProtectedRoute>
+                    <SchedulingPage />
+                  </ProtectedRoute>
+                } />
+
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+            <ToasterWrapper />
+          </PrintProvider>
+        </AuthProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
+  );
+};
 
 export default App;

@@ -3,68 +3,105 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
- 
+
 @layer base {
   :root {
     /* ===== BASE COLORS (ZINC) ===== */
-    --background: 0 0% 100%;           /* Branco puro */
-    --foreground: 240 10% 3.9%;        /* Texto preto suave */
-    --background-secondary: 240 4.8% 95.9%; /* Cinza muito claro (Zinc 100) */
-    
+    --background: 0 0% 100%;
+    /* Branco puro */
+    --foreground: 240 10% 3.9%;
+    /* Texto preto suave */
+    --background-secondary: 240 4.8% 95.9%;
+    /* Cinza muito claro (Zinc 100) */
+
     /* ===== CARDS & SURFACES ===== */
-    --card: 0 0% 100%;                 /* Fundo cards light */
-    --card-foreground: 240 10% 3.9%;   /* Texto cards light */
-    --card-hover: 240 4.8% 95.9%;      /* Hover sutil light (Zinc 100) */
-    
+    --card: 0 0% 100%;
+    /* Fundo cards light */
+    --card-foreground: 240 10% 3.9%;
+    /* Texto cards light */
+    --card-hover: 240 4.8% 95.9%;
+    /* Hover sutil light (Zinc 100) */
+
     /* ===== MODAIS & OVERLAYS (Ajustado para Zinc) ===== */
     --modal: 0 0% 100%;
-    --modal-border: 240 5.9% 90%;      /* Zinc 200 */
-    --overlay: 240 10% 3.9% / 0.8;     /* Foreground com opacidade */
-    
+    --modal-border: 240 5.9% 90%;
+    /* Zinc 200 */
+    --overlay: 240 10% 3.9% / 0.8;
+    /* Foreground com opacidade */
+
     /* ===== INPUTS & BORDERS (Ajustado para Zinc) */
-    --border: 240 5.9% 90%;            /* Zinc 200 */
-    --border-strong: 240 5.9% 80%;     /* Zinc 300 */
-    --ring: 217 91% 60%;               /* Primary Blue */
-    --input: 240 5.9% 90%;             /* Zinc 200 */
-    --input-bg: 0 0% 100%;             /* Branco */
-    --input-foreground: 240 10% 3.9%;  /* Foreground */
-    --input-placeholder: 240 3.8% 46.1% / 0.5; /* Muted Foreground */
-    
+    --border: 240 5.9% 90%;
+    /* Zinc 200 */
+    --border-strong: 240 5.9% 80%;
+    /* Zinc 300 */
+    --ring: 217 91% 60%;
+    /* Primary Blue */
+    --input: 240 5.9% 90%;
+    /* Zinc 200 */
+    --input-bg: 0 0% 100%;
+    /* Branco */
+    --input-foreground: 240 10% 3.9%;
+    /* Foreground */
+    --input-placeholder: 240 3.8% 46.1% / 0.5;
+    /* Muted Foreground */
+
     /* ===== PRIMARY & SECONDARY (Ajustado para Blue/Zinc) ===== */
-    --primary: 217 91% 60%;            /* Azul primário */
-    --primary-foreground: 210 40% 98%; /* Texto no primário */
-    --primary-hover: 217 91% 50%;      /* Hover primário */
-    
-    --secondary: 240 4.8% 95.9%;       /* Zinc 100 */
-    --secondary-foreground: 240 5.9% 10%; /* Zinc 900 */
-    
-    --muted: 240 4.8% 95.9%;           /* Zinc 100 */
-    --muted-foreground: 240 3.8% 46.1%;/* Zinc 500 */
-    --accent: 240 4.8% 95.9%;          /* Zinc 100 */
-    --accent-foreground: 240 5.9% 10%; /* Zinc 900 */
-    
+    --primary: 217 91% 60%;
+    /* Azul primário */
+    --primary-foreground: 210 40% 98%;
+    /* Texto no primário */
+    --primary-hover: 217 91% 50%;
+    /* Hover primário */
+
+    --secondary: 240 4.8% 95.9%;
+    /* Zinc 100 */
+    --secondary-foreground: 240 5.9% 10%;
+    /* Zinc 900 */
+
+    --muted: 240 4.8% 95.9%;
+    /* Zinc 100 */
+    --muted-foreground: 240 3.8% 46.1%;
+    /* Zinc 500 */
+    --accent: 240 4.8% 95.9%;
+    /* Zinc 100 */
+    --accent-foreground: 240 5.9% 10%;
+    /* Zinc 900 */
+
     /* ===== SEMANTIC STATES (Mantendo a funcionalidade BG/FG) ===== */
-    --success: 142.1 76.2% 36.3%;      /* Verde */
-    --success-foreground: 144 61% 20%; /* Texto verde escuro */
-    --success-bg: 142 76% 95%;         /* Fundo verde claro */
-    
-    --warning: 38 92% 50%;             /* Laranja */
-    --warning-foreground: 26 90% 37%;  /* Texto laranja escuro */
-    --warning-bg: 48 96% 95%;          /* Fundo laranja claro */
-    
-    --error: 0 84.2% 60.2%;            /* Vermelho */
-    --error-foreground: 0 90% 30%;     /* Texto vermelho escuro */
-    --error-bg: 0 86% 97%;             /* Fundo vermelho claro */
-    
-    --info: 221.2 83.2% 53.3%;         /* Azul info */
-    --info-foreground: 199 100% 20%;   /* Texto azul escuro */
-    --info-bg: 199 95% 95%;            /* Fundo azul claro */
-    
+    --success: 142.1 76.2% 36.3%;
+    /* Verde */
+    --success-foreground: 144 61% 20%;
+    /* Texto verde escuro */
+    --success-bg: 142 76% 95%;
+    /* Fundo verde claro */
+
+    --warning: 38 92% 50%;
+    /* Laranja */
+    --warning-foreground: 26 90% 37%;
+    /* Texto laranja escuro */
+    --warning-bg: 48 96% 95%;
+    /* Fundo laranja claro */
+
+    --error: 0 84.2% 60.2%;
+    /* Vermelho */
+    --error-foreground: 0 90% 30%;
+    /* Texto vermelho escuro */
+    --error-bg: 0 86% 97%;
+    /* Fundo vermelho claro */
+
+    --info: 221.2 83.2% 53.3%;
+    /* Azul info */
+    --info-foreground: 199 100% 20%;
+    /* Texto azul escuro */
+    --info-bg: 199 95% 95%;
+    /* Fundo azul claro */
+
     /* ===== BORDERS & SHADOWS (AJUSTADO PARA SOMBRA MAIS DENSA) ===== */
     --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.15);
     --shadow-md: 0 6px 15px -3px rgba(0, 0, 0, 0.2), 0 3px 6px -3px rgba(0, 0, 0, 0.15);
-    --shadow-lg: 0 20px 30px -10px rgba(0, 0, 0, 0.2), 0 10px 15px -7px rgba(0, 0, 0, 0.15); /* Sombra muito mais forte e difusa */
-    
+    --shadow-lg: 0 20px 30px -10px rgba(0, 0, 0, 0.2), 0 10px 15px -7px rgba(0, 0, 0, 0.15);
+    /* Sombra muito mais forte e difusa */
+
     /* ===== RADIUS ===== */
     --radius: 0.75rem;
     --radius-sm: 0.5rem;
@@ -89,63 +126,88 @@
 
   .dark {
     /* ===== BASE COLORS (ZINC) ===== */
-    --background: 240 10% 3.9%;        /* Preto azulado (Zinc 950) */
-    --foreground: 0 0% 98%;            /* Texto branco suave */
-    --background-secondary: 240 3.7% 15.9%; /* Zinc 800 */
-    
+    --background: 240 10% 3.9%;
+    /* Preto azulado (Zinc 950) */
+    --foreground: 0 0% 98%;
+    /* Texto branco suave */
+    --background-secondary: 240 3.7% 15.9%;
+    /* Zinc 800 */
+
     /* ===== CARDS & SURFACES ===== */
-    --card: 240 10% 3.9%;              /* Zinc 950 */
-    --card-foreground: 0 0% 98%;       /* Foreground */
-    --card-hover: 240 3.7% 15.9%;      /* Zinc 800 */
-    
+    --card: 240 10% 3.9%;
+    /* Zinc 950 */
+    --card-foreground: 0 0% 98%;
+    /* Foreground */
+    --card-hover: 240 3.7% 15.9%;
+    /* Zinc 800 */
+
     /* ===== MODAIS & OVERLAYS (Ajustado para Zinc) ===== */
     --modal: 240 10% 3.9%;
-    --modal-border: 240 3.7% 25%;      /* Zinc 700 */
-    --overlay: 240 10% 3.9% / 0.9;     /* Foreground com opacidade */
-    
+    --modal-border: 240 3.7% 25%;
+    /* Zinc 700 */
+    --overlay: 240 10% 3.9% / 0.9;
+    /* Foreground com opacidade */
+
     /* ===== INPUTS & BORDERS (Ajustado para Zinc) */
-    --border: 240 3.7% 25%;            /* Zinc 700 */
-    --border-strong: 240 3.7% 35%;     /* Zinc 600 */
-    --ring: 217 91% 60%;               /* Primary Blue */
-    --input: 240 3.7% 25%;             /* Zinc 700 */
-    --input-bg: 240 10% 3.9%;          /* Background */
-    --input-foreground: 0 0% 98%;      /* Foreground */
-    --input-placeholder: 240 5% 64.9% / 0.5; /* Muted Foreground */
-    
+    --border: 240 3.7% 25%;
+    /* Zinc 700 */
+    --border-strong: 240 3.7% 35%;
+    /* Zinc 600 */
+    --ring: 217 91% 60%;
+    /* Primary Blue */
+    --input: 240 3.7% 25%;
+    /* Zinc 700 */
+    --input-bg: 240 10% 3.9%;
+    /* Background */
+    --input-foreground: 0 0% 98%;
+    /* Foreground */
+    --input-placeholder: 240 5% 64.9% / 0.5;
+    /* Muted Foreground */
+
     /* ===== PRIMARY & SECONDARY (Ajustado para Blue/Zinc) ===== */
-    --primary: 217 91% 60%;            /* Azul primário */
-    --primary-foreground: 222 47.4% 11.2%; /* Texto escuro no primário */
-    --primary-hover: 217 91% 65%;      /* Hover mais claro */
-    
-    --secondary: 240 3.7% 15.9%;       /* Zinc 800 */
-    --secondary-foreground: 0 0% 98%;  /* Foreground */
-    
-    --muted: 240 3.7% 15.9%;           /* Zinc 800 */
-    --muted-foreground: 240 5% 64.9%;  /* Zinc 400 */
-    --accent: 240 3.7% 15.9%;          /* Zinc 800 */
-    --accent-foreground: 0 0% 98%;     /* Foreground */
-    
+    --primary: 217 91% 60%;
+    /* Azul primário */
+    --primary-foreground: 222 47.4% 11.2%;
+    /* Texto escuro no primário */
+    --primary-hover: 217 91% 65%;
+    /* Hover mais claro */
+
+    --secondary: 240 3.7% 15.9%;
+    /* Zinc 800 */
+    --secondary-foreground: 0 0% 98%;
+    /* Foreground */
+
+    --muted: 240 3.7% 15.9%;
+    /* Zinc 800 */
+    --muted-foreground: 240 5% 64.9%;
+    /* Zinc 400 */
+    --accent: 240 3.7% 15.9%;
+    /* Zinc 800 */
+    --accent-foreground: 0 0% 98%;
+    /* Foreground */
+
     /* ===== SEMANTIC COLORS (Mantendo a funcionalidade BG/FG) ===== */
     --success: 142.1 70.6% 45.3%;
     --success-foreground: 144 61% 90%;
     --success-bg: 142 76% 15%;
-    
+
     --warning: 38 92% 60%;
     --warning-foreground: 48 96% 85%;
     --warning-bg: 38 92% 15%;
-    
+
     --error: 0 84% 65%;
     --error-foreground: 0 86% 90%;
     --error-bg: 0 84% 15%;
-    
+
     --info: 217.2 91.2% 59.8%;
     --info-foreground: 199 95% 90%;
     --info-bg: 199 89% 15%;
-    
+
     /* ===== BORDERS & SHADOWS ===== */
     --shadow-sm: 240 10% 0% / 0.2;
     --shadow-md: 240 10% 0% / 0.3;
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1); /* Sombra mais suave e difusa */
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+    /* Sombra mais suave e difusa */
 
     /* Menu Button Colors (PRESERVADO) */
     --menu-green: 142 76% 36%;
@@ -164,11 +226,12 @@
     --menu-dark-blue-hover: 213 90% 30%;
   }
 }
- 
+
 @layer base {
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground font-sans antialiased;
     font-family: 'Inter', sans-serif;
@@ -241,31 +304,79 @@
 /* ======================================================================== */
 /* ADIÇÃO: Classes de Delay para Animação Sequencial */
 /* ======================================================================== */
-.animation-delay-0 { animation-delay: 0ms; }
-.animation-delay-100 { animation-delay: 100ms; }
-.animation-delay-200 { animation-delay: 200ms; }
-.animation-delay-300 { animation-delay: 300ms; }
-.animation-delay-400 { animation-delay: 400ms; }
-.animation-delay-500 { animation-delay: 500ms; }
-.animation-delay-600 { animation-delay: 600ms; }
-.animation-delay-700 { animation-delay: 700ms; }
-.animation-delay-800 { animation-delay: 800ms; }
-.animation-delay-900 { animation-delay: 900ms; }
-.animation-delay-1000 { animation-delay: 1000ms; }
-.animation-delay-1100 { animation-delay: 1100ms; }
+.animation-delay-0 {
+  animation-delay: 0ms;
+}
+
+.animation-delay-100 {
+  animation-delay: 100ms;
+}
+
+.animation-delay-200 {
+  animation-delay: 200ms;
+}
+
+.animation-delay-300 {
+  animation-delay: 300ms;
+}
+
+.animation-delay-400 {
+  animation-delay: 400ms;
+}
+
+.animation-delay-500 {
+  animation-delay: 500ms;
+}
+
+.animation-delay-600 {
+  animation-delay: 600ms;
+}
+
+.animation-delay-700 {
+  animation-delay: 700ms;
+}
+
+.animation-delay-800 {
+  animation-delay: 800ms;
+}
+
+.animation-delay-900 {
+  animation-delay: 900ms;
+}
+
+.animation-delay-1000 {
+  animation-delay: 1000ms;
+}
+
+.animation-delay-1100 {
+  animation-delay: 1100ms;
+}
 
 /* ======================================================================== */
 /* NOVO: Fundo Animado para o Menu Principal */
 /* ======================================================================== */
 @keyframes gradient-shift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 @keyframes shimmer {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
+  0% {
+    transform: translateX(-100%);
+  }
+
+  100% {
+    transform: translateX(100%);
+  }
 }
 
 .animate-shimmer {
@@ -274,25 +385,23 @@
 
 .animated-menu-bg {
   /* Gradiente sutil usando cores do tema */
-  background: linear-gradient(135deg, 
-    hsl(var(--background-secondary)) 0%, 
-    hsl(var(--primary) / 0.05) 25%, 
-    hsl(var(--background-secondary)) 50%, 
-    hsl(var(--primary) / 0.05) 75%, 
-    hsl(var(--background-secondary)) 100%
-  );
+  background: linear-gradient(135deg,
+      hsl(var(--background-secondary)) 0%,
+      hsl(var(--primary) / 0.05) 25%,
+      hsl(var(--background-secondary)) 50%,
+      hsl(var(--primary) / 0.05) 75%,
+      hsl(var(--background-secondary)) 100%);
   background-size: 400% 400%;
   animation: gradient-shift 30s ease infinite;
   transition: background-color 0.5s ease;
-  
+
   .dark & {
-    background: linear-gradient(135deg, 
-      hsl(var(--background-secondary)) 0%, 
-      hsl(var(--primary) / 0.1) 25%, 
-      hsl(var(--background-secondary)) 50%, 
-      hsl(var(--primary) / 0.1) 75%, 
-      hsl(var(--background-secondary)) 100%
-    );
+    background: linear-gradient(135deg,
+        hsl(var(--background-secondary)) 0%,
+        hsl(var(--primary) / 0.1) 25%,
+        hsl(var(--background-secondary)) 50%,
+        hsl(var(--primary) / 0.1) 75%,
+        hsl(var(--background-secondary)) 100%);
     background-size: 400% 400%;
     animation: gradient-shift 30s ease infinite;
   }
@@ -304,110 +413,116 @@
 /* ======================================================================== */
 
 .calendar-grid {
-    display: grid;
-    gap: 10px;
-    width: 100%;
-    min-width: 700px;
+  display: grid;
+  gap: 10px;
+  width: 100%;
+  min-width: 700px;
 }
 
 .grid-header {
-    text-align: center;
-    font-weight: 600;
-    color: hsl(var(--muted-foreground));
-    margin-bottom: 10px;
-    padding-top: 5px;
+  text-align: center;
+  font-weight: 600;
+  color: hsl(var(--muted-foreground));
+  margin-bottom: 10px;
+  padding-top: 5px;
 }
 
 .time-label {
-    background-color: hsl(var(--primary));
-    border-radius: 12px;
-    border: 1px solid hsl(var(--primary));
-    text-align: center;
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: hsl(var(--primary-foreground));
-    padding: 0 10px;
-    height: 60px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    
-    .dark & {
-        background-color: hsl(var(--card)); 
-        border-color: hsl(var(--border-strong));
-        color: hsl(var(--foreground));
-    }
+  background-color: hsl(var(--primary));
+  border-radius: 12px;
+  border: 1px solid hsl(var(--primary));
+  text-align: center;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: hsl(var(--primary-foreground));
+  padding: 0 10px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  .dark & {
+    background-color: hsl(var(--card));
+    border-color: hsl(var(--border-strong));
+    color: hsl(var(--foreground));
+  }
 }
 
 .slot {
-    height: 60px;
-    border-radius: 10px;
-    padding: 8px 12px;
-    transition: all 0.2s ease-in-out;
-    border-left: 5px solid transparent;
-    font-size: 0.8rem;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    overflow: hidden;
+  height: 60px;
+  border-radius: 10px;
+  padding: 8px 12px;
+  transition: all 0.2s ease-in-out;
+  border-left: 5px solid transparent;
+  font-size: 0.8rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
 }
 
 .slot.available {
-    background-color: hsl(var(--background-secondary));
-    border: 2px dashed hsl(var(--border-strong));
-    cursor: pointer;
-    text-align: center;
-    align-items: center;
-    justify-content: center;
+  background-color: hsl(var(--background-secondary));
+  border: 2px dashed hsl(var(--border-strong));
+  cursor: pointer;
+  text-align: center;
+  align-items: center;
+  justify-content: center;
 }
 
 .slot.available:hover {
-    background-color: hsl(var(--muted));
-    border-color: hsl(var(--muted-foreground));
+  background-color: hsl(var(--muted));
+  border-color: hsl(var(--muted-foreground));
 }
 
 /* Minha Reserva (Azul) */
 .slot.my-reservation {
-    background-color: hsl(var(--info-bg) / 0.8);
-    border-left-color: hsl(var(--info));
+  background-color: hsl(var(--info-bg) / 0.8);
+  border-left-color: hsl(var(--info));
 }
+
 .dark .slot.my-reservation {
-    background-color: hsl(199 89% 15% / 0.8); /* info-bg dark */
-    border-left-color: hsl(var(--info));
+  background-color: hsl(199 89% 15% / 0.8);
+  /* info-bg dark */
+  border-left-color: hsl(var(--info));
 }
 
 /* Parcialmente Reservado (Âmbar/Warning) */
 .slot.partial {
-    background-color: hsl(var(--warning-bg) / 0.8);
-    border-left-color: hsl(var(--warning));
+  background-color: hsl(var(--warning-bg) / 0.8);
+  border-left-color: hsl(var(--warning));
 }
+
 .dark .slot.partial {
-    background-color: hsl(38 92% 15% / 0.8); /* warning-bg dark */
-    border-left-color: hsl(var(--warning));
+  background-color: hsl(38 92% 15% / 0.8);
+  /* warning-bg dark */
+  border-left-color: hsl(var(--warning));
 }
 
 /* Esgotado (Vermelho/Error) */
 .slot.full {
-    background-color: hsl(var(--error-bg) / 0.8);
-    border-left-color: hsl(var(--error));
-    opacity: 0.9;
+  background-color: hsl(var(--error-bg) / 0.8);
+  border-left-color: hsl(var(--error));
+  opacity: 0.9;
 }
+
 .dark .slot.full {
-    background-color: hsl(0 84% 15% / 0.8); /* error-bg dark */
-    border-left-color: hsl(var(--error));
+  background-color: hsl(0 84% 15% / 0.8);
+  /* error-bg dark */
+  border-left-color: hsl(var(--error));
 }
 
 .slot-title {
-    font-weight: 600;
-    font-size: 0.85rem;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
+  font-weight: 600;
+  font-size: 0.85rem;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .slot-subtitle {
-    font-size: 0.75rem;
-    color: hsl(var(--muted-foreground));
+  font-size: 0.75rem;
+  color: hsl(var(--muted-foreground));
 }
 
 /* ======================================================================== */
@@ -416,47 +531,47 @@
 
 /* Estilo para o círculo de passo COMPLETO */
 .loan-step-completed {
-    /* Fundo mais claro para o modo light */
-    background-color: hsl(var(--success-bg)); 
+  /* Fundo mais claro para o modo light */
+  background-color: hsl(var(--success-bg));
+  color: hsl(var(--success-foreground));
+  border: 2px solid hsl(var(--success));
+
+  /* Ajuste para o modo dark */
+  .dark & {
+    background-color: hsl(var(--success));
     color: hsl(var(--success-foreground));
-    border: 2px solid hsl(var(--success));
-    
-    /* Ajuste para o modo dark */
-    .dark & {
-        background-color: hsl(var(--success));
-        color: hsl(var(--success-foreground));
-        border-color: hsl(var(--success));
-    }
+    border-color: hsl(var(--success));
+  }
 }
 
 /* Estilo para o círculo de passo ATUAL */
 .loan-step-active {
-    /* Fundo primário (azul) */
+  /* Fundo primário (azul) */
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  border: 2px solid hsl(var(--primary));
+
+  /* Ajuste para o modo dark */
+  .dark & {
     background-color: hsl(var(--primary));
     color: hsl(var(--primary-foreground));
-    border: 2px solid hsl(var(--primary));
-    
-    /* Ajuste para o modo dark */
-    .dark & {
-        background-color: hsl(var(--primary));
-        color: hsl(var(--primary-foreground));
-        border-color: hsl(var(--primary));
-    }
+    border-color: hsl(var(--primary));
+  }
 }
 
 /* Estilo para o círculo de passo PENDENTE */
 .loan-step-pending {
-    /* Fundo cinza claro e borda cinza para o modo light */
-    background-color: hsl(var(--background-secondary));
+  /* Fundo cinza claro e borda cinza para o modo light */
+  background-color: hsl(var(--background-secondary));
+  color: hsl(var(--muted-foreground));
+  border: 2px solid hsl(var(--border));
+
+  /* Ajuste para o modo dark */
+  .dark & {
+    background-color: hsl(var(--muted));
     color: hsl(var(--muted-foreground));
-    border: 2px solid hsl(var(--border));
-    
-    /* Ajuste para o modo dark */
-    .dark & {
-        background-color: hsl(var(--muted));
-        color: hsl(var(--muted-foreground));
-        border-color: hsl(var(--border-strong));
-    }
+    border-color: hsl(var(--border-strong));
+  }
 }
 
 /* ======================================================================== */
@@ -464,24 +579,77 @@
 /* ======================================================================== */
 
 @media print {
-    /* Oculta elementos marcados como no-print */
-    .no-print {
-        display: none !important;
-    }
-    
-    /* Garante que os adesivos não sejam quebrados entre páginas */
-    .print\\:break-inside-avoid {
-        break-inside: avoid;
-    }
-    
-    /* Estilos específicos para o adesivo (4cm x 4.5cm) */
-    .print\\:w-\\[4cm\\] { width: 4cm !important; }
-    .print\\:h-\\[4\\.5cm\\] { height: 4.5cm !important; }
-    .print\\:p-1 { padding: 0.25rem !important; }
-    .print\\:border-dashed { border-style: dashed !important; }
-    .print\\:border-gray-500 { border-color: #6b7280 !important; }
-    .print\\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
-    .print\\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
-    .print\\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
-    .print\\:gap-2 { gap: 0.5rem !important; }
+
+  /* Oculta elementos marcados como no-print */
+  .no-print {
+    display: none !important;
+  }
+
+  /* Garante que os adesivos não sejam quebrados entre páginas */
+  .print\\:break-inside-avoid {
+    break-inside: avoid;
+  }
+
+  /* Estilos específicos para o adesivo (4cm x 4.5cm) */
+  .print\:w-\[4cm\] {
+    width: 4cm !important;
+  }
+
+  .print\:h-\[4\.5cm\] {
+    height: 4.5cm !important;
+  }
+
+  .print\:p-1 {
+    padding: 0.25rem !important;
+  }
+
+  .print\:border-dashed {
+    border-style: dashed !important;
+  }
+
+  .print\:border-gray-500 {
+    border-color: #6b7280 !important;
+  }
+
+  .print\:grid-cols-4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  }
+
+  .print\:grid-cols-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+
+  .print\:grid-cols-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .print\:gap-2 {
+    gap: 0.5rem !important;
+  }
+}
+
+@layer components {
+  .neo-container {
+    @apply border-4 border-black dark:border-white bg-white dark:bg-zinc-900 shadow-[8px_8px_0px_0px_#000] dark:shadow-[8px_8px_0px_0px_#ffffff33];
+  }
+
+  .neo-container-yellow {
+    @apply border-4 border-black dark:border-white bg-yellow-300 dark:bg-yellow-700 shadow-[8px_8px_0px_0px_#000] dark:shadow-[8px_8px_0px_0px_#ffffff33];
+  }
+
+  .neo-card {
+    @apply border-2 border-black dark:border-white bg-white dark:bg-zinc-900 shadow-[4px_4px_0px_0px_#000] dark:shadow-[4px_4px_0px_0px_#ffffff33] transition-all duration-200;
+  }
+
+  .neo-card-hover {
+    @apply hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_#000] active:translate-x-[0px] active:translate-y-[0px] active:shadow-[2px_2px_0px_0px_#000];
+  }
+
+  .neo-input {
+    @apply border-2 border-black dark:border-white rounded-none bg-white dark:bg-zinc-950 shadow-[4px_4px_0px_0px_#000] dark:shadow-[4px_4px_0px_0px_#ffffff33] focus:shadow-[2px_2px_0px_0px_#000] focus:translate-x-[2px] focus:translate-y-[2px] focus-visible:ring-0 placeholder:text-gray-500 font-mono text-sm uppercase tracking-tight transition-all;
+  }
+
+  .neo-btn {
+    @apply border-2 border-black dark:border-white rounded-none shadow-[4px_4px_0px_0px_#000] dark:shadow-[4px_4px_0px_0px_#ffffff33] hover:shadow-[6px_6px_0px_0px_#000] active:shadow-none active:translate-x-[4px] active:translate-y-[4px] transition-all duration-200 uppercase font-black tracking-tight;
+  }
 }

@@ -182,8 +182,8 @@ export function DeviceListInput({ deviceIds, setDeviceIds, disabled, filterStatu
         isListMode={true}
       />
 
-      {/* Lista de Dispositivos - NOVO DESIGN */}
-      <div className="mt-3 p-3 bg-card/50 rounded-lg border border-border/50 max-h-[280px] overflow-y-auto backdrop-blur-sm transition-all duration-300">
+      {/* Lista de Dispositivos - NEO-BRUTALISM */}
+      <div className="mt-3 p-3 bg-white dark:bg-zinc-900 border-2 border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] max-h-[280px] overflow-y-auto transition-all duration-300">
         {deviceList.length > 0 ? (
           <div className="space-y-2">
             {deviceList.map((chromebook, index) => (

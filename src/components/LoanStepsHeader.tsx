@@ -55,13 +55,13 @@ export const LoanStepsHeader: React.FC<LoanStepsHeaderProps> = (props) => {
 
   return (
     <div className="mb-8 space-y-6 animate-in fade-in slide-in-from-top-3 duration-500">
-      {/* Título com gradiente */}
+      {/* Título */}
       <div className="text-center">
-        <h2 className="text-2xl font-bold bg-gradient-to-r from-violet-600 to-blue-600 bg-clip-text text-transparent flex items-center justify-center gap-2">
-          <Sparkles className="h-6 w-6 text-violet-500 animate-pulse" />
+        <h2 className="text-2xl font-black uppercase tracking-tight flex items-center justify-center gap-2">
+          <Sparkles className="h-6 w-6 text-black dark:text-white" />
           Novo Empréstimo
         </h2>
-        <p className="text-sm text-muted-foreground mt-1">
+        <p className="text-sm font-mono text-muted-foreground mt-1 uppercase">
           Passo {props.currentStep} de {totalSteps}
         </p>
       </div>
@@ -70,15 +70,12 @@ export const LoanStepsHeader: React.FC<LoanStepsHeaderProps> = (props) => {
       <div className="flex justify-between items-center relative px-4">
 
         {/* Barra de Progresso (Fundo) */}
-        <div className="absolute top-1/2 left-0 right-0 h-2 bg-muted/30 dark:bg-muted/20 -translate-y-1/2 mx-12 rounded-full" />
+        <div className="absolute top-1/2 left-0 right-0 h-4 bg-white dark:bg-zinc-800 border-2 border-black dark:border-white -translate-y-1/2 mx-12 z-0" />
 
-        {/* Barra de Progresso (Preenchimento com gradiente) */}
+        {/* Barra de Progresso (Preenchimento) */}
         <div
           className={cn(
-            "absolute top-1/2 left-12 h-2 -translate-y-1/2 transition-all duration-700 ease-out rounded-full",
-            currentStepData.progressColor,
-            "shadow-lg",
-            currentStepData.glowColor
+            "absolute top-1/2 left-12 h-4 -translate-y-1/2 transition-all duration-700 ease-out z-0 border-y-2 border-l-2 border-black dark:border-white bg-black dark:bg-white",
           )}
           style={{ width: `calc(${progressPercentage}% - 48px)` }}
         />
@@ -95,60 +92,32 @@ export const LoanStepsHeader: React.FC<LoanStepsHeaderProps> = (props) => {
                 "flex flex-col items-center text-center z-10 transition-all duration-500 w-1/4 px-2",
                 isActive && 'scale-110'
               )}
-              style={{ transitionDelay: `${index * 100}ms` }}
             >
-              {/* Círculo do Passo com animação */}
+              {/* Círculo do Passo (Quadrado Brutalista agora) */}
               <div className={cn(
-                "relative h-10 w-10 rounded-full flex items-center justify-center mb-3 transition-all duration-500",
-                "ring-4 ring-offset-2 ring-offset-background",
+                "relative h-12 w-12 flex items-center justify-center mb-3 transition-all duration-500 border-4 border-black dark:border-white bg-white dark:bg-zinc-900",
                 isActive
-                  ? cn(
-                    'bg-gradient-to-br from-primary to-primary/80',
-                    'ring-primary/30 dark:ring-primary/20',
-                    'shadow-lg',
-                    currentStepData.glowColor,
-                    'animate-pulse'
-                  )
+                  ? 'bg-yellow-300 dark:bg-yellow-600 shadow-[4px_4px_0px_0px_#000] dark:shadow-[4px_4px_0px_0px_#fff]'
                   : isPastCompleted
-                    ? cn(
-                      'bg-gradient-to-br from-green-500 to-green-600',
-                      'ring-green-500/30 dark:ring-green-500/20',
-                      'shadow-md shadow-green-500/30'
-                    )
-                    : 'bg-muted ring-muted/30 dark:ring-muted/20'
+                    ? 'bg-green-500 dark:bg-green-700 text-white'
+                    : 'bg-gray-200 dark:bg-zinc-800'
               )}>
                 {isPastCompleted ? (
-                  <CheckCircle className="h-5 w-5 text-white animate-in zoom-in duration-300" />
+                  <CheckCircle className="h-6 w-6 text-white" />
                 ) : isActive ? (
-                  <Icon className={cn("h-5 w-5 text-white")} />
+                  <Icon className="h-6 w-6 text-black dark:text-white" />
                 ) : (
-                  <span className="font-bold text-sm text-muted-foreground">{step.id}</span>
-                )}
-
-                {/* Efeito de brilho para passo ativo */}
-                {isActive && (
-                  <div className="absolute inset-0 rounded-full bg-primary/20 animate-ping" />
+                  <span className="font-bold text-lg text-gray-500">{step.id}</span>
                 )}
               </div>
 
               {/* Título */}
               <h4 className={cn(
-                "text-sm font-semibold whitespace-nowrap transition-colors duration-300",
-                isActive ? 'text-foreground' : 'text-muted-foreground'
+                "text-sm font-black uppercase whitespace-nowrap transition-colors duration-300 bg-white dark:bg-black px-1 border-2 border-transparent",
+                isActive ? 'border-black dark:border-white text-black dark:text-white shadow-[2px_2px_0px_0px_#000] dark:shadow-[2px_2px_0px_0px_#fff]' : 'text-muted-foreground'
               )}>
                 {step.title}
               </h4>
-
-              {/* Status com ícone */}
-              <div className={cn(
-                "flex items-center gap-1 text-xs mt-1 font-medium transition-colors duration-300",
-                isActive ? step.color : isPastCompleted ? 'text-green-600 dark:text-green-400' : 'text-muted-foreground'
-              )}>
-                {isPastCompleted && <CheckCircle className="h-3 w-3" />}
-                <span>
-                  {isActive ? 'Em andamento' : isPastCompleted ? 'Concluído' : 'Pendente'}
-                </span>
-              </div>
             </div>
           );
         })}

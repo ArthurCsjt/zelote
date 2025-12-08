@@ -83,8 +83,8 @@ const Layout: React.FC<LayoutProps> = ({
 
       {/* Header */}
       <header className={cn("fixed top-0 left-0 right-0 z-50 transition-all duration-300 no-print", isStandalone ? 'safe-area-top' : '')}>
-        {/* Glassmorphism Header Background */}
-        <div className="absolute inset-0 bg-white/70 dark:bg-zinc-950/70 backdrop-blur-xl border-b border-white/20 dark:border-zinc-800/50 shadow-sm" />
+        {/* Neo-Brutalism Header Background */}
+        <div className="absolute inset-0 bg-yellow-300 dark:bg-zinc-900 border-b-4 border-black dark:border-white shadow-[0px_4px_0px_0px_rgba(0,0,0,1)]" />
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
@@ -92,18 +92,18 @@ const Layout: React.FC<LayoutProps> = ({
               {showBackButton && (
                 <button
                   onClick={handleBackClick}
-                  className="p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors duration-200 touch-manipulation text-muted-foreground hover:text-foreground"
+                  className="p-2 rounded-none border-2 border-transparent hover:border-black dark:hover:border-white hover:bg-white dark:hover:bg-zinc-800 transition-all duration-200 touch-manipulation text-black dark:text-white shadow-[2px_2px_0px_0px_rgba(0,0,0,0)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:shadow-none translate-x-0 hover:translate-x-[-1px] hover:translate-y-[-1px]"
                 >
                   <ArrowLeft className="w-5 h-5" />
                 </button>
               )}
               <div>
-                <h1 className="bg-gradient-to-r from-primary to-blue-500 bg-clip-text text-transparent text-2xl font-bold text-left tracking-tight">
+                <h1 className="text-2xl font-black text-black dark:text-white text-left tracking-tight uppercase">
                   Zelote
                 </h1>
                 <div className="flex items-center gap-2">
-                  <p className="text-sm text-muted-foreground hidden sm:block font-medium">Controle de empréstimos</p>
-                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-semibold hidden sm:block">v1.0.0</span>
+                  <p className="text-sm font-bold text-black dark:text-white hidden sm:block uppercase tracking-tight">Controle de empréstimos</p>
+                  <span className="text-[10px] px-1.5 py-0.5 border border-black bg-white text-black font-bold hidden sm:block shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]">v1.0.0</span>
                 </div>
               </div>
             </div>

@@ -289,15 +289,10 @@ export function LoanForm({ onBack }: LoanFormProps) {
                     <div className="space-y-5">
 
                         {/* ═══ SEÇÃO 1: SOLICITANTE ═══ */}
-                        <GlassCard className={cn(
-                            "bg-gradient-to-br from-violet-500/5 via-violet-500/3 to-transparent",
-                            "border border-violet-500/20",
-                            "shadow-xl shadow-violet-500/5",
-                            "border-border-strong"
-                        )}>
-                            <CardHeader className="p-5 pb-3 border-b border-violet-500/10 dark:border-violet-500/30">
-                                <CardTitle className="text-lg font-semibold flex items-center gap-2 text-foreground">
-                                    <User className="h-5 w-5 text-violet-500" />
+                        <div className="neo-card border-l-8 border-l-violet-500 bg-violet-50 dark:bg-violet-900/10">
+                            <CardHeader className="p-5 pb-3 border-b-2 border-black/10 dark:border-white/10">
+                                <CardTitle className="text-xl font-black uppercase tracking-tight flex items-center gap-2 text-foreground">
+                                    <User className="h-6 w-6 text-black dark:text-white" />
                                     Passo 1: Solicitante
                                 </CardTitle>
                             </CardHeader>
@@ -306,7 +301,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
                                 {/* Busca de Usuário */}
                                 <div className="space-y-2">
                                     {/* REMOVIDA A LABEL REDUNDANTE */}
-                                    <Label className="text-sm font-medium text-foreground flex items-center gap-1 sr-only">
+                                    <Label className="text-sm font-bold uppercase text-foreground flex items-center gap-1 sr-only">
                                         Buscar por Nome, RA ou Email
                                         <span className="text-destructive">*</span>
                                     </Label>
@@ -318,90 +313,86 @@ export function LoanForm({ onBack }: LoanFormProps) {
                                     />
                                     {/* Validação em tempo real para Solicitante */}
                                     {!selectedUser && (
-                                        <p className="text-xs text-destructive flex items-center gap-1 mt-1">
-                                            <AlertTriangle className="h-3 w-3" />
-                                            Selecione um solicitante para continuar
-                                        </p>
+                                        <div className="text-xs font-bold text-red-600 flex items-center gap-1 mt-1 uppercase">
+                                            <AlertTriangle className="h-4 w-4" />
+                                            Selecione um solicitante
+                                        </div>
                                     )}
                                 </div>
                             </CardContent>
-                        </GlassCard>
+                        </div>
 
                         {/* ═══ SEÇÃO 2: FINALIDADE ═══ */}
-                        <GlassCard className={cn(
-                            "bg-gradient-to-br from-blue-500/5 via-blue-500/3 to-transparent",
-                            "border border-blue-500/20",
-                            "shadow-xl shadow-blue-500/5",
-                            "border-border-strong",
-                            !isUserSelected && "opacity-30 pointer-events-none" // ALTERADO PARA OPACITY-30
+                        <div className={cn(
+                            "neo-card border-l-8 border-l-blue-500 bg-blue-50 dark:bg-blue-900/10",
+                            !isUserSelected && "opacity-50 grayscale pointer-events-none"
                         )}>
-                            <CardHeader className="p-5 pb-3 border-b border-blue-500/10 dark:border-blue-500/30">
-                                <CardTitle className="text-lg font-semibold flex items-center gap-2 text-foreground">
-                                    <BookOpen className="h-5 w-5 text-blue-500" />
+                            <CardHeader className="p-5 pb-3 border-b-2 border-black/10 dark:border-white/10">
+                                <CardTitle className="text-xl font-black uppercase tracking-tight flex items-center gap-2 text-foreground">
+                                    <BookOpen className="h-6 w-6 text-black dark:text-white" />
                                     Passo 2: Finalidade
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="p-5 space-y-4">
                                 <div className="space-y-2">
-                                    <Label className="text-sm font-medium text-foreground flex items-center gap-1">
+                                    <Label className="text-sm font-bold uppercase text-foreground flex items-center gap-1">
                                         Finalidade do Empréstimo
-                                        <span className="text-destructive">*</span>
+                                        <span className="text-red-600">*</span>
                                     </Label>
 
                                     {renderPurposeInput()}
 
                                     {/* Validação em tempo real para Finalidade */}
                                     {!isPurposeDefined && isUserSelected && (
-                                        <p className="text-xs text-destructive flex items-center gap-1 mt-1">
-                                            <AlertTriangle className="h-3 w-3" />
-                                            Defina e confirme a finalidade do empréstimo.
-                                        </p>
+                                        <div className="text-xs font-bold text-red-600 flex items-center gap-1 mt-1 uppercase">
+                                            <AlertTriangle className="h-4 w-4" />
+                                            Defina e confirme a finalidade
+                                        </div>
                                     )}
                                 </div>
 
                                 {/* NOVO CAMPO: Observações Adicionais */}
-                                <div className="space-y-2 pt-4 border-t border-border/50">
-                                    <Label className="text-sm font-medium text-foreground flex items-center gap-1">
-                                        <MessageSquare className="h-4 w-4 text-muted-foreground" />
-                                        Observações Adicionais (Opcional)
+                                <div className="space-y-2 pt-4 border-t-2 border-black/5 dark:border-white/5">
+                                    <Label className="text-sm font-bold uppercase text-foreground flex items-center gap-1">
+                                        <MessageSquare className="h-4 w-4" />
+                                        Observações (Opcional)
                                     </Label>
                                     <Textarea
                                         id="notes"
                                         value={formData.notes || ''}
                                         onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                                        placeholder="Ex: Necessário para o projeto X, devolver antes das 15h."
-                                        className="bg-input border-gray-200 min-h-[80px] dark:bg-card dark:border-border"
+                                        placeholder="Ex: Devolver antes das 15h."
+                                        className="neo-input min-h-[80px]"
                                         disabled={loading || !isUserSelected}
                                     />
                                 </div>
                             </CardContent>
-                        </GlassCard>
+                        </div>
                     </div>
 
                     {/* ═══ COLUNA DIREITA ═══ */}
                     <div className="space-y-5">
 
                         {/* ═══ SEÇÃO 3: DISPOSITIVOS ═══ */}
-                        <GlassCard className={cn(
-                            "bg-gradient-to-br from-amber-500/5 via-amber-500/3 to-transparent",
-                            "border border-amber-500/20",
-                            "shadow-xl shadow-amber-500/5",
-                            "border-border-strong",
-                            (!isUserSelected || !isPurposeDefined) && "opacity-30 pointer-events-none" // ALTERADO PARA OPACITY-30
+                        <div className={cn(
+                            "neo-card border-l-8 border-l-amber-500 bg-amber-50 dark:bg-amber-900/10",
+                            (!isUserSelected || !isPurposeDefined) && "opacity-50 grayscale pointer-events-none"
                         )}>
-                            <CardHeader className="p-5 pb-3 border-b border-amber-500/10 dark:border-amber-500/30">
+                            <CardHeader className="p-5 pb-3 border-b-2 border-black/10 dark:border-white/10">
                                 <div className="flex items-center justify-between">
-                                    <CardTitle className="text-lg font-semibold flex items-center gap-2 text-foreground">
-                                        <Computer className="h-5 w-5 text-menu-amber" />
+                                    <CardTitle className="text-xl font-black uppercase tracking-tight flex items-center gap-2 text-foreground">
+                                        <Computer className="h-6 w-6 text-black dark:text-white" />
                                         Passo 3: Equipamento
                                     </CardTitle>
                                     <Badge variant="outline" className={cn(
-                                        "text-xs font-medium transition-colors",
-                                        deviceIds.length === 0 ? "bg-muted text-muted-foreground" : "bg-amber-500/10 text-amber-600 border-amber-500/30 dark:bg-amber-900/50 dark:text-amber-300 dark:border-amber-800"
+                                        "rounded-none border-2 font-bold transition-colors",
+                                        deviceIds.length === 0
+                                            ? "bg-gray-200 text-gray-500 border-gray-400"
+                                            : "bg-amber-300 text-black border-black"
                                     )}>
                                         {deviceIds.length === 0
-                                            ? 'Nenhum dispositivo'
-                                            : `${deviceIds.length} ${deviceIds.length === 1 ? 'dispositivo' : 'dispositivos'}`
+                                            ? 'Nenhum'
+                                            : `${deviceIds.length} ${deviceIds.length === 1 ? 'PC' : 'PCs'}`
                                         }
                                     </Badge>
                                 </div>
@@ -413,30 +404,28 @@ export function LoanForm({ onBack }: LoanFormProps) {
                                     setDeviceIds={setDeviceIds}
                                     disabled={loading || !isUserSelected || !isPurposeDefined}
                                     filterStatus="disponivel"
-                                    actionLabel="Empréstimo"
+                                    actionLabel="Adicionar"
                                 />
 
                                 {/* Validação em tempo real para Dispositivos */}
                                 {isUserSelected && isPurposeDefined && deviceIds.length === 0 && (
-                                    <p className="text-xs text-destructive flex items-center gap-1 mt-3">
-                                        <AlertTriangle className="h-3 w-3" />
+                                    <div className="text-xs font-bold text-red-600 flex items-center gap-1 mt-3 uppercase">
+                                        <AlertTriangle className="h-4 w-4" />
                                         Adicione pelo menos um dispositivo
-                                    </p>
+                                    </div>
                                 )}
                             </CardContent>
-                        </GlassCard>
+                        </div>
 
                         {/* ═══ SEÇÃO 4: PRAZO E CONFIRMAÇÃO ═══ */}
-                        <GlassCard className={cn(
-                            "bg-muted/30 border border-border/50",
-                            "shadow-xl",
-                            "border-border-strong",
-                            (!isUserSelected || !isPurposeDefined || !isDevicesAdded) && "opacity-30 pointer-events-none" // ALTERADO PARA OPACITY-30
+                        <div className={cn(
+                            "neo-card border-l-8 border-l-green-500 bg-gray-50 dark:bg-zinc-900",
+                            (!isUserSelected || !isPurposeDefined || !isDevicesAdded) && "opacity-50 grayscale pointer-events-none"
                         )}>
-                            <CardHeader className="p-5 pb-3 border-b border-border/50">
-                                <CardTitle className="text-lg font-semibold flex items-center gap-2 text-foreground">
-                                    <Clock className="h-5 w-5 text-green-500" />
-                                    Passo 4: Prazo de Devolução (Opcional)
+                            <CardHeader className="p-5 pb-3 border-b-2 border-black/10 dark:border-white/10">
+                                <CardTitle className="text-xl font-black uppercase tracking-tight flex items-center gap-2 text-foreground">
+                                    <Clock className="h-6 w-6 text-green-600" />
+                                    Passo 4: Prazo (Opcional)
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="p-5">
@@ -458,26 +447,25 @@ export function LoanForm({ onBack }: LoanFormProps) {
                                                     setFormData({ ...formData, expectedReturnDate: undefined });
                                                 }
                                             }}
-                                            className="mt-1"
+                                            className="mt-1 w-6 h-6 border-2 border-black data-[state=checked]:bg-black data-[state=checked]:text-white rounded-none"
                                             disabled={!isUserSelected || !isPurposeDefined || !isDevicesAdded}
                                         />
                                         <div className="flex-1">
                                             <Label
                                                 htmlFor="returnDeadline"
-                                                className="text-sm font-medium text-foreground cursor-pointer flex items-center gap-2"
+                                                className="text-base font-bold uppercase text-foreground cursor-pointer flex items-center gap-2"
                                             >
-                                                <Calendar className="h-4 w-4 text-violet-500" />
                                                 Definir prazo de devolução
                                             </Label>
-                                            <p className="text-xs text-muted-foreground mt-1">
-                                                Adicione uma data e hora limite para devolução
+                                            <p className="text-xs font-mono text-muted-foreground mt-1">
+                                                Adicione uma data limite
                                             </p>
                                         </div>
                                     </div>
 
                                     {/* Seletor de data/hora (aparece quando checkbox marcado) */}
                                     {hasReturnDeadline && (
-                                        <div className="pl-7 space-y-3 border-l-2 border-violet-500/30 animate-in slide-in-from-left-5">
+                                        <div className="pl-7 space-y-3 animate-in slide-in-from-left-5">
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                                 {/* Data */}
                                                 <Popover open={isDatePickerOpen} onOpenChange={setIsDatePickerOpen}>
@@ -485,7 +473,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
                                                         <Button
                                                             variant="outline"
                                                             className={cn(
-                                                                "justify-start text-left font-normal w-full",
+                                                                "justify-start text-left font-mono neo-input w-full",
                                                                 !formData.expectedReturnDate && "text-muted-foreground"
                                                             )}
                                                         >
@@ -493,12 +481,12 @@ export function LoanForm({ onBack }: LoanFormProps) {
                                                             {formData.expectedReturnDate ? (
                                                                 format(formData.expectedReturnDate, "dd/MM/yyyy")
                                                             ) : (
-                                                                <span>Selecionar data</span>
+                                                                <span>SELECIONAR DATA</span>
                                                             )}
                                                         </Button>
                                                     </PopoverTrigger>
                                                     <PopoverContent
-                                                        className="w-auto p-0 bg-card border-border"
+                                                        className="w-auto p-0 bg-card border-2 border-black rounded-none shadow-[4px_4px_0px_0px_#000]"
                                                         align="start"
                                                     >
                                                         <CalendarComponent
@@ -536,9 +524,9 @@ export function LoanForm({ onBack }: LoanFormProps) {
                                                                 setFormData({ ...formData, expectedReturnDate: newDate });
                                                             }
                                                         }}
-                                                        className="text-center w-16"
+                                                        className="text-center w-16 neo-input"
                                                     />
-                                                    <span className="text-muted-foreground">:</span>
+                                                    <span className="font-black">:</span>
                                                     <Input
                                                         type="number"
                                                         placeholder="MM"
@@ -553,17 +541,17 @@ export function LoanForm({ onBack }: LoanFormProps) {
                                                                 setFormData({ ...formData, expectedReturnDate: newDate });
                                                             }
                                                         }}
-                                                        className="text-center w-16"
+                                                        className="text-center w-16 neo-input"
                                                     />
                                                 </div>
                                             </div>
 
                                             {/* Preview da data/hora */}
                                             {formData.expectedReturnDate && (
-                                                <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/50 rounded-lg p-3">
-                                                    <Clock className="h-4 w-4 text-violet-500" />
-                                                    <span className="font-medium">
-                                                        Prazo: {format(formData.expectedReturnDate, "dd/MM/yyyy 'às' HH:mm")}
+                                                <div className="flex items-center gap-2 text-xs text-foreground neo-card p-2 bg-white dark:bg-black border-l-4 border-l-green-500 shadow-none">
+                                                    <Clock className="h-4 w-4 text-green-600" />
+                                                    <span className="font-bold uppercase">
+                                                        Prazo Final: {format(formData.expectedReturnDate, "dd/MM/yyyy 'às' HH:mm")}
                                                     </span>
                                                 </div>
                                             )}
@@ -571,7 +559,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
                                     )}
                                 </div>
                             </CardContent>
-                        </GlassCard>
+                        </div>
                     </div>
                 </div>
 
@@ -580,12 +568,9 @@ export function LoanForm({ onBack }: LoanFormProps) {
                     type="submit"
                     size="lg"
                     className={cn(
-                        "w-full h-12 text-base font-semibold",
-                        "bg-gradient-to-r from-violet-600 to-violet-500",
-                        "hover:from-violet-700 hover:to-violet-600",
-                        "shadow-lg shadow-violet-500/25",
-                        "transition-all duration-200",
-                        "disabled:opacity-50 disabled:cursor-not-allowed"
+                        "w-full h-14 text-lg neo-btn",
+                        "bg-violet-600 hover:bg-violet-700 text-white border-black dark:border-white",
+                        "disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:translate-x-[4px] disabled:translate-y-[4px]"
                     )}
                     disabled={
                         loading ||
@@ -596,28 +581,28 @@ export function LoanForm({ onBack }: LoanFormProps) {
                 >
                     {loading ? (
                         <>
-                            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                            Processando empréstimo...
+                            <Loader2 className="mr-2 h-6 w-6 animate-spin" />
+                            PROCESSANDO...
                         </>
                     ) : !isUserSelected ? (
                         <>
-                            <User className="mr-2 h-5 w-5" />
-                            Passo 1 Pendente: Selecione o Solicitante
+                            <User className="mr-2 h-6 w-6" />
+                            PASSO 1 PENDENTE
                         </>
                     ) : !isPurposeDefined ? (
                         <>
-                            <BookOpen className="mr-2 h-5 w-5" />
-                            Passo 2 Pendente: Defina a Finalidade
+                            <BookOpen className="mr-2 h-6 w-6" />
+                            PASSO 2 PENDENTE
                         </>
                     ) : !isDevicesAdded ? (
                         <>
-                            <Computer className="mr-2 h-5 w-5" />
-                            Passo 3 Pendente: Adicione os Equipamentos
+                            <Computer className="mr-2 h-6 w-6" />
+                            PASSO 3 PENDENTE
                         </>
                     ) : (
                         <>
-                            <CheckCircle className="mr-2 h-5 w-5" />
-                            Emprestar {deviceIds.length} {deviceIds.length === 1 ? 'Chromebook' : 'Chromebooks'}
+                            <CheckCircle className="mr-2 h-6 w-6" />
+                            CONFIRMAR EMPRÉSTIMO ({deviceIds.length})
                         </>
                     )}
                 </Button>

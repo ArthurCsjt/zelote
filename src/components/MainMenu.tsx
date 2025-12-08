@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { ClipboardList, BarChart3, PlusCircle, Laptop, RotateCcw, ListChecks, Calendar, Loader2 } from 'lucide-react';
 import { useProfileRole } from '@/hooks/use-profile-role';
 import { cn } from '@/lib/utils';
-import { GlassCard } from './ui/GlassCard';
+// import { GlassCard } from './ui/GlassCard';
 import { Badge } from './ui/badge'; // Importando Badge
 
 interface MainMenuProps {
@@ -109,30 +109,29 @@ export function MainMenu({
               )}
               style={{ transitionDelay: `${index * 100}ms` }}
             >
-              <GlassCard
-                className="group h-28 flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-zinc-100/80 dark:hover:bg-zinc-900/80 hover:border-primary/30 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg border-zinc-200/50 dark:border-zinc-800/50"
+              <div
+                className="group h-28 flex flex-col items-center justify-center gap-2 cursor-pointer neo-card hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_#000] active:translate-x-[0px] active:translate-y-[0px] active:shadow-[2px_2px_0px_0px_#000] transition-all duration-200"
                 onClick={item.action}
               >
                 <div className={cn(
-                  "p-2 rounded-full bg-zinc-50 dark:bg-zinc-800 group-hover:scale-110 transition-transform duration-300",
-                  // Removida a sombra extra do ícone
+                  "p-2 border-2 border-black dark:border-white bg-white dark:bg-zinc-800 transition-transform duration-300 shadow-[2px_2px_0px_0px_#000] group-hover:scale-110",
                 )}>
-                  <Icon className={cn("h-5 w-5", item.color)} />
+                  <Icon className={cn("h-5 w-5 text-black dark:text-white")} />
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="font-medium text-sm text-foreground/80 group-hover:text-foreground transition-colors">
+                  <span className="font-black text-sm text-black dark:text-white uppercase tracking-tight">
                     {item.title}
                   </span>
                   {item.badge && (
                     <Badge
                       variant={item.badge.variant as any}
-                      className="text-[10px] h-4 px-1.5 py-0.5 bg-info-bg text-info-foreground dark:bg-info-bg/50 dark:text-info-foreground"
+                      className="text-[10px] h-4 px-1.5 py-0.5 border border-black bg-yellow-300 text-black rounded-none shadow-[1px_1px_0px_0px_#000]"
                     >
                       {item.badge.label}
                     </Badge>
                   )}
                 </div>
-              </GlassCard>
+              </div>
             </div>
           );
         })}

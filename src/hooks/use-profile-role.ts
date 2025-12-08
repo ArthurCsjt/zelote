@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import logger from '@/utils/logger';
 
-export type ProfileRole = 'admin' | 'user' | 'super_admin' | null;
+export type ProfileRole = 'admin' | 'user' | 'super_admin' | 'professor' | 'teacher' | null;
 
 export function useProfileRole() {
   const { user } = useAuth();

@@ -7,6 +7,7 @@ import { RegistrationCardMenu } from './RegistrationCardMenu';
 import { Button } from './ui/button';
 import { ArrowLeft, PlusCircle } from 'lucide-react';
 import { SectionHeader } from './Shared/SectionHeader'; // Importando SectionHeader
+import { cn } from '@/lib/utils';
 
 type RegistrationView = 'chromebooks' | 'students' | 'teachers' | 'staff';
 
@@ -54,14 +55,13 @@ export function RegistrationHub({ onBack, onRegistrationSuccess }: RegistrationH
       <div className="container mx-auto p-0">
 
         {/* Cabeçalho do Hub: Centralizado e Preto */}
-        {/* Cabeçalho do Hub: Centralizado e Preto */}
         <div className="mb-6 text-center">
           <SectionHeader
             title="Hub de Cadastros"
             description="Selecione o tipo de item ou usuário para cadastrar"
             icon={PlusCircle}
-            iconColor="text-black"
-            className="flex flex-col items-center bg-yellow-300 border-4 border-black p-6 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]"
+            iconColor="text-black dark:text-white"
+            className="flex flex-col items-center neo-container-yellow p-6"
           />
         </div>
 
@@ -70,10 +70,10 @@ export function RegistrationHub({ onBack, onRegistrationSuccess }: RegistrationH
           <RegistrationCardMenu onNavigate={handleNavigate} currentView={currentView} />
         </div>
 
-        {/* Título do Formulário Selecionado: Removendo border-b e pb-2 */}
-        <h2 className="text-lg font-bold text-gray-800 mb-4 mt-8 text-center">
+        {/* Título do Formulário Selecionado */}
+        <div className="text-lg font-black uppercase tracking-tight text-gray-800 dark:text-white mb-4 mt-8 text-center bg-white dark:bg-zinc-900 border-2 border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] p-2 w-fit mx-auto">
           {getTitle()}
-        </h2>
+        </div>
 
         {/* Formulário Selecionado */}
         <div className="mt-6 max-w-4xl mx-auto"> {/* Adicionando max-w aqui para os formulários */}
