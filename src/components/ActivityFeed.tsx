@@ -79,7 +79,7 @@ export function ActivityFeed() {
       </CardHeader>
 
       {/* Área de Rolagem */}
-      <ScrollArea className="w-full max-h-[calc(90vh-100px)] min-h-[200px]">
+      <ScrollArea className="w-full max-h-[calc(90vh-100px)] min-h-[200px] force-scrollbar-y">
         <CardContent className="p-0">
           {activities && activities.length > 0 ? (
             <div className="divide-y-2 divide-black/10 dark:divide-white/10">

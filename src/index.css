@@ -575,6 +575,14 @@
 }
 
 /* ======================================================================== */
+/* NOVO: Forçar barra de rolagem vertical para ScrollArea */
+/* ======================================================================== */
+.force-scrollbar-y > div[data-radix-scroll-area-viewport] {
+  overflow-y: scroll !important;
+}
+
+
+/* ======================================================================== */
 /* REMOVIDO: Estilos de Impressão (MOVIDO PARA PrintPreviewPage.tsx) */
 /* ======================================================================== */
 
