@@ -122,6 +122,14 @@
     --menu-teal-hover: 174 70% 35%;
     --menu-dark-blue: 213 90% 35%;
     --menu-dark-blue-hover: 213 90% 30%;
+
+    /* ===== SIDEBAR ===== */
+    --sidebar: 0 0% 100%;
+    --sidebar-foreground: 240 10% 3.9%;
+    --sidebar-border: 240 5.9% 90%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-ring: 217 91% 60%;
   }
 
   .dark {
@@ -224,6 +232,14 @@
     --menu-teal-hover: 174 70% 35%;
     --menu-dark-blue: 213 90% 35%;
     --menu-dark-blue-hover: 213 90% 30%;
+
+    /* ===== SIDEBAR ===== */
+    --sidebar: 240 10% 3.9%;
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-border: 240 3.7% 25%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-ring: 217 91% 60%;
   }
 }
 
