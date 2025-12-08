@@ -30,7 +30,7 @@ export function MainMenu({
       title: 'Empréstimos',
       icon: ClipboardList,
       action: () => onNavigate('loan', 'form'),
-      color: 'text-menu-blue', // Azul
+      color: 'text-menu-blue', // Azul (Mantido para referência, mas não usado no ícone)
       bg: 'bg-blue-300 dark:bg-blue-900/50',
       roles: ['admin', 'super_admin', 'user']
     },
@@ -124,7 +124,8 @@ export function MainMenu({
                   "p-2 border-2 border-black dark:border-white transition-transform duration-300 shadow-[2px_2px_0px_0px_#000] group-hover:scale-110",
                   item.bg // Aplica a cor de fundo do item
                 )}>
-                  <Icon className={cn("h-5 w-5 text-black dark:text-white", item.color)} />
+                  {/* Ícone agora usa text-black dark:text-white para alto contraste */}
+                  <Icon className="h-5 w-5 text-black dark:text-white" />
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="font-black text-sm text-black dark:text-white uppercase tracking-tight">
