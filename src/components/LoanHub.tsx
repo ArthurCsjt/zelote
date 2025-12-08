@@ -73,7 +73,7 @@ export const LoanHub = ({ onBack, defaultTab = 'form', onNavigateToReturnView }:
           tabs={loanTabs}
           defaultValue={defaultTab}
           className="w-full"
-          // REMOVIDO: listClassName="grid-cols-2 neo-card p-0 gap-0 border-b-0"
+          listClassName="grid-cols-2 neo-card p-0 gap-0 border-b-0"
           value={currentTab}
           onValueChange={(v) => {
             setCurrentTab(v as 'form' | 'active');
