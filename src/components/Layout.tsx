@@ -1,15 +1,11 @@
 import React from 'react';
-import { User, LogOut, ArrowLeft, Bell, Settings, Sun, Moon, Loader2 } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
+import { ArrowLeft, Bell, Sun, Moon, Menu } from 'lucide-react';
 import { useTheme } from '@/hooks/use-theme';
-import { useNavigate } from 'react-router-dom';
-import { useProfileRole } from '@/hooks/use-profile-role';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { ActivityFeed } from './ActivityFeed';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
-
+import { useSidebar } from '@/components/ui/sidebar';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -28,10 +24,8 @@ const Layout: React.FC<LayoutProps> = ({
   onBack,
   backgroundClass = 'bg-background'
 }) => {
-  const { user, logout } = useAuth();
   const { theme, setTheme } = useTheme();
-  const navigate = useNavigate();
-  const { role, loading: roleLoading } = useProfileRole();
+  const { toggleSidebar, isMobile, openMobile } = useSidebar();
   const [isStandalone, setIsStandalone] = React.useState(false);
 
   React.useEffect(() => {
@@ -62,144 +56,93 @@ const Layout: React.FC<LayoutProps> = ({
     return () => displayModeQuery.removeEventListener('change', handleDisplayModeChange);
   }, []);
 
-  const handleLogout = async () => {
-    await logout();
-    navigate('/login', { replace: true });
-  };
-
-  const handleBackClick = () => {
-    if (onBack) {
-      onBack();
-    } else {
-      navigate(-1);
-    }
-  };
-
   return (
-    <div className={cn(`min-h-screen text-foreground ${isStandalone ? 'safe-area-top safe-area-bottom safe-area-left safe-area-right' : ''}`, backgroundClass)}>
-
+    <div className={cn(
+      "min-h-screen text-foreground flex-1 w-full",
+      isStandalone ? 'safe-area-top safe-area-bottom safe-area-left safe-area-right' : '',
+      backgroundClass
+    )}>
       {/* Status Bar Overlay for iOS in standalone mode */}
       {isStandalone && <div className="status-bar-overlay" />}
 
       {/* Header */}
-      <header className={cn("fixed top-0 left-0 right-0 z-50 transition-all duration-300 no-print", isStandalone ? 'safe-area-top' : '')}>
+      <header className={cn(
+        "sticky top-0 z-40 transition-all duration-300 no-print",
+        isStandalone ? 'safe-area-top' : ''
+      )}>
         {/* Neo-Brutalism Header Background */}
         <div className="absolute inset-0 bg-yellow-300 dark:bg-zinc-900 border-b-4 border-black dark:border-white shadow-[0px_4px_0px_0px_rgba(0,0,0,1)]" />
 
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="relative px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
+              {/* Mobile Menu Button */}
+              <button
+                onClick={toggleSidebar}
+                className="p-2 border-2 border-black dark:border-white bg-white dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-all duration-200 touch-manipulation text-black dark:text-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-0 active:translate-y-0 md:hidden"
+              >
+                <Menu className="w-5 h-5" />
+              </button>
+
               {showBackButton && (
                 <button
-                  onClick={handleBackClick}
-                  className="p-2 rounded-none border-2 border-transparent hover:border-black dark:hover:border-white hover:bg-white dark:hover:bg-zinc-800 transition-all duration-200 touch-manipulation text-black dark:text-white shadow-[2px_2px_0px_0px_rgba(0,0,0,0)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:shadow-none translate-x-0 hover:translate-x-[-1px] hover:translate-y-[-1px]"
+                  onClick={onBack}
+                  className="p-2 border-2 border-black dark:border-white bg-white dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-all duration-200 touch-manipulation text-black dark:text-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-0 active:translate-y-0"
                 >
                   <ArrowLeft className="w-5 h-5" />
                 </button>
               )}
+
               <div>
-                <h1 className="text-2xl font-black text-black dark:text-white text-left tracking-tight uppercase">
-                  Zelote
+                <h1 className="text-xl sm:text-2xl font-black text-black dark:text-white text-left tracking-tight uppercase">
+                  {title}
                 </h1>
-                <div className="flex items-center gap-2">
-                  <p className="text-sm font-bold text-black dark:text-white hidden sm:block uppercase tracking-tight">Controle de empréstimos</p>
-                  <span className="text-[10px] px-1.5 py-0.5 border border-black bg-white text-black font-bold hidden sm:block shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]">v1.0.0</span>
-                </div>
+                {subtitle && (
+                  <p className="text-xs font-bold text-black/70 dark:text-white/70 hidden sm:block uppercase tracking-tight">
+                    {subtitle}
+                  </p>
+                )}
               </div>
             </div>
 
-            <div className="flex items-center space-x-3">
-
-              {/* Botão de Notificações */}
+            <div className="flex items-center gap-2">
+              {/* Notifications */}
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button variant="ghost" size="icon" className="relative h-9 w-9 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800">
-                    <Bell className="h-5 w-5 text-muted-foreground" />
-                    <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-primary ring-2 ring-background" />
-                  </Button>
+                  <button className="relative p-2 border-2 border-black dark:border-white bg-white dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-all text-black dark:text-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-0 active:translate-y-0">
+                    <Bell className="h-5 w-5" />
+                    <span className="absolute top-1 right-1 h-2 w-2 bg-red-500 border border-black" />
+                  </button>
                 </PopoverTrigger>
                 <PopoverContent 
-                  className="p-0 w-80 sm:w-96 bg-card/95 backdrop-blur-xl border-border shadow-xl rounded-xl overflow-hidden" 
+                  className="p-0 w-80 sm:w-96 border-2 border-black dark:border-white bg-white dark:bg-zinc-900 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] rounded-none overflow-hidden" 
                   align="end"
                 >
                   <ActivityFeed />
                 </PopoverContent>
               </Popover>
 
-              {/* Botão de Alternância de Tema */}
-              <Button
-                variant="ghost"
-                size="icon"
+              {/* Theme Toggle */}
+              <button
                 onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                className="h-9 w-9 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                className="p-2 border-2 border-black dark:border-white bg-white dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-all text-black dark:text-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-0 active:translate-y-0"
               >
                 {theme === 'dark' ? (
-                  <Sun className="h-5 w-5 text-amber-400" />
+                  <Sun className="h-5 w-5 text-amber-500" />
                 ) : (
-                  <Moon className="h-5 w-5 text-zinc-600" />
+                  <Moon className="h-5 w-5" />
                 )}
-              </Button>
-
-              {/* Dropdown de Perfil */}
-              {user && (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      className={cn(
-                        "h-9 pl-2 pr-3 rounded-full border border-border/50 bg-white/50 dark:bg-zinc-900/50 hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center gap-2 transition-all duration-300",
-                        "hover:shadow-md hover:border-primary/20",
-                      )}
-                    >
-                      <div className="h-6 w-6 rounded-full bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center text-white text-xs font-bold">
-                        {roleLoading ? (
-                          <Loader2 className="w-3 h-3 animate-spin" />
-                        ) : (
-                          user.email?.charAt(0).toUpperCase()
-                        )}
-                      </div>
-                      <span className="text-sm font-medium hidden sm:inline text-foreground/90">
-                        {user.email?.split('@')[0]}
-                      </span>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-60 bg-card/95 backdrop-blur-xl border-border shadow-xl rounded-xl p-1">
-                    <div className="px-2 py-1.5">
-                      <p className="text-sm font-semibold text-foreground truncate">{user.email}</p>
-                      <p className="text-xs text-muted-foreground capitalize">{role || 'Usuário'}</p>
-                    </div>
-                    <DropdownMenuSeparator className="bg-border/50" />
-
-                    {role && (role === 'admin' || role === 'super_admin') && (
-                      <DropdownMenuItem
-                        onClick={() => navigate('/settings')}
-                        className="cursor-pointer rounded-lg focus:bg-zinc-100 dark:focus:bg-zinc-800"
-                      >
-                        <Settings className="h-4 w-4 mr-2 text-primary" />
-                        Configurações
-                      </DropdownMenuItem>
-                    )}
-
-                    <DropdownMenuItem
-                      onClick={handleLogout}
-                      className="cursor-pointer rounded-lg text-red-600 focus:text-red-600 focus:bg-red-50 dark:focus:bg-red-950/30"
-                    >
-                      <LogOut className="h-4 w-4 mr-2" />
-                      Sair
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              )}
+              </button>
             </div>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className={`relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 no-bounce pt-24 md:pt-28 ${isStandalone ? 'ios-bottom-safe' : ''}`}>
-        {/* Background Gradient Spot */}
-        <div className="fixed top-20 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-primary/5 rounded-full blur-[100px] -z-10 pointer-events-none no-print" />
-
+      <main className={cn(
+        "px-4 sm:px-6 lg:px-8 py-6 sm:py-8 no-bounce",
+        isStandalone ? 'ios-bottom-safe' : ''
+      )}>
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
           {children}
         </div>
