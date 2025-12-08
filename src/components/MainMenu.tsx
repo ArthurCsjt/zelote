@@ -74,7 +74,7 @@ export function MainMenu({
       icon: BarChart3,
       action: () => onNavigate('dashboard'),
       color: 'text-indigo-600 dark:text-indigo-400',
-      roles: ['admin', 'super_admin']
+      roles: ['admin', 'super_admin', 'user']
     },
   ];
 
