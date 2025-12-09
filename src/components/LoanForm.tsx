@@ -404,7 +404,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
                                     setDeviceIds={setDeviceIds}
                                     disabled={loading || !isUserSelected || !isPurposeDefined}
                                     filterStatus="disponivel"
-                                    actionLabel="Adicionar"
+                                    actionLabel="Empréstimo"
                                 />
 
                                 {/* Validação em tempo real para Dispositivos */}

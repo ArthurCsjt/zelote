@@ -12,7 +12,6 @@ export function MainMenu({
 }: MainMenuProps) {
   const { role, loading: roleLoading } = useProfileRole();
   const [isLoaded, setIsLoaded] = useState(false);
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   const isProfessor = role === 'professor';
 
@@ -29,8 +28,7 @@ export function MainMenu({
       subtitle: 'Gerenciar saídas',
       icon: ClipboardList,
       action: () => onNavigate('loan', 'form'),
-      bg: 'bg-neo-blue',
-      iconBg: 'bg-white',
+      accent: 'bg-blue-500',
       roles: ['admin', 'super_admin', 'user']
     },
     {
@@ -38,8 +36,7 @@ export function MainMenu({
       subtitle: 'Registrar retornos',
       icon: RotateCcw,
       action: () => onNavigate('return'),
-      bg: 'bg-neo-amber',
-      iconBg: 'bg-white',
+      accent: 'bg-amber-500',
       roles: ['admin', 'super_admin', 'user']
     },
     {
@@ -47,8 +44,7 @@ export function MainMenu({
       subtitle: 'Reservar horários',
       icon: Calendar,
       action: () => onNavigate('scheduling'),
-      bg: 'bg-neo-violet',
-      iconBg: 'bg-white',
+      accent: 'bg-violet-500',
       roles: ['admin', 'super_admin', 'professor', 'user'],
       badge: 'BETA'
     },
@@ -57,8 +53,7 @@ export function MainMenu({
       subtitle: 'Ver dispositivos',
       icon: Laptop,
       action: () => onNavigate('inventory'),
-      bg: 'bg-neo-teal',
-      iconBg: 'bg-white',
+      accent: 'bg-teal-500',
       roles: ['admin', 'super_admin', 'user']
     },
     {
@@ -66,8 +61,7 @@ export function MainMenu({
       subtitle: 'Novo registro',
       icon: PlusCircle,
       action: () => onNavigate('registration'),
-      bg: 'bg-neo-green',
-      iconBg: 'bg-white',
+      accent: 'bg-green-500',
       roles: ['admin', 'super_admin', 'user']
     },
     {
@@ -75,8 +69,7 @@ export function MainMenu({
       subtitle: 'Auditoria física',
       icon: ListChecks,
       action: () => onNavigate('audit'),
-      bg: 'bg-neo-rose',
-      iconBg: 'bg-white',
+      accent: 'bg-rose-500',
       roles: ['admin', 'super_admin']
     },
     {
@@ -84,9 +77,7 @@ export function MainMenu({
       subtitle: 'Estatísticas',
       icon: BarChart3,
       action: () => onNavigate('dashboard'),
-      bg: 'bg-neo-dark',
-      iconBg: 'bg-white',
-      textColor: 'text-white',
+      accent: 'bg-slate-700',
       roles: ['admin', 'super_admin', 'user']
     },
   ];
@@ -96,9 +87,7 @@ export function MainMenu({
   if (roleLoading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="neo-brutal-card p-8 animate-pulse">
-          <Loader2 className="h-12 w-12 animate-spin text-black" />
-        </div>
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
     );
   }
@@ -108,120 +97,76 @@ export function MainMenu({
   }
 
   return (
-    <div className="relative py-8 px-4">
-      {/* Decorative background elements */}
+    <div className="relative py-6 px-4">
+      {/* Animated background - same as login */}
       <div className="absolute inset-0 -z-10 overflow-hidden">
-        <div className="neo-brutal-dots opacity-30" />
-        <div className="absolute top-10 left-10 w-20 h-20 bg-neo-amber border-4 border-black rotate-12 hidden lg:block" />
-        <div className="absolute bottom-10 right-10 w-16 h-16 bg-neo-blue border-4 border-black -rotate-6 hidden lg:block" />
-        <div className="absolute top-1/2 right-20 w-12 h-12 bg-neo-rose border-4 border-black rotate-45 hidden xl:block" />
+        <div className="neo-brutal-grid animate-float opacity-20" />
+        <div className="neo-brutal-dots animate-float-delayed opacity-15" />
       </div>
 
       {/* Header */}
-      <div className="text-center mb-10">
-        <h2 className="text-3xl md:text-4xl font-black uppercase tracking-tight text-black dark:text-white mb-2">
+      <div className="text-center mb-6">
+        <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-1">
           Menu Principal
         </h2>
-        <div className="inline-block bg-neo-amber border-4 border-black px-4 py-1 shadow-neo-sm -rotate-1">
-          <span className="font-bold text-sm uppercase tracking-wider">Sistema Zelote</span>
-        </div>
+        <p className="text-sm text-muted-foreground">Sistema Zelote</p>
       </div>
 
-      {/* Menu Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 max-w-6xl mx-auto">
+      {/* Menu Grid - Compact cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 max-w-4xl mx-auto">
         {menuItemsFinal.map((item, index) => {
           const Icon = item.icon;
-          const isHovered = hoveredIndex === index;
           
           return (
             <div
               key={index}
               className={cn(
                 "transition-all duration-500 ease-out",
-                isLoaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-12"
+                isLoaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
               )}
-              style={{ transitionDelay: `${index * 80}ms` }}
-              onMouseEnter={() => setHoveredIndex(index)}
-              onMouseLeave={() => setHoveredIndex(null)}
+              style={{ transitionDelay: `${index * 60}ms` }}
             >
               <button
                 onClick={item.action}
                 className={cn(
-                  "group relative w-full h-40 flex flex-col items-center justify-center gap-3 cursor-pointer",
-                  "border-4 border-black dark:border-white",
+                  "group relative w-full p-4 flex flex-col items-center justify-center gap-2 cursor-pointer",
+                  "bg-card border-2 border-border rounded-lg",
                   "transition-all duration-200 ease-out",
-                  "hover:-translate-x-1 hover:-translate-y-1",
-                  "active:translate-x-0 active:translate-y-0",
-                  item.bg,
-                  item.textColor || 'text-black'
+                  "hover:border-foreground hover:-translate-y-1 hover:shadow-lg",
+                  "active:translate-y-0 active:shadow-md"
                 )}
-                style={{
-                  boxShadow: isHovered 
-                    ? '8px 8px 0px 0px #000' 
-                    : '4px 4px 0px 0px #000',
-                }}
               >
                 {/* Badge */}
                 {item.badge && (
-                  <div className="absolute -top-3 -right-3 z-10">
-                    <span className="inline-block bg-neo-rose text-black border-3 border-black px-2 py-0.5 text-xs font-black uppercase shadow-neo-xs rotate-6">
+                  <div className="absolute -top-2 -right-2 z-10">
+                    <span className="inline-block bg-primary text-primary-foreground px-1.5 py-0.5 text-[10px] font-bold uppercase rounded">
                       {item.badge}
                     </span>
                   </div>
                 )}
 
-                {/* Icon container */}
+                {/* Icon with accent */}
                 <div className={cn(
-                  "relative p-4 border-4 border-black transition-all duration-300",
-                  item.iconBg,
-                  "shadow-neo-sm",
-                  "group-hover:scale-110 group-hover:rotate-3"
+                  "p-2.5 rounded-lg transition-transform duration-200",
+                  item.accent,
+                  "group-hover:scale-110"
                 )}>
-                  <Icon className="h-8 w-8 text-black stroke-[2.5]" />
-                  
-                  {/* Icon decorative corner */}
-                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-black" />
+                  <Icon className="h-5 w-5 text-white" />
                 </div>
 
-                {/* Text content */}
-                <div className="text-center px-2">
-                  <h3 className={cn(
-                    "font-black text-lg uppercase tracking-tight leading-tight",
-                    item.textColor || 'text-black'
-                  )}>
+                {/* Text */}
+                <div className="text-center">
+                  <h3 className="font-semibold text-sm text-foreground leading-tight">
                     {item.title}
                   </h3>
-                  <p className={cn(
-                    "text-xs font-semibold uppercase tracking-wider opacity-80 mt-0.5",
-                    item.textColor || 'text-black'
-                  )}>
+                  <p className="text-[11px] text-muted-foreground mt-0.5 hidden sm:block">
                     {item.subtitle}
                   </p>
                 </div>
-
-                {/* Bottom decorative bar */}
-                <div 
-                  className={cn(
-                    "absolute bottom-0 left-0 w-full h-2 bg-black/20",
-                    "transition-all duration-300",
-                    isHovered && "h-3 bg-black/30"
-                  )}
-                />
-
-                {/* Corner accent */}
-                <div className="absolute top-0 left-0 w-4 h-4 border-t-4 border-l-4 border-black/30" />
-                <div className="absolute bottom-0 right-0 w-4 h-4 border-b-4 border-r-4 border-black/30" />
               </button>
             </div>
           );
         })}
-      </div>
-
-      {/* Footer decoration */}
-      <div className="flex justify-center mt-10 gap-4">
-        <div className="w-16 h-2 bg-black dark:bg-white" />
-        <div className="w-8 h-2 bg-neo-blue border-2 border-black" />
-        <div className="w-4 h-2 bg-neo-amber border-2 border-black" />
       </div>
     </div>
   );

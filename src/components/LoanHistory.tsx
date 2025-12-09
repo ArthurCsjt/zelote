@@ -70,7 +70,7 @@ export function LoanHistory({ history, isNewLoan }: LoanHistoryProps) {
     setCurrentPage(1);
   };
 
-  const getStatusBadgeProps = (status: LoanHistoryItem['status']) => {
+  const getStatusBadgeProps = (status: LoanHistoryItem['status']): { variant: "success" | "destructive" | "warning" | "default" | "secondary" | "outline"; className: string; cardClass: string } => {
     switch (status) {
       case 'devolvido':
         return { variant: "success", className: "bg-success-bg text-success-foreground hover:bg-success-bg", cardClass: "border-success-bg" };
@@ -78,7 +78,7 @@ export function LoanHistory({ history, isNewLoan }: LoanHistoryProps) {
         return { variant: "destructive", className: "bg-error-bg text-error-foreground hover:bg-error-bg", cardClass: "border-error-bg bg-error-bg/50 shadow-lg" };
       case 'ativo':
       default:
-        return { variant: "warning", className: "bg-warning-bg text-warning-foreground hover:bg-warning-bg", cardClass: "border-warning-bg" };
+        return { variant: "secondary", className: "bg-warning-bg text-warning-foreground hover:bg-warning-bg", cardClass: "border-warning-bg" };
     }
   };
 
