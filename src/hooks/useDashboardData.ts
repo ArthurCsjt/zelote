@@ -8,7 +8,7 @@ import logger from '@/utils/logger';
 // O PeriodView agora só terá 'history' e 'reports'
 export type PeriodView = 'history' | 'reports';
 
-export interface TopLoanContext {
+interface TopLoanContext {
   context: string; // Combinação de Nome + Finalidade
   name: string; // Nome do Solicitante
   purpose: string; // Finalidade

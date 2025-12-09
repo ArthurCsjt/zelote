@@ -7,17 +7,16 @@ import { cn } from '@/lib/utils';
 
 interface DeviceCardProps {
     deviceId: string;
-    status?: 'disponivel' | 'emprestado' | 'manutencao' | 'baixado' | 'fixo' | 'fora_uso';
+    status?: 'disponivel' | 'emprestado' | 'manutencao' | 'baixado';
     lastUsed?: string;
-    condition?: 'excelente' | 'bom' | 'regular' | 'ruim' | string | null;
+    condition?: 'excelente' | 'bom' | 'regular' | 'ruim';
     onRemove?: () => void;
     variant?: 'loan' | 'return';
     showDetails?: boolean;
     className?: string;
-    style?: React.CSSProperties;
 }
 
-const statusConfig: Record<string, { label: string; color: string; icon: typeof CheckCircle }> = {
+const statusConfig = {
     disponivel: {
         label: 'Disponível',
         color: 'bg-green-100 text-green-700 border-green-300 dark:bg-green-900/30 dark:text-green-400 dark:border-green-500/30',
@@ -38,16 +37,6 @@ const statusConfig: Record<string, { label: string; color: string; icon: typeof 
         color: 'bg-red-100 text-red-700 border-red-300 dark:bg-red-900/30 dark:text-red-400 dark:border-red-500/30',
         icon: X,
     },
-    fixo: {
-        label: 'Fixo',
-        color: 'bg-purple-100 text-purple-700 border-purple-300 dark:bg-purple-900/30 dark:text-purple-400 dark:border-purple-500/30',
-        icon: CheckCircle,
-    },
-    fora_uso: {
-        label: 'Fora de Uso',
-        color: 'bg-gray-100 text-gray-700 border-gray-300 dark:bg-gray-900/30 dark:text-gray-400 dark:border-gray-500/30',
-        icon: X,
-    },
 };
 
 const conditionConfig = {
@@ -66,11 +55,9 @@ export function DeviceCard({
     variant = 'loan',
     showDetails = true,
     className,
-    style,
 }: DeviceCardProps) {
-    const statusInfo = statusConfig[status] || statusConfig.disponivel;
-    const conditionKey = condition && typeof condition === 'string' ? condition.toLowerCase() : 'bom';
-    const conditionInfo = conditionConfig[conditionKey as keyof typeof conditionConfig] || conditionConfig.bom;
+    const statusInfo = statusConfig[status];
+    const conditionInfo = conditionConfig[condition];
     const StatusIcon = statusInfo.icon;
 
     const borderColor = variant === 'loan'
@@ -89,7 +76,6 @@ export function DeviceCard({
                 "bg-white dark:bg-card/50",
                 className
             )}
-            style={style}
         >
             {/* Background gradient on hover */}
             <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />

@@ -86,11 +86,11 @@ export function ManualChromebookForm({ onRegistrationSuccess }: { onRegistration
     const chromebookData = {
       model: formData.model,
       serialNumber: formData.series,
-      patrimonyNumber: formData.patrimonyNumber || undefined,
+      patrimonyNumber: formData.patrimonyNumber || null,
       manufacturer: formData.manufacturer,
       // manufacturingYear não é mapeado diretamente para o DB, mas pode ser incluído em 'condition' se necessário
       condition: formData.observations || 'novo',
-      location: isFixed ? formData.classroomLocation : undefined,
+      location: isFixed ? formData.classroomLocation : null,
       // O status é definido pela mobilidade, e não pelo provisionamento
       status: isFixed ? 'fixo' as const : 'disponivel' as const,
       is_deprovisioned: formData.provisioning_status === 'deprovisioned', // PASSANDO O VALOR

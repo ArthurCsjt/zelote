@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from 'react';
+import { Button } from '@/components/ui/button';
 import { ClipboardList, BarChart3, PlusCircle, Laptop, RotateCcw, ListChecks, Calendar, Loader2 } from 'lucide-react';
 import { useProfileRole } from '@/hooks/use-profile-role';
 import { cn } from '@/lib/utils';
+// import { GlassCard } from './ui/GlassCard';
+import { Badge } from './ui/badge'; // Importando Badge
 
 interface MainMenuProps {
   onNavigate: (route: 'registration' | 'dashboard' | 'loan' | 'inventory' | 'audit' | 'quick-register' | 'return' | 'scheduling', tab?: 'form' | 'active') => void;
@@ -25,59 +28,59 @@ export function MainMenu({
   const allMenuItems = [
     {
       title: 'Empréstimos',
-      subtitle: 'Gerenciar saídas',
       icon: ClipboardList,
       action: () => onNavigate('loan', 'form'),
-      accent: 'bg-blue-500',
+      color: 'text-menu-blue', // Azul (Mantido para referência, mas não usado no ícone)
+      bg: 'bg-blue-300 dark:bg-blue-900/50',
       roles: ['admin', 'super_admin', 'user']
     },
     {
       title: 'Devolução',
-      subtitle: 'Registrar retornos',
       icon: RotateCcw,
       action: () => onNavigate('return'),
-      accent: 'bg-amber-500',
+      color: 'text-menu-amber', // Âmbar
+      bg: 'bg-amber-300 dark:bg-amber-900/50',
       roles: ['admin', 'super_admin', 'user']
     },
     {
       title: 'Agendamento',
-      subtitle: 'Reservar horários',
       icon: Calendar,
       action: () => onNavigate('scheduling'),
-      accent: 'bg-violet-500',
+      color: 'text-menu-violet', // Violeta
+      bg: 'bg-violet-300 dark:bg-violet-900/50',
       roles: ['admin', 'super_admin', 'professor', 'user'],
-      badge: 'BETA'
+      badge: { label: 'BETA', variant: 'info' }
     },
     {
       title: 'Inventário',
-      subtitle: 'Ver dispositivos',
       icon: Laptop,
       action: () => onNavigate('inventory'),
-      accent: 'bg-teal-500',
+      color: 'text-menu-teal', // Teal
+      bg: 'bg-teal-300 dark:bg-teal-900/50',
       roles: ['admin', 'super_admin', 'user']
     },
     {
       title: 'Cadastros',
-      subtitle: 'Novo registro',
       icon: PlusCircle,
       action: () => onNavigate('registration'),
-      accent: 'bg-green-500',
+      color: 'text-menu-green', // Verde
+      bg: 'bg-green-300 dark:bg-green-900/50',
       roles: ['admin', 'super_admin', 'user']
     },
     {
       title: 'Contagem',
-      subtitle: 'Auditoria física',
       icon: ListChecks,
       action: () => onNavigate('audit'),
-      accent: 'bg-rose-500',
+      color: 'text-menu-rose', // Rosa/Vermelho
+      bg: 'bg-rose-300 dark:bg-rose-900/50',
       roles: ['admin', 'super_admin']
     },
     {
       title: 'Dashboard',
-      subtitle: 'Estatísticas',
       icon: BarChart3,
       action: () => onNavigate('dashboard'),
-      accent: 'bg-slate-700',
+      color: 'text-menu-dark-blue', // Azul Escuro
+      bg: 'bg-blue-500 dark:bg-blue-900/50',
       roles: ['admin', 'super_admin', 'user']
     },
   ];
@@ -87,7 +90,7 @@ export function MainMenu({
   if (roleLoading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
@@ -97,26 +100,13 @@ export function MainMenu({
   }
 
   return (
-    <div className="relative py-6 px-4">
-      {/* Animated background - same as login */}
-      <div className="absolute inset-0 -z-10 overflow-hidden">
-        <div className="neo-brutal-grid animate-float opacity-20" />
-        <div className="neo-brutal-dots animate-float-delayed opacity-15" />
-      </div>
+    <div className="space-y-8 relative py-8 animate-fade-in">
+      {/* Background glow effect */}
+      <div className="absolute inset-0 -z-10 bg-gradient-to-b from-blue-500/5 to-transparent rounded-3xl blur-3xl" />
 
-      {/* Header */}
-      <div className="text-center mb-6">
-        <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-1">
-          Menu Principal
-        </h2>
-        <p className="text-sm text-muted-foreground">Sistema Zelote</p>
-      </div>
-
-      {/* Menu Grid - Compact cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 max-w-4xl mx-auto">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-w-5xl mx-auto relative z-10">
         {menuItemsFinal.map((item, index) => {
           const Icon = item.icon;
-          
           return (
             <div
               key={index}
@@ -124,46 +114,33 @@ export function MainMenu({
                 "transition-all duration-500 ease-out",
                 isLoaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
               )}
-              style={{ transitionDelay: `${index * 60}ms` }}
+              style={{ transitionDelay: `${index * 100}ms` }}
             >
-              <button
+              <div
+                className="group h-28 flex flex-col items-center justify-center gap-2 cursor-pointer neo-card hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_#000] active:translate-x-[0px] active:translate-y-[0px] active:shadow-[2px_2px_0px_0px_#000] transition-all duration-200"
                 onClick={item.action}
-                className={cn(
-                  "group relative w-full p-4 flex flex-col items-center justify-center gap-2 cursor-pointer",
-                  "bg-card border-2 border-border rounded-lg",
-                  "transition-all duration-200 ease-out",
-                  "hover:border-foreground hover:-translate-y-1 hover:shadow-lg",
-                  "active:translate-y-0 active:shadow-md"
-                )}
               >
-                {/* Badge */}
-                {item.badge && (
-                  <div className="absolute -top-2 -right-2 z-10">
-                    <span className="inline-block bg-primary text-primary-foreground px-1.5 py-0.5 text-[10px] font-bold uppercase rounded">
-                      {item.badge}
-                    </span>
-                  </div>
-                )}
-
-                {/* Icon with accent */}
                 <div className={cn(
-                  "p-2.5 rounded-lg transition-transform duration-200",
-                  item.accent,
-                  "group-hover:scale-110"
+                  "p-2 border-2 border-black dark:border-white transition-transform duration-300 shadow-[2px_2px_0px_0px_#000] group-hover:scale-110",
+                  item.bg // Aplica a cor de fundo do item
                 )}>
-                  <Icon className="h-5 w-5 text-white" />
+                  {/* Ícone agora usa text-black dark:text-white para alto contraste */}
+                  <Icon className="h-5 w-5 text-black dark:text-white" />
                 </div>
-
-                {/* Text */}
-                <div className="text-center">
-                  <h3 className="font-semibold text-sm text-foreground leading-tight">
+                <div className="flex items-center gap-2">
+                  <span className="font-black text-sm text-black dark:text-white uppercase tracking-tight">
                     {item.title}
-                  </h3>
-                  <p className="text-[11px] text-muted-foreground mt-0.5 hidden sm:block">
-                    {item.subtitle}
-                  </p>
+                  </span>
+                  {item.badge && (
+                    <Badge
+                      variant={item.badge.variant as any}
+                      className="text-[10px] h-4 px-1.5 py-0.5 border border-black bg-yellow-300 text-black rounded-none shadow-[1px_1px_0px_0px_#000]"
+                    >
+                      {item.badge.label}
+                    </Badge>
+                  )}
                 </div>
-              </button>
+              </div>
             </div>
           );
         })}

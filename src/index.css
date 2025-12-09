@@ -782,55 +782,7 @@
     @apply border-4 border-black dark:border-white bg-yellow-300 dark:bg-yellow-700 shadow-[8px_8px_0px_0px_#000] dark:shadow-[8px_8px_0px_0px_#ffffff33];
   }
 
-/* Neo Brutalism Color Palette */
-.bg-neo-blue {
-  background-color: #4DABF7;
-}
-.bg-neo-amber {
-  background-color: #FFD43B;
-}
-.bg-neo-violet {
-  background-color: #B197FC;
-}
-.bg-neo-teal {
-  background-color: #38D9A9;
-}
-.bg-neo-green {
-  background-color: #69DB7C;
-}
-.bg-neo-rose {
-  background-color: #FF8787;
-}
-.bg-neo-dark {
-  background-color: #212529;
-}
-.bg-neo-cream {
-  background-color: #FFF3BF;
-}
-
-/* Neo Brutalism Shadows */
-.shadow-neo-xs {
-  box-shadow: 2px 2px 0px 0px #000;
-}
-.shadow-neo-sm {
-  box-shadow: 3px 3px 0px 0px #000;
-}
-.shadow-neo {
-  box-shadow: 4px 4px 0px 0px #000;
-}
-.shadow-neo-md {
-  box-shadow: 6px 6px 0px 0px #000;
-}
-.shadow-neo-lg {
-  box-shadow: 8px 8px 0px 0px #000;
-}
-
-/* Border width helper */
-.border-3 {
-  border-width: 3px;
-}
-
-.neo-card {
+  .neo-card {
     @apply border-2 border-black dark:border-white bg-white dark:bg-zinc-900 shadow-[4px_4px_0px_0px_#000] dark:shadow-[4px_4px_0px_0px_#ffffff33] transition-all duration-200;
   }
 
