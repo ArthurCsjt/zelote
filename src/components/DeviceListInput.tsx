@@ -21,6 +21,7 @@ interface DeviceListInputProps {
   disabled: boolean;
   filterStatus?: 'disponivel' | 'emprestado' | 'all';
   actionLabel: 'Empréstimo' | 'Devolução';
+  className?: string;
 }
 
 export function DeviceListInput({ deviceIds, setDeviceIds, disabled, filterStatus = 'disponivel', actionLabel }: DeviceListInputProps) {
@@ -115,6 +116,7 @@ export function DeviceListInput({ deviceIds, setDeviceIds, disabled, filterStatu
     }
 
     setDeviceList(prev => {
+      if (!validation.chromebook) return prev;
       const newList = [...prev, validation.chromebook];
       setDeviceIds(newList.map(item => item.chromebook_id));
       return newList;
@@ -141,7 +143,9 @@ export function DeviceListInput({ deviceIds, setDeviceIds, disabled, filterStatu
         });
         return;
       }
-      addDevice(validation.chromebook);
+      if (validation.chromebook) {
+        addDevice(validation.chromebook);
+      }
     }
     setIsQRReaderOpen(false);
   };
@@ -191,7 +195,7 @@ export function DeviceListInput({ deviceIds, setDeviceIds, disabled, filterStatu
                 key={chromebook.chromebook_id}
                 deviceId={chromebook.chromebook_id}
                 status={chromebook.status}
-                condition={chromebook.condition}
+                condition={undefined}
                 onRemove={() => removeDevice(chromebook.chromebook_id)}
                 variant={actionLabel === 'Empréstimo' ? 'loan' : 'return'}
                 showDetails={true}
