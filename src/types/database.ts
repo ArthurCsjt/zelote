@@ -84,6 +84,7 @@ export interface LoanHistoryItem {
   expected_return_date?: string;
   chromebook_id: string;
   chromebook_model: string;
+  created_by_email?: string; // Email de quem criou o empréstimo
   return_date?: string;
   returned_by_name?: string;
   returned_by_email?: string;

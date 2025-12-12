@@ -289,7 +289,10 @@ export function LoanForm({ onBack }: LoanFormProps) {
                     <div className="space-y-5">
 
                         {/* ═══ SEÇÃO 1: SOLICITANTE ═══ */}
-                        <div className="neo-card border-l-8 border-l-violet-500 bg-violet-50 dark:bg-violet-900/10">
+                        <div className={cn(
+                            "neo-card border-l-8 border-l-violet-500 bg-violet-50 dark:bg-violet-900/10 transition-all duration-300",
+                            currentStep === 1 && "ring-2 ring-violet-500 ring-offset-2 animate-gentle-pulse"
+                        )}>
                             <CardHeader className="p-5 pb-3 border-b-2 border-black/10 dark:border-white/10">
                                 <CardTitle className="text-xl font-black uppercase tracking-tight flex items-center gap-2 text-foreground">
                                     <User className="h-6 w-6 text-black dark:text-white" />
@@ -324,8 +327,9 @@ export function LoanForm({ onBack }: LoanFormProps) {
 
                         {/* ═══ SEÇÃO 2: FINALIDADE ═══ */}
                         <div className={cn(
-                            "neo-card border-l-8 border-l-blue-500 bg-blue-50 dark:bg-blue-900/10",
-                            !isUserSelected && "opacity-50 grayscale pointer-events-none"
+                            "neo-card border-l-8 border-l-blue-500 bg-blue-50 dark:bg-blue-900/10 transition-all duration-300",
+                            !isUserSelected && "opacity-50 grayscale pointer-events-none",
+                            currentStep === 2 && isUserSelected && "ring-2 ring-blue-500 ring-offset-2 animate-gentle-pulse"
                         )}>
                             <CardHeader className="p-5 pb-3 border-b-2 border-black/10 dark:border-white/10">
                                 <CardTitle className="text-xl font-black uppercase tracking-tight flex items-center gap-2 text-foreground">
@@ -375,8 +379,9 @@ export function LoanForm({ onBack }: LoanFormProps) {
 
                         {/* ═══ SEÇÃO 3: DISPOSITIVOS ═══ */}
                         <div className={cn(
-                            "neo-card border-l-8 border-l-amber-500 bg-amber-50 dark:bg-amber-900/10",
-                            (!isUserSelected || !isPurposeDefined) && "opacity-50 grayscale pointer-events-none"
+                            "neo-card border-l-8 border-l-amber-500 bg-amber-50 dark:bg-amber-900/10 transition-all duration-300",
+                            (!isUserSelected || !isPurposeDefined) && "opacity-50 grayscale pointer-events-none",
+                            currentStep === 3 && isUserSelected && isPurposeDefined && "ring-2 ring-amber-500 ring-offset-2 animate-gentle-pulse"
                         )}>
                             <CardHeader className="p-5 pb-3 border-b-2 border-black/10 dark:border-white/10">
                                 <div className="flex items-center justify-between">
@@ -419,8 +424,9 @@ export function LoanForm({ onBack }: LoanFormProps) {
 
                         {/* ═══ SEÇÃO 4: PRAZO E CONFIRMAÇÃO ═══ */}
                         <div className={cn(
-                            "neo-card border-l-8 border-l-green-500 bg-gray-50 dark:bg-zinc-900",
-                            (!isUserSelected || !isPurposeDefined || !isDevicesAdded) && "opacity-50 grayscale pointer-events-none"
+                            "neo-card border-l-8 border-l-green-500 bg-gray-50 dark:bg-zinc-900 transition-all duration-300",
+                            (!isUserSelected || !isPurposeDefined || !isDevicesAdded) && "opacity-50 grayscale pointer-events-none",
+                            currentStep === 4 && isUserSelected && isPurposeDefined && isDevicesAdded && "ring-2 ring-green-500 ring-offset-2 animate-gentle-pulse"
                         )}>
                             <CardHeader className="p-5 pb-3 border-b-2 border-black/10 dark:border-white/10">
                                 <CardTitle className="text-xl font-black uppercase tracking-tight flex items-center gap-2 text-foreground">

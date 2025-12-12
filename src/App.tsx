@@ -38,31 +38,14 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 const ToasterWrapper = () => {
   const { theme } = useTheme();
 
-  // Definindo estilos baseados no tema com melhor contraste no modo claro
-  const toastClass = cn(
-    "shadow-2xl border-2",
-    "backdrop-blur-md font-medium",
-    theme === 'dark'
-      ? "dark:border-gray-700 dark:bg-gray-800/90 dark:text-gray-100"
-      : "border-gray-400 bg-white text-gray-900"
-  );
-
   return (
     <Toaster
       theme={theme}
-      position="top-center"
+      position="top-right"
       richColors
       closeButton
-      className="z-[9999]"
-      toastOptions={{
-        className: toastClass,
-        style: {
-          padding: '14px 18px',
-          borderRadius: '12px',
-          fontSize: '14px',
-          fontWeight: '500',
-        },
-      }}
+      expand={false}
+      duration={4000}
     />
   );
 };

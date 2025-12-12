@@ -3,28 +3,24 @@ import Layout from '@/components/Layout';
 import { useProfileRole } from '@/hooks/use-profile-role';
 import { useNavigate } from 'react-router-dom';
 import { CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { UserManagement } from './parts/UserManagement';
 import { DataMaintenance } from '@/components/DataMaintenance';
-import { GlassCard } from '@/components/ui/GlassCard';
 import { Button } from '@/components/ui/button';
 import { LogOut, Loader2, Settings as SettingsIcon } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { EmailTestCard } from '@/components/EmailTestCard'; // NOVO IMPORT
+import { EmailTestCard } from '@/components/EmailTestCard';
 
 const Settings = () => {
   const { isAdmin, loading } = useProfileRole();
   const { logout } = useAuth();
   const navigate = useNavigate();
 
-  // Redireciona se o usuário não for admin e o carregamento terminar
   useEffect(() => {
     if (!loading && !isAdmin) {
-      // Se o usuário não for admin, redireciona para a página inicial
       navigate('/', { replace: true });
     }
   }, [isAdmin, loading, navigate]);
-  
+
   const handleLogout = async () => {
     await logout();
     navigate('/login', { replace: true });
@@ -40,47 +36,53 @@ const Settings = () => {
     );
   }
 
-  // Se o usuário não for admin, o useEffect acima já o redirecionou.
-  // Este bloco é um fallback de segurança.
   if (!isAdmin) {
-    return null; 
+    return null;
   }
 
   return (
     <Layout title="Configurações" subtitle="Gerencie configurações administrativas" showBackButton onBack={() => navigate(-1)}>
-      {/* Removido max-w-5xl mx-auto grid gap-6. Usando espaçamento vertical simples. */}
       <div className="space-y-6">
-        
-        <div className="flex items-center gap-3 mb-4">
-            <SettingsIcon className="h-7 w-7 text-primary" />
-            <h2 className="text-2xl font-bold text-gray-800">Painel Administrativo</h2>
+
+        {/* Header Neo-Brutalista */}
+        <div className="neo-card p-6">
+          <div className="flex items-center gap-3">
+            <div className="p-3 bg-violet-500 dark:bg-violet-600 border-2 border-black dark:border-white shadow-[3px_3px_0px_0px_#000] dark:shadow-[3px_3px_0px_0px_#fff]">
+              <SettingsIcon className="h-6 w-6 text-white" />
+            </div>
+            <div>
+              <h2 className="text-2xl font-black uppercase tracking-tight">Painel Administrativo</h2>
+              <p className="text-sm font-bold text-muted-foreground uppercase">Configurações do Sistema</p>
+            </div>
+          </div>
         </div>
-        
-        {/* 1. Gerenciamento de Usuários (Convites e Roles) */}
+
+        {/* 1. Gerenciamento de Usuários */}
         <UserManagement />
-        
-        {/* 2. Manutenção de Dados (Importação e Limpeza) */}
+
+        {/* 2. Manutenção de Dados */}
         <DataMaintenance />
-        
+
         {/* 3. Teste de E-mail */}
         <EmailTestCard />
-        
-        {/* 4. Botão de Sair (Visível para todos, mas colocado aqui para consistência) */}
-        <GlassCard className="border-red-200/50 bg-red-50/50">
-          <CardHeader>
-            <CardTitle className="text-red-700">Sair do Sistema</CardTitle>
+
+        {/* 4. Botão de Sair - Neo-Brutalista */}
+        <div className="neo-card border-l-8 border-l-red-600 bg-red-50 dark:bg-red-950 p-6">
+          <CardHeader className="p-0 mb-4">
+            <CardTitle className="text-xl font-black uppercase tracking-tight text-red-700 dark:text-red-400">
+              Sair do Sistema
+            </CardTitle>
           </CardHeader>
-          <CardContent>
-            <Button 
-              variant="destructive" 
+          <CardContent className="p-0">
+            <Button
               onClick={handleLogout}
-              className="w-full"
+              className="w-full neo-btn bg-red-600 hover:bg-red-700 text-white font-black uppercase tracking-wide h-12"
             >
-              <LogOut className="h-4 w-4 mr-2" />
+              <LogOut className="h-5 w-5 mr-2" />
               Sair e Desconectar
             </Button>
           </CardContent>
-        </GlassCard>
+        </div>
       </div>
     </Layout>
   );

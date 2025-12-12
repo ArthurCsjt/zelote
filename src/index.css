@@ -336,7 +336,7 @@
 
 /* Neo-Brutal Grid Pattern */
 .neo-brutal-grid {
-  background-image: 
+  background-image:
     linear-gradient(hsl(var(--foreground)) 1px, transparent 1px),
     linear-gradient(90deg, hsl(var(--foreground)) 1px, transparent 1px);
   background-size: 40px 40px;
@@ -350,18 +350,24 @@
 
 /* Floating Animation */
 @keyframes float {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translateY(0) rotate(12deg);
   }
+
   50% {
     transform: translateY(-20px) rotate(12deg);
   }
 }
 
 @keyframes float-delayed {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translateY(0) rotate(45deg);
   }
+
   50% {
     transform: translateY(-15px) rotate(45deg);
   }
@@ -714,7 +720,7 @@
 /* ======================================================================== */
 /* NOVO: Forçar barra de rolagem vertical para ScrollArea */
 /* ======================================================================== */
-.force-scrollbar-y > div[data-radix-scroll-area-viewport] {
+.force-scrollbar-y>div[data-radix-scroll-area-viewport] {
   overflow-y: scroll !important;
 }
 
@@ -797,4 +803,235 @@
   .neo-btn {
     @apply border-2 border-black dark:border-white rounded-none shadow-[4px_4px_0px_0px_#000] dark:shadow-[4px_4px_0px_0px_#ffffff33] hover:shadow-[6px_6px_0px_0px_#000] active:shadow-none active:translate-x-[4px] active:translate-y-[4px] transition-all duration-200 uppercase font-black tracking-tight;
   }
+}
+
+/* ======================================================================== */
+/* CUSTOM ANIMATIONS */
+/* ======================================================================== */
+
+/* Animação de pulso suave e lenta para cards ativos */
+@keyframes gentle-pulse {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.85;
+  }
+}
+
+.animate-gentle-pulse {
+  animation: gentle-pulse 3s ease-in-out infinite;
+}
+
+/* ======================================================================== */
+/* NEO-BRUTALISM TOAST NOTIFICATIONS (SONNER) */
+/* ======================================================================== */
+
+/* Estilo base do toast - Neo-Brutalismo */
+[data-sonner-toast] {
+  border-radius: 0 !important;
+  border: 4px solid #000 !important;
+  box-shadow: 6px 6px 0px 0px #000 !important;
+  padding: 16px 20px !important;
+  font-weight: 700 !important;
+  background: white !important;
+  color: #000 !important;
+}
+
+.dark [data-sonner-toast] {
+  border-color: #fff !important;
+  box-shadow: 6px 6px 0px 0px #fff !important;
+  background: #18181b !important;
+  color: #fff !important;
+}
+
+/* Ícone do toast */
+[data-sonner-toast] [data-icon] {
+  width: 24px !important;
+  height: 24px !important;
+}
+
+/* Título do toast */
+[data-sonner-toast] [data-title] {
+  font-weight: 900 !important;
+  font-size: 15px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+}
+
+/* Descrição do toast */
+[data-sonner-toast] [data-description] {
+  font-weight: 500 !important;
+  font-size: 13px !important;
+  opacity: 0.9 !important;
+}
+
+/* Botão de fechar */
+[data-sonner-toast] [data-close-button] {
+  border: 2px solid #000 !important;
+  border-radius: 0 !important;
+  background: #e4e4e7 !important;
+  color: #000 !important;
+  width: 24px !important;
+  height: 24px !important;
+  box-shadow: 2px 2px 0px 0px #000 !important;
+  transition: all 0.15s ease !important;
+}
+
+.dark [data-sonner-toast] [data-close-button] {
+  border-color: #fff !important;
+  background: #27272a !important;
+  color: #fff !important;
+  box-shadow: 2px 2px 0px 0px #fff !important;
+}
+
+[data-sonner-toast] [data-close-button]:hover {
+  transform: translate(-1px, -1px) !important;
+  box-shadow: 3px 3px 0px 0px #000 !important;
+}
+
+.dark [data-sonner-toast] [data-close-button]:hover {
+  box-shadow: 3px 3px 0px 0px #fff !important;
+}
+
+/* Toast de Sucesso (Verde) */
+[data-sonner-toast][data-type="success"] {
+  border-color: #16a34a !important;
+  background: #f0fdf4 !important;
+  color: #14532d !important;
+  box-shadow: 6px 6px 0px 0px #16a34a !important;
+}
+
+.dark [data-sonner-toast][data-type="success"] {
+  border-color: #22c55e !important;
+  background: #052e16 !important;
+  color: #bbf7d0 !important;
+  box-shadow: 6px 6px 0px 0px #22c55e !important;
+}
+
+[data-sonner-toast][data-type="success"] [data-icon] {
+  color: #16a34a !important;
+}
+
+.dark [data-sonner-toast][data-type="success"] [data-icon] {
+  color: #22c55e !important;
+}
+
+/* Toast de Erro (Vermelho) */
+[data-sonner-toast][data-type="error"] {
+  border-color: #dc2626 !important;
+  background: #fef2f2 !important;
+  color: #7f1d1d !important;
+  box-shadow: 6px 6px 0px 0px #dc2626 !important;
+}
+
+.dark [data-sonner-toast][data-type="error"] {
+  border-color: #ef4444 !important;
+  background: #450a0a !important;
+  color: #fecaca !important;
+  box-shadow: 6px 6px 0px 0px #ef4444 !important;
+}
+
+[data-sonner-toast][data-type="error"] [data-icon] {
+  color: #dc2626 !important;
+}
+
+.dark [data-sonner-toast][data-type="error"] [data-icon] {
+  color: #ef4444 !important;
+}
+
+/* Toast de Aviso (Âmbar) */
+[data-sonner-toast][data-type="warning"] {
+  border-color: #d97706 !important;
+  background: #fffbeb !important;
+  color: #78350f !important;
+  box-shadow: 6px 6px 0px 0px #d97706 !important;
+}
+
+.dark [data-sonner-toast][data-type="warning"] {
+  border-color: #f59e0b !important;
+  background: #451a03 !important;
+  color: #fef3c7 !important;
+  box-shadow: 6px 6px 0px 0px #f59e0b !important;
+}
+
+[data-sonner-toast][data-type="warning"] [data-icon] {
+  color: #d97706 !important;
+}
+
+.dark [data-sonner-toast][data-type="warning"] [data-icon] {
+  color: #f59e0b !important;
+}
+
+/* Toast de Info (Azul) */
+[data-sonner-toast][data-type="info"] {
+  border-color: #2563eb !important;
+  background: #eff6ff !important;
+  color: #1e3a8a !important;
+  box-shadow: 6px 6px 0px 0px #2563eb !important;
+}
+
+.dark [data-sonner-toast][data-type="info"] {
+  border-color: #3b82f6 !important;
+  background: #172554 !important;
+  color: #dbeafe !important;
+  box-shadow: 6px 6px 0px 0px #3b82f6 !important;
+}
+
+[data-sonner-toast][data-type="info"] [data-icon] {
+  color: #2563eb !important;
+}
+
+.dark [data-sonner-toast][data-type="info"] [data-icon] {
+  color: #3b82f6 !important;
+}
+
+/* Botões de ação no toast */
+[data-sonner-toast] [data-button] {
+  border: 2px solid #000 !important;
+  border-radius: 0 !important;
+  background: #000 !important;
+  color: #fff !important;
+  padding: 6px 12px !important;
+  font-weight: 900 !important;
+  text-transform: uppercase !important;
+  font-size: 11px !important;
+  letter-spacing: 0.5px !important;
+  box-shadow: 3px 3px 0px 0px #000 !important;
+  transition: all 0.15s ease !important;
+}
+
+.dark [data-sonner-toast] [data-button] {
+  border-color: #fff !important;
+  background: #fff !important;
+  color: #000 !important;
+  box-shadow: 3px 3px 0px 0px #fff !important;
+}
+
+[data-sonner-toast] [data-button]:hover {
+  transform: translate(-2px, -2px) !important;
+  box-shadow: 5px 5px 0px 0px #000 !important;
+}
+
+.dark [data-sonner-toast] [data-button]:hover {
+  box-shadow: 5px 5px 0px 0px #fff !important;
+}
+
+[data-sonner-toast] [data-button]:active {
+  transform: translate(2px, 2px) !important;
+  box-shadow: none !important;
+}
+
+/* Botão de cancelar */
+[data-sonner-toast] [data-cancel] {
+  background: #e4e4e7 !important;
+  color: #000 !important;
+}
+
+.dark [data-sonner-toast] [data-cancel] {
+  background: #27272a !important;
+  color: #fff !important;
 }

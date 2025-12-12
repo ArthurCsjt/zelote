@@ -7,14 +7,14 @@ import type { LoanHistoryItem } from "@/types/database";
 import { Input } from "./ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { Button } from "./ui/button";
-import { GlassCard } from "./ui/GlassCard";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "./ui/pagination";
-import { ToggleGroup, ToggleGroupItem } from "./ui/toggle-group"; // Importando ToggleGroup
-import { LoanHistoryTable } from "./LoanHistoryTable"; // Importando o novo componente de Tabela
+import { ToggleGroup, ToggleGroupItem } from "./ui/toggle-group";
+import { LoanHistoryTable } from "./LoanHistoryTable";
+import { cn } from "@/lib/utils";
 
 interface LoanHistoryProps {
   history: LoanHistoryItem[];
-  isNewLoan: (loan: LoanHistoryItem) => boolean; // NOVO PROP
+  isNewLoan: (loan: LoanHistoryItem) => boolean;
 }
 
 type ViewMode = 'cards' | 'table';
@@ -24,16 +24,15 @@ export function LoanHistory({ history, isNewLoan }: LoanHistoryProps) {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [userTypeFilter, setUserTypeFilter] = useState<string>("all");
   const [currentPage, setCurrentPage] = useState(1);
-  const [viewMode, setViewMode] = useState<ViewMode>('cards'); // NOVO ESTADO
-  const itemsPerPage = 10; // 10 itens por página
+  const [viewMode, setViewMode] = useState<ViewMode>('cards');
+  const itemsPerPage = 10;
 
   const filteredHistory = useMemo(() => {
     let filtered = history;
     const lowerCaseSearch = searchTerm.toLowerCase();
 
-    // 1. Filtrar por termo de pesquisa
     if (lowerCaseSearch) {
-      filtered = filtered.filter(loan => 
+      filtered = filtered.filter(loan =>
         loan.student_name.toLowerCase().includes(lowerCaseSearch) ||
         loan.student_email.toLowerCase().includes(lowerCaseSearch) ||
         (loan.student_ra && loan.student_ra.toLowerCase().includes(lowerCaseSearch)) ||
@@ -42,12 +41,10 @@ export function LoanHistory({ history, isNewLoan }: LoanHistoryProps) {
       );
     }
 
-    // 2. Filtrar por status
     if (statusFilter !== "all") {
       filtered = filtered.filter(loan => loan.status === statusFilter);
     }
 
-    // 3. Filtrar por tipo de usuário
     if (userTypeFilter !== "all") {
       filtered = filtered.filter(loan => loan.user_type === userTypeFilter);
     }
@@ -55,7 +52,6 @@ export function LoanHistory({ history, isNewLoan }: LoanHistoryProps) {
     return filtered;
   }, [history, searchTerm, statusFilter, userTypeFilter]);
 
-  // Lógica de Paginação
   const totalPages = Math.ceil(filteredHistory.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedHistory = filteredHistory.slice(
@@ -73,311 +69,344 @@ export function LoanHistory({ history, isNewLoan }: LoanHistoryProps) {
   const getStatusBadgeProps = (status: LoanHistoryItem['status']) => {
     switch (status) {
       case 'devolvido':
-        return { variant: "success", className: "bg-success-bg text-success-foreground hover:bg-success-bg", cardClass: "border-success-bg" };
+        return {
+          className: "bg-green-500 dark:bg-green-600 text-white border-2 border-green-700 dark:border-green-400 shadow-[2px_2px_0px_0px_#000] dark:shadow-[2px_2px_0px_0px_#fff] font-black uppercase",
+          cardClass: "border-l-green-600"
+        };
       case 'atrasado':
-        return { variant: "destructive", className: "bg-error-bg text-error-foreground hover:bg-error-bg", cardClass: "border-error-bg bg-error-bg/50 shadow-lg" };
+        return {
+          className: "bg-red-500 dark:bg-red-600 text-white border-2 border-red-700 dark:border-red-400 shadow-[2px_2px_0px_0px_#000] dark:shadow-[2px_2px_0px_0px_#fff] font-black uppercase",
+          cardClass: "border-l-red-600"
+        };
       case 'ativo':
       default:
-        return { variant: "warning", className: "bg-warning-bg text-warning-foreground hover:bg-warning-bg", cardClass: "border-warning-bg" };
+        return {
+          className: "bg-amber-500 dark:bg-amber-600 text-white border-2 border-amber-700 dark:border-amber-400 shadow-[2px_2px_0px_0px_#000] dark:shadow-[2px_2px_0px_0px_#fff] font-black uppercase",
+          cardClass: "border-l-amber-600"
+        };
     }
   };
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Clock className="h-5 w-5 text-primary" />
-          <h2 className="text-xl font-semibold text-foreground">Histórico de Empréstimos</h2>
-          <Badge variant="secondary">{filteredHistory.length} / {history.length}</Badge>
+      {/* Header */}
+      <div className="neo-card p-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-3 bg-violet-500 dark:bg-violet-600 border-2 border-black dark:border-white shadow-[3px_3px_0px_0px_#000] dark:shadow-[3px_3px_0px_0px_#fff]">
+              <Clock className="h-6 w-6 text-white" />
+            </div>
+            <div>
+              <h2 className="text-2xl font-black uppercase tracking-tight">Histórico Completo</h2>
+              <p className="text-sm font-bold text-muted-foreground uppercase">
+                {filteredHistory.length} de {history.length} registros
+              </p>
+            </div>
+          </div>
+
+          {/* Seletor de Visualização */}
+          <ToggleGroup
+            type="single"
+            value={viewMode}
+            onValueChange={(value: ViewMode) => value && setViewMode(value)}
+            className="border-2 border-black dark:border-white bg-white dark:bg-zinc-900 shadow-[3px_3px_0px_0px_#000] dark:shadow-[3px_3px_0px_0px_#fff]"
+          >
+            <ToggleGroupItem
+              value="cards"
+              aria-label="Visualização em Cards"
+              className="data-[state=on]:bg-black data-[state=on]:dark:bg-white data-[state=on]:text-white data-[state=on]:dark:text-black font-bold"
+            >
+              <LayoutGrid className="h-4 w-4 mr-2" />
+              CARDS
+            </ToggleGroupItem>
+            <ToggleGroupItem
+              value="table"
+              aria-label="Visualização em Tabela"
+              className="data-[state=on]:bg-black data-[state=on]:dark:bg-white data-[state=on]:text-white data-[state=on]:dark:text-black font-bold"
+            >
+              <List className="h-4 w-4 mr-2" />
+              TABELA
+            </ToggleGroupItem>
+          </ToggleGroup>
         </div>
-        
-        {/* Seletor de Visualização */}
-        <ToggleGroup 
-          type="single" 
-          value={viewMode} 
-          onValueChange={(value: ViewMode) => value && setViewMode(value)}
-          className="h-9 bg-card border border-border"
-        >
-          <ToggleGroupItem value="cards" aria-label="Visualização em Cards" className="h-9 px-3">
-            <LayoutGrid className="h-4 w-4" />
-          </ToggleGroupItem>
-          <ToggleGroupItem value="table" aria-label="Visualização em Tabela" className="h-9 px-3">
-            <List className="h-4 w-4" />
-          </ToggleGroupItem>
-        </ToggleGroup>
       </div>
 
       {/* Painel de Filtros */}
-      <GlassCard className="p-4">
+      <div className="neo-card p-4">
         <div className="flex flex-col sm:flex-row gap-3 items-center">
           {/* Busca */}
           <div className="relative flex-1 w-full">
             <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Buscar por nome, email, RA ou ID do Chromebook..."
+              placeholder="BUSCAR POR NOME, EMAIL, RA OU ID..."
               value={searchTerm}
               onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
-              className="pl-10 bg-input-bg border-input"
+              className="neo-input pl-10"
             />
           </div>
 
           {/* Filtro de Status */}
           <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setCurrentPage(1); }}>
-            <SelectTrigger className="w-full sm:w-[180px] bg-card border-border">
-              <SelectValue placeholder="Status" />
+            <SelectTrigger className="w-full sm:w-[180px] neo-input font-bold uppercase">
+              <SelectValue placeholder="STATUS" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Todos os Status</SelectItem>
-              <SelectItem value="ativo">Ativo</SelectItem>
-              <SelectItem value="devolvido">Devolvido</SelectItem>
-              <SelectItem value="atrasado">Atrasado</SelectItem>
+              <SelectItem value="all">TODOS</SelectItem>
+              <SelectItem value="ativo">ATIVO</SelectItem>
+              <SelectItem value="devolvido">DEVOLVIDO</SelectItem>
+              <SelectItem value="atrasado">ATRASADO</SelectItem>
             </SelectContent>
           </Select>
 
           {/* Filtro de Tipo de Usuário */}
           <Select value={userTypeFilter} onValueChange={(v) => { setUserTypeFilter(v); setCurrentPage(1); }}>
-            <SelectTrigger className="w-full sm:w-[180px] bg-card border-border">
-              <SelectValue placeholder="Tipo de Usuário" />
+            <SelectTrigger className="w-full sm:w-[180px] neo-input font-bold uppercase">
+              <SelectValue placeholder="TIPO" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Todos os Usuários</SelectItem>
-              <SelectItem value="aluno">Aluno</SelectItem>
-              <SelectItem value="professor">Professor</SelectItem>
-              <SelectItem value="funcionario">Funcionário</SelectItem>
+              <SelectItem value="all">TODOS</SelectItem>
+              <SelectItem value="aluno">ALUNO</SelectItem>
+              <SelectItem value="professor">PROFESSOR</SelectItem>
+              <SelectItem value="funcionario">FUNCIONÁRIO</SelectItem>
             </SelectContent>
           </Select>
-          
+
           {/* Botão Limpar */}
           {(searchTerm || statusFilter !== 'all' || userTypeFilter !== 'all') && (
-            <Button variant="outline" size="icon" onClick={clearFilters} title="Limpar Filtros">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={clearFilters}
+              title="Limpar Filtros"
+              className="neo-btn bg-red-500 hover:bg-red-600 text-white"
+            >
               <X className="h-4 w-4" />
             </Button>
           )}
         </div>
-      </GlassCard>
+      </div>
 
       {filteredHistory.length === 0 ? (
-        <Card className="bg-card border-border">
-          <CardContent className="py-8">
-            <div className="text-center text-muted-foreground">
-              <Clock className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p className="text-lg font-medium mb-2">Nenhum registro encontrado</p>
-              <p className="text-sm">Ajuste os filtros ou a pesquisa.</p>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="neo-card p-12">
+          <div className="text-center">
+            <Clock className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
+            <p className="text-xl font-black uppercase mb-2">Nenhum Registro Encontrado</p>
+            <p className="text-sm font-bold text-muted-foreground uppercase">Ajuste os filtros ou a pesquisa</p>
+          </div>
+        </div>
       ) : viewMode === 'table' ? (
-        /* Visualização em Tabela */
         <LoanHistoryTable history={paginatedHistory} isNewLoan={isNewLoan} />
       ) : (
-        /* Visualização em Cards */
         <div className="grid gap-4">
           {paginatedHistory.map((loan) => {
-            const { variant, className, cardClass } = getStatusBadgeProps(loan.status);
+            const { className, cardClass } = getStatusBadgeProps(loan.status);
             const isReturned = loan.status === 'devolvido';
-            const returnedByDifferentUser = isReturned && 
-              loan.returned_by_email && 
+            const returnedByDifferentUser = isReturned &&
+              loan.returned_by_email &&
               loan.returned_by_email !== loan.student_email;
-            
-            const isRecent = isNewLoan(loan); // Usando a função passada via prop
 
-            // Lógica para verificar se a devolução foi feita após o prazo esperado
+            const isRecent = isNewLoan(loan);
             const isLateReturn = isReturned && loan.expected_return_date && new Date(loan.return_date!) > new Date(loan.expected_return_date);
 
             return (
-              <GlassCard 
-                key={loan.id} 
-                className={`hover:shadow-md transition-shadow border-l-4 border-l-border-strong ${cardClass}`} // Aplicando a classe do card
+              <div
+                key={loan.id}
+                className={cn(
+                  "neo-card p-6 border-l-8 transition-all duration-200 hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_#000]",
+                  cardClass
+                )}
               >
-                <CardContent className="p-6">
-                  <div className="space-y-4">
-                    {/* Header */}
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-center gap-3">
-                        <User className="h-5 w-5 text-primary" />
-                        <div>
-                          <h3 className="font-semibold text-lg text-foreground">{loan.student_name}</h3>
-                          <p className="text-sm text-muted-foreground">{loan.student_email}</p>
-                        </div>
+                <div className="space-y-4">
+                  {/* Header */}
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-violet-500 dark:bg-violet-600 border-2 border-black dark:border-white">
+                        <User className="h-5 w-5 text-white" />
                       </div>
-                      <div className="flex flex-col items-end gap-1">
-                        <Badge 
-                          variant={variant}
-                          className={className}
-                        >
-                          {loan.status.charAt(0).toUpperCase() + loan.status.slice(1)}
-                        </Badge>
-                        {isRecent && (
-                          <Badge className="bg-info text-info-foreground hover:bg-info text-xs">
-                            NOVO
-                          </Badge>
-                        )}
+                      <div>
+                        <h3 className="font-black text-lg uppercase">{loan.student_name}</h3>
+                        <p className="text-sm font-bold text-muted-foreground">{loan.student_email}</p>
                       </div>
                     </div>
-
-                    {/* Info badges */}
-                    <div className="flex flex-wrap gap-2">
-                      {loan.student_ra && (
-                        <Badge variant="outline" className="bg-card text-foreground border-border">
-                          RA: {loan.student_ra}
-                        </Badge>
-                      )}
-                      <Badge variant="secondary" className="bg-info-bg text-info-foreground hover:bg-info-bg">
-                        <Monitor className="h-3 w-3 mr-1" />
-                        {loan.chromebook_id}
+                    <div className="flex flex-col items-end gap-2">
+                      <Badge className={className}>
+                        {loan.status.toUpperCase()}
                       </Badge>
-                      {loan.chromebook_model && (
-                        <Badge variant="outline" className="bg-card text-foreground border-border">
-                          {loan.chromebook_model}
+                      {isRecent && (
+                        <Badge className="bg-blue-500 dark:bg-blue-600 text-white border-2 border-blue-700 dark:border-blue-400 shadow-[2px_2px_0px_0px_#000] dark:shadow-[2px_2px_0px_0px_#fff] font-black">
+                          NOVO
                         </Badge>
-                      )}
-                      <Badge variant="outline" className="capitalize bg-card text-foreground border-border">
-                        {loan.user_type}
-                      </Badge>
-                      {loan.loan_type === 'lote' && (
-                        <Badge className="bg-warning-bg text-warning-foreground hover:bg-warning-bg">
-                          Lote
-                        </Badge>
-                      )}
-                    </div>
-
-                    {/* Purpose */}
-                    <div className="text-sm text-foreground">
-                      <span className="font-medium">Finalidade: </span>
-                      <span>{loan.purpose}</span>
-                    </div>
-
-                    {/* Timeline */}
-                    <div className="space-y-3">
-                      {/* Empréstimo */}
-                      <div className="bg-success-bg border border-success/50 rounded-lg p-3 dark:bg-success-bg/50 dark:border-success/30">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <CheckCircle className="h-4 w-4 text-success" />
-                            <span className="font-medium text-success-foreground">Empréstimo realizado</span>
-                          </div>
-                          <span className="text-sm text-success-foreground">
-                            {format(new Date(loan.loan_date), "dd/MM/yyyy 'às' HH:mm")}
-                          </span>
-                        </div>
-                        
-                        {/* Prazo Esperado */}
-                        {loan.expected_return_date && (
-                          <div className="mt-2 pt-2 border-t border-success/30 flex items-center justify-between text-sm">
-                            <div className="flex items-center gap-2 text-muted-foreground">
-                              <CalendarX className="h-4 w-4" />
-                              <span className="font-medium">Prazo Esperado:</span>
-                            </div>
-                            <span className="font-medium text-muted-foreground">
-                              {format(new Date(loan.expected_return_date), "dd/MM/yyyy 'às' HH:mm")}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Devolução */}
-                      {isReturned && loan.return_date && (
-                        <div className={`border rounded-lg p-3 ${
-                          isLateReturn 
-                            ? 'bg-error-bg border-error/50 dark:bg-error-bg/50 dark:border-error/30' 
-                            : 'bg-info-bg border-info/50 dark:bg-info-bg/50 dark:border-info/30'
-                        }`}>
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              {isLateReturn ? (
-                                <AlertTriangle className="h-4 w-4 text-error" />
-                              ) : (
-                                <RotateCcw className="h-4 w-4 text-info" />
-                              )}
-                              <span className={`font-medium ${
-                                isLateReturn ? 'text-error-foreground' : 'text-info-foreground'
-                              }`}>
-                                Devolução realizada
-                              </span>
-                            </div>
-                            <span className={`text-sm ${
-                              isLateReturn ? 'text-error-foreground' : 'text-info-foreground'
-                            }`}>
-                              {format(new Date(loan.return_date), "dd/MM/yyyy 'às' HH:mm")}
-                            </span>
-                          </div>
-                          
-                          {/* Detalhes da Devolução */}
-                          {(returnedByDifferentUser || isLateReturn) && (
-                            <div className="mt-2 pt-2 border-t border-border space-y-1">
-                              {returnedByDifferentUser && loan.returned_by_name && (
-                                <div className="text-sm text-warning-foreground">
-                                  <span className="font-medium">Devolvido por: </span>
-                                  <span>{loan.returned_by_name}</span>
-                                  {loan.returned_by_email && (
-                                    <span className="text-warning"> ({loan.returned_by_email})</span>
-                                  )}
-                                </div>
-                              )}
-                              {isLateReturn && (
-                                <div className="text-sm text-error-foreground font-semibold">
-                                  ATRASO: Devolvido após o prazo esperado.
-                                </div>
-                              )}
-                            </div>
-                          )}
-
-                          {loan.return_notes && (
-                            <div className="mt-2 pt-2 border-t border-border">
-                              <div className="text-sm text-muted-foreground">
-                                <span className="font-medium">Observações: </span>
-                                <span>{loan.return_notes}</span>
-                              </div>
-                            </div>
-                          )}
-                        </div>
                       )}
                     </div>
                   </div>
-                </CardContent>
-              </GlassCard>
+
+                  {/* Info badges */}
+                  <div className="flex flex-wrap gap-2">
+                    {loan.student_ra && (
+                      <Badge className="bg-white dark:bg-zinc-900 text-black dark:text-white border-2 border-black dark:border-white font-bold uppercase">
+                        RA: {loan.student_ra}
+                      </Badge>
+                    )}
+                    <Badge className="bg-violet-100 dark:bg-violet-900 text-violet-900 dark:text-violet-100 border-2 border-violet-600 font-bold uppercase">
+                      <Monitor className="h-3 w-3 mr-1" />
+                      {loan.chromebook_id}
+                    </Badge>
+                    {loan.chromebook_model && (
+                      <Badge className="bg-white dark:bg-zinc-900 text-black dark:text-white border-2 border-black dark:border-white font-bold uppercase">
+                        {loan.chromebook_model}
+                      </Badge>
+                    )}
+                    <Badge className="bg-zinc-200 dark:bg-zinc-800 text-black dark:text-white border-2 border-black dark:border-white font-bold uppercase">
+                      {loan.user_type}
+                    </Badge>
+                    {loan.loan_type === 'lote' && (
+                      <Badge className="bg-amber-100 dark:bg-amber-900 text-amber-900 dark:text-amber-100 border-2 border-amber-600 font-bold uppercase">
+                        LOTE
+                      </Badge>
+                    )}
+                  </div>
+
+                  {/* Purpose */}
+                  <div className="p-3 bg-zinc-100 dark:bg-zinc-800 border-2 border-black dark:border-white">
+                    <span className="font-black uppercase text-xs">Finalidade/Aula: </span>
+                    <span className="font-bold">{loan.purpose}</span>
+                  </div>
+
+                  {/* Timeline */}
+                  <div className="space-y-3">
+                    {/* Empréstimo */}
+                    <div className="neo-card bg-green-50 dark:bg-green-950 border-l-4 border-l-green-600 p-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <CheckCircle className="h-4 w-4 text-green-600" />
+                          <span className="font-black uppercase text-sm">Empréstimo</span>
+                        </div>
+                        <span className="text-sm font-bold">
+                          {format(new Date(loan.loan_date), "dd/MM/yyyy 'às' HH:mm")}
+                        </span>
+                      </div>
+
+                      {/* Email de quem realizou o empréstimo */}
+                      {loan.created_by_email && (
+                        <div className="mt-2 pt-2 border-t-2 border-green-600/30 text-sm">
+                          <span className="font-black uppercase text-xs">Registrado por: </span>
+                          <span className="font-bold">{loan.created_by_email}</span>
+                        </div>
+                      )}
+
+                      {loan.expected_return_date && (
+                        <div className="mt-2 pt-2 border-t-2 border-green-600/30 flex items-center justify-between text-sm">
+                          <div className="flex items-center gap-2">
+                            <CalendarX className="h-4 w-4" />
+                            <span className="font-black uppercase text-xs">Prazo:</span>
+                          </div>
+                          <span className="font-bold">
+                            {format(new Date(loan.expected_return_date), "dd/MM/yyyy 'às' HH:mm")}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Devolução */}
+                    {isReturned && loan.return_date && (
+                      <div className={cn(
+                        "neo-card border-l-4 p-3",
+                        isLateReturn
+                          ? 'bg-red-50 dark:bg-red-950 border-l-red-600'
+                          : 'bg-blue-50 dark:bg-blue-950 border-l-blue-600'
+                      )}>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            {isLateReturn ? (
+                              <AlertTriangle className="h-4 w-4 text-red-600" />
+                            ) : (
+                              <RotateCcw className="h-4 w-4 text-blue-600" />
+                            )}
+                            <span className="font-black uppercase text-sm">
+                              {isLateReturn ? 'Devolvido (Atrasado)' : 'Devolvido'}
+                            </span>
+                          </div>
+                          <span className="text-sm font-bold">
+                            {format(new Date(loan.return_date), "dd/MM/yyyy 'às' HH:mm")}
+                          </span>
+                        </div>
+
+                        {(returnedByDifferentUser || loan.return_notes || loan.returned_by_email) && (
+                          <div className="mt-2 pt-2 border-t-2 border-black/10 dark:border-white/10 space-y-1">
+                            {returnedByDifferentUser && loan.returned_by_name && (
+                              <div className="text-sm">
+                                <span className="font-black uppercase text-xs">Devolvido por: </span>
+                                <span className="font-bold">{loan.returned_by_name}</span>
+                              </div>
+                            )}
+                            {loan.returned_by_email && (
+                              <div className="text-sm">
+                                <span className="font-black uppercase text-xs">Email: </span>
+                                <span className="font-bold">{loan.returned_by_email}</span>
+                              </div>
+                            )}
+                            {loan.return_notes && (
+                              <div className="text-sm">
+                                <span className="font-black uppercase text-xs">Obs: </span>
+                                <span className="font-bold">{loan.return_notes}</span>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
             );
           })}
         </div>
       )}
-      
+
       {/* Paginação */}
       {totalPages > 1 && (
-        <Pagination className="mt-6">
-          <PaginationContent>
-            <PaginationItem>
-              <PaginationPrevious
-                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
-              />
-            </PaginationItem>
-
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-              <PaginationItem key={page}>
-                <PaginationLink
-                  isActive={currentPage === page}
-                  onClick={() => setCurrentPage(page)}
-                  className="cursor-pointer"
-                >
-                  {page}
-                </PaginationLink>
+        <div className="neo-card p-4">
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious
+                  onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                  className={cn(
+                    "neo-btn cursor-pointer font-black uppercase",
+                    currentPage === 1 && "pointer-events-none opacity-50"
+                  )}
+                />
               </PaginationItem>
-            ))}
 
-            <PaginationItem>
-              <PaginationNext
-                onClick={() =>
-                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-                }
-                className={
-                  currentPage === totalPages
-                    ? "pointer-events-none opacity-50"
-                    : "cursor-pointer"
-                }
-              />
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <PaginationItem key={page}>
+                  <PaginationLink
+                    isActive={currentPage === page}
+                    onClick={() => setCurrentPage(page)}
+                    className={cn(
+                      "cursor-pointer font-black",
+                      currentPage === page && "neo-btn bg-black dark:bg-white text-white dark:text-black"
+                    )}
+                  >
+                    {page}
+                  </PaginationLink>
+                </PaginationItem>
+              ))}
+
+              <PaginationItem>
+                <PaginationNext
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                  }
+                  className={cn(
+                    "neo-btn cursor-pointer font-black uppercase",
+                    currentPage === totalPages && "pointer-events-none opacity-50"
+                  )}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        </div>
       )}
     </div>
   );

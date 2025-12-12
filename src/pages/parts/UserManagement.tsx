@@ -54,26 +54,26 @@ const ProfileEditDialog: React.FC<ProfileEditDialogProps> = ({ open, onOpenChang
   const handleSave = async () => {
     if (!user || !currentUser) return;
     setIsSaving(true);
-    
+
     try {
       // 1. Atualizar o nome na tabela profiles
       const { error: nameError } = await supabase
         .from('profiles')
         .update({ name: name.trim() || null })
         .eq('id', user.id);
-      
+
       if (nameError) throw nameError;
 
       // 2. Atualizar a role (apenas se o usuário logado for admin/super_admin e não estiver editando a si mesmo)
       if (isAdmin && user.id !== currentUser.id) {
         // Super admin pode definir qualquer role, Admin só pode definir 'user' ou 'admin'
         const roleToSet = (currentRole === 'admin' && role === 'super_admin') ? 'admin' : role;
-        
+
         const { error: roleError } = await supabase
           .from('profiles')
           .update({ role: roleToSet })
           .eq('id', user.id);
-          
+
         if (roleError) throw roleError;
       }
 
@@ -152,7 +152,7 @@ export const UserManagement = () => {
   // Removendo estados de exclusão de pendentes, pois a seção será removida
   // const [isDeletePendingOpen, setIsDeletePendingOpen] = useState(false);
   // const [pendingInviteToDelete, setPendingInviteToDelete] = useState<UserProfile | null>(null);
-  
+
   // Estados para edição de perfil
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
   const [userToEditProfile, setUserToEditProfile] = useState<UserProfile | null>(null);
@@ -170,17 +170,32 @@ export const UserManagement = () => {
   const handleDeleteUserConfirm = async () => {
     if (!userToDelete) return;
     try {
-      const { error } = await supabase.functions.invoke('delete-user', { body: { userId: userToDelete.id } });
+      // Soft delete direto na tabela profiles
+      const { error } = await supabase
+        .from('profiles')
+        .update({ deleted_at: new Date().toISOString() })
+        .eq('id', userToDelete.id);
+
       if (error) throw error;
-      toast({ title: "Sucesso!", description: `Usuário ${userToDelete.email} foi excluído.` });
+
+      toast({
+        title: "Sucesso!",
+        description: `Usuário ${userToDelete.email} foi excluído.`,
+        variant: "success"
+      });
+
       queryClient.invalidateQueries({ queryKey: ['all_users'] });
     } catch (error: any) {
-      toast({ title: "Erro!", description: `Não foi possível excluir o usuário: ${error.message}`, variant: "destructive" });
+      toast({
+        title: "Erro!",
+        description: `Não foi possível excluir o usuário: ${error.message}`,
+        variant: "destructive"
+      });
     } finally {
       setUserToDelete(null);
     }
   };
-  
+
   // Removendo função de exclusão de pendentes
   /*
   const handleDeletePendingInviteConfirm = async () => {
@@ -217,11 +232,11 @@ export const UserManagement = () => {
       })) as UserProfile[];
     },
     // Desabilita a consulta se o usuário não for admin ou se o papel ainda estiver carregando
-    enabled: isAdmin && !roleLoading, 
+    enabled: isAdmin && !roleLoading,
     // Otimização de cache: mantém os dados 'frescos' por 5 minutos
-    staleTime: 1000 * 60 * 5, 
+    staleTime: 1000 * 60 * 5,
     // Não refaz a busca automaticamente ao focar na janela
-    refetchOnWindowFocus: false, 
+    refetchOnWindowFocus: false,
   });
 
   if (roleLoading || isLoading) {
@@ -232,7 +247,7 @@ export const UserManagement = () => {
       </div>
     );
   }
-  
+
   // Se não for admin, mas o componente foi renderizado (o que não deveria acontecer em Settings.tsx, mas como fallback)
   if (!isAdmin) {
     return (
@@ -247,7 +262,7 @@ export const UserManagement = () => {
 
   if (error) {
     const isPermissionError = error.message.includes('Acesso negado: Seu perfil não tem permissão de administrador no banco de dados.');
-    
+
     return (
       <Card className={cn("border-red-500 bg-red-50", isPermissionError ? 'border-l-4' : '')}>
         <CardContent className="pt-6 flex items-center gap-2 text-red-700">
@@ -288,14 +303,14 @@ export const UserManagement = () => {
               </div>
               <div className="flex items-center gap-2">
                 <Badge variant="outline" className={cn(
-                    user.role === 'super_admin' && 'bg-purple-100 text-purple-800 border-purple-300',
-                    user.role === 'admin' && 'bg-blue-100 text-blue-800 border-blue-300',
-                    user.role === 'user' && 'bg-gray-100 text-gray-800 border-gray-300',
-                    'capitalize'
+                  user.role === 'super_admin' && 'bg-purple-100 text-purple-800 border-purple-300',
+                  user.role === 'admin' && 'bg-blue-100 text-blue-800 border-blue-300',
+                  user.role === 'user' && 'bg-gray-100 text-gray-800 border-gray-300',
+                  'capitalize'
                 )}>
-                    {user.role.replace('_', ' ')}
+                  {user.role.replace('_', ' ')}
                 </Badge>
-                
+
                 {currentUser && user.id !== currentUser.id ? (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -342,10 +357,10 @@ export const UserManagement = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-      
+
       {/* Diálogo de Confirmação para Contas Pendentes (Mantido o código do Dialog, mas não será acionado) */}
       {/* Removido o estado isDeletePendingOpen, então este dialog não será aberto */}
-      
+
       {/* Diálogo de Edição de Perfil */}
       <ProfileEditDialog
         open={isEditProfileOpen}
