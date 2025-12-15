@@ -100,9 +100,15 @@ export function MainMenu({
   }
 
   return (
-    <div className="space-y-8 relative py-8 animate-fade-in">
-      {/* Background glow effect */}
-      <div className="absolute inset-0 -z-10 bg-gradient-to-b from-blue-500/5 to-transparent rounded-3xl blur-3xl" />
+    <div className="space-y-8 relative py-8 animate-fade-in min-h-[calc(100vh-100px)]">
+      {/* Background glow effect - PRESERVED */}
+      <div className="absolute inset-0 -z-20 bg-gradient-to-b from-blue-500/5 to-transparent rounded-3xl blur-3xl" />
+
+      {/* Floating Geometric Shapes (Added for "professional touch") */}
+      <div className="absolute top-10 left-10 w-20 h-20 bg-primary rotate-12 neo-brutal-shadow animate-float -z-10 opacity-50" />
+      <div className="absolute bottom-32 right-16 w-16 h-16 bg-warning rotate-45 neo-brutal-shadow animate-float-delayed -z-10 opacity-50" />
+      <div className="absolute top-1/3 right-20 w-12 h-12 bg-success rotate-6 neo-brutal-shadow animate-float -z-10 opacity-50" />
+      <div className="absolute bottom-20 left-24 w-14 h-14 bg-error -rotate-12 neo-brutal-shadow animate-float-delayed -z-10 opacity-50" />
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-w-5xl mx-auto relative z-10">
         {menuItemsFinal.map((item, index) => {
@@ -117,10 +123,17 @@ export function MainMenu({
               style={{ transitionDelay: `${index * 100}ms` }}
             >
               <div
-                className="group h-28 flex flex-col items-center justify-center gap-2 cursor-pointer neo-card hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_#000] active:translate-x-[0px] active:translate-y-[0px] active:shadow-[2px_2px_0px_0px_#000] transition-all duration-200"
+                // Reverted to previous specific classes (manual hover/active states)
+                // Removed 'neo-card-hover' which uses the new variables, using explicit values instead
+                // Kept 'neo-card' for base bg/color but overriding border if needed.
+                // Actually, to fully revert to "how it was", I should use the exact previous string.
+                // Previous: "group h-28 flex flex-col items-center justify-center gap-2 cursor-pointer neo-card hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_#000] active:translate-x-[0px] active:translate-y-[0px] active:shadow-[2px_2px_0px_0px_#000] transition-all duration-200"
+                // Adding border-2 to override the new global border-3 from neo-card
+                className="group h-28 flex flex-col items-center justify-center gap-2 cursor-pointer neo-card border-2 border-black dark:border-white hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_#000] active:translate-x-[0px] active:translate-y-[0px] active:shadow-[2px_2px_0px_0px_#000] transition-all duration-200"
                 onClick={item.action}
               >
                 <div className={cn(
+                  // Reverted inner box to border-2 and explicit shadow
                   "p-2 border-2 border-black dark:border-white transition-transform duration-300 shadow-[2px_2px_0px_0px_#000] group-hover:scale-110",
                   item.bg // Aplica a cor de fundo do item
                 )}>

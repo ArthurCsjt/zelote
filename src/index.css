@@ -122,9 +122,32 @@
     --menu-teal-hover: 174 70% 35%;
     --menu-dark-blue: 213 90% 35%;
     --menu-dark-blue-hover: 213 90% 30%;
+
+    /* ===== NEO-BRUTALISM TOKENS ===== */
+    --neo-border-width: 3px;
+    --neo-border-color: 0 0% 0%;
+    /* Black */
+    --neo-shadow-offset: 4px;
+    --neo-shadow-color: 0 0% 0%;
+    /* Black */
+
+    --neo-shadow: var(--neo-shadow-offset) var(--neo-shadow-offset) 0px 0px hsl(var(--neo-shadow-color));
+    --neo-shadow-hover: 6px 6px 0px 0px hsl(var(--neo-shadow-color));
+    --neo-shadow-active: 2px 2px 0px 0px hsl(var(--neo-shadow-color));
   }
 
   .dark {
+    /* ... (keep existing dark mode variable overrides) ... */
+    --neo-border-color: 0 0% 100%;
+    /* White in dark mode */
+    --neo-shadow-color: 0 0% 100%;
+    /* White shadows in dark mode for high contrast */
+
+    /* Override shadow for proper visibility in dark mode */
+    --neo-shadow: var(--neo-shadow-offset) var(--neo-shadow-offset) 0px 0px hsl(var(--neo-shadow-color) / 0.3);
+    --neo-shadow-hover: 6px 6px 0px 0px hsl(var(--neo-shadow-color) / 0.3);
+    --neo-shadow-active: 2px 2px 0px 0px hsl(var(--neo-shadow-color) / 0.3);
+
     /* ===== BASE COLORS (ZINC) ===== */
     --background: 240 10% 3.9%;
     /* Preto azulado (Zinc 950) */
@@ -254,23 +277,21 @@
 
 /* Neo-Brutal Card */
 .neo-brutal-card {
-  @apply bg-card border-4 border-foreground dark:border-foreground/80 rounded-none;
-  box-shadow: 8px 8px 0px 0px hsl(var(--foreground) / 0.9);
-}
-
-.dark .neo-brutal-card {
-  box-shadow: 8px 8px 0px 0px hsl(var(--foreground) / 0.3);
+  @apply bg-card rounded-none;
+  border: var(--neo-border-width) solid hsl(var(--neo-border-color));
+  box-shadow: var(--neo-shadow);
 }
 
 /* Neo-Brutal Header */
 .neo-brutal-header {
-  border-bottom: 4px solid hsl(var(--foreground) / 0.2);
+  border-bottom: 4px solid hsl(var(--neo-border-color) / 0.2);
 }
 
 /* Neo-Brutal Icon Box */
 .neo-brutal-icon-box {
-  @apply p-3 border-3 border-foreground;
-  box-shadow: 4px 4px 0px 0px hsl(var(--foreground) / 0.5);
+  @apply p-3;
+  border: var(--neo-border-width) solid hsl(var(--neo-border-color));
+  box-shadow: 4px 4px 0px 0px hsl(var(--neo-border-color) / 0.5);
 }
 
 /* Neo-Brutal Input */
@@ -294,44 +315,30 @@
 /* Neo-Brutal Button */
 .neo-brutal-button {
   @apply h-14 text-lg font-black uppercase tracking-wider;
-  @apply bg-primary text-primary-foreground border-3 border-foreground rounded-none;
-  box-shadow: 6px 6px 0px 0px hsl(var(--foreground) / 0.9);
+  @apply bg-primary text-primary-foreground rounded-none;
+  border: var(--neo-border-width) solid hsl(var(--neo-border-color));
+
+  box-shadow: 6px 6px 0px 0px hsl(var(--neo-border-color));
   transition: all 0.15s ease;
 }
 
 .neo-brutal-button:hover:not(:disabled) {
   transform: translate(-3px, -3px);
-  box-shadow: 9px 9px 0px 0px hsl(var(--foreground) / 0.9);
+  box-shadow: 9px 9px 0px 0px hsl(var(--neo-border-color));
 }
 
 .neo-brutal-button:active:not(:disabled) {
   transform: translate(2px, 2px);
-  box-shadow: 2px 2px 0px 0px hsl(var(--foreground) / 0.9);
+  box-shadow: 2px 2px 0px 0px hsl(var(--neo-border-color));
 }
 
 .neo-brutal-button:disabled {
   @apply opacity-50 cursor-not-allowed;
 }
 
-.dark .neo-brutal-button {
-  box-shadow: 6px 6px 0px 0px hsl(var(--foreground) / 0.3);
-}
-
-.dark .neo-brutal-button:hover:not(:disabled) {
-  box-shadow: 9px 9px 0px 0px hsl(var(--foreground) / 0.3);
-}
-
-.dark .neo-brutal-button:active:not(:disabled) {
-  box-shadow: 2px 2px 0px 0px hsl(var(--foreground) / 0.3);
-}
-
 /* Neo-Brutal Shadow (for floating elements) */
 .neo-brutal-shadow {
-  box-shadow: 4px 4px 0px 0px hsl(var(--foreground) / 0.8);
-}
-
-.dark .neo-brutal-shadow {
-  box-shadow: 4px 4px 0px 0px hsl(var(--foreground) / 0.3);
+  box-shadow: var(--neo-shadow);
 }
 
 /* Neo-Brutal Grid Pattern */
@@ -781,23 +788,23 @@
 
 @layer components {
   .neo-container {
-    @apply border-4 border-black dark:border-white bg-white dark:bg-zinc-900 shadow-[8px_8px_0px_0px_#000] dark:shadow-[8px_8px_0px_0px_#ffffff33];
+    @apply border-[length:var(--neo-border-width)] border-[hsl(var(--neo-border-color))] bg-white dark:bg-zinc-900 shadow-[var(--neo-shadow)];
   }
 
   .neo-container-yellow {
-    @apply border-4 border-black dark:border-white bg-yellow-300 dark:bg-yellow-700 shadow-[8px_8px_0px_0px_#000] dark:shadow-[8px_8px_0px_0px_#ffffff33];
+    @apply border-[length:var(--neo-border-width)] border-[hsl(var(--neo-border-color))] bg-yellow-300 dark:bg-yellow-700 shadow-[var(--neo-shadow)];
   }
 
   .neo-card {
-    @apply border-2 border-black dark:border-white bg-white dark:bg-zinc-900 shadow-[4px_4px_0px_0px_#000] dark:shadow-[4px_4px_0px_0px_#ffffff33] transition-all duration-200;
+    @apply border-[length:var(--neo-border-width)] border-[hsl(var(--neo-border-color))] bg-white dark:bg-zinc-900 shadow-[var(--neo-shadow)] transition-all duration-200;
   }
 
   .neo-card-hover {
-    @apply hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_#000] active:translate-x-[0px] active:translate-y-[0px] active:shadow-[2px_2px_0px_0px_#000];
+    @apply hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[var(--neo-shadow-hover)] active:translate-x-[0px] active:translate-y-[0px] active:shadow-[var(--neo-shadow-active)];
   }
 
   .neo-input {
-    @apply border-2 border-black dark:border-white rounded-none bg-white dark:bg-zinc-950 shadow-[4px_4px_0px_0px_#000] dark:shadow-[4px_4px_0px_0px_#ffffff33] focus:shadow-[2px_2px_0px_0px_#000] focus:translate-x-[2px] focus:translate-y-[2px] focus-visible:ring-0 placeholder:text-gray-500 font-mono text-sm uppercase tracking-tight transition-all;
+    @apply border-[length:var(--neo-border-width)] border-[hsl(var(--neo-border-color))] rounded-none bg-white dark:bg-zinc-950 shadow-[var(--neo-shadow)] focus:shadow-[var(--neo-shadow-active)] focus:translate-x-[2px] focus:translate-y-[2px] focus-visible:ring-0 placeholder:text-gray-500 font-mono text-sm uppercase tracking-tight transition-all;
   }
 
   .neo-btn {
