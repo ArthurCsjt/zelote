@@ -103,24 +103,24 @@ const Layout: React.FC<LayoutProps> = ({
                 </button>
               )}
               <div>
-                <h1 className="text-2xl font-black text-primary-foreground text-left tracking-tight uppercase">
+                <h1 className="text-3xl font-black text-white text-left tracking-tighter uppercase glitch-text leading-none mb-0.5">
                   Zelote
                 </h1>
                 <div className="flex items-center gap-2">
-                  <p className="text-sm font-bold text-primary-foreground/90 hidden sm:block uppercase tracking-tight">Controle de empréstimos</p>
-                  <span className="text-[10px] px-1.5 py-0.5 border border-white/50 bg-white/20 text-white font-bold hidden sm:block backdrop-blur-sm">v1.0.0</span>
+                  <p className="text-xs font-bold text-white/90 hidden sm:block uppercase tracking-wider glitch-text">Controle de empréstimos</p>
+                  <span className="text-[10px] px-1.5 py-0.5 text-white font-bold hidden sm:block glass-badge rounded-sm">v1.0.0</span>
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2">
 
               {/* Botão de Notificações */}
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button variant="ghost" size="icon" className="relative h-9 w-9 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800">
-                    <Bell className="h-5 w-5 text-muted-foreground" />
-                    <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-primary ring-2 ring-background" />
+                  <Button variant="ghost" size="icon" className="relative h-9 w-9 rounded-full hover:bg-white/10 text-white hover:text-white transition-colors">
+                    <Bell className="h-5 w-5" />
+                    <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-blue-500 ring-2 ring-primary" />
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent
@@ -136,12 +136,12 @@ const Layout: React.FC<LayoutProps> = ({
                 variant="ghost"
                 size="icon"
                 onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                className="h-9 w-9 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                className="h-9 w-9 rounded-full hover:bg-white/10 text-white hover:text-white transition-colors"
               >
                 {theme === 'dark' ? (
-                  <Sun className="h-5 w-5 text-amber-400" />
+                  <Sun className="h-5 w-5" />
                 ) : (
-                  <Moon className="h-5 w-5 text-zinc-600" />
+                  <Moon className="h-5 w-5" />
                 )}
               </Button>
 
@@ -152,18 +152,18 @@ const Layout: React.FC<LayoutProps> = ({
                     <Button
                       variant="ghost"
                       className={cn(
-                        "h-9 pl-2 pr-3 rounded-full border border-border/50 bg-white/50 dark:bg-zinc-900/50 hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center gap-2 transition-all duration-300",
-                        "hover:shadow-md hover:border-primary/20",
+                        "h-9 pl-1 pr-3 rounded-full border border-white/20 bg-white/10 backdrop-blur-md hover:bg-white/20 flex items-center gap-2 transition-all duration-300 ml-2",
+                        "text-white hover:text-white hover:border-white/40",
                       )}
                     >
-                      <div className="h-6 w-6 rounded-full bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center text-white text-xs font-bold">
+                      <div className="h-7 w-7 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-bold ring-2 ring-white/20">
                         {roleLoading ? (
                           <Loader2 className="w-3 h-3 animate-spin" />
                         ) : (
                           user.email?.charAt(0).toUpperCase()
                         )}
                       </div>
-                      <span className="text-sm font-medium hidden sm:inline text-foreground/90">
+                      <span className="text-sm font-medium hidden sm:inline text-white/90">
                         {user.email?.split('@')[0]}
                       </span>
                     </Button>

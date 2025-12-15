@@ -123,22 +123,14 @@ export function MainMenu({
               style={{ transitionDelay: `${index * 100}ms` }}
             >
               <div
-                // Reverted to previous specific classes (manual hover/active states)
-                // Removed 'neo-card-hover' which uses the new variables, using explicit values instead
-                // Kept 'neo-card' for base bg/color but overriding border if needed.
-                // Actually, to fully revert to "how it was", I should use the exact previous string.
-                // Previous: "group h-28 flex flex-col items-center justify-center gap-2 cursor-pointer neo-card hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_#000] active:translate-x-[0px] active:translate-y-[0px] active:shadow-[2px_2px_0px_0px_#000] transition-all duration-200"
-                // Adding border-2 to override the new global border-3 from neo-card
-                className="group h-28 flex flex-col items-center justify-center gap-2 cursor-pointer neo-card border-2 border-black dark:border-white hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_#000] active:translate-x-[0px] active:translate-y-[0px] active:shadow-[2px_2px_0px_0px_#000] transition-all duration-200"
+                className="group h-32 w-full flex flex-col items-center justify-center gap-3 cursor-pointer bg-white dark:bg-zinc-900 border-[3px] border-black dark:border-white shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[-2px] hover:translate-y-[-2px] active:translate-x-[0px] active:translate-y-[0px] active:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all duration-200"
                 onClick={item.action}
               >
                 <div className={cn(
-                  // Reverted inner box to border-2 and explicit shadow
-                  "p-2 border-2 border-black dark:border-white transition-transform duration-300 shadow-[2px_2px_0px_0px_#000] group-hover:scale-110",
-                  item.bg // Aplica a cor de fundo do item
+                  "p-2.5 border-2 border-black dark:border-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-transform duration-200 group-hover:scale-105",
+                  item.bg
                 )}>
-                  {/* Ícone agora usa text-black dark:text-white para alto contraste */}
-                  <Icon className="h-5 w-5 text-black dark:text-white" />
+                  <Icon className="h-6 w-6 text-black dark:text-white" />
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="font-black text-sm text-black dark:text-white uppercase tracking-tight">
