@@ -84,7 +84,12 @@ const Layout: React.FC<LayoutProps> = ({
       {/* Header */}
       <header className={cn("fixed top-0 left-0 right-0 z-50 transition-all duration-300 no-print", isStandalone ? 'safe-area-top' : '')}>
         {/* Neo-Brutalism Header Background */}
-        <div className="absolute inset-0 bg-yellow-300 dark:bg-zinc-900 border-b-4 border-black dark:border-white shadow-[0px_4px_0px_0px_rgba(0,0,0,1)]" />
+        <div className="absolute inset-0 bg-primary overflow-hidden">
+          {/* Dots Pattern Overlay */}
+          <div className="absolute inset-0 neo-brutal-dots opacity-20" />
+          {/* Bottom Gradient Border */}
+          <div className="absolute bottom-0 w-full h-2 bg-gradient-to-r from-primary via-warning to-success" />
+        </div>
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
@@ -92,18 +97,18 @@ const Layout: React.FC<LayoutProps> = ({
               {showBackButton && (
                 <button
                   onClick={handleBackClick}
-                  className="p-2 rounded-none border-2 border-transparent hover:border-black dark:hover:border-white hover:bg-white dark:hover:bg-zinc-800 transition-all duration-200 touch-manipulation text-black dark:text-white shadow-[2px_2px_0px_0px_rgba(0,0,0,0)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:shadow-none translate-x-0 hover:translate-x-[-1px] hover:translate-y-[-1px]"
+                  className="p-2 rounded-none border-2 border-transparent hover:border-white hover:bg-white/10 transition-all duration-200 touch-manipulation text-primary-foreground shadow-none hover:shadow-[2px_2px_0px_0px_rgba(255,255,255,0.5)] active:shadow-none translate-x-0 hover:translate-x-[-1px] hover:translate-y-[-1px]"
                 >
                   <ArrowLeft className="w-5 h-5" />
                 </button>
               )}
               <div>
-                <h1 className="text-2xl font-black text-black dark:text-white text-left tracking-tight uppercase">
+                <h1 className="text-2xl font-black text-primary-foreground text-left tracking-tight uppercase">
                   Zelote
                 </h1>
                 <div className="flex items-center gap-2">
-                  <p className="text-sm font-bold text-black dark:text-white hidden sm:block uppercase tracking-tight">Controle de empréstimos</p>
-                  <span className="text-[10px] px-1.5 py-0.5 border border-black bg-white text-black font-bold hidden sm:block shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]">v1.0.0</span>
+                  <p className="text-sm font-bold text-primary-foreground/90 hidden sm:block uppercase tracking-tight">Controle de empréstimos</p>
+                  <span className="text-[10px] px-1.5 py-0.5 border border-white/50 bg-white/20 text-white font-bold hidden sm:block backdrop-blur-sm">v1.0.0</span>
                 </div>
               </div>
             </div>
@@ -118,8 +123,8 @@ const Layout: React.FC<LayoutProps> = ({
                     <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-primary ring-2 ring-background" />
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent 
-                  className="p-0 w-80 sm:w-96 bg-card/95 backdrop-blur-xl border-border shadow-xl rounded-xl overflow-hidden" 
+                <PopoverContent
+                  className="p-0 w-80 sm:w-96 bg-card/95 backdrop-blur-xl border-border shadow-xl rounded-xl overflow-hidden"
                   align="end"
                 >
                   <ActivityFeed />
