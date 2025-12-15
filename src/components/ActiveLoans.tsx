@@ -68,9 +68,10 @@ export function ActiveLoans({ onNavigateToReturn }: ActiveLoansProps) {
       {/* Painel de Alertas de Atraso */}
       <OverdueAlertsPanel />
 
-      {/* Título e Botão de Atualizar (REMOVIDO O H2, MANTIDO O DIV DE CONTROLE) */}
+      {/* Título e Botão de Atualizar */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-        <h3 className="text-xl font-bold text-foreground">
+        <h3 className="text-xl font-black uppercase tracking-tight text-foreground flex items-center gap-2">
+          <List className="h-6 w-6" />
           Empréstimos Ativos ({activeLoans.length})
         </h3>
         <div className="flex items-center gap-3">
@@ -79,12 +80,20 @@ export function ActiveLoans({ onNavigateToReturn }: ActiveLoansProps) {
             type="single"
             value={viewMode}
             onValueChange={(value: ViewMode) => value && setViewMode(value)}
-            className="h-9 bg-card border border-border"
+            className="h-10 bg-white dark:bg-zinc-900 border-2 border-black dark:border-white shadow-[3px_3px_0px_0px_#000] dark:shadow-[3px_3px_0px_0px_#fff]"
           >
-            <ToggleGroupItem value="cards" aria-label="Visualização em Cards" className="h-9 px-3">
+            <ToggleGroupItem
+              value="cards"
+              aria-label="Visualização em Cards"
+              className="h-9 px-3 data-[state=on]:bg-black data-[state=on]:text-white hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-none border-r border-black/10 last:border-0"
+            >
               <LayoutGrid className="h-4 w-4" />
             </ToggleGroupItem>
-            <ToggleGroupItem value="table" aria-label="Visualização em Tabela" className="h-9 px-3">
+            <ToggleGroupItem
+              value="table"
+              aria-label="Visualização em Tabela"
+              className="h-9 px-3 data-[state=on]:bg-black data-[state=on]:text-white hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-none"
+            >
               <List className="h-4 w-4" />
             </ToggleGroupItem>
           </ToggleGroup>
@@ -93,28 +102,25 @@ export function ActiveLoans({ onNavigateToReturn }: ActiveLoansProps) {
             onClick={fetchActiveLoans}
             variant="outline"
             disabled={loading || dbLoading}
-            className="bg-card hover:bg-card-hover text-foreground border-border"
+            className="neo-btn bg-white hover:bg-gray-50 text-black h-10 px-4 flex items-center gap-2"
           >
-            <RefreshCw className={`h-4 w-4 mr-2 ${loading || dbLoading ? 'animate-spin' : ''}`} />
-            Atualizar
+            <RefreshCw className={`h-4 w-4 ${loading || dbLoading ? 'animate-spin' : ''}`} />
+            ATUALIZAR
           </Button>
         </div>
       </div>
 
       {loading ? (
-        <div className="text-center py-12">
-          <RefreshCw className="h-16 w-16 mx-auto mb-4 text-muted" />
-          <p className="text-muted-foreground text-lg">Carregando empréstimos...</p>
+        <div className="text-center py-12 neo-card bg-gray-50 dark:bg-zinc-900">
+          <RefreshCw className="h-12 w-12 mx-auto mb-4 text-muted-foreground animate-spin" />
+          <p className="text-muted-foreground text-sm font-bold uppercase">Buscando dados...</p>
         </div>
       ) : activeLoans.length === 0 ? (
-        <GlassCard>
-          <CardContent className="py-12">
-            <div className="text-center">
-              <Computer className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-              <p className="text-muted-foreground text-lg">Nenhum empréstimo ativo</p>
-            </div>
-          </CardContent>
-        </GlassCard>
+        <div className="neo-card p-12 bg-white dark:bg-zinc-900 text-center">
+          <Computer className="h-16 w-16 mx-auto mb-4 text-gray-300 dark:text-gray-700" />
+          <p className="text-xl font-black uppercase text-foreground mb-2">Nenhum empréstimo ativo</p>
+          <p className="text-sm font-bold text-muted-foreground uppercase">Todos os equipamentos estão no inventário.</p>
+        </div>
       ) : viewMode === 'table' ? (
         /* Visualização em Tabela */
         <ActiveLoansTable loans={activeLoans} onNavigateToReturn={onNavigateToReturn} />

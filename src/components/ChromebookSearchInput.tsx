@@ -16,13 +16,13 @@ interface ChromebookSearchInputProps {
   filterStatus?: 'disponivel' | 'ativo' | 'all';
   onScanClick: () => void;
   /** Se true, o componente não exibe o cartão de confirmação, apenas o input. */
-  isListMode?: boolean; 
+  isListMode?: boolean;
 }
 
-const ChromebookSearchInput: React.FC<ChromebookSearchInputProps> = ({ 
-  selectedChromebook, 
-  onSelect, 
-  onClear, 
+const ChromebookSearchInput: React.FC<ChromebookSearchInputProps> = ({
+  selectedChromebook,
+  onSelect,
+  onClear,
   disabled,
   filterStatus = 'all',
   onScanClick,
@@ -35,23 +35,21 @@ const ChromebookSearchInput: React.FC<ChromebookSearchInputProps> = ({
 
   const filteredChromebooks = useMemo(() => {
     if (!searchTerm || !isFocused) return [];
-    
+
     let filtered = chromebooks;
 
-    // 1. Filtrar por status (APENAS SE NÃO ESTIVER EM MODO LISTA)
-    if (!isListMode) {
-      if (filterStatus === 'disponivel') {
-        filtered = filtered.filter(cb => cb.status === 'disponivel');
-      } else if (filterStatus === 'ativo') {
-        filtered = filtered.filter(cb => cb.status === 'emprestado');
-      }
+    // 1. Filtrar por status
+    if (filterStatus === 'disponivel') {
+      filtered = filtered.filter(cb => cb.status === 'disponivel');
+    } else if (filterStatus === 'ativo') {
+      filtered = filtered.filter(cb => cb.status === 'emprestado');
     }
     // Se isListMode for true, não aplicamos filtro de status aqui.
 
     // 2. Filtrar por termo de busca
     const lowerCaseSearch = searchTerm.toLowerCase();
     filtered = filtered.filter(cb => cb.searchable.includes(lowerCaseSearch));
-    
+
     return filtered.slice(0, 10); // Limita a 10 resultados
   }, [chromebooks, searchTerm, filterStatus, isFocused, isListMode]); // Adicionando isListMode
 
@@ -81,18 +79,18 @@ const ChromebookSearchInput: React.FC<ChromebookSearchInputProps> = ({
   if (selectedChromebook && !isListMode) {
     const isAvailable = selectedChromebook.status === 'disponivel';
     const isEmprestado = selectedChromebook.status === 'emprestado';
-    
+
     let cardClass = "p-3 border-2 shadow-md";
     let icon = <CheckCircle className="h-5 w-5 text-green-600" />;
-    
+
     if (filterStatus === 'disponivel' && !isAvailable) {
-        cardClass = "p-3 border-2 border-error/50 bg-error-bg/50 shadow-md dark:bg-error-bg/50 dark:border-error/50";
-        icon = <AlertTriangle className="h-5 w-5 text-error dark:text-error-foreground" />;
+      cardClass = "p-3 border-2 border-error/50 bg-error-bg/50 shadow-md dark:bg-error-bg/50 dark:border-error/50";
+      icon = <AlertTriangle className="h-5 w-5 text-error dark:text-error-foreground" />;
     } else if (filterStatus === 'ativo' && !isEmprestado) {
-        cardClass = "p-3 border-2 border-error/50 bg-error-bg/50 shadow-md dark:bg-error-bg/50 dark:border-error/50";
-        icon = <AlertTriangle className="h-5 w-5 text-error dark:text-error-foreground" />;
+      cardClass = "p-3 border-2 border-error/50 bg-error-bg/50 shadow-md dark:bg-error-bg/50 dark:border-error/50";
+      icon = <AlertTriangle className="h-5 w-5 text-error dark:text-error-foreground" />;
     } else {
-        cardClass = "p-3 border-2 border-success/50 bg-success-bg/50 shadow-md dark:bg-success-bg/50 dark:border-success/50";
+      cardClass = "p-3 border-2 border-success/50 bg-success-bg/50 shadow-md dark:bg-success-bg/50 dark:border-success/50";
     }
 
     return (
@@ -139,9 +137,9 @@ const ChromebookSearchInput: React.FC<ChromebookSearchInputProps> = ({
             disabled={disabled || loading}
           />
         </div>
-        <Button 
-          type="button" 
-          variant="outline" 
+        <Button
+          type="button"
+          variant="outline"
           className="border-input bg-input-bg hover:bg-accent px-3 dark:bg-input-bg dark:border-input dark:hover:bg-accent" // CORRIGIDO
           onClick={onScanClick}
           disabled={disabled || loading}
@@ -173,14 +171,14 @@ const ChromebookSearchInput: React.FC<ChromebookSearchInputProps> = ({
           </div>
         </ScrollArea>
       )}
-      
+
       {loading && (
         <div className="flex items-center justify-center p-2 text-sm text-muted-foreground">
           <Loader2 className="h-4 w-4 animate-spin mr-2" />
           Buscando...
         </div>
       )}
-      
+
       {isFocused && searchTerm && filteredChromebooks.length === 0 && !loading && (
         <div className="p-2 text-sm text-muted-foreground text-center border rounded-md bg-card dark:bg-card dark:border-border">
           Nenhum Chromebook encontrado.
