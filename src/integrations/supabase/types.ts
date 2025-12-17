@@ -359,6 +359,7 @@ export type Database = {
         Row: {
           created_at: string
           created_by: string | null
+          deleted_at: string | null
           email: string
           id: string
           name: string | null
@@ -368,6 +369,7 @@ export type Database = {
         Insert: {
           created_at?: string
           created_by?: string | null
+          deleted_at?: string | null
           email: string
           id: string
           name?: string | null
@@ -377,6 +379,7 @@ export type Database = {
         Update: {
           created_at?: string
           created_by?: string | null
+          deleted_at?: string | null
           email?: string
           id?: string
           name?: string | null
@@ -664,6 +667,7 @@ export type Database = {
         Row: {
           chromebook_id: string | null
           chromebook_model: string | null
+          created_by_email: string | null
           expected_return_date: string | null
           id: string | null
           loan_date: string | null

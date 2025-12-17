@@ -7,7 +7,6 @@ import { SchedulingSlot } from './SchedulingSlot';
 import type { Reservation } from '@/hooks/useDatabase';
 import type { User as AuthUser } from '@supabase/supabase-js';
 import { Loader2, CheckCircle, AlertTriangle, Monitor, Clock } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface SchedulingCalendarProps {
   currentDate: Date;
@@ -19,31 +18,30 @@ interface SchedulingCalendarProps {
   professores: { id: string; nome_completo: string }[];
 }
 
-// Componente de Legenda (Novo)
+// Neo-Brutal Legend Component
 const CalendarLegend = () => (
-  <Card className="p-3 shadow-sm border-border dark:bg-card/50">
-    <CardTitle className="text-sm font-semibold mb-2">Legenda</CardTitle>
-    <div className="grid grid-cols-2 gap-2 text-xs">
+  <div className="border-3 border-foreground/20 bg-card p-4 shadow-[4px_4px_0px_0px_hsl(var(--foreground)/0.1)]">
+    <h3 className="text-xs font-black uppercase tracking-wide mb-3 text-foreground">Legenda</h3>
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
       <div className="flex items-center gap-2">
-        <div className="w-3 h-3 rounded-full bg-blue-500" />
-        Minha Reserva
+        <div className="w-4 h-4 border-2 border-info bg-info/20" />
+        <span className="font-medium">Minha Reserva</span>
       </div>
       <div className="flex items-center gap-2">
-        <div className="w-3 h-3 rounded-full bg-green-500" />
-        Disponível (Vazio)
+        <div className="w-4 h-4 border-2 border-dashed border-foreground/30 bg-background" />
+        <span className="font-medium">Disponível</span>
       </div>
       <div className="flex items-center gap-2">
-        <div className="w-3 h-3 rounded-full bg-amber-500" />
-        Parcialmente Reservado
+        <div className="w-4 h-4 border-2 border-warning bg-warning/20" />
+        <span className="font-medium">Parcial</span>
       </div>
       <div className="flex items-center gap-2">
-        <div className="w-3 h-3 rounded-full bg-red-500" />
-        Esgotado
+        <div className="w-4 h-4 border-2 border-error bg-error/20" />
+        <span className="font-medium">Esgotado</span>
       </div>
     </div>
-  </Card>
+  </div>
 );
-
 
 export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
   currentDate,
@@ -56,9 +54,8 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
 }) => {
   const weekDays = getWeekDays(currentDate);
 
-  // Pré-processa as reservas para acesso rápido por dia e hora
   const reservationsMap = useMemo(() => {
-    const map = new Map<string, Reservation[]>(); // Key: YYYY-MM-DD_HHhMM
+    const map = new Map<string, Reservation[]>();
     reservations.forEach(res => {
       const key = `${res.date}_${res.time_slot}`;
       if (!map.has(key)) {
@@ -71,52 +68,64 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center h-96">
-        <Loader2 className="h-10 w-10 animate-spin text-primary" />
-        <p className="ml-4 text-lg text-muted-foreground">Carregando agendamentos...</p>
+      <div className="flex flex-col justify-center items-center h-96 gap-4">
+        <Loader2 className="h-12 w-12 animate-spin text-primary" />
+        <p className="text-lg font-bold uppercase tracking-wide text-muted-foreground">
+          Carregando agendamentos...
+        </p>
       </div>
     );
   }
   
-  // Define o grid dinamicamente (1 coluna de hora + N colunas de dia)
-  // Em mobile, o grid será forçado a rolar horizontalmente (min-width: 700px no CSS)
   const gridTemplateColumns = `80px repeat(${weekDays.length}, 1fr)`;
 
   return (
     <div className="space-y-4">
       <CalendarLegend />
       
-      <div className="calendar-grid" style={{ gridTemplateColumns }}>
+      <div 
+        className="grid gap-1 min-w-[700px]" 
+        style={{ gridTemplateColumns }}
+      >
         
-        {/* Cabeçalho da Grade (Dias da Semana) */}
-        <div></div> {/* Canto superior esquerdo vazio */}
+        {/* Header Row */}
+        <div className="h-14" /> {/* Empty corner */}
         {weekDays.map((day, index) => {
           const isCurrentDay = isToday(day);
           return (
             <div 
               key={index} 
               className={cn(
-                "grid-header p-2 rounded-lg transition-colors",
-                isCurrentDay ? "bg-primary text-primary-foreground font-bold shadow-md" : "hover:bg-muted/50"
+                "h-14 flex flex-col items-center justify-center border-3 transition-all",
+                isCurrentDay 
+                  ? "bg-primary text-primary-foreground border-primary shadow-[3px_3px_0px_0px_hsl(var(--foreground)/0.3)]" 
+                  : "bg-muted/30 border-foreground/10 hover:bg-muted/50"
               )}
             >
-              {format(day, 'EEE', { locale: ptBR }).toUpperCase().slice(0, 3)}{' '}
-              <span className={cn("font-normal text-sm", isCurrentDay ? "text-primary-foreground/80" : "text-muted-foreground")}>
+              <span className="text-xs font-black uppercase tracking-wide">
+                {format(day, 'EEE', { locale: ptBR }).toUpperCase().slice(0, 3)}
+              </span>
+              <span className={cn(
+                "text-sm font-bold",
+                isCurrentDay ? "text-primary-foreground/90" : "text-muted-foreground"
+              )}>
                 {format(day, 'dd/MM')}
               </span>
             </div>
           );
         })}
 
-        {/* Corpo da Grade (Slots de Horário) */}
+        {/* Time Slots Grid */}
         {timeSlots.map((timeSlot, timeIndex) => (
           <React.Fragment key={timeIndex}>
-            {/* Rótulo da Hora */}
-            <div className="time-label">
-              {timeSlot}
+            {/* Time Label */}
+            <div className="h-16 flex items-center justify-center border-3 border-foreground/10 bg-muted/20">
+              <span className="text-xs font-black text-muted-foreground">
+                {timeSlot}
+              </span>
             </div>
             
-            {/* Slots dos Dias */}
+            {/* Day Slots */}
             {weekDays.map((day, dayIndex) => {
               const dateKey = format(day, 'yyyy-MM-dd');
               const slotKey = `${dateKey}_${timeSlot}`;

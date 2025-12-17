@@ -5,7 +5,6 @@ import type { Reservation } from '@/hooks/useDatabase';
 import type { User as AuthUser } from '@supabase/supabase-js';
 import { ReservationDialog } from './ReservationDialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { format } from 'date-fns';
 
 interface SchedulingSlotProps {
   date: Date;
@@ -36,57 +35,51 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
     const isPartial = jaReservados > 0 && restantes > 0;
     const isFull = restantes <= 0 && jaReservados > 0;
     
-    // --- CÁLCULO DE isPast (incluindo hora) ---
     const [hourStr, minuteStr] = timeSlot.split('h');
     const slotTime = new Date(date);
     slotTime.setHours(parseInt(hourStr), parseInt(minuteStr), 0, 0);
     
     const now = new Date();
     const isPast = slotTime < now;
-    // -----------------------------------------------
 
     return { jaReservados, restantes, myReservation, isAvailable, isPartial, isFull, isPast };
   }, [allReservationsForSlot, totalAvailableChromebooks, currentUser, date, timeSlot]);
 
-  // Estilo base para slots passados que tinham reservas
   const pastSlotClasses = isPast ? "opacity-40 cursor-not-allowed pointer-events-none" : "";
 
-  // 1. MINHA RESERVA (Prioridade máxima)
+  // MY RESERVATION - Neo Brutal Style
   if (myReservation) {
     return (
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
             <div className={cn(
-              "slot my-reservation min-h-[60px] sm:min-h-[70px]",
-              "bg-gradient-to-br from-info-bg/50 to-info-bg/30",
-              "border-l-4 border-l-info",
-              "border border-info/20",
-              "p-3 flex flex-col justify-center gap-1",
-              "hover:shadow-md transition-shadow",
-              pastSlotClasses // Aplica opacidade se for passado
+              "h-16 p-2 border-3 border-info bg-info/10 transition-all",
+              "flex flex-col justify-center gap-0.5",
+              "shadow-[3px_3px_0px_0px_hsl(var(--info)/0.3)]",
+              pastSlotClasses
             )}>
-              <div className="flex items-center gap-1.5">
-                <CheckCircle className="h-4 w-4 text-info dark:text-info-foreground shrink-0" />
-                <span className="text-xs font-semibold text-info-foreground truncate">
+              <div className="flex items-center gap-1">
+                <CheckCircle className="h-3 w-3 text-info shrink-0" />
+                <span className="text-[10px] font-black uppercase text-info truncate">
                   Minha Reserva
                 </span>
               </div>
-              <p className="text-xs font-medium text-foreground dark:text-info-foreground truncate">
+              <p className="text-[10px] font-bold text-foreground truncate">
                 {myReservation.subject}
               </p>
               <div className="flex items-center gap-1">
-                <Monitor className="h-3 w-3 text-info dark:text-info-foreground" />
-                <span className="text-[10px] font-medium text-muted-foreground dark:text-info-foreground/80">
-                  {myReservation.quantity_requested} Chromebook{myReservation.quantity_requested > 1 ? 's' : ''}
+                <Monitor className="h-2.5 w-2.5 text-info" />
+                <span className="text-[9px] font-bold text-muted-foreground">
+                  {myReservation.quantity_requested} CB
                 </span>
               </div>
             </div>
           </TooltipTrigger>
-          <TooltipContent>
-            <p className="font-semibold text-sm">{myReservation.subject}</p>
+          <TooltipContent className="border-3 border-foreground/20 rounded-none shadow-[4px_4px_0px_0px_hsl(var(--foreground)/0.1)]">
+            <p className="font-bold text-sm">{myReservation.subject}</p>
             <p className="text-xs text-muted-foreground">
-              {myReservation.prof_name} · {myReservation.quantity_requested} CB
+              {myReservation.prof_name} · {myReservation.quantity_requested} Chromebooks
             </p>
           </TooltipContent>
         </Tooltip>
@@ -94,31 +87,28 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
     );
   }
   
-  // 2. ESGOTADO
+  // FULL - Neo Brutal Style
   if (isFull) {
     return (
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
             <div className={cn(
-              "slot full min-h-[60px] sm:min-h-[70px]",
-              "bg-gradient-to-br from-error-bg/50 to-error-bg/30",
-              "border-l-4 border-l-error",
-              "border border-error/20",
-              "p-3 flex flex-col justify-center gap-1",
-              "opacity-80 cursor-not-allowed", // Mantém opacidade alta para esgotado
-              pastSlotClasses // Aplica opacidade se for passado
+              "h-16 p-2 border-3 border-error bg-error/10 transition-all",
+              "flex flex-col justify-center gap-0.5",
+              "cursor-not-allowed",
+              pastSlotClasses
             )}>
-              <div className="flex items-center gap-1.5">
-                <AlertTriangle className="h-4 w-4 text-error dark:text-error-foreground shrink-0" />
-                <span className="text-xs font-semibold text-error-foreground truncate">
+              <div className="flex items-center gap-1">
+                <AlertTriangle className="h-3 w-3 text-error shrink-0" />
+                <span className="text-[10px] font-black uppercase text-error truncate">
                   Esgotado
                 </span>
               </div>
-              <p className="text-xs font-medium text-foreground dark:text-error-foreground">
+              <p className="text-[10px] font-bold text-foreground">
                 {jaReservados}/{totalAvailableChromebooks} 💻
               </p>
-              <p className="text-[10px] text-muted-foreground dark:text-error-foreground/80 truncate">
+              <p className="text-[9px] text-muted-foreground truncate">
                 {allReservationsForSlot.length > 1 
                   ? `${allReservationsForSlot.length} reservas` 
                   : allReservationsForSlot[0]?.prof_name
@@ -126,12 +116,12 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
               </p>
             </div>
           </TooltipTrigger>
-          <TooltipContent side="top" className="max-w-xs">
+          <TooltipContent side="top" className="max-w-xs border-3 border-foreground/20 rounded-none shadow-[4px_4px_0px_0px_hsl(var(--foreground)/0.1)]">
             <div className="space-y-2">
-              <p className="font-semibold text-sm">Reservas neste horário:</p>
+              <p className="font-black text-sm uppercase">Reservas neste horário:</p>
               {allReservationsForSlot.map((res, idx) => (
-                <div key={idx} className="text-xs">
-                  <p className="font-medium">{res.prof_name}</p>
+                <div key={idx} className="text-xs border-l-2 border-error pl-2">
+                  <p className="font-bold">{res.prof_name}</p>
                   <p className="text-muted-foreground">{res.subject} · {res.quantity_requested} CB</p>
                 </div>
               ))}
@@ -142,7 +132,7 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
     );
   }
   
-  // 3. PARCIALMENTE RESERVADO
+  // PARTIAL - Neo Brutal Style
   if (isPartial) {
     return (
       <ReservationDialog
@@ -158,39 +148,38 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
           <Tooltip>
             <TooltipTrigger asChild>
               <div className={cn(
-                "slot partial min-h-[60px] sm:min-h-[70px]",
-                "bg-gradient-to-br from-warning-bg/50 to-warning-bg/30",
-                "border-l-4 border-l-warning",
-                "border border-warning/20",
-                "p-3 flex flex-col justify-center gap-1",
-                "cursor-pointer hover:shadow-lg hover:scale-[1.02]",
-                "group",
-                pastSlotClasses // Aplica opacidade se for passado
+                "h-16 p-2 border-3 border-warning bg-warning/10 transition-all",
+                "flex flex-col justify-center gap-0.5",
+                "cursor-pointer group",
+                "hover:shadow-[4px_4px_0px_0px_hsl(var(--warning)/0.3)] hover:-translate-x-0.5 hover:-translate-y-0.5",
+                pastSlotClasses
               )}>
-                <div className="flex items-center gap-1.5">
-                  <Monitor className="h-4 w-4 text-warning dark:text-warning-foreground shrink-0 group-hover:scale-110 transition-transform" />
-                  <span className="text-xs font-semibold text-warning-foreground truncate">
+                <div className="flex items-center gap-1">
+                  <Monitor className="h-3 w-3 text-warning shrink-0 group-hover:scale-110 transition-transform" />
+                  <span className="text-[10px] font-black uppercase text-warning truncate">
                     Disponível
                   </span>
                 </div>
-                <p className="text-xs font-medium text-foreground dark:text-warning-foreground">
-                  {restantes}/{totalAvailableChromebooks} 💻 restantes
+                <p className="text-[10px] font-bold text-foreground">
+                  {restantes}/{totalAvailableChromebooks} 💻
                 </p>
-                <p className="text-[10px] text-muted-foreground dark:text-warning-foreground/80">
+                <p className="text-[9px] text-muted-foreground">
                   {jaReservados} reservados
                 </p>
               </div>
             </TooltipTrigger>
-            <TooltipContent side="top" className="max-w-xs">
+            <TooltipContent side="top" className="max-w-xs border-3 border-foreground/20 rounded-none shadow-[4px_4px_0px_0px_hsl(var(--foreground)/0.1)]">
               <div className="space-y-2">
-                <p className="font-semibold text-sm">Reservas existentes:</p>
+                <p className="font-black text-sm uppercase">Reservas existentes:</p>
                 {allReservationsForSlot.map((res, idx) => (
-                  <div key={idx} className="text-xs">
-                    <p className="font-medium">{res.prof_name}</p>
+                  <div key={idx} className="text-xs border-l-2 border-warning pl-2">
+                    <p className="font-bold">{res.prof_name}</p>
                     <p className="text-muted-foreground">{res.subject} · {res.quantity_requested} CB</p>
                   </div>
                 ))}
-                <p className="pt-2 font-bold text-success">Clique para reservar os {restantes} restantes.</p>
+                <p className="pt-2 font-black text-success text-xs uppercase">
+                  Clique para reservar {restantes} restantes
+                </p>
               </div>
             </TooltipContent>
           </Tooltip>
@@ -199,31 +188,30 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
     );
   }
 
-  // 4. DISPONÍVEL (VAZIO) OU PASSADO VAZIO
+  // PAST EMPTY
   if (isPast) {
     return (
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
             <div className={cn(
-              "slot past min-h-[60px] sm:min-h-[70px]",
-              "bg-muted/30 border border-border/30",
-              "flex items-center justify-center",
+              "h-16 border-3 border-dashed border-foreground/10 bg-muted/10",
+              "flex items-center justify-center gap-1",
               "opacity-40 cursor-not-allowed"
             )}>
-              <Clock className="h-4 w-4 text-muted-foreground" />
-              <span className="text-xs text-muted-foreground ml-1">Passado</span>
+              <Clock className="h-3 w-3 text-muted-foreground" />
+              <span className="text-[10px] font-bold text-muted-foreground uppercase">Passado</span>
             </div>
           </TooltipTrigger>
-          <TooltipContent>
-            <p className="text-xs">Horário de agendamento já expirou.</p>
+          <TooltipContent className="border-3 border-foreground/20 rounded-none">
+            <p className="text-xs font-medium">Horário já expirou</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
     );
   }
   
-  // DISPONÍVEL (VAZIO) - FUTURO
+  // AVAILABLE (EMPTY) - Neo Brutal Style
   return (
     <ReservationDialog
       date={date}
@@ -235,12 +223,12 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
       maxQuantity={totalAvailableChromebooks}
     >
       <div className={cn(
-        "slot available min-h-[60px] sm:min-h-[70px]",
-        "bg-background-secondary border-2 border-dashed border-border hover:bg-muted dark:bg-card/50 dark:border-border-strong",
-        "flex items-center justify-center cursor-pointer",
-        "group"
+        "h-16 border-3 border-dashed border-foreground/20 bg-background",
+        "flex items-center justify-center cursor-pointer group transition-all",
+        "hover:border-primary hover:bg-primary/5",
+        "hover:shadow-[3px_3px_0px_0px_hsl(var(--primary)/0.2)] hover:-translate-x-0.5 hover:-translate-y-0.5"
       )}>
-        <Plus className="h-5 w-5 text-muted-foreground transition-transform group-hover:scale-110" />
+        <Plus className="h-5 w-5 text-muted-foreground group-hover:text-primary group-hover:scale-110 transition-all" />
       </div>
     </ReservationDialog>
   );

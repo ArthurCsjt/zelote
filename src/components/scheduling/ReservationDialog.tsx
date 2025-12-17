@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
-import { Loader2, Calendar, Clock, User, BookOpen, Save, Monitor, AlertTriangle, Info } from 'lucide-react';
+import { Loader2, Calendar, Clock, User, BookOpen, Save, Monitor, AlertTriangle, Info, X } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useDatabase, ReservationData, Reservation } from '@/hooks/useDatabase';
@@ -40,17 +40,14 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
   const [subject, setSubject] = useState<string>('');
   const [quantity, setQuantity] = useState<number>(1);
   
-  // Resetar ao abrir
   useEffect(() => {
     if (open) {
       setProfessorId('');
       setSubject('');
-      // Define a quantidade mínima de 1, ou 0 se o máximo for 0
       setQuantity(Math.min(1, maxQuantity) || 0); 
     }
   }, [open, maxQuantity]);
 
-  // Bloquear datas passadas (já tratado no SchedulingSlot, mas mantido aqui como fallback)
   const isPastDate = date < new Date(new Date().setHours(0, 0, 0, 0));
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -90,12 +87,10 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
   const available = totalAvailableChromebooks - totalReserved;
   const selectedProfessor = professores.find(p => p.id === professorId);
 
-  // BLOQUEAR SE DATA PASSADA
   if (isPastDate) {
     return <div className="opacity-50 cursor-not-allowed">{children}</div>;
   }
   
-  // Se não houver mais chromebooks disponíveis
   if (maxQuantity <= 0) {
     return <div className="opacity-80 cursor-not-allowed">{children}</div>;
   }
@@ -106,54 +101,56 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
         {children}
       </div>
       
-      <DialogContent className="sm:max-w-[500px] bg-modal border-modal-border">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-primary text-xl">
-            <Calendar className="h-5 w-5" />
-            Nova Reserva de Chromebooks
-          </DialogTitle>
-          <DialogDescription className="text-base">
-            {format(date, "EEEE, dd 'de' MMMM 'de' yyyy", { locale: ptBR })} às {timeSlot}
-          </DialogDescription>
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto border-3 border-foreground/20 rounded-none shadow-[8px_8px_0px_0px_hsl(var(--foreground)/0.15)] bg-background p-0">
+        
+        {/* Neo Brutal Header */}
+        <DialogHeader className="p-5 border-b-3 border-foreground/10 bg-primary/5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2 border-3 border-primary bg-primary/10 shadow-[3px_3px_0px_0px_hsl(var(--primary)/0.3)]">
+                <Calendar className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <DialogTitle className="text-lg font-black uppercase tracking-tight text-foreground">
+                  Nova Reserva
+                </DialogTitle>
+                <DialogDescription className="text-sm font-medium">
+                  {format(date, "EEEE, dd 'de' MMMM", { locale: ptBR })} às {timeSlot}
+                </DialogDescription>
+              </div>
+            </div>
+          </div>
         </DialogHeader>
         
-        <form onSubmit={handleSubmit} className="space-y-5 py-4">
+        <form onSubmit={handleSubmit} className="p-5 space-y-5">
           
-          {/* CARD DE STATUS DO SLOT */}
-          <div className={cn(
-            "p-4 rounded-xl border",
-            "bg-gradient-to-br from-blue-500/5 to-purple-500/5",
-            "border-blue-500/20 dark:border-blue-900/50"
-          )}>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1">
-                <p className="text-xs text-muted-foreground font-medium">Disponíveis</p>
-                <p className="text-2xl font-bold text-green-600 dark:text-green-400">
-                  {available}
-                </p>
+          {/* Status Card - Neo Brutal */}
+          <div className="border-3 border-foreground/10 bg-muted/20 p-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="text-center p-3 border-3 border-success/30 bg-success/5">
+                <p className="text-[10px] font-black uppercase tracking-wide text-muted-foreground">Disponíveis</p>
+                <p className="text-2xl font-black text-success">{available}</p>
               </div>
-              <div className="space-y-1">
-                <p className="text-xs text-muted-foreground font-medium">Total Reservado</p>
-                <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                  {totalReserved}
-                </p>
+              <div className="text-center p-3 border-3 border-info/30 bg-info/5">
+                <p className="text-[10px] font-black uppercase tracking-wide text-muted-foreground">Reservados</p>
+                <p className="text-2xl font-black text-info">{totalReserved}</p>
               </div>
             </div>
             
-            {/* RESERVAS EXISTENTES */}
+            {/* Existing Reservations */}
             {currentReservations.length > 0 && (
-              <div className="mt-3 pt-3 border-t border-border/50">
-                <p className="text-xs text-muted-foreground mb-2 font-medium">
-                  Reservas existentes:
+              <div className="mt-4 pt-4 border-t-3 border-foreground/10">
+                <p className="text-[10px] font-black uppercase tracking-wide text-muted-foreground mb-2">
+                  Reservas Existentes:
                 </p>
-                <div className="space-y-1 max-h-24 overflow-y-auto">
+                <div className="space-y-1.5 max-h-20 overflow-y-auto">
                   {currentReservations.map((res, idx) => (
-                    <div key={idx} className="flex items-center justify-between text-xs bg-muted/50 rounded px-2 py-1">
-                      <span className="flex items-center gap-1 font-medium text-foreground truncate">
-                        <User className="h-3 w-3 text-purple-500" />
+                    <div key={idx} className="flex items-center justify-between text-xs bg-background border-2 border-foreground/10 px-2 py-1.5">
+                      <span className="flex items-center gap-1.5 font-bold text-foreground truncate">
+                        <User className="h-3 w-3 text-primary" />
                         {res.prof_name}
                       </span>
-                      <span className="font-semibold text-primary">{res.quantity_requested} CB</span>
+                      <span className="font-black text-primary">{res.quantity_requested} CB</span>
                     </div>
                   ))}
                 </div>
@@ -161,14 +158,15 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
             )}
           </div>
           
-          {/* FORMULÁRIO EM 2 COLUNAS */}
-          <div className="grid sm:grid-cols-2 gap-4">
+          {/* Form Fields - Neo Brutal */}
+          <div className="space-y-4">
+            
             {/* Professor */}
-            <div className="space-y-2 sm:col-span-2">
-              <Label className="text-sm font-medium flex items-center gap-1">
-                <User className="h-4 w-4 text-purple-500" />
+            <div className="space-y-2">
+              <Label className="text-xs font-black uppercase tracking-wide flex items-center gap-1.5">
+                <User className="h-3.5 w-3.5 text-primary" />
                 Professor
-                <span className="text-destructive">*</span>
+                <span className="text-error">*</span>
               </Label>
               <ProfessorAutocomplete
                 professores={professores}
@@ -178,12 +176,12 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
               />
             </div>
             
-            {/* Matéria/Turma */}
-            <div className="space-y-2 sm:col-span-2">
-              <Label htmlFor="subject" className="text-sm font-medium flex items-center gap-1">
-                <BookOpen className="h-4 w-4 text-blue-500" />
+            {/* Subject */}
+            <div className="space-y-2">
+              <Label htmlFor="subject" className="text-xs font-black uppercase tracking-wide flex items-center gap-1.5">
+                <BookOpen className="h-3.5 w-3.5 text-info" />
                 Matéria/Turma
-                <span className="text-destructive">*</span>
+                <span className="text-error">*</span>
               </Label>
               <Input 
                 id="subject" 
@@ -192,74 +190,78 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                 placeholder="Ex: História 9A, Matemática Básica"
                 disabled={isSaving}
                 required
-                className="h-11 bg-input dark:bg-input"
+                className="h-11 border-3 border-foreground/20 rounded-none focus:border-primary focus:shadow-[3px_3px_0px_0px_hsl(var(--primary)/0.2)] transition-all"
               />
             </div>
-          </div>
-          
-          {/* QUANTIDADE COM SLIDER */}
-          <div className="space-y-3">
-            <Label className="text-sm font-medium flex items-center justify-between">
-              <span className="flex items-center gap-1">
-                <Monitor className="h-4 w-4 text-green-500" />
-                Quantidade de Chromebooks
-                <span className="text-destructive">*</span>
-              </span>
-              <span className="text-2xl font-bold text-primary">{quantity}</span>
-            </Label>
             
-            <Slider
-              value={[quantity]}
-              onValueChange={(value) => setQuantity(value[0])}
-              min={1}
-              max={maxQuantity}
-              step={1}
-              disabled={isSaving || maxQuantity <= 0}
-              className="py-4"
-            />
-            
-            <div className="flex justify-between text-xs text-muted-foreground">
-              <span>Mínimo: 1</span>
-              <span>Máximo: {maxQuantity}</span>
+            {/* Quantity Slider - Neo Brutal */}
+            <div className="space-y-3">
+              <Label className="text-xs font-black uppercase tracking-wide flex items-center justify-between">
+                <span className="flex items-center gap-1.5">
+                  <Monitor className="h-3.5 w-3.5 text-success" />
+                  Quantidade
+                  <span className="text-error">*</span>
+                </span>
+                <span className="text-2xl font-black text-primary">{quantity}</span>
+              </Label>
+              
+              <div className="p-4 border-3 border-foreground/10 bg-muted/10">
+                <Slider
+                  value={[quantity]}
+                  onValueChange={(value) => setQuantity(value[0])}
+                  min={1}
+                  max={maxQuantity}
+                  step={1}
+                  disabled={isSaving || maxQuantity <= 0}
+                  className="py-2"
+                />
+                
+                <div className="flex justify-between text-[10px] font-bold text-muted-foreground mt-2 uppercase">
+                  <span>Mín: 1</span>
+                  <span>Máx: {maxQuantity}</span>
+                </div>
+              </div>
+              
+              {quantity > maxQuantity && (
+                <p className="text-xs font-bold text-error flex items-center gap-1">
+                  <AlertTriangle className="h-3 w-3" />
+                  Quantidade excede o limite disponível.
+                </p>
+              )}
             </div>
-            
-            {quantity > maxQuantity && (
-              <p className="text-xs text-destructive flex items-center gap-1">
-                <AlertTriangle className="h-3 w-3" />
-                Quantidade excede o limite disponível.
-              </p>
-            )}
           </div>
           
-          {/* PREVIEW DA RESERVA */}
+          {/* Preview - Neo Brutal */}
           {selectedProfessor && subject && (
-            <div className="p-3 bg-primary/5 border border-primary/20 rounded-lg space-y-1">
-              <p className="text-xs text-muted-foreground font-medium flex items-center gap-1">
+            <div className="p-4 border-3 border-primary/30 bg-primary/5">
+              <p className="text-[10px] font-black uppercase tracking-wide text-muted-foreground flex items-center gap-1 mb-2">
                 <Info className="h-3 w-3" />
                 Preview da Reserva:
               </p>
-              <p className="text-sm font-medium text-foreground">
+              <p className="text-sm font-black text-foreground">
                 {quantity} Chromebook{quantity > 1 ? 's' : ''} → {selectedProfessor.nome_completo}
               </p>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-muted-foreground mt-1">
                 {subject} · {format(date, "dd/MM/yyyy")} às {timeSlot}
               </p>
             </div>
           )}
           
-          <DialogFooter className="pt-2">
+          {/* Footer Buttons - Neo Brutal */}
+          <DialogFooter className="flex flex-col-reverse sm:flex-row gap-2 pt-2">
             <Button 
               type="button" 
               variant="outline" 
               onClick={() => setOpen(false)} 
               disabled={isSaving}
+              className="h-11 border-3 border-foreground/20 rounded-none font-bold uppercase tracking-wide hover:bg-muted transition-all"
             >
               Cancelar
             </Button>
             <Button 
               type="submit" 
               disabled={isSaving || !professorId || !subject.trim() || quantity <= 0 || quantity > maxQuantity}
-              className="bg-primary hover:bg-primary/90"
+              className="h-11 border-3 border-primary rounded-none font-bold uppercase tracking-wide bg-primary hover:bg-primary/90 shadow-[4px_4px_0px_0px_hsl(var(--foreground)/0.2)] hover:shadow-[6px_6px_0px_0px_hsl(var(--foreground)/0.2)] hover:-translate-x-0.5 hover:-translate-y-0.5 transition-all"
             >
               {isSaving ? (
                 <>
