@@ -1,14 +1,12 @@
 import { useState, useMemo } from "react";
 import { format } from "date-fns";
 import { Badge } from "./ui/badge";
-import { Card, CardContent } from "./ui/card";
-import { Clock, Monitor, User, CheckCircle, AlertTriangle, Search, Filter, X, RotateCcw, CalendarX, List, LayoutGrid } from "lucide-react";
+import { Clock, Monitor, User, CheckCircle, AlertTriangle, Search, X, RotateCcw, CalendarX, List, LayoutGrid } from "lucide-react";
 import type { LoanHistoryItem } from "@/types/database";
 import { Input } from "./ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { Button } from "./ui/button";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "./ui/pagination";
-import { ToggleGroup, ToggleGroupItem } from "./ui/toggle-group";
 import { LoanHistoryTable } from "./LoanHistoryTable";
 import { cn } from "@/lib/utils";
 
@@ -104,30 +102,31 @@ export function LoanHistory({ history, isNewLoan }: LoanHistoryProps) {
             </div>
           </div>
 
-          {/* Seletor de Visualização */}
-          <ToggleGroup
-            type="single"
-            value={viewMode}
-            onValueChange={(value: ViewMode) => value && setViewMode(value)}
-            className="border-2 border-black dark:border-white bg-white dark:bg-zinc-900 shadow-[3px_3px_0px_0px_#000] dark:shadow-[3px_3px_0px_0px_#fff]"
-          >
-            <ToggleGroupItem
-              value="cards"
+          {/* Seletor de Visualização Neo-Brutal */}
+          <div className="neo-view-toggle">
+            <button
+              onClick={() => setViewMode('cards')}
+              className={cn(
+                "neo-view-toggle-btn",
+                viewMode === 'cards' && "neo-view-toggle-btn-active"
+              )}
               aria-label="Visualização em Cards"
-              className="data-[state=on]:bg-black data-[state=on]:dark:bg-white data-[state=on]:text-white data-[state=on]:dark:text-black font-bold"
             >
-              <LayoutGrid className="h-4 w-4 mr-2" />
-              CARDS
-            </ToggleGroupItem>
-            <ToggleGroupItem
-              value="table"
+              <LayoutGrid className="h-4 w-4" />
+              <span>CARDS</span>
+            </button>
+            <button
+              onClick={() => setViewMode('table')}
+              className={cn(
+                "neo-view-toggle-btn",
+                viewMode === 'table' && "neo-view-toggle-btn-active"
+              )}
               aria-label="Visualização em Tabela"
-              className="data-[state=on]:bg-black data-[state=on]:dark:bg-white data-[state=on]:text-white data-[state=on]:dark:text-black font-bold"
             >
-              <List className="h-4 w-4 mr-2" />
-              TABELA
-            </ToggleGroupItem>
-          </ToggleGroup>
+              <List className="h-4 w-4" />
+              <span>TABELA</span>
+            </button>
+          </div>
         </div>
       </div>
 
