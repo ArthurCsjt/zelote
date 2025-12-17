@@ -1,24 +1,20 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import Layout from '@/components/Layout';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { ChevronLeft, ChevronRight, Calendar, Loader2, Monitor, AlertTriangle } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar, Loader2, Monitor, AlertTriangle, CalendarDays, CalendarRange } from 'lucide-react';
 import { useDatabase } from '@/hooks/useDatabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
-import { ptBR } from 'date-fns/locale'; // IMPORT CORRIGIDO AQUI
+import { ptBR } from 'date-fns/locale';
 import { getStartOfWeek, formatWeekRange, changeWeek, getWeekDays, changeMonth } from '@/utils/scheduling';
 import { SchedulingCalendar } from '@/components/scheduling/SchedulingCalendar';
-import { SchedulingMonthView } from '@/components/scheduling/SchedulingMonthView'; // NOVO IMPORT
-import { SectionHeader } from '@/components/Shared/SectionHeader';
-import { GlassCard } from '@/components/ui/GlassCard';
+import { SchedulingMonthView } from '@/components/scheduling/SchedulingMonthView';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
-import { useNavigate } from 'react-router-dom'; // Importando useNavigate
+import { useNavigate } from 'react-router-dom';
 
-// Função para buscar a lista de professores (para o Combobox)
 const fetchProfessores = async () => {
     const { data, error } = await supabase
         .from('professores')
@@ -32,13 +28,11 @@ const SchedulingPage = () => {
   const { user } = useAuth();
   const { getReservationsForWeek, getTotalAvailableChromebooks } = useDatabase();
   const queryClient = useQueryClient();
-  const navigate = useNavigate(); // Inicializando useNavigate
+  const navigate = useNavigate();
   
-  // Estado para controlar a data de referência (pode ser o início da semana ou o mês atual)
   const [currentDate, setCurrentDate] = useState(getStartOfWeek(new Date()));
   const [viewMode, setViewMode] = useState<'weekly' | 'monthly'>('weekly');
   
-  // Define o intervalo de busca no DB baseado no modo de visualização
   const { startDate, endDate, displayRange } = useMemo(() => {
     if (viewMode === 'weekly') {
       const weekDays = getWeekDays(currentDate);
@@ -49,33 +43,29 @@ const SchedulingPage = () => {
         endDate: end,
         displayRange: formatWeekRange(currentDate),
       };
-    } else { // monthly
+    } else {
       const start = startOfMonth(currentDate);
       const end = endOfMonth(currentDate);
       return {
         startDate: format(start, 'yyyy-MM-dd'),
         endDate: format(end, 'yyyy-MM-dd'),
-        // CORREÇÃO: Passando ptBR para format
         displayRange: format(currentDate, 'MMMM yyyy', { locale: ptBR }).charAt(0).toUpperCase() + format(currentDate, 'MMMM yyyy', { locale: ptBR }).slice(1),
       };
     }
   }, [currentDate, viewMode]);
   
-  // Query 1: Total de Chromebooks disponíveis
   const { data: totalAvailableChromebooks = 0, isLoading: isLoadingTotal } = useQuery({
     queryKey: ['totalAvailableChromebooks'],
     queryFn: getTotalAvailableChromebooks,
-    staleTime: 1000 * 60 * 60, // 1 hora
+    staleTime: 1000 * 60 * 60,
   });
   
-  // Query 2: Reservas da semana/mês
   const { data: reservations = [], isLoading: isLoadingReservations, refetch } = useQuery({
     queryKey: ['reservations', startDate, endDate],
     queryFn: () => getReservationsForWeek(startDate, endDate),
     enabled: !!user,
   });
   
-  // Query 3: Lista de Professores (para o formulário)
   const { data: professores = [], isLoading: isLoadingProfessores } = useQuery({
     queryKey: ['professoresList'],
     queryFn: fetchProfessores,
@@ -92,7 +82,6 @@ const SchedulingPage = () => {
   
   const handleViewModeChange = (v: 'weekly' | 'monthly') => {
     setViewMode(v);
-    // Ao mudar a visualização, reajusta a data de referência para o início da semana/mês atual
     if (v === 'weekly') {
         setCurrentDate(getStartOfWeek(new Date()));
     } else {
@@ -101,7 +90,7 @@ const SchedulingPage = () => {
   };
   
   const handleReservationSuccess = () => {
-    refetch(); // Recarrega as reservas após uma inserção bem-sucedida
+    refetch();
     queryClient.invalidateQueries({ queryKey: ['totalAvailableChromebooks'] });
   };
   
@@ -112,72 +101,130 @@ const SchedulingPage = () => {
       title="Agendamento de Chromebooks" 
       subtitle="Reserve lotes de equipamentos para suas aulas" 
       showBackButton 
-      onBack={() => navigate('/')} // ALTERADO: Navega para a rota raiz (menu principal)
+      onBack={() => navigate('/')}
     >
-      <div className="space-y-6 max-w-7xl mx-auto">
+      {/* Background Pattern */}
+      <div className="fixed inset-0 pointer-events-none opacity-[0.02] dark:opacity-[0.03]">
+        <div className="absolute inset-0 neo-brutal-grid" />
+      </div>
+
+      <div className="space-y-6 max-w-7xl mx-auto relative z-10">
         
-        {/* Header e Toggle */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <SectionHeader 
-            title="Agendamento de Reservas" 
-            description="Gerencie a disponibilidade semanal ou mensal de Chromebooks."
-            icon={Calendar}
-            iconColor="text-menu-violet"
-          />
-          
-          <ToggleGroup 
-            type="single" 
-            value={viewMode} 
-            onValueChange={(v: 'weekly' | 'monthly') => v && handleViewModeChange(v)}
-            className="h-10 bg-card border border-border"
-          >
-            <ToggleGroupItem value="weekly" aria-label="Visualização Semanal" className="h-10 px-4">
-              🗓️ Semanal
-            </ToggleGroupItem>
-            <ToggleGroupItem value="monthly" aria-label="Visualização Mensal" className="h-10 px-4">
-              📅 Mensal
-            </ToggleGroupItem>
-          </ToggleGroup>
-        </div>
-        
-        {/* Card de Status e Navegação */}
-        <GlassCard className="p-4 space-y-4">
-            <div className="flex justify-between items-center">
-                {/* Navegação de Semana/Mês */}
-                <nav className="flex items-center gap-4 font-semibold text-lg">
-                    <Button variant="outline" size="icon" onClick={() => handleDateChange('prev')} disabled={isLoading}>
-                        <ChevronLeft className="h-5 w-5" />
-                    </Button>
-                    <span className="text-base text-foreground min-w-[250px] text-center">
-                        {displayRange}
-                    </span>
-                    <Button variant="outline" size="icon" onClick={() => handleDateChange('next')} disabled={isLoading}>
-                        <ChevronRight className="h-5 w-5" />
-                    </Button>
-                </nav>
-                
-                {/* Status de Disponibilidade */}
-                <div className="flex items-center gap-2 text-lg font-bold text-primary">
-                    <Monitor className="h-5 w-5" />
-                    {isLoadingTotal ? (
-                        <Loader2 className="h-5 w-5 animate-spin" />
-                    ) : (
-                        <span>{totalAvailableChromebooks} 💻 Disponíveis</span>
-                    )}
-                </div>
+        {/* Header Card - Neo Brutal */}
+        <div className="neo-brutal-card p-5">
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+            
+            {/* Title Section */}
+            <div className="flex items-center gap-4">
+              <div className="neo-brutal-icon-box bg-primary/10">
+                <Calendar className="h-6 w-6 text-primary" />
+              </div>
+              <div>
+                <h2 className="text-xl font-black uppercase tracking-tight text-foreground">
+                  Agendamento de Reservas
+                </h2>
+                <p className="text-sm text-muted-foreground font-medium">
+                  Gerencie a disponibilidade de Chromebooks
+                </p>
+              </div>
             </div>
             
-            {/* Aviso de Fim de Semana (Apenas na visualização semanal) */}
-            {viewMode === 'weekly' && getWeekDays(currentDate).length === 0 && (
-                <div className="text-center p-4 bg-warning-bg border border-warning/50 rounded-lg text-warning-foreground">
-                    <AlertTriangle className="h-5 w-5 inline mr-2" />
-                    Esta semana não contém dias úteis (Segunda a Sexta).
-                </div>
-            )}
-        </GlassCard>
+            {/* View Mode Toggle - Neo Brutal */}
+            <ToggleGroup 
+              type="single" 
+              value={viewMode} 
+              onValueChange={(v: 'weekly' | 'monthly') => v && handleViewModeChange(v)}
+              className="border-3 border-foreground/20 bg-background p-1"
+            >
+              <ToggleGroupItem 
+                value="weekly" 
+                aria-label="Visualização Semanal" 
+                className={cn(
+                  "h-10 px-4 font-bold uppercase text-xs tracking-wide rounded-none transition-all",
+                  viewMode === 'weekly' 
+                    ? "bg-primary text-primary-foreground shadow-[2px_2px_0px_0px_hsl(var(--foreground)/0.3)]" 
+                    : "hover:bg-muted"
+                )}
+              >
+                <CalendarDays className="h-4 w-4 mr-2" />
+                Semanal
+              </ToggleGroupItem>
+              <ToggleGroupItem 
+                value="monthly" 
+                aria-label="Visualização Mensal" 
+                className={cn(
+                  "h-10 px-4 font-bold uppercase text-xs tracking-wide rounded-none transition-all",
+                  viewMode === 'monthly' 
+                    ? "bg-primary text-primary-foreground shadow-[2px_2px_0px_0px_hsl(var(--foreground)/0.3)]" 
+                    : "hover:bg-muted"
+                )}
+              >
+                <CalendarRange className="h-4 w-4 mr-2" />
+                Mensal
+              </ToggleGroupItem>
+            </ToggleGroup>
+          </div>
+        </div>
+        
+        {/* Navigation & Status Card - Neo Brutal */}
+        <div className="neo-brutal-card p-4">
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+            
+            {/* Date Navigation */}
+            <nav className="flex items-center gap-3">
+              <Button 
+                variant="outline" 
+                size="icon" 
+                onClick={() => handleDateChange('prev')} 
+                disabled={isLoading}
+                className="h-10 w-10 border-3 border-foreground/20 rounded-none hover:bg-muted transition-all hover:shadow-[2px_2px_0px_0px_hsl(var(--foreground)/0.2)] hover:-translate-x-0.5 hover:-translate-y-0.5"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </Button>
+              
+              <div className="min-w-[200px] sm:min-w-[280px] text-center px-4 py-2 border-3 border-foreground/10 bg-muted/30">
+                <span className="text-base font-bold uppercase tracking-wide text-foreground">
+                  {displayRange}
+                </span>
+              </div>
+              
+              <Button 
+                variant="outline" 
+                size="icon" 
+                onClick={() => handleDateChange('next')} 
+                disabled={isLoading}
+                className="h-10 w-10 border-3 border-foreground/20 rounded-none hover:bg-muted transition-all hover:shadow-[2px_2px_0px_0px_hsl(var(--foreground)/0.2)] hover:-translate-x-0.5 hover:-translate-y-0.5"
+              >
+                <ChevronRight className="h-5 w-5" />
+              </Button>
+            </nav>
+            
+            {/* Availability Status */}
+            <div className="flex items-center gap-3 px-4 py-2 border-3 border-success/30 bg-success/5">
+              <Monitor className="h-5 w-5 text-success" />
+              {isLoadingTotal ? (
+                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+              ) : (
+                <span className="text-lg font-black text-success">
+                  {totalAvailableChromebooks} <span className="text-sm font-bold uppercase">Disponíveis</span>
+                </span>
+              )}
+            </div>
+          </div>
+          
+          {/* Weekend Warning */}
+          {viewMode === 'weekly' && getWeekDays(currentDate).length === 0 && (
+            <div className="mt-4 p-3 border-3 border-warning/50 bg-warning/10 flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-warning" />
+              <span className="text-sm font-bold text-warning-foreground">
+                Esta semana não contém dias úteis (Segunda a Sexta).
+              </span>
+            </div>
+          )}
+        </div>
 
-        {/* Calendário de Agendamento */}
-        <GlassCard className="p-4 overflow-x-auto">
+        {/* Calendar Grid - Neo Brutal */}
+        <div className="neo-brutal-card p-4 overflow-x-auto">
           {viewMode === 'weekly' ? (
             <SchedulingCalendar
               currentDate={currentDate}
@@ -196,7 +243,7 @@ const SchedulingPage = () => {
               isLoading={isLoading}
             />
           )}
-        </GlassCard>
+        </div>
       </div>
     </Layout>
   );
