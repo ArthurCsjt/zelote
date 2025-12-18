@@ -430,9 +430,168 @@
   color: hsl(var(--background));
 }
 
+/* Neo-Brutal Loan Slider */
+.loan-slider-container {
+  @apply w-full overflow-hidden;
+}
+
+.loan-slider-viewport {
+  @apply overflow-hidden touch-pan-y;
+}
+
+.loan-slider-content {
+  @apply flex;
+  backface-visibility: hidden;
+  touch-action: pan-y pinch-zoom;
+}
+
+.loan-slide {
+  @apply flex-[0_0_100%] min-w-0;
+  scroll-snap-align: start;
+}
+
+/* Neo-Brutal Slide Card */
+.neo-slide-card {
+  @apply border-4 border-black dark:border-white;
+  @apply border-l-8;
+  @apply min-h-[400px] md:min-h-[500px];
+  @apply flex flex-col;
+  box-shadow: 6px 6px 0px 0px hsl(var(--foreground));
+  transition: all 0.2s ease-out;
+}
+
+.dark .neo-slide-card {
+  box-shadow: 6px 6px 0px 0px hsl(var(--foreground) / 0.5);
+}
+
+.neo-slide-card-active {
+  @apply ring-4 ring-offset-2;
+  transform: translateY(-2px);
+  box-shadow: 8px 8px 0px 0px hsl(var(--foreground));
+}
+
+.neo-slide-header {
+  @apply p-4 md:p-5 border-b-4 border-black/20 dark:border-white/20;
+  @apply flex items-center justify-between;
+  @apply bg-black/5 dark:bg-white/5;
+}
+
+.neo-slide-icon {
+  @apply h-10 w-10 md:h-12 md:w-12 flex items-center justify-center;
+  @apply border-2 border-black dark:border-white;
+  box-shadow: 3px 3px 0px 0px hsl(var(--foreground));
+}
+
+.neo-slide-step-badge {
+  @apply text-[10px] font-black uppercase tracking-widest;
+  @apply text-muted-foreground;
+}
+
+.neo-slide-title {
+  @apply text-lg md:text-xl font-black uppercase tracking-tight;
+  @apply text-foreground;
+}
+
+.neo-slide-completed-badge {
+  @apply px-3 py-1 text-xs font-black uppercase;
+  @apply bg-green-500 text-white;
+  @apply border-2 border-black dark:border-white;
+  box-shadow: 2px 2px 0px 0px hsl(var(--foreground));
+}
+
+.neo-slide-content {
+  @apply p-4 md:p-5 flex-1 overflow-y-auto;
+}
+
+/* Neo-Brutal Status Bar (Mobile) */
+.loan-status-bar {
+  @apply fixed bottom-0 left-0 right-0 z-50;
+  @apply bg-background border-t-4 border-black dark:border-white;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  box-shadow: 0 -4px 0px 0px hsl(var(--foreground) / 0.1);
+}
+
+.loan-status-bar-inner {
+  @apply flex justify-around items-center px-2 pt-2 pb-1;
+}
+
+.loan-status-btn {
+  @apply flex flex-col items-center gap-1 p-2;
+  @apply transition-all duration-150 ease-out;
+  @apply min-w-[60px] min-h-[60px];
+}
+
+.loan-status-btn-icon {
+  @apply h-10 w-10 flex items-center justify-center;
+  @apply border-2 border-black dark:border-white;
+  @apply bg-background text-foreground;
+  @apply transition-all duration-150;
+  box-shadow: 2px 2px 0px 0px hsl(var(--foreground));
+}
+
+.loan-status-btn-active .loan-status-btn-icon {
+  @apply bg-yellow-400 text-black;
+  @apply scale-110;
+  box-shadow: 3px 3px 0px 0px hsl(var(--foreground));
+}
+
+.loan-status-btn-completed .loan-status-btn-icon {
+  @apply bg-green-500 text-white;
+}
+
+.loan-status-btn-disabled {
+  @apply opacity-40 pointer-events-none;
+}
+
+.loan-status-btn-disabled .loan-status-btn-icon {
+  @apply bg-muted;
+  box-shadow: none;
+}
+
+.loan-status-btn-label {
+  @apply text-[9px] font-black uppercase tracking-wider;
+  @apply text-muted-foreground;
+}
+
+.loan-status-btn-active .loan-status-btn-label {
+  @apply text-foreground;
+}
+
+.loan-status-progress {
+  @apply h-1 bg-muted mx-4 mb-2;
+}
+
+.loan-status-progress-fill {
+  @apply h-full bg-gradient-to-r from-violet-500 via-blue-500 to-green-500;
+  @apply transition-all duration-500 ease-out;
+}
+
+/* Padding para conteúdo com status bar no mobile */
+.loan-form-with-status-bar {
+  @apply pb-[120px] md:pb-0;
+}
+
+/* Swipe indicator animation */
+@keyframes swipe-hint {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(10px); }
+}
+
+.swipe-hint {
+  animation: swipe-hint 1.5s ease-in-out infinite;
+}
+
+/* Neo-Brutal Validation Warning */
+.neo-validation-warning {
+  @apply flex items-center gap-2 text-xs font-bold uppercase;
+  @apply text-red-600 dark:text-red-400;
+  @apply mt-2 p-2;
+  @apply border-2 border-red-500/50 bg-red-50 dark:bg-red-950/30;
+}
+
 /* ======================================================================== */
 /* END NEO-BRUTALISM                                                        */
-/* ======================================================================== */
+/* ========================================================================*/
 
 /* --- Animation Utilities --- */
 .animate-in {
