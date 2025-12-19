@@ -4,13 +4,15 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
-import { Loader2, Calendar, Clock, User, BookOpen, Save, Monitor, AlertTriangle, Info, X } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Textarea } from '@/components/ui/textarea';
+import { Loader2, Calendar, Monitor, AlertTriangle, Info, Save, Tv, Volume2, Mic } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useDatabase, ReservationData, Reservation } from '@/hooks/useDatabase';
 import { toast } from '@/hooks/use-toast';
-import { ProfessorAutocomplete } from './ProfessorAutocomplete';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface ReservationDialogProps {
   children: ReactNode;
@@ -19,7 +21,6 @@ interface ReservationDialogProps {
   totalAvailableChromebooks: number;
   currentReservations: Reservation[];
   onReservationSuccess: () => void;
-  professores: { id: string; nome_completo: string }[];
   maxQuantity: number;
 }
 
@@ -30,21 +31,27 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
   totalAvailableChromebooks,
   currentReservations,
   onReservationSuccess,
-  professores,
   maxQuantity,
 }) => {
   const [open, setOpen] = useState(false);
   const { createReservation, loading: isSaving } = useDatabase();
-  
-  const [professorId, setProfessorId] = useState<string>('');
-  const [subject, setSubject] = useState<string>('');
+  const { user } = useAuth();
+
+  const [justification, setJustification] = useState<string>('');
   const [quantity, setQuantity] = useState<number>(1);
-  
+  const [needsTv, setNeedsTv] = useState(false);
+  const [needsSound, setNeedsSound] = useState(false);
+  const [needsMic, setNeedsMic] = useState(false);
+  const [micQuantity, setMicQuantity] = useState(1);
+
   useEffect(() => {
     if (open) {
-      setProfessorId('');
-      setSubject('');
-      setQuantity(Math.min(1, maxQuantity) || 0); 
+      setJustification('');
+      setQuantity(Math.min(1, maxQuantity) || 0);
+      setNeedsTv(false);
+      setNeedsSound(false);
+      setNeedsMic(false);
+      setMicQuantity(1);
     }
   }, [open, maxQuantity]);
 
@@ -52,26 +59,29 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!professorId || !subject.trim() || quantity <= 0 || quantity > maxQuantity) {
-      toast({ 
-        title: "Erro de Validação", 
-        description: "Preencha todos os campos corretamente e verifique a quantidade solicitada.", 
-        variant: "destructive" 
+
+    if (!justification.trim() || quantity <= 0 || quantity > maxQuantity) {
+      toast({
+        title: "Erro de Validação",
+        description: "Preencha a justificativa e verifique a quantidade solicitada.",
+        variant: "destructive"
       });
       return;
     }
-    
+
     const reservationData: ReservationData = {
       date: format(date, 'yyyy-MM-dd'),
       time_slot: timeSlot,
-      professor_id: professorId,
-      subject: subject.trim(),
+      justification: justification.trim(),
       quantity_requested: quantity,
+      needs_tv: needsTv,
+      needs_sound: needsSound,
+      needs_mic: needsMic,
+      mic_quantity: needsMic ? micQuantity : 0,
     };
-    
+
     const result = await createReservation(reservationData);
-    
+
     if (result) {
       setOpen(false);
       onReservationSuccess();
@@ -82,15 +92,14 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
       });
     }
   };
-  
+
   const totalReserved = currentReservations.reduce((sum, res) => sum + res.quantity_requested, 0);
   const available = totalAvailableChromebooks - totalReserved;
-  const selectedProfessor = professores.find(p => p.id === professorId);
 
   if (isPastDate) {
     return <div className="opacity-50 cursor-not-allowed">{children}</div>;
   }
-  
+
   if (maxQuantity <= 0) {
     return <div className="opacity-80 cursor-not-allowed">{children}</div>;
   }
@@ -100,9 +109,9 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
       <div onClick={() => setOpen(true)} className="cursor-pointer">
         {children}
       </div>
-      
-      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto border-3 border-foreground/20 rounded-none shadow-[8px_8px_0px_0px_hsl(var(--foreground)/0.15)] bg-background p-0">
-        
+
+      <DialogContent className="sm:max-w-[550px] max-h-[90vh] overflow-y-auto border-3 border-foreground/20 rounded-none shadow-[8px_8px_0px_0px_hsl(var(--foreground)/0.15)] bg-background p-0">
+
         {/* Neo Brutal Header */}
         <DialogHeader className="p-5 border-b-3 border-foreground/10 bg-primary/5">
           <div className="flex items-center justify-between">
@@ -121,9 +130,9 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
             </div>
           </div>
         </DialogHeader>
-        
+
         <form onSubmit={handleSubmit} className="p-5 space-y-5">
-          
+
           {/* Status Card - Neo Brutal */}
           <div className="border-3 border-foreground/10 bg-muted/20 p-4">
             <div className="grid grid-cols-2 gap-4">
@@ -136,7 +145,7 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                 <p className="text-2xl font-black text-info">{totalReserved}</p>
               </div>
             </div>
-            
+
             {/* Existing Reservations */}
             {currentReservations.length > 0 && (
               <div className="mt-4 pt-4 border-t-3 border-foreground/10">
@@ -147,7 +156,6 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                   {currentReservations.map((res, idx) => (
                     <div key={idx} className="flex items-center justify-between text-xs bg-background border-2 border-foreground/10 px-2 py-1.5">
                       <span className="flex items-center gap-1.5 font-bold text-foreground truncate">
-                        <User className="h-3 w-3 text-primary" />
                         {res.prof_name}
                       </span>
                       <span className="font-black text-primary">{res.quantity_requested} CB</span>
@@ -157,43 +165,28 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
               </div>
             )}
           </div>
-          
+
           {/* Form Fields - Neo Brutal */}
           <div className="space-y-4">
-            
-            {/* Professor */}
+
+            {/* Justification */}
             <div className="space-y-2">
-              <Label className="text-xs font-black uppercase tracking-wide flex items-center gap-1.5">
-                <User className="h-3.5 w-3.5 text-primary" />
-                Professor
+              <Label htmlFor="justification" className="text-xs font-black uppercase tracking-wide flex items-center gap-1.5">
+                Justificativa / Motivo
                 <span className="text-error">*</span>
               </Label>
-              <ProfessorAutocomplete
-                professores={professores}
-                selectedProfessorId={professorId}
-                onSelect={setProfessorId}
-                disabled={isSaving}
-              />
-            </div>
-            
-            {/* Subject */}
-            <div className="space-y-2">
-              <Label htmlFor="subject" className="text-xs font-black uppercase tracking-wide flex items-center gap-1.5">
-                <BookOpen className="h-3.5 w-3.5 text-info" />
-                Matéria/Turma
-                <span className="text-error">*</span>
-              </Label>
-              <Input 
-                id="subject" 
-                value={subject} 
-                onChange={(e) => setSubject(e.target.value)} 
-                placeholder="Ex: História 9A, Matemática Básica"
+              <Textarea
+                id="justification"
+                value={justification}
+                onChange={(e) => setJustification(e.target.value)}
+                placeholder="Ex: Aula de História sobre Segunda Guerra Mundial, turma 9A"
                 disabled={isSaving}
                 required
-                className="h-11 border-3 border-foreground/20 rounded-none focus:border-primary focus:shadow-[3px_3px_0px_0px_hsl(var(--primary)/0.2)] transition-all"
+                rows={3}
+                className="border-3 border-foreground/20 rounded-none focus:border-primary focus:shadow-[3px_3px_0px_0px_hsl(var(--primary)/0.2)] transition-all resize-none"
               />
             </div>
-            
+
             {/* Quantity Slider - Neo Brutal */}
             <div className="space-y-3">
               <Label className="text-xs font-black uppercase tracking-wide flex items-center justify-between">
@@ -204,7 +197,7 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                 </span>
                 <span className="text-2xl font-black text-primary">{quantity}</span>
               </Label>
-              
+
               <div className="p-4 border-3 border-foreground/10 bg-muted/10">
                 <Slider
                   value={[quantity]}
@@ -215,13 +208,13 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                   disabled={isSaving || maxQuantity <= 0}
                   className="py-2"
                 />
-                
+
                 <div className="flex justify-between text-[10px] font-bold text-muted-foreground mt-2 uppercase">
                   <span>Mín: 1</span>
                   <span>Máx: {maxQuantity}</span>
                 </div>
               </div>
-              
+
               {quantity > maxQuantity && (
                 <p className="text-xs font-bold text-error flex items-center gap-1">
                   <AlertTriangle className="h-3 w-3" />
@@ -229,38 +222,118 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                 </p>
               )}
             </div>
+
+            {/* Auxiliary Equipment Section */}
+            <div className="space-y-3 p-4 border-3 border-foreground/10 bg-muted/5">
+              <Label className="text-xs font-black uppercase tracking-wide">
+                Equipamentos Auxiliares (Opcional)
+              </Label>
+
+              <div className="space-y-3">
+                {/* TV */}
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="needs-tv"
+                    checked={needsTv}
+                    onCheckedChange={(checked) => setNeedsTv(checked as boolean)}
+                    disabled={isSaving}
+                    className="border-2 border-foreground/30"
+                  />
+                  <Label htmlFor="needs-tv" className="text-sm font-bold flex items-center gap-2 cursor-pointer">
+                    <Tv className="h-4 w-4 text-primary" />
+                    TV
+                  </Label>
+                </div>
+
+                {/* Sound */}
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="needs-sound"
+                    checked={needsSound}
+                    onCheckedChange={(checked) => setNeedsSound(checked as boolean)}
+                    disabled={isSaving}
+                    className="border-2 border-foreground/30"
+                  />
+                  <Label htmlFor="needs-sound" className="text-sm font-bold flex items-center gap-2 cursor-pointer">
+                    <Volume2 className="h-4 w-4 text-info" />
+                    Som
+                  </Label>
+                </div>
+
+                {/* Microphone */}
+                <div className="space-y-2">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="needs-mic"
+                      checked={needsMic}
+                      onCheckedChange={(checked) => setNeedsMic(checked as boolean)}
+                      disabled={isSaving}
+                      className="border-2 border-foreground/30"
+                    />
+                    <Label htmlFor="needs-mic" className="text-sm font-bold flex items-center gap-2 cursor-pointer">
+                      <Mic className="h-4 w-4 text-success" />
+                      Microfone
+                    </Label>
+                  </div>
+
+                  {needsMic && (
+                    <div className="ml-6 flex items-center gap-2">
+                      <Label htmlFor="mic-quantity" className="text-xs font-bold">Quantidade:</Label>
+                      <Input
+                        id="mic-quantity"
+                        type="number"
+                        min={1}
+                        max={10}
+                        value={micQuantity}
+                        onChange={(e) => setMicQuantity(Math.max(1, Math.min(10, parseInt(e.target.value) || 1)))}
+                        disabled={isSaving}
+                        className="w-20 h-8 border-2 border-foreground/20 rounded-none text-center font-bold"
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
-          
+
           {/* Preview - Neo Brutal */}
-          {selectedProfessor && subject && (
+          {justification && (
             <div className="p-4 border-3 border-primary/30 bg-primary/5">
               <p className="text-[10px] font-black uppercase tracking-wide text-muted-foreground flex items-center gap-1 mb-2">
                 <Info className="h-3 w-3" />
                 Preview da Reserva:
               </p>
               <p className="text-sm font-black text-foreground">
-                {quantity} Chromebook{quantity > 1 ? 's' : ''} → {selectedProfessor.nome_completo}
+                {quantity} Chromebook{quantity > 1 ? 's' : ''} → {user?.email?.split('@')[0] || 'Professor'}
               </p>
               <p className="text-xs text-muted-foreground mt-1">
-                {subject} · {format(date, "dd/MM/yyyy")} às {timeSlot}
+                {justification.substring(0, 60)}{justification.length > 60 ? '...' : ''} · {format(date, "dd/MM/yyyy")} às {timeSlot}
               </p>
+              {(needsTv || needsSound || needsMic) && (
+                <p className="text-xs text-muted-foreground mt-2 flex items-center gap-2 flex-wrap">
+                  <span className="font-bold">Equipamentos:</span>
+                  {needsTv && <span className="px-2 py-0.5 bg-primary/10 border border-primary/30 text-primary font-bold">TV</span>}
+                  {needsSound && <span className="px-2 py-0.5 bg-info/10 border border-info/30 text-info font-bold">Som</span>}
+                  {needsMic && <span className="px-2 py-0.5 bg-success/10 border border-success/30 text-success font-bold">Mic ({micQuantity})</span>}
+                </p>
+              )}
             </div>
           )}
-          
+
           {/* Footer Buttons - Neo Brutal */}
           <DialogFooter className="flex flex-col-reverse sm:flex-row gap-2 pt-2">
-            <Button 
-              type="button" 
-              variant="outline" 
-              onClick={() => setOpen(false)} 
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setOpen(false)}
               disabled={isSaving}
               className="h-11 border-3 border-foreground/20 rounded-none font-bold uppercase tracking-wide hover:bg-muted transition-all"
             >
               Cancelar
             </Button>
-            <Button 
-              type="submit" 
-              disabled={isSaving || !professorId || !subject.trim() || quantity <= 0 || quantity > maxQuantity}
+            <Button
+              type="submit"
+              disabled={isSaving || !justification.trim() || quantity <= 0 || quantity > maxQuantity}
               className="h-11 border-3 border-primary rounded-none font-bold uppercase tracking-wide bg-primary hover:bg-primary/90 shadow-[4px_4px_0px_0px_hsl(var(--foreground)/0.2)] hover:shadow-[6px_6px_0px_0px_hsl(var(--foreground)/0.2)] hover:-translate-x-0.5 hover:-translate-y-0.5 transition-all"
             >
               {isSaving ? (

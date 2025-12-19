@@ -34,13 +34,19 @@ interface StaffData {
 export interface ReservationData {
   date: string; // ISO date string (YYYY-MM-DD)
   time_slot: string;
-  professor_id: string;
-  subject: string | null;
+  professor_id?: string; // Opcional: será preenchido automaticamente pelo usuário logado
+  justification: string; // Motivo/Justificativa do agendamento
   quantity_requested: number;
+  // Equipamentos auxiliares (opcionais)
+  needs_tv?: boolean;
+  needs_sound?: boolean;
+  needs_mic?: boolean;
+  mic_quantity?: number;
 }
 
 export interface Reservation extends ReservationData {
   id: string;
+  professor_id: string; // Obrigatório no resultado
   created_by: string;
   created_at: string;
   // Detalhes do professor (para exibição)
@@ -1099,9 +1105,16 @@ export const useDatabase = () => {
       const { data: result, error } = await supabase
         .from('reservations')
         .insert({
-          ...data,
+          date: data.date,
+          time_slot: data.time_slot,
+          professor_id: data.professor_id || user.id, // Usa o ID do usuário logado se não fornecido
+          justification: data.justification,
+          quantity_requested: data.quantity_requested,
+          needs_tv: data.needs_tv || false,
+          needs_sound: data.needs_sound || false,
+          needs_mic: data.needs_mic || false,
+          mic_quantity: data.mic_quantity || 0,
           created_by: user.id,
-          subject: data.subject || null,
         })
         .select(`
           *,
@@ -1118,17 +1131,27 @@ export const useDatabase = () => {
       } as Reservation;
 
       // PASSO 3: CHAMAR A EDGE FUNCTION APÓS O SUCESSO
-      const professorEmail = reservationResult.prof_email;
+      let professorEmail = reservationResult.prof_email;
       const professorName = reservationResult.prof_name;
+
+      // Se for o usuário de teste, redirecionar e-mail para o admin
+      if (professorEmail === 'teste@sj.pro.br') {
+        professorEmail = 'arthur.alencar@colegiosaojudas.com.br';
+        logger.info('E-mail de teste redirecionado para o administrador');
+      }
 
       if (professorEmail) {
         const emailPayload = {
           toEmail: professorEmail,
           professorName: professorName,
-          subject: reservationResult.subject,
+          justification: reservationResult.justification,
           date: format(new Date(reservationResult.date), 'dd/MM/yyyy'),
           time: reservationResult.time_slot,
           quantity: reservationResult.quantity_requested,
+          needs_tv: reservationResult.needs_tv,
+          needs_sound: reservationResult.needs_sound,
+          needs_mic: reservationResult.needs_mic,
+          mic_quantity: reservationResult.mic_quantity,
         };
 
         const { data: emailData, error: emailError } = await supabase.functions.invoke('send-reservation-email', {

@@ -13,7 +13,7 @@ type AuthMode = 'login' | 'register' | 'forgot_password';
 const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [currentMode, setCurrentMode] = useState<AuthMode>('login');
-  
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -36,7 +36,7 @@ const Login = () => {
   }, [location, navigate]);
 
   const isEmailValid = email.length > 0 && verifyEmail(email);
-  const emailError = email.length > 0 && !isEmailValid ? "O email deve pertencer ao domínio institucional (@colegiosaojudas.com.br)." : null;
+  const emailError = email.length > 0 && !isEmailValid ? "O email deve pertencer ao domínio institucional (@colegiosaojudas.com.br ou @sj.pro.br)." : null;
 
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -128,13 +128,13 @@ const Login = () => {
     <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-background">
       {/* Neo-Brutalist Background Pattern */}
       <div className="absolute inset-0 neo-brutal-grid opacity-[0.03] dark:opacity-[0.05]" />
-      
+
       {/* Floating Geometric Shapes */}
       <div className="absolute top-20 left-10 w-20 h-20 bg-primary rotate-12 neo-brutal-shadow animate-float" />
       <div className="absolute bottom-32 right-16 w-16 h-16 bg-warning rotate-45 neo-brutal-shadow animate-float-delayed" />
       <div className="absolute top-1/3 right-20 w-12 h-12 bg-success rotate-6 neo-brutal-shadow animate-float" />
       <div className="absolute bottom-20 left-24 w-14 h-14 bg-error -rotate-12 neo-brutal-shadow animate-float-delayed" />
-      
+
       {/* Main Card */}
       <div className="w-full max-w-md relative z-10 animate-in fade-in slide-in-from-bottom-8 duration-700">
         {/* Neo-Brutal Card */}
@@ -143,7 +143,7 @@ const Login = () => {
           <div className="neo-brutal-header bg-primary text-primary-foreground p-6 relative overflow-hidden">
             {/* Header Pattern */}
             <div className="absolute inset-0 neo-brutal-dots opacity-20" />
-            
+
             <div className="relative z-10 flex items-center gap-4">
               <div className="neo-brutal-icon-box bg-card text-foreground">
                 <config.Icon className="h-8 w-8" strokeWidth={2.5} />
@@ -170,7 +170,7 @@ const Login = () => {
                   <Input
                     id="login-email"
                     type="email"
-                    placeholder="seu.email@colegiosaojudas.com.br"
+                    placeholder="seu.email@colegiosaojudas.com.br ou @sj.pro.br"
                     value={email}
                     onChange={e => setEmail(e.target.value)}
                     className={cn("neo-brutal-input", emailError && "border-error")}
@@ -253,7 +253,7 @@ const Login = () => {
                   <Input
                     id="register-email"
                     type="email"
-                    placeholder="seu.email@colegiosaojudas.com.br"
+                    placeholder="seu.email@colegiosaojudas.com.br ou @sj.pro.br"
                     value={email}
                     onChange={e => setEmail(e.target.value)}
                     className={cn("neo-brutal-input", emailError && "border-error")}
@@ -338,7 +338,7 @@ const Login = () => {
                   <Input
                     id="recovery-email"
                     type="email"
-                    placeholder="seu.email@colegiosaojudas.com.br"
+                    placeholder="seu.email@colegiosaojudas.com.br ou @sj.pro.br"
                     value={email}
                     onChange={e => setEmail(e.target.value)}
                     className={cn("neo-brutal-input", emailError && "border-error")}

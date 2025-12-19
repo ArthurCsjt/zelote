@@ -21,6 +21,15 @@ FROM pg_policies
 WHERE tablename = 'profiles'
 ORDER BY policyname;
 
+-- 2b. Verificar políticas RLS da tabela chromebooks
+SELECT 
+  policyname,
+  cmd,
+  qual
+FROM pg_policies
+WHERE tablename = 'chromebooks'
+ORDER BY policyname;
+
 -- 3. Verificar se o trigger existe
 SELECT 
   tgname as trigger_name,

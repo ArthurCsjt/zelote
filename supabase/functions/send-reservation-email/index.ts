@@ -7,7 +7,31 @@ const corsHeaders = {
 };
 
 // Função para gerar o corpo HTML do e-mail
-function generateEmailHtml({ professorName, subject, date, time, quantity }: any) {
+function generateEmailHtml({
+  professorName,
+  justification,
+  date,
+  time,
+  quantity,
+  needs_tv,
+  needs_sound,
+  needs_mic,
+  mic_quantity
+}: any) {
+  // Gerar lista de equipamentos auxiliares
+  const equipmentList = [];
+  if (needs_tv) equipmentList.push('📺 TV');
+  if (needs_sound) equipmentList.push('🔊 Som');
+  if (needs_mic) equipmentList.push(`🎤 Microfone (${mic_quantity || 1})`);
+
+  const equipmentHtml = equipmentList.length > 0
+    ? `
+      <div class="detail-item">
+        <span class="label">Equipamentos Auxiliares:</span> ${equipmentList.join(', ')}
+      </div>
+    `
+    : '';
+
   return `
     <!DOCTYPE html>
     <html>
@@ -19,6 +43,7 @@ function generateEmailHtml({ professorName, subject, date, time, quantity }: any
             .details { margin-top: 15px; border-top: 1px solid #eee; padding-top: 15px; }
             .detail-item { margin-bottom: 10px; }
             .label { font-weight: bold; color: #333; }
+            .justification { background-color: #f9fafb; padding: 10px; border-left: 3px solid #4f46e5; margin: 10px 0; }
         </style>
     </head>
     <body>
@@ -38,8 +63,10 @@ function generateEmailHtml({ professorName, subject, date, time, quantity }: any
                     <span class="label">Quantidade:</span> ${quantity} Chromebook(s)
                 </div>
                 <div class="detail-item">
-                    <span class="label">Assunto/Turma:</span> ${subject}
+                    <span class="label">Justificativa:</span>
+                    <div class="justification">${justification}</div>
                 </div>
+                ${equipmentHtml}
             </div>
 
             <p>Por favor, retire os equipamentos no horário agendado. Em caso de dúvidas, entre em contato com a administração.</p>
@@ -65,17 +92,38 @@ serve(async (req) => {
   }
 
   try {
-    const { toEmail, professorName, subject, date, time, quantity } = await req.json();
+    const {
+      toEmail,
+      professorName,
+      justification,
+      date,
+      time,
+      quantity,
+      needs_tv,
+      needs_sound,
+      needs_mic,
+      mic_quantity
+    } = await req.json();
 
-    if (!toEmail || !professorName || !subject || !date || !time || !quantity) {
+    if (!toEmail || !professorName || !justification || !date || !time || !quantity) {
       return new Response(JSON.stringify({ error: 'Dados de reserva incompletos.' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 400,
       });
     }
-    
+
     // Renderiza o HTML
-    const htmlContent = generateEmailHtml({ professorName, subject, date, time, quantity });
+    const htmlContent = generateEmailHtml({
+      professorName,
+      justification,
+      date,
+      time,
+      quantity,
+      needs_tv,
+      needs_sound,
+      needs_mic,
+      mic_quantity
+    });
 
     // Chamada à API do Resend
     const resendResponse = await fetch('https://api.resend.com/emails', {
@@ -87,7 +135,7 @@ serve(async (req) => {
       body: JSON.stringify({
         from: 'Zelote <onboarding@resend.dev>', // Use um domínio verificado ou o domínio de teste do Resend
         to: [toEmail],
-        subject: `Confirmação de Agendamento - ${subject}`,
+        subject: `Confirmação de Agendamento - ${justification.substring(0, 50)}${justification.length > 50 ? '...' : ''}`,
         html: htmlContent,
       }),
     });

@@ -64,7 +64,7 @@ const Index = () => {
   };
 
   const renderCurrentView = () => {
-    if (role === 'teacher' && currentView === 'menu') {
+    if ((role === 'teacher' || role === 'professor') && currentView === 'menu') {
       return <Navigate to="/agendamento" replace />;
     }
 

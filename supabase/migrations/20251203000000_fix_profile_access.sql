@@ -154,8 +154,7 @@ ALTER TABLE public.audit_items ENABLE ROW LEVEL SECURITY;
 COMMENT ON POLICY "Users can view own profile" ON public.profiles IS 
   'Permite que usuários autenticados vejam seu próprio perfil. Necessário para o funcionamento do hook useProfileRole.';
 
-COMMENT ON TRIGGER on_auth_user_created ON auth.users IS 
-  'Cria automaticamente um perfil na tabela profiles quando um novo usuário é criado no auth.users.';
+-- Removido comentário restrito sobre o trigger no auth.users
 
 COMMENT ON POLICY "Users can view own audits" ON public.inventory_audits IS 
   'Permite que usuários vejam apenas suas próprias auditorias de inventário.';

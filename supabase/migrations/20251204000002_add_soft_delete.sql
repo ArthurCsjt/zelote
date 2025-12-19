@@ -46,6 +46,7 @@ CREATE POLICY "Authenticated users can view chromebooks"
   USING (auth.uid() IS NOT NULL AND deleted_at IS NULL);
 
 -- Política adicional para admins verem deletados
+DROP POLICY IF EXISTS "Admins can view deleted chromebooks" ON public.chromebooks;
 CREATE POLICY "Admins can view deleted chromebooks" 
   ON public.chromebooks 
   FOR SELECT 
@@ -65,6 +66,7 @@ CREATE POLICY "Authenticated users can view students"
   FOR SELECT 
   USING (auth.uid() IS NOT NULL AND deleted_at IS NULL);
 
+DROP POLICY IF EXISTS "Admins can view deleted students" ON public.alunos;
 CREATE POLICY "Admins can view deleted students" 
   ON public.alunos 
   FOR SELECT 
@@ -84,6 +86,7 @@ CREATE POLICY "Authenticated users can view teachers"
   FOR SELECT 
   USING (auth.uid() IS NOT NULL AND deleted_at IS NULL);
 
+DROP POLICY IF EXISTS "Admins can view deleted teachers" ON public.professores;
 CREATE POLICY "Admins can view deleted teachers" 
   ON public.professores 
   FOR SELECT 
@@ -103,6 +106,7 @@ CREATE POLICY "Authenticated users can view staff"
   FOR SELECT 
   USING (auth.uid() IS NOT NULL AND deleted_at IS NULL);
 
+DROP POLICY IF EXISTS "Admins can view deleted staff" ON public.funcionarios;
 CREATE POLICY "Admins can view deleted staff" 
   ON public.funcionarios 
   FOR SELECT 

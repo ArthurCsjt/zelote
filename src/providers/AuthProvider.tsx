@@ -66,7 +66,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return { success: !error, error: error?.message };
   };
 
-  const verifyEmail = (email: string) => /@colegiosaojudas\.com\.br$/i.test(email);
+  const verifyEmail = (email: string) => /@(colegiosaojudas\.com\.br|sj\.pro\.br)$/i.test(email);
 
   const isAuthenticated = !!user;
   const email = user?.email || null;
