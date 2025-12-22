@@ -6,13 +6,14 @@ import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, Calendar, Monitor, AlertTriangle, Info, Save, Tv, Volume2, Mic } from 'lucide-react';
+import { Loader2, Calendar, Monitor, AlertTriangle, Info, Save, Tv, Volume2, Mic, User } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useDatabase, ReservationData, Reservation } from '@/hooks/useDatabase';
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
+import { useProfileRole } from '@/hooks/use-profile-role';
 
 interface ReservationDialogProps {
   children: ReactNode;
@@ -36,6 +37,7 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
   const [open, setOpen] = useState(false);
   const { createReservation, loading: isSaving } = useDatabase();
   const { user } = useAuth();
+  const { isAdmin } = useProfileRole();
 
   const [justification, setJustification] = useState<string>('');
   const [quantity, setQuantity] = useState<number>(1);
@@ -44,6 +46,7 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
   const [needsMic, setNeedsMic] = useState(false);
   const [micQuantity, setMicQuantity] = useState(1);
   const [isMinecraft, setIsMinecraft] = useState(false);
+  const [classroom, setClassroom] = useState<string>(''); // NOVO: Sala/Turma
 
   useEffect(() => {
     if (open) {
@@ -54,6 +57,7 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
       setNeedsMic(false);
       setMicQuantity(1);
       setIsMinecraft(false);
+      setClassroom('');
     }
   }, [open, maxQuantity]);
 
@@ -81,6 +85,7 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
       needs_mic: needsMic,
       mic_quantity: needsMic ? micQuantity : 0,
       is_minecraft: isMinecraft,
+      classroom: classroom.trim(),
     };
 
     const result = await createReservation(reservationData);
@@ -155,19 +160,45 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                 <p className="text-[10px] font-black uppercase tracking-wide text-muted-foreground mb-2">
                   Reservas Existentes:
                 </p>
-                <div className="space-y-1.5 max-h-20 overflow-y-auto">
+                <div className="space-y-2 max-h-32 overflow-y-auto pr-1">
                   {currentReservations.map((res, idx) => (
-                    <div key={idx} className="flex items-center justify-between text-xs bg-background border-2 border-foreground/10 px-2 py-1.5">
-                      <span className="flex items-center gap-1.5 font-bold text-foreground truncate">
-                        {res.prof_name}
-                      </span>
-                      <span className="font-black text-primary">{res.quantity_requested} CB</span>
+                    <div key={idx} className={cn(
+                      "flex flex-col gap-1.5 p-2 bg-background border-2 transition-all",
+                      res.is_minecraft ? "border-[#3c8527]/30 bg-[#3c8527]/5" : "border-foreground/10"
+                    )}>
+                      <div className="flex items-center justify-between">
+                        <span className="flex items-center gap-1.5 font-bold text-[11px] text-foreground truncate">
+                          <User className="h-3 w-3 text-muted-foreground" />
+                          {res.prof_name && res.prof_name !== 'Usuário Desconhecido' ? res.prof_name : (res.prof_email || 'Usuário Desconhecido')}
+                        </span>
+                        <span className="font-black text-xs text-primary">{res.quantity_requested} CB</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        {res.classroom && (
+                          <div className="flex items-center gap-1 text-[9px] font-black uppercase text-info bg-info/10 px-1.5 py-0.5">
+                            SALA: {res.classroom}
+                          </div>
+                        )}
+                        <span className="text-[9px] font-medium text-muted-foreground truncate italic">
+                          "{res.justification}"
+                        </span>
+                      </div>
                     </div>
                   ))}
                 </div>
               </div>
             )}
           </div>
+
+          {/* Neo Brutal Info Alert for Permissions */}
+          {!isAdmin && (
+            <div className="p-3 border-2 border-info/30 bg-info/5 rounded-none flex items-start gap-2">
+              <Info className="h-4 w-4 text-info mt-0.5 shrink-0" />
+              <p className="text-[10px] font-bold text-info-foreground leading-tight">
+                Você está criando uma NOVA reserva. Reservas de outros professores não podem ser alteradas por você.
+              </p>
+            </div>
+          )}
 
           {/* Form Fields - Neo Brutal */}
           <div className="space-y-4">
@@ -182,11 +213,28 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                 id="justification"
                 value={justification}
                 onChange={(e) => setJustification(e.target.value)}
-                placeholder="Ex: Aula de História sobre Segunda Guerra Mundial, turma 9A"
+                placeholder="Ex: Aula sobre Segunda Guerra Mundial"
                 disabled={isSaving}
                 required
-                rows={3}
-                className="border-3 border-foreground/20 rounded-none focus:border-primary focus:shadow-[3px_3px_0px_0px_hsl(var(--primary)/0.2)] transition-all resize-none"
+                rows={2}
+                className="border-3 border-foreground/20 rounded-none focus:border-primary focus:shadow-[2px_2px_0px_0px_hsl(var(--primary)/0.2)] transition-all resize-none text-sm"
+              />
+            </div>
+
+            {/* Classroom / Turma */}
+            <div className="space-y-2">
+              <Label htmlFor="classroom" className="text-xs font-black uppercase tracking-wide flex items-center gap-1.5">
+                Sala / Turma onde será utilizado
+                <span className="text-error">*</span>
+              </Label>
+              <Input
+                id="classroom"
+                value={classroom}
+                onChange={(e) => setClassroom(e.target.value)}
+                placeholder="Ex: Sala 12 ou 9A"
+                disabled={isSaving}
+                required
+                className="border-3 border-foreground/20 rounded-none focus:border-primary focus:shadow-[2px_2px_0px_0px_hsl(var(--primary)/0.2)] transition-all h-10 text-sm font-bold"
               />
             </div>
 
@@ -348,7 +396,7 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                 {quantity} Chromebook{quantity > 1 ? 's' : ''} → {user?.email?.split('@')[0] || 'Professor'}
               </p>
               <p className="text-xs text-muted-foreground mt-1">
-                {justification.substring(0, 60)}{justification.length > 60 ? '...' : ''} · {format(date, "dd/MM/yyyy")} às {timeSlot}
+                {justification.substring(0, 60)}{justification.length > 60 ? '...' : ''} · {classroom} · {format(date, "dd/MM/yyyy")} às {timeSlot}
               </p>
               {(needsTv || needsSound || needsMic || isMinecraft) && (
                 <p className="text-xs text-muted-foreground mt-2 flex items-center gap-2 flex-wrap">

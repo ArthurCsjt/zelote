@@ -102,7 +102,8 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
               {myReservation.justification}
             </p>
             <p className="text-xs text-muted-foreground">
-              {myReservation.prof_name} · {myReservation.quantity_requested} Chromebooks
+              {myReservation.prof_name && myReservation.prof_name !== 'Usuário Desconhecido' ? myReservation.prof_name : (myReservation.prof_email || 'Usuário Desconhecido')} · {myReservation.quantity_requested} Chromebooks
+              {myReservation.classroom && ` · Sala: ${myReservation.classroom}`}
             </p>
             {myReservation.created_by === currentUser?.id && (
               <Button
@@ -168,7 +169,9 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
               <p className="text-[9px] text-muted-foreground truncate">
                 {allReservationsForSlot.length > 1
                   ? `${allReservationsForSlot.length} reservas`
-                  : allReservationsForSlot[0]?.prof_name
+                  : (allReservationsForSlot[0]?.prof_name && allReservationsForSlot[0]?.prof_name !== 'Usuário Desconhecido'
+                    ? allReservationsForSlot[0]?.prof_name
+                    : (allReservationsForSlot[0]?.prof_email || 'Usuário Desconhecido'))
                 }
               </p>
             </div>
@@ -183,7 +186,8 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
                 )}>
                   <p className="font-bold">
                     {res.is_minecraft && <span className="text-[#3c8527] mr-1">[MINECRAFT]</span>}
-                    {res.prof_name}
+                    {res.prof_name && res.prof_name !== 'Usuário Desconhecido' ? res.prof_name : (res.prof_email || 'Usuário Desconhecido')}
+                    {res.classroom && <span className="ml-2 text-[9px] px-1.5 bg-info/10 text-info">SALA: {res.classroom}</span>}
                   </p>
                   <p className="text-muted-foreground mb-1">{res.justification} · {res.quantity_requested} CB</p>
                   {(isSuperAdmin || res.created_by === currentUser?.id) && (
@@ -263,7 +267,8 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
                   )}>
                     <p className="font-bold">
                       {res.is_minecraft && <span className="text-[#3c8527] mr-1">[MINECRAFT]</span>}
-                      {res.prof_name}
+                      {res.prof_name && res.prof_name !== 'Usuário Desconhecido' ? res.prof_name : (res.prof_email || 'Usuário Desconhecido')}
+                      {res.classroom && <span className="ml-2 text-[9px] px-1.5 bg-info/10 text-info">SALA: {res.classroom}</span>}
                     </p>
                     <p className="text-muted-foreground mb-1">{res.justification} · {res.quantity_requested} CB</p>
                     {(isSuperAdmin || res.created_by === currentUser?.id) && (

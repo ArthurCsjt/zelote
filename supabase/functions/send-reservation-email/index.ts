@@ -7,7 +7,6 @@ const corsHeaders = {
 };
 
 // Função para gerar o corpo HTML do e-mail
-// Função para gerar o corpo HTML do e-mail
 function generateEmailHtml({
   professorName,
   professorEmail,
@@ -19,7 +18,8 @@ function generateEmailHtml({
   needs_sound,
   needs_mic,
   mic_quantity,
-  is_minecraft
+  is_minecraft,
+  classroom
 }: any) {
   // Gerar lista de equipamentos auxiliares
   const equipmentList = [];
@@ -84,6 +84,9 @@ function generateEmailHtml({
                     <span class="label">Justificativa:</span>
                     <div class="justification">${justification}</div>
                 </div>
+                <div class="detail-item">
+                    <span class="label">Sala / Turma:</span> ${classroom || 'Não informada'}
+                </div>
                 ${equipmentHtml}
             </div>
 
@@ -109,6 +112,7 @@ serve(async (req) => {
   }
 
   try {
+    const payload = await req.json();
     const {
       toEmail,
       professorName,
@@ -120,8 +124,9 @@ serve(async (req) => {
       needs_sound,
       needs_mic,
       mic_quantity,
-      is_minecraft
-    } = await req.json();
+      is_minecraft,
+      classroom
+    } = payload;
 
     if (!toEmail || !professorName || !justification || !date || !time || !quantity) {
       return new Response(JSON.stringify({ error: 'Dados de reserva incompletos.' }), {
@@ -142,7 +147,8 @@ serve(async (req) => {
       needs_sound,
       needs_mic,
       mic_quantity,
-      is_minecraft
+      is_minecraft,
+      classroom
     });
 
     // Chamada à API do Resend
@@ -175,7 +181,7 @@ serve(async (req) => {
       status: 200,
     });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Erro geral na Edge Function:', error);
     return new Response(JSON.stringify({ error: error.message || 'Erro interno do servidor' }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

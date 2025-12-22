@@ -44,6 +44,7 @@ export interface ReservationData {
   needs_mic?: boolean;
   mic_quantity?: number;
   is_minecraft?: boolean;
+  classroom?: string; // NOVO: Sala/Turma onde será utilizado
 }
 
 export interface Reservation extends ReservationData {
@@ -1088,12 +1089,18 @@ export const useDatabase = () => {
       if (error) throw error;
 
       // Mapeia o resultado para o tipo Reservation
-      return (data || []).map(res => ({
-        ...res,
-        prof_name: (res as any).prof_data?.name || (res as any).prof_data?.email || 'Usuário Desconhecido',
-        prof_email: (res as any).prof_data?.email || '',
-        justification: (res as any).justification || '', // Garantir que o campo existe
-      })) as Reservation[];
+      return (data || []).map(res => {
+        const profData = (res as any).prof_data;
+        const profName = profData?.name;
+        const profEmail = profData?.email;
+
+        return {
+          ...res,
+          prof_name: profName && profName !== 'Usuário Desconhecido' ? profName : (profEmail || 'Usuário Desconhecido'),
+          prof_email: profEmail || '',
+          justification: (res as any).justification || '',
+        };
+      }) as Reservation[];
 
     } catch (error: any) {
       logger.error('Erro ao buscar reservas:', error);
@@ -1123,6 +1130,7 @@ export const useDatabase = () => {
           needs_mic: data.needs_mic || false,
           mic_quantity: data.mic_quantity || 0,
           is_minecraft: data.is_minecraft || false,
+          classroom: data.classroom || '', // NOVO: Sala/Turma
           created_by: user.id,
         })
         .select(`
@@ -1133,10 +1141,14 @@ export const useDatabase = () => {
 
       if (error) throw error;
 
+      const profData = (result as any).prof_data;
+      const profName = profData?.name;
+      const profEmail = profData?.email;
+
       const reservationResult = {
         ...result,
-        prof_name: (result as any).prof_data?.name || (result as any).prof_data?.email || 'Usuário Desconhecido',
-        prof_email: (result as any).prof_data?.email || '',
+        prof_name: profName && profName !== 'Usuário Desconhecido' ? profName : (profEmail || 'Usuário Desconhecido'),
+        prof_email: profEmail || '',
         justification: (result as any).justification || '',
       } as Reservation;
 
