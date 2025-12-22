@@ -41,7 +41,7 @@ export const useInventoryAudit = () => {
   const missingItems = useMemo(() => {
     return calculateMissingItems(countedItems, allChromebooks);
   }, [countedItems, allChromebooks]);
-  
+
   // Função para gerar o relatório da auditoria ATIVA
   const calculateActiveReport = useCallback((): AuditReport | null => {
     if (!activeAudit || !stats) return null;
@@ -82,7 +82,7 @@ export const useInventoryAudit = () => {
     if (!user?.id) return;
     try {
       const { data, error } = await supabase
-        .from<any>('inventory_audits')
+        .from('inventory_audits')
         .select('*')
         .eq('status', 'concluida')
         .eq('created_by', user.id)
@@ -97,11 +97,11 @@ export const useInventoryAudit = () => {
   // Função auxiliar para buscar todos os Chromebooks e calcular estatísticas de inventário
   const loadAllChromebooks = useCallback(async () => {
     const { data: allCbData, error: allCbError } = await supabase
-      .from<any>('chromebooks')
+      .from('chromebooks')
       .select('*');
 
     if (allCbError) throw allCbError;
-    
+
     const chromebooks = (allCbData || []) as Chromebook[];
     setAllChromebooks(chromebooks);
     setTotalExpected(chromebooks.length);
@@ -121,27 +121,28 @@ export const useInventoryAudit = () => {
     if (!user?.id) return;
     try {
       setIsProcessing(true);
-      
+
       const chromebooks = await loadAllChromebooks();
       const chromebookMap = new Map(chromebooks.map((cb: Chromebook) => [cb.id, cb]));
 
       // 2. Buscar auditoria ativa
       const { data: auditData, error: auditError } = await supabase
-        .from<any>('inventory_audits')
+        .from('inventory_audits')
         .select('*')
         .eq('status', 'em_andamento')
         .eq('created_by', user.id)
         .order('started_at', { ascending: false })
         .limit(1)
-        .single();
-        
-      if (auditError && (auditError as any).code !== 'PGRST116') throw auditError;
+        .limit(1)
+        .maybeSingle();
+
+      if (auditError) throw auditError;
       setActiveAudit((auditData || null) as InventoryAudit | null);
 
       if (auditData) {
         // 3. Buscar itens contados
         const { data: items, error: itemsError } = await supabase
-          .from<any>('audit_items')
+          .from('audit_items')
           .select('*')
           .eq('audit_id', auditData.id)
           .order('counted_at', { ascending: false });
@@ -162,7 +163,7 @@ export const useInventoryAudit = () => {
           } as DisplayCountedItem;
           return display;
         });
-        
+
         setCountedItems(fullItems);
       } else {
         setCountedItems([]);
@@ -187,7 +188,7 @@ export const useInventoryAudit = () => {
         .select('*')
         .eq('audit_id', auditId)
         .order('counted_at', { ascending: false });
-      
+
       if (itemsError) throw itemsError;
 
       // 3. Mapear itens contados com detalhes do chromebook
@@ -205,7 +206,7 @@ export const useInventoryAudit = () => {
         } as DisplayCountedItem;
         return display;
       });
-      
+
       return fullItems;
     } catch (e: any) {
       toast({ title: 'Erro ao carregar relatório', description: e.message, variant: 'destructive' });
@@ -271,10 +272,10 @@ export const useInventoryAudit = () => {
 
     try {
       setIsProcessing(true);
-      
+
       // 1. Encontrar o Chromebook pelo ID normalizado ou outros campos
       const { data: chromebook, error: findError } = await supabase
-        .from<any>('chromebooks')
+        .from('chromebooks')
         .select('*')
         .or(
           [
@@ -334,7 +335,7 @@ export const useInventoryAudit = () => {
     if (!activeAudit) return;
     try {
       setIsProcessing(true);
-      const { error } = await supabase.from<any>('audit_items').delete().eq('id', itemId);
+      const { error } = await supabase.from('audit_items').delete().eq('id', itemId);
       if (error) throw error;
       setCountedItems(prev => prev.filter(i => i.id !== itemId));
       toast({ title: 'Item removido', description: 'Item removido da contagem.' });
@@ -349,7 +350,7 @@ export const useInventoryAudit = () => {
   const updateItemLocation = async (itemId: string, newLocation: string) => {
     if (!activeAudit) return;
     try {
-      const { error } = await supabase.from<any>('audit_items').update({ location_found: newLocation }).eq('id', itemId);
+      const { error } = await supabase.from('audit_items').update({ location_found: newLocation }).eq('id', itemId);
       if (error) throw error;
       setCountedItems(prev => prev.map(i => (i.id === itemId ? { ...i, location_found: newLocation } as DisplayCountedItem : i)));
       toast({ title: 'Localização atualizada' });
@@ -364,11 +365,11 @@ export const useInventoryAudit = () => {
     try {
       setIsProcessing(true);
       const report = calculateActiveReport(); // Usa a função do hook de cálculo
-      
+
       if (!report) {
         throw new Error("Falha ao gerar relatório final.");
       }
-      
+
       const { error } = await supabase
         .from<any>('inventory_audits')
         .update({
@@ -395,9 +396,9 @@ export const useInventoryAudit = () => {
   const deleteAudit = async (auditId: string) => {
     try {
       setIsProcessing(true);
-      const { error: itemsErr } = await supabase.from<any>('audit_items').delete().eq('audit_id', auditId);
+      const { error: itemsErr } = await supabase.from('audit_items').delete().eq('audit_id', auditId);
       if (itemsErr) throw itemsErr;
-      const { error: auditErr } = await supabase.from<any>('inventory_audits').delete().eq('id', auditId);
+      const { error: auditErr } = await supabase.from('inventory_audits').delete().eq('id', auditId);
       if (auditErr) throw auditErr;
       if (activeAudit?.id === auditId) {
         setActiveAudit(null);
@@ -415,33 +416,33 @@ export const useInventoryAudit = () => {
       setIsProcessing(false);
     }
   };
-  
+
   // NOVO: Função para gerar relatório de qualquer auditoria (ativa ou concluída)
   const generateReport = useCallback(async (auditId: string): Promise<AuditReport | null> => {
     const audit = completedAudits.find(a => a.id === auditId) || activeAudit;
-    
+
     if (!audit) return null;
-    
+
     let detailedItems: DisplayCountedItem[] | null = [];
-    
+
     if (audit.id === activeAudit?.id) {
-        // Se for a auditoria ativa, usa os itens do estado
-        detailedItems = countedItems;
+      // Se for a auditoria ativa, usa os itens do estado
+      detailedItems = countedItems;
     } else {
-        // Se for uma auditoria concluída, carrega os detalhes
-        detailedItems = await loadAuditReportDetails(auditId);
+      // Se for uma auditoria concluída, carrega os detalhes
+      detailedItems = await loadAuditReportDetails(auditId);
     }
-    
+
     if (!detailedItems) return null;
-    
+
     // Usa a função utilitária pura para gerar o relatório
     return generateAuditReport(
-        audit, 
-        detailedItems, 
-        allChromebooks, 
-        audit.total_expected || allChromebooks.length
+      audit,
+      detailedItems,
+      allChromebooks,
+      audit.total_expected || allChromebooks.length
     );
-    
+
   }, [activeAudit, completedAudits, countedItems, loadAuditReportDetails, allChromebooks]);
 
 

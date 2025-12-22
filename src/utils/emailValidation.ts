@@ -4,10 +4,13 @@
  */
 
 export const EMAIL_DOMAINS = {
-  ALUNO: '@sj.g12.br',
-  PROFESSOR: '@sj.pro.br',
-  FUNCIONARIO: '@colegiosaojudas.com.br',
+  ALUNO: ['@sj.g12.br'],
+  PROFESSOR: ['@sj.pro.br', '@colegiosaojudas.com.br'],
+  FUNCIONARIO: ['@colegiosaojudas.com.br', '@sj.pro.br'],
 } as const;
+
+// Domínios institucionais gerais permitidos no sistema
+export const INSTITUTIONAL_DOMAINS = ['@colegiosaojudas.com.br', '@sj.pro.br', '@sj.g12.br'];
 
 export type UserType = 'aluno' | 'professor' | 'funcionario';
 
@@ -17,19 +20,7 @@ export interface EmailValidationResult {
 }
 
 /**
- * Valida se um email termina com o domínio correto para o tipo de usuário
- * 
- * @param email - Email a ser validado
- * @param userType - Tipo de usuário (aluno, professor, funcionario)
- * @returns Objeto com resultado da validação e mensagem de erro se inválido
- * 
- * @example
- * ```typescript
- * const result = validateEmailDomain('joao@sj.g12.br', 'aluno');
- * if (!result.valid) {
- *   console.error(result.message);
- * }
- * ```
+ * Valida se um email termina com um dos domínios permitidos para o tipo de usuário
  */
 export function validateEmailDomain(
   email: string,
@@ -43,9 +34,11 @@ export function validateEmailDomain(
   }
 
   const normalizedEmail = email.trim().toLowerCase();
-  const domain = EMAIL_DOMAINS[userType.toUpperCase() as keyof typeof EMAIL_DOMAINS];
+  const domains = EMAIL_DOMAINS[userType.toUpperCase() as keyof typeof EMAIL_DOMAINS];
 
-  if (!normalizedEmail.endsWith(domain)) {
+  const isValid = domains.some(domain => normalizedEmail.endsWith(domain.toLowerCase()));
+
+  if (!isValid) {
     const userTypeLabel = {
       aluno: 'aluno',
       professor: 'professor',
@@ -54,7 +47,7 @@ export function validateEmailDomain(
 
     return {
       valid: false,
-      message: `Email de ${userTypeLabel} deve terminar com ${domain}`,
+      message: `Email de ${userTypeLabel} deve terminar com ${domains.join(' ou ')}`,
     };
   }
 
@@ -62,37 +55,25 @@ export function validateEmailDomain(
 }
 
 /**
- * Retorna o domínio de email esperado para um tipo de usuário
- * 
- * @param userType - Tipo de usuário
- * @returns Domínio de email (ex: '@sj.g12.br')
+ * Retorna o domínio de email principal esperado para um tipo de usuário
  */
 export function getEmailDomain(userType: UserType): string {
-  return EMAIL_DOMAINS[userType.toUpperCase() as keyof typeof EMAIL_DOMAINS];
+  return EMAIL_DOMAINS[userType.toUpperCase() as keyof typeof EMAIL_DOMAINS][0];
 }
 
 /**
  * Extrai o tipo de usuário baseado no domínio do email
- * 
- * @param email - Email a ser analisado
- * @returns Tipo de usuário ou null se não reconhecido
- * 
- * @example
- * ```typescript
- * const type = getUserTypeFromEmail('joao@sj.g12.br');
- * console.log(type); // 'aluno'
- * ```
  */
 export function getUserTypeFromEmail(email: string): UserType | null {
   const normalizedEmail = email.trim().toLowerCase();
 
-  if (normalizedEmail.endsWith(EMAIL_DOMAINS.ALUNO)) {
+  if (EMAIL_DOMAINS.ALUNO.some(d => normalizedEmail.endsWith(d.toLowerCase()))) {
     return 'aluno';
   }
-  if (normalizedEmail.endsWith(EMAIL_DOMAINS.PROFESSOR)) {
+  if (EMAIL_DOMAINS.PROFESSOR.some(d => normalizedEmail.endsWith(d.toLowerCase()))) {
     return 'professor';
   }
-  if (normalizedEmail.endsWith(EMAIL_DOMAINS.FUNCIONARIO)) {
+  if (EMAIL_DOMAINS.FUNCIONARIO.some(d => normalizedEmail.endsWith(d.toLowerCase()))) {
     return 'funcionario';
   }
 
@@ -100,10 +81,7 @@ export function getUserTypeFromEmail(email: string): UserType | null {
 }
 
 /**
- * Valida formato básico de email (RFC 5322 simplificado)
- * 
- * @param email - Email a ser validado
- * @returns true se o formato é válido
+ * Valida formato básico de email
  */
 export function isValidEmailFormat(email: string): boolean {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -112,16 +90,11 @@ export function isValidEmailFormat(email: string): boolean {
 
 /**
  * Validação completa de email (formato + domínio)
- * 
- * @param email - Email a ser validado
- * @param userType - Tipo de usuário
- * @returns Objeto com resultado da validação e mensagem de erro se inválido
  */
 export function validateEmail(
   email: string,
   userType: UserType
 ): EmailValidationResult {
-  // Validar formato básico
   if (!isValidEmailFormat(email)) {
     return {
       valid: false,
@@ -129,6 +102,13 @@ export function validateEmail(
     };
   }
 
-  // Validar domínio
   return validateEmailDomain(email, userType);
+}
+
+/**
+ * Valida se o email pertence a qualquer domínio institucional permitido
+ */
+export function isInstitutionalEmail(email: string): boolean {
+  const normalizedEmail = email.trim().toLowerCase();
+  return INSTITUTIONAL_DOMAINS.some(d => normalizedEmail.endsWith(d.toLowerCase()));
 }

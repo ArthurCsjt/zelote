@@ -28,6 +28,7 @@ interface StudentData {
 
 interface StaffData {
   nome_completo: string;
+  email: string;
 }
 
 // NOVO TIPO: Reserva
@@ -307,7 +308,7 @@ export const useDatabase = () => {
       if (error) throw error;
 
       // REMOVIDO: Toast de sucesso genérico. O componente chamador fará o toast de sucesso em lote.
-      return result;
+      return result as unknown as Loan;
     } catch (error: any) {
       toast({ title: "Erro ao registrar empréstimo", description: error.message, variant: "destructive" });
       return null;
@@ -407,7 +408,7 @@ export const useDatabase = () => {
       return (data || []).map(item => ({
         ...item,
         status: item.status as 'ativo' | 'devolvido' | 'atrasado'
-      }));
+      })) as unknown as LoanHistoryItem[];
     } catch (error: any) {
       toast({ title: "Erro de Sincronização", description: "Falha ao carregar empréstimos ativos.", variant: "destructive" });
       return [];
@@ -428,7 +429,7 @@ export const useDatabase = () => {
       return (data || []).map(item => ({
         ...item,
         status: item.status as 'ativo' | 'devolvido' | 'atrasado'
-      }));
+      })) as unknown as LoanHistoryItem[];
     } catch (error: any) {
       toast({ title: "Erro de Sincronização", description: "Falha ao carregar histórico de empréstimos.", variant: "destructive" });
       return [];
@@ -459,7 +460,7 @@ export const useDatabase = () => {
       return data ? {
         ...data,
         status: data.status as 'ativo' | 'devolvido' | 'atrasado'
-      } : null;
+      } as unknown as LoanHistoryItem : null;
     } catch (error: any) {
       logger.error('Erro ao buscar detalhes do empréstimo', error, { chromebookId });
       return null;
@@ -490,7 +491,7 @@ export const useDatabase = () => {
 
       if (error) throw error;
 
-      return result;
+      return result as unknown as Return;
     } catch (error: any) {
       throw error;
     }
@@ -573,7 +574,7 @@ export const useDatabase = () => {
         throw new Error('Chromebook não encontrado ou não possui um empréstimo ativo/atrasado.');
       }
 
-      const result = await createReturn(activeLoan.id, data);
+      const result = await createReturn(activeLoan.id as string, data);
 
       if (result) {
         // Sincroniza o status do Chromebook após a devolução
@@ -690,8 +691,9 @@ export const useDatabase = () => {
     }
 
     // Validação de domínio para aluno
-    if (!validateEmailDomain(data.email, 'aluno')) {
-      toast({ title: "Erro de Validação", description: `Email de aluno deve terminar com ${EMAIL_DOMAINS.ALUNO}`, variant: "destructive" });
+    const emailValidation = validateEmailDomain(data.email, 'aluno');
+    if (!emailValidation.valid) {
+      toast({ title: "Erro de Validação", description: emailValidation.message, variant: "destructive" });
       return null;
     }
 
@@ -728,9 +730,12 @@ export const useDatabase = () => {
       return false;
     }
     // Validação de domínio para aluno, se o email estiver sendo atualizado
-    if (data.email && !validateEmailDomain(data.email, 'aluno')) {
-      toast({ title: "Erro de Validação", description: `Email de aluno deve terminar com ${EMAIL_DOMAINS.ALUNO}`, variant: "destructive" });
-      return false;
+    if (data.email) {
+      const emailValidation = validateEmailDomain(data.email, 'aluno');
+      if (!emailValidation.valid) {
+        toast({ title: "Erro de Validação", description: emailValidation.message, variant: "destructive" });
+        return false;
+      }
     }
     setLoading(true);
     try {
@@ -764,8 +769,9 @@ export const useDatabase = () => {
     }
 
     // Validação de domínio para professor
-    if (!validateEmailDomain(data.email, 'professor')) {
-      toast({ title: "Erro de Validação", description: `Email de professor deve terminar com ${EMAIL_DOMAINS.PROFESSOR}`, variant: "destructive" });
+    const emailValidation = validateEmailDomain(data.email, 'professor');
+    if (!emailValidation.valid) {
+      toast({ title: "Erro de Validação", description: emailValidation.message, variant: "destructive" });
       return null;
     }
 
@@ -775,7 +781,7 @@ export const useDatabase = () => {
       const { data: result, error } = await supabase.rpc('create_teacher', {
         p_nome_completo: data.nome_completo,
         p_email: data.email,
-        p_materia: data.materia || null
+        p_materia: (data as any).materia || null
       });
 
       if (error) throw error;
@@ -1156,6 +1162,7 @@ export const useDatabase = () => {
           needs_sound: reservationResult.needs_sound,
           needs_mic: reservationResult.needs_mic,
           mic_quantity: reservationResult.mic_quantity,
+          is_minecraft: reservationResult.is_minecraft,
         };
 
         const { data: emailData, error: emailError } = await supabase.functions.invoke('send-reservation-email', {
@@ -1168,7 +1175,7 @@ export const useDatabase = () => {
 
         if (emailError) {
           logger.error('Erro ao disparar e-mail de confirmação:', emailError);
-          toast({ title: "Aviso", description: "Reserva criada, mas falha ao enviar e-mail de confirmação.", variant: "warning" });
+          toast({ title: "Aviso", description: "Reserva criada, mas falha ao enviar e-mail de confirmação.", variant: "info" });
         } else {
           logger.debug('E-mail de confirmação disparado:', emailData);
         }
@@ -1190,6 +1197,30 @@ export const useDatabase = () => {
       setLoading(false);
     }
   }, [user]);
+
+  const deleteReservation = async (id: string) => {
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from('reservations')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      toast({ title: "Sucesso", description: "Reserva cancelada com sucesso!", variant: "success" });
+      return true;
+    } catch (error: any) {
+      logger.error('Erro ao cancelar reserva:', error);
+      toast({
+        title: "Erro ao Cancelar",
+        description: error.message,
+        variant: "destructive"
+      });
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
 
 
   return {
@@ -1223,5 +1254,6 @@ export const useDatabase = () => {
     getTotalAvailableChromebooks,
     getReservationsForWeek,
     createReservation,
+    deleteReservation,
   };
 };

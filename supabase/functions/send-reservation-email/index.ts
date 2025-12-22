@@ -7,8 +7,10 @@ const corsHeaders = {
 };
 
 // Função para gerar o corpo HTML do e-mail
+// Função para gerar o corpo HTML do e-mail
 function generateEmailHtml({
   professorName,
+  professorEmail,
   justification,
   date,
   time,
@@ -16,7 +18,8 @@ function generateEmailHtml({
   needs_tv,
   needs_sound,
   needs_mic,
-  mic_quantity
+  mic_quantity,
+  is_minecraft
 }: any) {
   // Gerar lista de equipamentos auxiliares
   const equipmentList = [];
@@ -28,6 +31,14 @@ function generateEmailHtml({
     ? `
       <div class="detail-item">
         <span class="label">Equipamentos Auxiliares:</span> ${equipmentList.join(', ')}
+      </div>
+    `
+    : '';
+
+  const minecraftHtml = is_minecraft
+    ? `
+      <div class="detail-item" style="background-color: #3c8527; color: white; padding: 10px; margin: 10px 0; border-radius: 4px; font-weight: bold; text-align: center;">
+        🎮 AULA DE MINECRAFT - REQUER PREPARAÇÃO ESPECIAL
       </div>
     `
     : '';
@@ -44,13 +55,20 @@ function generateEmailHtml({
             .detail-item { margin-bottom: 10px; }
             .label { font-weight: bold; color: #333; }
             .justification { background-color: #f9fafb; padding: 10px; border-left: 3px solid #4f46e5; margin: 10px 0; }
+            .temp-alert { background-color: #eff6ff; border: 2px solid #3b82f6; padding: 15px; margin-bottom: 20px; border-radius: 4px; color: #1e40af; }
         </style>
     </head>
     <body>
         <div class="container">
+            <div class="temp-alert">
+                <strong>📢 NOTIFICAÇÃO DE RESERVA</strong><br>
+                Solicitada por: <strong>${professorName}</strong> (${professorEmail})
+            </div>
+
             <h2>✅ Confirmação de Agendamento - Zelote</h2>
-            <p>Olá, Professor(a) ${professorName},</p>
-            <p>Seu agendamento de Chromebooks foi confirmado com sucesso!</p>
+            <p>Olá, o agendamento de Chromebooks foi realizado no sistema!</p>
+
+            ${minecraftHtml}
 
             <div class="details">
                 <div class="detail-item">
@@ -69,8 +87,7 @@ function generateEmailHtml({
                 ${equipmentHtml}
             </div>
 
-            <p>Por favor, retire os equipamentos no horário agendado. Em caso de dúvidas, entre em contato com a administração.</p>
-            <p>Atenciosamente,<br>Equipe de TI</p>
+            <p>Atenciosamente,<br>Zelote System</p>
         </div>
     </body>
     </html>
@@ -102,7 +119,8 @@ serve(async (req) => {
       needs_tv,
       needs_sound,
       needs_mic,
-      mic_quantity
+      mic_quantity,
+      is_minecraft
     } = await req.json();
 
     if (!toEmail || !professorName || !justification || !date || !time || !quantity) {
@@ -115,6 +133,7 @@ serve(async (req) => {
     // Renderiza o HTML
     const htmlContent = generateEmailHtml({
       professorName,
+      professorEmail: toEmail,
       justification,
       date,
       time,
@@ -122,7 +141,8 @@ serve(async (req) => {
       needs_tv,
       needs_sound,
       needs_mic,
-      mic_quantity
+      mic_quantity,
+      is_minecraft
     });
 
     // Chamada à API do Resend
@@ -133,9 +153,9 @@ serve(async (req) => {
         'Authorization': `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: 'Zelote <onboarding@resend.dev>', // Use um domínio verificado ou o domínio de teste do Resend
-        to: [toEmail],
-        subject: `Confirmação de Agendamento - ${justification.substring(0, 50)}${justification.length > 50 ? '...' : ''}`,
+        from: 'Zelote <onboarding@resend.dev>', // Usando onboarding para passar pela trava de sandbox
+        to: ['arthur.alencar@colegiosaojudas.com.br'], // Enviando apenas para o dono da conta (Arthur)
+        subject: `${is_minecraft ? '🎮 MINECRAFT - ' : ''}Reserva: ${professorName} - ${date} - ${time}`,
         html: htmlContent,
       }),
     });

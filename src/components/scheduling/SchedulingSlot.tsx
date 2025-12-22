@@ -1,10 +1,13 @@
 import React, { useMemo } from 'react';
 import { cn } from '@/lib/utils';
-import { Plus, Monitor, User, CheckCircle, AlertTriangle, Clock } from 'lucide-react';
+import { Plus, Monitor, User, CheckCircle, AlertTriangle, Clock, Trash2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import type { Reservation } from '@/hooks/useDatabase';
 import type { User as AuthUser } from '@supabase/supabase-js';
 import { ReservationDialog } from './ReservationDialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { useProfileRole } from '@/hooks/use-profile-role';
+import { useDatabase } from '@/hooks/useDatabase';
 
 interface SchedulingSlotProps {
   date: Date;
@@ -25,6 +28,10 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
   onReservationSuccess,
   professores,
 }) => {
+  const { role, isAdmin } = useProfileRole();
+  const { deleteReservation } = useDatabase();
+
+  const isSuperAdmin = role === 'super_admin';
 
   const { jaReservados, restantes, myReservation, isAvailable, isPartial, isFull, isPast } = useMemo(() => {
     const jaReservados = allReservationsForSlot.reduce((sum, res) => sum + res.quantity_requested, 0);
@@ -97,6 +104,28 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
             <p className="text-xs text-muted-foreground">
               {myReservation.prof_name} · {myReservation.quantity_requested} Chromebooks
             </p>
+            {myReservation.created_by === currentUser?.id && (
+              <Button
+                variant="destructive"
+                size="sm"
+                className="w-full mt-2 h-7 text-[10px] font-black uppercase rounded-none border-2 border-foreground"
+                onClick={() => deleteReservation(myReservation!.id).then((success: boolean) => success && onReservationSuccess())}
+              >
+                <Trash2 className="h-3 w-3 mr-1" />
+                Cancelar Minha Reserva
+              </Button>
+            )}
+            {isSuperAdmin && myReservation.created_by !== currentUser?.id && (
+              <Button
+                variant="destructive"
+                size="sm"
+                className="w-full mt-2 h-7 text-[10px] font-black uppercase rounded-none border-2 border-foreground"
+                onClick={() => deleteReservation(myReservation!.id).then((success: boolean) => success && onReservationSuccess())}
+              >
+                <Trash2 className="h-3 w-3 mr-1" />
+                Remover Reserva (Admin)
+              </Button>
+            )}
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
@@ -156,7 +185,18 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
                     {res.is_minecraft && <span className="text-[#3c8527] mr-1">[MINECRAFT]</span>}
                     {res.prof_name}
                   </p>
-                  <p className="text-muted-foreground">{res.justification} · {res.quantity_requested} CB</p>
+                  <p className="text-muted-foreground mb-1">{res.justification} · {res.quantity_requested} CB</p>
+                  {(isSuperAdmin || res.created_by === currentUser?.id) && (
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      className="h-6 px-2 text-[9px] font-black uppercase rounded-none border-2 border-foreground mb-2"
+                      onClick={() => deleteReservation(res.id).then((success: boolean) => success && onReservationSuccess())}
+                    >
+                      <Trash2 className="h-3 w-3 mr-1" />
+                      {res.created_by === currentUser?.id ? 'Cancelar' : 'Remover'}
+                    </Button>
+                  )}
                 </div>
               ))}
             </div>
@@ -225,7 +265,18 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
                       {res.is_minecraft && <span className="text-[#3c8527] mr-1">[MINECRAFT]</span>}
                       {res.prof_name}
                     </p>
-                    <p className="text-muted-foreground">{res.justification} · {res.quantity_requested} CB</p>
+                    <p className="text-muted-foreground mb-1">{res.justification} · {res.quantity_requested} CB</p>
+                    {(isSuperAdmin || res.created_by === currentUser?.id) && (
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        className="h-6 px-2 text-[9px] font-black uppercase rounded-none border-2 border-foreground mb-2"
+                        onClick={() => deleteReservation(res.id).then((success: boolean) => success && onReservationSuccess())}
+                      >
+                        <Trash2 className="h-3 w-3 mr-1" />
+                        {res.created_by === currentUser?.id ? 'Cancelar' : 'Remover'}
+                      </Button>
+                    )}
                   </div>
                 ))}
                 <p className="pt-2 font-black text-success text-xs uppercase">

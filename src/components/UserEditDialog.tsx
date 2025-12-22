@@ -6,6 +6,7 @@ import { Label } from './ui/label';
 import { Loader2, Save, User, GraduationCap, Briefcase } from 'lucide-react';
 import { useDatabase } from '@/hooks/useDatabase';
 import { toast } from '@/hooks/use-toast';
+import { validateEmailDomain } from '@/utils/emailValidation';
 
 // Tipos de dados de usuário (devem ser compatíveis com o UserInventory)
 interface UserData {
@@ -41,26 +42,12 @@ export function UserEditDialog({ open, onOpenChange, user, onSuccess }: UserEdit
     }
   }, [user]);
 
-  const DOMAIN_SUFFIX_ALUNO = '@sj.g12.br';
-  const DOMAIN_SUFFIX_PROFESSOR = '@sj.pro.br';
-  const DOMAIN_SUFFIX_FUNCIONARIO = '@colegiosaojudas.com.br';
-
   const validateEmail = (email: string, type: UserData['tipo']) => {
-    let requiredSuffix = '';
-    switch (type) {
-      case 'Aluno':
-        requiredSuffix = DOMAIN_SUFFIX_ALUNO;
-        break;
-      case 'Professor':
-        requiredSuffix = DOMAIN_SUFFIX_PROFESSOR;
-        break;
-      case 'Funcionário':
-        requiredSuffix = DOMAIN_SUFFIX_FUNCIONARIO;
-        break;
-    }
+    const userType: any = type.toLowerCase().replace('í', 'i'); // funcionario
+    const validation = validateEmailDomain(email, userType);
 
-    if (!email.endsWith(requiredSuffix)) {
-      setEmailError(`E-mail deve terminar com ${requiredSuffix}`);
+    if (!validation.valid) {
+      setEmailError(validation.message || 'E-mail inválido');
       return false;
     }
     setEmailError('');

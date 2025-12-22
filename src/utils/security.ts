@@ -1,4 +1,5 @@
 import DOMPurify from 'dompurify';
+import { isInstitutionalEmail } from './emailValidation';
 
 /**
  * Utilitários de segurança para sanitização de dados
@@ -24,7 +25,7 @@ export function sanitizeHTML(input: string): string {
 }
 
 /**
- * Valida formato de email
+ * Valida formato básico de email
  */
 export function isValidEmail(email: string): boolean {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -32,18 +33,10 @@ export function isValidEmail(email: string): boolean {
 }
 
 /**
- * Valida se o email é do domínio da escola
+ * Valida se o email pertence a um domínio institucional da escola
  */
 export function isSchoolEmail(email: string): boolean {
-  if (!isValidEmail(email)) return false;
-  const allowedDomains = [
-    'colegiosaojudas.com.br',
-    'escola.edu.br',
-    'student.edu.br'
-  ];
-  
-  const domain = email.split('@')[1]?.toLowerCase();
-  return allowedDomains.includes(domain || '');
+  return isInstitutionalEmail(email);
 }
 
 /**
@@ -93,7 +86,7 @@ export function isValidRA(ra: string): boolean {
  */
 export function sanitizeQRCodeData(data: string): string {
   if (!data) return '';
-  
+
   try {
     // Tenta fazer parse como JSON
     const parsed = JSON.parse(data);
@@ -105,7 +98,7 @@ export function sanitizeQRCodeData(data: string): string {
     // Se não for JSON válido, sanitiza como string e normaliza
     return normalizeChromebookId(sanitizeString(data));
   }
-  
+
   return normalizeChromebookId(sanitizeString(data));
 }
 

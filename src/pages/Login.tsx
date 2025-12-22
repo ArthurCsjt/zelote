@@ -36,7 +36,7 @@ const Login = () => {
   }, [location, navigate]);
 
   const isEmailValid = email.length > 0 && verifyEmail(email);
-  const emailError = email.length > 0 && !isEmailValid ? "O email deve pertencer ao domínio institucional (@colegiosaojudas.com.br ou @sj.pro.br)." : null;
+  const emailError = email.length > 0 && !isEmailValid ? "O email deve pertencer a um domínio institucional permitido (@colegiosaojudas.com.br ou @sj.pro.br)." : null;
 
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

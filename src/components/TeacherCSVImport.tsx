@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import { useState, useRef } from 'react';
 import Papa from 'papaparse';
 import { Upload, Download, FileText, AlertCircle, CheckCircle, GraduationCap } from 'lucide-react';
 import { Button } from './ui/button';
@@ -10,6 +10,7 @@ import { toast } from '@/hooks/use-toast';
 import { useDatabase } from '@/hooks/useDatabase';
 import { GlassCard } from './ui/GlassCard';
 import type { TeacherData } from '@/types/database';
+import { validateEmailDomain } from '@/utils/emailValidation';
 
 interface TeacherCSVData extends TeacherData {
   // Herda nome_completo, email, materia
@@ -27,14 +28,12 @@ export function TeacherCSVImport() {
   const [importing, setImporting] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { bulkInsertTeachers } = useDatabase();
-  
-  const DOMAIN_SUFFIX_PROFESSOR = '@sj.pro.br';
 
   const downloadTemplate = () => {
     const template = 'nome_completo,email,materia\n' +
-                    'Ana Souza,ana.souza@sj.pro.br,Português\n' +
-                    'Carlos Lima,carlos.lima@sj.pro.br,Matemática';
-    
+      'Ana Souza,ana.souza@sj.pro.br,Português\n' +
+      'Carlos Lima,carlos.lima@sj.pro.br,Matemática';
+
     const blob = new Blob([template], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -48,22 +47,25 @@ export function TeacherCSVImport() {
 
   const validateTeacher = (teacher: any): { valid: boolean; errors: string[] } => {
     const errors: string[] = [];
-    
+
     if (!teacher.nome_completo || typeof teacher.nome_completo !== 'string' || teacher.nome_completo.trim() === '') {
       errors.push('Nome completo é obrigatório');
     }
-    
+
     if (!teacher.email || typeof teacher.email !== 'string' || teacher.email.trim() === '') {
       errors.push('E-mail é obrigatório');
-    } else if (!teacher.email.endsWith(DOMAIN_SUFFIX_PROFESSOR)) {
-      errors.push(`E-mail deve terminar com ${DOMAIN_SUFFIX_PROFESSOR}`);
+    } else {
+      const emailVal = validateEmailDomain(teacher.email, 'professor');
+      if (!emailVal.valid) {
+        errors.push(emailVal.message || 'E-mail institucional inválido');
+      }
     }
-    
+
     // Matéria é opcional, mas se existir, deve ser string
     if (teacher.materia && typeof teacher.materia !== 'string') {
       errors.push('Matéria inválida');
     }
-    
+
     return {
       valid: errors.length === 0,
       errors
@@ -81,20 +83,19 @@ export function TeacherCSVImport() {
     }
 
     setFile(selectedFile);
-    
+
     Papa.parse(selectedFile, {
       header: true,
       skipEmptyLines: true,
-      transformHeader: (header) => header.toLowerCase().trim().replace(/\s+/g, '_'), // Normaliza cabeçalhos
+      transformHeader: (header) => header.toLowerCase().trim().replace(/\s+/g, '_'),
       complete: (results) => {
         const parsed: ParsedTeacher[] = results.data.map((row: any) => {
-          // Mapeia e garante que os campos esperados existam
           const teacherData: TeacherCSVData = {
             nome_completo: row.nome_completo || '',
             email: row.email || '',
             materia: row.materia || '',
           };
-          
+
           const validation = validateTeacher(teacherData);
           return {
             ...teacherData,
@@ -102,7 +103,7 @@ export function TeacherCSVImport() {
             errors: validation.errors
           };
         });
-        
+
         setParsedData(parsed);
         setPreview(true);
       },
@@ -137,7 +138,7 @@ export function TeacherCSVImport() {
 
   const handleImport = async () => {
     const validTeachers = parsedData.filter(teacher => teacher.valid);
-    
+
     if (validTeachers.length === 0) {
       toast({
         title: "Erro",
@@ -148,7 +149,7 @@ export function TeacherCSVImport() {
     }
 
     setImporting(true);
-    
+
     try {
       const teachersToImport: TeacherData[] = validTeachers.map(teacher => ({
         nome_completo: teacher.nome_completo,
@@ -157,22 +158,19 @@ export function TeacherCSVImport() {
       }));
 
       const success = await bulkInsertTeachers(teachersToImport);
-      
+
       if (success) {
         toast({
           title: "Sucesso!",
           description: `${validTeachers.length} professores importados com sucesso.`,
         });
-        
-        // Reset state
+
         setFile(null);
         setParsedData([]);
         setPreview(false);
         if (fileInputRef.current) {
           fileInputRef.current.value = '';
         }
-      } else {
-        // O erro já é tratado no useDatabase
       }
     } catch (error) {
       console.error('Erro ao importar professores:', error);
@@ -199,7 +197,6 @@ export function TeacherCSVImport() {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Template Download */}
           <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
             <div className="flex items-center gap-3">
               <FileText className="h-5 w-5 text-muted-foreground" />
@@ -216,7 +213,6 @@ export function TeacherCSVImport() {
             </Button>
           </div>
 
-          {/* File Upload Area */}
           {!preview && (
             <div
               className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-8 text-center cursor-pointer hover:bg-muted/50 transition-colors"
@@ -244,7 +240,6 @@ export function TeacherCSVImport() {
             </div>
           )}
 
-          {/* Preview */}
           {preview && (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
@@ -264,8 +259,8 @@ export function TeacherCSVImport() {
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     onClick={() => {
                       setPreview(false);
                       setFile(null);
@@ -277,7 +272,7 @@ export function TeacherCSVImport() {
                   >
                     Cancelar
                   </Button>
-                  <Button 
+                  <Button
                     onClick={handleImport}
                     disabled={importing || validCount === 0}
                     className="bg-purple-600 hover:bg-purple-700"
@@ -291,13 +286,12 @@ export function TeacherCSVImport() {
                 <Alert>
                   <AlertCircle className="h-4 w-4" />
                   <AlertDescription>
-                    {invalidCount} linha(s) contém erros e não serão importadas. 
+                    {invalidCount} linha(s) contém erros e não serão importadas.
                     Verifique os dados destacados em vermelho.
                   </AlertDescription>
                 </Alert>
               )}
 
-              {/* Data Table */}
               <div className="border rounded-lg overflow-hidden">
                 <div className="max-h-96 overflow-y-auto">
                   <Table>
@@ -312,7 +306,7 @@ export function TeacherCSVImport() {
                     </TableHeader>
                     <TableBody>
                       {parsedData.map((teacher, index) => (
-                        <TableRow 
+                        <TableRow
                           key={index}
                           className={teacher.valid ? '' : 'bg-destructive/10'}
                         >

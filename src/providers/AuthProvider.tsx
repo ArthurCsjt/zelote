@@ -3,12 +3,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { AuthContext, AuthContextType } from "@/contexts/AuthContext";
 import type { User } from "@supabase/supabase-js";
 import logger from '@/utils/logger';
+import { isInstitutionalEmail } from '@/utils/emailValidation';
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // NOVO: Função para forçar a atualização da sessão
+  // Função para forçar a atualização da sessão
   const refreshSession = useCallback(async () => {
     const { data: { session }, error } = await supabase.auth.refreshSession();
     if (error) {
@@ -38,7 +39,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const login = async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
-    return { success: !error, error: error?.message };
+    return { success: !error, error: error?.message || null };
   };
 
   const loginWithGoogle = async () => {
@@ -49,38 +50,36 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     await supabase.auth.signOut();
   };
 
-  // Função de registro reintroduzida
   const register = async (email: string, password: string) => {
     if (!verifyEmail(email)) {
-      return { success: false, error: "O registro é permitido apenas com o domínio @colegiosaojudas.com.br." };
+      return { success: false, error: "O registro é permitido apenas com domínios institucionais permitidos." };
     }
     const { error } = await supabase.auth.signUp({ email, password });
-    return { success: !error, error: error?.message };
+    return { success: !error, error: error?.message || null };
   };
 
   const resetPassword = async (email: string) => {
-    // ATUALIZAÇÃO: Adicionando redirectTo para a nova página /update-password
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/update-password`,
     });
-    return { success: !error, error: error?.message };
+    return { success: !error, error: error?.message || null };
   };
 
-  const verifyEmail = (email: string) => /@(colegiosaojudas\.com\.br|sj\.pro\.br)$/i.test(email);
+  const verifyEmail = (email: string) => isInstitutionalEmail(email);
 
   const isAuthenticated = !!user;
-  const email = user?.email || null;
-  const username = user?.email?.split('@')[0] || null;
+  const emailValue = user?.email || null;
+  const usernameValue = user?.email?.split('@')[0] || null;
 
   const value: AuthContextType = {
     isAuthenticated,
-    username,
-    email,
+    username: usernameValue,
+    email: emailValue,
     user,
     login,
     loginWithGoogle,
     logout,
-    register, // Reintroduzido
+    register,
     resetPassword,
     verifyEmail,
   };
