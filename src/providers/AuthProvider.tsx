@@ -50,11 +50,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     await supabase.auth.signOut();
   };
 
-  const register = async (email: string, password: string) => {
+  const register = async (email: string, password: string, firstName: string, lastName: string) => {
     if (!verifyEmail(email)) {
       return { success: false, error: "O registro é permitido apenas com domínios institucionais permitidos." };
     }
-    const { error } = await supabase.auth.signUp({ email, password });
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          first_name: firstName,
+          last_name: lastName,
+        }
+      }
+    });
     return { success: !error, error: error?.message || null };
   };
 

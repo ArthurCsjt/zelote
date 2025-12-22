@@ -23,8 +23,10 @@ import type { User as AuthUser } from '@supabase/supabase-js'; // Importando o t
 type UserProfile = {
   id: string;
   email: string;
-  name: string | null; // Adicionado
-  role: 'admin' | 'user' | 'super_admin'; // Adicionado super_admin
+  name: string | null;
+  first_name: string | null;
+  last_name: string | null;
+  role: 'admin' | 'user' | 'super_admin';
   last_sign_in_at: string | null;
 };
 
@@ -39,6 +41,8 @@ interface ProfileEditDialogProps {
 
 const ProfileEditDialog: React.FC<ProfileEditDialogProps> = ({ open, onOpenChange, user, onSuccess, currentUser }) => {
   const [name, setName] = useState(user?.name || '');
+  const [firstName, setFirstName] = useState(user?.first_name || '');
+  const [lastName, setLastName] = useState(user?.last_name || '');
   const [role, setRole] = useState<'admin' | 'user' | 'super_admin'>(user?.role || 'user');
   const [isSaving, setIsSaving] = useState(false);
   const { isAdmin, role: currentRole } = useProfileRole();
@@ -47,6 +51,8 @@ const ProfileEditDialog: React.FC<ProfileEditDialogProps> = ({ open, onOpenChang
     if (user) {
       // Inicializa o estado com o valor atual do usuário
       setName(user.name || '');
+      setFirstName(user.first_name || '');
+      setLastName(user.last_name || '');
       setRole(user.role);
     }
   }, [user]);
@@ -59,7 +65,11 @@ const ProfileEditDialog: React.FC<ProfileEditDialogProps> = ({ open, onOpenChang
       // 1. Atualizar o nome na tabela profiles
       const { error: nameError } = await supabase
         .from('profiles')
-        .update({ name: name.trim() || null })
+        .update({
+          name: name.trim() || null,
+          first_name: firstName.trim() || null,
+          last_name: lastName.trim() || null
+        })
         .eq('id', user.id);
 
       if (nameError) throw nameError;
@@ -106,8 +116,18 @@ const ProfileEditDialog: React.FC<ProfileEditDialogProps> = ({ open, onOpenChang
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="firstName">Nome</Label>
+              <Input id="firstName" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="lastName">Sobrenome</Label>
+              <Input id="lastName" value={lastName} onChange={(e) => setLastName(e.target.value)} />
+            </div>
+          </div>
           <div className="space-y-2">
-            <Label htmlFor="name">Nome de Exibição</Label>
+            <Label htmlFor="name">Nome de Exibição (Combinado)</Label>
             <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Nome Completo" />
           </div>
           <div className="space-y-2">

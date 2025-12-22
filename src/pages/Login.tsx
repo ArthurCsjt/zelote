@@ -16,6 +16,8 @@ const Login = () => {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
@@ -67,13 +69,18 @@ const Login = () => {
       setIsLoading(false);
       return;
     }
+    if (firstName.trim().length === 0) {
+      toast({ title: "Erro de registro", description: "O nome é obrigatório.", variant: "destructive" });
+      setIsLoading(false);
+      return;
+    }
     if (!isEmailValid) {
       toast({ title: "Erro de registro", description: "Corrija o email institucional.", variant: "destructive" });
       setIsLoading(false);
       return;
     }
 
-    const result = await register(email, password);
+    const result = await register(email, password, firstName, lastName);
     if (result.success) {
       toast({ title: "Registro bem-sucedido", description: "Verifique seu email para confirmar o cadastro." });
       setCurrentMode('login');
@@ -107,6 +114,8 @@ const Login = () => {
     setEmail('');
     setPassword('');
     setConfirmPassword('');
+    setFirstName('');
+    setLastName('');
     setShowPassword(false);
     setCurrentMode(mode);
   }, []);
@@ -265,6 +274,34 @@ const Login = () => {
                       <AlertCircle className="h-3 w-3" />{emailError}
                     </p>
                   )}
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="first-name" className="neo-brutal-label">Nome</Label>
+                    <Input
+                      id="first-name"
+                      type="text"
+                      placeholder="Ex: José"
+                      value={firstName}
+                      onChange={e => setFirstName(e.target.value)}
+                      className="neo-brutal-input"
+                      disabled={isLoading}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="last-name" className="neo-brutal-label">Sobrenome</Label>
+                    <Input
+                      id="last-name"
+                      type="text"
+                      placeholder="Ex: Silva"
+                      value={lastName}
+                      onChange={e => setLastName(e.target.value)}
+                      className="neo-brutal-input"
+                      disabled={isLoading}
+                    />
+                  </div>
                 </div>
 
                 <div className="space-y-2">
