@@ -277,23 +277,31 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                     Sala / Turma onde será utilizado
                     <span className="text-error">*</span>
                   </Label>
-                  <div className="relative">
-                    <Input
-                      id="classroom"
-                      value={classroom}
-                      onChange={(e) => setClassroom(e.target.value)}
-                      placeholder="Ex: Sala 12 ou 9A"
-                      disabled={isSaving}
-                      required
-                      className="border-3 border-foreground/20 rounded-none focus:border-primary focus:shadow-[2px_2px_0px_0px_hsl(var(--primary)/0.2)] transition-all h-10 text-sm font-bold pr-28"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setClassroom('Sala Google')}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 px-2 py-1 bg-primary text-primary-foreground text-[10px] font-black uppercase border-2 border-foreground shadow-[2px_2px_0px_0px_rgba(0,0,0,0.2)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all"
-                    >
-                      Sala Google
-                    </button>
+                  <Input
+                    id="classroom"
+                    value={classroom}
+                    onChange={(e) => setClassroom(e.target.value)}
+                    placeholder="Ex: Sala 12 ou 9A"
+                    disabled={isSaving}
+                    required
+                    className="border-3 border-foreground/20 rounded-none focus:border-primary focus:shadow-[2px_2px_0px_0px_hsl(var(--primary)/0.2)] transition-all h-10 text-sm font-bold"
+                  />
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {['Sala Google', 'Sala Maker', 'Sala de Estudos', 'Sala de Artes'].map((sala) => (
+                      <button
+                        key={sala}
+                        type="button"
+                        onClick={() => setClassroom(sala)}
+                        disabled={isSaving}
+                        className={`px-3 py-1.5 text-[10px] font-black uppercase border-2 border-foreground shadow-[2px_2px_0px_0px_rgba(0,0,0,0.3)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all ${
+                          classroom === sala 
+                            ? 'bg-primary text-primary-foreground' 
+                            : 'bg-muted text-foreground hover:bg-primary/20'
+                        }`}
+                      >
+                        {sala}
+                      </button>
+                    ))}
                   </div>
                 </div>
 
