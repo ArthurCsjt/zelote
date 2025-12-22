@@ -43,6 +43,7 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
   const [needsSound, setNeedsSound] = useState(false);
   const [needsMic, setNeedsMic] = useState(false);
   const [micQuantity, setMicQuantity] = useState(1);
+  const [isMinecraft, setIsMinecraft] = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -52,6 +53,7 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
       setNeedsSound(false);
       setNeedsMic(false);
       setMicQuantity(1);
+      setIsMinecraft(false);
     }
   }, [open, maxQuantity]);
 
@@ -78,6 +80,7 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
       needs_sound: needsSound,
       needs_mic: needsMic,
       mic_quantity: needsMic ? micQuantity : 0,
+      is_minecraft: isMinecraft,
     };
 
     const result = await createReservation(reservationData);
@@ -294,24 +297,63 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                 </div>
               </div>
             </div>
+
+            {/* MINECRAFT BUTTON - SPECIAL HIGHLIGHT */}
+            <div
+              onClick={() => setIsMinecraft(!isMinecraft)}
+              className={cn(
+                "p-4 border-3 cursor-pointer transition-all flex items-center justify-between group",
+                isMinecraft
+                  ? "bg-[#3c8527] border-[#1e4d13] shadow-[4px_4px_0px_0px_#1e4d13]"
+                  : "bg-muted/10 border-foreground/10 hover:border-foreground/30"
+              )}
+            >
+              <div className="flex items-center gap-3">
+                <div className={cn(
+                  "p-2 border-2",
+                  isMinecraft ? "bg-[#55aa33] border-[#1e4d13]" : "bg-muted/20 border-foreground/10"
+                )}>
+                  <Monitor className={cn("h-5 w-5", isMinecraft ? "text-white" : "text-muted-foreground")} />
+                </div>
+                <div>
+                  <p className={cn("text-sm font-black uppercase tracking-tight", isMinecraft ? "text-white" : "text-foreground")}>
+                    Aula de Minecraft
+                  </p>
+                  <p className={cn("text-[10px] font-bold uppercase", isMinecraft ? "text-[#e2f3df]" : "text-muted-foreground")}>
+                    Requer preparação especial
+                  </p>
+                </div>
+              </div>
+              <div className={cn(
+                "h-6 w-11 border-2 flex items-center px-1 transition-all",
+                isMinecraft ? "bg-[#55aa33] border-[#1e4d13] justify-end" : "bg-muted/30 border-foreground/10 justify-start"
+              )}>
+                <div className={cn("h-4 w-4", isMinecraft ? "bg-white" : "bg-muted-foreground/30")} />
+              </div>
+            </div>
           </div>
 
           {/* Preview - Neo Brutal */}
           {justification && (
-            <div className="p-4 border-3 border-primary/30 bg-primary/5">
+            <div className={cn(
+              "p-4 border-3",
+              isMinecraft ? "bg-[#3c8527]/10 border-[#3c8527]/30" : "bg-primary/5 border-primary/30"
+            )}>
               <p className="text-[10px] font-black uppercase tracking-wide text-muted-foreground flex items-center gap-1 mb-2">
                 <Info className="h-3 w-3" />
                 Preview da Reserva:
               </p>
               <p className="text-sm font-black text-foreground">
+                {isMinecraft && <span className="text-[#3c8527] mr-2">[MINECRAFT]</span>}
                 {quantity} Chromebook{quantity > 1 ? 's' : ''} → {user?.email?.split('@')[0] || 'Professor'}
               </p>
               <p className="text-xs text-muted-foreground mt-1">
                 {justification.substring(0, 60)}{justification.length > 60 ? '...' : ''} · {format(date, "dd/MM/yyyy")} às {timeSlot}
               </p>
-              {(needsTv || needsSound || needsMic) && (
+              {(needsTv || needsSound || needsMic || isMinecraft) && (
                 <p className="text-xs text-muted-foreground mt-2 flex items-center gap-2 flex-wrap">
-                  <span className="font-bold">Equipamentos:</span>
+                  <span className="font-bold">Destaques:</span>
+                  {isMinecraft && <span className="px-2 py-0.5 bg-[#3c8527] text-white font-black text-xs">MNCFT</span>}
                   {needsTv && <span className="px-2 py-0.5 bg-primary/10 border border-primary/30 text-primary font-bold">TV</span>}
                   {needsSound && <span className="px-2 py-0.5 bg-info/10 border border-info/30 text-info font-bold">Som</span>}
                   {needsMic && <span className="px-2 py-0.5 bg-success/10 border border-success/30 text-success font-bold">Mic ({micQuantity})</span>}

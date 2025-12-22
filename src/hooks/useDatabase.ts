@@ -42,6 +42,7 @@ export interface ReservationData {
   needs_sound?: boolean;
   needs_mic?: boolean;
   mic_quantity?: number;
+  is_minecraft?: boolean;
 }
 
 export interface Reservation extends ReservationData {
@@ -1071,7 +1072,7 @@ export const useDatabase = () => {
         .from('reservations')
         .select(`
           *,
-          professores (nome_completo, email)
+          prof_data:profiles!professor_id (name, email)
         `)
         .gte('date', startDate)
         .lte('date', endDate)
@@ -1083,8 +1084,9 @@ export const useDatabase = () => {
       // Mapeia o resultado para o tipo Reservation
       return (data || []).map(res => ({
         ...res,
-        prof_name: res.professores?.nome_completo || 'Professor Desconhecido',
-        prof_email: res.professores?.email || '',
+        prof_name: (res as any).prof_data?.name || 'Usuário Desconhecido',
+        prof_email: (res as any).prof_data?.email || '',
+        justification: (res as any).justification || '', // Garantir que o campo existe
       })) as Reservation[];
 
     } catch (error: any) {
@@ -1114,11 +1116,12 @@ export const useDatabase = () => {
           needs_sound: data.needs_sound || false,
           needs_mic: data.needs_mic || false,
           mic_quantity: data.mic_quantity || 0,
+          is_minecraft: data.is_minecraft || false,
           created_by: user.id,
         })
         .select(`
           *,
-          professores (nome_completo, email)
+          prof_data:profiles!professor_id (name, email)
         `)
         .single();
 
@@ -1126,8 +1129,9 @@ export const useDatabase = () => {
 
       const reservationResult = {
         ...result,
-        prof_name: result.professores?.nome_completo || 'Professor Desconhecido',
-        prof_email: result.professores?.email || '',
+        prof_name: (result as any).prof_data?.name || 'Usuário Desconhecido',
+        prof_email: (result as any).prof_data?.email || '',
+        justification: (result as any).justification || '',
       } as Reservation;
 
       // PASSO 3: CHAMAR A EDGE FUNCTION APÓS O SUCESSO
