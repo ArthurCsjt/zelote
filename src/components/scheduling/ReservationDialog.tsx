@@ -47,7 +47,7 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
   const [needsMic, setNeedsMic] = useState(false);
   const [micQuantity, setMicQuantity] = useState(1);
   const [isMinecraft, setIsMinecraft] = useState(false);
-  const [classroom, setClassroom] = useState<string>(''); // NOVO: Sala/Turma
+  const [classroom, setClassroom] = useState<string>('Sala Google'); // NOVO: Sala/Turma com valor padrão
 
   useEffect(() => {
     if (open) {
@@ -58,7 +58,7 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
       setNeedsMic(false);
       setMicQuantity(1);
       setIsMinecraft(false);
-      setClassroom('');
+      setClassroom('Sala Google');
     }
   }, [open, maxQuantity]);
 
@@ -121,21 +121,19 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
 
       <DialogContent className="sm:max-w-[550px] max-h-[90vh] overflow-y-auto border-3 border-foreground/20 rounded-none shadow-[8px_8px_0px_0px_hsl(var(--foreground)/0.15)] bg-background p-0">
 
-        {/* Neo Brutal Header */}
-        <DialogHeader className="p-5 border-b-3 border-foreground/10 bg-primary/5">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="p-2 border-3 border-primary bg-primary/10 shadow-[3px_3px_0px_0px_hsl(var(--primary)/0.3)]">
-                <Calendar className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <DialogTitle className="text-lg font-black uppercase tracking-tight text-foreground">
-                  Gestão de Horário
-                </DialogTitle>
-                <DialogDescription className="text-sm font-medium">
-                  {format(date, "EEEE, dd 'de' MMMM", { locale: ptBR })} às {timeSlot}
-                </DialogDescription>
-              </div>
+        {/* Premium Neo-Brutal Header */}
+        <DialogHeader className="p-6 border-b-4 border-foreground bg-primary shadow-[0_4px_0_0_rgba(0,0,0,0.1)]">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rotate-[-3deg] border-4 border-foreground bg-white flex items-center justify-center shadow-[4px_4px_0_0_#000]">
+              <Calendar className="h-6 w-6 text-primary" />
+            </div>
+            <div>
+              <DialogTitle className="text-2xl font-black uppercase tracking-tighter text-white drop-shadow-[2px_2px_0_#000]">
+                Agendamento
+              </DialogTitle>
+              <DialogDescription className="text-white/90 font-bold bg-black/20 w-fit px-2 py-0.5 text-xs uppercase tracking-widest mt-1">
+                {format(date, "EEEE, dd 'de' MMMM", { locale: ptBR })} · {timeSlot}
+              </DialogDescription>
             </div>
           </div>
         </DialogHeader>
@@ -279,15 +277,24 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                     Sala / Turma onde será utilizado
                     <span className="text-error">*</span>
                   </Label>
-                  <Input
-                    id="classroom"
-                    value={classroom}
-                    onChange={(e) => setClassroom(e.target.value)}
-                    placeholder="Ex: Sala 12 ou 9A"
-                    disabled={isSaving}
-                    required
-                    className="border-3 border-foreground/20 rounded-none focus:border-primary focus:shadow-[2px_2px_0px_0px_hsl(var(--primary)/0.2)] transition-all h-10 text-sm font-bold"
-                  />
+                  <div className="relative">
+                    <Input
+                      id="classroom"
+                      value={classroom}
+                      onChange={(e) => setClassroom(e.target.value)}
+                      placeholder="Ex: Sala 12 ou 9A"
+                      disabled={isSaving}
+                      required
+                      className="border-3 border-foreground/20 rounded-none focus:border-primary focus:shadow-[2px_2px_0px_0px_hsl(var(--primary)/0.2)] transition-all h-10 text-sm font-bold pr-28"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setClassroom('Sala Google')}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 px-2 py-1 bg-primary text-primary-foreground text-[10px] font-black uppercase border-2 border-foreground shadow-[2px_2px_0px_0px_rgba(0,0,0,0.2)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all"
+                    >
+                      Sala Google
+                    </button>
+                  </div>
                 </div>
 
                 {/* Quantity Slider - Neo Brutal */}
