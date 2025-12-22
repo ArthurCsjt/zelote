@@ -16,12 +16,12 @@ import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 
 const fetchProfessores = async () => {
-    const { data, error } = await supabase
-        .from('professores')
-        .select('id, nome_completo')
-        .order('nome_completo', { ascending: true });
-    if (error) throw error;
-    return data;
+  const { data, error } = await supabase
+    .from('professores')
+    .select('id, nome_completo')
+    .order('nome_completo', { ascending: true });
+  if (error) throw error;
+  return data;
 };
 
 const SchedulingPage = () => {
@@ -29,10 +29,10 @@ const SchedulingPage = () => {
   const { getReservationsForWeek, getTotalAvailableChromebooks } = useDatabase();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-  
+
   const [currentDate, setCurrentDate] = useState(getStartOfWeek(new Date()));
   const [viewMode, setViewMode] = useState<'weekly' | 'monthly'>('weekly');
-  
+
   const { startDate, endDate, displayRange } = useMemo(() => {
     if (viewMode === 'weekly') {
       const weekDays = getWeekDays(currentDate);
@@ -53,19 +53,19 @@ const SchedulingPage = () => {
       };
     }
   }, [currentDate, viewMode]);
-  
+
   const { data: totalAvailableChromebooks = 0, isLoading: isLoadingTotal } = useQuery({
     queryKey: ['totalAvailableChromebooks'],
     queryFn: getTotalAvailableChromebooks,
     staleTime: 1000 * 60 * 60,
   });
-  
+
   const { data: reservations = [], isLoading: isLoadingReservations, refetch } = useQuery({
     queryKey: ['reservations', startDate, endDate],
     queryFn: () => getReservationsForWeek(startDate, endDate),
     enabled: !!user,
   });
-  
+
   const { data: professores = [], isLoading: isLoadingProfessores } = useQuery({
     queryKey: ['professoresList'],
     queryFn: fetchProfessores,
@@ -79,28 +79,28 @@ const SchedulingPage = () => {
       setCurrentDate(prev => changeMonth(prev, direction));
     }
   };
-  
+
   const handleViewModeChange = (v: 'weekly' | 'monthly') => {
     setViewMode(v);
     if (v === 'weekly') {
-        setCurrentDate(getStartOfWeek(new Date()));
+      setCurrentDate(getStartOfWeek(new Date()));
     } else {
-        setCurrentDate(startOfMonth(new Date()));
+      setCurrentDate(startOfMonth(new Date()));
     }
   };
-  
+
   const handleReservationSuccess = () => {
     refetch();
     queryClient.invalidateQueries({ queryKey: ['totalAvailableChromebooks'] });
   };
-  
+
   const isLoading = isLoadingTotal || isLoadingReservations || isLoadingProfessores;
 
   return (
-    <Layout 
-      title="Agendamento de Chromebooks" 
-      subtitle="Reserve lotes de equipamentos para suas aulas" 
-      showBackButton 
+    <Layout
+      title="Agendamento de Chromebooks"
+      subtitle="Reserve lotes de equipamentos para suas aulas"
+      showBackButton
       onBack={() => navigate('/')}
     >
       {/* Background Pattern */}
@@ -109,11 +109,11 @@ const SchedulingPage = () => {
       </div>
 
       <div className="space-y-6 max-w-7xl mx-auto relative z-10">
-        
+
         {/* Header Card - Neo Brutal */}
         <div className="neo-brutal-card p-5">
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-            
+
             {/* Title Section */}
             <div className="flex items-center gap-4">
               <div className="neo-brutal-icon-box bg-primary/10">
@@ -128,34 +128,34 @@ const SchedulingPage = () => {
                 </p>
               </div>
             </div>
-            
+
             {/* View Mode Toggle - Neo Brutal */}
-            <ToggleGroup 
-              type="single" 
-              value={viewMode} 
+            <ToggleGroup
+              type="single"
+              value={viewMode}
               onValueChange={(v: 'weekly' | 'monthly') => v && handleViewModeChange(v)}
               className="border-3 border-foreground/20 bg-background p-1"
             >
-              <ToggleGroupItem 
-                value="weekly" 
-                aria-label="Visualização Semanal" 
+              <ToggleGroupItem
+                value="weekly"
+                aria-label="Visualização Semanal"
                 className={cn(
                   "h-10 px-4 font-bold uppercase text-xs tracking-wide rounded-none transition-all",
-                  viewMode === 'weekly' 
-                    ? "bg-primary text-primary-foreground shadow-[2px_2px_0px_0px_hsl(var(--foreground)/0.3)]" 
+                  viewMode === 'weekly'
+                    ? "bg-primary text-primary-foreground shadow-[2px_2px_0px_0px_hsl(var(--foreground)/0.3)]"
                     : "hover:bg-muted"
                 )}
               >
                 <CalendarDays className="h-4 w-4 mr-2" />
                 Semanal
               </ToggleGroupItem>
-              <ToggleGroupItem 
-                value="monthly" 
-                aria-label="Visualização Mensal" 
+              <ToggleGroupItem
+                value="monthly"
+                aria-label="Visualização Mensal"
                 className={cn(
                   "h-10 px-4 font-bold uppercase text-xs tracking-wide rounded-none transition-all",
-                  viewMode === 'monthly' 
-                    ? "bg-primary text-primary-foreground shadow-[2px_2px_0px_0px_hsl(var(--foreground)/0.3)]" 
+                  viewMode === 'monthly'
+                    ? "bg-primary text-primary-foreground shadow-[2px_2px_0px_0px_hsl(var(--foreground)/0.3)]"
                     : "hover:bg-muted"
                 )}
               >
@@ -165,40 +165,40 @@ const SchedulingPage = () => {
             </ToggleGroup>
           </div>
         </div>
-        
+
         {/* Navigation & Status Card - Neo Brutal */}
         <div className="neo-brutal-card p-4">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-            
+
             {/* Date Navigation */}
             <nav className="flex items-center gap-3">
-              <Button 
-                variant="outline" 
-                size="icon" 
-                onClick={() => handleDateChange('prev')} 
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => handleDateChange('prev')}
                 disabled={isLoading}
                 className="h-10 w-10 border-3 border-foreground/20 rounded-none hover:bg-muted transition-all hover:shadow-[2px_2px_0px_0px_hsl(var(--foreground)/0.2)] hover:-translate-x-0.5 hover:-translate-y-0.5"
               >
                 <ChevronLeft className="h-5 w-5" />
               </Button>
-              
+
               <div className="min-w-[200px] sm:min-w-[280px] text-center px-4 py-2 border-3 border-foreground/10 bg-muted/30">
                 <span className="text-base font-bold uppercase tracking-wide text-foreground">
                   {displayRange}
                 </span>
               </div>
-              
-              <Button 
-                variant="outline" 
-                size="icon" 
-                onClick={() => handleDateChange('next')} 
+
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => handleDateChange('next')}
                 disabled={isLoading}
                 className="h-10 w-10 border-3 border-foreground/20 rounded-none hover:bg-muted transition-all hover:shadow-[2px_2px_0px_0px_hsl(var(--foreground)/0.2)] hover:-translate-x-0.5 hover:-translate-y-0.5"
               >
                 <ChevronRight className="h-5 w-5" />
               </Button>
             </nav>
-            
+
             {/* Availability Status */}
             <div className="flex items-center gap-3 px-4 py-2 border-3 border-success/30 bg-success/5">
               <Monitor className="h-5 w-5 text-success" />
@@ -211,7 +211,7 @@ const SchedulingPage = () => {
               )}
             </div>
           </div>
-          
+
           {/* Weekend Warning */}
           {viewMode === 'weekly' && getWeekDays(currentDate).length === 0 && (
             <div className="mt-4 p-3 border-3 border-warning/50 bg-warning/10 flex items-center gap-2">
@@ -243,6 +243,43 @@ const SchedulingPage = () => {
               isLoading={isLoading}
             />
           )}
+        </div>
+
+        {/* Legend - Neo Brutal Style */}
+        <div className="neo-brutal-card p-4">
+          <div className="flex flex-wrap items-center gap-x-8 gap-y-4">
+            <h3 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mr-2">
+              Legenda:
+            </h3>
+
+            <div className="flex items-center gap-2">
+              <div className="h-4 w-4 border-2 border-info bg-info/20" />
+              <span className="text-xs font-bold uppercase tracking-tight text-foreground/80">Minha Reserva</span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <div className="h-4 w-4 border-2 border-dashed border-foreground/30 bg-muted/10" />
+              <span className="text-xs font-bold uppercase tracking-tight text-foreground/80">Disponível</span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <div className="h-4 w-4 border-2 border-warning bg-warning/20" />
+              <span className="text-xs font-bold uppercase tracking-tight text-foreground/80">Parcial</span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <div className="h-4 w-4 border-2 border-error bg-error/20" />
+              <span className="text-xs font-bold uppercase tracking-tight text-foreground/80">Esgotado</span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <div className="h-4 w-4 border-2 border-[#3c8527] bg-[#3c8527]/20" />
+              <div className="flex flex-col">
+                <span className="text-xs font-black uppercase tracking-tight text-[#3c8527]">Minecraft</span>
+                <span className="text-[8px] font-bold uppercase text-[#3c8527]/70 -mt-1">Preparação TI</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </Layout>

@@ -18,30 +18,6 @@ interface SchedulingCalendarProps {
   professores: { id: string; nome_completo: string }[];
 }
 
-// Neo-Brutal Legend Component
-const CalendarLegend = () => (
-  <div className="border-3 border-foreground/20 bg-card p-4 shadow-[4px_4px_0px_0px_hsl(var(--foreground)/0.1)]">
-    <h3 className="text-xs font-black uppercase tracking-wide mb-3 text-foreground">Legenda</h3>
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-      <div className="flex items-center gap-2">
-        <div className="w-4 h-4 border-2 border-info bg-info/20" />
-        <span className="font-medium">Minha Reserva</span>
-      </div>
-      <div className="flex items-center gap-2">
-        <div className="w-4 h-4 border-2 border-dashed border-foreground/30 bg-background" />
-        <span className="font-medium">Disponível</span>
-      </div>
-      <div className="flex items-center gap-2">
-        <div className="w-4 h-4 border-2 border-warning bg-warning/20" />
-        <span className="font-medium">Parcial</span>
-      </div>
-      <div className="flex items-center gap-2">
-        <div className="w-4 h-4 border-2 border-error bg-error/20" />
-        <span className="font-medium">Esgotado</span>
-      </div>
-    </div>
-  </div>
-);
 
 export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
   currentDate,
@@ -76,29 +52,28 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
       </div>
     );
   }
-  
+
   const gridTemplateColumns = `80px repeat(${weekDays.length}, 1fr)`;
 
   return (
     <div className="space-y-4">
-      <CalendarLegend />
-      
-      <div 
-        className="grid gap-1 min-w-[700px]" 
+
+      <div
+        className="grid gap-1 min-w-[700px]"
         style={{ gridTemplateColumns }}
       >
-        
+
         {/* Header Row */}
         <div className="h-14" /> {/* Empty corner */}
         {weekDays.map((day, index) => {
           const isCurrentDay = isToday(day);
           return (
-            <div 
-              key={index} 
+            <div
+              key={index}
               className={cn(
                 "h-14 flex flex-col items-center justify-center border-3 transition-all",
-                isCurrentDay 
-                  ? "bg-primary text-primary-foreground border-primary shadow-[3px_3px_0px_0px_hsl(var(--foreground)/0.3)]" 
+                isCurrentDay
+                  ? "bg-primary text-primary-foreground border-primary shadow-[3px_3px_0px_0px_hsl(var(--foreground)/0.3)]"
                   : "bg-muted/30 border-foreground/10 hover:bg-muted/50"
               )}
             >
@@ -124,13 +99,13 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
                 {timeSlot}
               </span>
             </div>
-            
+
             {/* Day Slots */}
             {weekDays.map((day, dayIndex) => {
               const dateKey = format(day, 'yyyy-MM-dd');
               const slotKey = `${dateKey}_${timeSlot}`;
               const reservationsForSlot = reservationsMap.get(slotKey) || [];
-              
+
               return (
                 <SchedulingSlot
                   key={dayIndex}

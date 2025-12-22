@@ -1084,7 +1084,7 @@ export const useDatabase = () => {
       // Mapeia o resultado para o tipo Reservation
       return (data || []).map(res => ({
         ...res,
-        prof_name: (res as any).prof_data?.name || 'Usuário Desconhecido',
+        prof_name: (res as any).prof_data?.name || (res as any).prof_data?.email || 'Usuário Desconhecido',
         prof_email: (res as any).prof_data?.email || '',
         justification: (res as any).justification || '', // Garantir que o campo existe
       })) as Reservation[];
@@ -1129,7 +1129,7 @@ export const useDatabase = () => {
 
       const reservationResult = {
         ...result,
-        prof_name: (result as any).prof_data?.name || 'Usuário Desconhecido',
+        prof_name: (result as any).prof_data?.name || (result as any).prof_data?.email || 'Usuário Desconhecido',
         prof_email: (result as any).prof_data?.email || '',
         justification: (result as any).justification || '',
       } as Reservation;
