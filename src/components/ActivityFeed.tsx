@@ -54,13 +54,13 @@ export function ActivityFeed() {
   return (
     // Aplicando o estilo neo-brutalista ao Card principal
     <Card className={cn(
-      "flex flex-col max-h-[90vh] p-0", // Removida largura fixa
-      "border-4 border-black dark:border-white bg-white dark:bg-zinc-900 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.2)]"
+      "flex flex-col w-full h-[600px] max-h-[85vh] p-0 overflow-hidden",
+      "border-4 border-black dark:border-white bg-white dark:bg-zinc-900 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.2)] rounded-none"
     )}>
 
       {/* Cabeçalho Fixo e Aprimorado (shrink-0 para não encolher) */}
       <CardHeader className={cn(
-        "p-4 border-b-4 border-black dark:border-white sticky top-0 z-10 flex flex-row items-center justify-between gap-2 shrink-0",
+        "p-4 border-b-4 border-black dark:border-white sticky top-0 z-20 flex flex-row items-center justify-between gap-2 shrink-0",
         "bg-yellow-300 dark:bg-yellow-900/50"
       )}>
         <CardTitle className="text-lg flex items-center gap-2 text-black dark:text-white flex-1 min-w-0 font-black uppercase tracking-tight">
@@ -78,8 +78,8 @@ export function ActivityFeed() {
         </Button>
       </CardHeader>
 
-      {/* Área de Rolagem */}
-      <ScrollArea className="w-full max-h-[calc(90vh-100px)] min-h-[200px] force-scrollbar-y">
+      {/* Área de Rolagem - Flex-1 para ocupar o espaço restante */}
+      <ScrollArea className="flex-1 w-full overflow-y-auto bg-white dark:bg-zinc-900">
         <CardContent className="p-0">
           {activities && activities.length > 0 ? (
             <div className="divide-y-2 divide-black/10 dark:divide-white/10">
@@ -92,8 +92,8 @@ export function ActivityFeed() {
                 const creatorName = activity.creator_name || activity.creator_email?.split('@')[0] || 'Sistema';
 
                 return (
-                  <div 
-                    key={activity.activity_id} 
+                  <div
+                    key={activity.activity_id}
                     className={cn(
                       "p-4 transition-colors border-l-4",
                       "hover:bg-gray-50 dark:hover:bg-zinc-800/50",
@@ -135,14 +135,14 @@ export function ActivityFeed() {
                     <div className="mt-2 pt-2 border-t border-black/10 dark:border-white/10 space-y-1">
                       <p className="text-xs text-foreground flex items-start gap-1">
                         <User className="h-3 w-3 text-muted-foreground mt-0.5 shrink-0" />
-                        <span className="font-black shrink-0 uppercase">Solicitante:</span>
-                        <span className="break-words font-medium">{activity.user_name}</span>
+                        <span className="font-black shrink-0 uppercase text-[10px]">Solicitante:</span>
+                        <span className="break-words font-medium text-[11px]">{activity.user_name}</span>
                       </p>
 
                       <p className="text-xs text-muted-foreground flex items-start gap-1 mt-1">
                         <UserCheck className="h-3 w-3 text-primary mt-0.5 shrink-0" />
-                        <span className="font-black shrink-0 uppercase">Registrado por:</span>
-                        <span className="break-words font-medium">{creatorName}</span>
+                        <span className="font-black shrink-0 uppercase text-[10px]">Registrado por:</span>
+                        <span className="break-words font-medium text-[11px] text-zinc-500">{creatorName}</span>
                       </p>
                     </div>
                   </div>
@@ -150,9 +150,9 @@ export function ActivityFeed() {
               })}
             </div>
           ) : (
-            <div className="text-center py-8 text-muted-foreground">
-              <Clock className="h-8 w-8 mx-auto mb-2" />
-              Nenhuma atividade recente.
+            <div className="text-center py-12 text-muted-foreground">
+              <Clock className="h-8 w-8 mx-auto mb-2 opacity-20" />
+              <p className="font-black uppercase tracking-tighter">Nenhuma atividade recente.</p>
             </div>
           )}
         </CardContent>
