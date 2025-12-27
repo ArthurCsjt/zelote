@@ -1,0 +1,49 @@
+                    )}
+                  >
+                    <p className={cn("text-[10px] font-black uppercase", isMinecraft ? "text-white" : "text-foreground")}>Minecraft</p>
+                    <p className={cn("text-[8px] font-bold uppercase", isMinecraft ? "text-[#e2f3df]" : "text-muted-foreground")}>Preparo TI</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Preview */}
+            {justification && (
+              <div className={cn(
+                "p-3 border-4",
+                isMinecraft ? "bg-[#3c8527]/10 border-[#3c8527]/30 shadow-[4px_4px_0px_0px_rgba(60,133,39,0.2)]" : "bg-blue-500/5 border-blue-500/30 shadow-[4px_4px_0px_0px_rgba(59,130,246,0.2)]"
+              )}>
+                <p className="text-[9px] font-black uppercase text-muted-foreground mb-1">Resumo:</p>
+                <p className="text-xs font-black">
+                  {isMinecraft && "[MINECRAFT] "} {quantity} Chromebooks para {classroom}
+                </p>
+              </div>
+            )}
+
+            {/* Footer */}
+            <DialogFooter className="flex flex-col-reverse sm:flex-row gap-2 pt-1">
+              <Button
+                variant="outline"
+                onClick={() => setOpen(false)}
+                className="h-10 border-4 border-black dark:border-white rounded-none font-black uppercase shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all"
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="submit"
+                disabled={isSaving || !justification.trim() || quantity <= 0 || quantity > maxQuantity}
+                className={cn(
+                  "h-10 flex-1 font-black uppercase",
+                  "bg-gradient-to-r from-blue-500 to-indigo-600 text-white border-4 border-black dark:border-white",
+                  "shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.9)]",
+                  "active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all"
+                )}
+              >
+                {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Confirmar Reserva"}
+              </Button>
+            </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog >
+  );
+};

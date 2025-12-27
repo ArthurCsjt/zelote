@@ -15,6 +15,10 @@ import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfileRole } from '@/hooks/use-profile-role';
+import { Calendar as CalendarUI } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { ListFilter, CalendarDays, X as CloseIcon } from 'lucide-react';
+import { addDays, isSameDay } from 'date-fns';
 
 interface ReservationDialogProps {
   children: ReactNode;
@@ -36,7 +40,7 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
   maxQuantity,
 }) => {
   const [open, setOpen] = useState(false);
-  const { createReservation, loading: isSaving } = useDatabase();
+  const { createReservation, bulkCreateReservations, loading: isSaving } = useDatabase();
   const { user } = useAuth();
   const { isAdmin } = useProfileRole();
 
@@ -48,6 +52,10 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
   const [micQuantity, setMicQuantity] = useState(1);
   const [isMinecraft, setIsMinecraft] = useState(false);
   const [classroom, setClassroom] = useState<string>('Sala Google');
+  const [extraDates, setExtraDates] = useState<Date[]>([]);
+  const [tempExtraDates, setTempExtraDates] = useState<Date[]>([]);
+  const [isMultiMode, setIsMultiMode] = useState(false);
+  const [showCalendar, setShowCalendar] = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -59,6 +67,10 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
       setMicQuantity(1);
       setIsMinecraft(false);
       setClassroom('Sala Google');
+      setExtraDates([]);
+      setTempExtraDates([]);
+      setIsMultiMode(false);
+      setShowCalendar(false);
     }
   }, [open, maxQuantity]);
 
@@ -76,29 +88,45 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
       return;
     }
 
-    const reservationData: ReservationData = {
-      date: format(date, 'yyyy-MM-dd'),
-      time_slot: timeSlot,
-      justification: justification.trim(),
-      quantity_requested: quantity,
-      needs_tv: needsTv,
-      needs_sound: needsSound,
-      needs_mic: needsMic,
-      mic_quantity: needsMic ? micQuantity : 0,
-      is_minecraft: isMinecraft,
-      classroom: classroom.trim(),
-    };
+    if (isMultiMode && extraDates.length > 0) {
+      const allDates = [date, ...extraDates].map(d => format(d, 'yyyy-MM-dd'));
+      const baseData = {
+        time_slot: timeSlot,
+        justification: justification.trim(),
+        quantity_requested: quantity,
+        needs_tv: needsTv,
+        needs_sound: needsSound,
+        needs_mic: needsMic,
+        mic_quantity: needsMic ? micQuantity : 0,
+        is_minecraft: isMinecraft,
+        classroom: classroom.trim(),
+      };
 
-    const result = await createReservation(reservationData);
+      const result = await bulkCreateReservations(allDates, baseData);
+      if (result.success) {
+        setOpen(false);
+        onReservationSuccess();
+      }
+    } else {
+      const reservationData: ReservationData = {
+        date: format(date, 'yyyy-MM-dd'),
+        time_slot: timeSlot,
+        justification: justification.trim(),
+        quantity_requested: quantity,
+        needs_tv: needsTv,
+        needs_sound: needsSound,
+        needs_mic: needsMic,
+        mic_quantity: needsMic ? micQuantity : 0,
+        is_minecraft: isMinecraft,
+        classroom: classroom.trim(),
+      };
 
-    if (result) {
-      setOpen(false);
-      onReservationSuccess();
-      toast({
-        title: "Reserva criada!",
-        description: `${quantity} Chromebook${quantity > 1 ? 's' : ''} reservado${quantity > 1 ? 's' : ''} para ${format(date, "dd/MM/yyyy 'às' ", { locale: ptBR })}${timeSlot}`,
-        variant: "success",
-      });
+      const result = await createReservation(reservationData);
+
+      if (result) {
+        setOpen(false);
+        onReservationSuccess();
+      }
     }
   };
 
@@ -158,71 +186,200 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                 </div>
               </div>
             </div>
+          </div>
 
-            {/* Existing Reservations - Compact Premium */}
-            {currentReservations.length > 0 && (
-              <div className="mt-2 pt-2 border-t-2 border-black/10 dark:border-white/10">
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 text-foreground">
-                    <AlertTriangle className="h-4 w-4 text-amber-500" />
-                    Ocupação Atual
-                  </h3>
-                  <Badge variant="outline" className="text-[9px] font-black border-2 border-black dark:border-white rounded-none bg-amber-100 dark:bg-amber-900/30">
-                    {currentReservations.length} {currentReservations.length === 1 ? 'Reserva' : 'Reservas'}
+          {/* MODO DE AGENDAMENTO (NOVO) */}
+          <div className="border-4 border-black dark:border-white bg-zinc-100 dark:bg-zinc-800 p-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-[10px] font-black uppercase tracking-tight text-foreground flex items-center gap-1">
+                <CalendarDays className="h-4 w-4" />
+                Agendar Várias Datas?
+              </p>
+              <div className="flex bg-white dark:bg-black border-2 border-black p-0.5">
+                <button
+                  type="button"
+                  onClick={() => setIsMultiMode(false)}
+                  className={cn(
+                    "px-2 py-1 text-[9px] font-black uppercase transition-all",
+                    !isMultiMode ? "bg-black text-white" : "text-black dark:text-white"
+                  )}
+                >
+                  Não
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsMultiMode(true)}
+                  className={cn(
+                    "px-2 py-1 text-[9px] font-black uppercase transition-all",
+                    isMultiMode ? "bg-black text-white" : "text-black dark:text-white"
+                  )}
+                >
+                  Sim
+                </button>
+              </div>
+            </div>
+
+            {isMultiMode && (
+              <div className="space-y-2 animate-in fade-in duration-300">
+                <div className="flex flex-wrap gap-1 p-1 bg-white dark:bg-black border-2 border-black min-h-[44px] items-center">
+                  <Badge variant="outline" className="text-[10px] font-black border-2 border-black bg-blue-500 text-white rounded-none h-7 px-2">
+                    {format(date, 'dd/MM')} — {timeSlot}
                   </Badge>
+                  {extraDates.map((d, i) => (
+                    <Badge
+                      key={i}
+                      variant="outline"
+                      className="text-[10px] font-black border-2 border-black bg-violet-100 dark:bg-violet-900/40 text-foreground rounded-none flex items-center gap-2 pr-1 h-7 px-2"
+                    >
+                      {format(d, 'dd/MM')} — {timeSlot}
+                      <CloseIcon
+                        className="h-3.5 w-3.5 cursor-pointer hover:bg-red-500 hover:text-white border border-black transition-colors"
+                        onClick={() => setExtraDates(extraDates.filter((_, idx) => idx !== i))}
+                      />
+                    </Badge>
+                  ))}
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setShowCalendar(!showCalendar);
+                    }}
+                    className="h-6 px-2 border-black border-2 rounded-none text-[8px] font-black uppercase bg-violet-600 text-white hover:bg-violet-700 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all"
+                  >
+                    {showCalendar ? '- Fechar' : '+ Selecionar'}
+                  </Button>
                 </div>
 
-                <div className="space-y-2 max-h-[160px] overflow-y-auto pr-1 custom-scrollbar">
-                  {currentReservations.map((res, idx) => {
-                    const isMine = res.created_by === user?.id;
-                    return (
-                      <div key={idx} className={cn(
-                        "relative flex flex-col gap-1.5 p-2.5 border-3 transition-all",
-                        isMine
-                          ? "border-violet-500 bg-violet-50 dark:bg-violet-950/20 shadow-[3px_3px_0px_0px_rgba(139,92,246,0.3)]"
-                          : "border-gray-400 bg-white dark:bg-zinc-900 shadow-[3px_3px_0px_0px_rgba(0,0,0,0.1)]",
-                        res.is_minecraft && "border-green-600 bg-green-50 dark:bg-green-950/20 shadow-[3px_3px_0px_0px_rgba(22,163,74,0.3)]"
-                      )}>
-                        {isMine && (
-                          <div className="absolute -top-1.5 -right-1 bg-violet-600 text-white text-[8px] font-black uppercase px-2 py-0.5 border-2 border-black">
-                            Sua Reserva
-                          </div>
-                        )}
+                {showCalendar && (
+                  <div className="mt-4 border-4 border-black bg-white dark:bg-zinc-900 shadow-[8px_8px_0_0_#000] p-0 animate-in zoom-in-95 duration-200 overflow-hidden">
+                    <div className="bg-black text-white p-2 flex items-center justify-between border-b-2 border-black">
+                      <span className="text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
+                        <Calendar className="h-3 w-3" />
+                        Selecione as Datas
+                      </span>
+                      <Badge className="bg-violet-500 border-none rounded-none text-[8px] font-black">
+                        {extraDates.length + 1} DIA(S) NO TOTAL
+                      </Badge>
+                    </div>
 
-                        <div className="flex items-center justify-between">
-                          <span className="flex items-center gap-2 font-black text-[10px] text-foreground uppercase tracking-tight truncate max-w-[70%]">
-                            <User className={cn("h-3 w-3", isMine ? "text-violet-600" : "text-gray-500")} />
-                            {res.prof_name && res.prof_name !== 'Usuário Desconhecido' ? res.prof_name : (res.prof_email || 'Docente')}
-                          </span>
-                          <span className="font-black text-xs text-foreground flex items-center gap-1.5 px-2 py-0.5 bg-background border-2 border-black dark:border-white">
-                            <Monitor className="h-3 w-3" />
-                            {res.quantity_requested}
-                          </span>
-                        </div>
+                    <div className="p-4 flex justify-center bg-zinc-50 dark:bg-zinc-800/50">
+                      <CalendarUI
+                        mode="multiple"
+                        selected={[date, ...extraDates]}
+                        onSelect={(dates) => {
+                          if (dates) {
+                            setExtraDates(dates.filter(d => !isSameDay(d, date)));
+                          }
+                        }}
+                        disabled={(d) => d < new Date(new Date().setHours(0, 0, 0, 0)) || isSameDay(d, date)}
+                        className="w-full flex justify-center"
+                        classNames={{
+                          months: "w-full flex flex-col items-center",
+                          month: "w-full space-y-6",
+                          caption: "flex justify-center pt-2 relative items-center gap-4 mb-2",
+                          caption_label: "text-lg font-black uppercase tracking-tight",
+                          nav: "flex items-center gap-2",
+                          nav_button: "h-10 w-10 bg-white border-3 border-black rounded-none p-0 hover:bg-zinc-100 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center transition-all active:translate-x-0.5 active:translate-y-0.5 active:shadow-none",
+                          nav_button_previous: "",
+                          nav_button_next: "",
+                          table: "w-full border-collapse",
+                          head_row: "flex justify-between mb-4 border-b-2 border-black/10 pb-2",
+                          head_cell: "text-muted-foreground w-12 font-black text-[11px] uppercase text-center",
+                          row: "flex w-full mt-3 justify-between",
+                          cell: "h-12 w-12 text-center text-sm p-0 relative focus-within:relative focus-within:z-20",
+                          day: "h-11 w-11 p-0 font-black border-3 border-transparent hover:border-black rounded-none transition-all flex items-center justify-center text-base",
+                          day_selected: "bg-blue-600 text-white border-3 border-black hover:bg-blue-700 hover:text-white shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]",
+                          day_today: "bg-amber-100 border-3 border-amber-500 text-amber-900",
+                          day_outside: "text-muted-foreground opacity-30",
+                          day_disabled: "text-muted-foreground opacity-20 cursor-not-allowed",
+                        }}
+                        locale={ptBR}
+                      />
+                    </div>
 
-                        <div className="flex items-center gap-2">
-                          {res.classroom && (
-                            <div className="text-[8px] font-black uppercase px-1.5 py-0.5 bg-blue-500 text-white border border-black">
-                              {res.classroom}
-                            </div>
-                          )}
-                          <div className="flex-1 text-[9px] font-bold text-muted-foreground italic truncate">
-                            "{res.justification}"
-                          </div>
-                        </div>
-
-                        {res.is_minecraft && (
-                          <div className="text-[8px] font-black uppercase text-white bg-green-600 w-fit px-1.5 py-0.5 border border-black mt-0.5">
-                            MINECRAFT
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
+                    <div className="p-4 border-t-4 border-black bg-white dark:bg-zinc-900 flex justify-end">
+                      <Button
+                        type="button"
+                        onClick={() => setShowCalendar(false)}
+                        className="w-full h-12 text-sm font-black uppercase bg-green-500 hover:bg-green-600 text-white border-4 border-black rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all"
+                      >
+                        Concluir Seleção
+                      </Button>
+                    </div>
+                  </div>
+                )}
+                <p className="text-[9px] font-bold text-violet-600 dark:text-violet-400 italic">
+                  * Repetir essa reserva em todos os dias selecionados.
+                </p>
               </div>
             )}
           </div>
+
+          {/* Existing Reservations - Compact Premium */}
+          {currentReservations.length > 0 && (
+            <div className="mt-2 pt-2 border-t-2 border-black/10 dark:border-white/10">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 text-foreground">
+                  <AlertTriangle className="h-4 w-4 text-amber-500" />
+                  Ocupação Atual
+                </h3>
+                <Badge variant="outline" className="text-[9px] font-black border-2 border-black dark:border-white rounded-none bg-amber-100 dark:bg-amber-900/30">
+                  {currentReservations.length} {currentReservations.length === 1 ? 'Reserva' : 'Reservas'}
+                </Badge>
+              </div>
+
+              <div className="space-y-2 max-h-[160px] overflow-y-auto pr-1 custom-scrollbar">
+                {currentReservations.map((res, idx) => {
+                  const isMine = res.created_by === user?.id;
+                  return (
+                    <div key={idx} className={cn(
+                      "relative flex flex-col gap-1.5 p-2.5 border-3 transition-all",
+                      isMine
+                        ? "border-violet-500 bg-violet-50 dark:bg-violet-950/20 shadow-[3px_3px_0px_0px_rgba(139,92,246,0.3)]"
+                        : "border-gray-400 bg-white dark:bg-zinc-900 shadow-[3px_3px_0px_0px_rgba(0,0,0,0.1)]",
+                      res.is_minecraft && "border-green-600 bg-green-50 dark:bg-green-950/20 shadow-[3px_3px_0px_0px_rgba(22,163,74,0.3)]"
+                    )}>
+                      {isMine && (
+                        <div className="absolute -top-1.5 -right-1 bg-violet-600 text-white text-[8px] font-black uppercase px-2 py-0.5 border-2 border-black">
+                          Sua Reserva
+                        </div>
+                      )}
+
+                      <div className="flex items-center justify-between">
+                        <span className="flex items-center gap-2 font-black text-[10px] text-foreground uppercase tracking-tight truncate max-w-[70%]">
+                          <User className={cn("h-3 w-3", isMine ? "text-violet-600" : "text-gray-500")} />
+                          {res.prof_name && res.prof_name !== 'Usuário Desconhecido' ? res.prof_name : (res.prof_email || 'Docente')}
+                        </span>
+                        <span className="font-black text-xs text-foreground flex items-center gap-1.5 px-2 py-0.5 bg-background border-2 border-black dark:border-white">
+                          <Monitor className="h-3 w-3" />
+                          {res.quantity_requested}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        {res.classroom && (
+                          <div className="text-[8px] font-black uppercase px-1.5 py-0.5 bg-blue-500 text-white border border-black">
+                            {res.classroom}
+                          </div>
+                        )}
+                        <div className="flex-1 text-[9px] font-bold text-muted-foreground italic truncate">
+                          "{res.justification}"
+                        </div>
+                      </div>
+
+                      {res.is_minecraft && (
+                        <div className="text-[8px] font-black uppercase text-white bg-green-600 w-fit px-1.5 py-0.5 border border-black mt-0.5">
+                          MINECRAFT
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {!isAdmin && (
             <div className="p-3 border-2 border-amber-500/30 bg-amber-50 dark:bg-amber-950/20 rounded-none flex items-start gap-2">
@@ -426,7 +583,7 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
           )}
 
           {/* Footer */}
-          <DialogFooter className="flex flex-col-reverse sm:flex-row gap-2 pt-1">
+          <DialogFooter className="flex flex-col-reverse sm:flex-row gap-2 pt-1 pb-4 px-4">
             <Button
               variant="outline"
               onClick={() => setOpen(false)}

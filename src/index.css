@@ -137,55 +137,40 @@
   }
 
   .dark {
-    /* ... (keep existing dark mode variable overrides) ... */
+    /* Ajuste para sombras Neo-Brutais mais "glow" e menos chapadas no dark mode */
     --neo-border-color: 0 0% 100%;
-    /* White in dark mode */
     --neo-shadow-color: 0 0% 100%;
-    /* White shadows in dark mode for high contrast */
+    --neo-shadow: var(--neo-shadow-offset) var(--neo-shadow-offset) 0px 0px hsl(var(--neo-shadow-color) / 0.15);
+    --neo-shadow-hover: 6px 6px 0px 0px hsl(var(--neo-shadow-color) / 0.25);
+    --neo-shadow-active: 2px 2px 0px 0px hsl(var(--neo-shadow-color) / 0.1);
 
-    /* Override shadow for proper visibility in dark mode */
-    --neo-shadow: var(--neo-shadow-offset) var(--neo-shadow-offset) 0px 0px hsl(var(--neo-shadow-color) / 0.3);
-    --neo-shadow-hover: 6px 6px 0px 0px hsl(var(--neo-shadow-color) / 0.3);
-    --neo-shadow-active: 2px 2px 0px 0px hsl(var(--neo-shadow-color) / 0.3);
-
-    /* ===== BASE COLORS (ZINC) ===== */
-    --background: 240 10% 3.9%;
-    /* Preto azulado (Zinc 950) */
+    /* ===== BASE COLORS (DARK PREMIUM) ===== */
+    --background: 240 10% 2%;
+    /* Quase preto */
     --foreground: 0 0% 98%;
-    /* Texto branco suave */
-    --background-secondary: 240 3.7% 15.9%;
-    /* Zinc 800 */
+    --background-secondary: 240 10% 6%;
+    /* Superfície secundária */
 
     /* ===== CARDS & SURFACES ===== */
-    --card: 240 10% 3.9%;
-    /* Zinc 950 */
+    --card: 240 10% 5%;
+    /* Cards ligeiramente mais leves que o fundo */
     --card-foreground: 0 0% 98%;
-    /* Foreground */
-    --card-hover: 240 3.7% 15.9%;
-    /* Zinc 800 */
+    --card-hover: 240 10% 10%;
 
-    /* ===== MODAIS & OVERLAYS (Ajustado para Zinc) ===== */
-    --modal: 240 10% 3.9%;
-    --modal-border: 240 3.7% 25%;
-    /* Zinc 700 */
-    --overlay: 240 10% 3.9% / 0.9;
-    /* Foreground com opacidade */
+    /* ===== MODAIS & OVERLAYS ===== */
+    --modal: 240 10% 4%;
+    --modal-border: 240 10% 20%;
+    --overlay: 0 0% 0% / 0.9;
+    /* Overlay mais denso */
 
-    /* ===== INPUTS & BORDERS (Ajustado para Zinc) */
-    --border: 240 3.7% 25%;
-    /* Zinc 700 */
-    --border-strong: 240 3.7% 35%;
-    /* Zinc 600 */
+    /* ===== INPUTS & BORDERS ===== */
+    --border: 240 10% 18%;
+    --border-strong: 240 10% 30%;
     --ring: 217 91% 60%;
-    /* Primary Blue */
-    --input: 240 3.7% 25%;
-    /* Zinc 700 */
-    --input-bg: 240 10% 3.9%;
-    /* Background */
+    --input: 240 10% 15%;
+    --input-bg: 240 10% 3%;
     --input-foreground: 0 0% 98%;
-    /* Foreground */
-    --input-placeholder: 240 5% 64.9% / 0.5;
-    /* Muted Foreground */
+    --input-placeholder: 240 5% 64.9% / 0.4;
 
     /* ===== PRIMARY & SECONDARY (Ajustado para Blue/Zinc) ===== */
     --primary: 217 91% 60%;
@@ -263,12 +248,17 @@
 
 /* --- Glassmorphism Utilities --- */
 .glass-card {
-  /* Revertendo a borda para a definição original (mais sutil) */
-  @apply bg-white/80 dark:bg-zinc-950/80 backdrop-blur-xl border border-white/20 dark:border-zinc-800/50 shadow-xl;
+  @apply bg-white/80 dark:bg-zinc-950/40 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-xl;
 }
 
 .glass-panel {
-  @apply bg-white/50 dark:bg-zinc-950/50 backdrop-blur-md border border-white/10 dark:border-zinc-800/30;
+  @apply bg-white/50 dark:bg-black/50 backdrop-blur-md border border-white/10 dark:border-white/5;
+}
+
+.dark .premium-card {
+  background: linear-gradient(145deg, hsl(240 10% 6%), hsl(240 10% 4%));
+  border: 1px solid hsl(240 10% 15%);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
 }
 
 /* ======================================================================== */
@@ -296,10 +286,19 @@
 
 /* Neo-Brutal Input */
 .neo-brutal-input {
-  @apply h-12 text-base font-medium bg-background border-3 border-foreground/20 rounded-none px-4;
+  @apply h-12 text-base font-black uppercase bg-input-bg border-3 border-black dark:border-white rounded-none px-4;
   @apply focus:border-primary focus:ring-0 focus:ring-offset-0;
-  @apply placeholder:text-muted-foreground/60;
-  transition: all 0.15s ease;
+  @apply placeholder:text-muted-foreground/40;
+  transition: all 0.1s ease;
+}
+
+.neo-input {
+  @apply border-3 border-black dark:border-white rounded-none focus:border-primary focus:ring-0 transition-all bg-white dark:bg-zinc-950 font-bold;
+  box-shadow: 2px 2px 0px 0px rgba(0, 0, 0, 0.1);
+}
+
+.dark .neo-input {
+  box-shadow: 2px 2px 0px 0px rgba(255, 255, 255, 0.05);
 }
 
 .neo-brutal-input:focus {

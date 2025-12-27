@@ -1181,7 +1181,7 @@ export const useDatabase = () => {
           body: emailPayload,
           headers: {
             // Passa o token do usuário logado para a Edge Function (se necessário para auth)
-            'Authorization': `Bearer ${await supabase.auth.getSession().then(s => s.data.session?.access_token)}`,
+            'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
           }
         });
 
@@ -1205,6 +1205,54 @@ export const useDatabase = () => {
         variant: "destructive"
       });
       return null;
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
+
+  const bulkCreateReservations = useCallback(async (dates: string[], baseData: Omit<ReservationData, 'date'>): Promise<{ success: boolean; count: number }> => {
+    if (!user) {
+      toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
+      return { success: false, count: 0 };
+    }
+
+    setLoading(true);
+    try {
+      const inserts = dates.map(date => ({
+        date,
+        time_slot: baseData.time_slot,
+        professor_id: baseData.professor_id || user.id,
+        justification: baseData.justification,
+        quantity_requested: baseData.quantity_requested,
+        needs_tv: baseData.needs_tv || false,
+        needs_sound: baseData.needs_sound || false,
+        needs_mic: baseData.needs_mic || false,
+        mic_quantity: baseData.mic_quantity || 0,
+        is_minecraft: baseData.is_minecraft || false,
+        classroom: baseData.classroom || '',
+        created_by: user.id,
+      }));
+
+      const { data: results, error } = await supabase
+        .from('reservations')
+        .insert(inserts)
+        .select();
+
+      if (error) throw error;
+
+      // Disparar e-mails para cada reserva (opcional, talvez um e-mail consolidado fosse melhor, mas vamos manter simples por enquanto)
+      // Para não sobrecarregar, vamos ignorar o envio de e-mail no bulk por agora ou fazer apenas para a primeira data
+
+      toast({ title: "Sucesso", description: `${results.length} agendamentos realizados com sucesso!`, variant: "success" });
+      return { success: true, count: results.length };
+    } catch (error: any) {
+      logger.error('Erro ao criar agendamentos em lote:', error);
+      toast({
+        title: "Erro ao Agendar Lote",
+        description: error.message,
+        variant: "destructive"
+      });
+      return { success: false, count: 0 };
     } finally {
       setLoading(false);
     }
@@ -1266,6 +1314,7 @@ export const useDatabase = () => {
     getTotalAvailableChromebooks,
     getReservationsForWeek,
     createReservation,
+    bulkCreateReservations,
     deleteReservation,
   };
 };
