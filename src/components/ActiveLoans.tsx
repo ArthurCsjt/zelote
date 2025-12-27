@@ -63,15 +63,15 @@ export function ActiveLoans({ onNavigateToReturn }: ActiveLoansProps) {
   };
 
   return (
-    <div className="space-y-6 relative">
+    <div className="space-y-3 relative">
 
       {/* Painel de Alertas de Atraso */}
       <OverdueAlertsPanel />
 
       {/* Título e Botão de Atualizar */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-        <h3 className="text-xl font-black uppercase tracking-tight text-foreground flex items-center gap-2">
-          <List className="h-6 w-6" />
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-3 gap-3">
+        <h3 className="text-lg font-black uppercase tracking-tight text-foreground flex items-center gap-2">
+          <List className="h-5 w-5" />
           Empréstimos Ativos ({activeLoans.length})
         </h3>
         <div className="flex items-center gap-3">
@@ -80,19 +80,19 @@ export function ActiveLoans({ onNavigateToReturn }: ActiveLoansProps) {
             type="single"
             value={viewMode}
             onValueChange={(value: ViewMode) => value && setViewMode(value)}
-            className="h-10 bg-white dark:bg-zinc-900 border-2 border-black dark:border-white shadow-[3px_3px_0px_0px_#000] dark:shadow-[3px_3px_0px_0px_#fff]"
+            className="h-9 bg-white dark:bg-zinc-900 border-3 border-black dark:border-white shadow-[4px_4px_0px_0px_#000] dark:shadow-[4px_4px_0px_0px_#fff]"
           >
             <ToggleGroupItem
               value="cards"
               aria-label="Visualização em Cards"
-              className="h-9 px-3 data-[state=on]:bg-black data-[state=on]:text-white hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-none border-r border-black/10 last:border-0"
+              className="h-8 px-3 data-[state=on]:bg-black data-[state=on]:text-white hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-none border-r border-black/10 last:border-0"
             >
               <LayoutGrid className="h-4 w-4" />
             </ToggleGroupItem>
             <ToggleGroupItem
               value="table"
               aria-label="Visualização em Tabela"
-              className="h-9 px-3 data-[state=on]:bg-black data-[state=on]:text-white hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-none"
+              className="h-8 px-3 data-[state=on]:bg-black data-[state=on]:text-white hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-none"
             >
               <List className="h-4 w-4" />
             </ToggleGroupItem>
@@ -102,7 +102,7 @@ export function ActiveLoans({ onNavigateToReturn }: ActiveLoansProps) {
             onClick={fetchActiveLoans}
             variant="outline"
             disabled={loading || dbLoading}
-            className="neo-btn bg-white hover:bg-gray-50 text-black h-10 px-4 flex items-center gap-2"
+            className="bg-white hover:bg-gray-50 text-black h-9 px-4 flex items-center gap-2 border-3 border-black dark:border-white shadow-[4px_4px_0px_0px_#000] dark:shadow-[4px_4px_0px_0px_#fff] hover:shadow-[2px_2px_0px_0px_#000] hover:translate-x-[2px] hover:translate-y-[2px] transition-all font-bold uppercase text-xs"
           >
             <RefreshCw className={`h-4 w-4 ${loading || dbLoading ? 'animate-spin' : ''}`} />
             ATUALIZAR
@@ -134,50 +134,51 @@ export function ActiveLoans({ onNavigateToReturn }: ActiveLoansProps) {
             return (
               <div
                 key={loan.id}
-                className={cn("neo-card hover:translate-x-[-4px] hover:translate-y-[-4px] hover:shadow-[8px_8px_0px_0px_#000] dark:hover:shadow-[8px_8px_0px_0px_#fff] border-l-4 transition-all duration-200",
-                  overdueStatus ? 'border-l-error bg-error-bg/20' :
-                    dueSoonStatus ? 'border-l-warning bg-warning-bg/20' : 'border-l-black dark:border-l-white'
+                className={cn("border-4 bg-white dark:bg-zinc-900 hover:translate-x-[-2px] hover:translate-y-[-2px] transition-all duration-200 border-l-[12px]",
+                  overdueStatus ? 'border-red-500 bg-red-50 dark:bg-red-950/20 shadow-[6px_6px_0px_0px_rgba(239,68,68,0.3)]' :
+                    dueSoonStatus ? 'border-amber-500 bg-amber-50 dark:bg-amber-950/20 shadow-[6px_6px_0px_0px_rgba(245,158,11,0.3)]' :
+                      'border-blue-500 bg-blue-50 dark:bg-blue-950/20 shadow-[6px_6px_0px_0px_rgba(59,130,246,0.3)]'
                 )}
               >
-                <CardContent className="p-6">
+                <CardContent className="p-4">
                   <div className="flex items-start justify-between">
-                    <div className="space-y-3 flex-1">
+                    <div className="space-y-2 flex-1">
                       <div className="flex items-center gap-3">
                         <User className="h-6 w-6 text-black dark:text-white" />
                         <div>
-                          <h3 className="font-black text-lg text-foreground uppercase tracking-tight">{loan.student_name}</h3>
-                          <p className="text-sm font-mono text-muted-foreground">{loan.student_email}</p>
+                          <h3 className="font-black text-base text-foreground uppercase tracking-tight">{loan.student_name}</h3>
+                          <p className="text-xs font-mono text-muted-foreground">{loan.student_email}</p>
                         </div>
                       </div>
 
                       <div className="flex flex-wrap gap-2">
                         {loan.student_ra && (
-                          <Badge variant="outline" className="rounded-none border-2 border-black dark:border-white font-bold">
+                          <Badge variant="outline" className="rounded-none border-3 border-black dark:border-white font-bold text-xs">
                             RA: {loan.student_ra}
                           </Badge>
                         )}
-                        <Badge variant="secondary" className="rounded-none bg-blue-100 text-blue-800 border-2 border-blue-800 font-bold">
+                        <Badge variant="secondary" className="rounded-none bg-blue-500 text-white border-3 border-blue-700 font-bold text-xs">
                           <Monitor className="h-3 w-3 mr-1" />
                           {loan.chromebook_id}
                         </Badge>
-                        <Badge variant="outline" className="capitalize rounded-none border-dashed border-2 border-black dark:border-white font-bold">
+                        <Badge variant="outline" className="capitalize rounded-none border-dashed border-3 border-black dark:border-white font-bold text-xs">
                           {loan.user_type}
                         </Badge>
                         {loan.loan_type === 'lote' && (
-                          <Badge className="rounded-none bg-yellow-300 text-black border-2 border-black font-bold">
+                          <Badge className="rounded-none bg-yellow-400 text-black border-3 border-black font-bold text-xs">
                             Lote
                           </Badge>
                         )}
                         {/* Status de Atraso */}
                         {overdueStatus && (
-                          <Badge variant="destructive" className="gap-1 rounded-none border-2 border-black font-bold">
+                          <Badge variant="destructive" className="gap-1 rounded-none border-3 border-black font-bold text-xs">
                             <AlertTriangle className="h-3 w-3" />
                             EM ATRASO
                           </Badge>
                         )}
                       </div>
 
-                      <div className="space-y-2 pt-2 border-t-2 border-black/10 dark:border-white/10">
+                      <div className="space-y-1.5 pt-2 border-t-2 border-black/10 dark:border-white/10">
                         <div className="flex items-center gap-2 text-sm text-foreground">
                           <Target className="h-4 w-4" />
                           <span className="font-black uppercase">Finalidade:</span>
@@ -210,7 +211,7 @@ export function ActiveLoans({ onNavigateToReturn }: ActiveLoansProps) {
                   <Button
                     onClick={() => handleReturnClick(loan)}
                     disabled={loading || dbLoading}
-                    className="w-full mt-4 neo-btn bg-menu-amber hover:bg-menu-amber-hover border-black dark:border-white text-white"
+                    className="w-full mt-3 h-12 text-base font-black uppercase bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 border-4 border-black dark:border-white text-white shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
                   >
                     <CheckCircle className="h-5 w-5 mr-2" />
                     {overdueStatus ? 'REGISTRAR DEVOLUÇÃO (ATRASO)' : 'REGISTRAR DEVOLUÇÃO'}

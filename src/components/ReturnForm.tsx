@@ -159,44 +159,43 @@ export function ReturnForm({ onReturnSuccess, initialChromebookId }: ReturnFormP
   const isFormValid = selectedUser && deviceIds.length > 0 && confirmChecked;
 
   return (
-    <form onSubmit={handleConfirmReturn} className="space-y-5 relative">
+    <form onSubmit={handleConfirmReturn} className="space-y-3 relative">
       {/* Gradiente de fundo removido */}
 
-      <div className="grid md:grid-cols-2 gap-5 relative z-10">
+      <div className="grid md:grid-cols-2 gap-3 relative z-10">
 
         {/* COLUNA ESQUERDA */}
-        <div className="flex flex-col gap-5 h-full">
+        <div className="flex flex-col gap-3 h-full">
           {/* ═══ SEÇÃO 1: DISPOSITIVOS (Cor 1: Âmbar) ═══ */}
-          <div className="neo-card flex-1 p-0 overflow-hidden">
-            <CardHeader className="p-5 pb-3 border-b-2 border-black dark:border-white bg-amber-100 dark:bg-amber-900/20">
+          <div className="border-4 border-amber-500 bg-amber-100 dark:bg-amber-950/20 shadow-[6px_6px_0px_0px_rgba(245,158,11,0.3)] border-l-[12px] flex-1 p-0 overflow-hidden">
+            <CardHeader className="p-3 pb-2 border-b-3 border-amber-500/30 bg-gradient-to-r from-amber-400 to-orange-500">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-lg font-black uppercase tracking-tight flex items-center gap-2 text-foreground">
-                  <Computer className="h-5 w-5 text-black dark:text-white" />
+                <CardTitle className="text-base font-black uppercase tracking-tight flex items-center gap-2 text-white">
+                  <Computer className="h-5 w-5" />
                   Dispositivos para Devolução
                 </CardTitle>
                 <Badge variant="outline" className={cn(
-                  "text-xs font-bold border-2 border-black text-black dark:border-white dark:text-white rounded-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,0.2)]",
-                  deviceIds.length === 0 ? "bg-gray-100" : "bg-amber-300 dark:bg-amber-700"
+                  "text-xs font-bold border-3 border-white text-white rounded-none shadow-[2px_2px_0px_0px_rgba(255,255,255,0.3)]",
+                  deviceIds.length === 0 ? "bg-white/20" : "bg-white/30"
                 )}>
                   {deviceIds.length === 0
-                    ? 'Nenhum dispositivo'
-                    : `${deviceIds.length} ${deviceIds.length === 1 ? 'dispositivo' : 'dispositivos'}`
+                    ? 'Nenhum'
+                    : `${deviceIds.length} ${deviceIds.length === 1 ? 'PC' : 'PCs'}`
                   }
                 </Badge>
               </div>
             </CardHeader>
-            <CardContent className="p-5">
+            <CardContent className="p-3">
               <DeviceListInput
                 deviceIds={deviceIds}
                 setDeviceIds={setDeviceIds}
                 disabled={dbLoading}
                 filterStatus="emprestado" // Filtra por emprestado
                 actionLabel="Devolução"
-                className="neo-input"
               />
               {/* Validação em tempo real para Dispositivos */}
               {deviceIds.length === 0 && (
-                <p className="text-xs font-bold text-red-600 dark:text-red-400 flex items-center gap-1 mt-3">
+                <p className="text-xs font-bold text-red-600 dark:text-red-400 flex items-center gap-1 mt-2 uppercase">
                   <AlertTriangle className="h-3 w-3" />
                   Adicione pelo menos um dispositivo.
                 </p>
@@ -220,7 +219,7 @@ export function ReturnForm({ onReturnSuccess, initialChromebookId }: ReturnFormP
                       <div
                         key={deviceId}
                         className={cn(
-                          "p-3 border-2 border-black dark:border-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]",
+                          "p-2.5 border-3 border-black dark:border-white shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]",
                           overdue
                             ? "bg-red-100 dark:bg-red-900/30"
                             : "bg-blue-100 dark:bg-blue-900/30"
@@ -261,14 +260,14 @@ export function ReturnForm({ onReturnSuccess, initialChromebookId }: ReturnFormP
           </div>
 
           {/* ═══ SEÇÃO 2: OBSERVAÇÕES ═══ */}
-          <div className="neo-card p-0 overflow-hidden">
-            <CardHeader className="p-5 pb-3 border-b-2 border-black dark:border-white bg-gray-50 dark:bg-zinc-800">
-              <CardTitle className="text-lg font-black uppercase tracking-tight flex items-center gap-2 text-foreground">
-                <BookOpen className="h-5 w-5 text-black dark:text-white" />
+          <div className="border-4 border-gray-500 bg-gray-100 dark:bg-gray-950/20 shadow-[6px_6px_0px_0px_rgba(107,114,128,0.3)] border-l-[12px] p-0 overflow-hidden">
+            <CardHeader className="p-3 pb-2 border-b-3 border-gray-500/30 bg-gradient-to-r from-gray-400 to-gray-600">
+              <CardTitle className="text-base font-black uppercase tracking-tight flex items-center gap-2 text-white">
+                <BookOpen className="h-5 w-5" />
                 Observações
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-5 space-y-4">
+            <CardContent className="p-3 space-y-2">
               <div className="space-y-2">
                 <Label htmlFor="notes" className="text-foreground font-bold uppercase text-xs">
                   Condição do equipamento ou notas (Opcional)
@@ -278,7 +277,7 @@ export function ReturnForm({ onReturnSuccess, initialChromebookId }: ReturnFormP
                   value={returnData.notes || ''}
                   onChange={(e) => setReturnData({ ...returnData, notes: e.target.value })}
                   placeholder="Ex: O Chromebook foi devolvido com a tela trincada."
-                  className="neo-input min-h-[80px]"
+                  className="neo-input min-h-[60px]"
                   disabled={dbLoading}
                 />
               </div>
@@ -287,16 +286,16 @@ export function ReturnForm({ onReturnSuccess, initialChromebookId }: ReturnFormP
         </div>
 
         {/* COLUNA DIREITA */}
-        <div className="space-y-5">
+        <div className="space-y-3">
           {/* ═══ SEÇÃO 3: SOLICITANTE DA DEVOLUÇÃO ═══ */}
-          <div className="neo-card p-0 overflow-hidden">
-            <CardHeader className="p-5 pb-3 border-b-2 border-black dark:border-white bg-amber-100 dark:bg-amber-900/20">
-              <CardTitle className="text-lg font-black uppercase tracking-tight flex items-center gap-2 text-foreground">
-                <User className="h-5 w-5 text-black dark:text-white" />
+          <div className="border-4 border-violet-500 bg-violet-100 dark:bg-violet-950/20 shadow-[6px_6px_0px_0px_rgba(139,92,246,0.3)] border-l-[12px] p-0 overflow-hidden">
+            <CardHeader className="p-3 pb-2 border-b-3 border-violet-500/30 bg-gradient-to-r from-violet-400 to-purple-500">
+              <CardTitle className="text-base font-black uppercase tracking-tight flex items-center gap-2 text-white">
+                <User className="h-5 w-5" />
                 Solicitante da Devolução
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-5 space-y-4">
+            <CardContent className="p-3 space-y-2">
               <div className="space-y-2">
                 <Label htmlFor="userSearch" className="text-foreground font-bold uppercase text-xs">
                   Buscar Solicitante (Nome, RA ou Email) *
@@ -318,7 +317,7 @@ export function ReturnForm({ onReturnSuccess, initialChromebookId }: ReturnFormP
               )}
 
               {selectedUser && (
-                <div className="flex items-center gap-2 text-xs text-black bg-green-100 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] p-3 mt-2">
+                <div className="flex items-center gap-2 text-xs text-white bg-green-500 border-3 border-green-700 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] p-3 mt-2">
                   <CheckCircle className="h-4 w-4 text-green-700" />
                   <div className="flex-1">
                     <p className="font-black uppercase">{selectedUser.name}</p>
@@ -330,13 +329,13 @@ export function ReturnForm({ onReturnSuccess, initialChromebookId }: ReturnFormP
           </div>
 
           {/* ═══ SEÇÃO 4: CONFIRMAÇÃO OBRIGATÓRIA ═══ */}
-          <div className="p-5 border-2 border-black dark:border-white bg-yellow-100 dark:bg-yellow-900/30 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-            <div className="flex items-start gap-3">
+          <div className="p-4 border-4 border-yellow-500 bg-yellow-100 dark:bg-yellow-900/30 shadow-[6px_6px_0px_0px_rgba(234,179,8,0.4)]">
+            <div className="flex items-start gap-2">
               <Checkbox
                 id="confirmChecked"
                 checked={confirmChecked}
                 onCheckedChange={(v) => setConfirmChecked(!!v)}
-                className="mt-1 border-2 border-black checkbox-neo"
+                className="mt-0.5 w-5 h-5 border-3 border-black checkbox-neo"
                 disabled={dbLoading}
               />
               <Label htmlFor="confirmChecked" className="text-sm text-foreground leading-5 cursor-pointer">
@@ -362,12 +361,14 @@ export function ReturnForm({ onReturnSuccess, initialChromebookId }: ReturnFormP
         type="submit"
         size="lg"
         className={cn(
-          "w-full h-14 text-lg font-black uppercase tracking-tight",
-          "bg-amber-400 hover:bg-amber-500 text-black border-2 border-black",
-          "shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]",
-          "active:translate-x-[4px] active:translate-y-[4px] active:shadow-none",
-          "transition-all duration-200",
-          "disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
+          "w-full h-16 text-xl font-black uppercase tracking-tight",
+          "bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700",
+          "text-white border-4 border-black dark:border-white",
+          "shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.9)]",
+          "hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px]",
+          "active:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-x-[6px] active:translate-y-[6px]",
+          "transition-all duration-150",
+          "disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:translate-x-[8px] disabled:translate-y-[8px]"
         )}
         disabled={dbLoading || !isFormValid}
       >

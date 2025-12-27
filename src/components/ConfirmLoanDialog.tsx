@@ -2,7 +2,7 @@ import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from './ui/dialog';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
-import { User, BookOpen, Computer, Clock, CheckCircle, MessageSquare } from 'lucide-react';
+import { User, BookOpen, Computer, Clock, CheckCircle, MessageSquare, Save, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 
@@ -33,14 +33,16 @@ export function ConfirmLoanDialog({
 }: ConfirmLoanDialogProps) {
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-md border-4 border-black dark:border-white shadow-[8px_8px_0px_0px_#000] dark:shadow-[8px_8px_0px_0px_#fff] p-0 gap-0 bg-white dark:bg-zinc-900 sm:rounded-none">
-                <DialogHeader className="p-6 border-b-4 border-black dark:border-white bg-yellow-300 dark:bg-yellow-600">
-                    <DialogTitle className="flex items-center gap-2 text-2xl font-black uppercase tracking-tight text-black dark:text-white">
-                        <CheckCircle className="h-8 w-8" />
-                        Confirmar
+            <DialogContent className="max-w-md border-4 border-black dark:border-white shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] dark:shadow-[12px_12px_0px_0px_rgba(255,255,255,0.2)] p-0 gap-0 bg-white dark:bg-zinc-900 sm:rounded-none overflow-hidden">
+                <DialogHeader className="p-5 border-b-4 border-black dark:border-white bg-gradient-to-r from-yellow-300 to-amber-500 shadow-[0_4px_0_0_rgba(0,0,0,0.1)]">
+                    <DialogTitle className="flex items-center gap-3 text-2xl font-black uppercase tracking-tighter text-black drop-shadow-[2px_2px_0_rgba(255,255,255,0.5)]">
+                        <div className="w-12 h-12 border-3 border-black bg-white flex items-center justify-center shadow-[4px_4px_0_0_#000]">
+                            <CheckCircle className="h-7 w-7 text-green-600" />
+                        </div>
+                        Revisar Dados
                     </DialogTitle>
-                    <DialogDescription className="text-black/80 dark:text-white/80 font-bold uppercase">
-                        Revise os dados antes de finalizar
+                    <DialogDescription className="text-black font-bold bg-black/10 w-fit px-2 py-0.5 text-[10px] uppercase tracking-widest mt-2">
+                        Verifique as informações antes de confirmar
                     </DialogDescription>
                 </DialogHeader>
 
@@ -105,12 +107,12 @@ export function ConfirmLoanDialog({
                     )}
                 </div>
 
-                <DialogFooter className="gap-3 sm:gap-0 p-6 pt-0">
+                <DialogFooter className="gap-2 p-5 pt-1 flex flex-col-reverse sm:flex-row">
                     <Button
                         variant="outline"
                         onClick={() => onOpenChange(false)}
                         disabled={loading}
-                        className="neo-btn bg-white hover:bg-gray-100 text-black border-2 border-black h-12 flex-1"
+                        className="h-12 border-4 border-black dark:border-white rounded-none font-black uppercase tracking-wide hover:bg-muted shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all flex-1"
                     >
                         CANCELAR
                     </Button>
@@ -118,15 +120,17 @@ export function ConfirmLoanDialog({
                         onClick={onConfirm}
                         disabled={loading}
                         className={cn(
-                            "neo-btn h-12 flex-1",
-                            "bg-black hover:bg-neutral-800 text-white border-2 border-black dark:border-white"
+                            "h-12 flex-[2] font-black uppercase tracking-wide",
+                            "bg-black hover:bg-neutral-800 text-white border-4 border-black dark:border-white",
+                            "shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.9)]",
+                            "active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all"
                         )}
                     >
                         {loading ? (
-                            <>PROCS...</>
+                            <Loader2 className="h-5 w-5 animate-spin" />
                         ) : (
                             <>
-                                <CheckCircle className="mr-2 h-5 w-5" />
+                                <Save className="mr-2 h-5 w-5" />
                                 CONFIRMAR
                             </>
                         )}

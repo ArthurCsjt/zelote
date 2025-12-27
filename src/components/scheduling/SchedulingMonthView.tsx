@@ -37,11 +37,11 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
   const modifiers = useMemo(() => {
     const reservedDays: Date[] = [];
     const fullDays: Date[] = [];
-    
+
     reservationsByDay.forEach((resList, dateKey) => {
       const totalReserved = resList.reduce((sum, res) => sum + res.quantity_requested, 0);
       const date = new Date(dateKey + 'T12:00:00');
-      
+
       if (totalReserved > 0) {
         reservedDays.push(date);
       }
@@ -63,73 +63,108 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
     const dayReservations = reservationsByDay.get(dateKey) || [];
     const totalReserved = dayReservations.reduce((sum, res) => sum + res.quantity_requested, 0);
     const available = totalAvailableChromebooks - totalReserved;
-    
+
     const isDayPast = isPast(selectedDate);
 
     return (
-      <div className="border-3 border-foreground/20 bg-card shadow-[4px_4px_0px_0px_hsl(var(--foreground)/0.1)] p-4 space-y-4">
-        
+      <div className="border-4 border-foreground/30 bg-card shadow-[6px_6px_0px_0px_hsl(var(--foreground)/0.2)] p-6 space-y-6">
+
         {/* Header */}
-        <div className="border-b-3 border-foreground/10 pb-3">
-          <h3 className="text-lg font-black uppercase tracking-tight text-foreground">
-            {format(selectedDate, 'dd/MM/yyyy')}
+        <div className="border-b-4 border-foreground/20 pb-4">
+          <h3 className="text-3xl font-black uppercase tracking-tight text-foreground">
+            📅 {format(selectedDate, 'dd/MM/yyyy')}
           </h3>
-          <p className="text-xs font-medium text-muted-foreground mt-0.5">
-            {isDayPast ? 'Histórico de reservas' : 'Detalhes e disponibilidade'}
+          <p className="text-base font-bold text-muted-foreground mt-2">
+            {isDayPast ? '📚 Histórico de reservas' : '📊 Detalhes e disponibilidade'}
           </p>
         </div>
-        
+
         {/* Stats Grid */}
-        <div className="grid grid-cols-3 gap-2">
-          <div className="text-center p-3 border-3 border-foreground/10 bg-muted/20">
-            <p className="text-[9px] font-black uppercase tracking-wide text-muted-foreground">Total</p>
-            <p className="text-xl font-black text-foreground">{totalAvailableChromebooks}</p>
+        <div className="grid grid-cols-3 gap-4">
+          <div className="text-center p-5 border-4 border-foreground/30 bg-muted/40 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.15)]">
+            <p className="text-xs font-black uppercase tracking-wide text-muted-foreground mb-2">💻 Total</p>
+            <p className="text-5xl font-black text-foreground">{totalAvailableChromebooks}</p>
           </div>
-          <div className="text-center p-3 border-3 border-info/30 bg-info/5">
-            <p className="text-[9px] font-black uppercase tracking-wide text-muted-foreground">Reservados</p>
-            <p className="text-xl font-black text-info">{totalReserved}</p>
+          <div className="text-center p-5 border-4 border-info/50 bg-info/20 shadow-[4px_4px_0px_0px_hsl(var(--info)/0.3)]">
+            <p className="text-xs font-black uppercase tracking-wide text-info mb-2">📌 Reservados</p>
+            <p className="text-5xl font-black text-info">{totalReserved}</p>
           </div>
-          <div className="text-center p-3 border-3 border-success/30 bg-success/5">
-            <p className="text-[9px] font-black uppercase tracking-wide text-muted-foreground">Disponíveis</p>
-            <p className="text-xl font-black text-success">{available}</p>
+          <div className="text-center p-5 border-4 border-success/50 bg-success/20 shadow-[4px_4px_0px_0px_hsl(var(--success)/0.3)]">
+            <p className="text-xs font-black uppercase tracking-wide text-success mb-2">✅ Disponíveis</p>
+            <p className="text-5xl font-black text-success">{available}</p>
           </div>
         </div>
-        
+
         {/* Reservations List */}
         {dayReservations.length > 0 ? (
-          <div className="space-y-2 pt-2 border-t-3 border-foreground/10">
-            <p className="text-[10px] font-black uppercase tracking-wide text-muted-foreground">
-              Reservas do Dia:
+          <div className="space-y-4 pt-4 border-t-4 border-foreground/20">
+            <p className="text-sm font-black uppercase tracking-wide text-foreground mb-3">
+              📋 Reservas do Dia ({dayReservations.length}):
             </p>
-            {dayReservations.map((res) => (
-              <div 
-                key={res.id} 
-                className="p-3 border-3 border-foreground/10 bg-background hover:bg-muted/30 transition-colors"
-              >
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-2">
-                    <User className="h-4 w-4 text-primary" />
-                    <span className="font-bold text-sm text-foreground">{res.prof_name}</span>
+            {dayReservations.map((res) => {
+              const isMinecraft = res.is_minecraft;
+              return (
+                <div
+                  key={res.id}
+                  className={cn(
+                    "p-5 border-4 transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,0.15)]",
+                    isMinecraft
+                      ? "border-[#3c8527] bg-[#3c8527]/20 hover:bg-[#3c8527]/25"
+                      : "border-primary/40 bg-primary/10 hover:bg-primary/15"
+                  )}
+                >
+                  <div className="flex justify-between items-start mb-3">
+                    <div className="flex items-center gap-3">
+                      <div className={cn(
+                        "w-10 h-10 rounded-full flex items-center justify-center border-3",
+                        isMinecraft
+                          ? "bg-[#3c8527] border-[#2d6520] text-white"
+                          : "bg-primary border-primary/50 text-primary-foreground"
+                      )}>
+                        <User className="h-5 w-5" />
+                      </div>
+                      <span className="font-black text-lg text-foreground">{res.prof_name}</span>
+                    </div>
+                    <Badge className={cn(
+                      "font-black text-base px-4 py-2 border-0 rounded-none shadow-[3px_3px_0px_0px_rgba(0,0,0,0.3)]",
+                      isMinecraft
+                        ? "bg-[#3c8527] text-white"
+                        : "bg-primary text-primary-foreground"
+                    )}>
+                      {res.quantity_requested} CB
+                    </Badge>
                   </div>
-                  <Badge className="bg-primary text-primary-foreground font-black text-xs border-0 rounded-none">
-                    {res.quantity_requested} CB
-                  </Badge>
+
+                  {isMinecraft && (
+                    <div className="mb-3 inline-block px-3 py-1.5 bg-[#3c8527] text-white text-xs font-black uppercase border-2 border-[#2d6520]">
+                      🎮 MINECRAFT
+                    </div>
+                  )}
+
+                  <p className="text-base font-bold text-foreground mt-3 mb-3 leading-relaxed">
+                    {res.justification || res.subject}
+                  </p>
+
+                  <div className="flex items-center gap-4 text-sm">
+                    <div className="flex items-center gap-2 px-3 py-1.5 bg-foreground/10 border-2 border-foreground/20">
+                      <Clock className="h-5 w-5 text-foreground" />
+                      <span className="font-black text-foreground">{res.time_slot}</span>
+                    </div>
+                    {res.classroom && (
+                      <div className="px-3 py-1.5 bg-info/20 border-2 border-info/40 font-black text-foreground">
+                        🏫 {res.classroom}
+                      </div>
+                    )}
+                  </div>
                 </div>
-                <p className="text-xs text-muted-foreground mt-1.5 ml-6 truncate">
-                  {res.subject}
-                </p>
-                <p className="text-[10px] text-muted-foreground mt-1 ml-6 flex items-center gap-1">
-                  <Clock className="h-3 w-3" />
-                  {res.time_slot}
-                </p>
-              </div>
-            ))}
+              );
+            })}
           </div>
         ) : (
-          <div className="text-center py-6 border-3 border-dashed border-foreground/10">
-            <Monitor className="h-10 w-10 mx-auto mb-2 text-muted-foreground/50" />
-            <p className="text-sm font-bold text-muted-foreground">Nenhuma reserva</p>
-            <p className="text-xs text-muted-foreground/70">para este dia</p>
+          <div className="text-center py-10 border-4 border-dashed border-foreground/20 bg-muted/10">
+            <Monitor className="h-16 w-16 mx-auto mb-4 text-muted-foreground/50" />
+            <p className="text-xl font-black text-muted-foreground uppercase">📭 Nenhuma reserva</p>
+            <p className="text-base text-muted-foreground/70 mt-2">para este dia</p>
           </div>
         )}
       </div>
@@ -138,7 +173,7 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      
+
       {/* Calendar - Neo Brutal */}
       <div className="border-3 border-foreground/20 bg-card shadow-[4px_4px_0px_0px_hsl(var(--foreground)/0.1)] p-4">
         <div className="border-b-3 border-foreground/10 pb-3 mb-4">
@@ -152,7 +187,7 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
             Clique em um dia para ver os detalhes
           </p>
         </div>
-        
+
         <Calendar
           mode="single"
           selected={selectedDate}
@@ -160,17 +195,16 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
           month={currentDate}
           className="w-full p-0 flex justify-center"
           locale={ptBR}
+          disableNavigation
           classNames={{
             months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0 w-full",
             month: "space-y-4 w-full",
-            caption: "flex justify-center pt-1 relative items-center",
-            caption_label: "text-sm font-black uppercase tracking-wide",
-            nav: "space-x-1 flex items-center",
-            nav_button: cn(
-              "h-8 w-8 bg-transparent border-2 border-foreground/20 p-0 hover:bg-muted transition-colors"
-            ),
-            nav_button_previous: "absolute left-1",
-            nav_button_next: "absolute right-1",
+            caption: "hidden",
+            caption_label: "hidden",
+            nav: "hidden",
+            nav_button: "hidden",
+            nav_button_previous: "hidden",
+            nav_button_next: "hidden",
             table: "w-full border-collapse",
             head_row: "flex",
             head_cell: "text-muted-foreground w-full font-black text-[10px] uppercase",
@@ -195,7 +229,7 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
           }}
         />
       </div>
-      
+
       {/* Day Details */}
       <div className="lg:col-span-1">
         {renderDayDetails()}

@@ -210,11 +210,13 @@ export function LoanForm({ onBack }: LoanFormProps) {
     };
 
     // Determina o placeholder do campo de finalidade baseado no tipo de usuário
-    const purposePlaceholder = selectedUser?.type === 'professor'
-        ? '🎓 Ex: Aula de Matemática (3º ano)'
-        : selectedUser?.type === 'funcionario'
-            ? '💼 Ex: Suporte Técnico, Secretaria'
-            : '📚 Ex: Atividade em Sala, Pesquisa';
+    const purposePlaceholder = !selectedUser
+        ? '📝 Ex: Professor Silva, Matemática'
+        : selectedUser.type === 'professor'
+            ? '🎓 Ex: Professor Silva, Matemática - 3º ano'
+            : selectedUser.type === 'funcionario'
+                ? '💼 Ex: João Silva, Suporte Técnico'
+                : '📚 Ex: Maria Santos, Atividade em Sala';
 
     // Lógica para exibir o cartão de confirmação da finalidade
     const renderPurposeInput = () => {
@@ -225,29 +227,37 @@ export function LoanForm({ onBack }: LoanFormProps) {
             const displayType = isUserSelection ? formData.purpose.split(': ')[0] : 'Finalidade Livre';
 
             return (
-                <GlassCard
+                <div
                     className={cn(
-                        "p-3 border-2 shadow-md cursor-pointer",
-                        "border-green-600/50 bg-green-50/80 dark:bg-green-950/50 dark:border-green-900"
+                        "p-3 border-4 border-black dark:border-white shadow-[6px_6px_0px_0px_rgba(34,197,94,0.3)] cursor-pointer transition-all",
+                        "bg-green-100 dark:bg-green-950/20"
                     )}
-                    onClick={handlePurposeClear} // Permite clicar para limpar e editar
+                    onClick={handlePurposeClear}
                 >
                     <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-3">
-                            <CheckCircle className="h-5 w-5 text-green-600" />
-                            <div>
-                                <p className="font-semibold text-sm text-foreground">{displayValue}</p>
-                                <p className="text-xs text-muted-foreground">{displayType}</p>
+                        <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 border-2 border-black bg-white flex items-center justify-center shadow-[2px_2px_0_0_#000]">
+                                <CheckCircle className="h-5 w-5 text-green-600" />
+                            </div>
+                            <div className="min-w-0">
+                                <p className="font-black text-sm uppercase truncate text-black dark:text-white leading-tight">{displayValue}</p>
+                                <p className="text-[10px] font-bold uppercase text-green-700 dark:text-green-400">{displayType}</p>
                             </div>
                         </div>
-                        <Button variant="ghost" size="sm" onClick={handlePurposeClear} disabled={loading}>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                handlePurposeClear();
+                            }}
+                            disabled={loading}
+                            className="bg-white border-2 border-black rounded-none h-8 w-8 p-0"
+                        >
                             <X className="h-4 w-4 text-red-500" />
                         </Button>
                     </div>
-                    <div className="flex flex-wrap gap-2 mt-2 pt-2 border-t border-green-200 dark:border-green-900">
-                        <Badge variant="secondary" className="capitalize">{displayType}</Badge>
-                    </div>
-                </GlassCard>
+                </div>
             );
         }
 
@@ -258,7 +268,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
                     <PurposeAutocomplete
                         value={formData.purpose}
                         onChange={(value) => setFormData({ ...formData, purpose: value })}
-                        disabled={loading || !isUserSelected}
+                        disabled={loading}
                         placeholder={purposePlaceholder}
                         userType={formData.userType}
                         onConfirm={handlePurposeConfirm} // Passa a função de confirmação
@@ -281,28 +291,28 @@ export function LoanForm({ onBack }: LoanFormProps) {
                 isPurposeDefined={isPurposeDefined}
             />
 
-            <form onSubmit={handleSubmit} className="space-y-5 relative z-10">
+            <form onSubmit={handleSubmit} className="space-y-3 relative z-10">
 
-                <div className="grid md:grid-cols-2 gap-5">
+                <div className="grid md:grid-cols-2 gap-3">
 
                     {/* ═══ COLUNA ESQUERDA ═══ */}
-                    <div className="space-y-5">
+                    <div className="space-y-3">
 
                         {/* ═══ SEÇÃO 1: SOLICITANTE ═══ */}
                         <div className={cn(
-                            "neo-card border-l-8 border-l-violet-500 bg-violet-50 dark:bg-violet-900/10 transition-all duration-300",
-                            currentStep === 1 && "ring-2 ring-violet-500 ring-offset-2 animate-gentle-pulse"
+                            "neo-card border-l-[12px] border-4 border-violet-500 bg-violet-100 dark:bg-violet-950/20 transition-all duration-300 shadow-[6px_6px_0px_0px_rgba(139,92,246,0.3)]",
+                            currentStep === 1 && "ring-4 ring-violet-500 ring-offset-2 animate-gentle-pulse"
                         )}>
-                            <CardHeader className="p-5 pb-3 border-b-2 border-black/10 dark:border-white/10">
-                                <CardTitle className="text-xl font-black uppercase tracking-tight flex items-center gap-2 text-foreground">
-                                    <User className="h-6 w-6 text-black dark:text-white" />
-                                    Passo 1: Solicitante
+                            <CardHeader className="p-3 pb-2 border-b-3 border-violet-500/30 bg-gradient-to-r from-violet-400 to-purple-500">
+                                <CardTitle className="text-base font-black uppercase tracking-tight flex items-center gap-2 text-white">
+                                    <User className="h-5 w-5" />
+                                    Solicitante
                                 </CardTitle>
                             </CardHeader>
 
-                            <CardContent className="p-5 space-y-4">
+                            <CardContent className="p-3 space-y-2">
                                 {/* Busca de Usuário */}
-                                <div className="space-y-2">
+                                <div className="space-y-1">
                                     {/* REMOVIDA A LABEL REDUNDANTE */}
                                     <Label className="text-sm font-bold uppercase text-foreground flex items-center gap-1 sr-only">
                                         Buscar por Nome, RA ou Email
@@ -327,18 +337,17 @@ export function LoanForm({ onBack }: LoanFormProps) {
 
                         {/* ═══ SEÇÃO 2: FINALIDADE ═══ */}
                         <div className={cn(
-                            "neo-card border-l-8 border-l-blue-500 bg-blue-50 dark:bg-blue-900/10 transition-all duration-300",
-                            !isUserSelected && "opacity-50 grayscale pointer-events-none",
-                            currentStep === 2 && isUserSelected && "ring-2 ring-blue-500 ring-offset-2 animate-gentle-pulse"
+                            "neo-card border-l-[12px] border-4 border-blue-500 bg-blue-100 dark:bg-blue-950/20 transition-all duration-300 shadow-[6px_6px_0px_0px_rgba(59,130,246,0.3)]",
+                            currentStep === 2 && isUserSelected && "ring-4 ring-blue-500 ring-offset-2 animate-gentle-pulse"
                         )}>
-                            <CardHeader className="p-5 pb-3 border-b-2 border-black/10 dark:border-white/10">
-                                <CardTitle className="text-xl font-black uppercase tracking-tight flex items-center gap-2 text-foreground">
-                                    <BookOpen className="h-6 w-6 text-black dark:text-white" />
-                                    Passo 2: Finalidade
+                            <CardHeader className="p-3 pb-2 border-b-3 border-blue-500/30 bg-gradient-to-r from-blue-400 to-cyan-500">
+                                <CardTitle className="text-base font-black uppercase tracking-tight flex items-center gap-2 text-white">
+                                    <BookOpen className="h-5 w-5" />
+                                    Finalidade
                                 </CardTitle>
                             </CardHeader>
-                            <CardContent className="p-5 space-y-4">
-                                <div className="space-y-2">
+                            <CardContent className="p-3 space-y-2">
+                                <div className="space-y-1">
                                     <Label className="text-sm font-bold uppercase text-foreground flex items-center gap-1">
                                         Finalidade do Empréstimo
                                         <span className="text-red-600">*</span>
@@ -347,7 +356,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
                                     {renderPurposeInput()}
 
                                     {/* Validação em tempo real para Finalidade */}
-                                    {!isPurposeDefined && isUserSelected && (
+                                    {!isPurposeDefined && (
                                         <div className="text-xs font-bold text-red-600 flex items-center gap-1 mt-1 uppercase">
                                             <AlertTriangle className="h-4 w-4" />
                                             Defina e confirme a finalidade
@@ -356,7 +365,7 @@ export function LoanForm({ onBack }: LoanFormProps) {
                                 </div>
 
                                 {/* NOVO CAMPO: Observações Adicionais */}
-                                <div className="space-y-2 pt-4 border-t-2 border-black/5 dark:border-white/5">
+                                <div className="space-y-1 pt-2 border-t border-black/5 dark:border-white/5">
                                     <Label className="text-sm font-bold uppercase text-foreground flex items-center gap-1">
                                         <MessageSquare className="h-4 w-4" />
                                         Observações (Opcional)
@@ -366,8 +375,8 @@ export function LoanForm({ onBack }: LoanFormProps) {
                                         value={formData.notes || ''}
                                         onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                                         placeholder="Ex: Devolver antes das 15h."
-                                        className="neo-input min-h-[80px]"
-                                        disabled={loading || !isUserSelected}
+                                        className="neo-input min-h-[60px]"
+                                        disabled={loading}
                                     />
                                 </div>
                             </CardContent>
@@ -375,25 +384,24 @@ export function LoanForm({ onBack }: LoanFormProps) {
                     </div>
 
                     {/* ═══ COLUNA DIREITA ═══ */}
-                    <div className="space-y-5">
+                    <div className="space-y-3">
 
                         {/* ═══ SEÇÃO 3: DISPOSITIVOS ═══ */}
                         <div className={cn(
-                            "neo-card border-l-8 border-l-amber-500 bg-amber-50 dark:bg-amber-900/10 transition-all duration-300",
-                            (!isUserSelected || !isPurposeDefined) && "opacity-50 grayscale pointer-events-none",
-                            currentStep === 3 && isUserSelected && isPurposeDefined && "ring-2 ring-amber-500 ring-offset-2 animate-gentle-pulse"
+                            "neo-card border-l-[12px] border-4 border-amber-500 bg-amber-100 dark:bg-amber-950/20 transition-all duration-300 shadow-[6px_6px_0px_0px_rgba(245,158,11,0.3)]",
+                            currentStep === 3 && isUserSelected && isPurposeDefined && "ring-4 ring-amber-500 ring-offset-2 animate-gentle-pulse"
                         )}>
-                            <CardHeader className="p-5 pb-3 border-b-2 border-black/10 dark:border-white/10">
+                            <CardHeader className="p-3 pb-2 border-b-3 border-amber-500/30 bg-gradient-to-r from-amber-400 to-orange-500">
                                 <div className="flex items-center justify-between">
-                                    <CardTitle className="text-xl font-black uppercase tracking-tight flex items-center gap-2 text-foreground">
-                                        <Computer className="h-6 w-6 text-black dark:text-white" />
-                                        Passo 3: Equipamento
+                                    <CardTitle className="text-base font-black uppercase tracking-tight flex items-center gap-2 text-white">
+                                        <Computer className="h-5 w-5" />
+                                        Equipamento
                                     </CardTitle>
                                     <Badge variant="outline" className={cn(
-                                        "rounded-none border-2 font-bold transition-colors",
+                                        "rounded-none border-3 border-white text-white font-bold transition-colors text-xs shadow-[2px_2px_0px_0px_rgba(255,255,255,0.3)]",
                                         deviceIds.length === 0
-                                            ? "bg-gray-200 text-gray-500 border-gray-400"
-                                            : "bg-amber-300 text-black border-black"
+                                            ? "bg-white/20"
+                                            : "bg-white/30"
                                     )}>
                                         {deviceIds.length === 0
                                             ? 'Nenhum'
@@ -403,18 +411,18 @@ export function LoanForm({ onBack }: LoanFormProps) {
                                 </div>
                             </CardHeader>
 
-                            <CardContent className="p-5">
+                            <CardContent className="p-3">
                                 <DeviceListInput
                                     deviceIds={deviceIds}
                                     setDeviceIds={setDeviceIds}
-                                    disabled={loading || !isUserSelected || !isPurposeDefined}
+                                    disabled={loading}
                                     filterStatus="disponivel"
-                                    actionLabel="Adicionar"
+                                    actionLabel="Empréstimo"
                                 />
 
                                 {/* Validação em tempo real para Dispositivos */}
-                                {isUserSelected && isPurposeDefined && deviceIds.length === 0 && (
-                                    <div className="text-xs font-bold text-red-600 flex items-center gap-1 mt-3 uppercase">
+                                {deviceIds.length === 0 && (
+                                    <div className="text-xs font-bold text-red-600 flex items-center gap-1 mt-2 uppercase">
                                         <AlertTriangle className="h-4 w-4" />
                                         Adicione pelo menos um dispositivo
                                     </div>
@@ -424,20 +432,19 @@ export function LoanForm({ onBack }: LoanFormProps) {
 
                         {/* ═══ SEÇÃO 4: PRAZO E CONFIRMAÇÃO ═══ */}
                         <div className={cn(
-                            "neo-card border-l-8 border-l-green-500 bg-gray-50 dark:bg-zinc-900 transition-all duration-300",
-                            (!isUserSelected || !isPurposeDefined || !isDevicesAdded) && "opacity-50 grayscale pointer-events-none",
-                            currentStep === 4 && isUserSelected && isPurposeDefined && isDevicesAdded && "ring-2 ring-green-500 ring-offset-2 animate-gentle-pulse"
+                            "neo-card border-l-[12px] border-4 border-green-500 bg-green-100 dark:bg-green-950/20 transition-all duration-300 shadow-[6px_6px_0px_0px_rgba(34,197,94,0.3)]",
+                            currentStep === 4 && isUserSelected && isPurposeDefined && isDevicesAdded && "ring-4 ring-green-500 ring-offset-2 animate-gentle-pulse"
                         )}>
-                            <CardHeader className="p-5 pb-3 border-b-2 border-black/10 dark:border-white/10">
-                                <CardTitle className="text-xl font-black uppercase tracking-tight flex items-center gap-2 text-foreground">
-                                    <Clock className="h-6 w-6 text-green-600" />
-                                    Passo 4: Prazo (Opcional)
+                            <CardHeader className="p-3 pb-2 border-b-3 border-green-500/30 bg-gradient-to-r from-green-400 to-emerald-500">
+                                <CardTitle className="text-base font-black uppercase tracking-tight flex items-center gap-2 text-white">
+                                    <Clock className="h-5 w-5" />
+                                    Prazo (Opcional)
                                 </CardTitle>
                             </CardHeader>
-                            <CardContent className="p-5">
-                                <div className="space-y-4">
+                            <CardContent className="p-3">
+                                <div className="space-y-2">
                                     {/* Checkbox de prazo */}
-                                    <div className="flex items-start space-x-3">
+                                    <div className="flex items-start space-x-2">
                                         <Checkbox
                                             id="returnDeadline"
                                             checked={hasReturnDeadline}
@@ -453,17 +460,17 @@ export function LoanForm({ onBack }: LoanFormProps) {
                                                     setFormData({ ...formData, expectedReturnDate: undefined });
                                                 }
                                             }}
-                                            className="mt-1 w-6 h-6 border-2 border-black data-[state=checked]:bg-black data-[state=checked]:text-white rounded-none"
-                                            disabled={!isUserSelected || !isPurposeDefined || !isDevicesAdded}
+                                            className="mt-0.5 w-5 h-5 border-2 border-black data-[state=checked]:bg-black data-[state=checked]:text-white rounded-none"
+                                            disabled={loading}
                                         />
                                         <div className="flex-1">
                                             <Label
                                                 htmlFor="returnDeadline"
-                                                className="text-base font-bold uppercase text-foreground cursor-pointer flex items-center gap-2"
+                                                className="text-sm font-bold uppercase text-foreground cursor-pointer flex items-center gap-2"
                                             >
                                                 Definir prazo de devolução
                                             </Label>
-                                            <p className="text-xs font-mono text-muted-foreground mt-1">
+                                            <p className="text-xs font-mono text-muted-foreground mt-0.5">
                                                 Adicione uma data limite
                                             </p>
                                         </div>
@@ -574,9 +581,14 @@ export function LoanForm({ onBack }: LoanFormProps) {
                     type="submit"
                     size="lg"
                     className={cn(
-                        "w-full h-14 text-lg neo-btn",
-                        "bg-violet-600 hover:bg-violet-700 text-white border-black dark:border-white",
-                        "disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:translate-x-[4px] disabled:translate-y-[4px]"
+                        "w-full h-16 text-xl font-black uppercase tracking-wide",
+                        "bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700",
+                        "text-white border-4 border-black dark:border-white",
+                        "shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.9)]",
+                        "hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px]",
+                        "active:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-x-[6px] active:translate-y-[6px]",
+                        "transition-all duration-150",
+                        "disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:translate-x-[8px] disabled:translate-y-[8px]"
                     )}
                     disabled={
                         loading ||
@@ -593,22 +605,22 @@ export function LoanForm({ onBack }: LoanFormProps) {
                     ) : !isUserSelected ? (
                         <>
                             <User className="mr-2 h-6 w-6" />
-                            PASSO 1 PENDENTE
+                            ❌ Solicitante Pendente
                         </>
                     ) : !isPurposeDefined ? (
                         <>
                             <BookOpen className="mr-2 h-6 w-6" />
-                            PASSO 2 PENDENTE
+                            ❌ Finalidade Pendente
                         </>
                     ) : !isDevicesAdded ? (
                         <>
                             <Computer className="mr-2 h-6 w-6" />
-                            PASSO 3 PENDENTE
+                            ❌ Equipamento Pendente
                         </>
                     ) : (
                         <>
                             <CheckCircle className="mr-2 h-6 w-6" />
-                            CONFIRMAR EMPRÉSTIMO ({deviceIds.length})
+                            ✅ Registrar Empréstimo ({deviceIds.length})
                         </>
                     )}
                 </Button>

@@ -54,19 +54,25 @@ export const LoanHub = ({ onBack, defaultTab = 'form', onNavigateToReturnView }:
   ];
 
   return (
-    <div className="min-h-screen relative py-[30px]">
+    <div className="min-h-screen relative py-[10px]">
       { /* Background grid pattern like DashboardLayout */}
       <div className="absolute inset-0 -z-10 bg-white dark:bg-zinc-950 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]" />
 
-      <div className="container mx-auto p-4 max-w-7xl relative z-10">
-        <div className="mb-8 text-center p-6 border-[length:var(--neo-border-width)] border-[hsl(var(--neo-border-color))] bg-violet-100 dark:bg-violet-950/30 shadow-[var(--neo-shadow)]">
-          <SectionHeader
-            title="HUB DE EMPRÉSTIMOS"
-            description="REGISTRE NOVOS EMPRÉSTIMOS OU GERENCIE OS ATIVOS"
-            icon={ClipboardList}
-            iconColor="text-violet-600 dark:text-violet-400"
-            className="flex flex-col items-center uppercase tracking-tight font-black"
-          />
+      <div className="container mx-auto p-2 max-w-7xl relative z-10">
+        <div className="mb-3 text-center p-4 border-4 border-black dark:border-white bg-gradient-to-br from-violet-400 to-purple-500 dark:from-violet-600 dark:to-purple-700 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.9)]">
+          <div className="flex flex-col items-center gap-2">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-white dark:bg-black border-3 border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,0.3)]">
+                <ClipboardList className="h-8 w-8 text-violet-600 dark:text-violet-400" />
+              </div>
+              <h2 className="text-2xl font-black uppercase tracking-tighter text-white dark:text-white drop-shadow-[2px_2px_0px_rgba(0,0,0,0.8)]">
+                HUB DE EMPRÉSTIMOS
+              </h2>
+            </div>
+            <p className="text-xs font-bold uppercase tracking-wide text-white/90 dark:text-white/90">
+              Registre novos empréstimos ou gerencie os ativos
+            </p>
+          </div>
         </div>
 
         <TabbedContent

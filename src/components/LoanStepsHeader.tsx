@@ -37,11 +37,12 @@ const steps = [
 ];
 
 export const LoanStepsHeader: React.FC<LoanStepsHeaderProps> = (props) => {
-  const totalSteps = steps.length;
-  const progressPercentage = (props.currentStep - 1) / (totalSteps - 1) * 100;
+  // Calcula quantos passos estão completos
+  const completedSteps = steps.filter(step => step.check(props)).length;
+  const progressPercentage = (completedSteps / steps.length) * 100;
 
   return (
-    <div className="sticky top-0 z-50 mb-6 animate-in fade-in duration-300 bg-white/98 dark:bg-zinc-950/98 backdrop-blur-sm py-3 -mx-4 px-4 border-b-2 border-zinc-200 dark:border-zinc-800">
+    <div className="sticky top-0 z-50 mb-3 animate-in fade-in duration-300 bg-white/98 dark:bg-zinc-950/98 backdrop-blur-sm py-2 -mx-4 px-4 border-b-2 border-zinc-200 dark:border-zinc-800">
       {/* Linha do Tempo Visual Compacta */}
       <div className="flex justify-between items-center relative px-4 max-w-4xl mx-auto">
 
@@ -59,8 +60,8 @@ export const LoanStepsHeader: React.FC<LoanStepsHeaderProps> = (props) => {
 
         {steps.map((step) => {
           const Icon = step.icon;
-          const isPastCompleted = step.check(props) && step.id < props.currentStep;
-          const isActive = props.currentStep === step.id;
+          const isCompleted = step.check(props);
+          const isPending = !isCompleted;
 
           return (
             <div
@@ -71,44 +72,47 @@ export const LoanStepsHeader: React.FC<LoanStepsHeaderProps> = (props) => {
             >
               {/* Círculo do Passo - Compacto */}
               <div className={cn(
-                "relative h-12 w-12 flex items-center justify-center mb-2 transition-all duration-300 border-2",
-                isActive && 'animate-pulse',
-                isActive
-                  ? 'bg-yellow-300 dark:bg-yellow-500 border-black dark:border-white shadow-[3px_3px_0px_0px_#000] dark:shadow-[3px_3px_0px_0px_#fff]'
-                  : isPastCompleted
-                    ? 'bg-green-500 dark:bg-green-600 text-white border-green-700 dark:border-green-400 shadow-[2px_2px_0px_0px_rgba(0,0,0,0.2)]'
-                    : 'bg-white dark:bg-zinc-900 border-zinc-300 dark:border-zinc-700 shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)]'
+                "relative h-10 w-10 flex items-center justify-center mb-1 transition-all duration-300 border-3",
+                isCompleted
+                  ? 'bg-green-500 dark:bg-green-600 text-white border-green-700 dark:border-green-400 shadow-[3px_3px_0px_0px_rgba(34,197,94,0.4)]'
+                  : 'bg-red-50 dark:bg-red-950/30 border-red-300 dark:border-red-800 shadow-[2px_2px_0px_0px_rgba(239,68,68,0.2)]'
               )}>
-                {isPastCompleted ? (
-                  <CheckCircle className="h-6 w-6 text-white" />
-                ) : isActive ? (
-                  <Icon className="h-6 w-6 text-black dark:text-black" />
+                {isCompleted ? (
+                  <CheckCircle className="h-5 w-5 text-white" />
                 ) : (
-                  <span className="font-bold text-lg text-zinc-400 dark:text-zinc-600">{step.id}</span>
+                  <Icon className="h-5 w-5 text-red-500 dark:text-red-400" />
                 )}
               </div>
 
               {/* Título - Compacto */}
               <div className={cn(
-                "px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide transition-all duration-300",
-                isActive
-                  ? 'text-black dark:text-white'
-                  : isPastCompleted
-                    ? 'text-green-600 dark:text-green-400'
-                    : 'text-zinc-400 dark:text-zinc-600'
+                "px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide transition-all duration-300",
+                isCompleted
+                  ? 'text-green-600 dark:text-green-400'
+                  : 'text-red-600 dark:text-red-400'
               )}>
                 {step.title}
               </div>
 
-              {/* Badge do Passo Atual */}
-              {isActive && (
-                <div className="mt-1 px-2 py-0.5 bg-black dark:bg-white text-white dark:text-black text-[9px] font-black uppercase tracking-wider">
-                  Passo {props.currentStep}/4
-                </div>
-              )}
+              {/* Badge de Status */}
+              <div className={cn(
+                "mt-0.5 px-1.5 py-0.5 text-[7px] font-black uppercase tracking-wider",
+                isCompleted
+                  ? 'bg-green-500 text-white'
+                  : 'bg-red-500 text-white'
+              )}>
+                {isCompleted ? '✓ OK' : '✗ Falta'}
+              </div>
             </div>
           );
         })}
+      </div>
+
+      {/* Contador de Progresso */}
+      <div className="text-center mt-3">
+        <span className="text-xs font-bold text-foreground">
+          {completedSteps} de {steps.length} passos completos
+        </span>
       </div>
     </div>
   );
