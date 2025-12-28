@@ -12,9 +12,10 @@ interface LoanHubProps {
   defaultTab?: 'form' | 'active';
   // NOVO: Função para navegar para a view 'return' de nível superior
   onNavigateToReturnView: (chromebookId: string) => void;
+  initialReservationData?: any;
 }
 
-export const LoanHub = ({ onBack, defaultTab = 'form', onNavigateToReturnView }: LoanHubProps) => {
+export const LoanHub = ({ onBack, defaultTab = 'form', onNavigateToReturnView, initialReservationData }: LoanHubProps) => {
   const { getLoanHistory } = useDatabase();
   const [activeLoans, setActiveLoans] = useState<LoanHistoryItem[]>([]);
   const [loanHistory, setLoanHistory] = useState<LoanHistoryItem[]>([]);
@@ -41,7 +42,7 @@ export const LoanHub = ({ onBack, defaultTab = 'form', onNavigateToReturnView }:
       title: 'Novo Empréstimo',
       content: (
         <div className="p-0">
-          <LoanForm />
+          <LoanForm initialReservationData={initialReservationData} />
         </div>
       ),
     },

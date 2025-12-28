@@ -3,8 +3,12 @@ import { format, isPast } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Calendar } from '@/components/ui/calendar';
 import { Badge } from '@/components/ui/badge';
-import { Monitor, Clock, User, CalendarDays } from 'lucide-react';
+import { Monitor, Clock, User, CalendarDays, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
+import { useProfileRole } from '@/hooks/use-profile-role';
 import type { Reservation } from '@/hooks/useDatabase';
 
 interface SchedulingMonthViewProps {
@@ -21,6 +25,22 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
   isLoading,
 }) => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+  const navigate = useNavigate();
+  const { user: currentUser } = useAuth();
+  const { role } = useProfileRole();
+
+  const isSuperAdmin = role === 'super_admin';
+
+  // Lista de e-mails responsáveis pela sala google (conforme solicitado pelo usuário)
+  const responsibleEmails = [
+    'eduardo.cardoso@colegiosaojudas.com.br',
+    'davi.rossin@colegiosaojudas.com.br',
+    'arthur.alencar@colegiosaojudas.com.br'
+  ];
+
+  const isResponsible = useMemo(() => {
+    return isSuperAdmin || (currentUser?.email && responsibleEmails.includes(currentUser.email));
+  }, [isSuperAdmin, currentUser]);
 
   const reservationsByDay = useMemo(() => {
     const map = new Map<string, Reservation[]>();
@@ -156,6 +176,29 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
                       </div>
                     )}
                   </div>
+
+                  {isResponsible && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full mt-4 h-8 text-[11px] font-black uppercase rounded-none border-2 border-primary bg-primary/5 hover:bg-primary hover:text-white transition-all flex items-center justify-center gap-2"
+                      onClick={() => {
+                        navigate('/', {
+                          state: {
+                            fromScheduling: true,
+                            reservationData: {
+                              ...res,
+                              date: dateKey, // selectedDate formatado
+                              time_slot: res.time_slot
+                            }
+                          }
+                        });
+                      }}
+                    >
+                      <ArrowRight className="h-4 w-4" />
+                      Iniciar Empréstimo Desta Reserva
+                    </Button>
+                  )}
                 </div>
               );
             })}

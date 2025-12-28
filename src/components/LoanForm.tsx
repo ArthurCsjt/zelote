@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { toast } from "@/hooks/use-toast";
@@ -17,6 +17,7 @@ import { useDatabase } from '@/hooks/useDatabase';
 import UserAutocomplete from "./UserAutocomplete";
 import PurposeAutocomplete from "./PurposeAutocomplete";
 import type { UserSearchResult } from '@/hooks/useUserSearch';
+import { useUserSearch } from '@/hooks/useUserSearch';
 import { Card, CardContent, CardTitle, CardHeader } from "./ui/card";
 import { GlassCard } from "./ui/GlassCard";
 import { DeviceListInput } from "./DeviceListInput";
@@ -41,21 +42,60 @@ interface LoanFormData {
 // Define a interface das props do componente
 interface LoanFormProps {
     onBack?: () => void;
+    initialReservationData?: any;
 }
 
 /**
  * Componente de formulário para realizar novos empréstimos de Chromebooks
  */
-export function LoanForm({ onBack }: LoanFormProps) {
+export function LoanForm({ onBack, initialReservationData }: LoanFormProps) {
     // === ESTADOS (STATES) ===
 
     const { createLoan, bulkCreateLoans, loading } = useDatabase();
+    const { users } = useUserSearch();
 
     const [formData, setFormData] = useState<LoanFormData>({
         studentName: "", ra: "", email: "", chromebookId: "", purpose: "", userType: 'aluno', loanType: 'lote', notes: ''
     });
 
     const [selectedUser, setSelectedUser] = useState<UserSearchResult | null>(null);
+
+    // --- PRE-FILL LOGIC FROM RESERVATION ---
+    useEffect(() => {
+        if (initialReservationData && users.length > 0) {
+            const reservation = initialReservationData;
+
+            // Tenta encontrar o usuário pelo e-mail
+            const foundUser = users.find(u => u.email === reservation.prof_email);
+
+            if (foundUser) {
+                setSelectedUser(foundUser);
+                setFormData(prev => ({
+                    ...prev,
+                    studentName: foundUser.name,
+                    ra: foundUser.ra || '',
+                    email: foundUser.email,
+                    userType: foundUser.type,
+                    purpose: reservation.justification,
+                    notes: `Reserva do dia ${format(new Date(reservation.date), 'dd/MM/yyyy')} às ${reservation.time_slot}. Quantidade solicitada: ${reservation.quantity_requested} Chromebooks.`,
+                }));
+                // Confirma automaticamente a finalidade se houver uma justificativa
+                if (reservation.justification) {
+                    setIsPurposeConfirmed(true);
+                }
+            } else {
+                // Caso não encontre no autocomplete (improvável para professores ativos), preenche o máximo possível
+                setFormData(prev => ({
+                    ...prev,
+                    studentName: reservation.prof_name || '',
+                    email: reservation.prof_email || '',
+                    purpose: reservation.justification || '',
+                    userType: 'professor',
+                    notes: `Reserva do dia ${format(new Date(reservation.date), 'dd/MM/yyyy')} às ${reservation.time_slot}. Quantidade solicitada: ${reservation.quantity_requested} Chromebooks.`,
+                }));
+            }
+        }
+    }, [initialReservationData, users]);
     const [hasReturnDeadline, setHasReturnDeadline] = useState(false);
     const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
     const [deviceIds, setDeviceIds] = useState<string[]>([]); // Lista de IDs de dispositivos

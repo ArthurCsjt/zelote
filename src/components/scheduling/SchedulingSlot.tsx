@@ -1,7 +1,8 @@
 import React, { useMemo } from 'react';
 import { cn } from '@/lib/utils';
-import { Plus, Monitor, User, CheckCircle, AlertTriangle, Clock, Trash2 } from 'lucide-react';
+import { Plus, Monitor, User, CheckCircle, AlertTriangle, Clock, Trash2, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
 import type { Reservation } from '@/hooks/useDatabase';
 import type { User as AuthUser } from '@supabase/supabase-js';
 import { ReservationDialog } from './ReservationDialog';
@@ -30,8 +31,20 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
 }) => {
   const { role, isAdmin } = useProfileRole();
   const { deleteReservation } = useDatabase();
+  const navigate = useNavigate();
 
   const isSuperAdmin = role === 'super_admin';
+
+  // Lista de e-mails responsáveis pela sala google (conforme solicitado pelo usuário)
+  const responsibleEmails = [
+    'eduardo.cardoso@colegiosaojudas.com.br',
+    'davi.rossin@colegiosaojudas.com.br',
+    'arthur.alencar@colegiosaojudas.com.br'
+  ];
+
+  const isResponsible = useMemo(() => {
+    return isSuperAdmin || (currentUser?.email && responsibleEmails.includes(currentUser.email));
+  }, [isSuperAdmin, currentUser]);
 
   const { jaReservados, restantes, myReservation, isAvailable, isPartial, isFull, isPast } = useMemo(() => {
     const jaReservados = allReservationsForSlot.reduce((sum, res) => sum + res.quantity_requested, 0);
@@ -114,6 +127,29 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
               >
                 <Trash2 className="h-3 w-3 mr-1" />
                 Cancelar Minha Reserva
+              </Button>
+            )}
+
+            {isResponsible && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full mt-2 h-7 text-[10px] font-black uppercase rounded-none border-2 border-primary bg-primary/5 hover:bg-primary hover:text-white transition-all"
+                onClick={() => {
+                  navigate('/', {
+                    state: {
+                      fromScheduling: true,
+                      reservationData: {
+                        ...myReservation,
+                        date: date,
+                        time_slot: timeSlot
+                      }
+                    }
+                  });
+                }}
+              >
+                <ArrowRight className="h-3 w-3 mr-1" />
+                Iniciar Empréstimo
               </Button>
             )}
             {isSuperAdmin && myReservation.created_by !== currentUser?.id && (
@@ -201,6 +237,29 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
                       {res.created_by === currentUser?.id ? 'Cancelar' : 'Remover'}
                     </Button>
                   )}
+
+                  {isResponsible && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-6 px-2 text-[9px] font-black uppercase rounded-none border-2 border-primary bg-primary/5 hover:bg-primary hover:text-white transition-all ml-2 mb-2"
+                      onClick={() => {
+                        navigate('/', {
+                          state: {
+                            fromScheduling: true,
+                            reservationData: {
+                              ...res,
+                              date: date,
+                              time_slot: timeSlot
+                            }
+                          }
+                        });
+                      }}
+                    >
+                      <ArrowRight className="h-3 w-3 mr-1" />
+                      Iniciar Empréstimo
+                    </Button>
+                  )}
                 </div>
               ))}
             </div>
@@ -280,6 +339,30 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
                       >
                         <Trash2 className="h-3 w-3 mr-1" />
                         {res.created_by === currentUser?.id ? 'Cancelar' : 'Remover'}
+                      </Button>
+                    )}
+
+                    {isResponsible && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-6 px-2 text-[9px] font-black uppercase rounded-none border-2 border-primary bg-primary/5 hover:bg-primary hover:text-white transition-all ml-2 mb-2"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate('/', {
+                            state: {
+                              fromScheduling: true,
+                              reservationData: {
+                                ...res,
+                                date: date,
+                                time_slot: timeSlot
+                              }
+                            }
+                          });
+                        }}
+                      >
+                        <ArrowRight className="h-3 w-3 mr-1" />
+                        Iniciar Empréstimo
                       </Button>
                     )}
                   </div>

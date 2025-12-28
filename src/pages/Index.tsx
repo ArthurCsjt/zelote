@@ -3,7 +3,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useProfileRole } from '@/hooks/use-profile-role';
 
 import { AuditHub } from '@/components/audit/AuditHub';
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useLocation } from 'react-router-dom';
 import { RegistrationHub } from "@/components/RegistrationHub";
 import Layout from "@/components/Layout";
 import { MainMenu } from "@/components/MainMenu";
@@ -16,7 +17,7 @@ import { useDatabase } from "@/hooks/useDatabase";
 import { ReturnWrapper } from '@/components/ReturnWrapper';
 import { Navigate } from 'react-router-dom';
 
-type AppView = 'menu' | 'registration' | 'dashboard' | 'inventory' | 'loan' | 'audit' | 'return' | 'scheduling';
+type AppView = 'menu' | 'registration' | 'dashboard' | 'inventory' | 'loan' | 'audit' | 'return' | 'scheduling' | 'quick-register';
 
 const Index = () => {
   const { user, logout } = useAuth();
@@ -28,6 +29,15 @@ const Index = () => {
   const [selectedChromebookIdForReturn, setSelectedChromebookIdForReturn] = useState<string | undefined>(undefined);
   const [showQRCodeModal, setShowQRCodeModal] = useState(false);
   const [selectedChromebookId, setSelectedChromebookId] = useState<string | null>(null);
+  const location = useLocation();
+
+  // Capturar navegação vinda do agendamento
+  useEffect(() => {
+    if (location.state?.fromScheduling && location.state?.reservationData) {
+      setCurrentView('loan');
+      setLoanTabDefault('form');
+    }
+  }, [location.state]);
 
   const handleNavigation = (view: AppView, tab?: 'form' | 'active', chromebookId?: string) => {
     setCurrentView(view);
@@ -80,6 +90,7 @@ const Index = () => {
           onBack={handleBackToMenu}
           defaultTab={loanTabDefault}
           onNavigateToReturnView={handleNavigateToReturnView}
+          initialReservationData={location.state?.reservationData}
         />;
       case 'return':
         return <ReturnWrapper
