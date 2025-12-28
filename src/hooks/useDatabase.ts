@@ -55,6 +55,7 @@ export interface Reservation extends ReservationData {
   // Detalhes do professor (para exibição)
   prof_name: string;
   prof_email: string;
+  associated_loans?: { chromebook_id: string }[];
 }
 
 
@@ -301,7 +302,8 @@ export const useDatabase = () => {
           user_type: data.userType,
           loan_type: data.loanType,
           expected_return_date: data.expectedReturnDate?.toISOString(),
-          created_by: user.id
+          created_by: user.id,
+          reservation_id: data.reservationId
         })
         .select()
         .single();
@@ -365,7 +367,8 @@ export const useDatabase = () => {
           user_type: data.userType,
           loan_type: data.loanType,
           expected_return_date: data.expectedReturnDate?.toISOString(),
-          created_by: user.id
+          created_by: user.id,
+          reservation_id: data.reservationId
         });
       }
 
@@ -1079,7 +1082,10 @@ export const useDatabase = () => {
         .from('reservations')
         .select(`
           *,
-          prof_data:profiles!professor_id (name, email)
+          prof_data:profiles!professor_id (name, email),
+          loans (
+            chromebooks (chromebook_id)
+          )
         `)
         .gte('date', startDate)
         .lte('date', endDate)
@@ -1094,11 +1100,20 @@ export const useDatabase = () => {
         const profName = profData?.name;
         const profEmail = profData?.email;
 
+        // Extrai os empréstimos associados de forma segura
+        const loans = (res as any).loans || [];
+        const associatedLoans = loans.map((l: any) => {
+          // Lida com o caso de chromebooks ser um objeto ou um array (caso a relação não seja detectada como 1-1)
+          const cb = Array.isArray(l.chromebooks) ? l.chromebooks[0] : l.chromebooks;
+          return { chromebook_id: cb?.chromebook_id };
+        }).filter((l: any) => l.chromebook_id);
+
         return {
           ...res,
           prof_name: profName && profName !== 'Usuário Desconhecido' ? profName : (profEmail || 'Usuário Desconhecido'),
           prof_email: profEmail || '',
           justification: (res as any).justification || '',
+          associated_loans: associatedLoans
         };
       }) as Reservation[];
 
@@ -1193,6 +1208,32 @@ export const useDatabase = () => {
         }
       }
 
+      // --- NOTIFICAÇÃO PARA OS RESPONSÁVEIS ---
+      const responsibleUserIds = [
+        'e01b402a-3f99-48e5-84f6-3b23aad4fba9', // Eduardo
+        '2c613746-af33-47b2-bc0a-cd965f8603de', // Davi
+        'e9253b42-f52e-445b-b3ea-1f0c93e4c3f9'  // Arthur
+      ];
+
+      const notifications = responsibleUserIds
+        .filter(id => id !== user.id) // Não notifica o próprio criador se ele for um dos 3
+        .map(responsibleId => ({
+          user_id: responsibleId,
+          title: 'Nova Reserva de Chromebooks',
+          message: `${reservationResult.prof_name} agendou ${reservationResult.quantity_requested} Chromebooks para o dia ${format(new Date(reservationResult.date), 'dd/MM/yyyy')} às ${reservationResult.time_slot}.`,
+          type: 'reservation',
+          metadata: {
+            reservation_id: reservationResult.id,
+            prof_name: reservationResult.prof_name,
+            date: reservationResult.date,
+            time_slot: reservationResult.time_slot
+          }
+        }));
+
+      if (notifications.length > 0) {
+        await supabase.from('notifications' as any).insert(notifications);
+      }
+
       toast({ title: "Sucesso", description: "Reserva agendada com sucesso!", variant: "success" });
 
       return reservationResult;
@@ -1243,6 +1284,31 @@ export const useDatabase = () => {
       // Disparar e-mails para cada reserva (opcional, talvez um e-mail consolidado fosse melhor, mas vamos manter simples por enquanto)
       // Para não sobrecarregar, vamos ignorar o envio de e-mail no bulk por agora ou fazer apenas para a primeira data
 
+      // --- NOTIFICAÇÃO PARA OS RESPONSÁVEIS EM LOTE ---
+      const responsibleUserIds = [
+        'e01b402a-3f99-48e5-84f6-3b23aad4fba9', // Eduardo
+        '2c613746-af33-47b2-bc0a-cd965f8603de', // Davi
+        'e9253b42-f52e-445b-b3ea-1f0c93e4c3f9'  // Arthur
+      ];
+
+      const batchNotifications = responsibleUserIds
+        .filter(id => id !== user.id)
+        .map(responsibleId => ({
+          user_id: responsibleId,
+          title: 'Novas Reservas (Lote)',
+          message: `${dates.length} novos agendamentos realizados por ${user.email?.split('@')[0]} para o horário ${baseData.time_slot}.`,
+          type: 'reservation_bulk',
+          metadata: {
+            count: dates.length,
+            time_slot: baseData.time_slot,
+            dates: dates
+          }
+        }));
+
+      if (batchNotifications.length > 0) {
+        await supabase.from('notifications' as any).insert(batchNotifications);
+      }
+
       toast({ title: "Sucesso", description: `${results.length} agendamentos realizados com sucesso!`, variant: "success" });
       return { success: true, count: results.length };
     } catch (error: any) {
@@ -1282,12 +1348,64 @@ export const useDatabase = () => {
     }
   };
 
+  // --- NOTIFICATION OPERATIONS ---
+  const getNotifications = useCallback(async (): Promise<any[]> => {
+    if (!user) return [];
+    try {
+      const { data, error } = await supabase
+        .from('notifications' as any)
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(20);
+
+      if (error) throw error;
+      return data || [];
+    } catch (error: any) {
+      logger.error('Erro ao buscar notificações:', error);
+      return [];
+    }
+  }, [user]);
+
+  const markNotificationAsRead = useCallback(async (id: string): Promise<boolean> => {
+    if (!user) return false;
+    try {
+      const { error } = await supabase
+        .from('notifications' as any)
+        .update({ is_read: true })
+        .eq('id', id)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+      return true;
+    } catch (error: any) {
+      logger.error('Erro ao marcar notificação como lida:', error);
+      return false;
+    }
+  }, [user]);
+
+  const markAllNotificationsAsRead = useCallback(async (): Promise<boolean> => {
+    if (!user) return false;
+    try {
+      const { error } = await supabase
+        .from('notifications' as any)
+        .update({ is_read: true })
+        .eq('user_id', user.id)
+        .eq('is_read', false);
+
+      if (error) throw error;
+      return true;
+    } catch (error: any) {
+      logger.error('Erro ao marcar todas as notificações como lidas:', error);
+      return false;
+    }
+  }, [user]);
 
   return {
     loading,
     createChromebook,
     getChromebooks,
-    getChromebooksByStatus, // EXPORTANDO A NOVA FUNÇÃO
+    getChromebooksByStatus,
     updateChromebook,
     deleteChromebook,
     syncChromebookStatus,
@@ -1295,7 +1413,7 @@ export const useDatabase = () => {
     bulkCreateLoans,
     getActiveLoans,
     getLoanHistory,
-    getLoanDetailsByChromebookId, // NOVA FUNÇÃO PARA BUSCAR DETALHES DO EMPRÉSTIMO
+    getLoanDetailsByChromebookId,
     createReturn,
     returnChromebookById,
     bulkReturnChromebooks,
@@ -1306,15 +1424,18 @@ export const useDatabase = () => {
     deleteAllStudents,
     createTeacher,
     updateTeacher,
-    bulkInsertTeachers, // EXPORTANDO A NOVA FUNÇÃO
+    bulkInsertTeachers,
     createStaff,
     updateStaff,
     deleteUserRecord,
-    // NOVAS FUNÇÕES DE AGENDAMENTO
     getTotalAvailableChromebooks,
     getReservationsForWeek,
     createReservation,
     bulkCreateReservations,
     deleteReservation,
+    // NOTIFICAÇÕES
+    getNotifications,
+    markNotificationAsRead,
+    markAllNotificationsAsRead
   };
 };

@@ -15,6 +15,7 @@ interface ConfirmLoanDialogProps {
         purpose: string;
         notes?: string;
         expectedReturnDate?: Date;
+        reservationId?: string;
     };
     deviceIds: string[];
     hasReturnDeadline: boolean;
@@ -47,6 +48,14 @@ export function ConfirmLoanDialog({
                 </DialogHeader>
 
                 <div className="space-y-4 p-6">
+                    {/* Vinculado a Reserva (se houver) */}
+                    {formData.reservationId && (
+                        <div className="flex items-center gap-2 p-2 bg-indigo-500 text-white font-black text-[10px] uppercase border-2 border-black shadow-[3px_3px_0px_0px_#000]">
+                            <Clock className="h-4 w-4" />
+                            VINCULADO A UMA RESERVA ATIVA
+                        </div>
+                    )}
+
                     {/* Solicitante */}
                     <div className="flex items-start gap-3 p-3 neo-card border-none shadow-none bg-violet-100 dark:bg-violet-900/30 border-l-4 border-l-violet-600">
                         <User className="h-6 w-6 text-black dark:text-white mt-1 shrink-0" />

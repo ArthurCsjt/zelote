@@ -226,6 +226,15 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
                     {res.classroom && <span className="ml-2 text-[9px] px-1.5 bg-info/10 text-info">SALA: {res.classroom}</span>}
                   </p>
                   <p className="text-muted-foreground mb-1">{res.justification} · {res.quantity_requested} CB</p>
+                  {res.associated_loans && res.associated_loans.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-1 mb-2">
+                      {res.associated_loans.map((loan, lIdx) => (
+                        <span key={lIdx} className="text-[8px] font-black bg-blue-600 text-white px-1.5 py-0.5 border border-black">
+                          {loan.chromebook_id}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                   {(isSuperAdmin || res.created_by === currentUser?.id) && (
                     <Button
                       variant="destructive"

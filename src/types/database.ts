@@ -35,6 +35,7 @@ export interface Loan {
   created_by?: string;
   created_at: string;
   updated_at: string;
+  reservation_id?: string;
 }
 
 export interface Return {
@@ -60,6 +61,7 @@ export interface LoanFormData {
   userType: UserType;
   loanType: LoanType;
   expectedReturnDate?: Date;
+  reservationId?: string;
 }
 
 // Interface para dados de devolução
@@ -91,6 +93,7 @@ export interface LoanHistoryItem {
   returned_by_type?: UserType;
   return_notes?: string;
   status: 'ativo' | 'devolvido' | 'atrasado';
+  reservation_id?: string;
 }
 
 // Interface para dados do Chromebook no inventário (mantendo compatibilidade)

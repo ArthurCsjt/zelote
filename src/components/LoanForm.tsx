@@ -16,8 +16,9 @@ import { validateLoanFormData, sanitizeQRCodeData, normalizeChromebookId } from 
 import { useDatabase } from '@/hooks/useDatabase';
 import UserAutocomplete from "./UserAutocomplete";
 import PurposeAutocomplete from "./PurposeAutocomplete";
-import type { UserSearchResult } from '@/hooks/useUserSearch';
 import { useUserSearch } from '@/hooks/useUserSearch';
+import type { UserSearchResult } from '@/hooks/useUserSearch';
+import { useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardTitle, CardHeader } from "./ui/card";
 import { GlassCard } from "./ui/GlassCard";
 import { DeviceListInput } from "./DeviceListInput";
@@ -37,6 +38,7 @@ interface LoanFormData {
     expectedReturnDate?: Date;
     // NOVO CAMPO: Observações
     notes?: string;
+    reservationId?: string;
 }
 
 // Define a interface das props do componente
@@ -52,10 +54,11 @@ export function LoanForm({ onBack, initialReservationData }: LoanFormProps) {
     // === ESTADOS (STATES) ===
 
     const { createLoan, bulkCreateLoans, loading } = useDatabase();
+    const queryClient = useQueryClient();
     const { users } = useUserSearch();
 
     const [formData, setFormData] = useState<LoanFormData>({
-        studentName: "", ra: "", email: "", chromebookId: "", purpose: "", userType: 'aluno', loanType: 'lote', notes: ''
+        studentName: "", ra: "", email: "", chromebookId: "", purpose: "", userType: 'aluno', loanType: 'lote', notes: '', reservationId: undefined
     });
 
     const [selectedUser, setSelectedUser] = useState<UserSearchResult | null>(null);
@@ -78,6 +81,7 @@ export function LoanForm({ onBack, initialReservationData }: LoanFormProps) {
                     userType: foundUser.type,
                     purpose: reservation.justification,
                     notes: `Reserva do dia ${format(new Date(reservation.date), 'dd/MM/yyyy')} às ${reservation.time_slot}. Quantidade solicitada: ${reservation.quantity_requested} Chromebooks.`,
+                    reservationId: reservation.id,
                 }));
                 // Confirma automaticamente a finalidade se houver uma justificativa
                 if (reservation.justification) {
@@ -92,6 +96,7 @@ export function LoanForm({ onBack, initialReservationData }: LoanFormProps) {
                     purpose: reservation.justification || '',
                     userType: 'professor',
                     notes: `Reserva do dia ${format(new Date(reservation.date), 'dd/MM/yyyy')} às ${reservation.time_slot}. Quantidade solicitada: ${reservation.quantity_requested} Chromebooks.`,
+                    reservationId: reservation.id,
                 }));
             }
         }
@@ -233,6 +238,7 @@ export function LoanForm({ onBack, initialReservationData }: LoanFormProps) {
             loanType: loanType,
             expectedReturnDate: hasReturnDeadline && formData.expectedReturnDate ? formData.expectedReturnDate : undefined,
             notes: formData.notes,
+            reservationId: formData.reservationId,
         }));
 
         const { successCount, errorCount } = await bulkCreateLoans(loanDataList);
@@ -244,6 +250,8 @@ export function LoanForm({ onBack, initialReservationData }: LoanFormProps) {
                 description: `${successCount} Chromebooks emprestados com sucesso. ${errorCount > 0 ? `(${errorCount} falha(s))` : ''}`,
                 variant: "success",
             });
+            // Invalida as queries de reserva para atualizar o agendamento
+            queryClient.invalidateQueries({ queryKey: ['reservations'] });
         } else if (errorCount > 0) {
             // Erros já são toastados dentro do useDatabase
         }

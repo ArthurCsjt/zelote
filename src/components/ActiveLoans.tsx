@@ -169,6 +169,12 @@ export function ActiveLoans({ onNavigateToReturn }: ActiveLoansProps) {
                             Lote
                           </Badge>
                         )}
+                        {loan.reservation_id && (
+                          <Badge variant="outline" className="rounded-none bg-indigo-500 text-white border-3 border-indigo-700 font-bold text-xs">
+                            <Clock className="h-3 w-3 mr-1" />
+                            Reserva
+                          </Badge>
+                        )}
                         {/* Status de Atraso */}
                         {overdueStatus && (
                           <Badge variant="destructive" className="gap-1 rounded-none border-3 border-black font-bold text-xs">

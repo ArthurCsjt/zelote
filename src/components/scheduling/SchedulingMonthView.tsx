@@ -177,6 +177,22 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
                     )}
                   </div>
 
+                  {res.associated_loans && res.associated_loans.length > 0 && (
+                    <div className="mt-4 pt-4 border-t-4 border-dashed border-foreground/10">
+                      <p className="text-[10px] font-black uppercase text-blue-600 dark:text-blue-400 mb-2 flex items-center gap-2">
+                        <Monitor className="h-4 w-4" />
+                        Equipamentos Retirados:
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {res.associated_loans.map((loan, lIdx) => (
+                          <div key={lIdx} className="text-[11px] font-black bg-blue-500 text-white px-2 py-1 border-2 border-black shadow-[3px_3px_0px_0px_#000]">
+                            {loan.chromebook_id}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                   {isResponsible && (
                     <Button
                       variant="outline"

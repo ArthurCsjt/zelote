@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, LogOut, ArrowLeft, Bell, Settings, Sun, Moon, Loader2 } from 'lucide-react';
+import { User, LogOut, ArrowLeft, Bell, Settings, Sun, Moon, Loader2, Activity } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/hooks/use-theme';
 import { useNavigate } from 'react-router-dom';
@@ -7,6 +7,10 @@ import { useProfileRole } from '@/hooks/use-profile-role';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { ActivityFeed } from './ActivityFeed';
+import { NotificationFeed } from './NotificationFeed';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useDatabase } from '@/hooks/useDatabase';
+import { useQuery } from '@tanstack/react-query';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 
@@ -32,7 +36,17 @@ const Layout: React.FC<LayoutProps> = ({
   const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
   const { role, loading: roleLoading } = useProfileRole();
+  const { getNotifications } = useDatabase();
   const [isStandalone, setIsStandalone] = React.useState(false);
+
+  const { data: notifications } = useQuery({
+    queryKey: ['notifications'],
+    queryFn: getNotifications,
+    enabled: !!user,
+    refetchInterval: 30000,
+  });
+
+  const unreadCount = notifications?.filter(n => !n.is_read).length || 0;
 
   React.useEffect(() => {
     const checkStandalone = () => {
@@ -120,14 +134,38 @@ const Layout: React.FC<LayoutProps> = ({
                 <PopoverTrigger asChild>
                   <Button variant="ghost" size="icon" className="relative h-9 w-9 rounded-full hover:bg-white/10 text-white hover:text-white transition-colors">
                     <Bell className="h-5 w-5" />
-                    <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-blue-500 ring-2 ring-primary" />
+                    {unreadCount > 0 && (
+                      <span className="absolute top-2 right-2 h-4 min-w-4 flex items-center justify-center rounded-full bg-red-500 text-white text-[9px] font-black border-2 border-primary animate-in zoom-in px-1">
+                        {unreadCount}
+                      </span>
+                    )}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent
                   className="p-0 w-80 sm:w-96 bg-card/95 backdrop-blur-xl border-border shadow-xl rounded-xl overflow-hidden"
                   align="end"
                 >
-                  <ActivityFeed />
+                  <Tabs defaultValue="notifications" className="w-full">
+                    <TabsList className="w-full rounded-none bg-muted/50 p-0 h-10 border-b-2 border-black/10 dark:border-white/10">
+                      <TabsTrigger value="notifications" className="flex-1 rounded-none data-[state=active]:bg-blue-500 data-[state=active]:text-white uppercase font-black text-[10px] tracking-widest gap-2">
+                        <Bell className="h-3 w-3" />
+                        Notificações
+                        {unreadCount > 0 && (
+                          <span className="bg-white text-blue-600 px-1 rounded-sm text-[8px]">{unreadCount}</span>
+                        )}
+                      </TabsTrigger>
+                      <TabsTrigger value="activity" className="flex-1 rounded-none data-[state=active]:bg-yellow-400 data-[state=active]:text-black uppercase font-black text-[10px] tracking-widest gap-2">
+                        <Activity className="h-3 w-3" />
+                        Atividade
+                      </TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="notifications" className="m-0 border-none outline-none">
+                      <NotificationFeed />
+                    </TabsContent>
+                    <TabsContent value="activity" className="m-0 border-none outline-none">
+                      <ActivityFeed />
+                    </TabsContent>
+                  </Tabs>
                 </PopoverContent>
               </Popover>
 

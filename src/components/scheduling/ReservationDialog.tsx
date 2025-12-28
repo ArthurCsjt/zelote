@@ -188,134 +188,7 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
             </div>
           </div>
 
-          {/* MODO DE AGENDAMENTO (NOVO) */}
-          <div className="border-4 border-black dark:border-white bg-zinc-100 dark:bg-zinc-800 p-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-[10px] font-black uppercase tracking-tight text-foreground flex items-center gap-1">
-                <CalendarDays className="h-4 w-4" />
-                Agendar Várias Datas?
-              </p>
-              <div className="flex bg-white dark:bg-black border-2 border-black p-0.5">
-                <button
-                  type="button"
-                  onClick={() => setIsMultiMode(false)}
-                  className={cn(
-                    "px-2 py-1 text-[9px] font-black uppercase transition-all",
-                    !isMultiMode ? "bg-black text-white" : "text-black dark:text-white"
-                  )}
-                >
-                  Não
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setIsMultiMode(true)}
-                  className={cn(
-                    "px-2 py-1 text-[9px] font-black uppercase transition-all",
-                    isMultiMode ? "bg-black text-white" : "text-black dark:text-white"
-                  )}
-                >
-                  Sim
-                </button>
-              </div>
-            </div>
 
-            {isMultiMode && (
-              <div className="space-y-2 animate-in fade-in duration-300">
-                <div className="flex flex-wrap gap-1 p-1 bg-white dark:bg-black border-2 border-black min-h-[44px] items-center">
-                  <Badge variant="outline" className="text-[10px] font-black border-2 border-black bg-blue-500 text-white rounded-none h-7 px-2">
-                    {format(date, 'dd/MM')} — {timeSlot}
-                  </Badge>
-                  {extraDates.map((d, i) => (
-                    <Badge
-                      key={i}
-                      variant="outline"
-                      className="text-[10px] font-black border-2 border-black bg-violet-100 dark:bg-violet-900/40 text-foreground rounded-none flex items-center gap-2 pr-1 h-7 px-2"
-                    >
-                      {format(d, 'dd/MM')} — {timeSlot}
-                      <CloseIcon
-                        className="h-3.5 w-3.5 cursor-pointer hover:bg-red-500 hover:text-white border border-black transition-colors"
-                        onClick={() => setExtraDates(extraDates.filter((_, idx) => idx !== i))}
-                      />
-                    </Badge>
-                  ))}
-
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setShowCalendar(!showCalendar);
-                    }}
-                    className="h-6 px-2 border-black border-2 rounded-none text-[8px] font-black uppercase bg-violet-600 text-white hover:bg-violet-700 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all"
-                  >
-                    {showCalendar ? '- Fechar' : '+ Selecionar'}
-                  </Button>
-                </div>
-
-                {showCalendar && (
-                  <div className="mt-4 border-4 border-black bg-white dark:bg-zinc-900 shadow-[8px_8px_0_0_#000] p-0 animate-in zoom-in-95 duration-200 overflow-hidden">
-                    <div className="bg-black text-white p-2 flex items-center justify-between border-b-2 border-black">
-                      <span className="text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
-                        <Calendar className="h-3 w-3" />
-                        Selecione as Datas
-                      </span>
-                      <Badge className="bg-violet-500 border-none rounded-none text-[8px] font-black">
-                        {extraDates.length + 1} DIA(S) NO TOTAL
-                      </Badge>
-                    </div>
-
-                    <div className="p-4 flex justify-center bg-zinc-50 dark:bg-zinc-800/50">
-                      <CalendarUI
-                        mode="multiple"
-                        selected={[date, ...extraDates]}
-                        onSelect={(dates) => {
-                          if (dates) {
-                            setExtraDates(dates.filter(d => !isSameDay(d, date)));
-                          }
-                        }}
-                        disabled={(d) => d < new Date(new Date().setHours(0, 0, 0, 0)) || isSameDay(d, date)}
-                        className="w-full flex justify-center"
-                        classNames={{
-                          months: "w-full flex flex-col items-center",
-                          month: "w-full space-y-6",
-                          caption: "flex justify-center pt-2 relative items-center gap-4 mb-2",
-                          caption_label: "text-lg font-black uppercase tracking-tight",
-                          nav: "flex items-center gap-2",
-                          nav_button: "h-10 w-10 bg-white border-3 border-black rounded-none p-0 hover:bg-zinc-100 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center transition-all active:translate-x-0.5 active:translate-y-0.5 active:shadow-none",
-                          nav_button_previous: "",
-                          nav_button_next: "",
-                          table: "w-full border-collapse",
-                          head_row: "flex justify-between mb-4 border-b-2 border-black/10 pb-2",
-                          head_cell: "text-muted-foreground w-12 font-black text-[11px] uppercase text-center",
-                          row: "flex w-full mt-3 justify-between",
-                          cell: "h-12 w-12 text-center text-sm p-0 relative focus-within:relative focus-within:z-20",
-                          day: "h-11 w-11 p-0 font-black border-3 border-transparent hover:border-black rounded-none transition-all flex items-center justify-center text-base",
-                          day_selected: "bg-blue-600 text-white border-3 border-black hover:bg-blue-700 hover:text-white shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]",
-                          day_today: "bg-amber-100 border-3 border-amber-500 text-amber-900",
-                          day_outside: "text-muted-foreground opacity-30",
-                          day_disabled: "text-muted-foreground opacity-20 cursor-not-allowed",
-                        }}
-                        locale={ptBR}
-                      />
-                    </div>
-
-                    <div className="p-4 border-t-4 border-black bg-white dark:bg-zinc-900 flex justify-end">
-                      <Button
-                        type="button"
-                        onClick={() => setShowCalendar(false)}
-                        className="w-full h-12 text-sm font-black uppercase bg-green-500 hover:bg-green-600 text-white border-4 border-black rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all"
-                      >
-                        Concluir Seleção
-                      </Button>
-                    </div>
-                  </div>
-                )}
-                <p className="text-[9px] font-bold text-violet-600 dark:text-violet-400 italic">
-                  * Repetir essa reserva em todos os dias selecionados.
-                </p>
-              </div>
-            )}
-          </div>
 
           {/* Existing Reservations - Compact Premium */}
           {currentReservations.length > 0 && (
@@ -374,6 +247,18 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                           MINECRAFT
                         </div>
                       )}
+
+                      {res.associated_loans && res.associated_loans.length > 0 && (
+                        <div className="mt-1.5 flex flex-wrap gap-1 animate-in fade-in slide-in-from-bottom-1 duration-300">
+                          <span className="text-[7px] font-black uppercase text-blue-600 dark:text-blue-400 w-full mb-0.5">Equipamentos Retirados:</span>
+                          {res.associated_loans.map((loan, lIdx) => (
+                            <div key={lIdx} className="text-[8px] font-black bg-blue-500 text-white px-1.5 py-0.5 border-2 border-black shadow-[2px_2px_0px_0px_#000] flex items-center gap-1">
+                              <Monitor className="h-2 w-2" />
+                              {loan.chromebook_id}
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   );
                 })}
@@ -391,12 +276,139 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
           )}
 
           {/* SECTION: NEW RESERVATION FORM */}
-          <div className="pt-2 border-t-4 border-dashed border-black/10 dark:border-white/10 mt-2">
-            <div className="flex items-center gap-2 mb-4 bg-violet-500/10 p-2 border-2 border-violet-500/20">
-              <div className="w-8 h-8 bg-violet-500 flex items-center justify-center border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,0.2)]">
-                <Plus className="h-5 w-5 text-white" />
+          <div className="mt-8 pt-6 border-t-[6px] border-black dark:border-white relative">
+            <div className="absolute -top-[22px] left-4 bg-violet-600 text-white border-4 border-black px-4 py-1 shadow-[4px_4px_0px_0px_#000] flex items-center gap-2">
+              <Plus className="h-5 w-5 font-black" />
+              <h3 className="text-sm font-black uppercase tracking-widest text-white">Novo Agendamento</h3>
+            </div>
+
+            {/* MODO DE AGENDAMENTO (MOVIDO PARA CÁ) */}
+            <div className="border-4 border-black dark:border-white bg-zinc-100 dark:bg-zinc-800 p-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] mb-4 transition-all">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-[10px] font-black uppercase tracking-tight text-foreground flex items-center gap-1">
+                  <CalendarDays className="h-4 w-4" />
+                  Agendar Várias Datas?
+                </p>
+                <div className="flex bg-white dark:bg-black border-2 border-black p-0.5">
+                  <button
+                    type="button"
+                    onClick={() => setIsMultiMode(false)}
+                    className={cn(
+                      "px-2 py-1 text-[9px] font-black uppercase transition-all",
+                      !isMultiMode ? "bg-black text-white" : "text-black dark:text-white"
+                    )}
+                  >
+                    Não
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsMultiMode(true)}
+                    className={cn(
+                      "px-2 py-1 text-[9px] font-black uppercase transition-all",
+                      isMultiMode ? "bg-black text-white" : "text-black dark:text-white"
+                    )}
+                  >
+                    Sim
+                  </button>
+                </div>
               </div>
-              <h3 className="text-sm font-black uppercase tracking-tight text-foreground">Novo Agendamento</h3>
+
+              {isMultiMode && (
+                <div className="space-y-2 animate-in fade-in duration-300">
+                  <div className="flex flex-wrap gap-1 p-1 bg-white dark:bg-black border-2 border-black min-h-[44px] items-center">
+                    <Badge variant="outline" className="text-[10px] font-black border-2 border-black bg-blue-500 text-white rounded-none h-7 px-2">
+                      {format(date, 'dd/MM')} — {timeSlot}
+                    </Badge>
+                    {extraDates.map((d, i) => (
+                      <Badge
+                        key={i}
+                        variant="outline"
+                        className="text-[10px] font-black border-2 border-black bg-violet-100 dark:bg-violet-900/40 text-foreground rounded-none flex items-center gap-2 pr-1 h-7 px-2"
+                      >
+                        {format(d, 'dd/MM')} — {timeSlot}
+                        <CloseIcon
+                          className="h-3.5 w-3.5 cursor-pointer hover:bg-red-500 hover:text-white border border-black transition-colors"
+                          onClick={() => setExtraDates(extraDates.filter((_, idx) => idx !== i))}
+                        />
+                      </Badge>
+                    ))}
+
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setShowCalendar(!showCalendar);
+                      }}
+                      className="h-6 px-2 border-black border-2 rounded-none text-[8px] font-black uppercase bg-violet-600 text-white hover:bg-violet-700 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all"
+                    >
+                      {showCalendar ? '- Fechar' : '+ Selecionar'}
+                    </Button>
+                  </div>
+
+                  {showCalendar && (
+                    <div className="mt-4 border-4 border-black bg-white dark:bg-zinc-900 shadow-[8px_8px_0_0_#000] p-0 animate-in zoom-in-95 duration-200 overflow-hidden">
+                      <div className="bg-black text-white p-2 flex items-center justify-between border-b-2 border-black">
+                        <span className="text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
+                          <Calendar className="h-3 w-3" />
+                          Selecione as Datas
+                        </span>
+                        <Badge className="bg-violet-500 border-none rounded-none text-[8px] font-black">
+                          {extraDates.length + 1} DIA(S) NO TOTAL
+                        </Badge>
+                      </div>
+
+                      <div className="p-4 flex justify-center bg-zinc-50 dark:bg-zinc-800/50">
+                        <CalendarUI
+                          mode="multiple"
+                          selected={[date, ...extraDates]}
+                          onSelect={(dates) => {
+                            if (dates) {
+                              setExtraDates(dates.filter(d => !isSameDay(d, date)));
+                            }
+                          }}
+                          disabled={(d) => d < new Date(new Date().setHours(0, 0, 0, 0)) || isSameDay(d, date)}
+                          className="w-full flex justify-center"
+                          classNames={{
+                            months: "w-full flex flex-col items-center",
+                            month: "w-full space-y-6",
+                            caption: "flex justify-center pt-2 relative items-center gap-4 mb-2",
+                            caption_label: "text-lg font-black uppercase tracking-tight",
+                            nav: "flex items-center gap-2",
+                            nav_button: "h-10 w-10 bg-white border-3 border-black rounded-none p-0 hover:bg-zinc-100 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center transition-all active:translate-x-0.5 active:translate-y-0.5 active:shadow-none",
+                            nav_button_previous: "",
+                            nav_button_next: "",
+                            table: "w-full border-collapse",
+                            head_row: "flex justify-between mb-4 border-b-2 border-black/10 pb-2",
+                            head_cell: "text-muted-foreground w-12 font-black text-[11px] uppercase text-center",
+                            row: "flex w-full mt-3 justify-between",
+                            cell: "h-12 w-12 text-center text-sm p-0 relative focus-within:relative focus-within:z-20",
+                            day: "h-11 w-11 p-0 font-black border-3 border-transparent hover:border-black rounded-none transition-all flex items-center justify-center text-base",
+                            day_selected: "bg-blue-600 text-white border-3 border-black hover:bg-blue-700 hover:text-white shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]",
+                            day_today: "bg-amber-100 border-3 border-amber-500 text-amber-900",
+                            day_outside: "text-muted-foreground opacity-30",
+                            day_disabled: "text-muted-foreground opacity-20 cursor-not-allowed",
+                          }}
+                          locale={ptBR}
+                        />
+                      </div>
+
+                      <div className="p-4 border-t-4 border-black bg-white dark:bg-zinc-900 flex justify-end">
+                        <Button
+                          type="button"
+                          onClick={() => setShowCalendar(false)}
+                          className="w-full h-12 text-sm font-black uppercase bg-green-500 hover:bg-green-600 text-white border-4 border-black rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all"
+                        >
+                          Concluir Seleção
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                  <p className="text-[9px] font-bold text-violet-600 dark:text-violet-400 italic">
+                    * Repetir essa reserva em todos os dias selecionados.
+                  </p>
+                </div>
+              )}
             </div>
 
             <div className="space-y-3">
