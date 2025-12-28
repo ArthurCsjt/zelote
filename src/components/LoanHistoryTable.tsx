@@ -77,6 +77,11 @@ export const LoanHistoryTable: React.FC<LoanHistoryTableProps> = ({ history, isN
                     <div className="flex items-center gap-2">
                       <Monitor className="h-4 w-4" />
                       <span className="uppercase">{loan.chromebook_id}</span>
+                      {loan.reservation_id && (
+                        <Badge className="h-4 px-1 py-0 text-[8px] font-black uppercase bg-indigo-500 text-white border-2 border-black rounded-none">
+                          Reserva
+                        </Badge>
+                      )}
                     </div>
                     {loan.chromebook_model && (
                       <span className="text-[10px] uppercase text-muted-foreground block mt-0.5 ml-6">{loan.chromebook_model}</span>

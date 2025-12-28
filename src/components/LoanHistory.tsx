@@ -263,6 +263,12 @@ export function LoanHistory({ history, isNewLoan }: LoanHistoryProps) {
                         LOTE
                       </Badge>
                     )}
+                    {loan.reservation_id && (
+                      <Badge className="bg-indigo-500 text-white border-2 border-indigo-700 font-bold uppercase">
+                        <Clock className="h-3 w-3 mr-1" />
+                        RESERVA
+                      </Badge>
+                    )}
                   </div>
 
                   {/* Purpose */}

@@ -169,10 +169,10 @@ export function ActiveLoans({ onNavigateToReturn }: ActiveLoansProps) {
                             Lote
                           </Badge>
                         )}
-                        {loan.reservation_id && (
-                          <Badge variant="outline" className="rounded-none bg-indigo-500 text-white border-3 border-indigo-700 font-bold text-xs">
+                        {Boolean(loan.reservation_id) && (
+                          <Badge variant="outline" className="rounded-none bg-indigo-600 text-white border-3 border-indigo-900 font-black text-xs">
                             <Clock className="h-3 w-3 mr-1" />
-                            Reserva
+                            RESERVA
                           </Badge>
                         )}
                         {/* Status de Atraso */}

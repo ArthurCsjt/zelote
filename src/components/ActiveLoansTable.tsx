@@ -64,7 +64,14 @@ export const ActiveLoansTable: React.FC<ActiveLoansTableProps> = ({ loans, onNav
               >
                 <TableCell className="font-bold text-sm flex items-center gap-2 py-4">
                   <Monitor className="h-4 w-4 hidden sm:block" />
-                  <span className="uppercase">{loan.chromebook_id}</span>
+                  <div className="flex flex-col gap-1">
+                    <span className="uppercase">{loan.chromebook_id}</span>
+                    {loan.reservation_id && (
+                      <Badge className="h-4 px-1.5 py-0 text-[8px] font-black uppercase bg-indigo-500 text-white border-2 border-black rounded-none shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]">
+                        Reserva
+                      </Badge>
+                    )}
+                  </div>
                 </TableCell>
                 <TableCell className="py-4">
                   <div className="flex flex-col">
