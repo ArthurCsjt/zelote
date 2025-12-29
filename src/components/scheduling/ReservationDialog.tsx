@@ -208,55 +208,79 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                   const isMine = res.created_by === user?.id;
                   return (
                     <div key={idx} className={cn(
-                      "relative flex flex-col gap-1.5 p-2.5 border-3 transition-all",
+                      "relative flex flex-col p-3 border-3 transition-all",
                       isMine
-                        ? "border-violet-500 bg-violet-50 dark:bg-violet-950/20 shadow-[3px_3px_0px_0px_rgba(139,92,246,0.3)]"
-                        : "border-gray-400 bg-white dark:bg-zinc-900 shadow-[3px_3px_0px_0px_rgba(0,0,0,0.1)]",
-                      res.is_minecraft && "border-green-600 bg-green-50 dark:bg-green-950/20 shadow-[3px_3px_0px_0px_rgba(22,163,74,0.3)]"
+                        ? "border-violet-500 bg-violet-50/50 dark:bg-violet-950/10 shadow-[4px_4px_0px_0px_rgba(139,92,246,0.2)]"
+                        : "border-zinc-400 bg-white dark:bg-zinc-900 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.05)]",
+                      res.is_minecraft && "border-green-600 bg-green-50/50 dark:bg-green-950/10 shadow-[4px_4px_0px_0px_rgba(22,163,74,0.2)]"
                     )}>
                       {isMine && (
-                        <div className="absolute -top-1.5 -right-1 bg-violet-600 text-white text-[8px] font-black uppercase px-2 py-0.5 border-2 border-black">
+                        <div className="absolute -top-2.5 -right-1 bg-violet-600 text-white text-[7px] font-black uppercase px-2 py-0.5 border-2 border-black shadow-[2px_2px_0px_0px_#000] z-10">
                           Sua Reserva
                         </div>
                       )}
 
-                      <div className="flex items-center justify-between">
-                        <span className="flex items-center gap-2 font-black text-[10px] text-foreground uppercase tracking-tight truncate max-w-[70%]">
-                          <User className={cn("h-3 w-3", isMine ? "text-violet-600" : "text-gray-500")} />
-                          {res.prof_name && res.prof_name !== 'Usuário Desconhecido' ? res.prof_name : (res.prof_email || 'Docente')}
-                        </span>
-                        <span className="font-black text-xs text-foreground flex items-center gap-1.5 px-2 py-0.5 bg-background border-2 border-black dark:border-white">
-                          <Monitor className="h-3 w-3" />
-                          {res.quantity_requested}
-                        </span>
+                      {/* Top Row: User & Quantity */}
+                      <div className="flex items-center justify-between mb-3">
+                        <div className={cn(
+                          "flex items-center border-3 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.2)] overflow-hidden",
+                          isMine ? "bg-violet-500" : "bg-zinc-800"
+                        )}>
+                          <div className="w-10 h-10 flex items-center justify-center border-r-3 border-black bg-white">
+                            <User className={cn("h-5 w-5", isMine ? "text-violet-600" : "text-zinc-600")} />
+                          </div>
+                          <span className="px-4 py-1.5 font-black text-xs text-white uppercase tracking-wider">
+                            {res.prof_name && res.prof_name !== 'Usuário Desconhecido' ? res.prof_name : (res.prof_email || 'Docente')}
+                          </span>
+                        </div>
+
+                        <div className="flex flex-col items-center justify-center min-w-[70px] px-3 py-1 bg-blue-600 border-3 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.2)]">
+                          <span className="text-[7px] font-black text-white/90 uppercase tracking-tighter -mb-0.5">Equipamentos</span>
+                          <div className="flex items-center gap-1.5">
+                            <Monitor className="h-4 w-4 text-white" />
+                            <span className="font-black text-xl text-white leading-none drop-shadow-[1px_1px_0_#000]">
+                              {res.quantity_requested}
+                            </span>
+                          </div>
+                        </div>
                       </div>
 
-                      <div className="flex items-center gap-2">
-                        {res.classroom && (
-                          <div className="text-[8px] font-black uppercase px-1.5 py-0.5 bg-blue-500 text-white border border-black">
-                            {res.classroom}
-                          </div>
-                        )}
-                        <div className="flex-1 text-[9px] font-bold text-muted-foreground italic truncate">
+                      {/* Middle: Justification & Badges */}
+                      <div className="space-y-3 mb-2">
+                        <div className="flex flex-wrap gap-2">
+                          {res.classroom && (
+                            <div className="px-3 py-1 border-3 border-black bg-blue-500 text-white text-[10px] font-black uppercase shadow-[3px_3px_0px_0px_#000] flex items-center gap-1.5">
+                              <Monitor className="h-3 w-3" />
+                              {res.classroom}
+                            </div>
+                          )}
+                          {res.is_minecraft && (
+                            <div className="px-3 py-1 border-3 border-black bg-green-600 text-white text-[10px] font-black uppercase shadow-[3px_3px_0px_0px_#000] flex items-center gap-1.5">
+                              <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
+                              MINECRAFT
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 italic bg-zinc-50 dark:bg-zinc-800/30 p-2.5 border-l-4 border-zinc-200 dark:border-zinc-700">
                           "{res.justification}"
                         </div>
                       </div>
 
-                      {res.is_minecraft && (
-                        <div className="text-[8px] font-black uppercase text-white bg-green-600 w-fit px-1.5 py-0.5 border border-black mt-0.5">
-                          MINECRAFT
-                        </div>
-                      )}
-
+                      {/* Bottom Row: Loans (Compact Chips) */}
                       {res.associated_loans && res.associated_loans.length > 0 && (
-                        <div className="mt-1.5 flex flex-wrap gap-1 animate-in fade-in slide-in-from-bottom-1 duration-300">
-                          <span className="text-[7px] font-black uppercase text-blue-600 dark:text-blue-400 w-full mb-0.5">Equipamentos Retirados:</span>
-                          {res.associated_loans.map((loan, lIdx) => (
-                            <div key={lIdx} className="text-[8px] font-black bg-blue-500 text-white px-1.5 py-0.5 border-2 border-black shadow-[2px_2px_0px_0px_#000] flex items-center gap-1">
-                              <Monitor className="h-2 w-2" />
-                              {loan.chromebook_id}
-                            </div>
-                          ))}
+                        <div className="mt-1 pt-2 border-t border-dashed border-zinc-300 dark:border-zinc-700">
+                          <p className="text-[8px] font-black uppercase text-zinc-500 mb-2 flex items-center gap-1">
+                            <Plus className="h-2.5 w-2.5" />
+                            Equipamentos Vinculados
+                          </p>
+                          <div className="grid grid-cols-4 sm:grid-cols-6 gap-1">
+                            {res.associated_loans.map((loan, lIdx) => (
+                              <div key={lIdx} className="text-[7px] font-bold bg-zinc-50 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 p-1 text-center truncate hover:bg-blue-500 hover:text-white hover:border-black transition-colors">
+                                {loan.chromebook_id.replace('CHR', '')}
+                              </div>
+                            ))}
+                          </div>
                         </div>
                       )}
                     </div>
@@ -282,20 +306,42 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
               <h3 className="text-sm font-black uppercase tracking-widest text-white">Novo Agendamento</h3>
             </div>
 
-            {/* MODO DE AGENDAMENTO (MOVIDO PARA CÁ) */}
-            <div className="border-4 border-black dark:border-white bg-zinc-100 dark:bg-zinc-800 p-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] mb-4 transition-all">
-              <div className="flex items-center justify-between mb-2">
-                <p className="text-[10px] font-black uppercase tracking-tight text-foreground flex items-center gap-1">
-                  <CalendarDays className="h-4 w-4" />
-                  Agendar Várias Datas?
-                </p>
-                <div className="flex bg-white dark:bg-black border-2 border-black p-0.5">
+            {/* MODO DE AGENDAMENTO (PREMIUM POP OUT) */}
+            <div className={cn(
+              "border-4 border-black dark:border-white p-4 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] mb-6 transition-all relative overflow-hidden",
+              isMultiMode
+                ? "bg-amber-50 dark:bg-amber-900/30 border-amber-500"
+                : "bg-zinc-50 dark:bg-zinc-900"
+            )}>
+              {/* Decorative side bar */}
+              <div className={cn(
+                "absolute top-0 left-0 w-2 h-full transition-colors",
+                isMultiMode ? "bg-amber-500" : "bg-zinc-400"
+              )} />
+
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pl-2">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <CalendarDays className={cn("h-5 w-5", isMultiMode ? "text-amber-600" : "text-foreground")} />
+                    <p className="text-sm font-black uppercase tracking-tighter text-foreground">
+                      Agendar para várias datas?
+                    </p>
+                    <Badge className="bg-blue-600 text-white text-[8px] font-black rounded-none border-2 border-black whitespace-nowrap">
+                      RECORRÊNCIA
+                    </Badge>
+                  </div>
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase leading-tight max-w-[320px]">
+                    Economize tempo reservando o mesmo horário para outros dias da semana de uma só vez.
+                  </p>
+                </div>
+
+                <div className="flex bg-white dark:bg-black border-4 border-black p-1 shadow-[3px_3px_0px_0px_#000] self-start sm:self-center shrink-0">
                   <button
                     type="button"
                     onClick={() => setIsMultiMode(false)}
                     className={cn(
-                      "px-2 py-1 text-[9px] font-black uppercase transition-all",
-                      !isMultiMode ? "bg-black text-white" : "text-black dark:text-white"
+                      "px-6 py-1.5 text-xs font-black uppercase transition-all",
+                      !isMultiMode ? "bg-black text-white" : "text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white"
                     )}
                   >
                     Não
@@ -304,8 +350,8 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                     type="button"
                     onClick={() => setIsMultiMode(true)}
                     className={cn(
-                      "px-2 py-1 text-[9px] font-black uppercase transition-all",
-                      isMultiMode ? "bg-black text-white" : "text-black dark:text-white"
+                      "px-6 py-1.5 text-xs font-black uppercase transition-all",
+                      isMultiMode ? "bg-amber-500 text-white" : "text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white"
                     )}
                   >
                     Sim
@@ -314,16 +360,19 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
               </div>
 
               {isMultiMode && (
-                <div className="space-y-2 animate-in fade-in duration-300">
-                  <div className="flex flex-wrap gap-1 p-1 bg-white dark:bg-black border-2 border-black min-h-[44px] items-center">
-                    <Badge variant="outline" className="text-[10px] font-black border-2 border-black bg-blue-500 text-white rounded-none h-7 px-2">
+                <div className="mt-4 space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
+                  <p className="text-[9px] font-black text-amber-600 dark:text-amber-400 uppercase tracking-widest">
+                    Datas Selecionadas:
+                  </p>
+                  <div className="flex flex-wrap gap-2 p-2 bg-white dark:bg-black border-4 border-black min-h-[50px] items-center shadow-[inset_4px_4px_0px_0px_rgba(0,0,0,0.1)]">
+                    <Badge variant="outline" className="text-[10px] font-black border-2 border-black bg-blue-500 text-white rounded-none h-8 px-3">
                       {format(date, 'dd/MM')} — {timeSlot}
                     </Badge>
                     {extraDates.map((d, i) => (
                       <Badge
                         key={i}
                         variant="outline"
-                        className="text-[10px] font-black border-2 border-black bg-violet-100 dark:bg-violet-900/40 text-foreground rounded-none flex items-center gap-2 pr-1 h-7 px-2"
+                        className="text-[10px] font-black border-2 border-black bg-violet-100 dark:bg-violet-900/40 text-foreground rounded-none flex items-center gap-2 pr-1 h-8 px-3"
                       >
                         {format(d, 'dd/MM')} — {timeSlot}
                         <CloseIcon
@@ -340,7 +389,7 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                       onClick={() => {
                         setShowCalendar(!showCalendar);
                       }}
-                      className="h-6 px-2 border-black border-2 rounded-none text-[8px] font-black uppercase bg-violet-600 text-white hover:bg-violet-700 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all"
+                      className="h-8 px-4 border-black border-2 rounded-none text-[10px] font-black uppercase bg-violet-600 text-white hover:bg-violet-700 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all"
                     >
                       {showCalendar ? '- Fechar' : '+ Selecionar'}
                     </Button>
