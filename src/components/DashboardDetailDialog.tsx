@@ -43,26 +43,26 @@ export function DashboardDetailDialog({
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'disponivel':
-        return <Badge className="bg-green-100 text-green-800 hover:bg-green-200 border-2 border-black rounded-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] uppercase font-bold">Disponível</Badge>;
+        return <Badge className="bg-emerald-100 text-emerald-900 border-2 border-emerald-900 rounded-none shadow-[2px_2px_0px_0px_rgba(6,78,59,1)] uppercase font-black px-2 py-0.5">Disponível</Badge>;
       case 'em_uso':
-        return <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200 border-2 border-black rounded-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] uppercase font-bold">Em Uso</Badge>;
+        return <Badge className="bg-indigo-100 text-indigo-900 border-2 border-indigo-900 rounded-none shadow-[2px_2px_0px_0px_rgba(49,46,129,1)] uppercase font-black px-2 py-0.5">Em Uso</Badge>;
       case 'manutencao':
-        return <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-200 border-2 border-black rounded-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] uppercase font-bold">Manutenção</Badge>;
+        return <Badge className="bg-amber-100 text-amber-900 border-2 border-amber-900 rounded-none shadow-[2px_2px_0px_0px_rgba(120,53,15,1)] uppercase font-black px-2 py-0.5">Manutenção</Badge>;
       default:
-        return <Badge variant="outline" className="border-2 border-black rounded-none uppercase font-bold">{status}</Badge>;
+        return <Badge variant="outline" className="border-2 border-zinc-500 text-zinc-700 rounded-none uppercase font-bold">{status}</Badge>;
     }
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[85vh] flex flex-col p-0 gap-0 border-4 border-black dark:border-white bg-white dark:bg-zinc-950 shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] dark:shadow-[12px_12px_0px_0px_rgba(255,255,255,0.2)] rounded-none sm:rounded-none">
+      <DialogContent className="max-w-4xl max-h-[85vh] flex flex-col p-0 gap-0 border-4 border-indigo-900 bg-white dark:bg-zinc-950 shadow-[12px_12px_0px_0px_rgba(49,46,129,1)] rounded-none">
 
-        <DialogHeader className="p-6 pb-4 border-b-4 border-black dark:border-white bg-yellow-300 dark:bg-yellow-900">
-          <DialogTitle className="text-2xl font-black uppercase tracking-tight text-black dark:text-white flex items-center gap-2">
+        <DialogHeader className="p-6 pb-4 border-b-4 border-indigo-900 bg-indigo-50 dark:bg-zinc-900">
+          <DialogTitle className="text-2xl font-black uppercase tracking-tight text-indigo-900 dark:text-white flex items-center gap-2">
             {dataType === 'loans' ? <User className="h-6 w-6" /> : <Monitor className="h-6 w-6" />}
             {title}
           </DialogTitle>
-          <DialogDescription className="text-black dark:text-white font-mono font-bold text-sm opacity-80">
+          <DialogDescription className="text-indigo-900/80 dark:text-white/80 font-mono font-bold text-sm">
             {description}
           </DialogDescription>
         </DialogHeader>
@@ -132,10 +132,10 @@ export function DashboardDetailDialog({
           )}
         </div>
 
-        <div className="p-4 border-t-4 border-black dark:border-white bg-gray-50 dark:bg-zinc-900">
-          <div className="flex justify-between items-center text-xs font-mono text-gray-500">
-            <span>Total de registros: {data?.length || 0}</span>
-            <span>ZELOTE DASHBOARD v2.0 // NEO-BRUTALISM</span>
+        <div className="p-4 border-t-4 border-indigo-900 bg-indigo-50 dark:bg-zinc-900">
+          <div className="flex justify-between items-center text-xs font-mono font-bold text-indigo-900/70 dark:text-white/70">
+            <span>TOTAL: {data?.length || 0} REGISTROS</span>
+            <span>ZELOTE DASHBOARD // NEO-BRUTALISM</span>
           </div>
         </div>
       </DialogContent>
