@@ -22,7 +22,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardTitle, CardHeader } from "./ui/card";
 import { GlassCard } from "./ui/GlassCard";
 import { DeviceListInput } from "./DeviceListInput";
-import { LoanStepsHeader } from "./LoanStepsHeader";
+
 import { Textarea } from "./ui/textarea";
 import { ConfirmLoanDialog } from "./ConfirmLoanDialog"; // NOVO IMPORT
 
@@ -332,12 +332,7 @@ export function LoanForm({ onBack, initialReservationData }: LoanFormProps) {
         <div className="animate-fade-in">
 
             {/* NOVO: Cabeçalho de Passos */}
-            <LoanStepsHeader
-                currentStep={currentStep}
-                isUserSelected={isUserSelected}
-                isDevicesAdded={isDevicesAdded}
-                isPurposeDefined={isPurposeDefined}
-            />
+
 
             <form onSubmit={handleSubmit} className="space-y-3 relative z-10">
 
