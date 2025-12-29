@@ -127,24 +127,51 @@ const SchedulingPage = () => {
 
           <div className="relative p-6 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
             {/* Title Section with Premium Icon */}
-            <div className="flex items-center gap-5">
-              <div className="relative group">
-                <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-none blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200" />
-                <div className="relative w-14 h-14 border-4 border-black dark:border-white bg-white dark:bg-zinc-800 flex items-center justify-center shadow-[4px_4px_0px_0px_#000] dark:shadow-[4px_4px_0px_0px_#fff]">
-                  <Calendar className="h-7 w-7 text-blue-600 dark:text-blue-400 animate-pulse" />
+            <div className="flex flex-col gap-4">
+              <div className="flex items-center gap-5">
+                <div className="relative group">
+                  <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-none blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200" />
+                  <div className="relative w-14 h-14 border-4 border-black dark:border-white bg-white dark:bg-zinc-800 flex items-center justify-center shadow-[4px_4px_0px_0px_#000] dark:shadow-[4px_4px_0px_0px_#fff]">
+                    <Calendar className="h-7 w-7 text-blue-600 dark:text-blue-400 animate-pulse" />
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <h2 className="text-2xl font-black uppercase tracking-tighter text-foreground leading-none">
+                    Agendamento de Chromebooks
+                  </h2>
+                  <div className="flex items-center gap-2">
+                    <div className="h-1 w-8 bg-blue-600" />
+                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
+                      Gestão Inteligente de Recursos Disponíveis
+                    </p>
+                  </div>
                 </div>
               </div>
 
-              <div className="space-y-1">
-                <h2 className="text-2xl font-black uppercase tracking-tighter text-foreground leading-none">
-                  Agendamento de Chromebooks
-                </h2>
-                <div className="flex items-center gap-2">
-                  <div className="h-1 w-8 bg-blue-600" />
-                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
-                    Gestão Inteligente de Recursos Disponíveis
-                  </p>
-                </div>
+              {/* Month Quick Navigation */}
+              <div className="flex gap-1 overflow-x-auto pb-2 scrollbar-hide max-w-[800px] border-l-4 border-blue-600 pl-4 ml-6">
+                {Array.from({ length: 12 }, (_, i) => {
+                  const date = new Date(new Date().getFullYear(), i, 1);
+                  const isCurrentMonth = i === currentDate.getMonth();
+                  return (
+                    <button
+                      key={i}
+                      onClick={() => {
+                        const newDate = new Date(currentDate.getFullYear(), i, 1);
+                        setCurrentDate(getStartOfWeek(newDate));
+                      }}
+                      className={cn(
+                        "px-3 py-1 text-[10px] font-black uppercase tracking-wide transition-all border-b-2 whitespace-nowrap",
+                        isCurrentMonth
+                          ? "text-blue-600 border-blue-600 bg-blue-50 dark:bg-blue-900/20"
+                          : "text-zinc-500 border-transparent hover:text-foreground hover:border-zinc-300"
+                      )}
+                    >
+                      {format(date, 'MMMM', { locale: ptBR })}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
