@@ -78,6 +78,34 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
 
   const isPastDate = date < new Date(new Date().setHours(0, 0, 0, 0));
 
+  const isTimeSlotPast = () => {
+    if (isPastDate) return true;
+
+    // Check if it's the same day
+    const isToday = isSameDay(date, new Date());
+    if (!isToday) return false;
+
+    // Parse timeSlot (Format: "07h10")
+    const match = timeSlot.match(/(\d+)h(\d+)/);
+    if (!match) return false;
+
+    const slotHours = parseInt(match[1], 10);
+    const slotMinutes = parseInt(match[2], 10);
+
+    const now = new Date();
+    const currentHours = now.getHours();
+    const currentMinutes = now.getMinutes();
+
+    // If current hour is greater than slot hour, it's past
+    if (currentHours > slotHours) return true;
+    // If same hour, check minutes
+    if (currentHours === slotHours && currentMinutes >= slotMinutes) return true;
+
+    return false;
+  };
+
+  const isExpired = isTimeSlotPast();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -135,8 +163,8 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
   const totalReserved = currentReservations.reduce((sum, res) => sum + res.quantity_requested, 0);
   const available = totalAvailableChromebooks - totalReserved;
 
-  if (isPastDate) {
-    return <div className="opacity-50 cursor-not-allowed">{children}</div>;
+  if (isExpired) {
+    return <div className="opacity-50 cursor-not-allowed pointer-events-none">{children}</div>;
   }
 
   if (maxQuantity <= 0) {
@@ -149,10 +177,10 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
         {children}
       </div>
 
-      <DialogContent className="sm:max-w-[550px] max-h-[90vh] overflow-y-auto border-4 border-black dark:border-white rounded-none shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.2)] bg-background p-0">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto border-4 border-black dark:border-white rounded-none shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] dark:shadow-[10px_10px_0px_0px_rgba(255,255,255,0.2)] bg-background p-0">
 
         {/* Premium Neo-Brutal Header */}
-        <DialogHeader className="p-4 border-b-4 border-black dark:border-white bg-gradient-to-r from-blue-500 to-indigo-600 shadow-[0_4px_0_0_rgba(0,0,0,0.1)]">
+        <DialogHeader className="p-6 border-b-4 border-black dark:border-white bg-gradient-to-r from-blue-500 to-indigo-600 shadow-[0_4px_0_0_rgba(0,0,0,0.1)]">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 border-3 border-black dark:border-white bg-white flex items-center justify-center shadow-[3px_3px_0_0_#000]">
               <Calendar className="h-5 w-5 text-blue-600" />
@@ -168,19 +196,19 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
           </div>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="p-4 space-y-3">
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
 
           {/* Status Card - Neo Brutal Compact */}
-          <div className="border-4 border-black dark:border-white bg-white dark:bg-zinc-900 p-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.2)]">
-            <div className="grid grid-cols-2 gap-2">
-              <div className="flex items-center justify-center gap-2 p-2 border-2 border-green-500/30 bg-green-50 dark:bg-green-950/20">
+          <div className="border-4 border-black dark:border-white bg-white dark:bg-zinc-900 p-3 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.2)]">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="flex items-center justify-center gap-2 p-3 border-3 border-green-500/40 bg-green-50 dark:bg-green-950/20">
                 <Monitor className="h-4 w-4 text-green-600" />
                 <div>
                   <p className="text-[9px] font-black uppercase tracking-tight text-muted-foreground leading-none">Disponíveis</p>
                   <p className="text-lg font-black text-green-600 leading-none mt-1">{available}</p>
                 </div>
               </div>
-              <div className="flex items-center justify-center gap-2 p-2 border-2 border-blue-500/30 bg-blue-50 dark:bg-blue-950/20">
+              <div className="flex items-center justify-center gap-2 p-3 border-3 border-blue-500/40 bg-blue-50 dark:bg-blue-950/20">
                 <User className="h-4 w-4 text-blue-600" />
                 <div>
                   <p className="text-[9px] font-black uppercase tracking-tight text-muted-foreground leading-none">Reservados</p>

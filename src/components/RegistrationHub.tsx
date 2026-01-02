@@ -49,13 +49,13 @@ export function RegistrationHub({ onBack, onRegistrationSuccess }: RegistrationH
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
 
       {/* Removida a classe 'max-w-6xl' do container */}
       <div className="container mx-auto p-0">
 
         {/* Cabeçalho do Hub: Centralizado e Preto */}
-        <div className="mb-6 text-center">
+        <div className="mb-8 text-center">
           <SectionHeader
             title="Hub de Cadastros"
             description="Selecione o tipo de item ou usuário para cadastrar"
@@ -66,17 +66,17 @@ export function RegistrationHub({ onBack, onRegistrationSuccess }: RegistrationH
         </div>
 
         {/* Menu de Cards 2x2 */}
-        <div className="mb-8 max-w-4xl mx-auto"> {/* Adicionando max-w aqui para o menu de cards */}
+        <div className="mb-10 max-w-5xl mx-auto"> {/* Aumentado max-w para melhor espaçamento */}
           <RegistrationCardMenu onNavigate={handleNavigate} currentView={currentView} />
         </div>
 
         {/* Título do Formulário Selecionado */}
-        <div className="text-lg font-black uppercase tracking-tight text-gray-800 dark:text-white mb-4 mt-8 text-center bg-white dark:bg-zinc-900 border-2 border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] p-2 w-fit mx-auto">
+        <div className="text-lg font-black uppercase tracking-tight text-gray-800 dark:text-white mb-6 mt-10 text-center bg-white dark:bg-zinc-900 border-4 border-black dark:border-white shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.2)] p-3 w-fit mx-auto">
           {getTitle()}
         </div>
 
         {/* Formulário Selecionado */}
-        <div className="mt-6 max-w-4xl mx-auto"> {/* Adicionando max-w aqui para os formulários */}
+        <div className="mt-6 max-w-5xl mx-auto"> {/* Aumentado max-w para consistência */}
           {renderForm()}
         </div>
       </div>

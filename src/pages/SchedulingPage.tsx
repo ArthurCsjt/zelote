@@ -8,7 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { getStartOfWeek, formatWeekRange, changeWeek, getWeekDays, changeMonth } from '@/utils/scheduling';
+import { getStartOfWeek, formatWeekRange, changeWeek, getWeekDays, changeMonth, getInitialSchedulingDate } from '@/utils/scheduling';
 import { SchedulingCalendar } from '@/components/scheduling/SchedulingCalendar';
 import { SchedulingMonthView } from '@/components/scheduling/SchedulingMonthView';
 import { cn } from '@/lib/utils';
@@ -34,7 +34,7 @@ const SchedulingPage = () => {
   } = useDatabase();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-  const [currentDate, setCurrentDate] = useState(getStartOfWeek(new Date()));
+  const [currentDate, setCurrentDate] = useState(getInitialSchedulingDate());
   const [viewMode, setViewMode] = useState<'weekly' | 'monthly'>('weekly');
   const {
     startDate,
