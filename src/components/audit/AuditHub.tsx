@@ -97,11 +97,11 @@ export const AuditHub = () => {
         <div className="container mx-auto p-4 max-w-7xl relative z-10">
           <div className="mb-8 text-center p-6 neo-container-yellow">
             <SectionHeader
-              title="Contagem Ativa"
+              title="CONTAGEM ATIVA"
               description={`AUDITORIA: ${activeAudit.audit_name}`}
               icon={ListChecks}
               iconColor="text-black dark:text-white"
-              className="flex flex-col items-center uppercase tracking-tight font-black"
+              className="flex flex-col items-center tracking-tighter font-black"
             />
           </div>
           <AuditScanner />
@@ -121,7 +121,7 @@ export const AuditHub = () => {
             description="GERENCIE E REALIZE CONTROLE DE INVENTÁRIO"
             icon={ListChecks}
             iconColor="text-black dark:text-white"
-            className="flex flex-col items-center uppercase tracking-tight font-black"
+            className="flex flex-col items-center tracking-tighter font-black"
           />
         </div>
 
