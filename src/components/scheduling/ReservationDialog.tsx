@@ -56,6 +56,7 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
   const [tempExtraDates, setTempExtraDates] = useState<Date[]>([]);
   const [isMultiMode, setIsMultiMode] = useState(false);
   const [showCalendar, setShowCalendar] = useState(false);
+  const [showCustomClassroom, setShowCustomClassroom] = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -71,6 +72,7 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
       setTempExtraDates([]);
       setIsMultiMode(false);
       setShowCalendar(false);
+      setShowCustomClassroom(false);
     }
   }, [open, maxQuantity]);
 
@@ -469,6 +471,60 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                 </div>
                 <div className="p-3 space-y-3">
                   <div className="space-y-1.5">
+                    <Label className="text-[10px] font-black uppercase tracking-wide flex items-center gap-1.5 text-violet-700 dark:text-violet-300">
+                      Sala
+                      <span className="text-red-500">*</span>
+                    </Label>
+                    <div className="flex flex-wrap gap-1.5">
+                      {['Sala Google', 'Sala Maker', 'Sala de Estudos', 'Sala de Artes'].map((sala) => (
+                        <button
+                          key={sala}
+                          type="button"
+                          onClick={() => {
+                            setClassroom(sala);
+                            setShowCustomClassroom(false);
+                          }}
+                          disabled={isSaving}
+                          className={`px-2 py-1 text-[9px] font-black uppercase border-2 border-black dark:border-white shadow-[2px_2px_0px_0px_rgba(0,0,0,0.3)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all ${classroom === sala && !showCustomClassroom
+                            ? 'bg-violet-500 text-white'
+                            : 'bg-white dark:bg-black text-foreground hover:bg-violet-100 dark:hover:bg-violet-900/30'
+                            }`}
+                        >
+                          {sala}
+                        </button>
+                      ))}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowCustomClassroom(true);
+                          setClassroom('');
+                        }}
+                        disabled={isSaving}
+                        className={`px-2 py-1 text-[9px] font-black uppercase border-2 border-black dark:border-white shadow-[2px_2px_0px_0px_rgba(0,0,0,0.3)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all ${showCustomClassroom
+                          ? 'bg-violet-500 text-white'
+                          : 'bg-white dark:bg-black text-foreground hover:bg-violet-100 dark:hover:bg-violet-900/30'
+                          }`}
+                      >
+                        <Plus className="h-3 w-3" />
+                      </button>
+                    </div>
+
+                    {showCustomClassroom && (
+                      <div className="mt-2 animate-in fade-in slide-in-from-top-1 duration-200">
+                        <Input
+                          id="classroom"
+                          value={classroom}
+                          onChange={(e) => setClassroom(e.target.value)}
+                          placeholder="Digite o nome da sala (Ex: Sala 12 ou 9A)"
+                          disabled={isSaving}
+                          required
+                          className="border-3 border-black dark:border-white rounded-none h-9 text-sm font-bold bg-white dark:bg-black"
+                        />
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="space-y-1.5 pt-2">
                     <Label htmlFor="justification" className="text-[10px] font-black uppercase tracking-wide flex items-center gap-1.5 text-violet-700 dark:text-violet-300">
                       Justificativa / Motivo
                       <span className="text-red-500">*</span>
@@ -483,38 +539,6 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                       rows={2}
                       className="border-3 border-black dark:border-white rounded-none focus:ring-0 focus:border-violet-500 transition-all resize-none text-sm bg-white dark:bg-black"
                     />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <Label htmlFor="classroom" className="text-[10px] font-black uppercase tracking-wide flex items-center gap-1.5 text-violet-700 dark:text-violet-300">
-                      Sala
-                      <span className="text-red-500">*</span>
-                    </Label>
-                    <Input
-                      id="classroom"
-                      value={classroom}
-                      onChange={(e) => setClassroom(e.target.value)}
-                      placeholder="Ex: Sala 12 ou 9A"
-                      disabled={isSaving}
-                      required
-                      className="border-3 border-black dark:border-white rounded-none h-9 text-sm font-bold bg-white dark:bg-black"
-                    />
-                    <div className="flex flex-wrap gap-1.5 mt-1.5">
-                      {['Sala Google', 'Sala Maker', 'Sala de Estudos', 'Sala de Artes'].map((sala) => (
-                        <button
-                          key={sala}
-                          type="button"
-                          onClick={() => setClassroom(sala)}
-                          disabled={isSaving}
-                          className={`px-2 py-1 text-[9px] font-black uppercase border-2 border-black dark:border-white shadow-[2px_2px_0px_0px_rgba(0,0,0,0.3)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all ${classroom === sala
-                            ? 'bg-violet-500 text-white'
-                            : 'bg-white dark:bg-black text-foreground hover:bg-violet-100 dark:hover:bg-violet-900/30'
-                            }`}
-                        >
-                          {sala}
-                        </button>
-                      ))}
-                    </div>
                   </div>
                 </div>
               </div>
