@@ -162,7 +162,7 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
                   )}
 
                   <p className="text-base font-bold text-foreground mt-3 mb-3 leading-relaxed">
-                    {res.justification || res.subject}
+                    {res.justification}
                   </p>
 
                   <div className="flex items-center gap-4 text-sm">
@@ -231,18 +231,18 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
 
       {/* Calendar - Neo Brutal */}
       <div className="border-3 border-foreground/20 bg-card shadow-[4px_4px_0px_0px_hsl(var(--foreground)/0.1)] p-4">
-        <div className="border-b-3 border-foreground/10 pb-3 mb-4">
+        <div className="border-b-3 border-foreground/10 pb-2 mb-2">
           <div className="flex items-center gap-2">
             <CalendarDays className="h-5 w-5 text-primary" />
             <h3 className="text-lg font-black uppercase tracking-tight text-foreground">
               Visão Mensal
             </h3>
           </div>
-          <p className="text-xs font-medium text-muted-foreground mt-0.5">
+          <p className="text-[10px] font-medium text-muted-foreground mt-0">
             Clique em um dia para ver os detalhes
           </p>
         </div>
@@ -256,8 +256,8 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
           locale={ptBR}
           disableNavigation
           classNames={{
-            months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0 w-full",
-            month: "space-y-4 w-full",
+            months: "flex flex-col sm:flex-row w-full",
+            month: "space-y-0 w-full",
             caption: "hidden",
             caption_label: "hidden",
             nav: "hidden",

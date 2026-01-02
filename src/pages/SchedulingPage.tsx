@@ -118,152 +118,149 @@ const SchedulingPage = () => {
     </div>
 
     <div className="space-y-6 max-w-7xl mx-auto relative z-10">
+      {/* Modernized Header Section */}
+      <div className="relative overflow-hidden border-4 border-black dark:border-white bg-white dark:bg-zinc-900 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.1)] mb-8">
+        {/* Decorative Gradient Background */}
+        <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-blue-500/10 to-transparent pointer-events-none" />
 
-      <div className="space-y-6 max-w-7xl mx-auto relative z-10">
-        {/* Modernized Header Section */}
-        <div className="relative overflow-hidden border-4 border-black dark:border-white bg-white dark:bg-zinc-900 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.1)] mb-8">
-          {/* Decorative Gradient Background */}
-          <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-blue-500/10 to-transparent pointer-events-none" />
-
-          <div className="relative p-6 space-y-8">
-            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
-              {/* Title Section with Premium Icon */}
-              <div className="flex flex-col gap-4">
-                <div className="flex items-center gap-5">
-                  <div className="relative group">
-                    <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-none blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200" />
-                    <div className="relative w-14 h-14 border-4 border-black dark:border-white bg-white dark:bg-zinc-800 flex items-center justify-center shadow-[4px_4px_0px_0px_#000] dark:shadow-[4px_4px_0px_0px_#fff]">
-                      <Calendar className="h-7 w-7 text-blue-600 dark:text-blue-400 animate-pulse" />
-                    </div>
+        <div className="relative p-6 space-y-8">
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+            {/* Title Section with Premium Icon */}
+            <div className="flex flex-col gap-4">
+              <div className="flex items-center gap-5">
+                <div className="relative group">
+                  <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-none blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200" />
+                  <div className="relative w-14 h-14 border-4 border-black dark:border-white bg-white dark:bg-zinc-800 flex items-center justify-center shadow-[4px_4px_0px_0px_#000] dark:shadow-[4px_4px_0px_0px_#fff]">
+                    <Calendar className="h-7 w-7 text-blue-600 dark:text-blue-400 animate-pulse" />
                   </div>
+                </div>
 
-                  <div className="space-y-1">
-                    <h2 className="text-2xl font-black uppercase tracking-tighter text-foreground leading-none">
-                      Agendamento de Chromebooks
-                    </h2>
-                    <div className="flex items-center gap-2">
-                      <div className="h-1 w-8 bg-blue-600" />
-                      <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
-                        Gestão Inteligente de Recursos Disponíveis
-                      </p>
-                    </div>
+                <div className="space-y-1">
+                  <h2 className="text-2xl font-black uppercase tracking-tighter text-foreground leading-none">
+                    Agendamento de Chromebooks
+                  </h2>
+                  <div className="flex items-center gap-2">
+                    <div className="h-1 w-8 bg-blue-600" />
+                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
+                      Gestão Inteligente de Recursos Disponíveis
+                    </p>
                   </div>
                 </div>
               </div>
-
-              {/* View Mode Toggle - Premium Styling */}
-              <div className="flex bg-zinc-100 dark:bg-zinc-800 p-1.5 border-4 border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                <button
-                  onClick={() => handleViewModeChange('weekly')}
-                  className={cn(
-                    "flex items-center gap-2 px-6 py-2.5 text-xs font-black uppercase transition-all duration-200",
-                    viewMode === 'weekly'
-                      ? "bg-black text-white dark:bg-white dark:text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,0.3)]"
-                      : "text-zinc-500 hover:text-black dark:hover:text-white"
-                  )}
-                >
-                  <CalendarDays className="h-4 w-4" />
-                  Semanal
-                </button>
-                <button
-                  onClick={() => handleViewModeChange('monthly')}
-                  className={cn(
-                    "flex items-center gap-2 px-6 py-2.5 text-xs font-black uppercase transition-all duration-200",
-                    viewMode === 'monthly'
-                      ? "bg-black text-white dark:bg-white dark:text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,0.3)]"
-                      : "text-zinc-500 hover:text-black dark:hover:text-white"
-                  )}
-                >
-                  <CalendarRange className="h-4 w-4" />
-                  Histórico de Agendamentos (Admin)
-                </button>
-              </div>
             </div>
 
-            {/* Month Quick Navigation Bar - Clean & Centered */}
-            <div className="w-full border-t border-zinc-200 dark:border-zinc-800 pt-6 px-2">
-              <div className="flex justify-center w-full">
-                <div className="flex gap-2 overflow-x-auto pb-2 px-4 w-full justify-start lg:justify-center scrollbar-hide mask-linear-fade">
-                  {Array.from({ length: 12 }, (_, i) => {
-                    const date = new Date(new Date().getFullYear(), i, 1);
-                    const isCurrentMonth = i === currentDate.getMonth();
-                    return (
-                      <button
-                        key={i}
-                        onClick={() => {
-                          const newDate = new Date(currentDate.getFullYear(), i, 1);
-                          setCurrentDate(getStartOfWeek(newDate));
-                        }}
-                        className={cn(
-                          "flex-shrink-0 px-4 py-2.5 text-xs font-black uppercase tracking-widest transition-all duration-200 border-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] hover:-translate-y-0.5 active:translate-y-0 active:shadow-none min-w-[90px]",
-                          isCurrentMonth
-                            ? "bg-black text-white border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,0.3)] dark:bg-white dark:text-black dark:border-white"
-                            : "bg-white text-zinc-600 border-zinc-200 hover:border-black hover:text-black dark:bg-zinc-900 dark:text-zinc-400 dark:border-zinc-700 dark:hover:border-white dark:hover:text-white"
-                        )}
-                      >
-                        {format(date, 'MMM', { locale: ptBR }).replace('.', '')}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Navigation & Status Bar - Sleek & Modern */}
-        <div className="flex flex-col md:flex-row gap-4 mb-4">
-          {/* Date Picker Control */}
-          <div className="flex-1 flex items-center bg-white dark:bg-zinc-900 border-4 border-black dark:border-white shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] p-1">
-            <button
-              onClick={() => handleDateChange('prev')}
-              disabled={isLoading}
-              className="h-12 w-12 flex items-center justify-center border-r-4 border-black dark:border-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors disabled:opacity-50"
-            >
-              <ChevronLeft className="h-6 w-6" />
-            </button>
-
-            <div className="flex-1 text-center font-black uppercase tracking-tight text-lg py-2">
-              {displayRange}
-            </div>
-
-            <button
-              onClick={() => handleDateChange('next')}
-              disabled={isLoading}
-              className="h-12 w-12 flex items-center justify-center border-l-4 border-black dark:border-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors disabled:opacity-50"
-            >
-              <ChevronRight className="h-6 w-6" />
-            </button>
-          </div>
-
-          {/* Availability Pill - Premium Look */}
-          <div className="flex items-center gap-4 bg-green-500 border-4 border-black dark:border-white shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] px-6 py-3 min-w-[240px]">
-            <div className="w-10 h-10 bg-white border-3 border-black flex items-center justify-center shadow-[2px_2px_0px_0px_#000]">
-              <Monitor className="h-5 w-5 text-green-600" />
-            </div>
-            <div className="flex flex-col">
-              <span className="text-[10px] font-black text-white/80 uppercase tracking-widest leading-none mb-1">Status de Rede</span>
-              <div className="flex items-center gap-2">
-                {isLoadingTotal ? (
-                  <Loader2 className="h-5 w-5 animate-spin text-white" />
-                ) : (
-                  <span className="text-xl font-black text-white leading-none">
-                    {totalAvailableChromebooks} <span className="text-xs font-bold uppercase underline decoration-2 underline-offset-4">Disponíveis</span>
-                  </span>
+            {/* View Mode Toggle - Premium Styling */}
+            <div className="flex bg-zinc-100 dark:bg-zinc-800 p-1.5 border-4 border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+              <button
+                onClick={() => handleViewModeChange('weekly')}
+                className={cn(
+                  "flex items-center gap-2 px-6 py-2.5 text-xs font-black uppercase transition-all duration-200",
+                  viewMode === 'weekly'
+                    ? "bg-black text-white dark:bg-white dark:text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,0.3)]"
+                    : "text-zinc-500 hover:text-black dark:hover:text-white"
                 )}
+              >
+                <CalendarDays className="h-4 w-4" />
+                Semanal
+              </button>
+              <button
+                onClick={() => handleViewModeChange('monthly')}
+                className={cn(
+                  "flex items-center gap-2 px-6 py-2.5 text-xs font-black uppercase transition-all duration-200",
+                  viewMode === 'monthly'
+                    ? "bg-black text-white dark:bg-white dark:text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,0.3)]"
+                    : "text-zinc-500 hover:text-black dark:hover:text-white"
+                )}
+              >
+                <CalendarRange className="h-4 w-4" />
+                Histórico
+              </button>
+            </div>
+          </div>
+
+          {/* Month Quick Navigation Bar - Clean & Centered */}
+          <div className="w-full border-t border-zinc-200 dark:border-zinc-800 pt-6 px-2">
+            <div className="flex justify-center w-full">
+              <div className="flex gap-2 overflow-x-auto pb-2 px-4 w-full justify-start lg:justify-center scrollbar-hide mask-linear-fade">
+                {Array.from({ length: 12 }, (_, i) => {
+                  const date = new Date(new Date().getFullYear(), i, 1);
+                  const isCurrentMonth = i === currentDate.getMonth();
+                  return (
+                    <button
+                      key={i}
+                      onClick={() => {
+                        const newDate = new Date(currentDate.getFullYear(), i, 1);
+                        setCurrentDate(getStartOfWeek(newDate));
+                      }}
+                      className={cn(
+                        "flex-shrink-0 px-2 py-2.5 text-[10px] font-black uppercase tracking-wider transition-all duration-200 border-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] hover:-translate-y-0.5 active:translate-y-0 active:shadow-none min-w-[65px]",
+                        isCurrentMonth
+                          ? "bg-black text-white border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,0.3)] dark:bg-white dark:text-black dark:border-white"
+                          : "bg-white text-zinc-600 border-zinc-200 hover:border-black hover:text-black dark:bg-zinc-900 dark:text-zinc-400 dark:border-zinc-700 dark:hover:border-white dark:hover:text-white"
+                      )}
+                    >
+                      {format(date, 'MMM', { locale: ptBR }).replace('.', '')}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </div>
         </div>
-
-        {/* Weekend Warning */}
-        {viewMode === 'weekly' && getWeekDays(currentDate).length === 0 && <div className="mt-4 p-3 border-3 border-warning/50 bg-warning/10 flex items-center gap-2">
-          <AlertTriangle className="h-5 w-5 text-warning" />
-          <span className="text-sm font-bold text-warning-foreground">
-            Esta semana não contém dias úteis (Segunda a Sexta).
-          </span>
-        </div>}
       </div>
+
+      {/* Navigation & Status Bar - Sleek & Modern */}
+      <div className="flex flex-col md:flex-row gap-4 mb-4">
+        {/* Date Picker Control */}
+        <div className="flex-1 flex items-center bg-white dark:bg-zinc-900 border-4 border-black dark:border-white shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] p-1">
+          <button
+            onClick={() => handleDateChange('prev')}
+            disabled={isLoading}
+            className="h-12 w-12 flex items-center justify-center border-r-4 border-black dark:border-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors disabled:opacity-50"
+          >
+            <ChevronLeft className="h-6 w-6" />
+          </button>
+
+          <div className="flex-1 text-center font-black uppercase tracking-tight text-lg py-2">
+            {displayRange}
+          </div>
+
+          <button
+            onClick={() => handleDateChange('next')}
+            disabled={isLoading}
+            className="h-12 w-12 flex items-center justify-center border-l-4 border-black dark:border-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors disabled:opacity-50"
+          >
+            <ChevronRight className="h-6 w-6" />
+          </button>
+        </div>
+
+        {/* Availability Pill - Premium Look */}
+        <div className="flex items-center gap-4 bg-green-500 border-4 border-black dark:border-white shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] px-4 py-3 min-w-[210px]">
+          <div className="w-10 h-10 bg-white border-3 border-black flex items-center justify-center shadow-[2px_2px_0px_0px_#000]">
+            <Monitor className="h-5 w-5 text-green-600" />
+          </div>
+          <div className="flex flex-col">
+            <span className="text-[10px] font-black text-white/80 uppercase tracking-widest leading-none mb-1">Status de Rede</span>
+            <div className="flex items-center gap-2">
+              {isLoadingTotal ? (
+                <Loader2 className="h-5 w-5 animate-spin text-white" />
+              ) : (
+                <span className="text-xl font-black text-white leading-none">
+                  {totalAvailableChromebooks} <span className="text-xs font-bold uppercase underline decoration-2 underline-offset-4">Disponíveis</span>
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Weekend Warning */}
+      {viewMode === 'weekly' && getWeekDays(currentDate).length === 0 && <div className="mt-4 p-3 border-3 border-warning/50 bg-warning/10 flex items-center gap-2">
+        <AlertTriangle className="h-5 w-5 text-warning" />
+        <span className="text-sm font-bold text-warning-foreground">
+          Esta semana não contém dias úteis (Segunda a Sexta).
+        </span>
+      </div>}
 
       {/* Calendar Grid - Neo Brutal */}
       <div className="neo-brutal-card p-4 overflow-x-auto">
