@@ -228,7 +228,7 @@ export function DashboardLayout({
       <div className="absolute inset-0 -z-10 bg-white dark:bg-zinc-950 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]" />
 
       {/* Header: Title and Download Button */}
-      <div className={cn("flex flex-col sm:flex-row justify-between items-start sm:items-center relative z-10 gap-6 p-6 border-4 border-indigo-900 bg-white dark:bg-zinc-900 shadow-[8px_8px_0px_0px_rgba(49,46,129,1)] transition-all duration-300", isMounted ? 'animate-fadeIn animation-delay-0' : 'opacity-0')}>
+      <div className={cn("flex flex-col sm:flex-row justify-between items-start sm:items-center relative z-10 gap-4 p-6 border-4 border-black dark:border-white bg-white dark:bg-zinc-900 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.2)]", isMounted ? 'animate-fadeIn animation-delay-0' : 'opacity-0')}>
         <SectionHeader
           title="DASHBOARD"
           description="ANÁLISE DE USO E ESTATÍSTICAS"
@@ -244,15 +244,16 @@ export function DashboardLayout({
               variant="outline"
               onClick={handleExportPDF}
               className={cn(
-                "flex items-center gap-2 h-10 px-4 rounded-none border-2 border-indigo-900",
-                "bg-indigo-100 text-indigo-900 hover:bg-indigo-200",
-                "shadow-[4px_4px_0px_0px_rgba(49,46,129,1)] hover:shadow-[2px_2px_0px_0px_rgba(49,46,129,1)] hover:translate-x-[2px] hover:translate-y-[2px]",
-                "transition-all duration-200 font-black tracking-wide text-xs uppercase"
+                "flex items-center gap-2 border-2 border-black dark:border-white text-black dark:text-white rounded-none",
+                "bg-white dark:bg-zinc-900",
+                "shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]",
+                "hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[4px] active:translate-y-[4px]",
+                "transition-all duration-200 uppercase font-bold text-xs"
               )}
               disabled={loading || !stats}
             >
               <Download className="h-4 w-4" />
-              <span className="hidden md:inline">Exportar PDF</span>
+              <span className="hidden md:inline">PDF</span>
             </Button>
           )}
 
@@ -261,27 +262,28 @@ export function DashboardLayout({
             variant="ghost"
             onClick={refreshData}
             className={cn(
-              "flex items-center gap-2 h-10 px-4 rounded-none border-2 border-indigo-900",
-              "bg-yellow-300 text-indigo-900 hover:bg-yellow-400",
-              "shadow-[4px_4px_0px_0px_rgba(49,46,129,1)] hover:shadow-[2px_2px_0px_0px_rgba(49,46,129,1)] hover:translate-x-[2px] hover:translate-y-[2px]",
-              "transition-all duration-200 font-black tracking-wide text-xs uppercase"
+              "flex items-center gap-2 border-2 border-black dark:border-white text-black dark:text-white rounded-none",
+              "bg-yellow-300 dark:bg-yellow-700 hover:bg-yellow-400 dark:hover:bg-yellow-600",
+              "shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]",
+              "hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[4px] active:translate-y-[4px]",
+              "transition-all duration-200 uppercase font-bold text-xs"
             )}
             disabled={loading}
           >
             <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-            <span className="hidden md:inline">{loading ? '...' : 'Atualizar'}</span>
+            <span className="hidden md:inline">{loading ? '...' : 'ATUALIZAR'}</span>
           </Button>
 
           {/* Select para seleção de visualização */}
           <Select value={periodView} onValueChange={(v) => setPeriodView(v as PeriodView | 'charts')}>
-            <SelectTrigger className="w-full sm:w-[200px] h-10 rounded-none border-2 border-indigo-900 bg-white text-indigo-900 shadow-[4px_4px_0px_0px_rgba(49,46,129,1)] focus:ring-0 font-bold text-xs uppercase">
-              <SelectValue placeholder="Visualização" />
+            <SelectTrigger className="w-full sm:w-[200px] h-10 border-2 border-black dark:border-white rounded-none bg-white dark:bg-zinc-900 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus:ring-0 font-bold uppercase text-xs">
+              <SelectValue placeholder="VISUALIZAÇÃO" />
             </SelectTrigger>
-            <SelectContent className="rounded-none border-2 border-indigo-900 bg-white shadow-[4px_4px_0px_0px_rgba(49,46,129,1)]">
+            <SelectContent className="border-2 border-black dark:border-white rounded-none bg-white dark:bg-zinc-900 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
               {periodOptions.map(option => {
                 const Icon = option.icon;
                 return (
-                  <SelectItem key={option.value} value={option.value} className="flex items-center text-xs font-bold uppercase rounded-none cursor-pointer focus:bg-indigo-100 focus:text-indigo-900 my-1">
+                  <SelectItem key={option.value} value={option.value} className="flex items-center uppercase font-bold text-xs focus:bg-yellow-200 dark:focus:bg-yellow-900 rounded-none cursor-pointer">
                     <Icon className="h-4 w-4 mr-2" />
                     {option.label}
                   </SelectItem>
