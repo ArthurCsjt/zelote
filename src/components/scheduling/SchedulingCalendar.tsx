@@ -53,35 +53,33 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
     );
   }
 
-  const gridTemplateColumns = `80px repeat(${weekDays.length}, 1fr)`;
+  const gridTemplateColumns = `60px repeat(${weekDays.length}, 1fr)`;
 
   return (
-    <div className="space-y-4">
-
+    <div className="space-y-0">
       <div
-        className="grid gap-1 min-w-[700px]"
+        className="grid gap-[2px] min-w-[600px] bg-foreground/5"
         style={{ gridTemplateColumns }}
       >
-
         {/* Header Row */}
-        <div className="h-14" /> {/* Empty corner */}
+        <div className="h-10 bg-card" /> {/* Empty corner */}
         {weekDays.map((day, index) => {
           const isCurrentDay = isToday(day);
           return (
             <div
               key={index}
               className={cn(
-                "h-14 flex flex-col items-center justify-center border-3 transition-all",
+                "h-10 flex flex-col items-center justify-center transition-all bg-card",
                 isCurrentDay
-                  ? "bg-primary text-primary-foreground border-primary shadow-[3px_3px_0px_0px_hsl(var(--foreground)/0.3)]"
-                  : "bg-muted/30 border-foreground/10 hover:bg-muted/50"
+                  ? "bg-primary text-primary-foreground"
+                  : "hover:bg-muted/30"
               )}
             >
-              <span className="text-xs font-black uppercase tracking-wide">
+              <span className="text-[10px] font-black uppercase tracking-wide">
                 {format(day, 'EEE', { locale: ptBR }).toUpperCase().slice(0, 3)}
               </span>
               <span className={cn(
-                "text-sm font-bold",
+                "text-xs font-bold",
                 isCurrentDay ? "text-primary-foreground/90" : "text-muted-foreground"
               )}>
                 {format(day, 'dd/MM')}
@@ -94,8 +92,8 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
         {timeSlots.map((timeSlot, timeIndex) => (
           <React.Fragment key={timeIndex}>
             {/* Time Label */}
-            <div className="h-16 flex items-center justify-center border-3 border-foreground/10 bg-muted/20">
-              <span className="text-xs font-black text-muted-foreground">
+            <div className="h-14 flex items-center justify-center bg-muted/30">
+              <span className="text-[10px] font-black text-muted-foreground">
                 {timeSlot}
               </span>
             </div>
