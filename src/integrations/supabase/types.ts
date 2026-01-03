@@ -266,6 +266,7 @@ export type Database = {
           loan_date: string
           loan_type: Database["public"]["Enums"]["loan_type"]
           purpose: string
+          reservation_id: string | null
           student_email: string
           student_name: string
           student_ra: string | null
@@ -282,6 +283,7 @@ export type Database = {
           loan_date?: string
           loan_type?: Database["public"]["Enums"]["loan_type"]
           purpose: string
+          reservation_id?: string | null
           student_email: string
           student_name: string
           student_ra?: string | null
@@ -298,6 +300,7 @@ export type Database = {
           loan_date?: string
           loan_type?: Database["public"]["Enums"]["loan_type"]
           purpose?: string
+          reservation_id?: string | null
           student_email?: string
           student_name?: string
           student_ra?: string | null
@@ -326,7 +329,50 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "loans_reservation_id_fkey"
+            columns: ["reservation_id"]
+            isOneToOne: false
+            referencedRelation: "reservations"
+            referencedColumns: ["id"]
+          },
         ]
+      }
+      notifications: {
+        Row: {
+          created_at: string | null
+          deleted_at: string | null
+          id: string
+          is_read: boolean | null
+          message: string
+          metadata: Json | null
+          title: string
+          type: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          deleted_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message: string
+          metadata?: Json | null
+          title: string
+          type: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          deleted_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message?: string
+          metadata?: Json | null
+          title?: string
+          type?: string
+          user_id?: string | null
+        }
+        Relationships: []
       }
       professores: {
         Row: {
@@ -690,6 +736,7 @@ export type Database = {
           loan_date: string | null
           loan_type: Database["public"]["Enums"]["loan_type"] | null
           purpose: string | null
+          reservation_id: string | null
           return_date: string | null
           return_notes: string | null
           returned_by_email: string | null
@@ -701,7 +748,15 @@ export type Database = {
           student_ra: string | null
           user_type: Database["public"]["Enums"]["user_type"] | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "loans_reservation_id_fkey"
+            columns: ["reservation_id"]
+            isOneToOne: false
+            referencedRelation: "reservations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Functions: {
