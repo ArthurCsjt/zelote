@@ -4,6 +4,29 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Neo-Brutalismo Menu Cards */
+.neo-menu-card {
+  @apply relative h-28 md:h-32 w-full flex flex-col items-center justify-center gap-2.5 md:gap-3
+    cursor-pointer bg-card border-2 border-border
+    shadow-[3px_3px_0px_0px_hsl(var(--border))]
+    hover:shadow-[5px_5px_0px_0px_hsl(var(--border))]
+    hover:translate-x-[-2px] hover:translate-y-[-2px]
+    active:translate-x-[0px] active:translate-y-[0px]
+    active:shadow-[1px_1px_0px_0px_hsl(var(--border))]
+    transition-all duration-200 overflow-hidden;
+}
+
+.neo-menu-icon-wrapper {
+  @apply p-2 md:p-2.5 border border-border/50 shadow-sm transition-all duration-200;
+}
+
+.neo-badge-beta {
+  @apply text-[9px] md:text-[10px] h-4 px-1.5 py-0 
+    border border-border bg-warning/90 text-warning-foreground 
+    font-bold uppercase tracking-wider;
+}
+
+
 @layer base {
   :root {
     /* ===== BASE COLORS (ZINC) ===== */
