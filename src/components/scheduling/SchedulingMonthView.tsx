@@ -9,6 +9,8 @@ import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfileRole } from '@/hooks/use-profile-role';
+import { useDatabase } from '@/hooks/useDatabase';
+import { ReservationDetailsDialog } from './ReservationDetailsDialog';
 import type { Reservation } from '@/hooks/useDatabase';
 
 interface SchedulingMonthViewProps {
@@ -16,6 +18,7 @@ interface SchedulingMonthViewProps {
   reservations: Reservation[];
   totalAvailableChromebooks: number;
   isLoading: boolean;
+  onReservationSuccess?: () => void;
 }
 
 export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
@@ -23,11 +26,15 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
   reservations,
   totalAvailableChromebooks,
   isLoading,
+  onReservationSuccess,
 }) => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const navigate = useNavigate();
   const { user: currentUser } = useAuth();
-  const { role } = useProfileRole();
+  const { role, isAdmin } = useProfileRole();
+  const { deleteReservation } = useDatabase();
+  const [selectedReservation, setSelectedReservation] = useState<Reservation | null>(null);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
   const isSuperAdmin = role === 'super_admin';
 
@@ -130,8 +137,13 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
                     "p-5 border-4 transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,0.15)]",
                     isMinecraft
                       ? "border-[#3c8527] bg-[#3c8527]/20 hover:bg-[#3c8527]/25"
-                      : "border-primary/40 bg-primary/10 hover:bg-primary/15"
+                      : "border-primary/40 bg-primary/10 hover:bg-primary/15",
+                    "cursor-pointer"
                   )}
+                  onClick={() => {
+                    setSelectedReservation(res);
+                    setIsDetailsOpen(true);
+                  }}
                 >
                   <div className="flex justify-between items-start mb-3">
                     <div className="flex items-center gap-3">
@@ -145,14 +157,21 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
                       </div>
                       <span className="font-black text-lg text-foreground">{res.prof_name}</span>
                     </div>
-                    <Badge className={cn(
-                      "font-black text-base px-4 py-2 border-0 rounded-none shadow-[3px_3px_0px_0px_rgba(0,0,0,0.3)]",
-                      isMinecraft
-                        ? "bg-[#3c8527] text-white"
-                        : "bg-primary text-primary-foreground"
-                    )}>
-                      {res.quantity_requested} CB
-                    </Badge>
+                    <div className="flex flex-col items-end gap-1">
+                      <Badge className={cn(
+                        "font-black text-base px-4 py-2 border-0 rounded-none shadow-[3px_3px_0px_0px_rgba(0,0,0,0.3)]",
+                        isMinecraft
+                          ? "bg-[#3c8527] text-white"
+                          : "bg-primary text-primary-foreground"
+                      )}>
+                        {res.quantity_requested} CB
+                      </Badge>
+                      {res.associated_loans && res.associated_loans.length >= res.quantity_requested && (
+                        <Badge className="bg-green-500 text-white text-[10px] font-black uppercase rounded-none border-2 border-black shadow-[2px_2px_0px_0px_#000]">
+                          Reserva Atendida
+                        </Badge>
+                      )}
+                    </div>
                   </div>
 
                   {isMinecraft && (
@@ -193,12 +212,13 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
                     </div>
                   )}
 
-                  {isResponsible && (
+                  {isResponsible && (!res.associated_loans || res.associated_loans.length < res.quantity_requested) && (
                     <Button
                       variant="outline"
                       size="sm"
                       className="w-full mt-4 h-8 text-[11px] font-black uppercase rounded-none border-2 border-primary bg-primary/5 hover:bg-primary hover:text-white transition-all flex items-center justify-center gap-2"
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.stopPropagation();
                         navigate('/', {
                           state: {
                             fromScheduling: true,
@@ -218,6 +238,26 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
                 </div>
               );
             })}
+            {dayReservations.length > 0 && selectedReservation && (
+              <ReservationDetailsDialog
+                open={isDetailsOpen}
+                onOpenChange={setIsDetailsOpen}
+                reservation={selectedReservation}
+                date={selectedDate}
+                isAdmin={!!isAdmin}
+                isResponsible={!!isResponsible}
+                isOwner={selectedReservation.created_by === currentUser?.id}
+                onCancel={() => {
+                  deleteReservation(selectedReservation.id).then((success: boolean) => {
+                    if (success) {
+                      onReservationSuccess?.();
+                      setIsDetailsOpen(false);
+                      setSelectedReservation(null);
+                    }
+                  });
+                }}
+              />
+            )}
           </div>
         ) : (
           <div className="text-center py-10 border-4 border-dashed border-foreground/20 bg-muted/10">

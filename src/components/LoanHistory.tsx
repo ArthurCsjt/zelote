@@ -350,6 +350,12 @@ export function LoanHistory({ history, isNewLoan }: LoanHistoryProps) {
                                 <span className="font-bold">{loan.returned_by_email}</span>
                               </div>
                             )}
+                            {loan.return_registered_by_email && (
+                              <div className="text-sm">
+                                <span className="font-black uppercase text-xs">Registrado por: </span>
+                                <span className="font-bold">{loan.return_registered_by_email}</span>
+                              </div>
+                            )}
                             {loan.return_notes && (
                               <div className="text-sm">
                                 <span className="font-black uppercase text-xs">Obs: </span>

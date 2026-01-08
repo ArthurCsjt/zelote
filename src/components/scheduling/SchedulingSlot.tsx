@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { Plus, Monitor, User, CheckCircle, AlertTriangle, Clock, Trash2, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -9,6 +9,7 @@ import { ReservationDialog } from './ReservationDialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useProfileRole } from '@/hooks/use-profile-role';
 import { useDatabase } from '@/hooks/useDatabase';
+import { ReservationDetailsDialog } from './ReservationDetailsDialog';
 
 interface SchedulingSlotProps {
   date: Date;
@@ -32,6 +33,7 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
   const { role, isAdmin } = useProfileRole();
   const { deleteReservation } = useDatabase();
   const navigate = useNavigate();
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
   const isSuperAdmin = role === 'super_admin';
 
@@ -74,13 +76,17 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
-            <div className={cn(
-              "h-16 p-2 border-3 transition-all flex flex-col justify-center gap-0.5",
-              myReservation.is_minecraft
-                ? "border-[#3c8527] bg-[#3c8527]/10 shadow-[3px_3px_0px_0px_#3c8527/0.3]"
-                : "border-info bg-info/10 shadow-[3px_3px_0px_0px_hsl(var(--info)/0.3)]",
-              pastSlotClasses
-            )}>
+            <div
+              className={cn(
+                "h-16 p-2 border-3 transition-all flex flex-col justify-center gap-0.5 cursor-pointer",
+                myReservation.is_minecraft
+                  ? "border-[#3c8527] bg-[#3c8527]/10 shadow-[3px_3px_0px_0px_#3c8527/0.3]"
+                  : "border-info bg-info/10 shadow-[3px_3px_0px_0px_hsl(var(--info)/0.3)]",
+                "hover:-translate-y-0.5 hover:shadow-[5px_5px_0px_0px_rgba(0,0,0,0.1)]",
+                pastSlotClasses
+              )}
+              onClick={() => setIsDetailsOpen(true)}
+            >
               <div className="flex items-center gap-1">
                 {myReservation.is_minecraft ? (
                   <>
@@ -118,53 +124,27 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
               {myReservation.prof_name && myReservation.prof_name !== 'Usuário Desconhecido' ? myReservation.prof_name : (myReservation.prof_email || 'Usuário Desconhecido')} · {myReservation.quantity_requested} Chromebooks
               {myReservation.classroom && ` · Sala: ${myReservation.classroom}`}
             </p>
-            {myReservation.created_by === currentUser?.id && (
-              <Button
-                variant="destructive"
-                size="sm"
-                className="w-full mt-2 h-7 text-[10px] font-black uppercase rounded-none border-2 border-foreground"
-                onClick={() => deleteReservation(myReservation!.id).then((success: boolean) => success && onReservationSuccess())}
-              >
-                <Trash2 className="h-3 w-3 mr-1" />
-                Cancelar Minha Reserva
-              </Button>
-            )}
-
-            {isResponsible && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full mt-2 h-7 text-[10px] font-black uppercase rounded-none border-2 border-primary bg-primary/5 hover:bg-primary hover:text-white transition-all"
-                onClick={() => {
-                  navigate('/', {
-                    state: {
-                      fromScheduling: true,
-                      reservationData: {
-                        ...myReservation,
-                        date: date,
-                        time_slot: timeSlot
-                      }
-                    }
-                  });
-                }}
-              >
-                <ArrowRight className="h-3 w-3 mr-1" />
-                Iniciar Empréstimo
-              </Button>
-            )}
-            {isSuperAdmin && myReservation.created_by !== currentUser?.id && (
-              <Button
-                variant="destructive"
-                size="sm"
-                className="w-full mt-2 h-7 text-[10px] font-black uppercase rounded-none border-2 border-foreground"
-                onClick={() => deleteReservation(myReservation!.id).then((success: boolean) => success && onReservationSuccess())}
-              >
-                <Trash2 className="h-3 w-3 mr-1" />
-                Remover Reserva (Admin)
-              </Button>
-            )}
+            <p className="text-[10px] font-black text-blue-600 mt-2 uppercase tracking-tighter italic">Clique para ver detalhes e opções</p>
           </TooltipContent>
         </Tooltip>
+
+        <ReservationDetailsDialog
+          open={isDetailsOpen}
+          onOpenChange={setIsDetailsOpen}
+          reservation={myReservation}
+          date={date}
+          isOwner={true}
+          isAdmin={!!isAdmin}
+          isResponsible={!!isResponsible}
+          onCancel={() => {
+            deleteReservation(myReservation!.id).then((success: boolean) => {
+              if (success) {
+                onReservationSuccess();
+                setIsDetailsOpen(false);
+              }
+            });
+          }}
+        />
       </TooltipProvider>
     );
   }

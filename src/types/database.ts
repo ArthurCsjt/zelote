@@ -92,6 +92,7 @@ export interface LoanHistoryItem {
   returned_by_email?: string;
   returned_by_type?: UserType;
   return_notes?: string;
+  return_registered_by_email?: string; // NOVO: Email de quem registrou a devolução
   status: 'ativo' | 'devolvido' | 'atrasado';
   reservation_id?: string;
 }

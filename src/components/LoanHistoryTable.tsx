@@ -102,18 +102,28 @@ export const LoanHistoryTable: React.FC<LoanHistoryTableProps> = ({ history, isN
                     </div>
                   </TableCell>
                   <TableCell className="text-xs py-4 font-mono font-medium">
-                    {format(new Date(loan.loan_date), "dd/MM/yyyy HH:mm")}
+                    <div className="flex flex-col">
+                      <span>{format(new Date(loan.loan_date), "dd/MM/yyyy HH:mm")}</span>
+                      {loan.created_by_email && (
+                        <span className="text-[9px] text-muted-foreground font-sans mt-0.5 lowercase italic">Por: {loan.created_by_email}</span>
+                      )}
+                    </div>
                   </TableCell>
                   <TableCell className="text-xs py-4 font-mono font-medium">
                     {loan.return_date ? (
-                      <span className={cn(
-                        "px-2 py-1 border-black dark:border-white",
-                        loan.status === 'atrasado' ? 'text-red-700 dark:text-red-400 font-extrabold' : 'text-green-700 dark:text-green-400 font-bold'
-                      )}>
-                        {format(new Date(loan.return_date), "dd/MM/yyyy HH:mm")}
-                      </span>
+                      <div className="flex flex-col">
+                        <span className={cn(
+                          "border-black dark:border-white w-fit",
+                          loan.status === 'atrasado' ? 'text-red-700 dark:text-red-400 font-extrabold' : 'text-green-700 dark:text-green-400 font-bold'
+                        )}>
+                          {format(new Date(loan.return_date), "dd/MM/yyyy HH:mm")}
+                        </span>
+                        {loan.return_registered_by_email && (
+                          <span className="text-[9px] text-muted-foreground font-sans mt-0.5 lowercase italic">Por: {loan.return_registered_by_email}</span>
+                        )}
+                      </div>
                     ) : (
-                      <Badge variant="outline" className="rounded-none border-black dark:border-white text-xs font-normal uppercase opacity-50">Background</Badge>
+                      <Badge variant="outline" className="rounded-none border-black dark:border-white text-xs font-normal uppercase opacity-50">Ativo</Badge>
                     )}
                   </TableCell>
                 </TableRow>

@@ -12,10 +12,7 @@ export function OverdueAlertsPanel() {
   const { overdueLoans, upcomingDueLoans, loading, refresh } = useOverdueLoans();
   const { syncChromebookStatus, forceReturnLoan, loading: dbLoading } = useDatabase(); // Usando forceReturnLoan
 
-  const handleSyncStatus = async (chromebookId: string) => {
-    await syncChromebookStatus(chromebookId);
-    refresh(); // Atualiza a lista de empréstimos após a sincronização
-  };
+
 
   const handleForceReturn = async (loan: any) => {
     // CRÍTICO: Mapear loan_id para id, pois forceReturnLoan espera LoanHistoryItem
@@ -114,16 +111,7 @@ export function OverdueAlertsPanel() {
                       <Badge variant="destructive" className="ml-2 rounded-none border-2 border-black bg-red-500 hover:bg-red-600 text-white font-bold uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
                         {loan.days_overdue} {loan.days_overdue === 1 ? 'dia' : 'dias'} atrasado
                       </Badge>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleSyncStatus(loan.chromebook_id)}
-                        disabled={dbLoading}
-                        className="text-xs border-2 border-black bg-white hover:bg-gray-100 rounded-none h-8 px-3 font-bold uppercase w-full sm:w-auto"
-                      >
-                        <RefreshCw className={`h-3 w-3 mr-1 ${dbLoading ? 'animate-spin' : ''}`} />
-                        Sincronizar
-                      </Button>
+
                     </div>
                   </div>
                 </div>
@@ -167,16 +155,7 @@ export function OverdueAlertsPanel() {
                           loan.days_until_due === 1 ? 'AMANHÃ' :
                             `${loan.days_until_due} DIAS`}
                       </Badge>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleSyncStatus(loan.chromebook_id)}
-                        disabled={dbLoading}
-                        className="text-xs border-2 border-black bg-white hover:bg-gray-100 rounded-none h-8 px-3 font-bold uppercase w-full sm:w-auto"
-                      >
-                        <RefreshCw className={`h-3 w-3 mr-1 ${dbLoading ? 'animate-spin' : ''}`} />
-                        Sincronizar
-                      </Button>
+
                     </div>
                   </div>
                 </div>
