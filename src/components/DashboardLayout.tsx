@@ -234,7 +234,7 @@ export function DashboardLayout({
           description="ANÁLISE DE USO E ESTATÍSTICAS"
           icon={BarChartIcon}
           iconColor="text-black dark:text-white"
-          className="tracking-tighter font-black"
+          className="uppercase tracking-tight font-black"
         />
         <div className="flex items-center gap-3 w-full sm:w-auto flex-wrap">
 

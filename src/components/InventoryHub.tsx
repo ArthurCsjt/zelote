@@ -38,7 +38,7 @@ export function InventoryHub({ onBack, onGenerateQrCode }: InventoryHubProps) {
             description="VISUALIZE E GERENCIE EQUIPAMENTOS E USUÁRIOS CADASTRADOS"
             icon={Laptop}
             iconColor="text-indigo-600 dark:text-indigo-400"
-            className="flex flex-col items-center tracking-tighter font-black"
+            className="flex flex-col items-center uppercase tracking-tight font-black text-indigo-900 dark:text-indigo-100"
           />
         </div>
 

@@ -22,7 +22,7 @@ export const ReturnWrapper: React.FC<ReturnWrapperProps> = ({ onBack, initialChr
             description="DEVOLUÇÃO DE EQUIPAMENTOS E ACESSÓRIOS"
             icon={RotateCcw}
             iconColor="text-black dark:text-white"
-            className="flex flex-col items-center tracking-tighter font-black"
+            className="flex flex-col items-center uppercase tracking-tight font-black"
           />
         </div>
 

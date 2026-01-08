@@ -100,29 +100,17 @@ export function MainMenu({
   }
 
   return (
-    <div className="relative py-6 md:py-10 animate-fade-in min-h-[calc(100vh-120px)]">
-      {/* Subtle background pattern */}
-      <div className="absolute inset-0 -z-20 opacity-[0.02] dark:opacity-[0.03]" 
-        style={{
-          backgroundImage: `repeating-linear-gradient(
-            0deg,
-            transparent,
-            transparent 20px,
-            currentColor 20px,
-            currentColor 21px
-          ),
-          repeating-linear-gradient(
-            90deg,
-            transparent,
-            transparent 20px,
-            currentColor 21px,
-            currentColor 21px
-          )`
-        }}
-      />
+    <div className="space-y-8 relative py-8 animate-fade-in min-h-[calc(100vh-100px)]">
+      {/* Background glow effect - PRESERVED */}
+      <div className="absolute inset-0 -z-20 bg-gradient-to-b from-blue-500/5 to-transparent rounded-3xl blur-3xl" />
 
-      {/* Menu Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4 max-w-4xl mx-auto px-4 relative z-10">
+      {/* Floating Geometric Shapes (Added for "professional touch") */}
+      <div className="absolute top-10 left-10 w-20 h-20 bg-primary rotate-12 neo-brutal-shadow animate-float -z-10 opacity-50" />
+      <div className="absolute bottom-32 right-16 w-16 h-16 bg-warning rotate-45 neo-brutal-shadow animate-float-delayed -z-10 opacity-50" />
+      <div className="absolute top-1/3 right-20 w-12 h-12 bg-success rotate-6 neo-brutal-shadow animate-float -z-10 opacity-50" />
+      <div className="absolute bottom-20 left-24 w-14 h-14 bg-error -rotate-12 neo-brutal-shadow animate-float-delayed -z-10 opacity-50" />
+
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-w-5xl mx-auto relative z-10">
         {menuItemsFinal.map((item, index) => {
           const Icon = item.icon;
           return (
@@ -130,40 +118,34 @@ export function MainMenu({
               key={index}
               className={cn(
                 "transition-all duration-500 ease-out",
-                isLoaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
+                isLoaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
               )}
-              style={{ transitionDelay: `${index * 80}ms` }}
+              style={{ transitionDelay: `${index * 100}ms` }}
             >
-              <button
-                className="neo-menu-card group"
+              <div
+                className="group h-32 w-full flex flex-col items-center justify-center gap-3 cursor-pointer bg-white dark:bg-zinc-900 border-[3px] border-black dark:border-white shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[-2px] hover:translate-y-[-2px] active:translate-x-[0px] active:translate-y-[0px] active:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all duration-200"
                 onClick={item.action}
               >
-                {/* Icon Container */}
                 <div className={cn(
-                  "neo-menu-icon-wrapper",
+                  "p-2.5 border-2 border-black dark:border-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-transform duration-200 group-hover:scale-105",
                   item.bg
                 )}>
-                  <Icon className="h-5 w-5 md:h-6 md:w-6 text-black dark:text-white transition-transform duration-200 group-hover:scale-110" />
+                  <Icon className="h-6 w-6 text-black dark:text-white" />
                 </div>
-                
-                {/* Title & Badge */}
-                <div className="flex flex-col items-center gap-1.5">
-                  <span className="font-bold text-xs md:text-sm text-foreground uppercase tracking-wide">
+                <div className="flex items-center gap-2">
+                  <span className="font-black text-sm text-black dark:text-white uppercase tracking-tight">
                     {item.title}
                   </span>
                   {item.badge && (
                     <Badge
                       variant={item.badge.variant as any}
-                      className="neo-badge-beta"
+                      className="text-[10px] h-4 px-1.5 py-0.5 border border-black bg-yellow-300 text-black rounded-none shadow-[1px_1px_0px_0px_#000]"
                     >
                       {item.badge.label}
                     </Badge>
                   )}
                 </div>
-
-                {/* Hover indicator line */}
-                <div className="absolute bottom-0 left-0 right-0 h-1 bg-primary scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
-              </button>
+              </div>
             </div>
           );
         })}

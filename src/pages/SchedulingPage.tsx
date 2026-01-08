@@ -136,7 +136,7 @@ const SchedulingPage = () => {
                 </div>
 
                 <div className="space-y-1">
-                  <h2 className="text-2xl font-black uppercase tracking-tighter text-foreground leading-none drop-shadow-[2px_2px_0px_rgba(0,0,0,0.1)]">
+                  <h2 className="text-2xl font-black uppercase tracking-tighter text-foreground leading-none">
                     Agendamento de Chromebooks
                   </h2>
                   <div className="flex items-center gap-2">
