@@ -117,11 +117,11 @@ export function LoanForm({ onBack, initialReservationData }: LoanFormProps) {
     const isPurposeDefined = !!formData.purpose.trim() && isPurposeConfirmed;
     const isDevicesAdded = deviceIds.length > 0;
 
-    // NOVO CÁLCULO DE PASSO ATUAL (4 PASSOS)
+    // NOVO CÁLCULO DE PASSO ATUAL (4 PASSOS) - ORDEM ATUALIZADA: Solicitante -> Equipamento -> Finalidade -> Prazo
     const currentStep: 1 | 2 | 3 | 4 = useMemo(() => {
         if (!isUserSelected) return 1;
-        if (!isPurposeDefined) return 2;
-        if (!isDevicesAdded) return 3;
+        if (!isDevicesAdded) return 2;
+        if (!isPurposeDefined) return 3;
         return 4;
     }, [isUserSelected, isPurposeDefined, isDevicesAdded]);
 
@@ -196,21 +196,21 @@ export function LoanForm({ onBack, initialReservationData }: LoanFormProps) {
             return;
         }
 
-        // 2. Validação de Finalidade (Agora depende de isPurposeDefined)
-        if (!isPurposeDefined) {
+        // 2. Validação de Dispositivos (Agora é o Passo 2)
+        if (deviceIds.length === 0) {
             toast({
                 title: "Erro",
-                description: "Confirme a finalidade do empréstimo no Passo 2.",
+                description: "Adicione pelo menos um dispositivo para empréstimo no Passo 2.",
                 variant: "destructive",
             });
             return;
         }
 
-        // 3. Validação de Dispositivos
-        if (deviceIds.length === 0) {
+        // 3. Validação de Finalidade (Agora é o Passo 3)
+        if (!isPurposeDefined) {
             toast({
                 title: "Erro",
-                description: "Adicione pelo menos um dispositivo para empréstimo.",
+                description: "Confirme a finalidade do empréstimo no Passo 3.",
                 variant: "destructive",
             });
             return;
@@ -336,286 +336,277 @@ export function LoanForm({ onBack, initialReservationData }: LoanFormProps) {
 
             <form onSubmit={handleSubmit} className="space-y-3 relative z-10">
 
-                <div className="grid md:grid-cols-2 gap-3">
+                <div className="grid md:grid-cols-2 gap-x-4 gap-y-6">
 
-                    {/* ═══ COLUNA ESQUERDA ═══ */}
-                    <div className="space-y-3">
+                    {/* ═══ SEÇÃO 1: SOLICITANTE (PASSO 1) ═══ */}
+                    <div className={cn(
+                        "neo-card border-l-[12px] border-4 border-violet-500 bg-violet-100 dark:bg-violet-950/20 transition-all duration-300 shadow-[6px_6px_0px_0px_rgba(139,92,246,0.3)]",
+                        currentStep === 1 && "ring-4 ring-violet-500 ring-offset-2 animate-gentle-pulse"
+                    )}>
+                        <CardHeader className="p-3 pb-2 border-b-3 border-violet-500/30 bg-gradient-to-r from-violet-400 to-purple-500">
+                            <CardTitle className="text-base font-black uppercase tracking-tight flex items-center gap-2 text-white">
+                                <User className="h-5 w-5" />
+                                1. Solicitante
+                            </CardTitle>
+                        </CardHeader>
 
-                        {/* ═══ SEÇÃO 1: SOLICITANTE ═══ */}
-                        <div className={cn(
-                            "neo-card border-l-[12px] border-4 border-violet-500 bg-violet-100 dark:bg-violet-950/20 transition-all duration-300 shadow-[6px_6px_0px_0px_rgba(139,92,246,0.3)]",
-                            currentStep === 1 && "ring-4 ring-violet-500 ring-offset-2 animate-gentle-pulse"
-                        )}>
-                            <CardHeader className="p-3 pb-2 border-b-3 border-violet-500/30 bg-gradient-to-r from-violet-400 to-purple-500">
-                                <CardTitle className="text-base font-black uppercase tracking-tight flex items-center gap-2 text-white">
-                                    <User className="h-5 w-5" />
-                                    Solicitante
-                                </CardTitle>
-                            </CardHeader>
-
-                            <CardContent className="p-3 space-y-2">
-                                {/* Busca de Usuário */}
-                                <div className="space-y-1">
-                                    {/* REMOVIDA A LABEL REDUNDANTE */}
-                                    <Label className="text-sm font-bold uppercase text-foreground flex items-center gap-1 sr-only">
-                                        Buscar por Nome, RA ou Email
-                                        <span className="text-destructive">*</span>
-                                    </Label>
-                                    <UserAutocomplete
-                                        selectedUser={selectedUser}
-                                        onSelect={handleUserSelect}
-                                        onClear={handleUserClear}
-                                        disabled={loading}
-                                    />
-                                    {/* Validação em tempo real para Solicitante */}
-                                    {!selectedUser && (
-                                        <div className="text-xs font-bold text-red-600 flex items-center gap-1 mt-1 uppercase">
-                                            <AlertTriangle className="h-4 w-4" />
-                                            Selecione um solicitante
-                                        </div>
-                                    )}
-                                </div>
-                            </CardContent>
-                        </div>
-
-                        {/* ═══ SEÇÃO 2: FINALIDADE ═══ */}
-                        <div className={cn(
-                            "neo-card border-l-[12px] border-4 border-blue-500 bg-blue-100 dark:bg-blue-950/20 transition-all duration-300 shadow-[6px_6px_0px_0px_rgba(59,130,246,0.3)]",
-                            currentStep === 2 && isUserSelected && "ring-4 ring-blue-500 ring-offset-2 animate-gentle-pulse"
-                        )}>
-                            <CardHeader className="p-3 pb-2 border-b-3 border-blue-500/30 bg-gradient-to-r from-blue-400 to-cyan-500">
-                                <CardTitle className="text-base font-black uppercase tracking-tight flex items-center gap-2 text-white">
-                                    <BookOpen className="h-5 w-5" />
-                                    Finalidade
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent className="p-3 space-y-2">
-                                <div className="space-y-1">
-                                    <Label className="text-sm font-bold uppercase text-foreground flex items-center gap-1">
-                                        Finalidade do Empréstimo
-                                        <span className="text-red-600">*</span>
-                                    </Label>
-
-                                    {renderPurposeInput()}
-
-                                    {/* Validação em tempo real para Finalidade */}
-                                    {!isPurposeDefined && (
-                                        <div className="text-xs font-bold text-red-600 flex items-center gap-1 mt-1 uppercase">
-                                            <AlertTriangle className="h-4 w-4" />
-                                            Defina e confirme a finalidade
-                                        </div>
-                                    )}
-                                </div>
-
-                                {/* NOVO CAMPO: Observações Adicionais */}
-                                <div className="space-y-1 pt-2 border-t border-black/5 dark:border-white/5">
-                                    <Label className="text-sm font-bold uppercase text-foreground flex items-center gap-1">
-                                        <MessageSquare className="h-4 w-4" />
-                                        Observações (Opcional)
-                                    </Label>
-                                    <Textarea
-                                        id="notes"
-                                        value={formData.notes || ''}
-                                        onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                                        placeholder="Ex: Devolver antes das 15h."
-                                        className="neo-input min-h-[60px]"
-                                        disabled={loading}
-                                    />
-                                </div>
-                            </CardContent>
-                        </div>
-                    </div>
-
-                    {/* ═══ COLUNA DIREITA ═══ */}
-                    <div className="space-y-3">
-
-                        {/* ═══ SEÇÃO 3: DISPOSITIVOS ═══ */}
-                        <div className={cn(
-                            "neo-card border-l-[12px] border-4 border-amber-500 bg-amber-100 dark:bg-amber-950/20 transition-all duration-300 shadow-[6px_6px_0px_0px_rgba(245,158,11,0.3)]",
-                            currentStep === 3 && isUserSelected && isPurposeDefined && "ring-4 ring-amber-500 ring-offset-2 animate-gentle-pulse"
-                        )}>
-                            <CardHeader className="p-3 pb-2 border-b-3 border-amber-500/30 bg-gradient-to-r from-amber-400 to-orange-500">
-                                <div className="flex items-center justify-between">
-                                    <CardTitle className="text-base font-black uppercase tracking-tight flex items-center gap-2 text-white">
-                                        <Computer className="h-5 w-5" />
-                                        Equipamento
-                                    </CardTitle>
-                                    <Badge variant="outline" className={cn(
-                                        "rounded-none border-3 border-white text-white font-bold transition-colors text-xs shadow-[2px_2px_0px_0px_rgba(255,255,255,0.3)]",
-                                        deviceIds.length === 0
-                                            ? "bg-white/20"
-                                            : "bg-white/30"
-                                    )}>
-                                        {deviceIds.length === 0
-                                            ? 'Nenhum'
-                                            : `${deviceIds.length} ${deviceIds.length === 1 ? 'PC' : 'PCs'}`
-                                        }
-                                    </Badge>
-                                </div>
-                            </CardHeader>
-
-                            <CardContent className="p-3">
-                                <DeviceListInput
-                                    deviceIds={deviceIds}
-                                    setDeviceIds={setDeviceIds}
+                        <CardContent className="p-3 space-y-2">
+                            {/* Busca de Usuário */}
+                            <div className="space-y-1">
+                                <Label className="text-sm font-bold uppercase text-foreground flex items-center gap-1 sr-only">
+                                    Buscar por Nome, RA ou Email
+                                    <span className="text-destructive">*</span>
+                                </Label>
+                                <UserAutocomplete
+                                    selectedUser={selectedUser}
+                                    onSelect={handleUserSelect}
+                                    onClear={handleUserClear}
                                     disabled={loading}
-                                    filterStatus="disponivel"
-                                    actionLabel="Empréstimo"
                                 />
-
-                                {/* Validação em tempo real para Dispositivos */}
-                                {deviceIds.length === 0 && (
-                                    <div className="text-xs font-bold text-red-600 flex items-center gap-1 mt-2 uppercase">
+                                {/* Validação em tempo real para Solicitante */}
+                                {!selectedUser && (
+                                    <div className="text-xs font-bold text-red-600 flex items-center gap-1 mt-1 uppercase">
                                         <AlertTriangle className="h-4 w-4" />
-                                        Adicione pelo menos um dispositivo
+                                        Selecione um solicitante
                                     </div>
                                 )}
-                            </CardContent>
-                        </div>
+                            </div>
+                        </CardContent>
+                    </div>
 
-                        {/* ═══ SEÇÃO 4: PRAZO E CONFIRMAÇÃO ═══ */}
-                        <div className={cn(
-                            "neo-card border-l-[12px] border-4 border-green-500 bg-green-100 dark:bg-green-950/20 transition-all duration-300 shadow-[6px_6px_0px_0px_rgba(34,197,94,0.3)]",
-                            currentStep === 4 && isUserSelected && isPurposeDefined && isDevicesAdded && "ring-4 ring-green-500 ring-offset-2 animate-gentle-pulse"
-                        )}>
-                            <CardHeader className="p-3 pb-2 border-b-3 border-green-500/30 bg-gradient-to-r from-green-400 to-emerald-500">
+                    {/* ═══ SEÇÃO 2: EQUIPAMENTO (PASSO 2) ═══ */}
+                    <div className={cn(
+                        "neo-card border-l-[12px] border-4 border-amber-500 bg-amber-100 dark:bg-amber-950/20 transition-all duration-300 shadow-[6px_6px_0px_0px_rgba(245,158,11,0.3)]",
+                        currentStep === 2 && isUserSelected && "ring-4 ring-amber-500 ring-offset-2 animate-gentle-pulse"
+                    )}>
+                        <CardHeader className="p-3 pb-2 border-b-3 border-amber-500/30 bg-gradient-to-r from-amber-400 to-orange-500">
+                            <div className="flex items-center justify-between">
                                 <CardTitle className="text-base font-black uppercase tracking-tight flex items-center gap-2 text-white">
-                                    <Clock className="h-5 w-5" />
-                                    Prazo (Opcional)
+                                    <Computer className="h-5 w-5" />
+                                    2. Equipamento
                                 </CardTitle>
-                            </CardHeader>
-                            <CardContent className="p-3">
-                                <div className="space-y-2">
-                                    {/* Checkbox de prazo */}
-                                    <div className="flex items-start space-x-2">
-                                        <Checkbox
-                                            id="returnDeadline"
-                                            checked={hasReturnDeadline}
-                                            onCheckedChange={(checked) => {
-                                                const isChecked = !!checked;
-                                                setHasReturnDeadline(isChecked);
-                                                if (isChecked) {
-                                                    // Pré-define a data e hora atuais se o prazo for ativado
-                                                    if (!formData.expectedReturnDate) {
-                                                        setFormData(prev => ({ ...prev, expectedReturnDate: new Date() }));
-                                                    }
-                                                } else {
-                                                    setFormData({ ...formData, expectedReturnDate: undefined });
-                                                }
-                                            }}
-                                            className="mt-0.5 w-5 h-5 border-2 border-black data-[state=checked]:bg-black data-[state=checked]:text-white rounded-none"
-                                            disabled={loading}
-                                        />
-                                        <div className="flex-1">
-                                            <Label
-                                                htmlFor="returnDeadline"
-                                                className="text-sm font-bold uppercase text-foreground cursor-pointer flex items-center gap-2"
-                                            >
-                                                Definir prazo de devolução
-                                            </Label>
-                                            <p className="text-xs font-mono text-muted-foreground mt-0.5">
-                                                Adicione uma data limite
-                                            </p>
-                                        </div>
-                                    </div>
+                                <Badge variant="outline" className={cn(
+                                    "rounded-none border-3 border-white text-white font-bold transition-colors text-xs shadow-[2px_2px_0px_0px_rgba(255,255,255,0.3)]",
+                                    deviceIds.length === 0
+                                        ? "bg-white/20"
+                                        : "bg-white/30"
+                                )}>
+                                    {deviceIds.length === 0
+                                        ? 'Nenhum'
+                                        : `${deviceIds.length} ${deviceIds.length === 1 ? 'PC' : 'PCs'}`
+                                    }
+                                </Badge>
+                            </div>
+                        </CardHeader>
 
-                                    {/* Seletor de data/hora (aparece quando checkbox marcado) */}
-                                    {hasReturnDeadline && (
-                                        <div className="pl-7 space-y-3 animate-in slide-in-from-left-5">
-                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                                {/* Data */}
-                                                <Popover open={isDatePickerOpen} onOpenChange={setIsDatePickerOpen}>
-                                                    <PopoverTrigger asChild>
-                                                        <Button
-                                                            variant="outline"
-                                                            className={cn(
-                                                                "justify-start text-left font-mono neo-input w-full",
-                                                                !formData.expectedReturnDate && "text-muted-foreground"
-                                                            )}
-                                                        >
-                                                            <Calendar className="mr-2 h-4 w-4" />
-                                                            {formData.expectedReturnDate ? (
-                                                                format(formData.expectedReturnDate, "dd/MM/yyyy")
-                                                            ) : (
-                                                                <span>SELECIONAR DATA</span>
-                                                            )}
-                                                        </Button>
-                                                    </PopoverTrigger>
-                                                    <PopoverContent
-                                                        className="w-auto p-0 bg-card border-2 border-black rounded-none shadow-[4px_4px_0px_0px_#000]"
-                                                        align="start"
-                                                    >
-                                                        <CalendarComponent
-                                                            mode="single"
-                                                            selected={formData.expectedReturnDate}
-                                                            onSelect={(date) => {
-                                                                if (date) {
-                                                                    const currentTime = formData.expectedReturnDate || new Date();
-                                                                    const newDateTime = new Date(date);
-                                                                    newDateTime.setHours(currentTime.getHours());
-                                                                    newDateTime.setMinutes(currentTime.getMinutes());
-                                                                    setFormData({ ...formData, expectedReturnDate: newDateTime });
-                                                                }
-                                                                setIsDatePickerOpen(false);
-                                                            }}
-                                                            disabled={(date) => date < new Date()}
-                                                            initialFocus
-                                                        />
-                                                    </PopoverContent>
-                                                </Popover>
+                        <CardContent className="p-3">
+                            <DeviceListInput
+                                deviceIds={deviceIds}
+                                setDeviceIds={setDeviceIds}
+                                disabled={loading}
+                                filterStatus="disponivel"
+                                actionLabel="Empréstimo"
+                            />
 
-                                                {/* Hora */}
-                                                <div className="flex gap-2 items-center">
-                                                    <Input
-                                                        type="number"
-                                                        placeholder="HH"
-                                                        min="0"
-                                                        max="23"
-                                                        value={formData.expectedReturnDate ? String(formData.expectedReturnDate.getHours()).padStart(2, '0') : ''}
-                                                        onChange={(e) => {
-                                                            const hours = parseInt(e.target.value) || 0;
-                                                            if (hours >= 0 && hours <= 23) {
-                                                                const newDate = formData.expectedReturnDate || new Date();
-                                                                newDate.setHours(hours);
-                                                                setFormData({ ...formData, expectedReturnDate: newDate });
-                                                            }
-                                                        }}
-                                                        className="text-center w-16 neo-input"
-                                                    />
-                                                    <span className="font-black">:</span>
-                                                    <Input
-                                                        type="number"
-                                                        placeholder="MM"
-                                                        min="0"
-                                                        max="59"
-                                                        value={formData.expectedReturnDate ? String(formData.expectedReturnDate.getMinutes()).padStart(2, '0') : ''}
-                                                        onChange={(e) => {
-                                                            const minutes = parseInt(e.target.value) || 0;
-                                                            if (minutes >= 0 && minutes <= 59) {
-                                                                const newDate = formData.expectedReturnDate || new Date();
-                                                                newDate.setMinutes(minutes);
-                                                                setFormData({ ...formData, expectedReturnDate: newDate });
-                                                            }
-                                                        }}
-                                                        className="text-center w-16 neo-input"
-                                                    />
-                                                </div>
-                                            </div>
-
-                                            {/* Preview da data/hora */}
-                                            {formData.expectedReturnDate && (
-                                                <div className="flex items-center gap-2 text-xs text-foreground neo-card p-2 bg-white dark:bg-black border-l-4 border-l-green-500 shadow-none">
-                                                    <Clock className="h-4 w-4 text-green-600" />
-                                                    <span className="font-bold uppercase">
-                                                        Prazo Final: {format(formData.expectedReturnDate, "dd/MM/yyyy 'às' HH:mm")}
-                                                    </span>
-                                                </div>
-                                            )}
-                                        </div>
-                                    )}
+                            {/* Validação em tempo real para Dispositivos */}
+                            {deviceIds.length === 0 && (
+                                <div className="text-xs font-bold text-red-600 flex items-center gap-1 mt-2 uppercase">
+                                    <AlertTriangle className="h-4 w-4" />
+                                    Adicione pelo menos um dispositivo
                                 </div>
-                            </CardContent>
-                        </div>
+                            )}
+                        </CardContent>
+                    </div>
+
+                    {/* ═══ SEÇÃO 3: FINALIDADE (PASSO 3) ═══ */}
+                    <div className={cn(
+                        "neo-card border-l-[12px] border-4 border-blue-500 bg-blue-100 dark:bg-blue-950/20 transition-all duration-300 shadow-[6px_6px_0px_0px_rgba(59,130,246,0.3)]",
+                        currentStep === 3 && isUserSelected && isDevicesAdded && "ring-4 ring-blue-500 ring-offset-2 animate-gentle-pulse"
+                    )}>
+                        <CardHeader className="p-3 pb-2 border-b-3 border-blue-500/30 bg-gradient-to-r from-blue-400 to-cyan-500">
+                            <CardTitle className="text-base font-black uppercase tracking-tight flex items-center gap-2 text-white">
+                                <BookOpen className="h-5 w-5" />
+                                3. Finalidade
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-3 space-y-2">
+                            <div className="space-y-1">
+                                <Label className="text-sm font-bold uppercase text-foreground flex items-center gap-1">
+                                    Finalidade do Empréstimo
+                                    <span className="text-red-600">*</span>
+                                </Label>
+
+                                {renderPurposeInput()}
+
+                                {/* Validação em tempo real para Finalidade */}
+                                {!isPurposeDefined && (
+                                    <div className="text-xs font-bold text-red-600 flex items-center gap-1 mt-1 uppercase">
+                                        <AlertTriangle className="h-4 w-4" />
+                                        Defina e confirme a finalidade
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* NOVO CAMPO: Observações Adicionais */}
+                            <div className="space-y-1 pt-2 border-t border-black/5 dark:border-white/5">
+                                <Label className="text-sm font-bold uppercase text-foreground flex items-center gap-1">
+                                    <MessageSquare className="h-4 w-4" />
+                                    Observações (Opcional)
+                                </Label>
+                                <Textarea
+                                    id="notes"
+                                    value={formData.notes || ''}
+                                    onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                                    placeholder="Ex: Devolver antes das 15h."
+                                    className="neo-input min-h-[60px]"
+                                    disabled={loading}
+                                />
+                            </div>
+                        </CardContent>
+                    </div>
+
+                    {/* ═══ SEÇÃO 4: PRAZO (PASSO 4) ═══ */}
+                    <div className={cn(
+                        "neo-card border-l-[12px] border-4 border-green-500 bg-green-100 dark:bg-green-950/20 transition-all duration-300 shadow-[6px_6px_0px_0px_rgba(34,197,94,0.3)]",
+                        currentStep === 4 && isUserSelected && isPurposeDefined && isDevicesAdded && "ring-4 ring-green-500 ring-offset-2 animate-gentle-pulse"
+                    )}>
+                        <CardHeader className="p-3 pb-2 border-b-3 border-green-500/30 bg-gradient-to-r from-green-400 to-emerald-500">
+                            <CardTitle className="text-base font-black uppercase tracking-tight flex items-center gap-2 text-white">
+                                <Clock className="h-5 w-5" />
+                                4. Prazo (Opcional)
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-3">
+                            <div className="space-y-2">
+                                {/* Checkbox de prazo */}
+                                <div className="flex items-start space-x-2">
+                                    <Checkbox
+                                        id="returnDeadline"
+                                        checked={hasReturnDeadline}
+                                        onCheckedChange={(checked) => {
+                                            const isChecked = !!checked;
+                                            setHasReturnDeadline(isChecked);
+                                            if (isChecked) {
+                                                // Pré-define a data e hora atuais se o prazo for ativado
+                                                if (!formData.expectedReturnDate) {
+                                                    setFormData(prev => ({ ...prev, expectedReturnDate: new Date() }));
+                                                }
+                                            } else {
+                                                setFormData({ ...formData, expectedReturnDate: undefined });
+                                            }
+                                        }}
+                                        className="mt-0.5 w-5 h-5 border-2 border-black data-[state=checked]:bg-black data-[state=checked]:text-white rounded-none"
+                                        disabled={loading}
+                                    />
+                                    <div className="flex-1">
+                                        <Label
+                                            htmlFor="returnDeadline"
+                                            className="text-sm font-bold uppercase text-foreground cursor-pointer flex items-center gap-2"
+                                        >
+                                            Definir prazo de devolução
+                                        </Label>
+                                        <p className="text-xs font-mono text-muted-foreground mt-0.5">
+                                            Adicione uma data limite
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {/* Seletor de data/hora (aparece quando checkbox marcado) */}
+                                {hasReturnDeadline && (
+                                    <div className="pl-7 space-y-3 animate-in slide-in-from-left-5">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                            {/* Data */}
+                                            <Popover open={isDatePickerOpen} onOpenChange={setIsDatePickerOpen}>
+                                                <PopoverTrigger asChild>
+                                                    <Button
+                                                        variant="outline"
+                                                        className={cn(
+                                                            "justify-start text-left font-mono neo-input w-full",
+                                                            !formData.expectedReturnDate && "text-muted-foreground"
+                                                        )}
+                                                    >
+                                                        <Calendar className="mr-2 h-4 w-4" />
+                                                        {formData.expectedReturnDate ? (
+                                                            format(formData.expectedReturnDate, "dd/MM/yyyy")
+                                                        ) : (
+                                                            <span>SELECIONAR DATA</span>
+                                                        )}
+                                                    </Button>
+                                                </PopoverTrigger>
+                                                <PopoverContent
+                                                    className="w-auto p-0 bg-card border-2 border-black rounded-none shadow-[4px_4px_0px_0px_#000]"
+                                                    align="start"
+                                                >
+                                                    <CalendarComponent
+                                                        mode="single"
+                                                        selected={formData.expectedReturnDate}
+                                                        onSelect={(date) => {
+                                                            if (date) {
+                                                                const currentTime = formData.expectedReturnDate || new Date();
+                                                                const newDateTime = new Date(date);
+                                                                newDateTime.setHours(currentTime.getHours());
+                                                                newDateTime.setMinutes(currentTime.getMinutes());
+                                                                setFormData({ ...formData, expectedReturnDate: newDateTime });
+                                                            }
+                                                            setIsDatePickerOpen(false);
+                                                        }}
+                                                        disabled={(date) => date < new Date()}
+                                                        initialFocus
+                                                    />
+                                                </PopoverContent>
+                                            </Popover>
+
+                                            {/* Hora */}
+                                            <div className="flex gap-2 items-center">
+                                                <Input
+                                                    type="number"
+                                                    placeholder="HH"
+                                                    min="0"
+                                                    max="23"
+                                                    value={formData.expectedReturnDate ? String(formData.expectedReturnDate.getHours()).padStart(2, '0') : ''}
+                                                    onChange={(e) => {
+                                                        const hours = parseInt(e.target.value) || 0;
+                                                        if (hours >= 0 && hours <= 23) {
+                                                            const newDate = formData.expectedReturnDate || new Date();
+                                                            newDate.setHours(hours);
+                                                            setFormData({ ...formData, expectedReturnDate: newDate });
+                                                        }
+                                                    }}
+                                                    className="text-center w-16 neo-input"
+                                                />
+                                                <span className="font-black">:</span>
+                                                <Input
+                                                    type="number"
+                                                    placeholder="MM"
+                                                    min="0"
+                                                    max="59"
+                                                    value={formData.expectedReturnDate ? String(formData.expectedReturnDate.getMinutes()).padStart(2, '0') : ''}
+                                                    onChange={(e) => {
+                                                        const minutes = parseInt(e.target.value) || 0;
+                                                        if (minutes >= 0 && minutes <= 59) {
+                                                            const newDate = formData.expectedReturnDate || new Date();
+                                                            newDate.setMinutes(minutes);
+                                                            setFormData({ ...formData, expectedReturnDate: newDate });
+                                                        }
+                                                    }}
+                                                    className="text-center w-16 neo-input"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        {/* Preview da data/hora */}
+                                        {formData.expectedReturnDate && (
+                                            <div className="flex items-center gap-2 text-xs text-foreground neo-card p-2 bg-white dark:bg-black border-l-4 border-l-green-500 shadow-none">
+                                                <Clock className="h-4 w-4 text-green-600" />
+                                                <span className="font-bold uppercase">
+                                                    Prazo Final: {format(formData.expectedReturnDate, "dd/MM/yyyy 'às' HH:mm")}
+                                                </span>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        </CardContent>
                     </div>
                 </div>
 
@@ -650,15 +641,15 @@ export function LoanForm({ onBack, initialReservationData }: LoanFormProps) {
                             <User className="mr-2 h-6 w-6" />
                             ❌ Solicitante Pendente
                         </>
-                    ) : !isPurposeDefined ? (
-                        <>
-                            <BookOpen className="mr-2 h-6 w-6" />
-                            ❌ Finalidade Pendente
-                        </>
                     ) : !isDevicesAdded ? (
                         <>
                             <Computer className="mr-2 h-6 w-6" />
                             ❌ Equipamento Pendente
+                        </>
+                    ) : !isPurposeDefined ? (
+                        <>
+                            <BookOpen className="mr-2 h-6 w-6" />
+                            ❌ Finalidade Pendente
                         </>
                     ) : (
                         <>

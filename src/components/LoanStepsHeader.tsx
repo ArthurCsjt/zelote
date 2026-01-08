@@ -18,15 +18,15 @@ const steps = [
   },
   {
     id: 2,
-    title: 'Finalidade',
-    icon: BookOpen,
-    check: (props: LoanStepsHeaderProps) => props.isPurposeDefined,
-  },
-  {
-    id: 3,
     title: 'Equipamento',
     icon: Computer,
     check: (props: LoanStepsHeaderProps) => props.isDevicesAdded,
+  },
+  {
+    id: 3,
+    title: 'Finalidade',
+    icon: BookOpen,
+    check: (props: LoanStepsHeaderProps) => props.isPurposeDefined,
   },
   {
     id: 4,
