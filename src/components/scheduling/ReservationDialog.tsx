@@ -172,75 +172,88 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
             </div>
 
             {/* RECORRÊNCIA */}
-            <div className="border-3 border-black bg-white shadow-[5px_5px_0px_0px_#000] p-3 sm:p-4 relative">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div className="flex items-start gap-2.5">
-                  <CalendarDays className="h-5 w-5 text-black flex-shrink-0 mt-0.5" />
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="text-xs sm:text-sm font-black uppercase text-black leading-tight">Agendar para várias datas?</h3>
-                      <span className="bg-[#2563eb] text-white text-[8px] sm:text-[9px] font-black px-1.5 py-0.5 border border-black">RECORRÊNCIA</span>
-                    </div>
-                    <p className="text-[9px] sm:text-[10px] font-medium text-zinc-400 uppercase leading-snug mt-0.5">
-                      Economize tempo reservando o mesmo horário para outros dias.
-                    </p>
-                  </div>
+            <div className="border-2 border-[#f59e0b] bg-amber-50/30 overflow-hidden shadow-[4px_4px_0_0_rgba(245,158,11,0.15)] relative">
+              <div className="bg-[#f59e0b] px-3 py-2 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <CalendarDays className="h-4 w-4 text-white" />
+                  <span className="text-[10px] sm:text-xs font-black uppercase text-white tracking-wider">Múltiplas Datas</span>
                 </div>
-
-                <div className="flex border-2 border-black bg-white shadow-[3px_3px_0_0_#000] self-start sm:self-center">
-                  <button
-                    type="button"
-                    onClick={() => setIsMultiMode(false)}
-                    className={cn(
-                      "px-4 sm:px-5 py-1.5 text-[10px] sm:text-xs font-black uppercase transition-all",
-                      !isMultiMode ? "bg-black text-white" : "bg-white text-zinc-400 hover:text-black"
-                    )}
-                  >
-                    Não
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setIsMultiMode(true)}
-                    className={cn(
-                      "px-4 sm:px-5 py-1.5 text-[10px] sm:text-xs font-black uppercase transition-all border-l-2 border-black",
-                      isMultiMode ? "bg-black text-white" : "bg-white text-zinc-400 hover:text-black"
-                    )}
-                  >
-                    Sim
-                  </button>
-                </div>
+                <span className="bg-white/20 border border-white/50 px-2 py-0.5 text-white text-[8px] sm:text-[9px] font-black uppercase">Recorrência</span>
               </div>
-
-              {isMultiMode && (
-                <div className="mt-3 pt-3 border-t-2 border-zinc-100 animate-in fade-in slide-in-from-top-2">
-                  <Label className="text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-zinc-500 mb-2 block">Selecione os dias:</Label>
-                  <div className="flex flex-wrap gap-1.5">
-                    <div className="inline-flex items-center gap-1.5 px-2 py-1 bg-black text-white text-[9px] sm:text-[10px] font-black uppercase border-2 border-black">
-                      {format(date, 'dd/MM')} (Atual)
-                    </div>
-                    {extraDates.map((d, i) => (
-                      <div key={i} className="inline-flex items-center gap-1.5 px-2 py-1 bg-[#a855f7] text-white text-[9px] sm:text-[10px] font-black uppercase border-2 border-black shadow-[2px_2px_0_0_#000]">
-                        {format(d, 'dd/MM')}
-                        <CloseIcon className="h-3 w-3 cursor-pointer hover:scale-110 transition-transform" onClick={() => setExtraDates(extraDates.filter((_, idx) => idx !== i))} />
-                      </div>
-                    ))}
-                    <Button type="button" onClick={() => setShowCalendar(!showCalendar)} className="h-6 bg-white text-black border-2 border-black text-[9px] sm:text-[10px] font-black uppercase hover:bg-zinc-100 shadow-[2px_2px_0_0_#000] rounded-none px-2">+ Add</Button>
+              
+              <div className="p-3 sm:p-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <p className="text-[9px] sm:text-[10px] font-bold text-zinc-600 leading-snug max-w-[240px]">
+                    Economize tempo reservando o mesmo horário para outros dias.
+                  </p>
+                  
+                  <div className="flex border-2 border-black bg-white shadow-[3px_3px_0_0_#000] self-start sm:self-center overflow-hidden">
+                    <button
+                      type="button"
+                      onClick={() => setIsMultiMode(false)}
+                      className={cn(
+                        "px-4 sm:px-6 py-2 text-[10px] sm:text-xs font-black uppercase transition-all",
+                        !isMultiMode ? "bg-zinc-800 text-white" : "bg-white text-zinc-400 hover:text-black hover:bg-zinc-50"
+                      )}
+                    >
+                      Não
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setIsMultiMode(true)}
+                      className={cn(
+                        "px-4 sm:px-6 py-2 text-[10px] sm:text-xs font-black uppercase transition-all border-l-2 border-black",
+                        isMultiMode ? "bg-[#f59e0b] text-white" : "bg-white text-zinc-400 hover:text-black hover:bg-zinc-50"
+                      )}
+                    >
+                      Sim
+                    </button>
                   </div>
-                  {showCalendar && (
-                    <div className="mt-2 border-2 border-black p-2 bg-white shadow-[4px_4px_0_0_#000] absolute z-50 left-2 right-2 sm:left-4 sm:right-4">
-                      <CalendarUI
-                        mode="multiple"
-                        selected={extraDates}
-                        onSelect={(dates) => setExtraDates(dates || [])}
-                        disabled={(d) => d < new Date(new Date().setHours(0, 0, 0, 0)) || format(d, 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd')}
-                        className="rounded-none w-full"
-                        locale={ptBR}
-                      />
-                      <Button type="button" onClick={() => setShowCalendar(false)} className="w-full mt-2 bg-black text-white h-7 text-[10px] font-black uppercase rounded-none border-2 border-black">OK</Button>
-                    </div>
-                  )}
                 </div>
-              )}
+
+                {isMultiMode && (
+                  <div className="mt-4 pt-4 border-t-2 border-amber-200 animate-in fade-in slide-in-from-top-2">
+                    <Label className="text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-[#f59e0b] mb-2.5 block">Selecione os dias:</Label>
+                    <div className="flex flex-wrap gap-2">
+                      <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-zinc-800 text-white text-[9px] sm:text-[10px] font-black uppercase border-2 border-black shadow-[2px_2px_0_0_#000]">
+                        <Calendar className="h-3 w-3" />
+                        {format(date, 'dd/MM')}
+                        <span className="text-zinc-400 text-[8px]">(atual)</span>
+                      </div>
+                      {extraDates.map((d, i) => (
+                        <div key={i} className="inline-flex items-center gap-2 px-3 py-1.5 bg-[#f59e0b] text-white text-[9px] sm:text-[10px] font-black uppercase border-2 border-black shadow-[2px_2px_0_0_#000] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all group">
+                          <Calendar className="h-3 w-3" />
+                          {format(d, 'dd/MM')}
+                          <CloseIcon className="h-3 w-3 cursor-pointer opacity-70 group-hover:opacity-100 transition-opacity" onClick={() => setExtraDates(extraDates.filter((_, idx) => idx !== i))} />
+                        </div>
+                      ))}
+                      <Button 
+                        type="button" 
+                        onClick={() => setShowCalendar(!showCalendar)} 
+                        className="h-auto py-1.5 px-3 bg-white text-[#f59e0b] border-2 border-dashed border-[#f59e0b] text-[9px] sm:text-[10px] font-black uppercase hover:bg-amber-50 hover:border-solid rounded-none flex items-center gap-1.5 transition-all"
+                      >
+                        <CalendarDays className="h-3 w-3" />
+                        Adicionar
+                      </Button>
+                    </div>
+                    {showCalendar && (
+                      <div className="mt-3 border-2 border-black p-3 bg-white shadow-[4px_4px_0_0_#000]">
+                        <CalendarUI
+                          mode="multiple"
+                          selected={extraDates}
+                          onSelect={(dates) => setExtraDates(dates || [])}
+                          disabled={(d) => d < new Date(new Date().setHours(0, 0, 0, 0)) || format(d, 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd')}
+                          className="rounded-none w-full"
+                          locale={ptBR}
+                        />
+                        <Button type="button" onClick={() => setShowCalendar(false)} className="w-full mt-3 bg-[#f59e0b] text-white h-8 text-[10px] font-black uppercase rounded-none border-2 border-black shadow-[3px_3px_0_0_#000] hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px] transition-all">
+                          Confirmar Datas
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* DADOS DA RESERVA */}
