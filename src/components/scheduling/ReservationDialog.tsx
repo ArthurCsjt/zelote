@@ -237,16 +237,16 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                       </Button>
                     </div>
                     {showCalendar && (
-                      <div className="mt-3 border-3 border-black p-4 bg-zinc-900 shadow-[6px_6px_0_0_#000] flex flex-col items-center">
+                      <div className="mt-3 border-2 border-black p-3 bg-white shadow-[4px_4px_0_0_#000]">
                         <CalendarUI
                           mode="multiple"
                           selected={extraDates}
                           onSelect={(dates) => setExtraDates(dates || [])}
                           disabled={(d) => d < new Date(new Date().setHours(0, 0, 0, 0)) || format(d, 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd')}
-                          className="rounded-none w-full pointer-events-auto bg-transparent [&_.rdp-months]:justify-center [&_.rdp-caption]:text-white [&_.rdp-caption_label]:text-sm [&_.rdp-caption_label]:font-black [&_.rdp-caption_label]:uppercase [&_.rdp-nav_button]:bg-white [&_.rdp-nav_button]:border-2 [&_.rdp-nav_button]:border-black [&_.rdp-nav_button]:shadow-[2px_2px_0_0_#000] [&_.rdp-nav_button]:opacity-100 [&_.rdp-nav_button:hover]:bg-zinc-100 [&_.rdp-head_cell]:text-zinc-400 [&_.rdp-head_cell]:font-black [&_.rdp-head_cell]:text-xs [&_.rdp-cell]:text-white [&_.rdp-day]:text-white [&_.rdp-day]:font-bold [&_.rdp-day]:text-sm [&_.rdp-day]:w-10 [&_.rdp-day]:h-10 [&_.rdp-day:hover]:bg-white/20 [&_.rdp-day_selected]:bg-[#f59e0b] [&_.rdp-day_selected]:text-white [&_.rdp-day_selected]:border-2 [&_.rdp-day_selected]:border-black [&_.rdp-day_today]:bg-white/10 [&_.rdp-day_today]:text-[#f59e0b] [&_.rdp-day_today]:font-black [&_.rdp-day_disabled]:text-zinc-600 [&_.rdp-day_disabled]:opacity-40 [&_.rdp-table]:w-full [&_.rdp-tbody]:space-y-1"
+                          className="rounded-none w-full"
                           locale={ptBR}
                         />
-                        <Button type="button" onClick={() => setShowCalendar(false)} className="w-full mt-4 bg-[#f59e0b] text-white h-10 text-xs font-black uppercase rounded-none border-3 border-black shadow-[4px_4px_0_0_#000] hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px] transition-all">
+                        <Button type="button" onClick={() => setShowCalendar(false)} className="w-full mt-3 bg-[#f59e0b] text-white h-8 text-[10px] font-black uppercase rounded-none border-2 border-black shadow-[3px_3px_0_0_#000] hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px] transition-all">
                           Confirmar Datas
                         </Button>
                       </div>
