@@ -9,6 +9,7 @@ import { Badge } from './ui/badge';
 import { toast } from '@/hooks/use-toast';
 import { useDatabase } from '@/hooks/useDatabase';
 import { GlassCard } from './ui/GlassCard';
+import { cn } from '@/lib/utils';
 import type { TeacherData } from '@/types/database';
 import { validateEmailDomain } from '@/utils/emailValidation';
 
@@ -75,8 +76,8 @@ export function TeacherCSVImport() {
   const handleFileSelect = (selectedFile: File) => {
     if (!selectedFile.name.endsWith('.csv')) {
       toast({
-        title: "Erro",
-        description: "Por favor, selecione um arquivo CSV.",
+        title: "Arquivo inválido",
+        description: "Por favor, selecione um arquivo no formato CSV.",
         variant: "destructive",
       });
       return;
@@ -84,37 +85,74 @@ export function TeacherCSVImport() {
 
     setFile(selectedFile);
 
+    // ESTRATÉGIA DE IMPORTAÇÃO INTELIGENTE
     Papa.parse(selectedFile, {
       header: true,
       skipEmptyLines: true,
       transformHeader: (header) => header.toLowerCase().trim().replace(/\s+/g, '_'),
       complete: (results) => {
-        const parsed: ParsedTeacher[] = results.data.map((row: any) => {
-          const teacherData: TeacherCSVData = {
-            nome_completo: row.nome_completo || '',
-            email: row.email || '',
-            materia: row.materia || '',
-          };
+        const expectedFields = ['nome_completo', 'email', 'materia'];
+        const hasCorrectHeaders = expectedFields.every(field => results.meta.fields?.includes(field));
 
-          const validation = validateTeacher(teacherData);
-          return {
-            ...teacherData,
-            valid: validation.valid,
-            errors: validation.errors
-          };
-        });
+        if (hasCorrectHeaders && results.data.length > 0) {
+          // Caso 1: Arquivo com cabeçalho correto
+          processParsedData(results.data as any[]);
+        } else {
+          // Caso 2: Tentar sem cabeçalho (fallback)
+          Papa.parse(selectedFile, {
+            header: false,
+            skipEmptyLines: true,
+            complete: (noHeaderResults) => {
+              const data = noHeaderResults.data as string[][];
+              if (data.length === 0) {
+                toast({
+                  title: "Arquivo vazio",
+                  description: "O arquivo selecionado não contém dados.",
+                  variant: "destructive",
+                });
+                return;
+              }
 
-        setParsedData(parsed);
-        setPreview(true);
+              // Mapeia por índice: Nome, Email, Matéria
+              const mapped = data.map(row => ({
+                nome_completo: row[0] || '',
+                email: row[1] || '',
+                materia: row[2] || ''
+              }));
+
+              processParsedData(mapped);
+            }
+          });
+        }
       },
       error: (error) => {
         toast({
-          title: "Erro ao processar arquivo",
+          title: "Erro no processamento",
           description: error.message,
           variant: "destructive",
         });
       }
     });
+  };
+
+  const processParsedData = (data: any[]) => {
+    const parsed: ParsedTeacher[] = data.map((row: any) => {
+      const teacherData: TeacherCSVData = {
+        nome_completo: String(row.nome_completo || row[0] || '').trim(),
+        email: String(row.email || row[1] || '').trim(),
+        materia: String(row.materia || row[2] || '').trim(),
+      };
+
+      const validation = validateTeacher(teacherData);
+      return {
+        ...teacherData,
+        valid: validation.valid,
+        errors: validation.errors
+      };
+    });
+
+    setParsedData(parsed);
+    setPreview(true);
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -189,46 +227,54 @@ export function TeacherCSVImport() {
 
   return (
     <div className="space-y-6">
-      <GlassCard>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <GraduationCap className="h-5 w-5 text-purple-600" />
-            Importação de Professores via CSV
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+      <div className="border-4 border-black dark:border-white bg-white dark:bg-zinc-900 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.2)] overflow-hidden">
+        <div className="bg-purple-600 dark:bg-purple-800 p-4 border-b-4 border-black dark:border-white flex items-center gap-3">
+          <GraduationCap className="h-6 w-6 text-white" />
+          <h2 className="text-xl font-black text-white uppercase tracking-tighter">Importação de Professores via CSV</h2>
+        </div>
+
+        <div className="p-6 space-y-6">
+          {/* Template Download */}
+          <div className="flex flex-col sm:flex-row items-center justify-between p-4 bg-purple-50 dark:bg-purple-900/20 border-4 border-black dark:border-white gap-4">
             <div className="flex items-center gap-3">
-              <FileText className="h-5 w-5 text-muted-foreground" />
+              <div className="p-2 border-2 border-black bg-white dark:bg-zinc-800">
+                <FileText className="h-5 w-5 text-black dark:text-white" />
+              </div>
               <div>
-                <p className="font-medium">Arquivo Template</p>
-                <p className="text-sm text-muted-foreground">
-                  Baixe o modelo com os cabeçalhos corretos (nome_completo, email, materia)
+                <p className="font-black uppercase text-xs text-black dark:text-white">Arquivo Template</p>
+                <p className="text-sm font-bold text-gray-700 dark:text-gray-300">
+                  Baixe o modelo se tiver dúvidas sobre as colunas.
                 </p>
               </div>
             </div>
-            <Button variant="outline" onClick={downloadTemplate}>
+            <Button
+              onClick={downloadTemplate}
+              className="w-full sm:w-auto bg-white hover:bg-gray-100 text-black border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] font-bold uppercase text-xs"
+            >
               <Download className="h-4 w-4 mr-2" />
               Baixar Template
             </Button>
           </div>
 
+          {/* File Upload Area */}
           {!preview && (
             <div
-              className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-8 text-center cursor-pointer hover:bg-muted/50 transition-colors"
+              className="border-4 border-dashed border-black dark:border-zinc-700 rounded-none p-12 text-center cursor-pointer hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition-all group"
               onDrop={handleDrop}
               onDragOver={handleDragOver}
               onClick={() => fileInputRef.current?.click()}
             >
-              <Upload className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <p className="text-lg font-medium mb-2">
-                Arraste e solte um arquivo CSV aqui
+              <div className="bg-purple-200 dark:bg-purple-900 border-4 border-black h-20 w-20 flex items-center justify-center mx-auto mb-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] group-hover:translate-x-1 group-hover:translate-y-1 group-hover:shadow-none transition-all">
+                <Upload className="h-10 w-10 text-black dark:text-white" />
+              </div>
+              <p className="text-xl font-black uppercase mb-2 text-black dark:text-white">
+                Selecione o seu arquivo
               </p>
-              <p className="text-muted-foreground mb-4">
-                ou clique para selecionar um arquivo
+              <p className="text-sm font-bold text-gray-500 dark:text-zinc-400 mb-6 font-mono">
+                Arraste e solte o CSV ou clique aqui
               </p>
-              <Button variant="outline">
-                Selecionar Arquivo
+              <Button className="bg-black dark:bg-white text-white dark:text-black font-black uppercase rounded-none border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,0.3)]">
+                Procurar no Computador
               </Button>
               <input
                 ref={fileInputRef}
@@ -240,25 +286,24 @@ export function TeacherCSVImport() {
             </div>
           )}
 
+          {/* Preview */}
           {preview && (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <h3 className="text-lg font-semibold">Pré-visualização</h3>
-                  <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="text-green-600">
-                      <CheckCircle className="h-3 w-3 mr-1" />
-                      {validCount} válidos
-                    </Badge>
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-b-4 border-black dark:border-white pb-6">
+                <div className="flex flex-wrap items-center gap-3">
+                  <h3 className="text-xl font-black uppercase text-black dark:text-white tracking-tight">Pré-visualização</h3>
+                  <div className="flex gap-2">
+                    <div className="bg-green-500 text-white font-black px-3 py-1 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] text-xs uppercase flex items-center gap-1">
+                      <CheckCircle className="h-3 w-3" /> {validCount} Válidos
+                    </div>
                     {invalidCount > 0 && (
-                      <Badge variant="outline" className="text-destructive">
-                        <AlertCircle className="h-3 w-3 mr-1" />
-                        {invalidCount} inválidos
-                      </Badge>
+                      <div className="bg-red-500 text-white font-black px-3 py-1 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] text-xs uppercase flex items-center gap-1">
+                        <AlertCircle className="h-3 w-3" /> {invalidCount} Inválidos
+                      </div>
                     )}
                   </div>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-4 w-full sm:w-auto">
                   <Button
                     variant="outline"
                     onClick={() => {
@@ -269,61 +314,72 @@ export function TeacherCSVImport() {
                         fileInputRef.current.value = '';
                       }
                     }}
+                    className="flex-1 sm:flex-none border-4 border-black font-black uppercase shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-x-1 active:translate-y-1 active:shadow-none"
                   >
-                    Cancelar
+                    Trocar Arquivo
                   </Button>
                   <Button
                     onClick={handleImport}
                     disabled={importing || validCount === 0}
-                    className="bg-purple-600 hover:bg-purple-700"
+                    className="flex-1 sm:flex-none bg-purple-600 hover:bg-purple-700 text-white border-4 border-black font-black uppercase shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-x-1 active:translate-y-1 active:shadow-none disabled:opacity-50 disabled:shadow-none"
                   >
-                    {importing ? 'Importando...' : `Importar ${validCount} Professores`}
+                    {importing ? 'Processando...' : `Confirmar Importação`}
                   </Button>
                 </div>
               </div>
 
               {invalidCount > 0 && (
-                <Alert>
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>
-                    {invalidCount} linha(s) contém erros e não serão importadas.
-                    Verifique os dados destacados em vermelho.
-                  </AlertDescription>
-                </Alert>
+                <div className="bg-red-100 dark:bg-red-900/30 border-4 border-black dark:border-white p-4 flex gap-3">
+                  <AlertCircle className="h-5 w-5 text-red-600 mt-0.5" />
+                  <div>
+                    <p className="font-black uppercase text-xs text-red-600">Atenção!</p>
+                    <p className="text-sm font-bold text-red-800 dark:text-red-300">
+                      {invalidCount} linhas possuem erros (destacadas em vermelho) e não serão importadas.
+                    </p>
+                  </div>
+                </div>
               )}
 
-              <div className="border rounded-lg overflow-hidden">
-                <div className="max-h-96 overflow-y-auto">
+              {/* Data Table */}
+              <div className="border-4 border-black dark:border-white overflow-hidden bg-white dark:bg-zinc-950 shadow-[8px_8px_0px_0px_rgba(0,0,0,0.2)]">
+                <div className="max-h-96 overflow-y-auto font-mono">
                   <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Nome Completo</TableHead>
-                        <TableHead>E-mail</TableHead>
-                        <TableHead>Matéria</TableHead>
-                        <TableHead>Erros</TableHead>
+                    <TableHeader className="bg-gray-100 dark:bg-zinc-800 border-b-4 border-black dark:border-white sticky top-0 z-20">
+                      <TableRow className="hover:bg-transparent">
+                        <TableHead className="text-black dark:text-white font-black uppercase text-xs border-r-2 border-black dark:border-white">Status</TableHead>
+                        <TableHead className="text-black dark:text-white font-black uppercase text-xs border-r-2 border-black dark:border-white">Nome Completo</TableHead>
+                        <TableHead className="text-black dark:text-white font-black uppercase text-xs border-r-2 border-black dark:border-white">E-mail</TableHead>
+                        <TableHead className="text-black dark:text-white font-black uppercase text-xs border-r-2 border-black dark:border-white">Matéria</TableHead>
+                        <TableHead className="text-black dark:text-white font-black uppercase text-xs">Erros</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {parsedData.map((teacher, index) => (
                         <TableRow
                           key={index}
-                          className={teacher.valid ? '' : 'bg-destructive/10'}
+                          className={cn(
+                            "hover:bg-gray-50 dark:hover:bg-zinc-900 border-b-2 border-black dark:border-white",
+                            !teacher.valid && "bg-red-50 dark:bg-red-950/40"
+                          )}
                         >
-                          <TableCell>
+                          <TableCell className="border-r-2 border-black dark:border-white text-center">
                             {teacher.valid ? (
-                              <CheckCircle className="h-4 w-4 text-green-600" />
+                              <div className="p-1 bg-green-100 border-2 border-black rounded-full inline-block">
+                                <CheckCircle className="h-4 w-4 text-green-700" />
+                              </div>
                             ) : (
-                              <AlertCircle className="h-4 w-4 text-destructive" />
+                              <div className="p-1 bg-red-100 border-2 border-black rounded-full inline-block">
+                                <AlertCircle className="h-4 w-4 text-red-700" />
+                              </div>
                             )}
                           </TableCell>
-                          <TableCell>{teacher.nome_completo}</TableCell>
-                          <TableCell>{teacher.email}</TableCell>
-                          <TableCell>{teacher.materia || '-'}</TableCell>
+                          <TableCell className="border-r-2 border-black dark:border-white font-bold text-xs">{teacher.nome_completo}</TableCell>
+                          <TableCell className="border-r-2 border-black dark:border-white font-bold text-xs">{teacher.email}</TableCell>
+                          <TableCell className="border-r-2 border-black dark:border-white font-bold text-xs">{teacher.materia || '-'}</TableCell>
                           <TableCell>
                             {teacher.errors.length > 0 && (
-                              <div className="text-sm text-destructive">
-                                {teacher.errors.join(', ')}
+                              <div className="text-[10px] font-black uppercase text-red-600 leading-tight">
+                                {teacher.errors.join(' | ')}
                               </div>
                             )}
                           </TableCell>
@@ -335,8 +391,8 @@ export function TeacherCSVImport() {
               </div>
             </div>
           )}
-        </CardContent>
-      </GlassCard>
+        </div>
+      </div>
     </div>
   );
 }
