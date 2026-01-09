@@ -6,7 +6,8 @@ import { Label } from "@/components/ui/label";
 import { CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { toast } from "@/hooks/use-toast";
-import { LockKeyhole, Eye, EyeOff, Loader2, ArrowLeft } from "lucide-react";
+import { validatePassword } from "@/utils/passwordValidation";
+import { LockKeyhole, Eye, EyeOff, Loader2, ArrowLeft, Check, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import Layout from "@/components/Layout";
 import { cn } from "@/lib/utils";
@@ -29,7 +30,7 @@ const UpdatePasswordPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isSessionSet, setIsSessionSet] = useState(false);
-  
+
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -49,22 +50,22 @@ const UpdatePasswordPage = () => {
           } else if (data.session) {
             setIsSessionSet(true);
             // Limpa o hash da URL após definir a sessão
-            navigate(location.pathname, { replace: true }); 
+            navigate(location.pathname, { replace: true });
           }
         })
         .finally(() => {
           setIsLoading(false);
         });
     } else {
-        // Se não houver tokens, verifica se já está logado
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            if (session) {
-                setIsSessionSet(true);
-            } else {
-                // Se não houver tokens e nem sessão, redireciona para login
-                navigate('/login', { replace: true });
-            }
-        });
+      // Se não houver tokens, verifica se já está logado
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session) {
+          setIsSessionSet(true);
+        } else {
+          // Se não houver tokens e nem sessão, redireciona para login
+          navigate('/login', { replace: true });
+        }
+      });
     }
   }, [location, navigate]);
 
@@ -77,8 +78,8 @@ const UpdatePasswordPage = () => {
       setIsLoading(false);
       return;
     }
-    if (password.length < 6) {
-      toast({ title: "Erro", description: "A senha deve ter pelo menos 6 caracteres.", variant: "destructive" });
+    if (!validatePassword(password).isValid) {
+      toast({ title: "Erro", description: "A senha não atende aos requisitos de segurança.", variant: "destructive" });
       setIsLoading(false);
       return;
     }
@@ -99,56 +100,73 @@ const UpdatePasswordPage = () => {
       setIsLoading(false);
     }
   };
-  
+
   if (isLoading || !isSessionSet) {
     return (
-        <div className="min-h-screen flex items-center justify-center bg-background">
-            <div className="text-center">
-                <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
-                <p className="text-muted-foreground">Verificando acesso seguro...</p>
-            </div>
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
+          <p className="text-muted-foreground">Verificando acesso seguro...</p>
         </div>
+      </div>
     );
   }
 
   return (
     <Layout title="Nova Senha" subtitle="Defina sua nova senha de acesso" showBackButton onBack={() => navigate('/login')}>
-        <div className="flex items-center justify-center p-4 relative overflow-hidden">
-            <GlassCard className="w-full max-w-md border-white/20 dark:border-white/10 shadow-2xl backdrop-blur-2xl relative z-10">
-                <form onSubmit={handleUpdatePasswordSubmit} className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                    {renderMinimalHeader(
-                        "Definir Nova Senha",
-                        "Crie uma senha segura para acessar o sistema.",
-                        LockKeyhole
-                    )}
-                    <CardContent className="space-y-4 pt-2">
-                        <div className="space-y-2">
-                            <Label htmlFor="new-password">Nova Senha</Label>
-                            <div className="relative">
-                                <Input id="new-password" type={showPassword ? "text" : "password"} placeholder="Mínimo 6 caracteres" value={password} onChange={e => setPassword(e.target.value)} className="bg-white/50 dark:bg-zinc-900/50 pr-10" disabled={isLoading} required />
-                                <Button type="button" variant="ghost" size="sm" className="absolute right-0 top-0 h-full px-3 hover:bg-transparent" onClick={() => setShowPassword(prev => !prev)}>
-                                    {showPassword ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
-                                </Button>
-                            </div>
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="confirm-password">Confirmar Senha</Label>
-                            <div className="relative">
-                                <Input id="confirm-password" type={showPassword ? "text" : "password"} placeholder="Confirme sua nova senha" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className="bg-white/50 dark:bg-zinc-900/50 pr-10" disabled={isLoading} required />
-                                <Button type="button" variant="ghost" size="sm" className="absolute right-0 top-0 h-full px-3 hover:bg-transparent" onClick={() => setShowPassword(prev => !prev)}>
-                                    {showPassword ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
-                                </Button>
-                            </div>
-                        </div>
-                    </CardContent>
-                    <CardFooter className="pb-8">
-                        <Button type="submit" className="w-full h-11 text-base shadow-lg shadow-primary/20" disabled={isLoading || password.length < 6 || password !== confirmPassword}>
-                            {isLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : "Definir Senha e Entrar"}
-                        </Button>
-                    </CardFooter>
-                </form>
-            </GlassCard>
-        </div>
+      <div className="flex items-center justify-center p-4 relative overflow-hidden">
+        <GlassCard className="w-full max-w-md border-white/20 dark:border-white/10 shadow-2xl backdrop-blur-2xl relative z-10">
+          <form onSubmit={handleUpdatePasswordSubmit} className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+            {renderMinimalHeader(
+              "Definir Nova Senha",
+              "Crie uma senha segura para acessar o sistema.",
+              LockKeyhole
+            )}
+            <CardContent className="space-y-4 pt-2">
+              <div className="space-y-2">
+                <Label htmlFor="new-password">Nova Senha</Label>
+                <div className="relative">
+                  <Input id="new-password" type={showPassword ? "text" : "password"} placeholder="Sua nova senha segura" value={password} onChange={e => setPassword(e.target.value)} className="bg-white/50 dark:bg-zinc-900/50 pr-10" disabled={isLoading} required />
+                  <Button type="button" variant="ghost" size="sm" className="absolute right-0 top-0 h-full px-3 hover:bg-transparent" onClick={() => setShowPassword(prev => !prev)}>
+                    {showPassword ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
+                  </Button>
+                </div>
+
+                {/* Password Strength Checklist */}
+                {password.length > 0 && (
+                  <div className="grid grid-cols-1 gap-1.5 p-3 bg-primary/5 rounded-xl border border-primary/10 text-[10px] font-bold uppercase mt-2">
+                    {[
+                      { label: "8+ Caracteres", met: validatePassword(password).hasMinLength },
+                      { label: "Letra Maiúscula", met: validatePassword(password).hasUpperCase },
+                      { label: "Número", met: validatePassword(password).hasNumber },
+                      { label: "Símbolo (!@#)", met: validatePassword(password).hasSpecialChar },
+                    ].map((req, i) => (
+                      <div key={i} className={cn("flex items-center gap-2", req.met ? "text-green-600 dark:text-green-400" : "text-muted-foreground opacity-60")}>
+                        {req.met ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
+                        {req.label}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="confirm-password">Confirmar Senha</Label>
+                <div className="relative">
+                  <Input id="confirm-password" type={showPassword ? "text" : "password"} placeholder="Confirme sua nova senha" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className="bg-white/50 dark:bg-zinc-900/50 pr-10" disabled={isLoading} required />
+                  <Button type="button" variant="ghost" size="sm" className="absolute right-0 top-0 h-full px-3 hover:bg-transparent" onClick={() => setShowPassword(prev => !prev)}>
+                    {showPassword ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+            <CardFooter className="pb-8">
+              <Button type="submit" className="w-full h-11 text-base shadow-lg shadow-primary/20" disabled={isLoading || !validatePassword(password).isValid || password !== confirmPassword}>
+                {isLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : "Definir Senha e Entrar"}
+              </Button>
+            </CardFooter>
+          </form>
+        </GlassCard>
+      </div>
     </Layout>
   );
 };

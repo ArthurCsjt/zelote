@@ -30,6 +30,9 @@ export interface DashboardStats {
   maxOccupancyRate: number; // Taxa de ocupação máxima
   occupancyRateColor: 'green' | 'yellow' | 'red'; // NOVO: Cor semafórica para pico
   topLoanContexts: TopLoanContext[]; // NOVO CAMPO
+  totalMovable: number;
+  availableMovable: number;
+  reserveRate: number;
 }
 
 export function useDashboardData(
@@ -234,6 +237,9 @@ export function useDashboardData(
       maxOccupancyRate: Math.min(100, maxOccupancyRate), // Limita a 100%
       occupancyRateColor, // NOVO
       topLoanContexts, // NOVO
+      totalMovable: availableForLoan,
+      availableMovable: availableForLoan - totalActive,
+      reserveRate: availableForLoan > 0 ? ((availableForLoan - totalActive) / availableForLoan) * 100 : 0,
     };
   }, [chromebooks, history, filteredLoans, startHour, endHour, startDate, endDate]);
 

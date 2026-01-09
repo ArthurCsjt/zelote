@@ -4,6 +4,7 @@ import { AuthContext, AuthContextType } from "@/contexts/AuthContext";
 import type { User } from "@supabase/supabase-js";
 import logger from '@/utils/logger';
 import { isInstitutionalEmail } from '@/utils/emailValidation';
+import { validatePassword } from '@/utils/passwordValidation';
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -53,6 +54,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const register = async (email: string, password: string, firstName: string, lastName: string) => {
     if (!verifyEmail(email)) {
       return { success: false, error: "O registro é permitido apenas com domínios institucionais permitidos." };
+    }
+    if (!validatePassword(password).isValid) {
+      return { success: false, error: "A senha não atende aos requisitos mínimos de segurança (8+ caracteres, maiúsculas, números e símbolos)." };
     }
     const { error } = await supabase.auth.signUp({
       email,

@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
-import { Computer, ArrowLeft, UserPlus, Eye, EyeOff, AlertCircle, LogIn, RotateCcw, Loader2 } from "lucide-react";
+import { validatePassword } from "@/utils/passwordValidation";
+import { Computer, ArrowLeft, UserPlus, Eye, EyeOff, AlertCircle, LogIn, RotateCcw, Loader2, Check, X } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 
@@ -304,13 +305,13 @@ const Login = () => {
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="register-password" className="neo-brutal-label">Senha</Label>
+                <div className="space-y-3">
+                  <Label htmlFor="register-password" title="A senha deve ter 8+ caracteres, maiúsculas, minúsculas, números e símbolos." className="neo-brutal-label">Senha</Label>
                   <div className="relative">
                     <Input
                       id="register-password"
                       type={showPassword ? "text" : "password"}
-                      placeholder="Mínimo 6 caracteres"
+                      placeholder="Sua senha segura"
                       value={password}
                       onChange={e => setPassword(e.target.value)}
                       className="neo-brutal-input pr-12"
@@ -325,6 +326,23 @@ const Login = () => {
                       {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                     </button>
                   </div>
+
+                  {/* Password Strength Checklist */}
+                  {password.length > 0 && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-3 bg-muted/30 border-2 border-black dark:border-white/10 text-[10px] font-bold uppercase">
+                      {[
+                        { label: "8+ Caracteres", met: validatePassword(password).hasMinLength },
+                        { label: "Letra Maiúscula", met: validatePassword(password).hasUpperCase },
+                        { label: "Número", met: validatePassword(password).hasNumber },
+                        { label: "Símbolo (!@#)", met: validatePassword(password).hasSpecialChar },
+                      ].map((req, i) => (
+                        <div key={i} className={cn("flex items-center gap-2", req.met ? "text-success" : "text-muted-foreground opacity-60")}>
+                          {req.met ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
+                          {req.label}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 <div className="space-y-2">
@@ -344,7 +362,7 @@ const Login = () => {
                 <Button
                   type="submit"
                   className="neo-brutal-button w-full"
-                  disabled={isLoading || !isEmailValid || password.length < 6 || password !== confirmPassword}
+                  disabled={isLoading || !isEmailValid || !validatePassword(password).isValid || password !== confirmPassword}
                 >
                   {isLoading ? (
                     <Loader2 className="h-5 w-5 animate-spin" />

@@ -77,7 +77,7 @@ export const UsageRateCard: React.FC<UsageRateCardProps> = ({ stats, isMounted }
 
           <CardContent className="p-0 pt-6 grid grid-cols-1 md:grid-cols-2 gap-8 border-t-4 border-black dark:border-white mt-2">
 
-            {/* METRICA 1: TEMPO REAL */}
+            {/* METRICA 1: MONITOR DE CARGA (TEMPO REAL) */}
             <div className={cn(
               "space-y-4 p-6 border-2 border-black dark:border-white transition-all duration-300",
               "bg-white dark:bg-zinc-900",
@@ -85,13 +85,13 @@ export const UsageRateCard: React.FC<UsageRateCardProps> = ({ stats, isMounted }
             )}>
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-black uppercase text-black dark:text-white flex items-center gap-2">
-                  USO ATUAL
+                  MONITOR DE CARGA
                   <ShadcnTooltip delayDuration={300}>
                     <TooltipTrigger asChild>
                       <Info className="h-4 w-4 cursor-help text-black dark:text-white" />
                     </TooltipTrigger>
                     <TooltipContent className="max-w-xs text-xs border-2 border-black rounded-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-                      <p>Porcentagem de equipamentos móveis que estão atualmente emprestados.</p>
+                      <p>Visualização instantânea da carga de empréstimos em relação ao total de equipamentos móveis.</p>
                     </TooltipContent>
                   </ShadcnTooltip>
                 </h3>
@@ -107,6 +107,7 @@ export const UsageRateCard: React.FC<UsageRateCardProps> = ({ stats, isMounted }
                 <div className="text-6xl md:text-7xl font-black text-black dark:text-white">
                   {totalInventoryUsageRate.toFixed(0)}%
                 </div>
+                <div className="text-xs font-black uppercase text-muted-foreground">Em Uso</div>
               </div>
 
               <div className="relative border-2 border-black dark:border-white p-1">
@@ -117,53 +118,58 @@ export const UsageRateCard: React.FC<UsageRateCardProps> = ({ stats, isMounted }
                 />
               </div>
 
-              <p className="text-sm text-black dark:text-white font-mono font-bold mt-2">
-                {totalActive}/{totalChromebooks} EM USO
-              </p>
+              <div className="flex justify-between items-center mt-2">
+                <p className="text-sm text-black dark:text-white font-mono font-bold">
+                  {totalActive}/{totalChromebooks} EQUIPAMENTOS
+                </p>
+                <div className="text-[10px] bg-black text-white px-2 py-0.5 font-black uppercase">Instantâneo</div>
+              </div>
             </div>
 
-            {/* METRICA 2: PICO NO PERÍODO */}
+            {/* METRICA 2: ANÁLISE DE DISPONIBILIDADE (CAPACIDADE RESERVA) */}
             <div className={cn(
               "space-y-4 p-6 border-2 border-black dark:border-white transition-all duration-300",
-              "bg-white dark:bg-zinc-900",
+              "bg-zinc-50 dark:bg-zinc-950",
               "hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]"
             )}>
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-black uppercase text-black dark:text-white flex items-center gap-2">
-                  PICO (PERÍODO)
+                  DISPONIBILIDADE
                   <ShadcnTooltip delayDuration={300}>
                     <TooltipTrigger asChild>
                       <Info className="h-4 w-4 cursor-help text-black dark:text-white" />
                     </TooltipTrigger>
                     <TooltipContent className="max-w-xs text-xs border-2 border-black rounded-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-                      <p>O pico de uso atingido durante o período selecionado.</p>
+                      <p>Equipamentos que ainda estão disponíveis para novos empréstimos neste momento.</p>
                     </TooltipContent>
                   </ShadcnTooltip>
                 </h3>
-                <div className={cn(
-                  "p-2 border-2 border-black dark:border-white",
-                  picoColors.bg
-                )}>
+                <div className="p-2 border-2 border-black dark:border-white bg-blue-300 dark:bg-blue-800">
                   <TrendingUp className="h-6 w-6 text-black dark:text-white" />
                 </div>
               </div>
 
               <div className="flex items-baseline gap-3">
-                <div className="text-6xl md:text-7xl font-black text-black dark:text-white">
-                  {maxOccupancyRate.toFixed(0)}%
+                <div className="text-6xl md:text-7xl font-black text-blue-600 dark:text-blue-400">
+                  {stats?.reserveRate ? stats.reserveRate.toFixed(0) : (100 - totalInventoryUsageRate).toFixed(0)}%
+                </div>
+                <div className="text-xs font-black uppercase text-blue-600 dark:text-blue-400">Reserva</div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 mt-2">
+                <div className="border-2 border-black p-2 bg-white dark:bg-zinc-900">
+                  <p className="text-[10px] font-black uppercase opacity-60">Disponível</p>
+                  <p className="text-xl font-black">{stats?.availableMovable || (totalChromebooks - totalActive)}</p>
+                </div>
+                <div className="border-2 border-black p-2 bg-white dark:bg-zinc-900">
+                  <p className="text-[10px] font-black uppercase opacity-60">Pico Período</p>
+                  <p className="text-xl font-black">{maxOccupancyRate.toFixed(0)}%</p>
                 </div>
               </div>
 
-              <div className="relative border-2 border-black dark:border-white p-1">
-                <div className="h-6 bg-gray-100 dark:bg-zinc-800 w-full absolute inset-0 m-1" />
-                <div
-                  className={cn("relative h-6 transition-all duration-500 border-r-2 border-black dark:border-white", picoColors.bg)}
-                  style={{ width: `${Math.max(5, maxOccupancyRate)}%` }}
-                />
-              </div>
-
-              <p className="text-sm text-black dark:text-white font-mono font-bold mt-2">
-                MÁX: {Math.round(totalChromebooks * maxOccupancyRate / 100)} SIMULTÂNEOS
+              <p className="text-[10px] text-black dark:text-white font-bold mt-2 uppercase flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+                Capacidade ociosa pronta para uso
               </p>
             </div>
           </CardContent>
