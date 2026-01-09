@@ -133,7 +133,7 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
             </div>
             <div>
               <DialogTitle className="text-xl sm:text-2xl font-black uppercase tracking-tight">AGENDAMENTO</DialogTitle>
-              <p className="text-[10px] sm:text-xs font-bold uppercase opacity-90 tracking-wide">
+              <p className="text-[11px] sm:text-sm font-bold uppercase opacity-90 tracking-wide">
                 {format(date, "EEEE, dd 'de' MMMM", { locale: ptBR })} • {timeSlot}
               </p>
             </div>
@@ -166,8 +166,8 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
             {/* NOVO AGENDAMENTO DIVIDER */}
             <div className="relative flex items-center py-1">
               <div className="absolute inset-x-0 h-[3px] bg-black" />
-              <div className="relative bg-[#a855f7] text-white px-3 py-1 border-2 border-black shadow-[3px_3px_0_0_#000] -rotate-1">
-                <span className="text-[10px] sm:text-xs font-black uppercase tracking-wide">+ Novo Agendamento</span>
+              <div className="relative bg-[#a855f7] text-white px-3 py-1.5 border-2 border-black shadow-[3px_3px_0_0_#000] -rotate-1">
+                <span className="text-[11px] sm:text-sm font-black uppercase tracking-wide">+ Novo Agendamento</span>
               </div>
             </div>
 
@@ -213,26 +213,26 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
 
                 {isMultiMode && (
                   <div className="mt-4 pt-4 border-t-2 border-blue-200 animate-in fade-in slide-in-from-top-2">
-                    <Label className="text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-[#1e3a8a] mb-2.5 block">Selecione os dias:</Label>
+                    <Label className="text-[11px] sm:text-xs font-black uppercase tracking-wider text-[#1e3a8a] mb-2.5 block">Selecione os dias:</Label>
                     <div className="flex flex-wrap gap-2">
-                      <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-zinc-800 text-white text-[9px] sm:text-[10px] font-black uppercase border-2 border-black shadow-[2px_2px_0_0_#000]">
-                        <Calendar className="h-3 w-3" />
+                      <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-zinc-950 text-white text-[12px] sm:text-[13px] font-black uppercase border-2 border-black shadow-[3px_3px_0_0_#000]">
+                        <Calendar className="h-3.5 w-3.5" />
                         {format(date, 'dd/MM')}
-                        <span className="text-zinc-400 text-[8px]">(atual)</span>
+                        <span className="text-blue-300 text-[10px] sm:text-[11px] font-bold">(atual)</span>
                       </div>
                       {extraDates.map((d, i) => (
-                        <div key={i} className="inline-flex items-center gap-2 px-3 py-1.5 bg-[#1e3a8a] text-white text-[9px] sm:text-[10px] font-black uppercase border-2 border-black shadow-[2px_2px_0_0_#000] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all group">
-                          <Calendar className="h-3 w-3" />
+                        <div key={i} className="inline-flex items-center gap-2 px-3 py-1.5 bg-[#1e40af] text-white text-[12px] sm:text-[13px] font-black uppercase border-2 border-black shadow-[3px_3px_0_0_#000] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all group">
+                          <Calendar className="h-3.5 w-3.5" />
                           {format(d, 'dd/MM')}
-                          <CloseIcon className="h-3 w-3 cursor-pointer opacity-70 group-hover:opacity-100 transition-opacity" onClick={() => setExtraDates(extraDates.filter((_, idx) => idx !== i))} />
+                          <CloseIcon className="h-3.5 w-3.5 cursor-pointer opacity-70 group-hover:opacity-100 transition-opacity" onClick={() => setExtraDates(extraDates.filter((_, idx) => idx !== i))} />
                         </div>
                       ))}
                       <Button
                         type="button"
                         onClick={() => setShowCalendar(!showCalendar)}
-                        className="h-auto py-1.5 px-3 bg-white dark:bg-zinc-900 text-[#1e3a8a] dark:text-blue-400 border-2 border-dashed border-[#1e3a8a] dark:border-blue-700 text-[9px] sm:text-[10px] font-black uppercase hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:border-solid rounded-none flex items-center gap-1.5 transition-all"
+                        className="h-auto py-1.5 px-3 bg-white dark:bg-zinc-900 text-[#1e3a8a] dark:text-blue-400 border-2 border-dashed border-[#1e3a8a] dark:border-blue-700 text-[11px] sm:text-[12px] font-black uppercase hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:border-solid rounded-none flex items-center gap-1.5 transition-all shadow-[2px_2px_0_0_rgba(30,58,138,0.1)]"
                       >
-                        <CalendarDays className="h-3 w-3" />
+                        <CalendarDays className="h-4 w-4" />
                         Adicionar
                       </Button>
                     </div>
@@ -271,7 +271,7 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
               </div>
               <div className="p-3 sm:p-4 space-y-3">
                 <div className="space-y-2">
-                  <Label className="text-[9px] sm:text-[10px] font-black uppercase text-[#a855f7] dark:text-purple-400 tracking-wider">Sala <span className="text-red-500">*</span></Label>
+                  <Label className="text-[11px] sm:text-xs font-black uppercase text-[#a855f7] dark:text-purple-400 tracking-wider">Sala <span className="text-red-500">*</span></Label>
                   <div className="flex flex-wrap gap-1.5">
                     {['Sala Google', 'Sala Maker', 'Sala de Estudos', 'Sala de Artes'].map((s) => (
                       <button
@@ -310,7 +310,7 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-[9px] sm:text-[10px] font-black uppercase text-[#a855f7] dark:text-purple-400 tracking-wider">Justificativa / Motivo <span className="text-red-500">*</span></Label>
+                  <Label className="text-[11px] sm:text-xs font-black uppercase text-[#a855f7] dark:text-purple-400 tracking-wider">Justificativa / Motivo <span className="text-red-500">*</span></Label>
                   <Textarea
                     value={justification}
                     onChange={(e) => setJustification(e.target.value)}
@@ -323,17 +323,17 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
             </div>
 
             {/* QUANTIDADE */}
-            <div className="border-2 border-[#22c55e] bg-green-50/30 overflow-hidden shadow-[4px_4px_0_0_rgba(34,197,94,0.15)]">
+            <div className="border-2 border-[#22c55e] bg-green-50/30 dark:bg-green-950/10 overflow-hidden shadow-[4px_4px_0_0_rgba(34,197,94,0.15)]">
               <div className="bg-[#22c55e] px-3 py-2 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Monitor className="h-4 w-4 text-white" />
-                  <span className="text-[11px] sm:text-[13px] font-black uppercase text-white tracking-wider">Quantidade</span>
+                  <Monitor className="h-4 w-5 text-white" />
+                  <span className="text-[13px] sm:text-[15px] font-black uppercase text-white tracking-wider">Quantidade</span>
                 </div>
-                <div className="bg-white/20 border border-white/50 px-2 py-0.5 text-white text-xs font-black">{quantity}</div>
+                <div className="bg-white/20 border-2 border-white/50 px-3 py-1 text-white text-sm sm:text-base font-black leading-none">{quantity}</div>
               </div>
-              <div className="p-3 sm:p-4">
+              <div className="p-4 sm:p-5">
                 <Slider value={[quantity]} onValueChange={(v) => setQuantity(v[0])} min={1} max={maxQuantity} step={1} className="py-2" />
-                <div className="flex justify-between mt-1.5 text-[8px] sm:text-[9px] font-black uppercase text-green-700">
+                <div className="flex justify-between mt-2 text-[12px] sm:text-[13px] font-black uppercase text-green-700 dark:text-green-400">
                   <span>Mín: 1</span>
                   <span>Máx: {maxQuantity}</span>
                 </div>
