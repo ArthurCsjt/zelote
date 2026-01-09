@@ -12,7 +12,7 @@ import {
 import { cn } from '@/lib/utils';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
-import { format, startOfDay, endOfDay, isBefore, isAfter, subDays, startOfMonth, endOfMonth } from 'date-fns';
+import { format, startOfDay, endOfDay, isBefore, isAfter, subDays, startOfMonth, endOfMonth, subMonths, startOfYear, endOfYear } from 'date-fns';
 
 interface CollapsibleDashboardFilterProps {
   startDate: Date | null;
@@ -96,7 +96,7 @@ export const CollapsibleDashboardFilter: React.FC<CollapsibleDashboardFilterProp
     }
   };
 
-  const handlePreset = (preset: 'today' | 'last7days' | 'thisMonth') => {
+  const handlePreset = (preset: 'today' | 'last7days' | 'thisMonth' | 'lastMonth' | 'thisYear') => {
     const now = new Date();
     let start: Date;
     let end: Date;
@@ -112,7 +112,16 @@ export const CollapsibleDashboardFilter: React.FC<CollapsibleDashboardFilterProp
         break;
       case 'thisMonth':
         start = startOfMonth(now);
-        end = endOfDay(now); // Vai até o final do dia atual
+        end = endOfDay(now);
+        break;
+      case 'lastMonth':
+        const lastMonth = subMonths(now, 1);
+        start = startOfMonth(lastMonth);
+        end = endOfMonth(lastMonth);
+        break;
+      case 'thisYear':
+        start = startOfYear(now);
+        end = endOfDay(now);
         break;
       default:
         return;
@@ -160,12 +169,12 @@ export const CollapsibleDashboardFilter: React.FC<CollapsibleDashboardFilterProp
             <Label className="text-xs font-bold uppercase flex items-center gap-1 text-gray-500">
               <CalendarDays className="h-3 w-3" /> Predefinições de Período
             </Label>
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
               <Button
                 variant="outline"
                 onClick={() => handlePreset('today')}
                 disabled={loading}
-                className="h-10 text-xs uppercase font-bold border-2 border-black dark:border-white rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:shadow-none bg-white dark:bg-zinc-800"
+                className="h-10 text-[10px] uppercase font-bold border-2 border-black dark:border-white rounded-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] active:shadow-none bg-white dark:bg-zinc-800"
               >
                 Hoje
               </Button>
@@ -173,17 +182,33 @@ export const CollapsibleDashboardFilter: React.FC<CollapsibleDashboardFilterProp
                 variant="outline"
                 onClick={() => handlePreset('last7days')}
                 disabled={loading}
-                className="h-10 text-xs uppercase font-bold border-2 border-black dark:border-white rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:shadow-none bg-white dark:bg-zinc-800"
+                className="h-10 text-[10px] uppercase font-bold border-2 border-black dark:border-white rounded-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] active:shadow-none bg-white dark:bg-zinc-800"
               >
-                Últimos 7 Dias
+                7 Dias
               </Button>
               <Button
                 variant="outline"
                 onClick={() => handlePreset('thisMonth')}
                 disabled={loading}
-                className="h-10 text-xs uppercase font-bold border-2 border-black dark:border-white rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:shadow-none bg-white dark:bg-zinc-800"
+                className="h-10 text-[10px] uppercase font-bold border-2 border-black dark:border-white rounded-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] active:shadow-none bg-white dark:bg-zinc-800"
               >
-                Mês Atual
+                Este Mês
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => handlePreset('lastMonth')}
+                disabled={loading}
+                className="h-10 text-[10px] uppercase font-bold border-2 border-black dark:border-white rounded-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] active:shadow-none bg-white dark:bg-zinc-800"
+              >
+                Mês Passado
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => handlePreset('thisYear')}
+                disabled={loading}
+                className="h-10 text-[10px] uppercase font-bold border-2 border-black dark:border-white rounded-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] active:shadow-none bg-white dark:bg-zinc-800"
+              >
+                Este Ano
               </Button>
             </div>
           </div>

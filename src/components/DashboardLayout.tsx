@@ -329,6 +329,8 @@ export function DashboardLayout({
           <DashboardStatsGrid
             stats={stats}
             history={history}
+            filteredLoans={filteredLoans}
+            filteredReturns={filteredReturns}
             loading={loading}
             onCardClick={handleCardClick}
             isMounted={isMounted}

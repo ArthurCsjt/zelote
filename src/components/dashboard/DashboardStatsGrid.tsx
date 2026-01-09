@@ -23,6 +23,8 @@ type DetailItem = {
 interface DashboardStatsGridProps {
   stats: ReturnType<typeof useDashboardData>['stats'];
   history: LoanHistoryItem[];
+  filteredLoans: LoanHistoryItem[];
+  filteredReturns: LoanHistoryItem[];
   loading: boolean;
   isMounted: boolean;
   onCardClick: (
@@ -37,6 +39,8 @@ interface DashboardStatsGridProps {
 export const DashboardStatsGrid: React.FC<DashboardStatsGridProps> = ({
   stats,
   history,
+  filteredLoans,
+  filteredReturns,
   loading,
   isMounted,
   onCardClick
@@ -48,22 +52,38 @@ export const DashboardStatsGrid: React.FC<DashboardStatsGridProps> = ({
     availableChromebooks = 0,
     averageUsageTime = 0,
     completionRate = 0,
-    filteredLoans = [],
-    filteredReturns = [],
   } = stats || {};
 
-  const isOverdue = (loan: LoanHistoryItem) => {
-    return loan.expected_return_date && new Date(loan.expected_return_date) < new Date();
+  const isOverdue = (loan: LoanHistoryItem): boolean => {
+    return !!(loan.expected_return_date && new Date(loan.expected_return_date) < new Date());
   };
 
   const getAnimationClass = (delay: number) =>
     isMounted ? `animate-fadeIn animation-delay-${delay}` : 'opacity-0';
+
+  const DeltaBadge = ({ value, invertColor = false }: { value?: number, invertColor?: boolean }) => {
+    if (value === undefined || value === 0) return null;
+    const isIncrease = value > 0;
+    // Para tempo de uso, aumento pode ser ruim. Para volume, aumento é crescimento.
+    const isPositiveEffect = invertColor ? !isIncrease : isIncrease;
+
+    return (
+      <div className={cn(
+        "inline-flex items-center px-1.5 py-0.5 text-[10px] font-black border border-black uppercase mt-1",
+        isPositiveEffect ? "bg-green-300 text-green-900" : "bg-red-300 text-red-900"
+      )}>
+        {isIncrease ? "+" : ""}
+        {value.toFixed(0)}%
+      </div>
+    );
+  };
 
   const cardData = [
     {
       title: 'Empréstimos Ativos',
       value: totalActive,
       description: `${filteredLoans.length} empréstimos no período`,
+      delta: stats?.deltas?.loanVolume,
       icon: Computer,
       color: 'blue',
       gradient: 'from-blue-600 to-blue-800',
@@ -94,6 +114,7 @@ export const DashboardStatsGrid: React.FC<DashboardStatsGridProps> = ({
       title: 'Tempo Médio de Uso',
       value: `${Math.round(averageUsageTime)} min`,
       description: 'média no período',
+      delta: stats?.deltas?.avgTime,
       icon: Clock,
       color: 'purple',
       gradient: 'from-purple-600 to-violet-600',
@@ -105,6 +126,7 @@ export const DashboardStatsGrid: React.FC<DashboardStatsGridProps> = ({
       title: 'Taxa de Devolução',
       value: `${completionRate.toFixed(0)}%`,
       description: `${filteredReturns.length} de ${filteredLoans.length} devolvidos`,
+      delta: stats?.deltas?.completionRate,
       icon: RotateCcw,
       color: 'teal',
       gradient: 'from-teal-600 to-cyan-600',
@@ -159,8 +181,11 @@ export const DashboardStatsGrid: React.FC<DashboardStatsGridProps> = ({
             </CardHeader>
 
             <CardContent className="p-0 pt-4">
-              <div className="text-3xl sm:text-4xl font-black text-black dark:text-white">
-                {item.value}
+              <div className="flex items-baseline justify-between">
+                <div className="text-3xl sm:text-4xl font-black text-black dark:text-white">
+                  {item.value}
+                </div>
+                <DeltaBadge value={item.delta} invertColor={item.title === 'Tempo Médio de Uso'} />
               </div>
               <p className="text-xs sm:text-sm text-gray-700 dark:text-gray-300 mt-2 font-bold font-mono">
                 {item.description}

@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useDatabase } from '@/hooks/useDatabase';
 import { toast } from '@/hooks/use-toast';
 import type { LoanHistoryItem, Chromebook } from '@/types/database';
-import { format, startOfDay, isToday, isWithinInterval, subDays, differenceInMinutes, startOfWeek, endOfWeek, startOfMonth, endOfMonth, addDays, endOfDay } from "date-fns";
+import { format, startOfDay, isToday, isWithinInterval, subDays, differenceInMinutes, differenceInDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth, addDays, endOfDay } from "date-fns";
 import logger from '@/utils/logger';
 
 // O PeriodView agora só terá 'history' e 'reports'
@@ -33,6 +33,13 @@ export interface DashboardStats {
   totalMovable: number;
   availableMovable: number;
   reserveRate: number;
+  deltas?: {
+    usageRate: number;
+    maxOccupancy: number;
+    loanVolume: number;
+    avgTime: number;
+    completionRate: number;
+  };
 }
 
 export function useDashboardData(
@@ -240,6 +247,59 @@ export function useDashboardData(
       totalMovable: availableForLoan,
       availableMovable: availableForLoan - totalActive,
       reserveRate: availableForLoan > 0 ? ((availableForLoan - totalActive) / availableForLoan) * 100 : 0,
+      deltas: (() => {
+        if (!startDate || !endDate || isNaN(startDate.getTime()) || isNaN(endDate.getTime())) return undefined;
+
+        const duration = differenceInDays(endDate, startDate) + 1;
+        const prevStart = subDays(startDate, duration);
+        const prevEnd = subDays(startDate, 1);
+
+        const prevLoans = history.filter(loan => isWithinInterval(new Date(loan.loan_date), { start: prevStart, end: prevEnd }));
+        const prevReturns = prevLoans.filter(loan => loan.return_date);
+
+        // Volume Delta
+        const loanVolumeDelta = prevLoans.length > 0 ? ((filteredLoans.length - prevLoans.length) / prevLoans.length) * 100 : 0;
+
+        // Avg Time Delta
+        const prevAvgTime = prevReturns.reduce((acc, loan) => acc + differenceInMinutes(new Date(loan.return_date!), new Date(loan.loan_date)), 0) / (prevReturns.length || 1);
+        const avgTimeDelta = prevAvgTime > 0 ? ((averageUsageTime - prevAvgTime) / prevAvgTime) * 100 : 0;
+
+        // Pico Delta (Simplificado: usamos o Pico do período anterior)
+        let maxPrevConcurrent = 0;
+        const checkPoints: Date[] = [];
+        let curr = startOfDay(prevStart);
+        while (curr <= endOfDay(prevEnd)) {
+          for (let h = startHour; h <= endHour; h++) {
+            const ct = new Date(curr);
+            ct.setHours(h, 30);
+            if (ct >= prevStart && ct <= prevEnd) checkPoints.push(ct);
+          }
+          curr = addDays(curr, 1);
+        }
+        checkPoints.forEach(ct => {
+          let count = 0;
+          history.forEach(l => {
+            const s = new Date(l.loan_date);
+            const e = l.return_date ? new Date(l.return_date) : new Date();
+            if (ct >= s && ct <= e) count++;
+          });
+          maxPrevConcurrent = Math.max(maxPrevConcurrent, count);
+        });
+        const prevMaxRate = availableForLoan > 0 ? (maxPrevConcurrent / availableForLoan) * 100 : 0;
+        const maxOccupancyDelta = prevMaxRate > 0 ? ((maxOccupancyRate - prevMaxRate) / prevMaxRate) * 100 : 0;
+
+        // Completion Rate Delta
+        const prevCompletionRate = prevLoans.length > 0 ? (prevReturns.length / prevLoans.length) * 100 : 0;
+        const completionRateDelta = prevCompletionRate > 0 ? ((completionRate - prevCompletionRate) / prevCompletionRate) * 100 : 0;
+
+        return {
+          usageRate: 0, // Instantâneo não tem comparativo histórico direto nesse contexto
+          maxOccupancy: maxOccupancyDelta,
+          loanVolume: loanVolumeDelta,
+          avgTime: avgTimeDelta,
+          completionRate: completionRateDelta
+        };
+      })(),
     };
   }, [chromebooks, history, filteredLoans, startHour, endHour, startDate, endDate]);
 

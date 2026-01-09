@@ -46,6 +46,20 @@ export const UsageRateCard: React.FC<UsageRateCardProps> = ({ stats, isMounted }
 
   const getAnimationClass = isMounted ? 'animate-fadeIn animation-delay-0' : 'opacity-0';
 
+  const DeltaIndicator = ({ value, label }: { value?: number, label?: string }) => {
+    if (value === undefined || value === 0) return null;
+    const isPositive = value > 0;
+    return (
+      <div className={cn(
+        "inline-flex items-center gap-1 px-1.5 py-0.5 border-2 border-black text-[9px] font-black uppercase",
+        isPositive ? "bg-red-200 text-red-700" : "bg-green-200 text-green-700"
+      )}>
+        {isPositive ? "↑" : "↓"} {Math.abs(value).toFixed(0)}%
+        {label && <span className="opacity-60 ml-1">{label}</span>}
+      </div>
+    );
+  };
+
   return (
     <TooltipProvider>
       <div className={cn(
@@ -107,7 +121,10 @@ export const UsageRateCard: React.FC<UsageRateCardProps> = ({ stats, isMounted }
                 <div className="text-6xl md:text-7xl font-black text-black dark:text-white">
                   {totalInventoryUsageRate.toFixed(0)}%
                 </div>
-                <div className="text-xs font-black uppercase text-muted-foreground">Em Uso</div>
+                <div className="flex flex-col gap-1">
+                  <div className="text-xs font-black uppercase text-muted-foreground">Em Uso</div>
+                  <DeltaIndicator value={stats?.deltas?.loanVolume} label="Vol" />
+                </div>
               </div>
 
               <div className="relative border-2 border-black dark:border-white p-1">
@@ -161,9 +178,12 @@ export const UsageRateCard: React.FC<UsageRateCardProps> = ({ stats, isMounted }
                   <p className="text-[10px] font-black uppercase opacity-60">Disponível</p>
                   <p className="text-xl font-black">{stats?.availableMovable || (totalChromebooks - totalActive)}</p>
                 </div>
-                <div className="border-2 border-black p-2 bg-white dark:bg-zinc-900">
+                <div className="border-2 border-black p-2 bg-white dark:bg-zinc-900 relative">
                   <p className="text-[10px] font-black uppercase opacity-60">Pico Período</p>
-                  <p className="text-xl font-black">{maxOccupancyRate.toFixed(0)}%</p>
+                  <div className="flex items-baseline justify-between">
+                    <p className="text-xl font-black">{maxOccupancyRate.toFixed(0)}%</p>
+                    <DeltaIndicator value={stats?.deltas?.maxOccupancy} />
+                  </div>
                 </div>
               </div>
 
