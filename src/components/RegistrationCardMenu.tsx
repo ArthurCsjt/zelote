@@ -14,29 +14,29 @@ const menuItems = [
     title: 'Chromebooks',
     icon: Laptop,
     view: 'chromebooks',
-    color: 'text-green-600',
-    activeBorder: 'border-green-400',
+    bgColor: 'bg-blue-500',
+    color: 'text-white',
   },
   {
     title: 'Alunos',
     icon: Users,
     view: 'students',
-    color: 'text-blue-600',
-    activeBorder: 'border-blue-400',
+    bgColor: 'bg-green-500',
+    color: 'text-white',
   },
   {
     title: 'Professores',
     icon: GraduationCap,
     view: 'teachers',
-    color: 'text-purple-600',
-    activeBorder: 'border-purple-400',
+    bgColor: 'bg-purple-500',
+    color: 'text-white',
   },
   {
     title: 'Funcionários',
     icon: Briefcase,
     view: 'staff',
-    color: 'text-orange-600',
-    activeBorder: 'border-orange-400',
+    bgColor: 'bg-orange-500',
+    color: 'text-white',
   },
 ];
 
@@ -60,11 +60,12 @@ export function RegistrationCardMenu({ onNavigate, currentView }: RegistrationCa
           >
             <CardContent className="p-6 flex flex-col items-center justify-center text-center h-full gap-3">
               <div className={cn(
-                "p-4 border-3 border-black dark:border-white bg-white dark:bg-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] dark:shadow-[3px_3px_0px_0px_rgba(255,255,255,0.2)]",
-                "transition-transform duration-200",
-                isActive && "scale-110"
+                "p-4 border-3 border-black dark:border-white shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] dark:shadow-[3px_3px_0px_0px_rgba(255,255,255,0.2)]",
+                "transition-all duration-200",
+                item.bgColor,
+                isActive ? "scale-110 -translate-y-1" : "opacity-80 grayscale-[0.3]"
               )}>
-                <Icon className={cn("h-7 w-7 text-black dark:text-white")} />
+                <Icon className={cn("h-7 w-7", item.color)} />
               </div>
               <CardTitle className="text-xs font-black uppercase tracking-wider text-black dark:text-white leading-tight">
                 {item.title}

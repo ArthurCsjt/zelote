@@ -55,7 +55,7 @@ export function RegistrationHub({ onBack, onRegistrationSuccess }: RegistrationH
       <div className="container mx-auto p-0">
 
         {/* Cabeçalho do Hub: Centralizado e Preto */}
-        <div className="mb-8 text-center">
+        <div className="mb-8 max-w-5xl mx-auto">
           <SectionHeader
             title="Hub de Cadastros"
             description="Selecione o tipo de item ou usuário para cadastrar"
@@ -66,7 +66,7 @@ export function RegistrationHub({ onBack, onRegistrationSuccess }: RegistrationH
         </div>
 
         {/* Menu de Cards 2x2 */}
-        <div className="mb-10 max-w-5xl mx-auto"> {/* Aumentado max-w para melhor espaçamento */}
+        <div className="mb-10 max-w-5xl mx-auto">
           <RegistrationCardMenu onNavigate={handleNavigate} currentView={currentView} />
         </div>
 
