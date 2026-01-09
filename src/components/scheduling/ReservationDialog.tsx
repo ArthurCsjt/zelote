@@ -123,7 +123,7 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
         {children}
       </div>
 
-      <DialogContent className="sm:max-w-[580px] max-h-[90vh] overflow-y-auto border-4 border-black rounded-none shadow-[8px_8px_0px_0px_#000] p-0 outline-none bg-white">
+      <DialogContent className="sm:max-w-[580px] max-h-[90vh] overflow-y-auto border-4 border-black dark:border-zinc-800 rounded-none shadow-[8px_8px_0px_0px_#000] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.1)] p-0 outline-none bg-white dark:bg-zinc-950 text-black dark:text-zinc-100">
 
         {/* HEADER */}
         <DialogHeader className="p-4 sm:p-5 border-b-4 border-black bg-[#3b82f6] text-white relative">
@@ -146,18 +146,18 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
 
             {/* STATUS GRID */}
             <div className="grid grid-cols-2 gap-3">
-              <div className="flex flex-col items-center justify-center p-3 sm:p-4 border-3 border-[#22c55e] bg-green-50/50">
+              <div className="flex flex-col items-center justify-center p-3 sm:p-4 border-3 border-[#22c55e] bg-green-50/50 dark:bg-green-950/20">
                 <div className="flex items-center gap-1.5 mb-1">
-                  <Monitor className="h-3.5 w-3.5 text-green-600" />
-                  <span className="text-[9px] sm:text-[10px] font-black uppercase text-green-600 tracking-wider">Disponíveis</span>
+                  <Monitor className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
+                  <span className="text-[9px] sm:text-[10px] font-black uppercase text-green-600 dark:text-green-400 tracking-wider">Disponíveis</span>
                 </div>
                 <span className="text-3xl sm:text-4xl font-black text-green-500 leading-none">{available}</span>
               </div>
 
-              <div className="flex flex-col items-center justify-center p-3 sm:p-4 border-3 border-[#a855f7] bg-purple-50/50">
+              <div className="flex flex-col items-center justify-center p-3 sm:p-4 border-3 border-[#a855f7] bg-purple-50/50 dark:bg-purple-950/20">
                 <div className="flex items-center gap-1.5 mb-1">
-                  <User className="h-3.5 w-3.5 text-purple-600" />
-                  <span className="text-[9px] sm:text-[10px] font-black uppercase text-purple-600 tracking-wider">Reservados</span>
+                  <User className="h-3.5 w-3.5 text-purple-600 dark:text-purple-400" />
+                  <span className="text-[9px] sm:text-[10px] font-black uppercase text-purple-600 dark:text-purple-400 tracking-wider">Reservados</span>
                 </div>
                 <span className="text-3xl sm:text-4xl font-black text-purple-500 leading-none">{totalReserved}</span>
               </div>
@@ -172,28 +172,28 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
             </div>
 
             {/* RECORRÊNCIA */}
-            <div className="border-2 border-[#f59e0b] bg-amber-50/30 overflow-hidden shadow-[4px_4px_0_0_rgba(245,158,11,0.15)] relative">
-              <div className="bg-[#f59e0b] px-3 py-2 flex items-center justify-between">
+            <div className="border-2 border-[#1e3a8a] bg-blue-50/30 overflow-hidden shadow-[4px_4px_0_0_rgba(30,58,138,0.15)] relative">
+              <div className="bg-[#1e3a8a] px-3 py-2 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <CalendarDays className="h-4 w-4 text-white" />
                   <span className="text-[10px] sm:text-xs font-black uppercase text-white tracking-wider">Múltiplas Datas</span>
                 </div>
                 <span className="bg-white/20 border border-white/50 px-2 py-0.5 text-white text-[8px] sm:text-[9px] font-black uppercase">Recorrência</span>
               </div>
-              
+
               <div className="p-3 sm:p-4">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <p className="text-[9px] sm:text-[10px] font-bold text-zinc-600 leading-snug max-w-[240px]">
+                  <p className="text-[9px] sm:text-[10px] font-bold text-zinc-600 dark:text-zinc-400 leading-snug max-w-[240px]">
                     Economize tempo reservando o mesmo horário para outros dias.
                   </p>
-                  
-                  <div className="flex border-2 border-black bg-white shadow-[3px_3px_0_0_#000] self-start sm:self-center overflow-hidden">
+
+                  <div className="flex border-2 border-black dark:border-zinc-700 bg-white dark:bg-zinc-800 shadow-[3px_3px_0_0_#000] dark:shadow-[3px_3px_0_0_rgba(255,255,255,0.1)] self-start sm:self-center overflow-hidden">
                     <button
                       type="button"
                       onClick={() => setIsMultiMode(false)}
                       className={cn(
                         "px-4 sm:px-6 py-2 text-[10px] sm:text-xs font-black uppercase transition-all",
-                        !isMultiMode ? "bg-zinc-800 text-white" : "bg-white text-zinc-400 hover:text-black hover:bg-zinc-50"
+                        !isMultiMode ? "bg-zinc-800 text-white dark:bg-zinc-700" : "bg-white dark:bg-zinc-900 text-zinc-400 dark:text-zinc-500 hover:text-black dark:hover:text-white"
                       )}
                     >
                       Não
@@ -202,8 +202,8 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                       type="button"
                       onClick={() => setIsMultiMode(true)}
                       className={cn(
-                        "px-4 sm:px-6 py-2 text-[10px] sm:text-xs font-black uppercase transition-all border-l-2 border-black",
-                        isMultiMode ? "bg-[#f59e0b] text-white" : "bg-white text-zinc-400 hover:text-black hover:bg-zinc-50"
+                        "px-4 sm:px-6 py-2 text-[10px] sm:text-xs font-black uppercase transition-all border-l-2 border-black dark:border-zinc-700",
+                        isMultiMode ? "bg-[#1e3a8a] text-white" : "bg-white dark:bg-zinc-900 text-zinc-400 dark:text-zinc-500 hover:text-black dark:hover:text-white"
                       )}
                     >
                       Sim
@@ -212,8 +212,8 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                 </div>
 
                 {isMultiMode && (
-                  <div className="mt-4 pt-4 border-t-2 border-amber-200 animate-in fade-in slide-in-from-top-2">
-                    <Label className="text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-[#f59e0b] mb-2.5 block">Selecione os dias:</Label>
+                  <div className="mt-4 pt-4 border-t-2 border-blue-200 animate-in fade-in slide-in-from-top-2">
+                    <Label className="text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-[#1e3a8a] mb-2.5 block">Selecione os dias:</Label>
                     <div className="flex flex-wrap gap-2">
                       <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-zinc-800 text-white text-[9px] sm:text-[10px] font-black uppercase border-2 border-black shadow-[2px_2px_0_0_#000]">
                         <Calendar className="h-3 w-3" />
@@ -221,23 +221,23 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                         <span className="text-zinc-400 text-[8px]">(atual)</span>
                       </div>
                       {extraDates.map((d, i) => (
-                        <div key={i} className="inline-flex items-center gap-2 px-3 py-1.5 bg-[#f59e0b] text-white text-[9px] sm:text-[10px] font-black uppercase border-2 border-black shadow-[2px_2px_0_0_#000] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all group">
+                        <div key={i} className="inline-flex items-center gap-2 px-3 py-1.5 bg-[#1e3a8a] text-white text-[9px] sm:text-[10px] font-black uppercase border-2 border-black shadow-[2px_2px_0_0_#000] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all group">
                           <Calendar className="h-3 w-3" />
                           {format(d, 'dd/MM')}
                           <CloseIcon className="h-3 w-3 cursor-pointer opacity-70 group-hover:opacity-100 transition-opacity" onClick={() => setExtraDates(extraDates.filter((_, idx) => idx !== i))} />
                         </div>
                       ))}
-                      <Button 
-                        type="button" 
-                        onClick={() => setShowCalendar(!showCalendar)} 
-                        className="h-auto py-1.5 px-3 bg-white text-[#f59e0b] border-2 border-dashed border-[#f59e0b] text-[9px] sm:text-[10px] font-black uppercase hover:bg-amber-50 hover:border-solid rounded-none flex items-center gap-1.5 transition-all"
+                      <Button
+                        type="button"
+                        onClick={() => setShowCalendar(!showCalendar)}
+                        className="h-auto py-1.5 px-3 bg-white dark:bg-zinc-900 text-[#1e3a8a] dark:text-blue-400 border-2 border-dashed border-[#1e3a8a] dark:border-blue-700 text-[9px] sm:text-[10px] font-black uppercase hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:border-solid rounded-none flex items-center gap-1.5 transition-all"
                       >
                         <CalendarDays className="h-3 w-3" />
                         Adicionar
                       </Button>
                     </div>
                     {showCalendar && (
-                      <div className="mt-3 border-2 border-black p-3 bg-white shadow-[4px_4px_0_0_#000]">
+                      <div className="mt-3 border-2 border-black dark:border-zinc-800 p-3 bg-white dark:bg-zinc-900 shadow-[4px_4px_0_0_#000] dark:shadow-[4px_4px_0_0_rgba(255,255,255,0.05)]">
                         <CalendarUI
                           mode="multiple"
                           selected={extraDates}
@@ -245,8 +245,15 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                           disabled={(d) => d < new Date(new Date().setHours(0, 0, 0, 0)) || format(d, 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd')}
                           className="rounded-none w-full"
                           locale={ptBR}
+                          classNames={{
+                            day_selected: "bg-[#1e3a8a] text-white hover:bg-[#1e40af] hover:text-white focus:bg-[#1e3a8a] focus:text-white rounded-none border-2 border-black shadow-[3px_3px_0_0_#000]",
+                          }}
                         />
-                        <Button type="button" onClick={() => setShowCalendar(false)} className="w-full mt-3 bg-[#f59e0b] text-white h-8 text-[10px] font-black uppercase rounded-none border-2 border-black shadow-[3px_3px_0_0_#000] hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px] transition-all">
+                        <Button
+                          type="button"
+                          onClick={() => setShowCalendar(false)}
+                          className="w-full mt-6 bg-[#1e3a8a] text-white h-12 text-xs font-black uppercase rounded-none border-2 border-black shadow-[4px_4px_0_0_#000] hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px] transition-all"
+                        >
                           Confirmar Datas
                         </Button>
                       </div>
@@ -257,59 +264,59 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
             </div>
 
             {/* DADOS DA RESERVA */}
-            <div className="border-2 border-[#a855f7] bg-purple-50/30 overflow-hidden shadow-[4px_4px_0_0_rgba(168,85,247,0.15)]">
+            <div className="border-2 border-[#a855f7] bg-purple-50/30 dark:bg-purple-950/10 overflow-hidden shadow-[4px_4px_0_0_rgba(168,85,247,0.15)]">
               <div className="bg-[#a855f7] px-3 py-2 flex items-center gap-2">
                 <Info className="h-4 w-4 text-white" />
                 <span className="text-[10px] sm:text-xs font-black uppercase text-white tracking-wider">Dados da Reserva</span>
               </div>
               <div className="p-3 sm:p-4 space-y-3">
                 <div className="space-y-2">
-                  <Label className="text-[9px] sm:text-[10px] font-black uppercase text-[#a855f7] tracking-wider">Sala <span className="text-red-500">*</span></Label>
+                  <Label className="text-[9px] sm:text-[10px] font-black uppercase text-[#a855f7] dark:text-purple-400 tracking-wider">Sala <span className="text-red-500">*</span></Label>
                   <div className="flex flex-wrap gap-1.5">
                     {['Sala Google', 'Sala Maker', 'Sala de Estudos', 'Sala de Artes'].map((s) => (
-                      <button 
-                        key={s} 
-                        type="button" 
-                        onClick={() => { setClassroom(s); setShowCustomClassroom(false); }} 
+                      <button
+                        key={s}
+                        type="button"
+                        onClick={() => { setClassroom(s); setShowCustomClassroom(false); }}
                         className={cn(
                           "px-2 sm:px-2.5 py-1 sm:py-1.5 text-[9px] sm:text-[10px] font-black border-2 border-black uppercase transition-all",
-                          classroom === s && !showCustomClassroom 
-                            ? "bg-[#a855f7] text-white shadow-[2px_2px_0_0_#000] translate-x-[1px] translate-y-[1px] shadow-none" 
-                            : "bg-white text-black hover:bg-zinc-50 shadow-[2px_2px_0_0_#000]"
+                          classroom === s && !showCustomClassroom
+                            ? "bg-[#1e3a8a] text-white shadow-[2px_2px_0_0_#000] translate-x-[1px] translate-y-[1px] shadow-none"
+                            : "bg-white dark:bg-zinc-900 text-black dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800 shadow-[2px_2px_0_0_#000] dark:shadow-[2px_2px_0_0_rgba(255,255,255,0.1)]"
                         )}
                       >
                         {s}
                       </button>
                     ))}
-                    <button 
-                      type="button" 
-                      onClick={() => { setShowCustomClassroom(true); setClassroom(''); }} 
+                    <button
+                      type="button"
+                      onClick={() => { setShowCustomClassroom(true); setClassroom(''); }}
                       className={cn(
-                        "px-2.5 py-1 sm:py-1.5 text-[10px] sm:text-xs font-black border-2 border-black uppercase transition-all shadow-[2px_2px_0_0_#000]", 
-                        showCustomClassroom ? "bg-[#a855f7] text-white" : "bg-white hover:bg-zinc-50"
+                        "px-2.5 py-1 sm:py-1.5 text-[10px] sm:text-xs font-black border-2 border-black dark:border-zinc-800 uppercase transition-all shadow-[2px_2px_0_0_#000] dark:shadow-[2px_2px_0_0_rgba(255,255,255,0.1)]",
+                        showCustomClassroom ? "bg-[#1e3a8a] text-white" : "bg-white dark:bg-zinc-900 text-black dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800"
                       )}
                     >
                       +
                     </button>
                   </div>
                   {showCustomClassroom && (
-                    <Input 
-                      value={classroom} 
-                      onChange={(e) => setClassroom(e.target.value)} 
-                      placeholder="Nome da sala..." 
-                      className="border-2 border-black rounded-none h-8 mt-2 text-xs font-bold focus-visible:ring-0 focus-visible:border-[#a855f7]" 
+                    <Input
+                      value={classroom}
+                      onChange={(e) => setClassroom(e.target.value)}
+                      placeholder="Nome da sala..."
+                      className="border-2 border-black rounded-none h-8 mt-2 text-xs font-bold focus-visible:ring-0 focus-visible:border-[#a855f7]"
                     />
                   )}
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-[9px] sm:text-[10px] font-black uppercase text-[#a855f7] tracking-wider">Justificativa / Motivo <span className="text-red-500">*</span></Label>
-                  <Textarea 
-                    value={justification} 
-                    onChange={(e) => setJustification(e.target.value)} 
-                    placeholder="Ex: Aula sobre Segunda Guerra Mundial" 
-                    className="border-2 border-black rounded-none min-h-[70px] text-xs sm:text-sm resize-none focus-visible:ring-0 focus-visible:border-[#a855f7]" 
-                    required 
+                  <Label className="text-[9px] sm:text-[10px] font-black uppercase text-[#a855f7] dark:text-purple-400 tracking-wider">Justificativa / Motivo <span className="text-red-500">*</span></Label>
+                  <Textarea
+                    value={justification}
+                    onChange={(e) => setJustification(e.target.value)}
+                    placeholder="Ex: Aula sobre Segunda Guerra Mundial"
+                    className="border-2 border-black dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded-none min-h-[70px] text-xs sm:text-sm resize-none focus-visible:ring-0 focus-visible:border-[#a855f7] dark:focus-visible:border-purple-500"
+                    required
                   />
                 </div>
               </div>
@@ -334,7 +341,7 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
             </div>
 
             {/* RECURSOS EXTRAS */}
-            <div className="border-2 border-[#3b82f6] bg-blue-50/30 overflow-hidden shadow-[4px_4px_0_0_rgba(59,130,246,0.15)]">
+            <div className="border-2 border-[#3b82f6] bg-blue-50/30 dark:bg-blue-950/20 overflow-hidden shadow-[4px_4px_0_0_rgba(59,130,246,0.15)]">
               <div className="bg-[#3b82f6] px-3 py-2 flex items-center gap-2">
                 <Tv className="h-4 w-4 text-white" />
                 <span className="text-[10px] sm:text-xs font-black uppercase text-white tracking-wider">Recursos Extras</span>
@@ -342,63 +349,63 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
               <div className="p-3 sm:p-4">
                 <div className="grid grid-cols-2 gap-2 sm:gap-3">
                   {/* TV */}
-                  <div 
-                    onClick={() => setNeedsTv(!needsTv)} 
+                  <div
+                    onClick={() => setNeedsTv(!needsTv)}
                     className={cn(
-                      "flex items-center gap-2 p-2.5 border-2 border-black cursor-pointer transition-all",
-                      needsTv ? "bg-black text-white shadow-none translate-x-[1px] translate-y-[1px]" : "bg-white hover:bg-zinc-50 shadow-[3px_3px_0_0_#000]"
+                      "flex items-center gap-2 p-2.5 border-2 border-black dark:border-zinc-800 cursor-pointer transition-all",
+                      needsTv ? "bg-black dark:bg-blue-600 text-white shadow-none translate-x-[1px] translate-y-[1px]" : "bg-white dark:bg-zinc-900 text-black dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800 shadow-[3px_3px_0_0_#000] dark:shadow-[3px_3px_0_0_rgba(255,255,255,0.05)]"
                     )}
                   >
-                    <Tv className={cn("h-4 w-4", needsTv ? "text-white" : "text-black")} />
+                    <Tv className={cn("h-4 w-4", needsTv ? "text-white" : "text-black dark:text-zinc-400")} />
                     <span className="text-[10px] sm:text-xs font-black uppercase">TV</span>
                   </div>
 
                   {/* SOM */}
-                  <div 
-                    onClick={() => setNeedsSound(!needsSound)} 
+                  <div
+                    onClick={() => setNeedsSound(!needsSound)}
                     className={cn(
-                      "flex items-center gap-2 p-2.5 border-2 border-black cursor-pointer transition-all",
-                      needsSound ? "bg-black text-white shadow-none translate-x-[1px] translate-y-[1px]" : "bg-white hover:bg-zinc-50 shadow-[3px_3px_0_0_#000]"
+                      "flex items-center gap-2 p-2.5 border-2 border-black dark:border-zinc-800 cursor-pointer transition-all",
+                      needsSound ? "bg-black dark:bg-blue-600 text-white shadow-none translate-x-[1px] translate-y-[1px]" : "bg-white dark:bg-zinc-900 text-black dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800 shadow-[3px_3px_0_0_#000] dark:shadow-[3px_3px_0_0_rgba(255,255,255,0.05)]"
                     )}
                   >
-                    <Volume2 className={cn("h-4 w-4", needsSound ? "text-white" : "text-black")} />
+                    <Volume2 className={cn("h-4 w-4", needsSound ? "text-white" : "text-black dark:text-zinc-400")} />
                     <span className="text-[10px] sm:text-xs font-black uppercase">Som</span>
                   </div>
 
                   {/* MIC */}
-                  <div 
-                    onClick={() => setNeedsMic(!needsMic)} 
+                  <div
+                    onClick={() => setNeedsMic(!needsMic)}
                     className={cn(
-                      "flex items-center gap-2 p-2.5 border-2 border-black cursor-pointer transition-all",
-                      needsMic ? "bg-black text-white shadow-none translate-x-[1px] translate-y-[1px]" : "bg-white hover:bg-zinc-50 shadow-[3px_3px_0_0_#000]"
+                      "flex items-center gap-2 p-2.5 border-2 border-black dark:border-zinc-800 cursor-pointer transition-all",
+                      needsMic ? "bg-black dark:bg-blue-600 text-white shadow-none translate-x-[1px] translate-y-[1px]" : "bg-white dark:bg-zinc-900 text-black dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800 shadow-[3px_3px_0_0_#000] dark:shadow-[3px_3px_0_0_rgba(255,255,255,0.05)]"
                     )}
                   >
-                    <Mic className={cn("h-4 w-4", needsMic ? "text-white" : "text-black")} />
+                    <Mic className={cn("h-4 w-4", needsMic ? "text-white" : "text-black dark:text-zinc-400")} />
                     <span className="text-[10px] sm:text-xs font-black uppercase">Mic</span>
                     {needsMic && (
-                      <Input 
-                        type="number" 
-                        value={micQuantity} 
-                        onChange={(e) => setMicQuantity(parseInt(e.target.value) || 1)} 
-                        onClick={(e) => e.stopPropagation()} 
-                        className="w-10 h-5 text-[10px] font-bold border-white bg-white/20 text-white p-1 ml-auto rounded-none" 
+                      <Input
+                        type="number"
+                        value={micQuantity}
+                        onChange={(e) => setMicQuantity(parseInt(e.target.value) || 1)}
+                        onClick={(e) => e.stopPropagation()}
+                        className="w-10 h-5 text-[10px] font-bold border-white bg-white/20 text-white p-1 ml-auto rounded-none"
                         min={1}
                       />
                     )}
                   </div>
 
                   {/* MINECRAFT */}
-                  <div 
-                    onClick={() => setIsMinecraft(!isMinecraft)} 
+                  <div
+                    onClick={() => setIsMinecraft(!isMinecraft)}
                     className={cn(
-                      "flex items-center gap-2 p-2.5 border-2 border-black cursor-pointer transition-all",
-                      isMinecraft ? "bg-[#22c55e] text-white shadow-none translate-x-[1px] translate-y-[1px]" : "bg-white hover:bg-zinc-50 shadow-[3px_3px_0_0_#000]"
+                      "flex items-center gap-2 p-2.5 border-2 border-black dark:border-zinc-800 cursor-pointer transition-all",
+                      isMinecraft ? "bg-[#22c55e] text-white shadow-none translate-x-[1px] translate-y-[1px]" : "bg-white dark:bg-zinc-900 text-black dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800 shadow-[3px_3px_0_0_#000] dark:shadow-[3px_3px_0_0_rgba(255,255,255,0.05)]"
                     )}
                   >
-                    <Monitor className={cn("h-4 w-4", isMinecraft ? "text-white" : "text-black")} />
+                    <Monitor className={cn("h-4 w-4", isMinecraft ? "text-white" : "text-black dark:text-zinc-400")} />
                     <div className="flex flex-col">
                       <span className="text-[10px] sm:text-xs font-black uppercase leading-none">Minecraft</span>
-                      <span className="text-[8px] font-medium uppercase opacity-60">TI</span>
+                      <span className="text-[8px] font-black uppercase opacity-60 dark:opacity-80">TI</span>
                     </div>
                   </div>
                 </div>
@@ -409,12 +416,12 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
         </form>
 
         {/* FOOTER */}
-        <DialogFooter className="p-4 sm:p-5 bg-zinc-50 border-t-4 border-black flex flex-col sm:flex-row gap-2 sm:gap-3">
+        <DialogFooter className="p-4 sm:p-5 bg-zinc-50 dark:bg-zinc-900/50 border-t-4 border-black dark:border-zinc-800 flex flex-col sm:flex-row gap-2 sm:gap-3">
           <Button
             type="button"
             variant="outline"
             onClick={() => setOpen(false)}
-            className="w-full sm:w-auto sm:flex-1 h-10 sm:h-11 font-black uppercase border-2 border-black bg-white hover:bg-zinc-100 text-black rounded-none shadow-[3px_3px_0_0_#000] text-xs sm:text-sm order-2 sm:order-1"
+            className="w-full sm:w-auto sm:flex-1 h-10 sm:h-11 font-black uppercase border-2 border-black dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 text-black dark:text-zinc-100 rounded-none shadow-[3px_3px_0_0_#000] dark:shadow-[3px_3px_0_0_rgba(255,255,255,0.05)] text-xs sm:text-sm order-2 sm:order-1"
           >
             Cancelar
           </Button>
