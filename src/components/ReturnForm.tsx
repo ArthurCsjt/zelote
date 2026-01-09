@@ -159,15 +159,15 @@ export function ReturnForm({ onReturnSuccess, initialChromebookId }: ReturnFormP
   const isFormValid = selectedUser && deviceIds.length > 0 && confirmChecked;
 
   return (
-    <form onSubmit={handleConfirmReturn} className="space-y-3 relative">
+    <form onSubmit={handleConfirmReturn} className="space-y-6 relative">
       {/* Gradiente de fundo removido */}
 
       <div className="grid md:grid-cols-2 gap-3 relative z-10">
 
         {/* COLUNA ESQUERDA */}
-        <div className="flex flex-col gap-3 h-full">
+        <div className="flex flex-col gap-6 h-full">
           {/* ═══ SEÇÃO 1: DISPOSITIVOS (Cor 1: Âmbar) ═══ */}
-          <div className="border-4 border-amber-500 bg-amber-100 dark:bg-amber-950/20 shadow-[6px_6px_0px_0px_rgba(245,158,11,0.3)] border-l-[12px] flex-1 p-0 overflow-hidden">
+          <div className="border-4 border-amber-500 bg-amber-100 dark:bg-amber-950/20 shadow-[6px_6px_0px_0px_rgba(245,158,11,0.3)] border-l-[6px] md:border-l-[12px] flex-1 p-0 overflow-hidden">
             <CardHeader className="p-3 pb-2 border-b-3 border-amber-500/30 bg-gradient-to-r from-amber-400 to-orange-500">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-base font-black uppercase tracking-tight flex items-center gap-2 text-white">
@@ -260,7 +260,7 @@ export function ReturnForm({ onReturnSuccess, initialChromebookId }: ReturnFormP
           </div>
 
           {/* ═══ SEÇÃO 2: OBSERVAÇÕES ═══ */}
-          <div className="border-4 border-gray-500 bg-gray-100 dark:bg-gray-950/20 shadow-[6px_6px_0px_0px_rgba(107,114,128,0.3)] border-l-[12px] p-0 overflow-hidden">
+          <div className="border-4 border-gray-500 bg-gray-100 dark:bg-gray-950/20 shadow-[6px_6px_0px_0px_rgba(107,114,128,0.3)] border-l-[6px] md:border-l-[12px] p-0 overflow-hidden">
             <CardHeader className="p-3 pb-2 border-b-3 border-gray-500/30 bg-gradient-to-r from-gray-400 to-gray-600">
               <CardTitle className="text-base font-black uppercase tracking-tight flex items-center gap-2 text-white">
                 <BookOpen className="h-5 w-5" />
@@ -286,9 +286,9 @@ export function ReturnForm({ onReturnSuccess, initialChromebookId }: ReturnFormP
         </div>
 
         {/* COLUNA DIREITA */}
-        <div className="space-y-3">
+        <div className="space-y-6">
           {/* ═══ SEÇÃO 3: SOLICITANTE DA DEVOLUÇÃO ═══ */}
-          <div className="border-4 border-violet-500 bg-violet-100 dark:bg-violet-950/20 shadow-[6px_6px_0px_0px_rgba(139,92,246,0.3)] border-l-[12px] p-0 overflow-hidden">
+          <div className="border-4 border-violet-500 bg-violet-100 dark:bg-violet-950/20 shadow-[6px_6px_0px_0px_rgba(139,92,246,0.3)] border-l-[6px] md:border-l-[12px] p-0 overflow-hidden">
             <CardHeader className="p-3 pb-2 border-b-3 border-violet-500/30 bg-gradient-to-r from-violet-400 to-purple-500">
               <CardTitle className="text-base font-black uppercase tracking-tight flex items-center gap-2 text-white">
                 <User className="h-5 w-5" />
