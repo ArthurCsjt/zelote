@@ -130,44 +130,46 @@ const Layout: React.FC<LayoutProps> = ({
             <div className="flex items-center space-x-2">
 
               {/* Botão de Notificações */}
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="ghost" size="icon" className="relative h-9 w-9 rounded-full hover:bg-white/10 text-white hover:text-white transition-colors">
-                    <Bell className="h-5 w-5" />
-                    {unreadCount > 0 && (
-                      <span className="absolute top-2 right-2 h-4 min-w-4 flex items-center justify-center rounded-full bg-red-500 text-white text-[9px] font-black border-2 border-primary animate-in zoom-in px-1">
-                        {unreadCount}
-                      </span>
-                    )}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent
-                  className="p-0 w-80 sm:w-96 bg-card/95 backdrop-blur-xl border-border shadow-xl rounded-xl overflow-hidden"
-                  align="end"
-                >
-                  <Tabs defaultValue="notifications" className="w-full">
-                    <TabsList className="w-full rounded-none bg-muted/50 p-0 h-10 border-b-2 border-black/10 dark:border-white/10">
-                      <TabsTrigger value="notifications" className="flex-1 rounded-none data-[state=active]:bg-blue-500 data-[state=active]:text-white uppercase font-black text-[10px] tracking-widest gap-2">
-                        <Bell className="h-3 w-3" />
-                        Notificações
-                        {unreadCount > 0 && (
-                          <span className="bg-white text-blue-600 px-1 rounded-sm text-[8px]">{unreadCount}</span>
-                        )}
-                      </TabsTrigger>
-                      <TabsTrigger value="activity" className="flex-1 rounded-none data-[state=active]:bg-yellow-400 data-[state=active]:text-black uppercase font-black text-[10px] tracking-widest gap-2">
-                        <Activity className="h-3 w-3" />
-                        Atividade
-                      </TabsTrigger>
-                    </TabsList>
-                    <TabsContent value="notifications" className="m-0 border-none outline-none">
-                      <NotificationFeed />
-                    </TabsContent>
-                    <TabsContent value="activity" className="m-0 border-none outline-none">
-                      <ActivityFeed />
-                    </TabsContent>
-                  </Tabs>
-                </PopoverContent>
-              </Popover>
+              {!user?.email?.endsWith('@sj.pro.br') && (
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="ghost" size="icon" className="relative h-9 w-9 rounded-full hover:bg-white/10 text-white hover:text-white transition-colors">
+                      <Bell className="h-5 w-5" />
+                      {unreadCount > 0 && (
+                        <span className="absolute top-2 right-2 h-4 min-w-4 flex items-center justify-center rounded-full bg-red-500 text-white text-[9px] font-black border-2 border-primary animate-in zoom-in px-1">
+                          {unreadCount}
+                        </span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    className="p-0 w-80 sm:w-96 bg-card/95 backdrop-blur-xl border-border shadow-xl rounded-xl overflow-hidden"
+                    align="end"
+                  >
+                    <Tabs defaultValue="notifications" className="w-full">
+                      <TabsList className="w-full rounded-none bg-muted/50 p-0 h-10 border-b-2 border-black/10 dark:border-white/10">
+                        <TabsTrigger value="notifications" className="flex-1 rounded-none data-[state=active]:bg-blue-500 data-[state=active]:text-white uppercase font-black text-[10px] tracking-widest gap-2">
+                          <Bell className="h-3 w-3" />
+                          Notificações
+                          {unreadCount > 0 && (
+                            <span className="bg-white text-blue-600 px-1 rounded-sm text-[8px]">{unreadCount}</span>
+                          )}
+                        </TabsTrigger>
+                        <TabsTrigger value="activity" className="flex-1 rounded-none data-[state=active]:bg-yellow-400 data-[state=active]:text-black uppercase font-black text-[10px] tracking-widest gap-2">
+                          <Activity className="h-3 w-3" />
+                          Atividade
+                        </TabsTrigger>
+                      </TabsList>
+                      <TabsContent value="notifications" className="m-0 border-none outline-none">
+                        <NotificationFeed />
+                      </TabsContent>
+                      <TabsContent value="activity" className="m-0 border-none outline-none">
+                        <ActivityFeed />
+                      </TabsContent>
+                    </Tabs>
+                  </PopoverContent>
+                </Popover>
+              )}
 
               {/* Botão de Alternância de Tema */}
               <Button
