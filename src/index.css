@@ -29,6 +29,9 @@
     --overlay: 240 10% 3.9% / 0.8;
     /* Foreground com opacidade */
 
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+
     /* ===== INPUTS & BORDERS (Ajustado para Zinc) */
     --border: 240 5.9% 90%;
     /* Zinc 200 */
@@ -162,6 +165,9 @@
     --modal-border: 240 10% 20%;
     --overlay: 0 0% 0% / 0.9;
     /* Overlay mais denso */
+
+    --popover: 240 10% 4%;
+    --popover-foreground: 0 0% 98%;
 
     /* ===== INPUTS & BORDERS ===== */
     --border: 240 10% 18%;
@@ -430,8 +436,340 @@
 }
 
 /* ======================================================================== */
-/* END NEO-BRUTALISM                                                        */
+/* NEO-BRUTALISM SEMANTIC SECTIONS                                          */
+/* Classes reutilizáveis para seções coloridas em formulários e modais      */
 /* ======================================================================== */
+
+/* Base para todas as seções coloridas */
+.neo-section {
+  @apply border-4 p-0 overflow-hidden rounded-none;
+  border-left-width: 6px;
+  box-shadow: 6px 6px 0px 0px rgba(0, 0, 0, 0.15);
+}
+
+@media (min-width: 768px) {
+  .neo-section {
+    border-left-width: 12px;
+  }
+}
+
+.dark .neo-section {
+  box-shadow: 6px 6px 0px 0px rgba(255, 255, 255, 0.08);
+}
+
+/* Seção Âmbar - Dispositivos/Chromebooks */
+.neo-section-amber {
+  @apply neo-section border-amber-500 bg-amber-50;
+  box-shadow: 6px 6px 0px 0px rgba(245, 158, 11, 0.25);
+}
+
+.dark .neo-section-amber {
+  @apply bg-amber-950/20;
+  box-shadow: 6px 6px 0px 0px rgba(245, 158, 11, 0.15);
+}
+
+/* Seção Violeta - Usuários/Solicitantes */
+.neo-section-violet {
+  @apply neo-section border-violet-500 bg-violet-50;
+  box-shadow: 6px 6px 0px 0px rgba(139, 92, 246, 0.25);
+}
+
+.dark .neo-section-violet {
+  @apply bg-violet-950/20;
+  box-shadow: 6px 6px 0px 0px rgba(139, 92, 246, 0.15);
+}
+
+/* Seção Cinza - Observações/Notas */
+.neo-section-gray {
+  @apply neo-section border-gray-500 bg-gray-50;
+  box-shadow: 6px 6px 0px 0px rgba(107, 114, 128, 0.25);
+}
+
+.dark .neo-section-gray {
+  @apply bg-gray-900/30;
+  box-shadow: 6px 6px 0px 0px rgba(107, 114, 128, 0.15);
+}
+
+/* Seção Verde - Sucesso/Confirmação */
+.neo-section-green {
+  @apply neo-section border-green-500 bg-green-50;
+  box-shadow: 6px 6px 0px 0px rgba(34, 197, 94, 0.25);
+}
+
+.dark .neo-section-green {
+  @apply bg-green-950/20;
+  box-shadow: 6px 6px 0px 0px rgba(34, 197, 94, 0.15);
+}
+
+/* Seção Azul - Alunos/Info */
+.neo-section-blue {
+  @apply neo-section border-blue-500 bg-blue-50;
+  box-shadow: 6px 6px 0px 0px rgba(59, 130, 246, 0.25);
+}
+
+.dark .neo-section-blue {
+  @apply bg-blue-950/20;
+  box-shadow: 6px 6px 0px 0px rgba(59, 130, 246, 0.15);
+}
+
+/* Seção Roxa - Professores */
+.neo-section-purple {
+  @apply neo-section border-purple-500 bg-purple-50;
+  box-shadow: 6px 6px 0px 0px rgba(168, 85, 247, 0.25);
+}
+
+.dark .neo-section-purple {
+  @apply bg-purple-950/20;
+  box-shadow: 6px 6px 0px 0px rgba(168, 85, 247, 0.15);
+}
+
+/* Seção Amarela - Avisos/Atenção */
+.neo-section-yellow {
+  @apply neo-section border-yellow-500 bg-yellow-50;
+  box-shadow: 6px 6px 0px 0px rgba(234, 179, 8, 0.25);
+}
+
+.dark .neo-section-yellow {
+  @apply bg-yellow-900/30;
+  box-shadow: 6px 6px 0px 0px rgba(234, 179, 8, 0.15);
+}
+
+/* ======================================================================== */
+/* NEO-BRUTALISM DIALOG COMPONENTS                                          */
+/* Classes para modais padronizados                                         */
+/* ======================================================================== */
+
+/* Container de Modal Neo-Brutal */
+.neo-dialog {
+  @apply border-4 border-black p-0 gap-0 bg-white rounded-none;
+  box-shadow: 8px 8px 0px 0px rgba(0, 0, 0, 1);
+}
+
+.dark .neo-dialog {
+  @apply border-white bg-zinc-900;
+  box-shadow: 8px 8px 0px 0px rgba(255, 255, 255, 0.2);
+}
+
+/* Header de Modal com Cor */
+.neo-dialog-header {
+  @apply p-4 border-b-4 border-black;
+}
+
+@media (min-width: 640px) {
+  .neo-dialog-header {
+    @apply p-6;
+  }
+}
+
+.dark .neo-dialog-header {
+  @apply border-white;
+}
+
+/* Header Âmbar (Devoluções) */
+.neo-dialog-header-amber {
+  @apply neo-dialog-header bg-amber-300;
+}
+
+.dark .neo-dialog-header-amber {
+  @apply bg-amber-600;
+}
+
+/* Header Verde (Empréstimos) */
+.neo-dialog-header-green {
+  @apply neo-dialog-header bg-green-300;
+}
+
+.dark .neo-dialog-header-green {
+  @apply bg-green-700;
+}
+
+/* Header Azul (Info/Detalhes) */
+.neo-dialog-header-blue {
+  @apply neo-dialog-header bg-blue-300;
+}
+
+.dark .neo-dialog-header-blue {
+  @apply bg-blue-700;
+}
+
+/* Header Violeta (Reservas/Usuários) */
+.neo-dialog-header-violet {
+  @apply neo-dialog-header bg-violet-300;
+}
+
+.dark .neo-dialog-header-violet {
+  @apply bg-violet-700;
+}
+
+/* Título de Modal */
+.neo-dialog-title {
+  @apply flex items-center gap-2 text-xl font-black uppercase tracking-tight text-black;
+}
+
+@media (min-width: 640px) {
+  .neo-dialog-title {
+    @apply text-2xl;
+  }
+}
+
+.dark .neo-dialog-title {
+  @apply text-white;
+}
+
+/* Conteúdo de Modal */
+.neo-dialog-content {
+  @apply space-y-4 p-4;
+}
+
+@media (min-width: 640px) {
+  .neo-dialog-content {
+    @apply p-6;
+  }
+}
+
+/* Footer de Modal */
+.neo-dialog-footer {
+  @apply flex flex-col gap-3 p-4 pt-0;
+}
+
+@media (min-width: 640px) {
+  .neo-dialog-footer {
+    @apply flex-row p-6 pt-0 gap-0;
+  }
+}
+
+/* ======================================================================== */
+/* NEO-BRUTALISM SECTION HEADERS                                            */
+/* Cabeçalhos coloridos para seções internas                                */
+/* ======================================================================== */
+
+.neo-section-header {
+  @apply p-3 pb-2;
+  border-bottom-width: 3px;
+  border-bottom-style: solid;
+}
+
+.neo-section-header-amber {
+  @apply neo-section-header border-amber-500/30 bg-gradient-to-r from-amber-400 to-orange-500;
+}
+
+.neo-section-header-violet {
+  @apply neo-section-header border-violet-500/30 bg-gradient-to-r from-violet-400 to-purple-500;
+}
+
+.neo-section-header-gray {
+  @apply neo-section-header border-gray-500/30 bg-gradient-to-r from-gray-400 to-gray-600;
+}
+
+.neo-section-header-green {
+  @apply neo-section-header border-green-500/30 bg-gradient-to-r from-green-400 to-emerald-500;
+}
+
+.neo-section-header-blue {
+  @apply neo-section-header border-blue-500/30 bg-gradient-to-r from-blue-400 to-cyan-500;
+}
+
+/* Título de Seção */
+.neo-section-title {
+  @apply text-base font-black uppercase tracking-tight flex items-center gap-2 text-white;
+}
+
+/* ======================================================================== */
+/* NEO-BRUTALISM BUTTONS EXTENDED                                           */
+/* Variantes adicionais de botões                                           */
+/* ======================================================================== */
+
+/* Botão Neo Grande (Submit) */
+.neo-btn-lg {
+  @apply w-full h-14 text-lg font-black uppercase tracking-tight;
+  @apply text-white border-4 border-black rounded-none;
+  box-shadow: 8px 8px 0px 0px rgba(0, 0, 0, 1);
+  transition: all 0.15s ease;
+}
+
+.neo-btn-lg:hover:not(:disabled) {
+  box-shadow: 6px 6px 0px 0px rgba(0, 0, 0, 1);
+  transform: translate(2px, 2px);
+}
+
+.neo-btn-lg:active:not(:disabled) {
+  box-shadow: 2px 2px 0px 0px rgba(0, 0, 0, 1);
+  transform: translate(6px, 6px);
+}
+
+.neo-btn-lg:disabled {
+  @apply opacity-50 cursor-not-allowed;
+  box-shadow: none;
+  transform: translate(8px, 8px);
+}
+
+.dark .neo-btn-lg {
+  @apply border-white;
+  box-shadow: 8px 8px 0px 0px rgba(255, 255, 255, 0.9);
+}
+
+.dark .neo-btn-lg:hover:not(:disabled) {
+  box-shadow: 6px 6px 0px 0px rgba(255, 255, 255, 0.9);
+}
+
+.dark .neo-btn-lg:active:not(:disabled) {
+  box-shadow: 2px 2px 0px 0px rgba(255, 255, 255, 0.9);
+}
+
+/* Botão Âmbar */
+.neo-btn-amber {
+  @apply neo-btn-lg bg-gradient-to-r from-amber-500 to-orange-600;
+}
+
+.neo-btn-amber:hover:not(:disabled) {
+  @apply from-amber-600 to-orange-700;
+}
+
+/* Botão Verde */
+.neo-btn-green {
+  @apply neo-btn-lg bg-gradient-to-r from-green-500 to-emerald-600;
+}
+
+.neo-btn-green:hover:not(:disabled) {
+  @apply from-green-600 to-emerald-700;
+}
+
+/* Botão Azul */
+.neo-btn-blue {
+  @apply neo-btn-lg bg-gradient-to-r from-blue-500 to-cyan-600;
+}
+
+.neo-btn-blue:hover:not(:disabled) {
+  @apply from-blue-600 to-cyan-700;
+}
+
+/* Botão Violeta */
+.neo-btn-violet {
+  @apply neo-btn-lg bg-gradient-to-r from-violet-500 to-purple-600;
+}
+
+.neo-btn-violet:hover:not(:disabled) {
+  @apply from-violet-600 to-purple-700;
+}
+
+/* Neo-Brutal Select Content */
+.neo-select-content {
+  @apply rounded-none border-3 border-black bg-white p-0 overflow-hidden;
+  box-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 1);
+}
+
+.dark .neo-select-content {
+  @apply border-white bg-zinc-950;
+  box-shadow: 4px 4px 0px 0px rgba(255, 255, 255, 0.2);
+}
+
+.neo-select-item {
+  @apply rounded-none font-bold uppercase py-2.5 transition-colors focus:bg-black focus:text-white dark:focus:bg-white dark:focus:text-black;
+}
+
+/* ======================================================================== */
+/* END NEO-BRUTALISM                                                        */
+/* ========================================================================  */
 
 /* --- Animation Utilities --- */
 .animate-in {

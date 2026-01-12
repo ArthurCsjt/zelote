@@ -105,55 +105,55 @@ const ProfileEditDialog: React.FC<ProfileEditDialogProps> = ({ open, onOpenChang
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+      <DialogContent className="neo-dialog sm:max-w-[450px]">
+        <DialogHeader className="neo-dialog-header-violet">
+          <DialogTitle className="neo-dialog-title">
             <User className="h-5 w-5" />
             Editar Perfil de Acesso
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-black/80 dark:text-white/80 font-bold uppercase text-xs mt-1">
             Atualize o nome e a função de acesso para {user.email}.
           </DialogDescription>
         </DialogHeader>
-        <div className="grid gap-4 py-4">
+        <div className="neo-dialog-content">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="firstName">Nome</Label>
-              <Input id="firstName" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
+              <Label htmlFor="firstName" className="text-xs font-bold uppercase">Nome</Label>
+              <Input id="firstName" value={firstName} onChange={(e) => setFirstName(e.target.value)} className="neo-input h-10" />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="lastName">Sobrenome</Label>
-              <Input id="lastName" value={lastName} onChange={(e) => setLastName(e.target.value)} />
+              <Label htmlFor="lastName" className="text-xs font-bold uppercase">Sobrenome</Label>
+              <Input id="lastName" value={lastName} onChange={(e) => setLastName(e.target.value)} className="neo-input h-10" />
             </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="name">Nome de Exibição (Combinado)</Label>
-            <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Nome Completo" />
+            <Label htmlFor="name" className="text-xs font-bold uppercase">Nome de Exibição (Combinado)</Label>
+            <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Nome Completo" className="neo-input h-10" />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="email">E-mail (Não Editável)</Label>
-            <Input id="email" value={user.email} readOnly disabled />
+            <Label htmlFor="email" className="text-xs font-bold uppercase">E-mail (Não Editável)</Label>
+            <Input id="email" value={user.email} readOnly disabled className="neo-input h-10 opacity-60" />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="role">Função de Acesso</Label>
+            <Label htmlFor="role" className="text-xs font-bold uppercase">Função de Acesso</Label>
             <Select value={role} onValueChange={(v: 'admin' | 'user' | 'super_admin') => setRole(v)} disabled={!canEditRole || isSaving}>
-              <SelectTrigger>
+              <SelectTrigger className="neo-input h-10">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="user">Padrão (Apenas Empréstimo/Devolução)</SelectItem>
-                <SelectItem value="admin">Admin (Gerenciamento de Inventário e Usuários)</SelectItem>
-                {canSetSuperAdmin && <SelectItem value="super_admin">Super Admin (Acesso Total)</SelectItem>}
+              <SelectContent className="border-3 border-black dark:border-white rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                <SelectItem value="user" className="font-bold uppercase text-xs">Padrão (Apenas Empréstimo/Devolução)</SelectItem>
+                <SelectItem value="admin" className="font-bold uppercase text-xs">Admin (Gerenciamento de Inventário e Usuários)</SelectItem>
+                {canSetSuperAdmin && <SelectItem value="super_admin" className="font-bold uppercase text-xs">Super Admin (Acesso Total)</SelectItem>}
               </SelectContent>
             </Select>
-            {!canEditRole && <p className="text-xs text-muted-foreground mt-1">Você não pode editar sua própria função ou não tem permissão de administrador.</p>}
+            {!canEditRole && <p className="text-xs text-muted-foreground mt-1 font-bold">Você não pode editar sua própria função ou não tem permissão de administrador.</p>}
           </div>
         </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSaving}>
+        <DialogFooter className="neo-dialog-footer">
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSaving} className="neo-btn-lg h-11 bg-white dark:bg-zinc-800 text-black dark:text-white flex-1">
             Cancelar
           </Button>
-          <Button onClick={handleSave} disabled={isSaving}>
+          <Button onClick={handleSave} disabled={isSaving} className="neo-btn-violet h-11 flex-[2]">
             {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
             Salvar
           </Button>

@@ -22,7 +22,7 @@ export function LoanHistory({ history, isNewLoan }: LoanHistoryProps) {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [userTypeFilter, setUserTypeFilter] = useState<string>("all");
   const [currentPage, setCurrentPage] = useState(1);
-  const [viewMode, setViewMode] = useState<ViewMode>('cards');
+  const [viewMode, setViewMode] = useState<ViewMode>('table');
   const itemsPerPage = 10;
 
   const filteredHistory = useMemo(() => {
@@ -47,7 +47,10 @@ export function LoanHistory({ history, isNewLoan }: LoanHistoryProps) {
       filtered = filtered.filter(loan => loan.user_type === userTypeFilter);
     }
 
-    return filtered;
+    // Ordenar do mais recente para o mais antigo
+    return [...filtered].sort((a, b) =>
+      new Date(b.loan_date).getTime() - new Date(a.loan_date).getTime()
+    );
   }, [history, searchTerm, statusFilter, userTypeFilter]);
 
   const totalPages = Math.ceil(filteredHistory.length / itemsPerPage);
@@ -105,17 +108,6 @@ export function LoanHistory({ history, isNewLoan }: LoanHistoryProps) {
           {/* Seletor de Visualização Neo-Brutal */}
           <div className="neo-view-toggle">
             <button
-              onClick={() => setViewMode('cards')}
-              className={cn(
-                "neo-view-toggle-btn",
-                viewMode === 'cards' && "neo-view-toggle-btn-active"
-              )}
-              aria-label="Visualização em Cards"
-            >
-              <LayoutGrid className="h-4 w-4" />
-              <span>CARDS</span>
-            </button>
-            <button
               onClick={() => setViewMode('table')}
               className={cn(
                 "neo-view-toggle-btn",
@@ -125,6 +117,17 @@ export function LoanHistory({ history, isNewLoan }: LoanHistoryProps) {
             >
               <List className="h-4 w-4" />
               <span>TABELA</span>
+            </button>
+            <button
+              onClick={() => setViewMode('cards')}
+              className={cn(
+                "neo-view-toggle-btn",
+                viewMode === 'cards' && "neo-view-toggle-btn-active"
+              )}
+              aria-label="Visualização em Cards"
+            >
+              <LayoutGrid className="h-4 w-4" />
+              <span>CARDS</span>
             </button>
           </div>
         </div>

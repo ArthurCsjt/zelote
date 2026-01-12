@@ -53,9 +53,9 @@ export function ConfirmReturnDialog({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto border-4 border-black dark:border-white shadow-[8px_8px_0px_0px_#000] dark:shadow-[8px_8px_0px_0px_#fff] p-0 gap-0 bg-white dark:bg-zinc-900 sm:rounded-none">
-                <DialogHeader className="p-4 sm:p-6 border-b-4 border-black dark:border-white bg-amber-300 dark:bg-amber-600">
-                    <DialogTitle className="flex items-center gap-2 text-xl sm:text-2xl font-black uppercase tracking-tight text-black dark:text-white">
+            <DialogContent className="neo-dialog max-w-lg max-h-[90vh] overflow-y-auto">
+                <DialogHeader className="neo-dialog-header-amber">
+                    <DialogTitle className="neo-dialog-title">
                         <RotateCcw className="h-6 w-6 sm:h-8 sm:w-8" />
                         Confirmar Devolução
                     </DialogTitle>
@@ -64,7 +64,7 @@ export function ConfirmReturnDialog({
                     </DialogDescription>
                 </DialogHeader>
 
-                <div className="space-y-4 p-4 sm:p-6">
+                <div className="neo-dialog-content">
                     {/* Solicitante da Devolução */}
                     <div className="flex items-start gap-3 p-3 neo-card border-none shadow-none bg-amber-100 dark:bg-amber-900/30 border-l-4 border-l-amber-600">
                         <User className="h-6 w-6 text-black dark:text-white mt-1 shrink-0" />

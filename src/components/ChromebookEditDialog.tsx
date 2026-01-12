@@ -25,6 +25,7 @@ import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
 import { useDatabase } from '@/hooks/useDatabase';
 import { useProfileRole } from '@/hooks/use-profile-role';
 import type { Chromebook, ChromebookData } from "@/types/database";
+import { cn } from "@/lib/utils";
 
 // Mapeamento de Fabricantes e Modelos (Copiado de ManualChromebookForm.tsx)
 const MANUFACTURER_MODELS: Record<string, string[]> = {
@@ -167,7 +168,6 @@ export function ChromebookEditDialog({ open, onOpenChange, chromebook }: Chromeb
     });
   };
 
-
   // Handle save edit
   const handleSaveEdit = async () => {
     if (!editingChromebook) return;
@@ -231,18 +231,17 @@ export function ChromebookEditDialog({ open, onOpenChange, chromebook }: Chromeb
 
   const currentModels = editingChromebook.manufacturer ? MANUFACTURER_MODELS[editingChromebook.manufacturer] || [] : [];
 
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[95vw] h-[95vh] max-w-none sm:w-full sm:max-w-5xl sm:max-h-[90vh] flex flex-col p-0 border-4 border-black dark:border-white shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] dark:shadow-[12px_12px_0px_0px_rgba(255,255,255,0.2)] rounded-none sm:rounded-none bg-white dark:bg-zinc-900 overflow-hidden">
-        <DialogHeader className="px-6 py-4 border-b-4 border-black dark:border-white shrink-0 bg-yellow-300 dark:bg-yellow-900/50">
-          <DialogTitle className="text-xl font-black uppercase flex items-center gap-3 text-black dark:text-white tracking-tight">
+      <DialogContent className="neo-dialog w-[95vw] h-[95vh] max-w-none sm:w-full sm:max-w-5xl sm:max-h-[90vh] flex flex-col p-0 overflow-hidden">
+        <DialogHeader className="neo-dialog-header-yellow">
+          <DialogTitle className="neo-dialog-title">
             <div className="p-1.5 border-2 border-black dark:border-white bg-white dark:bg-black">
               <Edit3 className="h-5 w-5 text-black dark:text-white" />
             </div>
             Editar Chromebook: <span className="font-mono bg-white dark:bg-black px-2 py-0.5 border-2 border-black dark:border-white">{editingChromebook.chromebook_id}</span>
           </DialogTitle>
-          <DialogDescription className="text-black/70 dark:text-white/70 font-bold text-xs uppercase tracking-wide">
+          <DialogDescription className="text-black/70 dark:text-white/70 font-bold text-xs uppercase tracking-wide mt-1">
             Atualize as informações do Chromebook. Campos com * são obrigatórios.
           </DialogDescription>
         </DialogHeader>
@@ -250,249 +249,251 @@ export function ChromebookEditDialog({ open, onOpenChange, chromebook }: Chromeb
         <div className="flex-1 overflow-y-auto px-6 py-6 space-y-8 bg-white dark:bg-zinc-900">
 
           {/* Seção 1: Identificação e Modelo */}
-          <div className="space-y-4 p-5 border-2 border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-white dark:bg-zinc-950">
-            <h4 className="font-black uppercase text-sm flex items-center gap-2 border-b-2 border-black dark:border-white pb-2 mb-4">
-              <Tag className="h-4 w-4" />
-              Identificação e Modelo
-            </h4>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="space-y-1.5">
-                <Label htmlFor="chromebook_id" className="text-xs font-bold uppercase dark:text-white">
-                  ID do Chromebook *
-                </Label>
-                <Input
-                  id="chromebook_id"
-                  value={editingChromebook.chromebook_id}
-                  className="h-10 border-2 border-black dark:border-white rounded-none bg-gray-100 dark:bg-zinc-800 font-mono font-bold"
-                  readOnly
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <Label htmlFor="patrimony_number" className="text-xs font-bold uppercase flex items-center gap-1 dark:text-white">
-                  <Hash className="h-3 w-3" /> Patrimônio
-                </Label>
-                <Input
-                  id="patrimony_number"
-                  value={editingChromebook.patrimony_number || ""}
-                  onChange={handleEditChange}
-                  placeholder="NÚMERO DO PATRIMÔNIO"
-                  className="h-10 border-2 border-black dark:border-white rounded-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] focus-visible:ring-0 uppercase placeholder:normal-case"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <Label htmlFor="serial_number" className="text-xs font-bold uppercase flex items-center gap-1 dark:text-white">
-                  <Hash className="h-3 w-3" /> Número de Série
-                </Label>
-                <Input
-                  id="serial_number"
-                  value={editingChromebook.serial_number || ""}
-                  onChange={handleEditChange}
-                  placeholder="NÚMERO DE SÉRIE"
-                  className="h-10 border-2 border-black dark:border-white rounded-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] focus-visible:ring-0 uppercase placeholder:normal-case"
-                />
-              </div>
+          <div className="neo-section">
+            <div className="neo-section-header-amber">
+              <h4 className="font-black uppercase text-sm flex items-center gap-2">
+                <Tag className="h-4 w-4" />
+                Identificação e Modelo
+              </h4>
             </div>
+            <div className="p-5 space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="space-y-1.5">
+                  <Label htmlFor="chromebook_id" className="text-xs font-bold uppercase dark:text-white">
+                    ID do Chromebook *
+                  </Label>
+                  <Input
+                    id="chromebook_id"
+                    value={editingChromebook.chromebook_id}
+                    className="neo-input h-10 opacity-70 bg-gray-100 dark:bg-zinc-800 font-mono font-bold"
+                    readOnly
+                  />
+                </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Fabricante (SELECT) */}
-              <div className="space-y-1.5">
-                <Label htmlFor="manufacturer" className="text-xs font-bold uppercase flex items-center gap-1 dark:text-white">
-                  <Factory className="h-3 w-3" /> Fabricante *
-                </Label>
-                <Select
-                  value={editingChromebook.manufacturer || ''}
-                  onValueChange={(value) => handleSelectChange('manufacturer', value)}
-                >
-                  <SelectTrigger className="h-10 border-2 border-black dark:border-white rounded-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] focus:ring-0">
-                    <SelectValue placeholder="SELECIONE O FABRICANTE" />
-                  </SelectTrigger>
-                  <SelectContent className="border-2 border-black dark:border-white rounded-none bg-white dark:bg-zinc-900 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                    {AVAILABLE_MANUFACTURERS.map(manufacturer => (
-                      <SelectItem key={manufacturer} value={manufacturer} className="font-bold uppercase text-xs">
-                        {manufacturer}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="space-y-1.5">
+                  <Label htmlFor="patrimony_number" className="text-xs font-bold uppercase flex items-center gap-1 dark:text-white">
+                    <Hash className="h-3 w-3" /> Patrimônio
+                  </Label>
+                  <Input
+                    id="patrimony_number"
+                    value={editingChromebook.patrimony_number || ""}
+                    onChange={handleEditChange}
+                    placeholder="NÚMERO DO PATRIMÔNIO"
+                    className="neo-input h-10 uppercase placeholder:normal-case"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="serial_number" className="text-xs font-bold uppercase flex items-center gap-1 dark:text-white">
+                    <Hash className="h-3 w-3" /> Número de Série
+                  </Label>
+                  <Input
+                    id="serial_number"
+                    value={editingChromebook.serial_number || ""}
+                    onChange={handleEditChange}
+                    placeholder="NÚMERO DE SÉRIE"
+                    className="neo-input h-10 uppercase placeholder:normal-case"
+                  />
+                </div>
               </div>
 
-              {/* Modelo (SELECT) */}
-              <div className="space-y-1.5">
-                <Label htmlFor="model" className="text-xs font-bold uppercase dark:text-white">Modelo *</Label>
-                <Select
-                  value={editingChromebook.model}
-                  onValueChange={(value) => handleSelectChange('model', value)}
-                  disabled={!editingChromebook.manufacturer || currentModels.length === 0}
-                >
-                  <SelectTrigger className="h-10 border-2 border-black dark:border-white rounded-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] focus:ring-0">
-                    <SelectValue placeholder={editingChromebook.manufacturer ? "SELECIONE O MODELO" : "SELECIONE UM FABRICANTE PRIMEIRO"} />
-                  </SelectTrigger>
-                  <SelectContent className="border-2 border-black dark:border-white rounded-none bg-white dark:bg-zinc-900 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                    {currentModels.map(model => (
-                      <SelectItem key={model} value={model} className="font-bold uppercase text-xs">
-                        {model}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-1.5">
+                  <Label htmlFor="manufacturer" className="text-xs font-bold uppercase flex items-center gap-1 dark:text-white">
+                    <Factory className="h-3 w-3" /> Fabricante *
+                  </Label>
+                  <Select
+                    value={editingChromebook.manufacturer || ''}
+                    onValueChange={(value) => handleSelectChange('manufacturer', value)}
+                  >
+                    <SelectTrigger className="neo-input h-10">
+                      <SelectValue placeholder="SELECIONE O FABRICANTE" />
+                    </SelectTrigger>
+                    <SelectContent className="border-3 border-black dark:border-white rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                      {AVAILABLE_MANUFACTURERS.map(manufacturer => (
+                        <SelectItem key={manufacturer} value={manufacturer} className="font-bold uppercase text-xs">
+                          {manufacturer}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="model" className="text-xs font-bold uppercase dark:text-white">Modelo *</Label>
+                  <Select
+                    value={editingChromebook.model}
+                    onValueChange={(value) => handleSelectChange('model', value)}
+                    disabled={!editingChromebook.manufacturer || currentModels.length === 0}
+                  >
+                    <SelectTrigger className="neo-input h-10">
+                      <SelectValue placeholder={editingChromebook.manufacturer ? "SELECIONE O MODELO" : "SELECIONE UM FABRICANTE PRIMEIRO"} />
+                    </SelectTrigger>
+                    <SelectContent className="border-3 border-black dark:border-white rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                      {currentModels.map(model => (
+                        <SelectItem key={model} value={model} className="font-bold uppercase text-xs">
+                          {model}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Seção 2: Status e Localização (REESTRUTURADA) */}
-          <div className="space-y-4 p-5 border-2 border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-white dark:bg-zinc-950">
-            <h4 className="font-black uppercase text-sm flex items-center gap-2 border-b-2 border-black dark:border-white pb-2 mb-4">
-              <MapPin className="h-4 w-4" />
-              Status e Localização
-            </h4>
-
-            {/* Linha 1: Status de Uso (Select) */}
-            <div className="space-y-1.5">
-              <Label className="text-xs font-bold uppercase dark:text-white">Status de Uso</Label>
-              <Select
-                value={editingChromebook.status}
-                onValueChange={handleEditStatusChange}
-                disabled={isEmprestado}
-              >
-                <SelectTrigger className="h-10 border-2 border-black dark:border-white rounded-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] focus:ring-0">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="border-2 border-black dark:border-white rounded-none bg-white dark:bg-zinc-900 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                  <SelectItem value="disponivel" className="font-bold uppercase text-xs">Disponível</SelectItem>
-                  <SelectItem value="emprestado" disabled className="font-bold uppercase text-xs">Emprestado</SelectItem>
-                  <SelectItem value="fixo" className="font-bold uppercase text-xs">Fixo</SelectItem>
-                  <SelectItem value="manutencao" className="font-bold uppercase text-xs">Manutenção</SelectItem>
-                  <SelectItem value="fora_uso" className="font-bold uppercase text-xs">Inativo</SelectItem>
-                </SelectContent>
-              </Select>
-              {isEmprestado && (
-                <p className="text-[10px] font-bold uppercase text-yellow-600 flex items-center gap-1 mt-1 bg-yellow-50 p-1 border border-yellow-200 w-fit">
-                  <AlertTriangle className="h-3 w-3" /> Status definido por empréstimo ativo.
-                </p>
-              )}
+          {/* Seção 2: Status e Localização */}
+          <div className="neo-section">
+            <div className="neo-section-header-blue">
+              <h4 className="font-black uppercase text-sm flex items-center gap-2">
+                <MapPin className="h-4 w-4" />
+                Status e Localização
+              </h4>
             </div>
-
-            {/* Linha 2: Status de Mobilidade (RadioGroup) */}
-            <div className="space-y-2 pt-4 border-t-2 border-dashed border-black/20 dark:border-white/20">
-              <Label className="text-xs font-bold uppercase dark:text-white">Status de Mobilidade</Label>
-              <RadioGroup
-                value={currentMobilityStatus}
-                onValueChange={handleMobilityChange}
-                className="flex space-x-6"
-                disabled={isMobilityDisabled}
-              >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="movel" id="movel-edit" className="border-2 border-black text-black" />
-                  <Label htmlFor="movel-edit" className="font-bold text-xs uppercase cursor-pointer dark:text-white">Móvel (Disponível)</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="fixo" id="fixo-edit" className="border-2 border-black text-black" />
-                  <Label htmlFor="fixo-edit" className="font-bold text-xs uppercase cursor-pointer dark:text-white">Fixo em Sala</Label>
-                </div>
-              </RadioGroup>
-              {isMobilityDisabled && (
-                <p className="text-[10px] font-bold uppercase text-gray-500 flex items-center gap-1 mt-1">
-                  <Info className="h-3 w-3" /> Mobilidade desabilitada: Status atual é {editingChromebook.status}.
-                </p>
-              )}
-            </div>
-
-            {/* Linha 3: Localização (Geral e Sala) */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
+            <div className="p-5 space-y-4">
               <div className="space-y-1.5">
-                <Label htmlFor="location" className="text-xs font-bold uppercase flex items-center gap-1 dark:text-white">
-                  <Map className="h-3 w-3" /> Localização Geral
-                </Label>
-                <Input
-                  id="location"
-                  value={editingChromebook.location || ""}
-                  onChange={handleEditChange}
-                  placeholder="EX: SALA DE INFORMÁTICA"
-                  className="h-10 border-2 border-black dark:border-white rounded-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] focus-visible:ring-0 uppercase placeholder:normal-case"
-                />
+                <Label className="text-xs font-bold uppercase dark:text-white">Status de Uso</Label>
+                <Select
+                  value={editingChromebook.status}
+                  onValueChange={handleEditStatusChange}
+                  disabled={isEmprestado}
+                >
+                  <SelectTrigger className="neo-input h-10">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="border-3 border-black dark:border-white rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                    <SelectItem value="disponivel" className="font-bold uppercase text-xs">Disponível</SelectItem>
+                    <SelectItem value="emprestado" disabled className="font-bold uppercase text-xs">Emprestado</SelectItem>
+                    <SelectItem value="fixo" className="font-bold uppercase text-xs">Fixo</SelectItem>
+                    <SelectItem value="manutencao" className="font-bold uppercase text-xs">Manutenção</SelectItem>
+                    <SelectItem value="fora_uso" className="font-bold uppercase text-xs">Inativo</SelectItem>
+                  </SelectContent>
+                </Select>
+                {isEmprestado && (
+                  <p className="text-[10px] font-bold uppercase text-yellow-600 flex items-center gap-1 mt-1 bg-yellow-50 p-1 border border-yellow-200 w-fit">
+                    <AlertTriangle className="h-3 w-3" /> Status definido por empréstimo ativo.
+                  </p>
+                )}
               </div>
 
-              <div className="space-y-1.5">
-                <Label htmlFor="classroom" className="text-xs font-bold uppercase dark:text-white">Sala de Aula (Obrigatório se Fixo)</Label>
-                <Input
-                  id="classroom"
-                  value={editingChromebook.classroom || ''}
-                  onChange={handleEditChange}
-                  placeholder="EX: SALA 21"
-                  className="h-10 border-2 border-black dark:border-white rounded-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] focus-visible:ring-0 uppercase placeholder:normal-case"
-                  required={isFixed}
-                  disabled={!isFixed}
-                />
+              <div className="space-y-2 pt-4 border-t-2 border-dashed border-black/20 dark:border-white/20">
+                <Label className="text-xs font-bold uppercase dark:text-white">Status de Mobilidade</Label>
+                <RadioGroup
+                  value={currentMobilityStatus}
+                  onValueChange={handleMobilityChange}
+                  className="flex space-x-6"
+                  disabled={isMobilityDisabled}
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="movel" id="movel-edit" className="border-2 border-black text-black" />
+                    <Label htmlFor="movel-edit" className="font-bold text-xs uppercase cursor-pointer dark:text-white">Móvel (Disponível)</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="fixo" id="fixo-edit" className="border-2 border-black text-black" />
+                    <Label htmlFor="fixo-edit" className="font-bold text-xs uppercase cursor-pointer dark:text-white">Fixo em Sala</Label>
+                  </div>
+                </RadioGroup>
+                {isMobilityDisabled && (
+                  <p className="text-[10px] font-bold uppercase text-gray-500 flex items-center gap-1 mt-1">
+                    <Info className="h-3 w-3" /> Mobilidade desabilitada: Status atual é {editingChromebook.status}.
+                  </p>
+                )}
               </div>
-            </div>
 
-            {/* Linha 4: Status de Provisionamento (RadioGroup) */}
-            <div className="space-y-2 pt-4 border-t-2 border-dashed border-black/20 dark:border-white/20">
-              <Label className="text-xs font-bold uppercase dark:text-white">Status de Provisionamento</Label>
-              <RadioGroup
-                value={currentProvisioningStatus}
-                onValueChange={handleProvisioningChange}
-                className="flex space-x-6"
-                disabled={isProvisioningDisabled}
-              >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="provisioned" id="provisioned-edit" className="border-2 border-black text-black" />
-                  <Label htmlFor="provisioned-edit" className="flex items-center gap-1 font-bold text-xs uppercase cursor-pointer dark:text-white">
-                    <CheckCircle className="h-3 w-3 text-green-600" /> Provisionado
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
+                <div className="space-y-1.5">
+                  <Label htmlFor="location" className="text-xs font-bold uppercase flex items-center gap-1 dark:text-white">
+                    <Map className="h-3 w-3" /> Localização Geral
                   </Label>
+                  <Input
+                    id="location"
+                    value={editingChromebook.location || ""}
+                    onChange={handleEditChange}
+                    placeholder="EX: SALA DE INFORMÁTICA"
+                    className="neo-input h-10 uppercase placeholder:normal-case"
+                  />
                 </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="deprovisioned" id="deprovisioned-edit" className="border-2 border-black text-black" />
-                  <Label htmlFor="deprovisioned-edit" className="flex items-center gap-1 font-bold text-xs uppercase cursor-pointer dark:text-white">
-                    <XCircle className="h-3 w-3 text-red-600" /> Desprovisionado
-                  </Label>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="classroom" className="text-xs font-bold uppercase dark:text-white">Sala de Aula (Obrigatório se Fixo)</Label>
+                  <Input
+                    id="classroom"
+                    value={editingChromebook.classroom || ''}
+                    onChange={handleEditChange}
+                    placeholder="EX: SALA 21"
+                    className="neo-input h-10 uppercase placeholder:normal-case"
+                    required={isFixed}
+                    disabled={!isFixed}
+                  />
                 </div>
-              </RadioGroup>
-              {isProvisioningDisabled && (
-                <p className="text-[10px] font-bold uppercase text-gray-500 flex items-center gap-1 mt-1">
-                  <Info className="h-3 w-3" /> Provisionamento desabilitado: O equipamento está emprestado.
-                </p>
-              )}
+              </div>
+
+              <div className="space-y-2 pt-4 border-t-2 border-dashed border-black/20 dark:border-white/20">
+                <Label className="text-xs font-bold uppercase dark:text-white">Status de Provisionamento</Label>
+                <RadioGroup
+                  value={currentProvisioningStatus}
+                  onValueChange={handleProvisioningChange}
+                  className="flex space-x-6"
+                  disabled={isProvisioningDisabled}
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="provisioned" id="provisioned-edit" className="border-2 border-black text-black" />
+                    <Label htmlFor="provisioned-edit" className="flex items-center gap-1 font-bold text-xs uppercase cursor-pointer dark:text-white">
+                      <CheckCircle className="h-3 w-3 text-green-600" /> Provisionado
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="deprovisioned" id="deprovisioned-edit" className="border-2 border-black text-black" />
+                    <Label htmlFor="deprovisioned-edit" className="flex items-center gap-1 font-bold text-xs uppercase cursor-pointer dark:text-white">
+                      <XCircle className="h-3 w-3 text-red-600" /> Desprovisionado
+                    </Label>
+                  </div>
+                </RadioGroup>
+                {isProvisioningDisabled && (
+                  <p className="text-[10px] font-bold uppercase text-gray-500 flex items-center gap-1 mt-1">
+                    <Info className="h-3 w-3" /> Provisionamento desabilitado: O equipamento está emprestado.
+                  </p>
+                )}
+              </div>
             </div>
           </div>
 
           {/* Seção 3: Condição/Observações */}
-          <div className="space-y-4 p-5 border-2 border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-white dark:bg-zinc-950">
-            <h4 className="font-black uppercase text-sm flex items-center gap-2 border-b-2 border-black dark:border-white pb-2 mb-4">
-              <AlertTriangle className="h-4 w-4" />
-              Condição e Notas
-            </h4>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="condition" className="text-xs font-bold uppercase dark:text-white">Condição/Observações</Label>
-              <Textarea
-                id="condition"
-                value={editingChromebook.condition || ""}
-                onChange={handleConditionChange}
-                placeholder="OBSERVAÇÕES (EX: TELA TRINCADA, BATERIA FRACA)"
-                className="resize-none min-h-[100px] border-2 border-black dark:border-white rounded-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] focus-visible:ring-0 bg-white dark:bg-zinc-950 uppercase placeholder:normal-case font-mono text-sm"
-              />
+          <div className="neo-section">
+            <div className="neo-section-header-gray">
+              <h4 className="font-black uppercase text-sm flex items-center gap-2">
+                <AlertTriangle className="h-4 w-4" />
+                Condição e Notas
+              </h4>
+            </div>
+            <div className="p-5">
+              <div className="space-y-1.5">
+                <Label htmlFor="condition" className="text-xs font-bold uppercase dark:text-white">Condição/Observações</Label>
+                <Textarea
+                  id="condition"
+                  value={editingChromebook.condition || ""}
+                  onChange={handleConditionChange}
+                  placeholder="OBSERVAÇÕES (EX: TELA TRINCADA, BATERIA FRACA)"
+                  className="neo-input resize-none min-h-[100px] uppercase placeholder:normal-case font-mono text-sm"
+                />
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Fixed Footer */}
-        <DialogFooter className="px-6 py-6 border-t-4 border-black dark:border-white bg-gray-50 shrink-0 flex-col sm:flex-row gap-3 sm:justify-end dark:bg-zinc-900">
+        <DialogFooter className="neo-dialog-footer shrink-0">
           <Button
             type="button"
             variant="outline"
             onClick={() => onOpenChange(false)}
-            className="w-full sm:w-auto h-10 border-2 border-black dark:border-white rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:shadow-none bg-white font-bold uppercase text-xs"
+            className="neo-btn-lg bg-white dark:bg-zinc-800 text-black dark:text-white flex-1"
             disabled={isSaving}
           >
             Cancelar
           </Button>
           <Button
             onClick={handleSaveEdit}
-            className="w-full sm:w-auto h-10 border-2 border-black dark:border-white rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:shadow-none bg-black hover:bg-gray-800 text-white font-bold uppercase text-xs"
+            className="neo-btn-yellow flex-[2]"
             disabled={isSaving || !editingChromebook.model || !editingChromebook.manufacturer || (isFixed && !editingChromebook.classroom)}
           >
             {isSaving ? (
