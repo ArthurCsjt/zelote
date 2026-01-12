@@ -1,9 +1,7 @@
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Laptop, CheckCircle, AlertTriangle, XCircle, MapPin, Clock } from 'lucide-react';
+import { Laptop, CheckCircle, AlertTriangle, Clock } from 'lucide-react';
 import type { Chromebook } from "@/types/database";
 import { cn } from '@/lib/utils';
-import { GlassCard } from './ui/GlassCard';
 
 interface InventoryStatsProps {
   chromebooks: Chromebook[];
@@ -17,24 +15,51 @@ export function InventoryStats({ chromebooks }: InventoryStatsProps) {
   const fixed = chromebooks.filter((c) => c.status === 'fixo').length;
   const inactive = chromebooks.filter((c) => c.status === 'fora_uso').length;
 
-  // Neo-Brutalism Card Component
-  const StatCard = ({ title, value, icon: Icon, color, description, delay = 0 }: any) => (
-    <div className={cn(
-      "relative p-4 border-2 border-black dark:border-white bg-white dark:bg-zinc-900 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.2)]",
-      "hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all duration-200",
-      "animate-fadeIn"
-    )} style={{ animationDelay: `${delay}ms` }}>
-      <div className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <h3 className="text-xs font-black uppercase tracking-tight text-gray-500 dark:text-gray-400">
+  // Neo-Brutalism Stat Card Component
+  const StatCard = ({ 
+    title, 
+    value, 
+    icon: Icon, 
+    iconBg, 
+    description, 
+    delay = 0,
+    sticker,
+  }: {
+    title: string;
+    value: number | string;
+    icon: React.ElementType;
+    iconBg: string;
+    description: string;
+    delay?: number;
+    sticker?: { text: string; color: string };
+  }) => (
+    <div 
+      className={cn(
+        "neo-stat-card animate-fadeIn neo-pattern-dots relative overflow-visible"
+      )} 
+      style={{ animationDelay: `${delay}ms` }}
+    >
+      {/* Sticker decorativo */}
+      {sticker && (
+        <div className={cn(
+          "neo-sticker neo-sticker-top-right",
+          sticker.color
+        )}>
+          {sticker.text}
+        </div>
+      )}
+      
+      <div className="flex flex-row items-center justify-between space-y-0 pb-3">
+        <h3 className="text-xs font-black uppercase tracking-tight text-muted-foreground">
           {title}
         </h3>
-        <div className={cn("p-1.5 border-2 border-black dark:border-white", color)}>
-          <Icon className="h-4 w-4 text-black dark:text-white" />
+        <div className={cn("neo-stat-icon-box", iconBg)}>
+          <Icon className="h-5 w-5 text-black dark:text-white" strokeWidth={2.5} />
         </div>
       </div>
       <div>
-        <div className="text-2xl font-black text-black dark:text-white">{value}</div>
-        <p className="text-xs text-muted-foreground font-mono font-bold mt-1">
+        <div className="text-3xl font-black text-black dark:text-white">{value}</div>
+        <p className="text-xs text-muted-foreground font-mono font-bold mt-2 uppercase tracking-wide">
           {description}
         </p>
       </div>
@@ -47,15 +72,16 @@ export function InventoryStats({ chromebooks }: InventoryStatsProps) {
         title="Total de Equipamentos"
         value={total}
         icon={Laptop}
-        color="bg-gray-200"
+        iconBg="bg-gray-200 dark:bg-gray-700"
         description="Inventário completo"
         delay={0}
+        sticker={{ text: "AO VIVO", color: "bg-green-400 animate-gentle-pulse" }}
       />
       <StatCard
         title="Disponíveis"
         value={available}
         icon={CheckCircle}
-        color="bg-green-300"
+        iconBg="bg-green-300 dark:bg-green-700"
         description={`${((available / total) * 100 || 0).toFixed(0)}% do total`}
         delay={100}
       />
@@ -63,7 +89,7 @@ export function InventoryStats({ chromebooks }: InventoryStatsProps) {
         title="Emprestados/Fixos"
         value={borrowed + fixed}
         icon={Clock}
-        color="bg-purple-300"
+        iconBg="bg-purple-300 dark:bg-purple-700"
         description={`${borrowed} emprestados + ${fixed} fixos`}
         delay={200}
       />
@@ -71,7 +97,7 @@ export function InventoryStats({ chromebooks }: InventoryStatsProps) {
         title="Indisponíveis"
         value={maintenance + inactive}
         icon={AlertTriangle}
-        color="bg-red-300"
+        iconBg="bg-red-300 dark:bg-red-700"
         description={`${maintenance} manutenção + ${inactive} inativos`}
         delay={300}
       />

@@ -34,17 +34,17 @@ export const LoanHistoryTable: React.FC<LoanHistoryTableProps> = ({ history, isN
   };
 
   return (
-    <div className="border-2 border-black dark:border-white bg-white dark:bg-zinc-900 shadow-[4px_4px_0px_0px_#000] dark:shadow-[4px_4px_0px_0px_#fff]">
+    <div className="neo-table-container">
       <div className="overflow-x-auto">
-        <Table className="min-w-[900px]">
+        <Table className="neo-table min-w-[900px]">
           <TableHeader>
-            <TableRow className="bg-black dark:bg-white hover:bg-black dark:hover:bg-white border-b-2 border-black dark:border-white">
-              <TableHead className="w-[120px] text-white dark:text-black font-black uppercase tracking-wider">Status</TableHead>
-              <TableHead className="w-[150px] text-white dark:text-black font-black uppercase tracking-wider">ID Chromebook</TableHead>
-              <TableHead className="w-[200px] text-white dark:text-black font-black uppercase tracking-wider">Solicitante</TableHead>
-              <TableHead className="hidden md:table-cell text-white dark:text-black font-black uppercase tracking-wider">Finalidade</TableHead>
-              <TableHead className="w-[150px] text-white dark:text-black font-black uppercase tracking-wider">Empréstimo</TableHead>
-              <TableHead className="w-[150px] text-white dark:text-black font-black uppercase tracking-wider">Devolução</TableHead>
+            <TableRow className="hover:bg-black dark:hover:bg-white">
+              <TableHead className="w-[120px]">Status</TableHead>
+              <TableHead className="w-[150px]">ID Chromebook</TableHead>
+              <TableHead className="w-[200px]">Solicitante</TableHead>
+              <TableHead className="hidden md:table-cell">Finalidade</TableHead>
+              <TableHead className="w-[150px]">Empréstimo</TableHead>
+              <TableHead className="w-[150px]">Devolução</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -57,10 +57,8 @@ export const LoanHistoryTable: React.FC<LoanHistoryTableProps> = ({ history, isN
                 <TableRow
                   key={loan.id}
                   className={cn(
-                    "border-b-2 border-black/10 dark:border-white/10 transition-colors",
-                    "hover:bg-yellow-50 dark:hover:bg-yellow-900/20",
-                    loan.status === 'atrasado' && 'bg-red-50 dark:bg-red-900/10 hover:bg-red-100 dark:hover:bg-red-900/30',
-                    isRecent && 'bg-blue-50 dark:bg-blue-900/10 hover:bg-blue-100 dark:hover:bg-blue-900/30'
+                    loan.status === 'atrasado' && 'neo-table-row-danger',
+                    isRecent && !loan.status?.includes('atrasado') && 'neo-table-row-info'
                   )}
                 >
                   <TableCell className="font-medium text-sm py-4">

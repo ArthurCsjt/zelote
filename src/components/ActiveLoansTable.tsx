@@ -35,16 +35,16 @@ export const ActiveLoansTable: React.FC<ActiveLoansTableProps> = ({ loans, onNav
   };
 
   return (
-    <div className="border-2 border-black dark:border-white bg-white dark:bg-zinc-900 shadow-[4px_4px_0px_0px_#000] dark:shadow-[4px_4px_0px_0px_#fff]">
-      <Table>
+    <div className="neo-table-container">
+      <Table className="neo-table">
         <TableHeader>
-          <TableRow className="bg-black dark:bg-white hover:bg-black dark:hover:bg-white border-b-2 border-black dark:border-white">
-            <TableHead className="w-[150px] text-white dark:text-black font-black uppercase tracking-wider">ID Chromebook</TableHead>
-            <TableHead className="w-[200px] text-white dark:text-black font-black uppercase tracking-wider">Solicitante</TableHead>
-            <TableHead className="hidden sm:table-cell text-white dark:text-black font-black uppercase tracking-wider">Finalidade</TableHead>
-            <TableHead className="w-[150px] hidden md:table-cell text-white dark:text-black font-black uppercase tracking-wider">Empréstimo</TableHead>
-            <TableHead className="w-[150px] text-white dark:text-black font-black uppercase tracking-wider">Prazo</TableHead>
-            <TableHead className="w-[100px] text-right text-white dark:text-black font-black uppercase tracking-wider">Ações</TableHead>
+          <TableRow className="hover:bg-black dark:hover:bg-white">
+            <TableHead className="w-[150px]">ID Chromebook</TableHead>
+            <TableHead className="w-[200px]">Solicitante</TableHead>
+            <TableHead className="hidden sm:table-cell">Finalidade</TableHead>
+            <TableHead className="w-[150px] hidden md:table-cell">Empréstimo</TableHead>
+            <TableHead className="w-[150px]">Prazo</TableHead>
+            <TableHead className="w-[100px] text-right">Ações</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -56,10 +56,8 @@ export const ActiveLoansTable: React.FC<ActiveLoansTableProps> = ({ loans, onNav
               <TableRow
                 key={loan.id}
                 className={cn(
-                  "border-b-2 border-black/10 dark:border-white/10 transition-colors",
-                  "hover:bg-yellow-50 dark:hover:bg-yellow-900/20",
-                  overdueStatus && 'bg-red-50 dark:bg-red-900/10 hover:bg-red-100 dark:hover:bg-red-900/30',
-                  dueSoonStatus && !overdueStatus && 'bg-amber-50 dark:bg-amber-900/10 hover:bg-amber-100 dark:hover:bg-amber-900/30'
+                  overdueStatus && 'neo-table-row-danger',
+                  dueSoonStatus && !overdueStatus && 'neo-table-row-warning'
                 )}
               >
                 <TableCell className="font-bold text-sm flex items-center gap-2 py-4">

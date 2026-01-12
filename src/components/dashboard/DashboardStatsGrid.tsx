@@ -146,37 +146,40 @@ export const DashboardStatsGrid: React.FC<DashboardStatsGridProps> = ({
           <div
             key={index}
             className={cn(
-              "relative transition-all duration-200 p-4 border-2 border-black dark:border-white",
-              "bg-white dark:bg-zinc-900 rounded-none", // Brutalism often uses sharp corners
-              "shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.2)]",
-              isClickable ? 'cursor-pointer hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[4px] active:translate-y-[4px]' : '',
+              "neo-stat-card neo-pattern-dots relative overflow-visible",
+              isClickable && 'cursor-pointer',
               getAnimationClass(item.delay)
             )}
             onClick={isClickable ? item.onClick : undefined}
           >
+            {/* Corner tag para cards clicáveis */}
+            {index === 0 && (
+              <div className="neo-sticker neo-sticker-top-right bg-blue-400">
+                AGORA
+              </div>
+            )}
+
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 p-0">
               <ShadcnTooltip delayDuration={300}>
                 <TooltipTrigger asChild>
-                  <CardTitle className="text-xs sm:text-sm font-bold flex items-center gap-1.5 cursor-help text-black dark:text-white uppercase tracking-tight">
+                  <CardTitle className="text-xs sm:text-sm font-black flex items-center gap-1.5 cursor-help text-black dark:text-white uppercase tracking-tight">
                     {item.title}
-                    <Info className="h-3 w-3 text-gray-500" />
+                    <Info className="h-3 w-3 text-muted-foreground" />
                   </CardTitle>
                 </TooltipTrigger>
-                <TooltipContent className="max-w-sm text-xs border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] rounded-none">
+                <TooltipContent className="max-w-sm text-xs border-4 border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-none bg-white dark:bg-zinc-900">
                   <p>{item.tooltip}</p>
                 </TooltipContent>
               </ShadcnTooltip>
 
               <div className={cn(
-                "p-2 border-2 border-black dark:border-white",
-                item.color === 'blue' && "bg-blue-300 dark:bg-blue-800",
-                item.color === 'green' && "bg-green-300 dark:bg-green-800",
-                item.color === 'purple' && "bg-purple-300 dark:bg-purple-800",
-                item.color === 'teal' && "bg-teal-300 dark:bg-teal-800",
+                "neo-stat-icon-box",
+                item.color === 'blue' && "bg-blue-300 dark:bg-blue-700",
+                item.color === 'green' && "bg-green-300 dark:bg-green-700",
+                item.color === 'purple' && "bg-purple-300 dark:bg-purple-700",
+                item.color === 'teal' && "bg-teal-300 dark:bg-teal-700",
               )}>
-                <Icon className={cn(
-                  "h-5 w-5 sm:h-6 sm:w-6 text-black dark:text-white"
-                )} />
+                <Icon className="h-5 w-5 sm:h-6 sm:w-6 text-black dark:text-white" strokeWidth={2.5} />
               </div>
             </CardHeader>
 
@@ -187,16 +190,16 @@ export const DashboardStatsGrid: React.FC<DashboardStatsGridProps> = ({
                 </div>
                 <DeltaBadge value={item.delta} invertColor={item.title === 'Tempo Médio de Uso'} />
               </div>
-              <p className="text-xs sm:text-sm text-gray-700 dark:text-gray-300 mt-2 font-bold font-mono">
+              <p className="text-xs sm:text-sm text-muted-foreground mt-2 font-bold font-mono uppercase tracking-wide">
                 {item.description}
               </p>
               {item.title === 'Taxa de Devolução' && (
-                <div className="flex items-center gap-2 mt-3 p-1 border-2 border-black dark:border-white bg-gray-100 dark:bg-zinc-800">
+                <div className="flex items-center gap-2 mt-3 p-1.5 border-4 border-black dark:border-white bg-gray-100 dark:bg-zinc-800">
                   <Progress
                     value={completionRate}
                     className={cn(
-                      "h-2 w-full bg-transparent rounded-none",
-                      "[&>div]:bg-black dark:[&>div]:bg-white [&>div]:rounded-none" // Hard progress bar
+                      "h-3 w-full bg-transparent rounded-none",
+                      "[&>div]:bg-black dark:[&>div]:bg-white [&>div]:rounded-none"
                     )}
                   />
                 </div>
