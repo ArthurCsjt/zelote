@@ -26,18 +26,6 @@ const Login = () => {
   const location = useLocation();
   const { login, register, resetPassword, verifyEmail } = useAuth();
 
-  useEffect(() => {
-    const params = new URLSearchParams(location.hash.substring(1));
-    const type = params.get('type');
-    const accessToken = params.get('access_token');
-
-    if (type === 'recovery' || type === 'invite') {
-      if (accessToken) {
-        navigate(`/update-password${location.hash}`, { replace: true });
-      }
-    }
-  }, [location, navigate]);
-
   const isEmailValid = email.length > 0 && verifyEmail(email);
   const emailError = email.length > 0 && !isEmailValid ? "O email deve pertencer a um domínio institucional permitido (@colegiosaojudas.com.br ou @sj.pro.br)." : null;
 
