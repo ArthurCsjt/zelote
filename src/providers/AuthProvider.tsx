@@ -72,8 +72,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const resetPassword = async (email: string) => {
+    // Definimos a base URL: se estivermos em produção, garantimos o uso do domínio lovable.
+    // Caso contrário, usamos o origin atual (localhost por exemplo).
+    const baseUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+      ? window.location.origin
+      : 'https://zelote.lovable.app';
+
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/update-password`,
+      redirectTo: `${baseUrl}/update-password`,
     });
     return { success: !error, error: error?.message || null };
   };
