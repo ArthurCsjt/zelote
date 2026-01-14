@@ -122,14 +122,14 @@ export function StudentForm() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-1.5">
-            <Label htmlFor="nomeCompleto" className="text-xs font-bold uppercase dark:text-white">Nome Completo *</Label>
+            <Label htmlFor="nomeCompleto" className="text-xs font-bold dark:text-white">Nome Completo *</Label>
             <Input
               id="nomeCompleto"
               value={formData.nomeCompleto}
               onChange={handleInputChange('nomeCompleto')}
               placeholder="DIGITE O NOME COMPLETO"
               required
-              className="h-10 border-2 border-black dark:border-white rounded-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] focus-visible:ring-0 uppercase placeholder:normal-case font-bold"
+              className="h-10 border-2 border-black dark:border-white rounded-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] focus-visible:ring-0 placeholder:normal-case font-bold"
             />
           </div>
 
@@ -146,7 +146,7 @@ export function StudentForm() {
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="email" className="text-xs font-bold uppercase dark:text-white">E-mail Institucional *</Label>
+            <Label htmlFor="email" className="text-xs font-bold dark:text-white">E-mail Institucional *</Label>
             <Input
               id="email"
               type="email"
@@ -159,7 +159,7 @@ export function StudentForm() {
                 emailError ? "border-red-600 dark:border-red-500 bg-red-50 dark:bg-red-900/20" : ""
               )}
             />
-            {emailError && <p className="text-[10px] font-bold uppercase text-red-600 flex items-center gap-1 mt-1 bg-red-50 p-1 border border-red-200 w-fit">{emailError}</p>}
+            {emailError && <p className="text-[10px] font-bold text-red-600 flex items-center gap-1 mt-1 bg-red-50 p-1 border border-red-200 w-fit">{emailError}</p>}
           </div>
 
           <div className="space-y-1.5">

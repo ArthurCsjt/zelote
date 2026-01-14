@@ -317,7 +317,7 @@ const Login = () => {
 
                   {/* Password Strength Checklist */}
                   {password.length > 0 && (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-3 bg-muted/30 border-2 border-black dark:border-white/10 text-[10px] font-bold uppercase">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-3 bg-muted/30 border-2 border-black dark:border-white/10 text-[10px] font-bold">
                       {[
                         { label: "8+ Caracteres", met: validatePassword(password).hasMinLength },
                         { label: "Letra Maiúscula", met: validatePassword(password).hasUpperCase },

@@ -86,11 +86,11 @@ export function ManualChromebookForm({ onRegistrationSuccess }: { onRegistration
     const chromebookData = {
       model: formData.model,
       serialNumber: formData.series,
-      patrimonyNumber: formData.patrimonyNumber || null,
+      patrimonyNumber: formData.patrimonyNumber || undefined,
       manufacturer: formData.manufacturer,
       // manufacturingYear não é mapeado diretamente para o DB, mas pode ser incluído em 'condition' se necessário
       condition: formData.observations || 'novo',
-      location: isFixed ? formData.classroomLocation : null,
+      location: isFixed ? formData.classroomLocation : undefined,
       // O status é definido pela mobilidade, e não pelo provisionamento
       status: isFixed ? 'fixo' as const : 'disponivel' as const,
       is_deprovisioned: formData.provisioning_status === 'deprovisioned', // PASSANDO O VALOR
@@ -235,11 +235,11 @@ export function ManualChromebookForm({ onRegistrationSuccess }: { onRegistration
               className="flex space-x-6"
             >
               <div className="flex items-center space-x-2">
-                <RadioGroupItem value="movel" id="movel" className="border-2 border-black text-black" />
+                <RadioGroupItem value="movel" id="movel" className="neo-radio" />
                 <Label htmlFor="movel" className="font-bold text-xs uppercase cursor-pointer dark:text-white">Móvel (Disponível)</Label>
               </div>
               <div className="flex items-center space-x-2">
-                <RadioGroupItem value="fixo" id="fixo" className="border-2 border-black text-black" />
+                <RadioGroupItem value="fixo" id="fixo" className="neo-radio" />
                 <Label htmlFor="fixo" className="font-bold text-xs uppercase cursor-pointer dark:text-white">Fixo em Sala</Label>
               </div>
             </RadioGroup>
@@ -267,13 +267,13 @@ export function ManualChromebookForm({ onRegistrationSuccess }: { onRegistration
               className="flex space-x-6"
             >
               <div className="flex items-center space-x-2">
-                <RadioGroupItem value="provisioned" id="provisioned" className="border-2 border-black text-black" />
+                <RadioGroupItem value="provisioned" id="provisioned" className="neo-radio" />
                 <Label htmlFor="provisioned" className="flex items-center gap-1 font-bold text-xs uppercase cursor-pointer dark:text-white">
                   <CheckCircle className="h-3 w-3 text-green-600" /> Provisionado
                 </Label>
               </div>
               <div className="flex items-center space-x-2">
-                <RadioGroupItem value="deprovisioned" id="deprovisioned" className="border-2 border-black text-black" />
+                <RadioGroupItem value="deprovisioned" id="deprovisioned" className="neo-radio" />
                 <Label htmlFor="deprovisioned" className="flex items-center gap-1 font-bold text-xs uppercase cursor-pointer dark:text-white">
                   <AlertTriangle className="h-3 w-3 text-red-600" /> Desprovisionado
                 </Label>
@@ -295,7 +295,7 @@ export function ManualChromebookForm({ onRegistrationSuccess }: { onRegistration
               value={formData.observations}
               onChange={(e) => handleFormChange('observations', e.target.value)}
               placeholder="EX: TELA TRINCADA, BATERIA VICIADA, ETC."
-              className="resize-none min-h-[100px] border-2 border-black dark:border-white rounded-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] focus-visible:ring-0 bg-white dark:bg-zinc-950 uppercase placeholder:normal-case font-mono text-sm"
+              className="resize-none min-h-[100px] border-2 border-black dark:border-white rounded-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] focus-visible:ring-0 bg-white dark:bg-zinc-950 font-mono text-sm"
             />
           </div>
         </div>

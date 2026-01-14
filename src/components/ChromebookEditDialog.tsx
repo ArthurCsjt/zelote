@@ -385,11 +385,11 @@ export function ChromebookEditDialog({ open, onOpenChange, chromebook }: Chromeb
                   disabled={isMobilityDisabled}
                 >
                   <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="movel" id="movel-edit" className="border-2 border-black text-black" />
+                    <RadioGroupItem value="movel" id="movel-edit" className="neo-radio" />
                     <Label htmlFor="movel-edit" className="font-bold text-xs uppercase cursor-pointer dark:text-white">Móvel (Disponível)</Label>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="fixo" id="fixo-edit" className="border-2 border-black text-black" />
+                    <RadioGroupItem value="fixo" id="fixo-edit" className="neo-radio" />
                     <Label htmlFor="fixo-edit" className="font-bold text-xs uppercase cursor-pointer dark:text-white">Fixo em Sala</Label>
                   </div>
                 </RadioGroup>
@@ -437,13 +437,13 @@ export function ChromebookEditDialog({ open, onOpenChange, chromebook }: Chromeb
                   disabled={isProvisioningDisabled}
                 >
                   <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="provisioned" id="provisioned-edit" className="border-2 border-black text-black" />
+                    <RadioGroupItem value="provisioned" id="provisioned-edit" className="neo-radio" />
                     <Label htmlFor="provisioned-edit" className="flex items-center gap-1 font-bold text-xs uppercase cursor-pointer dark:text-white">
                       <CheckCircle className="h-3 w-3 text-green-600" /> Provisionado
                     </Label>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="deprovisioned" id="deprovisioned-edit" className="border-2 border-black text-black" />
+                    <RadioGroupItem value="deprovisioned" id="deprovisioned-edit" className="neo-radio" />
                     <Label htmlFor="deprovisioned-edit" className="flex items-center gap-1 font-bold text-xs uppercase cursor-pointer dark:text-white">
                       <XCircle className="h-3 w-3 text-red-600" /> Desprovisionado
                     </Label>

@@ -292,7 +292,7 @@
 
 /* Neo-Brutal Input */
 .neo-brutal-input {
-  @apply h-12 text-base font-black uppercase bg-input-bg border-3 border-black dark:border-white rounded-none px-4;
+  @apply h-12 text-base font-black bg-input-bg border-3 border-black dark:border-white rounded-none px-4;
   @apply focus:border-primary focus:ring-0 focus:ring-offset-0;
   @apply placeholder:text-muted-foreground/40;
   transition: all 0.1s ease;
@@ -314,7 +314,7 @@
 
 /* Neo-Brutal Label */
 .neo-brutal-label {
-  @apply text-sm font-bold uppercase tracking-wide text-foreground;
+  @apply text-sm font-bold tracking-wide text-foreground;
 }
 
 /* Neo-Brutal Button */
@@ -765,6 +765,23 @@
 
 .neo-select-item {
   @apply rounded-none font-bold uppercase py-2.5 transition-colors focus:bg-black focus:text-white dark:focus:bg-white dark:focus:text-black;
+}
+
+/* Neo-Brutal Choicers (Radio/Checkbox) */
+.neo-radio {
+  @apply border-2 border-black dark:border-white bg-white dark:bg-zinc-950 transition-all duration-150 rounded-full;
+}
+
+.neo-radio[data-state='checked'] {
+  @apply border-primary ring-2 ring-primary bg-primary/10 dark:bg-primary/20;
+}
+
+.neo-checkbox {
+  @apply border-2 border-black dark:border-white bg-white dark:bg-zinc-950 transition-all duration-150;
+}
+
+.neo-checkbox[data-state='checked'] {
+  @apply border-primary bg-primary/10 dark:bg-primary/20 text-primary;
 }
 
 /* ======================================================================== */
@@ -1639,6 +1656,7 @@
 
 /* ===== MICRO-INTERAÇÕES E ANIMAÇÕES ===== */
 @keyframes neo-bounce {
+
   0%,
   100% {
     transform: translateY(0);
@@ -1654,6 +1672,7 @@
 }
 
 @keyframes neo-shake {
+
   0%,
   100% {
     transform: translateX(0);
@@ -1675,6 +1694,7 @@
 }
 
 @keyframes neo-wiggle {
+
   0%,
   100% {
     transform: rotate(0deg);

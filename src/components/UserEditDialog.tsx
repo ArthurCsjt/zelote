@@ -117,7 +117,7 @@ export function UserEditDialog({ open, onOpenChange, user, onSuccess }: UserEdit
             </div>
             Editar <span className="bg-white dark:bg-black px-2 border-2 border-black dark:border-white">{user.tipo}</span>
           </DialogTitle>
-          <DialogDescription className="text-black/70 dark:text-white/70 font-bold text-xs uppercase tracking-wide mt-1">
+          <DialogDescription className="text-black/70 dark:text-white/70 font-bold text-xs tracking-wide mt-1">
             Atualize os dados de <span className="font-black text-black dark:text-white">{user.nome_completo}</span>.
           </DialogDescription>
         </DialogHeader>
@@ -125,18 +125,18 @@ export function UserEditDialog({ open, onOpenChange, user, onSuccess }: UserEdit
         <form onSubmit={handleSubmit} className="neo-dialog-content">
           <div className="space-y-4 p-4 border-2 border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-white dark:bg-zinc-950">
             <div className="space-y-1.5">
-              <Label htmlFor="nome_completo" className="text-xs font-bold uppercase dark:text-white">Nome Completo *</Label>
+              <Label htmlFor="nome_completo" className="text-xs font-bold dark:text-white">Nome Completo *</Label>
               <Input
                 id="nome_completo"
                 value={formData.nome_completo || ''}
                 onChange={handleInputChange('nome_completo')}
                 required
-                className="neo-input h-10 uppercase placeholder:normal-case font-bold"
+                className="neo-input h-10 font-bold"
               />
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="email" className="text-xs font-bold uppercase dark:text-white">E-mail *</Label>
+              <Label htmlFor="email" className="text-xs font-bold dark:text-white">E-mail *</Label>
               <Input
                 id="email"
                 type="email"
@@ -148,7 +148,7 @@ export function UserEditDialog({ open, onOpenChange, user, onSuccess }: UserEdit
                   emailError && "border-red-600 bg-red-50"
                 )}
               />
-              {emailError && <p className="text-xs font-bold uppercase text-red-600 border border-red-600 p-1 bg-red-100 w-fit">{emailError}</p>}
+              {emailError && <p className="text-xs font-bold text-red-600 border border-red-600 p-1 bg-red-100 w-fit">{emailError}</p>}
             </div>
 
             {user.tipo === 'Aluno' && (
