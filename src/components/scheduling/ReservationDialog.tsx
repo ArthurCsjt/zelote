@@ -74,10 +74,10 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!justification.trim() || !classroom.trim() || quantity <= 0 || quantity > maxQuantity) {
+    if (!classroom.trim() || quantity <= 0 || quantity > maxQuantity) {
       toast({
         title: "Erro de Validação",
-        description: "Preencha a sala e a justificativa.",
+        description: "Preencha a sala.",
         variant: "destructive"
       });
       return;
@@ -310,13 +310,12 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-[11px] sm:text-xs font-black uppercase text-[#a855f7] dark:text-purple-400 tracking-wider">Justificativa / Motivo <span className="text-red-500">*</span></Label>
+                  <Label className="text-[11px] sm:text-xs font-black uppercase text-[#a855f7] dark:text-purple-400 tracking-wider">Justificativa / Motivo (Opcional)</Label>
                   <Textarea
                     value={justification}
                     onChange={(e) => setJustification(e.target.value)}
                     placeholder="Ex: Aula sobre Segunda Guerra Mundial"
                     className="border-2 border-black dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded-none min-h-[70px] text-xs sm:text-sm resize-none focus-visible:ring-0 focus-visible:border-[#a855f7] dark:focus-visible:border-purple-500"
-                    required
                   />
                 </div>
               </div>
@@ -437,7 +436,7 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
           </Button>
           <Button
             type="submit"
-            disabled={isSaving || !justification.trim() || !classroom.trim() || quantity <= 0}
+            disabled={isSaving || !classroom.trim() || quantity <= 0}
             onClick={handleSubmit}
             className="w-full sm:w-auto sm:flex-[2] h-10 sm:h-11 font-black uppercase bg-gradient-to-r from-blue-500 to-violet-600 hover:from-blue-600 hover:to-violet-700 text-white border-2 border-black rounded-none shadow-[3px_3px_0_0_#000] text-xs sm:text-sm disabled:opacity-50 order-1 sm:order-2"
           >
