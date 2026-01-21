@@ -185,26 +185,29 @@ export function TeacherCSVImport() {
 
     const emails = validRows.map(t => t.email).filter(Boolean);
 
+    if (emails.length === 0) return true;
+
     try {
       const { data: existing, error } = await supabase
         .from('professores')
         .select('email')
         .in('email', emails);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Erro ao buscar e-mails:', error);
+        throw error;
+      }
 
       if (existing && existing.length > 0) {
         const existingEmails = new Set(existing.map(e => String(e.email).toLowerCase()));
 
         setParsedData(prev => prev.map(teacher => {
-          const teacherErrors = [...teacher.errors];
+          const teacherErrors = [...teacher.errors].filter(e => e !== 'E-mail já cadastrado');
           let isValid = teacher.valid;
           let hasDuplicate = false;
 
           if (existingEmails.has(teacher.email.toLowerCase())) {
-            if (!teacherErrors.includes('E-mail já cadastrado')) {
-              teacherErrors.push('E-mail já cadastrado');
-            }
+            teacherErrors.push('E-mail já cadastrado');
             isValid = false;
             hasDuplicate = true;
           }
@@ -216,9 +219,14 @@ export function TeacherCSVImport() {
           } : teacher;
         }));
 
+        const duplicateCount = parsedData.filter((_, idx) => {
+          const t = parsedData[idx];
+          return existingEmails.has(t.email.toLowerCase());
+        }).length;
+
         toast({
           title: "Duplicados encontrados",
-          description: "Alguns professores já possuem E-mail cadastrado. As linhas foram marcadas em vermelho.",
+          description: `${duplicateCount} professor(es) já cadastrado(s). Verifique as linhas destacadas em vermelho na coluna "Erros".`,
           variant: "destructive",
         });
         return false;
@@ -228,7 +236,7 @@ export function TeacherCSVImport() {
       console.error('Erro ao verificar duplicados:', error);
       toast({
         title: "Erro na validação",
-        description: "Não foi possível verificar dados duplicados no banco.",
+        description: `Não foi possível verificar duplicados: ${error.message}`,
         variant: "destructive",
       });
       return false;

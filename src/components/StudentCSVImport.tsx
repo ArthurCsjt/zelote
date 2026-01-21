@@ -188,36 +188,58 @@ export function StudentCSVImport() {
     const ras = validRows.map(s => s.ra).filter(Boolean);
     const emails = validRows.map(s => s.email).filter(Boolean);
 
+    if (ras.length === 0 && emails.length === 0) return true;
+
     try {
-      // Busca duplicados no banco usando a sintaxe otimizada do PostgREST para o Supabase
-      const { data: existing, error } = await supabase
-        .from('alunos')
-        .select('ra, email')
-        .or(`ra.in.(${ras.map(ra => `"${ra}"`).join(',')}),email.in.(${emails.map(e => `"${e}"`).join(',')})`);
+      // Busca duplicados no banco - fazendo duas queries separadas para evitar problemas de sintaxe
+      const existingRas = new Set<string>();
+      const existingEmails = new Set<string>();
 
-      if (error) throw error;
+      // Query 1: Buscar RAs duplicados
+      if (ras.length > 0) {
+        const { data: raData, error: raError } = await supabase
+          .from('alunos')
+          .select('ra')
+          .in('ra', ras);
 
-      if (existing && existing.length > 0) {
-        const existingRas = new Set(existing.map(e => String(e.ra)));
-        const existingEmails = new Set(existing.map(e => String(e.email).toLowerCase()));
+        if (raError) {
+          console.error('Erro ao buscar RAs:', raError);
+        } else if (raData) {
+          raData.forEach(item => existingRas.add(String(item.ra)));
+        }
+      }
 
+      // Query 2: Buscar E-mails duplicados
+      if (emails.length > 0) {
+        const { data: emailData, error: emailError } = await supabase
+          .from('alunos')
+          .select('email')
+          .in('email', emails);
+
+        if (emailError) {
+          console.error('Erro ao buscar e-mails:', emailError);
+        } else if (emailData) {
+          emailData.forEach(item => existingEmails.add(String(item.email).toLowerCase()));
+        }
+      }
+
+      // Se encontrou duplicados, marca as linhas
+      if (existingRas.size > 0 || existingEmails.size > 0) {
         setParsedData(prev => prev.map(student => {
-          const studentErrors = [...student.errors];
+          const studentErrors = [...student.errors].filter(e =>
+            e !== 'RA já cadastrado' && e !== 'E-mail já cadastrado'
+          );
           let isValid = student.valid;
           let hasDuplicate = false;
 
           if (existingRas.has(student.ra)) {
-            if (!studentErrors.includes('RA já cadastrado')) {
-              studentErrors.push('RA já cadastrado');
-            }
+            studentErrors.push('RA já cadastrado');
             isValid = false;
             hasDuplicate = true;
           }
 
           if (existingEmails.has(student.email.toLowerCase())) {
-            if (!studentErrors.includes('E-mail já cadastrado')) {
-              studentErrors.push('E-mail já cadastrado');
-            }
+            studentErrors.push('E-mail já cadastrado');
             isValid = false;
             hasDuplicate = true;
           }
@@ -229,9 +251,14 @@ export function StudentCSVImport() {
           } : student;
         }));
 
+        const duplicateCount = parsedData.filter((_, idx) => {
+          const s = parsedData[idx];
+          return existingRas.has(s.ra) || existingEmails.has(s.email.toLowerCase());
+        }).length;
+
         toast({
           title: "Duplicados encontrados",
-          description: "Alguns alunos já possuem RA ou E-mail cadastrado. As linhas foram marcadas em vermelho.",
+          description: `${duplicateCount} aluno(s) já cadastrado(s). Verifique as linhas destacadas em vermelho na coluna "Erros".`,
           variant: "destructive",
         });
         return false;
@@ -241,7 +268,7 @@ export function StudentCSVImport() {
       console.error('Erro ao verificar duplicados:', error);
       toast({
         title: "Erro na validação",
-        description: "Não foi possível verificar dados duplicados no banco.",
+        description: `Não foi possível verificar duplicados: ${error.message}`,
         variant: "destructive",
       });
       return false;
