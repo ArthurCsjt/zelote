@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import Papa from 'papaparse';
-import { Upload, Download, FileText, AlertCircle, CheckCircle } from 'lucide-react';
+import { Upload, Download, FileText, AlertCircle, CheckCircle, Trash2 } from 'lucide-react';
 import { Button } from './ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
@@ -138,12 +138,16 @@ export function StudentCSVImport() {
 
   const processParsedData = (data: any[]) => {
     const parsed: ParsedStudent[] = data.map((row: any) => {
-      const validation = validateStudent(row);
-      return {
+      const studentData = {
         nome_completo: String(row.nome_completo || row[0] || '').trim(),
         ra: String(row.ra || row[1] || '').trim(),
         email: String(row.email || row[2] || '').trim(),
         turma: String(row.turma || row[3] || '').trim(),
+      };
+
+      const validation = validateStudent(studentData);
+      return {
+        ...studentData,
         valid: validation.valid,
         errors: validation.errors
       };
@@ -151,6 +155,29 @@ export function StudentCSVImport() {
 
     setParsedData(parsed);
     setPreview(true);
+  };
+
+  const removeRow = (index: number) => {
+    setParsedData(prev => prev.filter((_, i) => i !== index));
+    toast({
+      title: "Linha removida",
+      description: "O aluno foi removido da lista de importação.",
+    });
+  };
+
+  const updateRow = (index: number, field: keyof StudentCSVData, value: string) => {
+    setParsedData(prev => {
+      const newData = [...prev];
+      const updatedStudent = { ...newData[index], [field]: value };
+      const validation = validateStudent(updatedStudent);
+
+      newData[index] = {
+        ...updatedStudent,
+        valid: validation.valid,
+        errors: validation.errors
+      };
+      return newData;
+    });
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -352,12 +379,13 @@ export function StudentCSVImport() {
                   <Table>
                     <TableHeader className="bg-gray-100 dark:bg-zinc-800 border-b-4 border-black dark:border-white sticky top-0 z-20">
                       <TableRow className="hover:bg-transparent">
-                        <TableHead className="text-black dark:text-white font-black uppercase text-xs border-r-2 border-black dark:border-white">Status</TableHead>
+                        <TableHead className="text-black dark:text-white font-black uppercase text-xs border-r-2 border-black dark:border-white w-16">Status</TableHead>
                         <TableHead className="text-black dark:text-white font-black uppercase text-xs border-r-2 border-black dark:border-white">Nome Completo</TableHead>
-                        <TableHead className="text-black dark:text-white font-black uppercase text-xs border-r-2 border-black dark:border-white">RA</TableHead>
+                        <TableHead className="text-black dark:text-white font-black uppercase text-xs border-r-2 border-black dark:border-white w-32">RA</TableHead>
                         <TableHead className="text-black dark:text-white font-black uppercase text-xs border-r-2 border-black dark:border-white">E-mail</TableHead>
-                        <TableHead className="text-black dark:text-white font-black uppercase text-xs border-r-2 border-black dark:border-white">Turma</TableHead>
-                        <TableHead className="text-black dark:text-white font-black uppercase text-xs">Erros</TableHead>
+                        <TableHead className="text-black dark:text-white font-black uppercase text-xs border-r-2 border-black dark:border-white w-24">Turma</TableHead>
+                        <TableHead className="text-black dark:text-white font-black uppercase text-xs border-r-2 border-black dark:border-white">Erros</TableHead>
+                        <TableHead className="text-black dark:text-white font-black uppercase text-xs w-16 text-center">Ações</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -380,16 +408,54 @@ export function StudentCSVImport() {
                               </div>
                             )}
                           </TableCell>
-                          <TableCell className="border-r-2 border-black dark:border-white font-bold text-xs">{student.nome_completo}</TableCell>
-                          <TableCell className="border-r-2 border-black dark:border-white text-zinc-500 dark:text-zinc-400 font-bold text-xs">{student.ra}</TableCell>
-                          <TableCell className="border-r-2 border-black dark:border-white font-bold text-xs">{student.email}</TableCell>
-                          <TableCell className="border-r-2 border-black dark:border-white font-bold text-xs">{student.turma}</TableCell>
-                          <TableCell>
+                          <TableCell className="border-r-2 border-black dark:border-white p-0">
+                            <input
+                              type="text"
+                              value={student.nome_completo}
+                              onChange={(e) => updateRow(index, 'nome_completo', e.target.value)}
+                              className="w-full h-full bg-transparent p-2 font-bold text-xs focus:bg-blue-50 dark:focus:bg-blue-900/20 outline-none"
+                            />
+                          </TableCell>
+                          <TableCell className="border-r-2 border-black dark:border-white p-0">
+                            <input
+                              type="text"
+                              value={student.ra}
+                              onChange={(e) => updateRow(index, 'ra', e.target.value)}
+                              className="w-full h-full bg-transparent p-2 font-bold text-xs text-zinc-500 dark:text-zinc-400 focus:bg-blue-50 dark:focus:bg-blue-900/20 outline-none font-mono"
+                            />
+                          </TableCell>
+                          <TableCell className="border-r-2 border-black dark:border-white p-0">
+                            <input
+                              type="text"
+                              value={student.email}
+                              onChange={(e) => updateRow(index, 'email', e.target.value)}
+                              className="w-full h-full bg-transparent p-2 font-bold text-xs focus:bg-blue-50 dark:focus:bg-blue-900/20 outline-none"
+                            />
+                          </TableCell>
+                          <TableCell className="border-r-2 border-black dark:border-white p-0">
+                            <input
+                              type="text"
+                              value={student.turma}
+                              onChange={(e) => updateRow(index, 'turma', e.target.value)}
+                              className="w-full h-full bg-transparent p-2 font-bold text-xs focus:bg-blue-50 dark:focus:bg-blue-900/20 outline-none"
+                            />
+                          </TableCell>
+                          <TableCell className="border-r-2 border-black dark:border-white">
                             {student.errors.length > 0 && (
                               <div className="text-[10px] font-black uppercase text-red-600 leading-tight">
                                 {student.errors.join(' | ')}
                               </div>
                             )}
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => removeRow(index)}
+                              className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
                           </TableCell>
                         </TableRow>
                       ))}

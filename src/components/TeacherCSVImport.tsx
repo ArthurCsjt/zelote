@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import Papa from 'papaparse';
-import { Upload, Download, FileText, AlertCircle, CheckCircle, GraduationCap } from 'lucide-react';
+import { Upload, Download, FileText, AlertCircle, CheckCircle, GraduationCap, Trash2 } from 'lucide-react';
 import { Button } from './ui/button';
 import { CardContent, CardHeader, CardTitle } from './ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
@@ -153,6 +153,29 @@ export function TeacherCSVImport() {
 
     setParsedData(parsed);
     setPreview(true);
+  };
+
+  const removeRow = (index: number) => {
+    setParsedData(prev => prev.filter((_, i) => i !== index));
+    toast({
+      title: "Linha removida",
+      description: "O professor foi removido da lista de importação.",
+    });
+  };
+
+  const updateRow = (index: number, field: keyof TeacherCSVData, value: string) => {
+    setParsedData(prev => {
+      const newData = [...prev];
+      const updatedTeacher = { ...newData[index], [field]: value };
+      const validation = validateTeacher(updatedTeacher);
+
+      newData[index] = {
+        ...updatedTeacher,
+        valid: validation.valid,
+        errors: validation.errors
+      };
+      return newData;
+    });
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -346,11 +369,12 @@ export function TeacherCSVImport() {
                   <Table>
                     <TableHeader className="bg-gray-100 dark:bg-zinc-800 border-b-4 border-black dark:border-white sticky top-0 z-20">
                       <TableRow className="hover:bg-transparent">
-                        <TableHead className="text-black dark:text-white font-black uppercase text-xs border-r-2 border-black dark:border-white">Status</TableHead>
+                        <TableHead className="text-black dark:text-white font-black uppercase text-xs border-r-2 border-black dark:border-white w-16">Status</TableHead>
                         <TableHead className="text-black dark:text-white font-black uppercase text-xs border-r-2 border-black dark:border-white">Nome Completo</TableHead>
                         <TableHead className="text-black dark:text-white font-black uppercase text-xs border-r-2 border-black dark:border-white">E-mail</TableHead>
-                        <TableHead className="text-black dark:text-white font-black uppercase text-xs border-r-2 border-black dark:border-white">Matéria</TableHead>
-                        <TableHead className="text-black dark:text-white font-black uppercase text-xs">Erros</TableHead>
+                        <TableHead className="text-black dark:text-white font-black uppercase text-xs border-r-2 border-black dark:border-white w-32">Matéria</TableHead>
+                        <TableHead className="text-black dark:text-white font-black uppercase text-xs border-r-2 border-black dark:border-white">Erros</TableHead>
+                        <TableHead className="text-black dark:text-white font-black uppercase text-xs w-16 text-center">Ações</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -373,15 +397,46 @@ export function TeacherCSVImport() {
                               </div>
                             )}
                           </TableCell>
-                          <TableCell className="border-r-2 border-black dark:border-white font-bold text-xs">{teacher.nome_completo}</TableCell>
-                          <TableCell className="border-r-2 border-black dark:border-white font-bold text-xs">{teacher.email}</TableCell>
-                          <TableCell className="border-r-2 border-black dark:border-white font-bold text-xs">{teacher.materia || '-'}</TableCell>
-                          <TableCell>
+                          <TableCell className="border-r-2 border-black dark:border-white p-0">
+                            <input
+                              type="text"
+                              value={teacher.nome_completo}
+                              onChange={(e) => updateRow(index, 'nome_completo', e.target.value)}
+                              className="w-full h-full bg-transparent p-2 font-bold text-xs focus:bg-blue-50 dark:focus:bg-blue-900/20 outline-none"
+                            />
+                          </TableCell>
+                          <TableCell className="border-r-2 border-black dark:border-white p-0">
+                            <input
+                              type="text"
+                              value={teacher.email}
+                              onChange={(e) => updateRow(index, 'email', e.target.value)}
+                              className="w-full h-full bg-transparent p-2 font-bold text-xs focus:bg-blue-50 dark:focus:bg-blue-900/20 outline-none"
+                            />
+                          </TableCell>
+                          <TableCell className="border-r-2 border-black dark:border-white p-0">
+                            <input
+                              type="text"
+                              value={teacher.materia || ''}
+                              onChange={(e) => updateRow(index, 'materia', e.target.value)}
+                              className="w-full h-full bg-transparent p-2 font-bold text-xs focus:bg-blue-50 dark:focus:bg-blue-900/20 outline-none"
+                            />
+                          </TableCell>
+                          <TableCell className="border-r-2 border-black dark:border-white">
                             {teacher.errors.length > 0 && (
                               <div className="text-[10px] font-black uppercase text-red-600 leading-tight">
                                 {teacher.errors.join(' | ')}
                               </div>
                             )}
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => removeRow(index)}
+                              className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
                           </TableCell>
                         </TableRow>
                       ))}
