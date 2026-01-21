@@ -225,6 +225,11 @@ export function StudentCSVImport() {
 
       // Se encontrou duplicados, marca as linhas
       if (existingRas.size > 0 || existingEmails.size > 0) {
+        // Calcula a contagem ANTES de atualizar o estado
+        const duplicateCount = validRows.filter(student => {
+          return existingRas.has(student.ra) || existingEmails.has(student.email.toLowerCase());
+        }).length;
+
         setParsedData(prev => prev.map(student => {
           const studentErrors = [...student.errors].filter(e =>
             e !== 'RA já cadastrado' && e !== 'E-mail já cadastrado'
@@ -250,11 +255,6 @@ export function StudentCSVImport() {
             errors: studentErrors
           } : student;
         }));
-
-        const duplicateCount = parsedData.filter((_, idx) => {
-          const s = parsedData[idx];
-          return existingRas.has(s.ra) || existingEmails.has(s.email.toLowerCase());
-        }).length;
 
         toast({
           title: "Duplicados encontrados",

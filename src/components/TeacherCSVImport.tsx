@@ -201,6 +201,11 @@ export function TeacherCSVImport() {
       if (existing && existing.length > 0) {
         const existingEmails = new Set(existing.map(e => String(e.email).toLowerCase()));
 
+        // Calcula a contagem ANTES de atualizar o estado
+        const duplicateCount = validRows.filter(teacher => {
+          return existingEmails.has(teacher.email.toLowerCase());
+        }).length;
+
         setParsedData(prev => prev.map(teacher => {
           const teacherErrors = [...teacher.errors].filter(e => e !== 'E-mail já cadastrado');
           let isValid = teacher.valid;
@@ -218,11 +223,6 @@ export function TeacherCSVImport() {
             errors: teacherErrors
           } : teacher;
         }));
-
-        const duplicateCount = parsedData.filter((_, idx) => {
-          const t = parsedData[idx];
-          return existingEmails.has(t.email.toLowerCase());
-        }).length;
 
         toast({
           title: "Duplicados encontrados",
