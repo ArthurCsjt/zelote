@@ -12,6 +12,7 @@ import { GlassCard } from './ui/GlassCard';
 import { cn } from '@/lib/utils';
 import type { TeacherData } from '@/types/database';
 import { validateEmailDomain } from '@/utils/emailValidation';
+import { supabase } from '@/integrations/supabase/client';
 
 interface TeacherCSVData extends TeacherData {
   // Herda nome_completo, email, materia
@@ -178,6 +179,62 @@ export function TeacherCSVImport() {
     });
   };
 
+  const checkDuplicates = async () => {
+    const validRows = parsedData.filter(s => s.valid);
+    if (validRows.length === 0) return true;
+
+    const emails = validRows.map(t => t.email).filter(Boolean);
+
+    try {
+      const { data: existing, error } = await supabase
+        .from('professores')
+        .select('email')
+        .in('email', emails);
+
+      if (error) throw error;
+
+      if (existing && existing.length > 0) {
+        const existingEmails = new Set(existing.map(e => String(e.email).toLowerCase()));
+
+        setParsedData(prev => prev.map(teacher => {
+          const teacherErrors = [...teacher.errors];
+          let isValid = teacher.valid;
+          let hasDuplicate = false;
+
+          if (existingEmails.has(teacher.email.toLowerCase())) {
+            if (!teacherErrors.includes('E-mail já cadastrado')) {
+              teacherErrors.push('E-mail já cadastrado');
+            }
+            isValid = false;
+            hasDuplicate = true;
+          }
+
+          return hasDuplicate ? {
+            ...teacher,
+            valid: isValid,
+            errors: teacherErrors
+          } : teacher;
+        }));
+
+        toast({
+          title: "Duplicados encontrados",
+          description: "Alguns professores já possuem E-mail cadastrado. As linhas foram marcadas em vermelho.",
+          variant: "destructive",
+        });
+        return false;
+      }
+      return true;
+    } catch (error: any) {
+      console.error('Erro ao verificar duplicados:', error);
+      toast({
+        title: "Erro na validação",
+        description: "Não foi possível verificar dados duplicados no banco.",
+        variant: "destructive",
+      });
+      return false;
+    }
+  };
+
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
@@ -212,7 +269,27 @@ export function TeacherCSVImport() {
     setImporting(true);
 
     try {
-      const teachersToImport: TeacherData[] = validTeachers.map(teacher => ({
+      // PASSO 1: Verificar duplicados antes de tentar inserir
+      const noDuplicates = await checkDuplicates();
+      if (!noDuplicates) {
+        setImporting(false);
+        return;
+      }
+
+      // Re-filtra após a verificação de duplicados
+      const currentValidTeachers = parsedData.filter(t => t.valid);
+
+      if (currentValidTeachers.length === 0) {
+        toast({
+          title: "Erro",
+          description: "Não há professores válidos para importar após a verificação de duplicados.",
+          variant: "destructive",
+        });
+        setImporting(false);
+        return;
+      }
+
+      const teachersToImport: TeacherData[] = currentValidTeachers.map(teacher => ({
         nome_completo: teacher.nome_completo,
         email: teacher.email,
         materia: teacher.materia,

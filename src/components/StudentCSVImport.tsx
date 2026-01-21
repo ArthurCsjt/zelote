@@ -10,6 +10,7 @@ import { toast } from '@/hooks/use-toast';
 import { useDatabase } from '@/hooks/useDatabase';
 import { GlassCard } from './ui/GlassCard';
 import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
 
 interface StudentCSVData {
   nome_completo: string;
@@ -180,6 +181,73 @@ export function StudentCSVImport() {
     });
   };
 
+  const checkDuplicates = async () => {
+    const validRows = parsedData.filter(s => s.valid);
+    if (validRows.length === 0) return true;
+
+    const ras = validRows.map(s => s.ra).filter(Boolean);
+    const emails = validRows.map(s => s.email).filter(Boolean);
+
+    try {
+      // Busca duplicados no banco usando a sintaxe otimizada do PostgREST para o Supabase
+      const { data: existing, error } = await supabase
+        .from('alunos')
+        .select('ra, email')
+        .or(`ra.in.(${ras.map(ra => `"${ra}"`).join(',')}),email.in.(${emails.map(e => `"${e}"`).join(',')})`);
+
+      if (error) throw error;
+
+      if (existing && existing.length > 0) {
+        const existingRas = new Set(existing.map(e => String(e.ra)));
+        const existingEmails = new Set(existing.map(e => String(e.email).toLowerCase()));
+
+        setParsedData(prev => prev.map(student => {
+          const studentErrors = [...student.errors];
+          let isValid = student.valid;
+          let hasDuplicate = false;
+
+          if (existingRas.has(student.ra)) {
+            if (!studentErrors.includes('RA já cadastrado')) {
+              studentErrors.push('RA já cadastrado');
+            }
+            isValid = false;
+            hasDuplicate = true;
+          }
+
+          if (existingEmails.has(student.email.toLowerCase())) {
+            if (!studentErrors.includes('E-mail já cadastrado')) {
+              studentErrors.push('E-mail já cadastrado');
+            }
+            isValid = false;
+            hasDuplicate = true;
+          }
+
+          return hasDuplicate ? {
+            ...student,
+            valid: isValid,
+            errors: studentErrors
+          } : student;
+        }));
+
+        toast({
+          title: "Duplicados encontrados",
+          description: "Alguns alunos já possuem RA ou E-mail cadastrado. As linhas foram marcadas em vermelho.",
+          variant: "destructive",
+        });
+        return false;
+      }
+      return true;
+    } catch (error: any) {
+      console.error('Erro ao verificar duplicados:', error);
+      toast({
+        title: "Erro na validação",
+        description: "Não foi possível verificar dados duplicados no banco.",
+        variant: "destructive",
+      });
+      return false;
+    }
+  };
+
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
@@ -214,7 +282,27 @@ export function StudentCSVImport() {
     setImporting(true);
 
     try {
-      const studentsToImport = validStudents.map(student => ({
+      // PASSO 1: Verificar duplicados antes de tentar inserir
+      const noDuplicates = await checkDuplicates();
+      if (!noDuplicates) {
+        setImporting(false);
+        return;
+      }
+
+      // Re-filtra após a verificação de duplicados
+      const currentValidStudents = parsedData.filter(student => student.valid);
+
+      if (currentValidStudents.length === 0) {
+        toast({
+          title: "Erro",
+          description: "Não há alunos válidos para importar após a verificação de duplicados.",
+          variant: "destructive",
+        });
+        setImporting(false);
+        return;
+      }
+
+      const studentsToImport = currentValidStudents.map(student => ({
         nome_completo: student.nome_completo,
         ra: student.ra,
         email: student.email,
