@@ -169,6 +169,92 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
               </div>
             </div>
 
+
+            {/* RESERVAS EXISTENTES */}
+            {currentReservations.length > 0 && (
+              <div className="space-y-3 animate-in fade-in slide-in-from-top-4 duration-500">
+                <div className="flex items-center gap-2 px-1">
+                  <ListFilter className="h-4 w-4 text-zinc-500" />
+                  <span className="text-[10px] sm:text-[11px] font-black uppercase text-zinc-500 tracking-widest">Reservas Existentes ({currentReservations.length})</span>
+                </div>
+
+                <div className="space-y-2.5">
+                  {currentReservations.map((res) => (
+                    <div
+                      key={res.id}
+                      className="border-2 border-black dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-[4px_4px_0_0_#000] dark:shadow-[4px_4px_0_0_rgba(255,255,255,0.05)] overflow-hidden"
+                    >
+                      <div className="flex items-center justify-between bg-zinc-100 dark:bg-zinc-800 px-3 py-1.5 border-b-2 border-black dark:border-zinc-700">
+                        <div className="flex items-center gap-2 overflow-hidden">
+                          <User className="h-3.5 w-3.5 text-zinc-600 dark:text-zinc-400 shrink-0" />
+                          <div className="flex flex-col sm:flex-row sm:items-baseline sm:gap-2 truncate">
+                            <span className="text-[11px] sm:text-xs font-black uppercase truncate">
+                              {res.prof_name || 'Professor'}
+                            </span>
+                            <span className="text-[8px] sm:text-[10px] font-bold text-zinc-500 dark:text-zinc-400 lowercase truncate opacity-80">
+                              {res.prof_email}
+                            </span>
+                          </div>
+                        </div>
+                        <Badge className="bg-purple-600 text-white border-2 border-black rounded-none h-5 text-[9px] font-black uppercase px-1.5 shadow-[2px_2px_0_0_#000]">
+                          {res.quantity_requested} Chromebooks
+                        </Badge>
+                      </div>
+
+                      <div className="p-2.5 flex flex-col gap-1.5">
+                        <div className="flex items-center gap-2">
+                          <div className="bg-blue-100 dark:bg-blue-900 px-1.5 py-0.5 border border-black dark:border-blue-700">
+                            <span className="text-[9px] font-black uppercase text-blue-700 dark:text-blue-300">SALA</span>
+                          </div>
+                          <span className="text-[11px] font-bold text-zinc-800 dark:text-zinc-200">
+                            {res.classroom || 'Não informada'}
+                          </span>
+                        </div>
+
+                        {res.justification && (
+                          <div className="flex items-start gap-2 pt-0.5">
+                            <div className="bg-zinc-200 dark:bg-zinc-700 px-1.5 py-0.5 border border-black dark:border-zinc-600 shrink-0">
+                              <span className="text-[9px] font-black uppercase text-zinc-600 dark:text-zinc-400">MOTIVO</span>
+                            </div>
+                            <p className="text-[11px] font-medium italic text-zinc-600 dark:text-zinc-400 leading-tight line-clamp-2">
+                              "{res.justification}"
+                            </p>
+                          </div>
+                        )}
+
+                        <div className="flex gap-2 pt-0.5">
+                          {res.needs_tv && (
+                            <div className="flex items-center gap-1 opacity-60">
+                              <Tv className="h-3 w-3" />
+                              <span className="text-[8px] font-black uppercase">TV</span>
+                            </div>
+                          )}
+                          {res.needs_sound && (
+                            <div className="flex items-center gap-1 opacity-60">
+                              <Volume2 className="h-3 w-3" />
+                              <span className="text-[8px] font-black uppercase">SOM</span>
+                            </div>
+                          )}
+                          {res.needs_mic && (
+                            <div className="flex items-center gap-1 opacity-60">
+                              <Mic className="h-3 w-3" />
+                              <span className="text-[8px] font-black uppercase">MIC ({res.mic_quantity})</span>
+                            </div>
+                          )}
+                          {res.is_minecraft && (
+                            <div className="flex items-center gap-1 text-green-600 dark:text-green-500">
+                              <Monitor className="h-3 w-3" />
+                              <span className="text-[8px] font-black uppercase">MINECRAFT</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* NOVO AGENDAMENTO DIVIDER */}
             <div className="relative flex items-center py-1">
               <div className="absolute inset-x-0 h-[3px] bg-black" />
