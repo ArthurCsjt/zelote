@@ -316,20 +316,9 @@ export function StudentCSVImport() {
         return;
       }
 
-      // Re-filtra após a verificação de duplicados
-      const currentValidStudents = parsedData.filter(student => student.valid);
-
-      if (currentValidStudents.length === 0) {
-        toast({
-          title: "Erro",
-          description: "Não há alunos válidos para importar após a verificação de duplicados.",
-          variant: "destructive",
-        });
-        setImporting(false);
-        return;
-      }
-
-      const studentsToImport = currentValidStudents.map(student => ({
+      // Usa a lista de validStudents que foi filtrada no início
+      // (checkDuplicates já atualizou o estado, mas usamos a lista original de válidos)
+      const studentsToImport = validStudents.map(student => ({
         nome_completo: student.nome_completo,
         ra: student.ra,
         email: student.email,

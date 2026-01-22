@@ -284,20 +284,9 @@ export function TeacherCSVImport() {
         return;
       }
 
-      // Re-filtra após a verificação de duplicados
-      const currentValidTeachers = parsedData.filter(t => t.valid);
-
-      if (currentValidTeachers.length === 0) {
-        toast({
-          title: "Erro",
-          description: "Não há professores válidos para importar após a verificação de duplicados.",
-          variant: "destructive",
-        });
-        setImporting(false);
-        return;
-      }
-
-      const teachersToImport: TeacherData[] = currentValidTeachers.map(teacher => ({
+      // Usa a lista de validTeachers que foi filtrada no início
+      // (checkDuplicates já atualizou o estado, mas usamos a lista original de válidos)
+      const teachersToImport: TeacherData[] = validTeachers.map(teacher => ({
         nome_completo: teacher.nome_completo,
         email: teacher.email,
         materia: teacher.materia,
