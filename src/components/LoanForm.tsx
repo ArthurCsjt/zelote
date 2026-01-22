@@ -113,8 +113,8 @@ export function LoanForm({ onBack, initialReservationData }: LoanFormProps) {
 
     // === LÓGICA DE PASSOS E VALIDAÇÃO ===
     const isUserSelected = !!selectedUser;
-    // A finalidade só é definida se o campo não estiver vazio E o usuário tiver confirmado
-    const isPurposeDefined = !!formData.purpose.trim() && isPurposeConfirmed;
+    // A finalidade é considerada "definida" se estiver confirmada OU se estiver vazia (campo opcional)
+    const isPurposeDefined = isPurposeConfirmed || !formData.purpose.trim();
     const isDevicesAdded = deviceIds.length > 0;
 
     // NOVO CÁLCULO DE PASSO ATUAL (4 PASSOS) - ORDEM: Equipamento, Solicitante, Finalidade, Prazo
@@ -165,12 +165,8 @@ export function LoanForm({ onBack, initialReservationData }: LoanFormProps) {
     };
 
     const handlePurposeConfirm = (value: string) => {
-        if (value.trim()) {
-            setFormData(prev => ({ ...prev, purpose: value.trim() }));
-            setIsPurposeConfirmed(true);
-        } else {
-            toast({ title: "Atenção", description: "O campo de finalidade não pode estar vazio.", variant: "destructive" });
-        }
+        setFormData(prev => ({ ...prev, purpose: value.trim() }));
+        setIsPurposeConfirmed(true);
     };
 
     const resetForm = () => {
@@ -339,11 +335,11 @@ export function LoanForm({ onBack, initialReservationData }: LoanFormProps) {
                 <div className="grid md:grid-cols-2 gap-6">
 
                     {/* ═══ COLUNA ESQUERDA (EQUIPAMENTO) ═══ */}
-                    <div className="space-y-6">
+                    <div className="h-full flex flex-col">
 
                         {/* ═══ SEÇÃO 1: EQUIPAMENTO ═══ */}
                         <div className={cn(
-                            "neo-card border-l-[12px] border-4 border-amber-500 bg-amber-100 dark:bg-amber-950/20 transition-all duration-300 shadow-[6px_6px_0px_0px_rgba(245,158,11,0.3)]",
+                            "neo-card border-l-[12px] border-4 border-amber-500 bg-amber-100 dark:bg-amber-950/20 transition-all duration-300 shadow-[6px_6px_0px_0px_rgba(245,158,11,0.3)] h-full flex flex-col",
                             currentStep === 1 && "ring-4 ring-amber-500 ring-offset-2 animate-gentle-pulse"
                         )}>
                             <CardHeader className="p-3 pb-2 border-b-3 border-amber-500/30 bg-gradient-to-r from-amber-400 to-orange-500">
@@ -366,7 +362,7 @@ export function LoanForm({ onBack, initialReservationData }: LoanFormProps) {
                                 </div>
                             </CardHeader>
 
-                            <CardContent className="p-3">
+                            <CardContent className="p-3 flex-1 flex flex-col">
                                 <DeviceListInput
                                     deviceIds={deviceIds}
                                     setDeviceIds={setDeviceIds}
@@ -431,23 +427,21 @@ export function LoanForm({ onBack, initialReservationData }: LoanFormProps) {
                             <CardHeader className="p-3 pb-2 border-b-3 border-blue-500/30 bg-gradient-to-r from-blue-400 to-cyan-500">
                                 <CardTitle className="text-base font-black uppercase tracking-tight flex items-center gap-2 text-white">
                                     <BookOpen className="h-5 w-5" />
-                                    Finalidade
+                                    Finalidade (Opcional)
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="p-3 space-y-2">
                                 <div className="space-y-1">
                                     <Label className="text-sm font-bold uppercase text-foreground flex items-center gap-1">
                                         Finalidade do Empréstimo
-                                        <span className="text-red-600">*</span>
                                     </Label>
 
                                     {renderPurposeInput()}
 
-                                    {/* Validação em tempo real para Finalidade */}
-                                    {!isPurposeDefined && (
-                                        <div className="text-xs font-bold text-red-600 flex items-center gap-1 mt-1 uppercase">
+                                    {formData.purpose.trim() && !isPurposeConfirmed && (
+                                        <div className="text-xs font-bold text-amber-600 flex items-center gap-1 mt-1 uppercase">
                                             <AlertTriangle className="h-4 w-4" />
-                                            Defina e confirme a finalidade
+                                            Confirme a finalidade digitada
                                         </div>
                                     )}
                                 </div>
@@ -647,10 +641,10 @@ export function LoanForm({ onBack, initialReservationData }: LoanFormProps) {
                             <User className="mr-2 h-6 w-6" />
                             ❌ Solicitante Pendente
                         </>
-                    ) : !isPurposeDefined ? (
+                    ) : (formData.purpose.trim() && !isPurposeConfirmed) ? (
                         <>
                             <BookOpen className="mr-2 h-6 w-6" />
-                            ❌ Finalidade Pendente
+                            ❌ Finalidade não confirmada
                         </>
                     ) : !isDevicesAdded ? (
                         <>

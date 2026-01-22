@@ -10,6 +10,7 @@ export interface UserSearchResult {
   email: string;
   ra?: string;
   turma?: string;
+  materia?: string | null;
   type: UserType;
   searchable: string;
 }
@@ -27,7 +28,7 @@ export function useUserSearch() {
         { data: funcionarios, error: funcionariosError },
       ] = await Promise.all([
         supabase.from('alunos').select('id, nome_completo, ra, email, turma'),
-        supabase.from('professores').select('id, nome_completo, email'),
+        supabase.from('professores').select('id, nome_completo, email, materia'),
         supabase.from('funcionarios').select('id, nome_completo, email'),
       ]);
 
@@ -51,11 +52,12 @@ export function useUserSearch() {
       });
 
       (professores || []).forEach(p => {
-        const searchable = `${p.nome_completo} ${p.email}`.toLowerCase();
+        const searchable = `${p.nome_completo} ${p.email} ${p.materia || ''}`.toLowerCase();
         allUsers.push({
           id: p.id,
           name: p.nome_completo,
           email: p.email,
+          materia: p.materia,
           type: 'professor',
           searchable,
         });

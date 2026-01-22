@@ -379,7 +379,7 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
               "opacity-40 cursor-not-allowed"
             )}>
               <Clock className="h-3 w-3 text-muted-foreground" />
-              <span className="text-[10px] font-bold text-muted-foreground uppercase">Passado</span>
+              <span className="text-[10px] font-bold text-muted-foreground uppercase">Expirado</span>
             </div>
           </TooltipTrigger>
           <TooltipContent className="border-3 border-foreground/20 rounded-none">

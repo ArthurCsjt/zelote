@@ -165,7 +165,7 @@ export function DeviceListInput({ deviceIds, setDeviceIds, disabled, filterStatu
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 h-full flex flex-col">
       <div className="flex justify-between items-center">
         <Label htmlFor="deviceInput" className="text-foreground font-semibold text-sm">
           Adicionar Dispositivo (Status Requerido: {requiredStatusLabel})
@@ -183,7 +183,7 @@ export function DeviceListInput({ deviceIds, setDeviceIds, disabled, filterStatu
       />
 
       {/* Lista de Dispositivos - NEO-BRUTALISM */}
-      <div className="mt-3 p-3 bg-white dark:bg-zinc-900 border-2 border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] max-h-[280px] overflow-y-auto transition-all duration-300">
+      <div className="mt-3 p-3 bg-white dark:bg-zinc-900 border-2 border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex-1 overflow-y-auto transition-all duration-300 min-h-[150px]">
         {deviceList.length > 0 ? (
           <div className="space-y-2">
             {deviceList.map((chromebook, index) => (
