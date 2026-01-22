@@ -28,8 +28,41 @@ export function TeacherCSVImport() {
   const [parsedData, setParsedData] = useState<ParsedTeacher[]>([]);
   const [preview, setPreview] = useState<boolean>(false);
   const [importing, setImporting] = useState<boolean>(false);
+  const [selectedIndices, setSelectedIndices] = useState<Set<number>>(new Set());
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { bulkInsertTeachers } = useDatabase();
+
+  const toggleSelectRow = (index: number) => {
+    setSelectedIndices(prev => {
+      const next = new Set(prev);
+      if (next.has(index)) {
+        next.delete(index);
+      } else {
+        next.add(index);
+      }
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIndices.size === parsedData.length && parsedData.length > 0) {
+      setSelectedIndices(new Set());
+    } else {
+      setSelectedIndices(new Set(parsedData.map((_, i) => i)));
+    }
+  };
+
+  const removeSelectedRows = () => {
+    if (selectedIndices.size === 0) return;
+
+    setParsedData(prev => prev.filter((_, index) => !selectedIndices.has(index)));
+    setSelectedIndices(new Set());
+
+    toast({
+      title: "Sucesso",
+      description: `${selectedIndices.size} registros removidos da lista.`,
+    });
+  };
 
   const downloadTemplate = () => {
     const template = 'nome_completo,email,materia\n' +
@@ -435,13 +468,23 @@ export function TeacherCSVImport() {
                     )}
                   </div>
                 </div>
-                <div className="flex gap-4 w-full sm:w-auto">
+                <div className="flex flex-wrap gap-4 w-full sm:w-auto">
+                  {selectedIndices.size > 0 && (
+                    <Button
+                      onClick={removeSelectedRows}
+                      className="flex-1 sm:flex-none bg-red-600 hover:bg-red-700 text-white border-4 border-black font-black uppercase shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-x-1 active:translate-y-1 active:shadow-none"
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Excluir Selecionados ({selectedIndices.size})
+                    </Button>
+                  )}
                   <Button
                     variant="outline"
                     onClick={() => {
                       setPreview(false);
                       setFile(null);
                       setParsedData([]);
+                      setSelectedIndices(new Set());
                       if (fileInputRef.current) {
                         fileInputRef.current.value = '';
                       }
@@ -478,6 +521,14 @@ export function TeacherCSVImport() {
                   <Table>
                     <TableHeader className="bg-gray-100 dark:bg-zinc-800 border-b-4 border-black dark:border-white sticky top-0 z-20">
                       <TableRow className="hover:bg-transparent">
+                        <TableHead className="text-black dark:text-white font-black uppercase text-xs border-r-2 border-black dark:border-white w-12 text-center p-0">
+                          <input
+                            type="checkbox"
+                            checked={selectedIndices.size === parsedData.length && parsedData.length > 0}
+                            onChange={toggleSelectAll}
+                            className="w-4 h-4 cursor-pointer accent-black"
+                          />
+                        </TableHead>
                         <TableHead className="text-black dark:text-white font-black uppercase text-xs border-r-2 border-black dark:border-white w-16">Status</TableHead>
                         <TableHead className="text-black dark:text-white font-black uppercase text-xs border-r-2 border-black dark:border-white">Nome Completo</TableHead>
                         <TableHead className="text-black dark:text-white font-black uppercase text-xs border-r-2 border-black dark:border-white">E-mail</TableHead>
@@ -492,9 +543,18 @@ export function TeacherCSVImport() {
                           key={index}
                           className={cn(
                             "hover:bg-gray-50 dark:hover:bg-zinc-900 border-b-2 border-black dark:border-white",
-                            !teacher.valid && "bg-red-50 dark:bg-red-950/40"
+                            !teacher.valid && "bg-red-50 dark:bg-red-950/40",
+                            selectedIndices.has(index) && "bg-blue-50 dark:bg-blue-900/20"
                           )}
                         >
+                          <TableCell className="border-r-2 border-black dark:border-white text-center p-0">
+                            <input
+                              type="checkbox"
+                              checked={selectedIndices.has(index)}
+                              onChange={() => toggleSelectRow(index)}
+                              className="w-4 h-4 cursor-pointer accent-black"
+                            />
+                          </TableCell>
                           <TableCell className="border-r-2 border-black dark:border-white text-center">
                             {teacher.valid ? (
                               <div className="p-1 bg-green-100 border-2 border-black rounded-full inline-block">
