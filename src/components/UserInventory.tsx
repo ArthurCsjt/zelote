@@ -36,6 +36,8 @@ import { UserEditDialog } from "./UserEditDialog"; // Importando o novo diálogo
 import { GlassCard } from "./ui/GlassCard"; // Importando GlassCard
 import { cn } from "@/lib/utils"; // Importando cn
 
+import { NeoPagination } from "./ui/NeoPagination";
+
 interface User {
   id: string;
   nome_completo: string;
@@ -57,6 +59,10 @@ export function UserInventory() {
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [classFilter, setClassFilter] = useState<string>('all');
   const [availableClasses, setAvailableClasses] = useState<string[]>([]);
+
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 20;
 
   // Estados para edição
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -141,6 +147,11 @@ export function UserInventory() {
     fetchUsers();
   }, [fetchUsers]);
 
+  // Reset pagination on filter change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, typeFilter, classFilter]);
+
   // Filter users based on search and filters
   const filteredUsers = users.filter((user) => {
     const matchesSearch =
@@ -154,6 +165,11 @@ export function UserInventory() {
 
     return matchesSearch && matchesType && matchesClass;
   });
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedUsers = filteredUsers.slice(startIndex, startIndex + itemsPerPage);
 
   // Get statistics
   const totalUsers = users.length;
@@ -332,8 +348,8 @@ export function UserInventory() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredUsers.length > 0 ? (
-              filteredUsers.map((user) => (
+            {paginatedUsers.length > 0 ? (
+              paginatedUsers.map((user) => (
                 <TableRow key={user.id} className="border-b-2 border-black/10 dark:border-white/10 hover:bg-yellow-50 dark:hover:bg-yellow-900/10 transition-colors">
                   <TableCell className="font-medium font-mono text-xs py-3 align-middle border-r-2 border-black/10 dark:border-white/10 uppercase">{user.nome_completo}</TableCell>
                   <TableCell className="text-xs text-muted-foreground py-3 align-middle border-r-2 border-black/10 dark:border-white/10">{user.email}</TableCell>
@@ -397,6 +413,14 @@ export function UserInventory() {
           </TableBody>
         </Table>
       </div>
+
+      {/* Pagination component */}
+      <NeoPagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+        className="mb-8"
+      />
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>

@@ -117,13 +117,13 @@ export function LoanForm({ onBack, initialReservationData }: LoanFormProps) {
     const isPurposeDefined = !!formData.purpose.trim() && isPurposeConfirmed;
     const isDevicesAdded = deviceIds.length > 0;
 
-    // NOVO CÁLCULO DE PASSO ATUAL (4 PASSOS)
+    // NOVO CÁLCULO DE PASSO ATUAL (4 PASSOS) - ORDEM: Equipamento, Solicitante, Finalidade, Prazo
     const currentStep: 1 | 2 | 3 | 4 = useMemo(() => {
-        if (!isUserSelected) return 1;
-        if (!isPurposeDefined) return 2;
-        if (!isDevicesAdded) return 3;
+        if (!isDevicesAdded) return 1;
+        if (!isUserSelected) return 2;
+        if (!isPurposeDefined) return 3;
         return 4;
-    }, [isUserSelected, isPurposeDefined, isDevicesAdded]);
+    }, [isDevicesAdded, isUserSelected, isPurposeDefined]);
 
     // === FUNÇÕES DE MANIPULAÇÃO (HANDLERS) ===
 
@@ -334,17 +334,64 @@ export function LoanForm({ onBack, initialReservationData }: LoanFormProps) {
             {/* NOVO: Cabeçalho de Passos */}
 
 
-            <form onSubmit={handleSubmit} className="space-y-3 relative z-10">
+            <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
 
-                <div className="grid md:grid-cols-2 gap-3">
+                <div className="grid md:grid-cols-2 gap-6">
 
-                    {/* ═══ COLUNA ESQUERDA ═══ */}
-                    <div className="space-y-3">
+                    {/* ═══ COLUNA ESQUERDA (EQUIPAMENTO) ═══ */}
+                    <div className="space-y-6">
 
-                        {/* ═══ SEÇÃO 1: SOLICITANTE ═══ */}
+                        {/* ═══ SEÇÃO 1: EQUIPAMENTO ═══ */}
+                        <div className={cn(
+                            "neo-card border-l-[12px] border-4 border-amber-500 bg-amber-100 dark:bg-amber-950/20 transition-all duration-300 shadow-[6px_6px_0px_0px_rgba(245,158,11,0.3)]",
+                            currentStep === 1 && "ring-4 ring-amber-500 ring-offset-2 animate-gentle-pulse"
+                        )}>
+                            <CardHeader className="p-3 pb-2 border-b-3 border-amber-500/30 bg-gradient-to-r from-amber-400 to-orange-500">
+                                <div className="flex items-center justify-between">
+                                    <CardTitle className="text-base font-black uppercase tracking-tight flex items-center gap-2 text-white">
+                                        <Computer className="h-5 w-5" />
+                                        Equipamento
+                                    </CardTitle>
+                                    <Badge variant="outline" className={cn(
+                                        "rounded-none border-3 border-white text-white font-bold transition-colors text-xs shadow-[2px_2px_0px_0px_rgba(255,255,255,0.3)]",
+                                        deviceIds.length === 0
+                                            ? "bg-white/20"
+                                            : "bg-white/30"
+                                    )}>
+                                        {deviceIds.length === 0
+                                            ? 'Nenhum'
+                                            : `${deviceIds.length} ${deviceIds.length === 1 ? 'PC' : 'PCs'}`
+                                        }
+                                    </Badge>
+                                </div>
+                            </CardHeader>
+
+                            <CardContent className="p-3">
+                                <DeviceListInput
+                                    deviceIds={deviceIds}
+                                    setDeviceIds={setDeviceIds}
+                                    disabled={loading}
+                                    filterStatus="disponivel"
+                                    actionLabel="Empréstimo"
+                                />
+
+                                {/* Validação em tempo real para Dispositivos */}
+                                {deviceIds.length === 0 && (
+                                    <div className="text-xs font-bold text-red-600 flex items-center gap-1 mt-2 uppercase">
+                                        <AlertTriangle className="h-4 w-4" />
+                                        Adicione pelo menos um dispositivo
+                                    </div>
+                                )}
+                            </CardContent>
+                        </div>
+                    </div>
+
+                    {/* ═══ COLUNA DIREITA (SOLICITANTE, FINALIDADE, PRAZO) ═══ */}
+                    <div className="space-y-6">
+                        {/* ═══ SEÇÃO 2: SOLICITANTE ═══ */}
                         <div className={cn(
                             "neo-card border-l-[12px] border-4 border-violet-500 bg-violet-100 dark:bg-violet-950/20 transition-all duration-300 shadow-[6px_6px_0px_0px_rgba(139,92,246,0.3)]",
-                            currentStep === 1 && "ring-4 ring-violet-500 ring-offset-2 animate-gentle-pulse"
+                            currentStep === 2 && isDevicesAdded && "ring-4 ring-violet-500 ring-offset-2 animate-gentle-pulse"
                         )}>
                             <CardHeader className="p-3 pb-2 border-b-3 border-violet-500/30 bg-gradient-to-r from-violet-400 to-purple-500">
                                 <CardTitle className="text-base font-black uppercase tracking-tight flex items-center gap-2 text-white">
@@ -356,7 +403,6 @@ export function LoanForm({ onBack, initialReservationData }: LoanFormProps) {
                             <CardContent className="p-3 space-y-2">
                                 {/* Busca de Usuário */}
                                 <div className="space-y-1">
-                                    {/* REMOVIDA A LABEL REDUNDANTE */}
                                     <Label className="text-sm font-bold uppercase text-foreground flex items-center gap-1 sr-only">
                                         Buscar por Nome, RA ou Email
                                         <span className="text-destructive">*</span>
@@ -377,11 +423,10 @@ export function LoanForm({ onBack, initialReservationData }: LoanFormProps) {
                                 </div>
                             </CardContent>
                         </div>
-
-                        {/* ═══ SEÇÃO 2: FINALIDADE ═══ */}
+                        {/* ═══ SEÇÃO 3: FINALIDADE ═══ */}
                         <div className={cn(
                             "neo-card border-l-[12px] border-4 border-blue-500 bg-blue-100 dark:bg-blue-950/20 transition-all duration-300 shadow-[6px_6px_0px_0px_rgba(59,130,246,0.3)]",
-                            currentStep === 2 && isUserSelected && "ring-4 ring-blue-500 ring-offset-2 animate-gentle-pulse"
+                            currentStep === 3 && isDevicesAdded && isUserSelected && "ring-4 ring-blue-500 ring-offset-2 animate-gentle-pulse"
                         )}>
                             <CardHeader className="p-3 pb-2 border-b-3 border-blue-500/30 bg-gradient-to-r from-blue-400 to-cyan-500">
                                 <CardTitle className="text-base font-black uppercase tracking-tight flex items-center gap-2 text-white">
@@ -422,54 +467,6 @@ export function LoanForm({ onBack, initialReservationData }: LoanFormProps) {
                                         disabled={loading}
                                     />
                                 </div>
-                            </CardContent>
-                        </div>
-                    </div>
-
-                    {/* ═══ COLUNA DIREITA ═══ */}
-                    <div className="space-y-3">
-
-                        {/* ═══ SEÇÃO 3: DISPOSITIVOS ═══ */}
-                        <div className={cn(
-                            "neo-card border-l-[12px] border-4 border-amber-500 bg-amber-100 dark:bg-amber-950/20 transition-all duration-300 shadow-[6px_6px_0px_0px_rgba(245,158,11,0.3)]",
-                            currentStep === 3 && isUserSelected && isPurposeDefined && "ring-4 ring-amber-500 ring-offset-2 animate-gentle-pulse"
-                        )}>
-                            <CardHeader className="p-3 pb-2 border-b-3 border-amber-500/30 bg-gradient-to-r from-amber-400 to-orange-500">
-                                <div className="flex items-center justify-between">
-                                    <CardTitle className="text-base font-black uppercase tracking-tight flex items-center gap-2 text-white">
-                                        <Computer className="h-5 w-5" />
-                                        Equipamento
-                                    </CardTitle>
-                                    <Badge variant="outline" className={cn(
-                                        "rounded-none border-3 border-white text-white font-bold transition-colors text-xs shadow-[2px_2px_0px_0px_rgba(255,255,255,0.3)]",
-                                        deviceIds.length === 0
-                                            ? "bg-white/20"
-                                            : "bg-white/30"
-                                    )}>
-                                        {deviceIds.length === 0
-                                            ? 'Nenhum'
-                                            : `${deviceIds.length} ${deviceIds.length === 1 ? 'PC' : 'PCs'}`
-                                        }
-                                    </Badge>
-                                </div>
-                            </CardHeader>
-
-                            <CardContent className="p-3">
-                                <DeviceListInput
-                                    deviceIds={deviceIds}
-                                    setDeviceIds={setDeviceIds}
-                                    disabled={loading}
-                                    filterStatus="disponivel"
-                                    actionLabel="Empréstimo"
-                                />
-
-                                {/* Validação em tempo real para Dispositivos */}
-                                {deviceIds.length === 0 && (
-                                    <div className="text-xs font-bold text-red-600 flex items-center gap-1 mt-2 uppercase">
-                                        <AlertTriangle className="h-4 w-4" />
-                                        Adicione pelo menos um dispositivo
-                                    </div>
-                                )}
                             </CardContent>
                         </div>
 

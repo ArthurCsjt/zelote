@@ -120,23 +120,59 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
     };
   }, []);
 
-  // Filter Chromebooks based on search term and status
-  const filteredChromebooks = chromebooks.filter((chromebook) => {
+  // Filter Chromebooks based on search term and status with intelligent scoring
+  const filteredChromebooks = useMemo(() => {
+    let filtered = chromebooks;
+
+    // 1. Filtrar por status
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter(cb => cb.status === statusFilter);
+    }
+
+    // 2. Se não houver termo de busca, retorna a lista filtrada apenas por status
+    if (!searchTerm.trim()) return filtered;
+
     const lowerCaseSearch = searchTerm.toLowerCase();
+    const isNumeric = /^\d+$/.test(searchTerm);
 
-    const matchesSearch =
-      chromebook.chromebook_id.toLowerCase().includes(lowerCaseSearch) ||
-      String(chromebook.patrimony_number || '').toLowerCase().includes(lowerCaseSearch) ||
-      chromebook.model.toLowerCase().includes(lowerCaseSearch) ||
-      String(chromebook.serial_number || '').toLowerCase().includes(lowerCaseSearch) ||
-      String(chromebook.location || '').toLowerCase().includes(lowerCaseSearch) ||
-      String(chromebook.manufacturer || '').toLowerCase().includes(lowerCaseSearch) ||
-      String(chromebook.classroom || '').toLowerCase().includes(lowerCaseSearch);
+    // 3. Aplicar sistema de pontuação (scoring)
+    return filtered
+      .map(cb => {
+        let score = 0;
+        const idLower = cb.chromebook_id.toLowerCase();
+        const searchable = `${cb.chromebook_id} ${cb.model} ${cb.serial_number} ${cb.patrimony_number} ${cb.manufacturer} ${cb.location} ${cb.classroom}`.toLowerCase();
 
-    const matchesStatus = statusFilter === 'all' || chromebook.status === statusFilter;
+        // Pontuação baseada no ID
+        if (idLower === lowerCaseSearch) {
+          score += 100; // Match exato
+        } else if (isNumeric) {
+          const idMatch = idLower.match(/\d+/);
+          const idNumber = idMatch ? parseInt(idMatch[0], 10) : null;
+          if (idNumber === parseInt(searchTerm, 10)) {
+            score += 90; // Match numérico (ex: "1" em "CHR001")
+          } else if (idLower.includes(lowerCaseSearch)) {
+            score += 70;
+          }
+        } else if (idLower.startsWith(lowerCaseSearch)) {
+          score += 85;
+        } else if (idLower.includes(lowerCaseSearch)) {
+          score += 70;
+        }
 
-    return matchesSearch && matchesStatus;
-  });
+        // Pontuação baseada em outros campos
+        if (searchable.includes(lowerCaseSearch) && score === 0) {
+          // Se for numérico e encontrou apenas em outros campos (modelo, etc), pontuação baixa
+          score += isNumeric ? 10 : 30;
+        } else if (searchable.includes(lowerCaseSearch)) {
+          // Bônus se já teve match no ID mas também tem no resto
+          score += 5;
+        }
+
+        return { ...cb, score };
+      })
+      .filter(cb => (cb as any).score > 0)
+      .sort((a, b) => (b as any).score - (a as any).score || a.chromebook_id.localeCompare(b.chromebook_id));
+  }, [chromebooks, searchTerm, statusFilter]);
 
   // Calculate pagination
   const totalPages = Math.ceil(filteredChromebooks.length / itemsPerPage);

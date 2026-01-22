@@ -46,12 +46,49 @@ const ChromebookSearchInput: React.FC<ChromebookSearchInputProps> = ({
     }
     // Se isListMode for true, não aplicamos filtro de status aqui.
 
-    // 2. Filtrar por termo de busca
+    // 2. Filtrar por termo de busca e ordenar por relevância
     const lowerCaseSearch = searchTerm.toLowerCase();
-    filtered = filtered.filter(cb => cb.searchable.includes(lowerCaseSearch));
+    const isNumeric = /^\d+$/.test(searchTerm);
 
-    return filtered.slice(0, 10); // Limita a 10 resultados
-  }, [chromebooks, searchTerm, filterStatus, isFocused, isListMode]); // Adicionando isListMode
+    return filtered
+      .map(cb => {
+        let score = 0;
+        const idLower = cb.chromebook_id.toLowerCase();
+
+        // 1. Prioridade máxima: ID exato
+        if (idLower === lowerCaseSearch) {
+          score += 100;
+        }
+        // 2. Match numérico inteligente (ex: "1" encontra "CHR001")
+        else if (isNumeric) {
+          const idMatch = idLower.match(/\d+/);
+          const idNumber = idMatch ? parseInt(idMatch[0], 10) : null;
+          if (idNumber === parseInt(searchTerm, 10)) {
+            score += 90;
+          } else if (idLower.includes(lowerCaseSearch)) {
+            score += 70;
+          }
+        }
+        // 3. Começa com o termo (no ID)
+        else if (idLower.startsWith(lowerCaseSearch)) {
+          score += 80;
+        }
+        // 4. Contém no ID em qualquer parte
+        else if (idLower.includes(lowerCaseSearch)) {
+          score += 70;
+        }
+        // 5. Contém em outros campos (modelo, série, patrimônio, fabricante)
+        else if (cb.searchable.includes(lowerCaseSearch)) {
+          // Se for numérico e estiver apenas no modelo (ex: "1" em "100e"), a pontuação é baixa
+          score += 10;
+        }
+
+        return { ...cb, score };
+      })
+      .filter(cb => (cb as any).score > 0)
+      .sort((a, b) => (b as any).score - (a as any).score)
+      .slice(0, 10); // Limita a 10 resultados
+  }, [chromebooks, searchTerm, filterStatus, isFocused, isListMode]);
 
   const getStatusBadge = (status: ChromebookSearchResult['status']) => {
     switch (status) {

@@ -12,21 +12,21 @@ interface LoanStepsHeaderProps {
 const steps = [
   {
     id: 1,
+    title: 'Equipamento',
+    icon: Computer,
+    check: (props: LoanStepsHeaderProps) => props.isDevicesAdded,
+  },
+  {
+    id: 2,
     title: 'Solicitante',
     icon: User,
     check: (props: LoanStepsHeaderProps) => props.isUserSelected,
   },
   {
-    id: 2,
+    id: 3,
     title: 'Finalidade',
     icon: BookOpen,
     check: (props: LoanStepsHeaderProps) => props.isPurposeDefined,
-  },
-  {
-    id: 3,
-    title: 'Equipamento',
-    icon: Computer,
-    check: (props: LoanStepsHeaderProps) => props.isDevicesAdded,
   },
   {
     id: 4,
