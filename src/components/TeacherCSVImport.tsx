@@ -188,7 +188,20 @@ export function TeacherCSVImport() {
     if (emails.length === 0) return true;
 
     try {
-      // Busca duplicados no banco usando processamento em lotes (batching)
+      // 1. Identificar duplicados INTERNOS ao CSV
+      const internalDuplicateEmails = new Set<string>();
+      const emailCounts = new Map<string, number>();
+
+      validRows.forEach(t => {
+        if (t.email) {
+          const emailLower = t.email.toLowerCase();
+          emailCounts.set(emailLower, (emailCounts.get(emailLower) || 0) + 1);
+        }
+      });
+
+      emailCounts.forEach((count, email) => { if (count > 1) internalDuplicateEmails.add(email); });
+
+      // 2. Busca duplicados no banco usando processamento em lotes (batching)
       // para evitar erro de URL muito longa (Request-URI Too Large)
       const existingEmails = new Set<string>();
       const BATCH_SIZE = 100;
@@ -212,18 +225,28 @@ export function TeacherCSVImport() {
         }
       }
 
-      if (existingEmails.size > 0) {
+      // Se encontrou duplicados (internos ou no banco), marca as linhas
+      const totalConflictEmails = new Set([...internalDuplicateEmails, ...existingEmails]);
+
+      if (totalConflictEmails.size > 0) {
         // Calcula a contagem ANTES de atualizar o estado
-        const duplicateCount = validRows.filter(teacher => {
-          return existingEmails.has(teacher.email.toLowerCase());
+        const duplicatesFound = validRows.filter(teacher => {
+          return totalConflictEmails.has(teacher.email.toLowerCase());
         }).length;
 
         setParsedData(prev => prev.map(teacher => {
-          const teacherErrors = [...teacher.errors].filter(e => e !== 'E-mail já cadastrado');
+          const teacherErrors = [...teacher.errors].filter(e =>
+            e !== 'E-mail já cadastrado' && e !== 'E-mail duplicado no arquivo'
+          );
+
           let isValid = teacher.valid;
           let hasDuplicate = false;
 
-          if (existingEmails.has(teacher.email.toLowerCase())) {
+          if (internalDuplicateEmails.has(teacher.email.toLowerCase())) {
+            teacherErrors.push('E-mail duplicado no arquivo');
+            isValid = false;
+            hasDuplicate = true;
+          } else if (existingEmails.has(teacher.email.toLowerCase())) {
             teacherErrors.push('E-mail já cadastrado');
             isValid = false;
             hasDuplicate = true;
@@ -238,7 +261,7 @@ export function TeacherCSVImport() {
 
         toast({
           title: "Duplicados encontrados",
-          description: `${duplicateCount} professor(es) já cadastrado(s). Verifique as linhas destacadas em vermelho na coluna "Erros".`,
+          description: `${duplicatesFound} professor(es) com e-mails duplicados (no arquivo ou no sistema). Verifique as linhas em vermelho.`,
           variant: "destructive",
         });
         return false;
@@ -491,12 +514,18 @@ export function TeacherCSVImport() {
                               className="w-full h-full bg-transparent p-2 font-bold text-xs focus:bg-blue-50 dark:focus:bg-blue-900/20 outline-none"
                             />
                           </TableCell>
-                          <TableCell className="border-r-2 border-black dark:border-white p-0">
+                          <TableCell className={cn(
+                            "border-r-2 border-black dark:border-white p-0",
+                            teacher.errors.some(e => e.toLowerCase().includes('e-mail')) && "bg-red-200 dark:bg-red-900/60"
+                          )}>
                             <input
                               type="text"
                               value={teacher.email}
                               onChange={(e) => updateRow(index, 'email', e.target.value)}
-                              className="w-full h-full bg-transparent p-2 font-bold text-xs focus:bg-blue-50 dark:focus:bg-blue-900/20 outline-none"
+                              className={cn(
+                                "w-full h-full bg-transparent p-2 font-bold text-xs focus:bg-blue-50 dark:focus:bg-blue-900/20 outline-none",
+                                teacher.errors.some(e => e.toLowerCase().includes('e-mail')) && "text-red-700 dark:text-red-300"
+                              )}
                             />
                           </TableCell>
                           <TableCell className="border-r-2 border-black dark:border-white p-0">

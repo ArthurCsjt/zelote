@@ -191,8 +191,25 @@ export function StudentCSVImport() {
     if (ras.length === 0 && emails.length === 0) return true;
 
     try {
-      // Busca duplicados no banco usando processamento em lotes (batching)
-      // para evitar erro de URL muito longa (Request-URI Too Large)
+      // 1. Identificar duplicados INTERNOS ao CSV (antes de ir ao banco)
+      const internalDuplicateRas = new Set<string>();
+      const internalDuplicateEmails = new Set<string>();
+
+      const raCounts = new Map<string, number>();
+      const emailCounts = new Map<string, number>();
+
+      validRows.forEach(s => {
+        if (s.ra) raCounts.set(s.ra, (raCounts.get(s.ra) || 0) + 1);
+        if (s.email) {
+          const emailLower = s.email.toLowerCase();
+          emailCounts.set(emailLower, (emailCounts.get(emailLower) || 0) + 1);
+        }
+      });
+
+      raCounts.forEach((count, ra) => { if (count > 1) internalDuplicateRas.add(ra); });
+      emailCounts.forEach((count, email) => { if (count > 1) internalDuplicateEmails.add(email); });
+
+      // 2. Busca duplicados no banco usando processamento em lotes (batching)
       const existingRas = new Set<string>();
       const existingEmails = new Set<string>();
       const BATCH_SIZE = 100;
@@ -231,27 +248,42 @@ export function StudentCSVImport() {
         }
       }
 
-      // Se encontrou duplicados, marca as linhas
-      if (existingRas.size > 0 || existingEmails.size > 0) {
-        // Calcula a contagem ANTES de atualizar o estado
-        const duplicateCount = validRows.filter(student => {
-          return existingRas.has(student.ra) || existingEmails.has(student.email.toLowerCase());
+      // Se encontrou duplicados (internos ou no banco), marca as linhas
+      const totalConflictRas = new Set([...internalDuplicateRas, ...existingRas]);
+      const totalConflictEmails = new Set([...internalDuplicateEmails, ...existingEmails]);
+
+      if (totalConflictRas.size > 0 || totalConflictEmails.size > 0) {
+        // Calcula a contagem de linhas afetadas
+        const duplicatesFound = validRows.filter(student => {
+          return totalConflictRas.has(student.ra) || totalConflictEmails.has(student.email.toLowerCase());
         }).length;
 
         setParsedData(prev => prev.map(student => {
+          // Remove erros de duplicidade antigos para não acumular
           const studentErrors = [...student.errors].filter(e =>
-            e !== 'RA já cadastrado' && e !== 'E-mail já cadastrado'
+            e !== 'RA já cadastrado' && e !== 'E-mail já cadastrado' &&
+            e !== 'RA duplicado no arquivo' && e !== 'E-mail duplicado no arquivo'
           );
+
           let isValid = student.valid;
           let hasDuplicate = false;
 
-          if (existingRas.has(student.ra)) {
+          // Prioridade 1: Duplicado no arquivo
+          if (internalDuplicateRas.has(student.ra)) {
+            studentErrors.push('RA duplicado no arquivo');
+            isValid = false;
+            hasDuplicate = true;
+          } else if (existingRas.has(student.ra)) {
             studentErrors.push('RA já cadastrado');
             isValid = false;
             hasDuplicate = true;
           }
 
-          if (existingEmails.has(student.email.toLowerCase())) {
+          if (internalDuplicateEmails.has(student.email.toLowerCase())) {
+            studentErrors.push('E-mail duplicado no arquivo');
+            isValid = false;
+            hasDuplicate = true;
+          } else if (existingEmails.has(student.email.toLowerCase())) {
             studentErrors.push('E-mail já cadastrado');
             isValid = false;
             hasDuplicate = true;
@@ -266,7 +298,7 @@ export function StudentCSVImport() {
 
         toast({
           title: "Duplicados encontrados",
-          description: `${duplicateCount} aluno(s) já cadastrado(s). Verifique as linhas destacadas em vermelho na coluna "Erros".`,
+          description: `${duplicatesFound} aluno(s) com dados duplicados (no arquivo ou no sistema). Verifique as linhas em vermelho.`,
           variant: "destructive",
         });
         return false;
@@ -528,20 +560,32 @@ export function StudentCSVImport() {
                               className="w-full h-full bg-transparent p-2 font-bold text-xs focus:bg-blue-50 dark:focus:bg-blue-900/20 outline-none"
                             />
                           </TableCell>
-                          <TableCell className="border-r-2 border-black dark:border-white p-0">
+                          <TableCell className={cn(
+                            "border-r-2 border-black dark:border-white p-0",
+                            student.errors.some(e => e.toLowerCase().includes('ra')) && "bg-red-200 dark:bg-red-900/60"
+                          )}>
                             <input
                               type="text"
                               value={student.ra}
                               onChange={(e) => updateRow(index, 'ra', e.target.value)}
-                              className="w-full h-full bg-transparent p-2 font-bold text-xs text-zinc-500 dark:text-zinc-400 focus:bg-blue-50 dark:focus:bg-blue-900/20 outline-none font-mono"
+                              className={cn(
+                                "w-full h-full bg-transparent p-2 font-bold text-xs focus:bg-blue-50 dark:focus:bg-blue-900/20 outline-none font-mono",
+                                student.errors.some(e => e.toLowerCase().includes('ra')) ? "text-red-700 dark:text-red-300" : "text-zinc-500 dark:text-zinc-400"
+                              )}
                             />
                           </TableCell>
-                          <TableCell className="border-r-2 border-black dark:border-white p-0">
+                          <TableCell className={cn(
+                            "border-r-2 border-black dark:border-white p-0",
+                            student.errors.some(e => e.toLowerCase().includes('e-mail')) && "bg-red-200 dark:bg-red-900/60"
+                          )}>
                             <input
                               type="text"
                               value={student.email}
                               onChange={(e) => updateRow(index, 'email', e.target.value)}
-                              className="w-full h-full bg-transparent p-2 font-bold text-xs focus:bg-blue-50 dark:focus:bg-blue-900/20 outline-none"
+                              className={cn(
+                                "w-full h-full bg-transparent p-2 font-bold text-xs focus:bg-blue-50 dark:focus:bg-blue-900/20 outline-none",
+                                student.errors.some(e => e.toLowerCase().includes('e-mail')) && "text-red-700 dark:text-red-300"
+                              )}
                             />
                           </TableCell>
                           <TableCell className="border-r-2 border-black dark:border-white p-0">
