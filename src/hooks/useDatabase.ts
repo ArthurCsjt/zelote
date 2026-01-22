@@ -805,6 +805,70 @@ export const useDatabase = () => {
     }
   }, [user]);
 
+  // Bulk insert students - para importação CSV
+  const bulkInsertStudents = useCallback(async (students: StudentData[]): Promise<boolean> => {
+    if (!user) {
+      toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
+      return false;
+    }
+
+    if (students.length === 0) {
+      toast({ title: "Erro", description: "Nenhum aluno para importar", variant: "destructive" });
+      return false;
+    }
+
+    setLoading(true);
+    try {
+      // Insere diretamente na tabela alunos (sem usar RPC para melhor performance em lote)
+      const { error } = await supabase
+        .from('alunos')
+        .insert(students.map(s => ({
+          nome_completo: s.nome_completo,
+          ra: s.ra,
+          email: s.email.toLowerCase(),
+          turma: s.turma
+        })));
+
+      if (error) throw error;
+      return true;
+    } catch (error: any) {
+      logger.error('Erro ao importar alunos em lote:', error);
+      toast({
+        title: "Erro na importação",
+        description: error.message.includes('duplicate') ? "Alguns alunos já estão cadastrados" : error.message,
+        variant: "destructive"
+      });
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
+
+  // Função para deletar todos os alunos (se necessário)
+  const deleteAllStudents = useCallback(async (): Promise<boolean> => {
+    if (!user) {
+      toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
+      return false;
+    }
+
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from('alunos')
+        .delete()
+        .neq('id', '00000000-0000-0000-0000-000000000000'); // Delete all
+
+      if (error) throw error;
+      return true;
+    } catch (error: any) {
+      logger.error('Erro ao deletar alunos:', error);
+      toast({ title: "Erro", description: error.message, variant: "destructive" });
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
+
   const updateTeacher = useCallback(async (id: string, data: Partial<TeacherData>): Promise<boolean> => {
     if (!user) {
       toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
