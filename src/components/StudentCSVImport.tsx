@@ -191,35 +191,43 @@ export function StudentCSVImport() {
     if (ras.length === 0 && emails.length === 0) return true;
 
     try {
-      // Busca duplicados no banco - fazendo duas queries separadas para evitar problemas de sintaxe
+      // Busca duplicados no banco usando processamento em lotes (batching)
+      // para evitar erro de URL muito longa (Request-URI Too Large)
       const existingRas = new Set<string>();
       const existingEmails = new Set<string>();
+      const BATCH_SIZE = 100;
 
-      // Query 1: Buscar RAs duplicados
+      // Query 1: Buscar RAs duplicados em lotes
       if (ras.length > 0) {
-        const { data: raData, error: raError } = await supabase
-          .from('alunos')
-          .select('ra')
-          .in('ra', ras);
+        for (let i = 0; i < ras.length; i += BATCH_SIZE) {
+          const batch = ras.slice(i, i + BATCH_SIZE);
+          const { data: raData, error: raError } = await supabase
+            .from('alunos')
+            .select('ra')
+            .in('ra', batch);
 
-        if (raError) {
-          console.error('Erro ao buscar RAs:', raError);
-        } else if (raData) {
-          raData.forEach(item => existingRas.add(String(item.ra)));
+          if (raError) {
+            console.error(`Erro ao buscar RAs (lote ${i}):`, raError);
+          } else if (raData) {
+            raData.forEach(item => existingRas.add(String(item.ra)));
+          }
         }
       }
 
-      // Query 2: Buscar E-mails duplicados
+      // Query 2: Buscar E-mails duplicados em lotes
       if (emails.length > 0) {
-        const { data: emailData, error: emailError } = await supabase
-          .from('alunos')
-          .select('email')
-          .in('email', emails);
+        for (let i = 0; i < emails.length; i += BATCH_SIZE) {
+          const batch = emails.slice(i, i + BATCH_SIZE);
+          const { data: emailData, error: emailError } = await supabase
+            .from('alunos')
+            .select('email')
+            .in('email', batch);
 
-        if (emailError) {
-          console.error('Erro ao buscar e-mails:', emailError);
-        } else if (emailData) {
-          emailData.forEach(item => existingEmails.add(String(item.email).toLowerCase()));
+          if (emailError) {
+            console.error(`Erro ao buscar e-mails (lote ${i}):`, emailError);
+          } else if (emailData) {
+            emailData.forEach(item => existingEmails.add(String(item.email).toLowerCase()));
+          }
         }
       }
 

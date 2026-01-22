@@ -805,70 +805,6 @@ export const useDatabase = () => {
     }
   }, [user]);
 
-  // Bulk insert students - para importação CSV
-  const bulkInsertStudents = useCallback(async (students: StudentData[]): Promise<boolean> => {
-    if (!user) {
-      toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
-      return false;
-    }
-
-    if (students.length === 0) {
-      toast({ title: "Erro", description: "Nenhum aluno para importar", variant: "destructive" });
-      return false;
-    }
-
-    setLoading(true);
-    try {
-      // Insere diretamente na tabela alunos (sem usar RPC para melhor performance em lote)
-      const { error } = await supabase
-        .from('alunos')
-        .insert(students.map(s => ({
-          nome_completo: s.nome_completo,
-          ra: s.ra,
-          email: s.email.toLowerCase(),
-          turma: s.turma
-        })));
-
-      if (error) throw error;
-      return true;
-    } catch (error: any) {
-      logger.error('Erro ao importar alunos em lote:', error);
-      toast({
-        title: "Erro na importação",
-        description: error.message.includes('duplicate') ? "Alguns alunos já estão cadastrados" : error.message,
-        variant: "destructive"
-      });
-      return false;
-    } finally {
-      setLoading(false);
-    }
-  }, [user]);
-
-  // Função para deletar todos os alunos (se necessário)
-  const deleteAllStudents = useCallback(async (): Promise<boolean> => {
-    if (!user) {
-      toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
-      return false;
-    }
-
-    setLoading(true);
-    try {
-      const { error } = await supabase
-        .from('alunos')
-        .delete()
-        .neq('id', '00000000-0000-0000-0000-000000000000'); // Delete all
-
-      if (error) throw error;
-      return true;
-    } catch (error: any) {
-      logger.error('Erro ao deletar alunos:', error);
-      toast({ title: "Erro", description: error.message, variant: "destructive" });
-      return false;
-    } finally {
-      setLoading(false);
-    }
-  }, [user]);
-
   const updateTeacher = useCallback(async (id: string, data: Partial<TeacherData>): Promise<boolean> => {
     if (!user) {
       toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
@@ -989,11 +925,24 @@ export const useDatabase = () => {
           throw new Error(`Email de aluno inválido: ${student.email}. Deve terminar com ${EMAIL_DOMAINS.ALUNO}`);
         }
       }
-      const { error } = await supabase
-        .from('alunos')
-        .insert(students);
 
-      if (error) throw error;
+      // Processamento em lotes para inserção (prevenção de timeouts em arquivos muito grandes)
+      const BATCH_SIZE = 200;
+      for (let i = 0; i < students.length; i += BATCH_SIZE) {
+        const batch = students.slice(i, i + BATCH_SIZE).map(s => ({
+          nome_completo: s.nome_completo,
+          ra: s.ra,
+          email: s.email.toLowerCase(),
+          turma: s.turma
+        }));
+
+        const { error } = await supabase
+          .from('alunos')
+          .insert(batch);
+
+        if (error) throw error;
+      }
+
       return true;
     } catch (error: any) {
       logger.error('Erro ao importar alunos:', error);
@@ -1025,18 +974,22 @@ export const useDatabase = () => {
         }
       }
 
-      // Mapeia para o formato do DB (nome_completo, email, materia)
-      const teachersToInsert = teachers.map(t => ({
-        nome_completo: t.nome_completo,
-        email: t.email,
-        materia: t.materia || null,
-      }));
+      // Mapeia e Processa em lotes para inserção
+      const BATCH_SIZE = 200;
+      for (let i = 0; i < teachers.length; i += BATCH_SIZE) {
+        const batch = teachers.slice(i, i + BATCH_SIZE).map(t => ({
+          nome_completo: t.nome_completo,
+          email: t.email.toLowerCase(),
+          materia: t.materia || null,
+        }));
 
-      const { error } = await supabase
-        .from('professores')
-        .insert(teachersToInsert);
+        const { error } = await supabase
+          .from('professores')
+          .insert(batch);
 
-      if (error) throw error;
+        if (error) throw error;
+      }
+
       return true;
     } catch (error: any) {
       logger.error('Erro ao importar professores:', error);

@@ -188,19 +188,31 @@ export function TeacherCSVImport() {
     if (emails.length === 0) return true;
 
     try {
-      const { data: existing, error } = await supabase
-        .from('professores')
-        .select('email')
-        .in('email', emails);
+      // Busca duplicados no banco usando processamento em lotes (batching)
+      // para evitar erro de URL muito longa (Request-URI Too Large)
+      const existingEmails = new Set<string>();
+      const BATCH_SIZE = 100;
 
-      if (error) {
-        console.error('Erro ao buscar e-mails:', error);
-        throw error;
+      if (emails.length > 0) {
+        for (let i = 0; i < emails.length; i += BATCH_SIZE) {
+          const batch = emails.slice(i, i + BATCH_SIZE);
+          const { data: existing, error } = await supabase
+            .from('professores')
+            .select('email')
+            .in('email', batch);
+
+          if (error) {
+            console.error(`Erro ao buscar e-mails (lote ${i}):`, error);
+            throw error;
+          }
+
+          if (existing) {
+            existing.forEach(item => existingEmails.add(String(item.email).toLowerCase()));
+          }
+        }
       }
 
-      if (existing && existing.length > 0) {
-        const existingEmails = new Set(existing.map(e => String(e.email).toLowerCase()));
-
+      if (existingEmails.size > 0) {
         // Calcula a contagem ANTES de atualizar o estado
         const duplicateCount = validRows.filter(teacher => {
           return existingEmails.has(teacher.email.toLowerCase());
