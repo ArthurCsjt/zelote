@@ -74,6 +74,16 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const isRoomOccupied = currentReservations.some(res => res.classroom?.toLowerCase() === classroom.trim().toLowerCase());
+    if (isRoomOccupied) {
+      toast({
+        title: "Conflito de Sala",
+        description: `A sala "${classroom}" já está reservada para este horário.`,
+        variant: "destructive"
+      });
+      return;
+    }
+
     if (!classroom.trim() || quantity <= 0 || quantity > maxQuantity) {
       toast({
         title: "Erro de Validação",
@@ -365,21 +375,32 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                 <div className="space-y-2">
                   <Label className="text-[11px] sm:text-xs font-black uppercase text-[#a855f7] dark:text-purple-400 tracking-wider">Sala <span className="text-red-500">*</span></Label>
                   <div className="flex flex-wrap gap-1.5">
-                    {['Sala Google', 'Sala Maker', 'Sala de Estudos', 'Sala de Artes'].map((s) => (
-                      <button
-                        key={s}
-                        type="button"
-                        onClick={() => { setClassroom(s); setShowCustomClassroom(false); }}
-                        className={cn(
-                          "px-2 sm:px-2.5 py-1 sm:py-1.5 text-[9px] sm:text-[10px] font-black border-2 border-black uppercase transition-all",
-                          classroom === s && !showCustomClassroom
-                            ? "bg-[#1e3a8a] text-white shadow-[2px_2px_0_0_#000] translate-x-[1px] translate-y-[1px] shadow-none"
-                            : "bg-white dark:bg-zinc-900 text-black dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800 shadow-[2px_2px_0_0_#000] dark:shadow-[2px_2px_0_0_rgba(255,255,255,0.1)]"
-                        )}
-                      >
-                        {s}
-                      </button>
-                    ))}
+                    {['Sala Google', 'Sala Maker', 'Sala de Estudos', 'Sala de Artes'].map((s) => {
+                      const isOccupied = currentReservations.some(res => res.classroom === s);
+                      return (
+                        <button
+                          key={s}
+                          type="button"
+                          disabled={isOccupied}
+                          onClick={() => { setClassroom(s); setShowCustomClassroom(false); }}
+                          className={cn(
+                            "px-2 sm:px-2.5 py-1 sm:py-1.5 text-[9px] sm:text-[10px] font-black border-2 border-black uppercase transition-all relative overflow-hidden",
+                            classroom === s && !showCustomClassroom
+                              ? "bg-[#1e3a8a] text-white shadow-[2px_2px_0_0_#000] translate-x-[1px] translate-y-[1px] shadow-none"
+                              : isOccupied
+                                ? "bg-zinc-200 text-zinc-400 border-zinc-400 cursor-not-allowed grayscale"
+                                : "bg-white dark:bg-zinc-900 text-black dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800 shadow-[2px_2px_0_0_#000] dark:shadow-[2px_2px_0_0_rgba(255,255,255,0.1)]"
+                          )}
+                        >
+                          <span className={cn(isOccupied && "opacity-40")}>{s}</span>
+                          {isOccupied && (
+                            <span className="absolute inset-0 flex items-center justify-center bg-zinc-200/80 text-[7px] text-zinc-600 font-black rotate-12 uppercase">
+                              Ocupada
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
                     <button
                       type="button"
                       onClick={() => { setShowCustomClassroom(true); setClassroom(''); }}
