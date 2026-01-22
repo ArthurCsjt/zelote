@@ -35,6 +35,22 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
   onReservationSuccess,
   maxQuantity,
 }) => {
+  useEffect(() => {
+    // Add custom animation for room buttons
+    const style = document.createElement('style');
+    style.innerHTML = `
+      @keyframes alternate-texts {
+        0%, 35% { transform: translateY(0); }
+        45%, 85% { transform: translateY(-100%); }
+        95%, 100% { transform: translateY(0); }
+      }
+    `;
+    document.head.appendChild(style);
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, []);
+
   const [open, setOpen] = useState(false);
   const { createReservation, bulkCreateReservations, loading: isSaving } = useDatabase();
   const { user } = useAuth();
@@ -133,27 +149,31 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
         {children}
       </div>
 
-      <DialogContent className="sm:max-w-[580px] max-h-[90vh] overflow-y-auto border-4 border-black dark:border-zinc-800 rounded-none shadow-[8px_8px_0px_0px_#000] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.1)] p-0 outline-none bg-white dark:bg-zinc-950 text-black dark:text-zinc-100">
+      <DialogContent className="sm:max-w-[580px] max-h-[90vh] overflow-y-auto border-[4px] border-black dark:border-zinc-800 rounded-none shadow-[10px_10px_0px_0px_#000] dark:shadow-[10px_10px_0px_0px_rgba(255,255,255,0.05)] p-0 outline-none bg-white dark:bg-zinc-950 text-black dark:text-zinc-100 selection:bg-yellow-300 selection:text-black">
 
         {/* HEADER */}
-        <DialogHeader className="p-4 sm:p-5 border-b-4 border-black bg-[#3b82f6] text-white relative">
-          <div className="flex items-center gap-3">
-            <div className="bg-white p-2 border-2 border-black shadow-[3px_3px_0_0_rgba(0,0,0,0.3)]">
-              <Calendar className="h-5 w-5 text-black" />
+        <DialogHeader className="p-5 sm:p-6 border-b-[5px] border-black bg-[#3b82f6] text-white relative shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] z-10">
+          <div className="flex items-center gap-4">
+            <div className="bg-white p-2.5 border-[3px] border-black shadow-[4px_4px_0_0_#000]">
+              <CalendarDays className="h-6 w-6 text-black stroke-[3]" />
             </div>
-            <div>
-              <DialogTitle className="text-xl sm:text-2xl font-black uppercase tracking-tight">AGENDAMENTO</DialogTitle>
-              <p className="text-[11px] sm:text-sm font-bold uppercase opacity-90 tracking-wide">
-                {format(date, "EEEE, dd 'de' MMMM", { locale: ptBR })} • {timeSlot}
+            <div className="space-y-0.5">
+              <DialogTitle className="text-2xl sm:text-3xl font-[1000] uppercase tracking-tighter leading-none">AGENDAMENTO</DialogTitle>
+              <p className="text-[10px] sm:text-xs font-black uppercase opacity-90 tracking-[0.1em] flex items-center gap-2">
+                <span className="bg-black/20 px-1.5 py-0.5 border border-white/30">
+                  {format(date, "EEEE, dd 'de' MMMM", { locale: ptBR })}
+                </span>
+                <span className="text-yellow-300">•</span>
+                <span className="font-black">{timeSlot}</span>
               </p>
             </div>
           </div>
           <button
             type="button"
             onClick={() => setOpen(false)}
-            className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center bg-white border-2 border-black shadow-[2px_2px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all z-20"
+            className="absolute top-4 right-4 w-10 h-10 flex items-center justify-center bg-white border-[3px] border-black shadow-[4px_4px_0px_0px_#000] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all z-20 group"
           >
-            <CloseIcon className="w-5 h-5 text-black stroke-[3]" />
+            <CloseIcon className="w-6 h-6 text-black stroke-[4] group-hover:rotate-90 transition-transform" />
           </button>
         </DialogHeader>
 
@@ -161,100 +181,109 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
           <div className="p-4 sm:p-5 space-y-5">
 
             {/* STATUS GRID */}
-            <div className="grid grid-cols-2 gap-3">
-              <div className="flex flex-col items-center justify-center p-3 sm:p-4 border-3 border-[#22c55e] bg-green-50/50 dark:bg-green-950/20">
-                <div className="flex items-center gap-1.5 mb-1">
-                  <Monitor className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
-                  <span className="text-[9px] sm:text-[10px] font-black uppercase text-green-600 dark:text-green-400 tracking-wider">Disponíveis</span>
+            <div className="grid grid-cols-2 gap-5 pt-2">
+              <div className="flex flex-col items-center justify-center p-6 border-[4px] border-black bg-[#00FF00]/10 dark:bg-green-950/20 shadow-[6px_6px_0px_0px_#000] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[8px_8px_0px_0px_#000] transition-all group">
+                <div className="mb-2">
+                  <span className="text-[10px] sm:text-[11px] font-[1000] uppercase text-black dark:text-white tracking-widest">Disponíveis</span>
                 </div>
-                <span className="text-3xl sm:text-4xl font-black text-green-500 leading-none">{available}</span>
+                <div className="flex items-center gap-3">
+                  <Monitor className="h-6 w-6 text-green-600 dark:text-[#4ADE80] stroke-[3]" />
+                  <span className="text-4xl sm:text-5xl font-[1000] text-black dark:text-white leading-none tracking-tighter">{available}</span>
+                </div>
               </div>
 
-              <div className="flex flex-col items-center justify-center p-3 sm:p-4 border-3 border-[#a855f7] bg-purple-50/50 dark:bg-purple-950/20">
-                <div className="flex items-center gap-1.5 mb-1">
-                  <User className="h-3.5 w-3.5 text-purple-600 dark:text-purple-400" />
-                  <span className="text-[9px] sm:text-[10px] font-black uppercase text-purple-600 dark:text-purple-400 tracking-wider">Reservados</span>
+              <div className="flex flex-col items-center justify-center p-6 border-[4px] border-black bg-[#8B5CF6]/10 dark:bg-purple-950/20 shadow-[6px_6px_0px_0px_#000] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[8px_8px_0px_0px_#000] transition-all group">
+                <div className="mb-2">
+                  <span className="text-[10px] sm:text-[11px] font-[1000] uppercase text-black dark:text-white tracking-widest">Reservados</span>
                 </div>
-                <span className="text-3xl sm:text-4xl font-black text-purple-500 leading-none">{totalReserved}</span>
+                <div className="flex items-center gap-3">
+                  <User className="h-6 w-6 text-purple-600 dark:text-[#8B5CF6] stroke-[3]" />
+                  <span className="text-4xl sm:text-5xl font-[1000] text-black dark:text-white leading-none tracking-tighter">{totalReserved}</span>
+                </div>
               </div>
             </div>
 
 
             {/* RESERVAS EXISTENTES */}
             {currentReservations.length > 0 && (
-              <div className="space-y-3 animate-in fade-in slide-in-from-top-4 duration-500">
-                <div className="flex items-center gap-2 px-1">
-                  <ListFilter className="h-4 w-4 text-zinc-500" />
-                  <span className="text-[10px] sm:text-[11px] font-black uppercase text-zinc-500 tracking-widest">Reservas Existentes ({currentReservations.length})</span>
+              <div className="pt-5 border-t-[5px] border-black space-y-5 animate-in fade-in slide-in-from-top-4 duration-500">
+                <div className="inline-block px-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <ListFilter className="h-5 w-5 text-black dark:text-white stroke-[3]" />
+                    <span className="text-xs sm:text-sm font-[1000] uppercase text-black dark:text-white tracking-widest">Reservas Existentes ({currentReservations.length})</span>
+                  </div>
+                  <div className="h-1.5 bg-black dark:bg-white w-full" />
                 </div>
 
-                <div className="space-y-2.5">
+                <div className="space-y-4 pt-1">
                   {currentReservations.map((res) => (
                     <div
                       key={res.id}
-                      className="border-2 border-black dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-[4px_4px_0_0_#000] dark:shadow-[4px_4px_0_0_rgba(255,255,255,0.05)] overflow-hidden"
+                      className="border-[3px] border-black dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-[6px_6px_0px_0px_#000] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.05)] transition-all hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[8px_8px_0px_0px_#000]"
                     >
-                      <div className="flex items-center justify-between bg-zinc-100 dark:bg-zinc-800 px-3 py-1.5 border-b-2 border-black dark:border-zinc-700">
-                        <div className="flex items-center gap-2 overflow-hidden">
-                          <User className="h-3.5 w-3.5 text-zinc-600 dark:text-zinc-400 shrink-0" />
-                          <div className="flex flex-col sm:flex-row sm:items-baseline sm:gap-2 truncate">
-                            <span className="text-[11px] sm:text-xs font-black uppercase truncate">
+                      <div className="flex items-center justify-between bg-zinc-50 dark:bg-zinc-800/50 px-4 py-3 border-b-[3px] border-black dark:border-zinc-700">
+                        <div className="flex items-center gap-3 overflow-hidden">
+                          <div className="w-10 h-10 flex items-center justify-center bg-white border-[3px] border-black rounded-full shrink-0 shadow-[3px_3px_0_0_#000]">
+                            <User className="h-5 w-5 text-black stroke-[3]" />
+                          </div>
+                          <div className="flex flex-col truncate">
+                            <span className="text-[12px] sm:text-sm font-[1000] uppercase text-black dark:text-white truncate leading-tight">
                               {res.prof_name || 'Professor'}
                             </span>
-                            <span className="text-[8px] sm:text-[10px] font-bold text-zinc-500 dark:text-zinc-400 lowercase truncate opacity-80">
+                            <span className="text-[9px] sm:text-[11px] font-[900] text-zinc-500 dark:text-zinc-400 lowercase truncate opacity-80 tracking-tight">
                               {res.prof_email}
                             </span>
                           </div>
                         </div>
-                        <Badge className="bg-purple-600 text-white border-2 border-black rounded-none h-5 text-[9px] font-black uppercase px-1.5 shadow-[2px_2px_0_0_#000]">
+                        <Badge className="bg-[#8B5CF6] text-white border-[3px] border-black rounded-none h-8 text-[10px] font-[1000] uppercase px-3 shadow-[4px_4px_0px_0px_#000] shrink-0 hover:scale-105 active:scale-95 transition-all cursor-default">
                           {res.quantity_requested} Chromebooks
                         </Badge>
                       </div>
 
-                      <div className="p-2.5 flex flex-col gap-1.5">
-                        <div className="flex items-center gap-2">
-                          <div className="bg-blue-100 dark:bg-blue-900 px-1.5 py-0.5 border border-black dark:border-blue-700">
-                            <span className="text-[9px] font-black uppercase text-blue-700 dark:text-blue-300">SALA</span>
+                      <div className="p-4 flex flex-col gap-3.5">
+                        <div className="flex items-center gap-3">
+                          <div className="bg-[#3B82F6] px-2.5 py-1 border-[2px] border-black shadow-[3px_3px_0_0_#000] -rotate-1">
+                            <span className="text-[10px] sm:text-[11px] font-[1000] uppercase text-white tracking-widest">Sala</span>
                           </div>
-                          <span className="text-[11px] font-bold text-zinc-800 dark:text-zinc-200">
+                          <span className="text-sm sm:text-base font-[1000] text-black dark:text-zinc-100 uppercase tracking-tight">
                             {res.classroom || 'Não informada'}
                           </span>
                         </div>
 
                         {res.justification && (
-                          <div className="flex items-start gap-2 pt-0.5">
-                            <div className="bg-zinc-200 dark:bg-zinc-700 px-1.5 py-0.5 border border-black dark:border-zinc-600 shrink-0">
-                              <span className="text-[9px] font-black uppercase text-zinc-600 dark:text-zinc-400">MOTIVO</span>
+                          <div className="flex items-start gap-3 pt-1">
+                            <div className="bg-[#FBBF24] px-2.5 py-1 border-[2px] border-black shadow-[3px_3px_0_0_#000] rotate-1 shrink-0">
+                              <span className="text-[10px] sm:text-[11px] font-[1000] uppercase text-black tracking-widest">Motivo</span>
                             </div>
-                            <p className="text-[11px] font-medium italic text-zinc-600 dark:text-zinc-400 leading-tight line-clamp-2">
+                            <p className="text-[12px] sm:text-[13px] font-black italic text-zinc-800 dark:text-zinc-200 leading-snug line-clamp-2 mt-0.5">
                               "{res.justification}"
                             </p>
                           </div>
                         )}
 
-                        <div className="flex gap-2 pt-0.5">
+                        <div className="flex flex-wrap gap-4 pt-1.5">
                           {res.needs_tv && (
-                            <div className="flex items-center gap-1 opacity-60">
-                              <Tv className="h-3 w-3" />
-                              <span className="text-[8px] font-black uppercase">TV</span>
+                            <div className="flex items-center gap-2 bg-zinc-100 dark:bg-zinc-800/50 px-2 py-1 border-2 border-dashed border-black/30 dark:border-white/20">
+                              <Tv className="h-4 w-4 text-black dark:text-zinc-300 stroke-[3]" />
+                              <span className="text-[9px] font-[1000] uppercase tracking-wider text-black dark:text-zinc-300">TV</span>
                             </div>
                           )}
                           {res.needs_sound && (
-                            <div className="flex items-center gap-1 opacity-60">
-                              <Volume2 className="h-3 w-3" />
-                              <span className="text-[8px] font-black uppercase">SOM</span>
+                            <div className="flex items-center gap-2 bg-zinc-100 dark:bg-zinc-800/50 px-2 py-1 border-2 border-dashed border-black/30 dark:border-white/20">
+                              <Volume2 className="h-4 w-4 text-black dark:text-zinc-300 stroke-[3]" />
+                              <span className="text-[9px] font-[1000] uppercase tracking-wider text-black dark:text-zinc-300">SOM</span>
                             </div>
                           )}
                           {res.needs_mic && (
-                            <div className="flex items-center gap-1 opacity-60">
-                              <Mic className="h-3 w-3" />
-                              <span className="text-[8px] font-black uppercase">MIC ({res.mic_quantity})</span>
+                            <div className="flex items-center gap-2 bg-zinc-100 dark:bg-zinc-800/50 px-2 py-1 border-2 border-dashed border-black/30 dark:border-white/20">
+                              <Mic className="h-4 w-4 text-black dark:text-zinc-300 stroke-[3]" />
+                              <span className="text-[9px] font-[1000] uppercase tracking-wider text-black dark:text-zinc-300">MIC ({res.mic_quantity})</span>
                             </div>
                           )}
                           {res.is_minecraft && (
-                            <div className="flex items-center gap-1 text-green-600 dark:text-green-500">
-                              <Monitor className="h-3 w-3" />
-                              <span className="text-[8px] font-black uppercase">MINECRAFT</span>
+                            <div className="flex items-center gap-2 bg-green-100 dark:bg-green-900/30 px-2 py-1 border-2 border-black">
+                              <Monitor className="h-4 w-4 text-green-700 dark:text-[#4ADE80] stroke-[3]" />
+                              <span className="text-[9px] font-[1000] uppercase tracking-wider text-green-700 dark:text-[#4ADE80]">MINECRAFT</span>
                             </div>
                           )}
                         </div>
@@ -384,19 +413,29 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                           disabled={isOccupied}
                           onClick={() => { setClassroom(s); setShowCustomClassroom(false); }}
                           className={cn(
-                            "px-2 sm:px-2.5 py-1 sm:py-1.5 text-[9px] sm:text-[10px] font-black border-2 border-black uppercase transition-all relative overflow-hidden",
+                            "px-2 sm:px-2.5 py-1 sm:py-1.5 text-[9px] sm:text-[10px] font-black border-2 border-black uppercase transition-all relative overflow-hidden min-h-[36px] min-w-[90px] flex items-center justify-center bg-white dark:bg-zinc-900",
                             classroom === s && !showCustomClassroom
                               ? "bg-[#1e3a8a] text-white shadow-[2px_2px_0_0_#000] translate-x-[1px] translate-y-[1px] shadow-none"
                               : isOccupied
-                                ? "bg-zinc-200 text-zinc-400 border-zinc-400 cursor-not-allowed grayscale"
+                                ? "bg-zinc-100 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-600 border-zinc-300 dark:border-zinc-700 cursor-not-allowed"
                                 : "bg-white dark:bg-zinc-900 text-black dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800 shadow-[2px_2px_0_0_#000] dark:shadow-[2px_2px_0_0_rgba(255,255,255,0.1)]"
                           )}
                         >
-                          <span className={cn(isOccupied && "opacity-40")}>{s}</span>
-                          {isOccupied && (
-                            <span className="absolute inset-0 flex items-center justify-center bg-zinc-200/80 text-[7px] text-zinc-600 font-black rotate-12 uppercase">
-                              Ocupada
-                            </span>
+                          {isOccupied ? (
+                            <div className="h-5 overflow-hidden w-full relative">
+                              <div className="flex flex-col h-full animate-[alternate-texts_4s_infinite_cubic-bezier(0.7,0,0.3,1)]">
+                                <span className="h-5 flex items-center justify-center shrink-0 text-zinc-400 dark:text-zinc-600">
+                                  {s}
+                                </span>
+                                <div className="h-5 flex items-center justify-center shrink-0">
+                                  <span className="bg-[#EF4444] text-white border border-black text-[8px] font-black uppercase shadow-[1px_1px_0_0_#000] px-1.5 py-0.5">
+                                    Ocupada
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          ) : (
+                            <span>{s}</span>
                           )}
                         </button>
                       );
