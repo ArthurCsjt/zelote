@@ -6,7 +6,7 @@ import { ChevronLeft, ChevronRight, Calendar, Loader2, Monitor, AlertTriangle, C
 import { useDatabase } from '@/hooks/useDatabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { format, startOfMonth, endOfMonth } from 'date-fns';
+import { format, startOfMonth, endOfMonth, isSaturday, isSunday, addDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { getStartOfWeek, formatWeekRange, changeWeek, getWeekDays, changeMonth, getInitialSchedulingDate } from '@/utils/scheduling';
 import { SchedulingCalendar } from '@/components/scheduling/SchedulingCalendar';
@@ -189,8 +189,13 @@ const SchedulingPage = () => {
                     <button
                       key={i}
                       onClick={() => {
-                        const newDate = new Date(currentDate.getFullYear(), i, 1);
-                        setCurrentDate(getStartOfWeek(newDate));
+                        let targetDate = new Date(currentDate.getFullYear(), i, 1);
+                        // Se o dia 1º cair no final de semana, vai para a próxima segunda-feira
+                        // para garantir que ficamos no mês correto e em um dia útil.
+                        if (isSaturday(targetDate)) targetDate = addDays(targetDate, 2);
+                        else if (isSunday(targetDate)) targetDate = addDays(targetDate, 1);
+
+                        setCurrentDate(targetDate);
                       }}
                       className={cn(
                         "flex-shrink-0 px-2 py-2.5 text-[10px] font-black uppercase tracking-wider transition-all duration-200 border-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] hover:-translate-y-0.5 active:translate-y-0 active:shadow-none min-w-[65px]",
