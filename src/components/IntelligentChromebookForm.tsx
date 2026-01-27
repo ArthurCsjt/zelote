@@ -36,6 +36,8 @@ const MODEL_MAPPING: Record<string, { manufacturer: string; model: string }> = {
   'XE500c13': { manufacturer: 'Samsung', model: 'XE500c13' },
   'N18Q5': { manufacturer: 'Acer', model: 'N18Q5' },
   'N24P1': { manufacturer: 'Acer', model: 'N24P1' },
+  'N15Q8': { manufacturer: 'Acer', model: 'N15Q8' },
+  'N18Q12': { manufacturer: 'Acer', model: 'N18Q12' },
   '100e Chromebook Gen 3': { manufacturer: 'Lenovo', model: '100e Chromebook Gen 3' },
   'XE310XBA': { manufacturer: 'Samsung', model: 'XE310XBA' },
   'XE501C13': { manufacturer: 'Samsung', model: 'XE501C13' },
