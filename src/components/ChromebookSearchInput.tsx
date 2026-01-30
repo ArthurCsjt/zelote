@@ -38,13 +38,14 @@ const ChromebookSearchInput: React.FC<ChromebookSearchInputProps> = ({
 
     let filtered = chromebooks;
 
-    // 1. Filtrar por status
-    if (filterStatus === 'disponivel') {
-      filtered = filtered.filter(cb => cb.status === 'disponivel');
-    } else if (filterStatus === 'ativo') {
-      filtered = filtered.filter(cb => cb.status === 'emprestado');
+    // 1. Filtrar por status (apenas se NÃO for isListMode)
+    if (!isListMode) {
+      if (filterStatus === 'disponivel') {
+        filtered = filtered.filter(cb => cb.status === 'disponivel');
+      } else if (filterStatus === 'ativo') {
+        filtered = filtered.filter(cb => cb.status === 'emprestado');
+      }
     }
-    // Se isListMode for true, não aplicamos filtro de status aqui.
 
     // 2. Filtrar por termo de busca e ordenar por relevância
     const lowerCaseSearch = searchTerm.toLowerCase();
