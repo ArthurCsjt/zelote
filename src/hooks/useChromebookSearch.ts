@@ -14,6 +14,7 @@ export interface ChromebookSearchResult {
   manufacturer?: string | null;
   serial_number?: string | null;
   patrimony_number?: string | null;
+  condition?: string | null;
 }
 
 export function useChromebookSearch() {
@@ -26,7 +27,7 @@ export function useChromebookSearch() {
       // Busca agora inclui manufacturer e patrimony_number
       const { data, error } = await supabase
         .from('chromebooks')
-        .select('id, chromebook_id, model, status, serial_number, patrimony_number, manufacturer');
+        .select('id, chromebook_id, model, status, serial_number, patrimony_number, manufacturer, condition');
 
       if (error) throw new Error('Erro ao carregar inventário de Chromebooks.');
 
@@ -41,6 +42,7 @@ export function useChromebookSearch() {
           manufacturer: cb.manufacturer,
           serial_number: cb.serial_number,
           patrimony_number: cb.patrimony_number,
+          condition: cb.condition,
         };
       });
 

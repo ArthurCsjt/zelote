@@ -14,6 +14,7 @@ interface DeviceCardProps {
     variant?: 'loan' | 'return';
     showDetails?: boolean;
     className?: string;
+    style?: React.CSSProperties;
 }
 
 const statusConfig = {
@@ -37,6 +38,11 @@ const statusConfig = {
         color: 'bg-red-100 text-red-700 border-red-300 dark:bg-red-900/30 dark:text-red-400 dark:border-red-500/30',
         icon: X,
     },
+    fixo: {
+        label: 'Fixo',
+        color: 'bg-purple-100 text-purple-700 border-purple-300 dark:bg-purple-900/30 dark:text-purple-400 dark:border-purple-500/30',
+        icon: Computer,
+    },
 };
 
 const conditionConfig = {
@@ -55,10 +61,14 @@ export function DeviceCard({
     variant = 'loan',
     showDetails = true,
     className,
+    style,
 }: DeviceCardProps) {
-    const statusInfo = statusConfig[status];
-    const conditionInfo = conditionConfig[condition];
-    const StatusIcon = statusInfo.icon;
+    const safeStatus = (status || 'disponivel').toLowerCase() as keyof typeof statusConfig;
+    const safeCondition = (condition || 'bom').toLowerCase() as keyof typeof conditionConfig;
+
+    const statusInfo = statusConfig[safeStatus] || statusConfig.disponivel;
+    const conditionInfo = conditionConfig[safeCondition] || conditionConfig.bom;
+    const StatusIcon = statusInfo.icon || CheckCircle;
 
     const borderColor = variant === 'loan'
         ? 'border-l-amber-600 dark:border-l-amber-500'
@@ -76,6 +86,7 @@ export function DeviceCard({
                 "bg-white dark:bg-card/50",
                 className
             )}
+            style={style}
         >
             {/* Background gradient on hover */}
             <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />

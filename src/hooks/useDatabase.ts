@@ -443,6 +443,42 @@ export const useDatabase = () => {
   }, []);
 
   /**
+   * Busca empréstimos ativos de um usuário específico (por RA ou Email)
+   */
+  const getActiveLoansByUser = useCallback(async (params: { ra?: string, email?: string }): Promise<LoanHistoryItem[]> => {
+    if (!params.ra && !params.email) return [];
+
+    setLoading(true);
+    try {
+      let query = supabase
+        .from('loan_history')
+        .select('*')
+        .in('status', ['ativo', 'atrasado']);
+
+      if (params.ra && params.email) {
+        query = query.or(`student_ra.eq."${params.ra}",student_email.eq."${params.email}"`);
+      } else if (params.ra) {
+        query = query.eq('student_ra', params.ra);
+      } else if (params.email) {
+        query = query.eq('student_email', params.email);
+      }
+
+      const { data, error } = await query.order('loan_date', { ascending: false });
+
+      if (error) throw error;
+      return (data || []).map(item => ({
+        ...item,
+        status: item.status as 'ativo' | 'devolvido' | 'atrasado'
+      })) as unknown as LoanHistoryItem[];
+    } catch (error: any) {
+      logger.error('Erro ao buscar empréstimos ativos do usuário', error, params);
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  /**
    * Busca detalhes do empréstimo ativo/atrasado por ID do Chromebook
    * Útil para exibir informações contextuais na devolução
    */
@@ -1430,6 +1466,7 @@ export const useDatabase = () => {
     bulkCreateLoans,
     getActiveLoans,
     getLoanHistory,
+    getActiveLoansByUser,
     getLoanDetailsByChromebookId,
     createReturn,
     returnChromebookById,

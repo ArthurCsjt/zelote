@@ -25,7 +25,7 @@ interface ReturnFormProps {
 }
 
 export function ReturnForm({ onReturnSuccess, initialChromebookId }: ReturnFormProps) {
-  const { bulkReturnChromebooks, getLoanDetailsByChromebookId, loading: dbLoading } = useDatabase();
+  const { bulkReturnChromebooks, getLoanDetailsByChromebookId, getActiveLoansByUser, loading: dbLoading } = useDatabase();
 
   // Inicializa a lista de dispositivos com o ID inicial, se houver
   const [deviceIds, setDeviceIds] = useState<string[]>(initialChromebookId ? [initialChromebookId] : []);
@@ -43,6 +43,10 @@ export function ReturnForm({ onReturnSuccess, initialChromebookId }: ReturnFormP
   // NOVO ESTADO: Detalhes dos empréstimos
   const [loanDetails, setLoanDetails] = useState<Map<string, LoanHistoryItem>>(new Map());
 
+  // NOVO ESTADO: Empréstimos ativos do usuário selecionado
+  const [userActiveLoans, setUserActiveLoans] = useState<LoanHistoryItem[]>([]);
+  const [loadingUserLoans, setLoadingUserLoans] = useState(false);
+
   // NOVO ESTADO: Modal de confirmação
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
@@ -53,8 +57,34 @@ export function ReturnForm({ onReturnSuccess, initialChromebookId }: ReturnFormP
       setSelectedUser(null);
       setConfirmChecked(false);
       setReturnData({ name: "", ra: "", email: "", type: 'lote', userType: 'aluno', notes: '' });
+      setUserActiveLoans([]);
     }
   }, [deviceIds.length]);
+
+  // NOVO EFEITO: Buscar empréstimos ativos quando o usuário é selecionado
+  useEffect(() => {
+    const fetchUserLoans = async () => {
+      if (!selectedUser) {
+        setUserActiveLoans([]);
+        return;
+      }
+
+      setLoadingUserLoans(true);
+      try {
+        const loans = await getActiveLoansByUser({
+          ra: selectedUser.ra || undefined,
+          email: selectedUser.email
+        });
+        setUserActiveLoans(loans);
+      } catch (error) {
+        console.error('Erro ao buscar empréstimos do usuário:', error);
+      } finally {
+        setLoadingUserLoans(false);
+      }
+    };
+
+    fetchUserLoans();
+  }, [selectedUser, getActiveLoansByUser]);
 
   // NOVO EFEITO: Buscar detalhes do empréstimo quando dispositivos são adicionados
   useEffect(() => {
@@ -106,6 +136,22 @@ export function ReturnForm({ onReturnSuccess, initialChromebookId }: ReturnFormP
       userType: 'aluno',
       type: 'lote',
     }));
+  };
+
+  const toggleLoanSelection = (chromebookId: string) => {
+    setDeviceIds(prev =>
+      prev.includes(chromebookId)
+        ? prev.filter(id => id !== chromebookId)
+        : [...prev, chromebookId]
+    );
+  };
+
+  const selectAllUserLoans = () => {
+    const allLoanIds = userActiveLoans.map(l => l.chromebook_id);
+    setDeviceIds(prev => {
+      const otherIds = prev.filter(id => !allLoanIds.includes(id));
+      return [...otherIds, ...allLoanIds];
+    });
   };
 
   const handleConfirmReturn = useCallback(async (e: React.FormEvent) => {
@@ -192,6 +238,11 @@ export function ReturnForm({ onReturnSuccess, initialChromebookId }: ReturnFormP
                 disabled={dbLoading}
                 filterStatus="emprestado" // Filtra por emprestado
                 actionLabel="Devolução"
+                userActiveLoans={userActiveLoans}
+                loadingUserLoans={loadingUserLoans}
+                onToggleLoan={toggleLoanSelection}
+                onSelectAllLoans={selectAllUserLoans}
+                selectedUserName={selectedUser?.name}
               />
               {/* Validação em tempo real para Dispositivos */}
               {deviceIds.length === 0 && (
@@ -201,7 +252,9 @@ export function ReturnForm({ onReturnSuccess, initialChromebookId }: ReturnFormP
                 </p>
               )}
 
-              {/* NOVO: Detalhes dos Empréstimos */}
+
+
+              {/* NOVO: Detalhes dos Empréstimos (Existente para quando já tem deviceIds) */}
               {deviceIds.length > 0 && loanDetails.size > 0 && (
                 <div className="mt-4 space-y-2">
                   <p className="text-xs font-black uppercase tracking-tight text-muted-foreground mb-2">
