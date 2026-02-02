@@ -389,11 +389,11 @@
 
   0%,
   100% {
-    transform: scale(1);
+    transform: scale(1) translateZ(0);
   }
 
   50% {
-    transform: scale(1.05);
+    transform: scale(1.02) translateZ(0);
   }
 }
 
@@ -408,6 +408,10 @@
 
 .animate-zoom-pulse {
   animation: zoom-pulse 2s ease-in-out infinite;
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-font-smoothing: subpixel-antialiased;
+  transform-style: preserve-3d;
 }
 
 /* Border Width Utility */

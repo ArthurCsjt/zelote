@@ -386,10 +386,10 @@ export function ReturnForm({ onReturnSuccess, initialChromebookId }: ReturnFormP
                         <BookOpen className="h-3.5 w-3.5 text-white" />
                       </div>
                       <div className="flex-1">
-                        <p className="text-xs font-black uppercase text-blue-900 dark:text-blue-100 mb-1">
+                        <p className="text-xs font-black uppercase text-black dark:text-white mb-1">
                           📋 Próximo Passo
                         </p>
-                        <p className="text-[10px] font-bold text-blue-800 dark:text-blue-200 leading-tight">
+                        <p className="text-[10px] font-bold text-black dark:text-white leading-tight">
                           Agora, <span className="font-black underline">selecione os dispositivos</span> na lista de "Sugeridos" à esquerda para validar quais equipamentos serão devolvidos.
                         </p>
                       </div>
