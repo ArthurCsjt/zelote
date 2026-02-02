@@ -48,7 +48,7 @@ export const LoanHub = ({ onBack, defaultTab = 'form', onNavigateToReturnView, i
     },
     {
       value: 'active',
-      title: 'Empréstimos Ativos',
+      title: `Empréstimos Ativos (${activeLoans.length})`,
       // Passa a função de navegação para o ActiveLoans
       content: <ActiveLoans onNavigateToReturn={handleNavigateToReturn} />,
     },

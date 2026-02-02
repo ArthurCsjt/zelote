@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { Label } from './ui/label';
-import { Computer } from 'lucide-react';
+import { Computer, ChevronLeft, ChevronRight } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { normalizeChromebookId, sanitizeQRCodeData } from '@/utils/security';
 import { QRCodeReader } from './QRCodeReader';
@@ -51,6 +51,13 @@ export function DeviceListInput({
   const { getActiveLoans } = useDatabase();
   const [activeLoansCache, setActiveLoansCache] = useState<LoanHistoryItem[]>([]);
   const [isLoanCacheLoading, setIsLoanCacheLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+
+  // Resetar página quando o usuário ou a lista bruta mudar
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedUserName]);
 
   useEffect(() => {
     const loadLoans = async () => {
@@ -240,6 +247,10 @@ export function DeviceListInput({
 
           if (suggestions.length === 0 && !loadingUserLoans && deviceList.length > 0) return null;
 
+          const totalPages = Math.ceil(suggestions.length / itemsPerPage);
+          const startIndex = (currentPage - 1) * itemsPerPage;
+          const paginatedSuggestions = suggestions.slice(startIndex, startIndex + itemsPerPage);
+
           return (
             <div className={cn(
               "flex flex-col animate-in fade-in duration-500",
@@ -249,6 +260,7 @@ export function DeviceListInput({
                 <p className="text-[12px] font-black uppercase tracking-tight flex items-center gap-2 text-white">
                   <Computer className="h-4 w-4" />
                   Sugeridos: {selectedUserName.split(' ')[0]}
+                  {suggestions.length > itemsPerPage && <span className="text-[10px] opacity-70 ml-2">({suggestions.length})</span>}
                 </p>
                 {suggestions.length > 0 && !loadingUserLoans && onSelectAllLoans && (
                   <Button
@@ -268,51 +280,114 @@ export function DeviceListInput({
                   <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
                 </div>
               ) : suggestions.length > 0 ? (
-                <div className="grid gap-3 overflow-y-auto max-h-[300px] pr-1">
-                  {suggestions.map((loan, idx) => (
-                    <div
-                      key={loan.id}
-                      className={cn(
-                        "flex items-center gap-4 p-3 border-2 transition-all cursor-pointer group",
-                        "bg-white dark:bg-zinc-800 border-black dark:border-white shadow-[3px_3px_0px_0px_rgba(59,130,246,0.3)] hover:shadow-[5px_5px_0px_0px_rgba(59,130,246,1)] hover:-translate-y-0.5 hover:-translate-x-0.5"
-                      )}
-                      onClick={() => onToggleLoan?.(loan.chromebook_id)}
-                      style={{ animationDelay: `${idx * 40}ms` }}
-                    >
-                      <div className="relative">
-                        <Checkbox
-                          checked={false}
-                          className="h-6 w-6 border-2 border-black dark:border-white rounded-none data-[state=checked]:bg-blue-500 shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]"
-                        />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between gap-2">
-                          <p className="text-sm font-black uppercase text-black dark:text-white">
-                            {loan.chromebook_id}
-                          </p>
-                          <Badge variant="outline" className={cn(
-                            "text-[9px] font-black rounded-none border-2 px-1.5 h-5",
-                            loan.status === 'atrasado'
-                              ? "border-red-500 text-red-600 bg-red-50"
-                              : "border-blue-500 text-blue-600 bg-blue-50"
-                          )}>
-                            {loan.status === 'atrasado' ? 'ATRASADO' : 'ATIVO'}
-                          </Badge>
+                <>
+                  <div className="grid gap-3 pr-1">
+                    {paginatedSuggestions.map((loan, idx) => (
+                      <div
+                        key={loan.id}
+                        className={cn(
+                          "flex items-center gap-4 p-3 border-2 transition-all cursor-pointer group",
+                          "bg-white dark:bg-zinc-800 border-black dark:border-white shadow-[3px_3px_0px_0px_rgba(59,130,246,0.3)] hover:shadow-[5px_5px_0px_0px_rgba(59,130,246,1)] hover:-translate-y-0.5 hover:-translate-x-0.5"
+                        )}
+                        onClick={() => onToggleLoan?.(loan.chromebook_id)}
+                        style={{ animationDelay: `${idx * 40}ms` }}
+                      >
+                        <div className="relative">
+                          <Checkbox
+                            checked={false}
+                            className="h-6 w-6 border-2 border-black dark:border-white rounded-none data-[state=checked]:bg-blue-500 shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]"
+                          />
                         </div>
-                        <div className="flex items-center gap-1.5 mt-1">
-                          <span className="w-1.5 h-1.5 bg-blue-500 rounded-full" />
-                          <p className="text-[10px] uppercase font-bold text-muted-foreground truncate">
-                            {loan.purpose}
-                          </p>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between gap-2">
+                            <p className="text-sm font-black uppercase text-black dark:text-white">
+                              {loan.chromebook_id}
+                            </p>
+                            <Badge variant="outline" className={cn(
+                              "text-[9px] font-black rounded-none border-2 px-1.5 h-5",
+                              loan.status === 'atrasado'
+                                ? "border-red-500 text-red-600 bg-red-50"
+                                : "border-blue-500 text-blue-600 bg-blue-50"
+                            )}>
+                              {loan.status === 'atrasado' ? 'ATRASADO' : 'ATIVO'}
+                            </Badge>
+                          </div>
+                          <div className="flex items-center gap-1.5 mt-1">
+                            <span className="w-1.5 h-1.5 bg-blue-500 rounded-full" />
+                            <p className="text-[10px] uppercase font-bold text-muted-foreground truncate">
+                              {loan.purpose}
+                            </p>
+                          </div>
                         </div>
                       </div>
+                    ))}
+                  </div>
+
+                  {/* PAGINAÇÃO NEO-BRUTALISTA */}
+                  {suggestions.length > itemsPerPage && (
+                    <div className="mt-8 mb-2 flex flex-wrap items-center justify-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={currentPage === 1}
+                        onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                        className={cn(
+                          "h-10 px-3 text-[10px] font-black border-2 border-black uppercase transition-all rounded-none",
+                          currentPage === 1
+                            ? "opacity-50 cursor-not-allowed border-muted text-muted shadow-none"
+                            : "bg-white text-black hover:bg-zinc-100 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-y-0.5 active:translate-x-0.5 active:shadow-none"
+                        )}
+                      >
+                        <ChevronLeft className="h-4 w-4 mr-1" />
+                        PREVIOUS
+                      </Button>
+
+                      <div className="flex gap-1.5">
+                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                          <Button
+                            key={page}
+                            size="sm"
+                            onClick={() => setCurrentPage(page)}
+                            className={cn(
+                              "h-10 w-10 text-xs font-black border-2 border-black rounded-none transition-all",
+                              currentPage === page
+                                ? "bg-black text-white shadow-[2px_2px_0px_0px_rgba(59,130,246,0.6)] transform translate-x-0.5 translate-y-0.5"
+                                : "bg-white text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-0.5 hover:-translate-x-0.5 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-y-0.5 active:translate-x-0.5 active:shadow-none"
+                            )}
+                          >
+                            {page}
+                          </Button>
+                        ))}
+                      </div>
+
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={currentPage === totalPages}
+                        onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                        className={cn(
+                          "h-10 px-3 text-[10px] font-black border-2 border-black uppercase transition-all rounded-none",
+                          currentPage === totalPages
+                            ? "opacity-50 cursor-not-allowed border-muted text-muted shadow-none"
+                            : "bg-white text-black hover:bg-zinc-100 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-y-0.5 active:translate-x-0.5 active:shadow-none"
+                        )}
+                      >
+                        NEXT
+                        <ChevronRight className="h-4 w-4 ml-1" />
+                      </Button>
                     </div>
-                  ))}
-                </div>
+                  )}
+                </>
               ) : (
-                <div className="text-center py-6 border-2 border-dashed border-gray-100 dark:border-zinc-800">
-                  <p className="text-[10px] font-bold text-muted-foreground uppercase">
-                    Sem mais sugestões para este aluno.
+                <div className="text-center py-8 border-2 border-dashed border-zinc-300 dark:border-zinc-700 bg-zinc-50/50 dark:bg-zinc-800/30">
+                  <div className="inline-flex items-center justify-center p-2 mb-2 bg-white dark:bg-zinc-900 border-2 border-black dark:border-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                  </div>
+                  <p className="text-[10px] font-black text-foreground uppercase tracking-wider">
+                    Tudo certo!
+                  </p>
+                  <p className="text-[9px] font-bold text-muted-foreground uppercase mt-1">
+                    Sem empréstimos pendentes para este aluno.
                   </p>
                 </div>
               )}

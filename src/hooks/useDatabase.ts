@@ -456,7 +456,7 @@ export const useDatabase = () => {
         .in('status', ['ativo', 'atrasado']);
 
       if (params.ra && params.email) {
-        query = query.or(`student_ra.eq."${params.ra}",student_email.eq."${params.email}"`);
+        query = query.or(`student_ra.eq.${params.ra},student_email.eq.${params.email}`);
       } else if (params.ra) {
         query = query.eq('student_ra', params.ra);
       } else if (params.email) {
