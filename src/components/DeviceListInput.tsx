@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { Label } from './ui/label';
-import { Computer, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Computer, ChevronLeft, ChevronRight, CheckCircle } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { normalizeChromebookId, sanitizeQRCodeData } from '@/utils/security';
 import { QRCodeReader } from './QRCodeReader';

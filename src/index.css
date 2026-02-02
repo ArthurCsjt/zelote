@@ -385,6 +385,18 @@
   }
 }
 
+@keyframes zoom-pulse {
+
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.05);
+  }
+}
+
 .animate-float {
   animation: float 6s ease-in-out infinite;
 }
@@ -392,6 +404,10 @@
 .animate-float-delayed {
   animation: float-delayed 5s ease-in-out infinite;
   animation-delay: 1s;
+}
+
+.animate-zoom-pulse {
+  animation: zoom-pulse 2s ease-in-out infinite;
 }
 
 /* Border Width Utility */

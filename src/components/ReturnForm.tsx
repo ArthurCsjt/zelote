@@ -370,13 +370,32 @@ export function ReturnForm({ onReturnSuccess, initialChromebookId }: ReturnFormP
               )}
 
               {selectedUser && (
-                <div className="flex items-center gap-2 text-xs text-white bg-green-500 border-3 border-green-700 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] p-3 mt-2">
-                  <CheckCircle className="h-4 w-4 text-green-700" />
-                  <div className="flex-1">
-                    <p className="font-black uppercase">{selectedUser.name}</p>
-                    <p className="font-mono">{selectedUser.email}</p>
+                <>
+                  <div className="flex items-center gap-2 text-xs text-white bg-green-500 border-3 border-green-700 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] p-3 mt-2">
+                    <CheckCircle className="h-4 w-4 text-green-700" />
+                    <div className="flex-1">
+                      <p className="font-black uppercase">{selectedUser.name}</p>
+                      <p className="font-mono">{selectedUser.email}</p>
+                    </div>
                   </div>
-                </div>
+
+                  {/* NOVA MENSAGEM INFORMATIVA COM ANIMAÇÃO ZOOM */}
+                  <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-950/30 border-3 border-blue-500 shadow-[3px_3px_0px_0px_rgba(59,130,246,0.5)] animate-zoom-pulse">
+                    <div className="flex items-start gap-2">
+                      <div className="p-1 bg-blue-500 rounded-sm mt-0.5">
+                        <BookOpen className="h-3.5 w-3.5 text-white" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-xs font-black uppercase text-blue-900 dark:text-blue-100 mb-1">
+                          📋 Próximo Passo
+                        </p>
+                        <p className="text-[10px] font-bold text-blue-800 dark:text-blue-200 leading-tight">
+                          Agora, <span className="font-black underline">selecione os dispositivos</span> na lista de "Sugeridos" à esquerda para validar quais equipamentos serão devolvidos.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </>
               )}
             </CardContent>
           </div>
