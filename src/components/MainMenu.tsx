@@ -5,6 +5,7 @@ import { useProfileRole } from '@/hooks/use-profile-role';
 import { cn } from '@/lib/utils';
 // import { GlassCard } from './ui/GlassCard';
 import { Badge } from './ui/badge'; // Importando Badge
+import { LongDurationLoansPanel } from './LongDurationLoansPanel';
 
 interface MainMenuProps {
   onNavigate: (route: 'registration' | 'dashboard' | 'loan' | 'inventory' | 'audit' | 'quick-register' | 'return' | 'scheduling', tab?: 'form' | 'active') => void;
@@ -150,6 +151,9 @@ export function MainMenu({
           );
         })}
       </div>
+
+      {/* Painel de Alertas de Longa Duração */}
+      <LongDurationLoansPanel />
     </div>
   );
 }
