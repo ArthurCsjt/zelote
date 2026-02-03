@@ -48,32 +48,55 @@ export function NeoPagination({
     };
 
     return (
-        <nav className={cn("flex flex-wrap items-center justify-center gap-4 py-6 px-2", className)}>
+        <nav className={cn("flex flex-wrap items-center justify-center gap-3 py-6 px-2", className)}>
             <button
                 onClick={() => onPageChange(currentPage - 1)}
                 disabled={currentPage === 1}
                 className={cn(
-                    "px-4 h-[40px] flex items-center gap-2 font-black uppercase text-xs border-4 border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all bg-white dark:bg-zinc-900 text-black dark:text-white disabled:opacity-50 disabled:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]",
-                    currentPage === 1 ? "" : ""
+                    "px-4 h-10 flex items-center gap-2 font-black uppercase text-[10px] tracking-wider border-[3px] border-black dark:border-white transition-all duration-200",
+                    "bg-white dark:bg-zinc-900 text-black dark:text-white",
+                    "disabled:opacity-30 disabled:cursor-not-allowed disabled:shadow-none",
+                    currentPage !== 1 && "shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] dark:shadow-[3px_3px_0px_0px_rgba(255,255,255,0.2)] hover:shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-0.5 hover:-translate-x-0.5 active:translate-y-0 active:translate-x-0 active:shadow-none"
                 )}
             >
                 <ChevronLeft className="h-4 w-4" />
-                PREVIOUS
+                <span>Anterior</span>
             </button>
 
-            <div className="flex flex-wrap items-center gap-3">
-                {renderPageNumbers()}
+            <div className="flex flex-wrap items-center justify-center gap-2">
+                {renderPageNumbers().map((pageButton, index) => {
+                    // Re-rendering with better styles
+                    const pageNum = (pageButton as React.ReactElement).key;
+                    const isActive = currentPage === Number(pageNum);
+
+                    return (
+                        <button
+                            key={pageNum}
+                            onClick={() => onPageChange(Number(pageNum))}
+                            className={cn(
+                                "w-10 h-10 flex items-center justify-center font-black text-xs transition-all duration-200 border-[3px] border-black dark:border-white",
+                                isActive
+                                    ? "bg-black text-white dark:bg-white dark:text-black shadow-[3px_3px_0px_0px_rgba(59,130,246,0.5)] transform translate-x-0.5 translate-y-0.5"
+                                    : "bg-white text-black dark:bg-zinc-900 dark:text-white shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] dark:shadow-[3px_3px_0px_0px_rgba(255,255,255,0.1)] hover:shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-0.5 hover:-translate-x-0.5 active:translate-y-0 active:translate-x-0 active:shadow-none"
+                            )}
+                        >
+                            {pageNum}
+                        </button>
+                    );
+                })}
             </div>
 
             <button
                 onClick={() => onPageChange(currentPage + 1)}
                 disabled={currentPage === totalPages}
                 className={cn(
-                    "px-4 h-[40px] flex items-center gap-2 font-black uppercase text-xs border-4 border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all bg-white dark:bg-zinc-900 text-black dark:text-white disabled:opacity-50 disabled:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]",
-                    currentPage === totalPages ? "" : ""
+                    "px-4 h-10 flex items-center gap-2 font-black uppercase text-[10px] tracking-wider border-[3px] border-black dark:border-white transition-all duration-200",
+                    "bg-white dark:bg-zinc-900 text-black dark:text-white",
+                    "disabled:opacity-30 disabled:cursor-not-allowed disabled:shadow-none",
+                    currentPage !== totalPages && "shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] dark:shadow-[3px_3px_0px_0px_rgba(255,255,255,0.2)] hover:shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-0.5 hover:-translate-x-0.5 active:translate-y-0 active:translate-x-0 active:shadow-none"
                 )}
             >
-                NEXT
+                <span>Próximo</span>
                 <ChevronRight className="h-4 w-4" />
             </button>
         </nav>

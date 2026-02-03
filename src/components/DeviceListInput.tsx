@@ -14,6 +14,7 @@ import { Checkbox } from './ui/checkbox';
 import { Button } from './ui/button';
 import { Loader2 } from 'lucide-react';
 import { Badge } from './ui/badge';
+import { NeoPagination } from './ui/NeoPagination';
 
 interface DeviceListItem extends ChromebookSearchResult {
   loanStatus: 'ativo' | 'inativo' | 'atrasado' | 'desconhecido';
@@ -323,59 +324,14 @@ export function DeviceListInput({
                     ))}
                   </div>
 
-                  {/* PAGINAÇÃO NEO-BRUTALISTA */}
+                  {/* PAGINAÇÃO NEO-BRUTALISTA CENTRALIZADA */}
                   {suggestions.length > itemsPerPage && (
-                    <div className="mt-8 mb-2 flex flex-wrap items-center justify-center gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        disabled={currentPage === 1}
-                        onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                        className={cn(
-                          "h-10 px-3 text-[10px] font-black border-2 border-black uppercase transition-all rounded-none",
-                          currentPage === 1
-                            ? "opacity-50 cursor-not-allowed border-muted text-muted shadow-none"
-                            : "bg-white text-black hover:bg-zinc-100 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-y-0.5 active:translate-x-0.5 active:shadow-none"
-                        )}
-                      >
-                        <ChevronLeft className="h-4 w-4 mr-1" />
-                        PREVIOUS
-                      </Button>
-
-                      <div className="flex gap-1.5">
-                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                          <Button
-                            key={page}
-                            size="sm"
-                            onClick={() => setCurrentPage(page)}
-                            className={cn(
-                              "h-10 w-10 text-xs font-black border-2 border-black rounded-none transition-all",
-                              currentPage === page
-                                ? "bg-black text-white shadow-[2px_2px_0px_0px_rgba(59,130,246,0.6)] transform translate-x-0.5 translate-y-0.5"
-                                : "bg-white text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-0.5 hover:-translate-x-0.5 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-y-0.5 active:translate-x-0.5 active:shadow-none"
-                            )}
-                          >
-                            {page}
-                          </Button>
-                        ))}
-                      </div>
-
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        disabled={currentPage === totalPages}
-                        onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                        className={cn(
-                          "h-10 px-3 text-[10px] font-black border-2 border-black uppercase transition-all rounded-none",
-                          currentPage === totalPages
-                            ? "opacity-50 cursor-not-allowed border-muted text-muted shadow-none"
-                            : "bg-white text-black hover:bg-zinc-100 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-y-0.5 active:translate-x-0.5 active:shadow-none"
-                        )}
-                      >
-                        NEXT
-                        <ChevronRight className="h-4 w-4 ml-1" />
-                      </Button>
-                    </div>
+                    <NeoPagination
+                      currentPage={currentPage}
+                      totalPages={totalPages}
+                      onPageChange={setCurrentPage}
+                      className="mt-6 mb-2"
+                    />
                   )}
                 </>
               ) : (
