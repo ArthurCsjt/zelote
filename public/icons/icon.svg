@@ -1,4 +1,10 @@
 <svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
-  <rect width="512" height="512" fill="#0a84ff"/>
-  <text x="256" y="360" font-family="Arial, sans-serif" font-weight="900" font-size="350" text-anchor="middle" fill="white">Z</text>
+  <!-- Hard Shadow -->
+  <rect x="25" y="25" width="487" height="487" fill="#000000"/>
+  
+  <!-- Main Container -->
+  <rect x="0" y="0" width="487" height="487" fill="#0a84ff" stroke="#000000" stroke-width="15"/>
+  
+  <!-- Letter Z - Maximized -->
+  <text x="243" y="380" font-family="Arial Black, Impact, sans-serif" font-weight="900" font-size="400" text-anchor="middle" fill="#ffffff">Z</text>
 </svg>
