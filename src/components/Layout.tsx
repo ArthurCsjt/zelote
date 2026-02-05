@@ -116,14 +116,18 @@ const Layout: React.FC<LayoutProps> = ({
                   <ArrowLeft className="w-5 h-5" />
                 </button>
               )}
-              <div>
-                <h1 className="text-3xl font-black text-white text-left tracking-tighter uppercase glitch-text leading-none mb-0.5">
-                  Zelote
-                </h1>
-                <div className="flex items-center gap-2">
-                  <p className="text-xs font-bold text-white/90 hidden sm:block uppercase tracking-wider glitch-text">Controle de empréstimos</p>
-                  <span className="text-[10px] px-1.5 py-0.5 text-white font-bold hidden sm:block glass-badge rounded-sm">v1.0.0</span>
+              <div className="flex flex-col">
+                <div className="flex items-center gap-3">
+                  <img
+                    src="/logo-header.svg"
+                    alt="Zelote"
+                    className="h-8 sm:h-10 w-auto object-contain neo-brutal-logo"
+                  />
+                  <span className="text-[10px] px-1.5 py-0.5 text-white font-bold hidden sm:block glass-badge rounded-sm self-start mt-1">v1.0.0</span>
                 </div>
+                <p className="text-[10px] font-bold text-white/90 hidden sm:block uppercase tracking-[0.2em] mt-1 opacity-80">
+                  Controle de Empréstimos
+                </p>
               </div>
             </div>
 
