@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, LogOut, ArrowLeft, Bell, Settings, Sun, Moon, Loader2, Activity } from 'lucide-react';
+import { User, LogOut, ArrowLeft, Bell, Settings, Sun, Moon, Loader2, Activity, BellRing, BellOff } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/hooks/use-theme';
 import { useNavigate } from 'react-router-dom';
