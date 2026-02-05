@@ -37,6 +37,7 @@ const Layout: React.FC<LayoutProps> = ({
   const navigate = useNavigate();
   const { role, loading: roleLoading } = useProfileRole();
   const { getNotifications } = useDatabase();
+  const { isSubscribed, subscribeToPush, unsubscribeFromPush } = usePushNotifications();
   const [isStandalone, setIsStandalone] = React.useState(false);
 
   const { data: notifications } = useQuery({
@@ -133,7 +134,21 @@ const Layout: React.FC<LayoutProps> = ({
 
             <div className="flex items-center space-x-2">
 
-              {/* Botão de Notificações */}
+              {/* Push Notification Toggle */}
+              <button
+                onClick={isSubscribed ? unsubscribeFromPush : subscribeToPush}
+                className={cn(
+                  "p-2 rounded-full transition-all duration-200",
+                  isSubscribed
+                    ? "bg-green-500/20 text-green-400 hover:bg-green-500/30"
+                    : "text-white/60 hover:text-white hover:bg-white/10"
+                )}
+                title={isSubscribed ? "Notificações ativadas" : "Ativar notificações push"}
+              >
+                {isSubscribed ? <BellRing className="w-5 h-5" /> : <BellOff className="w-5 h-5" />}
+              </button>
+
+              {/* Botão de Notificações Internas (App) */}
               {!user?.email?.endsWith('@sj.pro.br') && (
                 <Popover>
                   <PopoverTrigger asChild>

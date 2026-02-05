@@ -47,26 +47,27 @@ export function LongDurationLoansPanel() {
     return (
         <div className="w-full max-w-5xl mx-auto mt-12 animate-in slide-in-from-bottom-10 fade-in duration-700">
             {/* Header Section */}
-            <div className="flex items-center justify-between bg-red-600 border-4 border-black p-4 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] mb-6 select-none relative overflow-hidden group">
+            {/* Header Section - Compact 40% Smaller */}
+            <div className="flex items-center justify-between bg-red-600 border-4 border-black p-2.5 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] mb-4 select-none relative overflow-hidden group">
                 {/* Decorative Background Pattern */}
                 <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-black via-transparent to-transparent scale-150 group-hover:scale-125 transition-transform duration-1000" />
 
-                <div className="flex items-center gap-4 relative z-10">
-                    <div className="bg-white p-3 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] animate-bounce-slow">
-                        <AlertTriangle className="h-8 w-8 text-black fill-yellow-400" />
+                <div className="flex items-center gap-3 relative z-10">
+                    <div className="bg-white p-1.5 border-4 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] animate-bounce-slow">
+                        <AlertTriangle className="h-5 w-5 text-black fill-yellow-400" />
                     </div>
                     <div>
-                        <h2 className="text-3xl font-black text-white uppercase tracking-tighter italic drop-shadow-[2px_2px_0px_rgba(0,0,0,1)]">
+                        <h2 className="text-lg sm:text-xl font-black text-white uppercase tracking-tighter italic drop-shadow-[2px_2px_0px_rgba(0,0,0,1)] leading-none">
                             Atenção Absoluta
                         </h2>
-                        <p className="text-white font-bold font-mono text-sm tracking-widest uppercase opacity-90">
+                        <p className="text-white font-bold font-mono text-[10px] sm:text-xs tracking-widest uppercase opacity-90 mt-0.5">
                             Empréstimos Críticos ({longDurationLoans.length})
                         </p>
                     </div>
                 </div>
 
                 <div className="hidden sm:block">
-                    <Badge className="bg-black text-white text-lg font-black px-6 py-2 rounded-none border-2 border-white shadow-[4px_4px_0px_0px_rgba(255,255,255,0.5)] transform -rotate-2">
+                    <Badge className="bg-black text-white text-xs sm:text-sm font-black px-3 py-1 rounded-none border-2 border-white shadow-[3px_3px_0px_0px_rgba(255,255,255,0.5)] transform -rotate-2">
                         {'>'} 24H
                     </Badge>
                 </div>

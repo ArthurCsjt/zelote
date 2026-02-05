@@ -18,6 +18,26 @@ import logger from '@/utils/logger';
 import { validateEmailDomain, EMAIL_DOMAINS } from '@/utils/emailValidation';
 import { isNetworkError, getSupabaseErrorMessage, handleSupabaseError, retryWithBackoff } from '@/utils/networkErrors';
 
+// Helper to trigger push notifications via Edge Function
+const triggerPushNotification = async (title: string, body: string, url: string = '/') => {
+  try {
+    const { error } = await supabase.functions.invoke('send-push-notification', {
+      body: {
+        title,
+        body,
+        url,
+        // No target_user_id means broadcast to all subscribers (admins/staff)
+      }
+    });
+
+    if (error) {
+      console.error('Error triggering push:', error);
+    }
+  } catch (err) {
+    console.error('Failed to invoke push function:', err);
+  }
+};
+
 // Types for new entities
 interface StudentData {
   nome_completo: string;
@@ -310,6 +330,13 @@ export const useDatabase = () => {
 
       if (error) throw error;
 
+      // Trigger Push Notification
+      triggerPushNotification(
+        "Novo Empréstimo",
+        `${data.studentName} retirou o Chromebook ${data.chromebookId}.`,
+        '/dashboard'
+      );
+
       // REMOVIDO: Toast de sucesso genérico. O componente chamador fará o toast de sucesso em lote.
       return result as unknown as Loan;
     } catch (error: any) {
@@ -530,6 +557,13 @@ export const useDatabase = () => {
         .single();
 
       if (error) throw error;
+
+      // Trigger Push Notification
+      triggerPushNotification(
+        "Devolução Registrada",
+        `${data.name} devolveu um equipamento.`,
+        '/dashboard'
+      );
 
       return result as unknown as Return;
     } catch (error: any) {

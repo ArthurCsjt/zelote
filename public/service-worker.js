@@ -1,5 +1,5 @@
 // Service Worker for Zelote PWA
-const CACHE_NAME = 'zelote-cache-v4'; // Incrementando a versão do cache
+const CACHE_NAME = 'zelote-cache-v5'; // Incrementando a versão do cache
 const OFFLINE_URL = '/offline.html';
 
 // Recursos essenciais para o shell do app
@@ -9,8 +9,7 @@ const urlsToCache = [
   '/manifest.json',
   '/favicon.ico',
   '/offline.html',
-  '/icons/icon-512x512.png',
-  '/icons/icon-192x192.png'
+  '/icons/icon.svg'
 ];
 
 // Tipos de recursos que queremos cachear agressivamente (Cache First)
@@ -39,7 +38,6 @@ self.addEventListener('activate', (event) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
           if (cacheWhitelist.indexOf(cacheName) === -1) {
-            console.log('[Service Worker] Deleting old cache:', cacheName);
             return caches.delete(cacheName);
           }
           return null;
@@ -55,10 +53,9 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
   const request = event.request;
-  
-  // 1. Ignorar requisições de terceiros (exceto Google Fonts) e extensões
+
+  // 1. Ignorar requisições de terceiros (exceto Google Fonts)
   if (!url.protocol.startsWith('http') || url.origin !== location.origin) {
-    // Exceção para Google Fonts (Cache First)
     if (url.origin === 'https://fonts.googleapis.com' || url.origin === 'https://fonts.gstatic.com') {
       event.respondWith(
         caches.match(request).then(response => {
@@ -75,7 +72,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 2. Estratégia Cache First para imagens e fontes
+  // 2. Cache First para imagens e fontes
   if (cacheFirstTypes.includes(request.destination)) {
     event.respondWith(
       caches.match(request).then(response => {
@@ -85,67 +82,94 @@ self.addEventListener('fetch', (event) => {
             return fetchResponse;
           });
         }).catch(() => {
-          // Fallback para imagens offline
-          if (request.destination === 'image') {
-            return caches.match('/icons/offline-image.png');
-          }
+          if (request.destination === 'image') return caches.match('/icons/offline-image.png');
         });
       })
     );
     return;
   }
 
-  // 3. Estratégia Network First para HTML e Assets Críticos (JS/CSS)
-  // Isso garante que o usuário obtenha a versão mais recente do app shell
+  // 3. Network First para HTML e Assets Críticos
   const isCriticalAsset = request.mode === 'navigate' || url.pathname.endsWith('.js') || url.pathname.endsWith('.css');
-  
+
   if (isCriticalAsset) {
     event.respondWith(
       fetch(request)
         .then((response) => {
-          // Se a rede funcionar, cacheia a nova versão e retorna
           if (response && response.status === 200) {
             const responseToCache = response.clone();
-            caches.open(CACHE_NAME).then((cache) => {
-              cache.put(request, responseToCache);
-            });
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, responseToCache));
           }
           return response;
         })
         .catch(() => {
-          // Se a rede falhar, retorna a versão em cache
           return caches.match(request).then(cachedResponse => {
             if (cachedResponse) return cachedResponse;
-            
-            // Se for uma navegação e não houver cache, retorna a página offline
-            if (request.mode === 'navigate') {
-              return caches.match(OFFLINE_URL);
-            }
-            
+            if (request.mode === 'navigate') return caches.match(OFFLINE_URL);
             return new Response('Offline content not available');
           });
         })
     );
     return;
   }
-  
-  // 4. Para o resto (APIs, etc.): Network First (sem cache persistente para APIs)
+
   event.respondWith(fetch(request).catch(() => caches.match(request)));
 });
 
-// Listen for messages from the main thread
+// --- PUSH NOTIFICATIONS SUPPORT ---
+
+self.addEventListener('push', (event) => {
+  if (!event.data) return;
+
+  try {
+    const data = event.data.json();
+    const title = data.title || 'Zelote Notificação';
+
+    const options = {
+      body: data.body || 'Nova atualização disponível.',
+      icon: '/icons/icon.svg',
+      badge: '/icons/icon.svg',
+      vibrate: [100, 50, 100],
+      data: {
+        url: data.url || '/'
+      },
+      // Neo-Brutalist inspired actions potentially
+      actions: [
+        { action: 'open', title: 'Ver Detalhes' }
+      ]
+    };
+
+    event.waitUntil(
+      self.registration.showNotification(title, options)
+    );
+  } catch (error) {
+    console.error('Erro ao processar push:', error);
+  }
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+
+  const urlToOpen = event.notification.data?.url || '/';
+
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
+      // Se já houver uma aba aberta, foca nela
+      for (let client of windowClients) {
+        if (client.url === urlToOpen && 'focus' in client) {
+          return client.focus();
+        }
+      }
+      // Se não, abre uma nova
+      if (clients.openWindow) {
+        return clients.openWindow(urlToOpen);
+      }
+    })
+  );
+});
+
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
   }
-  
-  if (event.data && event.data.type === 'FORCE_UPDATE') {
-    // Clear all caches and force update
-    caches.keys().then(names => {
-      names.forEach(name => caches.delete(name));
-    });
-    self.skipWaiting();
-  }
 });
-
-// Removida a lógica de 'CHECK_UPDATE' baseada em setInterval
