@@ -10,6 +10,7 @@ import { ActivityFeed } from './ActivityFeed';
 import { NotificationFeed } from './NotificationFeed';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useDatabase } from '@/hooks/useDatabase';
+import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { useQuery } from '@tanstack/react-query';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
