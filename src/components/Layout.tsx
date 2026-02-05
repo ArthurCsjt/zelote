@@ -123,9 +123,9 @@ const Layout: React.FC<LayoutProps> = ({
                     alt="Zelote"
                     className="h-8 sm:h-10 w-auto object-contain neo-brutal-logo"
                   />
-                  <span className="text-[10px] px-1.5 py-0.5 text-white font-bold hidden sm:block glass-badge rounded-sm self-start mt-1">v1.0.0</span>
+                  <span className="text-[8px] px-1 py-0 text-white/50 font-medium hidden sm:block border border-white/10 rounded-sm self-start mt-1.5 ml-1">v1.0.0</span>
                 </div>
-                <p className="text-[10px] font-bold text-white/90 hidden sm:block uppercase tracking-[0.2em] mt-1 opacity-80">
+                <p className="text-[9px] font-bold text-white/90 hidden sm:block uppercase tracking-[0.14em] mt-0.5 opacity-90 pl-1">
                   Controle de Empréstimos
                 </p>
               </div>
