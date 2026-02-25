@@ -12,6 +12,11 @@ dist
 dist-ssr
 *.local
 
+# Sensitive / development-only files — never commit these
+keys.txt
+gen-keys.js
+*.env.local
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
