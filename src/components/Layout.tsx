@@ -14,6 +14,8 @@ import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { useQuery } from '@tanstack/react-query';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 
 
 interface LayoutProps {
@@ -136,18 +138,15 @@ const Layout: React.FC<LayoutProps> = ({
             <div className="flex items-center space-x-2">
 
               {/* Push Notification Toggle */}
-              <button
-                onClick={isSubscribed ? unsubscribeFromPush : subscribeToPush}
-                className={cn(
-                  "p-2 rounded-full transition-all duration-200",
-                  isSubscribed
-                    ? "bg-green-500/20 text-green-400 hover:bg-green-500/30"
-                    : "text-white/60 hover:text-white hover:bg-white/10"
-                )}
-                title={isSubscribed ? "Notificações ativadas" : "Ativar notificações push"}
-              >
-                {isSubscribed ? <BellRing className="w-5 h-5" /> : <BellOff className="w-5 h-5" />}
-              </button>
+              <div className="flex items-center px-1">
+                <Switch
+                  id="push-toggle"
+                  checked={isSubscribed}
+                  onCheckedChange={(checked) => checked ? subscribeToPush() : unsubscribeFromPush()}
+                  className="data-[state=checked]:bg-green-500/80 data-[state=unchecked]:bg-white/20 h-4 w-7 scale-75 md:scale-90"
+                  title={isSubscribed ? "Notificações ativadas" : "Ativar notificações"}
+                />
+              </div>
 
               {/* Botão de Notificações Internas (App) */}
               {!user?.email?.endsWith('@sj.pro.br') && (
