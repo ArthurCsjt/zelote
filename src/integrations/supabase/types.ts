@@ -482,7 +482,8 @@ export type Database = {
           needs_sound: boolean | null
           needs_tv: boolean | null
           professor_id: string | null
-          quantity_requested: number
+          quantity_requested: number | null
+          space_id: string | null
           time_slot: string
         }
         Insert: {
@@ -499,7 +500,8 @@ export type Database = {
           needs_sound?: boolean | null
           needs_tv?: boolean | null
           professor_id?: string | null
-          quantity_requested: number
+          quantity_requested?: number | null
+          space_id?: string | null
           time_slot: string
         }
         Update: {
@@ -516,7 +518,8 @@ export type Database = {
           needs_sound?: boolean | null
           needs_tv?: boolean | null
           professor_id?: string | null
-          quantity_requested?: number
+          quantity_requested?: number | null
+          space_id?: string | null
           time_slot?: string
         }
         Relationships: [
@@ -525,6 +528,13 @@ export type Database = {
             columns: ["professor_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reservations_space_id_fkey"
+            columns: ["space_id"]
+            isOneToOne: false
+            referencedRelation: "spaces"
             referencedColumns: ["id"]
           },
         ]
@@ -592,6 +602,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      spaces: {
+        Row: {
+          capacity: number | null
+          color: string
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          capacity?: number | null
+          color: string
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          capacity?: number | null
+          color?: string
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
       }
     }
     Views: {

@@ -10,12 +10,16 @@ import logger from '@/utils/logger';
 // Expose React for devtools in iframe
 window.React = React;
 
-// Código para forçar a remoção de Service Workers antigos que estejam bloqueando o dev server
+// Registro do Service Worker para PWA e Notificações Push
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.getRegistrations().then((registrations) => {
-    for (let registration of registrations) {
-      registration.unregister();
-    }
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/service-worker.js')
+      .then(registration => {
+        logger.info('ServiceWorker registrado com sucesso:', { scope: registration.scope });
+      })
+      .catch(error => {
+        logger.error('Falha ao registrar ServiceWorker:', error);
+      });
   });
 }
 

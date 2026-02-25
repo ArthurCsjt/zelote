@@ -14,6 +14,30 @@ serve(async (req) => {
   }
 
   try {
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: 'Faltando header de autorização' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 401,
+      });
+    }
+
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
+
+    const supabaseUserClient = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+
+    // Validar o token e obter o usuário
+    const { data: { user }, error: userError } = await supabaseUserClient.auth.getUser();
+    if (userError || !user) {
+      return new Response(JSON.stringify({ error: 'Não autorizado: Token inválido' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 401,
+      });
+    }
+
     const body = await req.json();
     const { userQuestion } = body;
 
@@ -143,15 +167,10 @@ serve(async (req) => {
       );
     }
 
-    // Criar cliente Supabase para executar a consulta
-    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    // Executar a consulta usando a função RPC
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-    
-    // CORREÇÃO: Usamos o operador '!' para garantir que o createClient receba strings,
-    // pois sabemos que essas variáveis de ambiente estão configuradas.
     const supabase = createClient(supabaseUrl!, supabaseServiceKey!);
 
-    // Executar a consulta usando a função RPC
     const { data, error } = await supabase.rpc('execute_sql', { query: cleanSQL });
 
     if (error) {
@@ -165,10 +184,10 @@ serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         query: cleanSQL,
         data: data || [],
-        userQuestion 
+        userQuestion
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
