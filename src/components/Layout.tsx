@@ -10,7 +10,6 @@ import { ActivityFeed } from './ActivityFeed';
 import { NotificationFeed } from './NotificationFeed';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useDatabase } from '@/hooks/useDatabase';
-import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { useQuery } from '@tanstack/react-query';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
@@ -40,7 +39,6 @@ const Layout: React.FC<LayoutProps> = ({
   const navigate = useNavigate();
   const { role, loading: roleLoading } = useProfileRole();
   const { getNotifications } = useDatabase();
-  const { isSubscribed, subscribeToPush, unsubscribeFromPush } = usePushNotifications();
   const [isStandalone, setIsStandalone] = React.useState(false);
 
   const { data: notifications } = useQuery({
@@ -137,16 +135,7 @@ const Layout: React.FC<LayoutProps> = ({
 
             <div className="flex items-center space-x-2">
 
-              {/* Push Notification Toggle */}
-              <div className="flex items-center px-1">
-                <Switch
-                  id="push-toggle"
-                  checked={isSubscribed}
-                  onCheckedChange={(checked) => checked ? subscribeToPush() : unsubscribeFromPush()}
-                  className="data-[state=checked]:bg-green-500/80 data-[state=unchecked]:bg-white/20 h-4 w-7 scale-75 md:scale-90"
-                  title={isSubscribed ? "Notificações ativadas" : "Ativar notificações"}
-                />
-              </div>
+
 
               {/* Botão de Notificações Internas (App) */}
               {!user?.email?.endsWith('@sj.pro.br') && (
@@ -234,15 +223,13 @@ const Layout: React.FC<LayoutProps> = ({
                     </div>
                     <DropdownMenuSeparator className="bg-border/50" />
 
-                    {role && (role === 'admin' || role === 'super_admin') && (
-                      <DropdownMenuItem
-                        onClick={() => navigate('/settings')}
-                        className="cursor-pointer rounded-lg focus:bg-zinc-100 dark:focus:bg-zinc-800"
-                      >
-                        <Settings className="h-4 w-4 mr-2 text-primary" />
-                        Configurações
-                      </DropdownMenuItem>
-                    )}
+                    <DropdownMenuItem
+                      onClick={() => navigate('/settings')}
+                      className="cursor-pointer rounded-lg focus:bg-zinc-100 dark:focus:bg-zinc-800"
+                    >
+                      <Settings className="h-4 w-4 mr-2 text-primary" />
+                      Configurações
+                    </DropdownMenuItem>
 
                     <DropdownMenuItem
                       onClick={handleLogout}

@@ -111,7 +111,7 @@ const SchedulingPage = () => {
     });
   };
   const isLoading = isLoadingTotal || isLoadingReservations || isLoadingProfessores;
-  return <Layout title="Agendamento de Chromebooks" subtitle="Reserve lotes de equipamentos para suas aulas" showBackButton onBack={() => navigate('/')}>
+  return <Layout title="Agendamento" showBackButton onBack={() => navigate('/')}>
     {/* Background Pattern */}
     <div className="fixed inset-0 pointer-events-none opacity-[0.02] dark:opacity-[0.03]">
       <div className="absolute inset-0 neo-brutal-grid" />
@@ -137,13 +137,10 @@ const SchedulingPage = () => {
 
                 <div className="space-y-1">
                   <h2 className="text-2xl font-black uppercase tracking-tighter text-foreground leading-none">
-                    Agendamento de Chromebooks
+                    Agendamento
                   </h2>
                   <div className="flex items-center gap-2">
                     <div className="h-1 w-8 bg-blue-600" />
-                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
-                      Gestão Inteligente de Recursos Disponíveis
-                    </p>
                   </div>
                 </div>
               </div>

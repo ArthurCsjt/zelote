@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, Calendar, Monitor, Info, Save, Tv, Volume2, Mic, User, ListFilter, CalendarDays, X as CloseIcon, ArrowRight, Plus, Minus } from 'lucide-react';
+import { Loader2, Calendar, Monitor, Info, Save, Tv, Volume2, Mic, User, ListFilter, CalendarDays, X as CloseIcon, ArrowRight, Plus, Minus, CheckCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useDatabase, ReservationData, Reservation } from '@/hooks/useDatabase';
@@ -57,7 +57,7 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
   const { isAdmin } = useProfileRole();
 
   const [justification, setJustification] = useState<string>('');
-  const [quantity, setQuantity] = useState<number>(1);
+  const [quantity, setQuantity] = useState<number>(0);
   const [needsTv, setNeedsTv] = useState(false);
   const [needsSound, setNeedsSound] = useState(false);
   const [needsMic, setNeedsMic] = useState(false);
@@ -72,7 +72,7 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
   useEffect(() => {
     if (open) {
       setJustification('');
-      setQuantity(Math.min(1, maxQuantity) || 0);
+      setQuantity(0);
       setNeedsTv(false);
       setNeedsSound(false);
       setNeedsMic(false);
@@ -85,6 +85,17 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
       setShowCustomClassroom(false);
     }
   }, [open, maxQuantity]);
+
+  // Reset extra resources when the room is not "Sala Google"
+  useEffect(() => {
+    if (classroom !== 'Sala Google') {
+      setNeedsTv(false);
+      setNeedsSound(false);
+      setNeedsMic(false);
+      setMicQuantity(1);
+      setIsMinecraft(false);
+    }
+  }, [classroom]);
 
   const isExpired = date < new Date(new Date().setHours(0, 0, 0, 0));
 
@@ -100,7 +111,7 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
       return;
     }
 
-    if (!classroom.trim() || quantity <= 0 || quantity > maxQuantity) {
+    if (!classroom.trim() || quantity < 0 || quantity > maxQuantity) {
       toast({
         title: "Erro de Validação",
         description: "Preencha a sala.",
@@ -243,7 +254,7 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                       <div className="p-4 flex flex-col gap-3.5">
                         <div className="flex items-center gap-3">
                           <div className="bg-[#3B82F6] px-2.5 py-1 border-[2px] border-black shadow-[3px_3px_0_0_#000] -rotate-1">
-                            <span className="text-[10px] sm:text-[11px] font-[1000] uppercase text-white tracking-widest">Sala</span>
+                            <span className="text-[10px] sm:text-[11px] font-[1000] uppercase text-white tracking-widest">Sala / Turma</span>
                           </div>
                           <span className="text-sm sm:text-base font-[1000] text-black dark:text-zinc-100 uppercase tracking-tight">
                             {res.classroom || 'Não informada'}
@@ -402,7 +413,7 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
               </div>
               <div className="p-3 sm:p-4 space-y-3">
                 <div className="space-y-2">
-                  <Label className="text-[11px] sm:text-xs font-black uppercase text-[#a855f7] dark:text-purple-400 tracking-wider">Sala <span className="text-red-500">*</span></Label>
+                  <Label className="text-[11px] sm:text-xs font-black uppercase text-[#a855f7] dark:text-purple-400 tracking-wider">Sala / Turma <span className="text-red-500">*</span></Label>
                   <div className="flex flex-wrap gap-1.5">
                     {['Sala Google', 'Sala Maker', 'Sala de Estudos', 'Sala de Artes'].map((s) => {
                       const isOccupied = currentReservations.some(res => res.classroom === s);
@@ -455,7 +466,7 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                     <Input
                       value={classroom}
                       onChange={(e) => setClassroom(e.target.value)}
-                      placeholder="Nome da sala..."
+                      placeholder="Nome da sala ou turma..."
                       className="border-2 border-black rounded-none h-8 mt-2 text-xs font-bold focus-visible:ring-0 focus-visible:border-[#a855f7]"
                     />
                   )}
@@ -473,105 +484,128 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
               </div>
             </div>
 
-            {/* QUANTIDADE */}
-            <div className="border-2 border-[#22c55e] bg-green-50/30 dark:bg-green-950/10 overflow-hidden shadow-[4px_4px_0_0_rgba(34,197,94,0.15)]">
-              <div className="bg-[#22c55e] px-3 py-2 flex items-center justify-between">
+            {/* QUANTIDADE / RESERVA DE ESPAÇO */}
+            <div className="border-2 border-[#1e3a8a] bg-blue-50/30 dark:bg-blue-950/10 overflow-hidden shadow-[4px_4px_0_0_rgba(30,58,138,0.15)]">
+              <div className="bg-[#1e3a8a] px-3 py-2 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Monitor className="h-4 w-5 text-white" />
-                  <span className="text-[13px] sm:text-[15px] font-black uppercase text-white tracking-wider">Quantidade</span>
+                  <Monitor className={cn("h-4 w-5 text-white", quantity === 0 && "opacity-50")} />
+                  <span className="text-[13px] sm:text-[15px] font-black uppercase text-white tracking-wider">
+                    Quantidade de Chromebooks
+                  </span>
                 </div>
-                <div className="bg-white/20 border-2 border-white/50 px-3 py-1 text-white text-sm sm:text-base font-black leading-none">{quantity}</div>
+                {quantity > 0 && (
+                  <div className="bg-white/20 border-2 border-white/50 px-3 py-1 text-white text-sm sm:text-base font-black leading-none">
+                    {quantity}
+                  </div>
+                )}
               </div>
               <div className="p-4 sm:p-5">
-                <Slider value={[quantity]} onValueChange={(v) => setQuantity(v[0])} min={1} max={maxQuantity} step={1} className="py-2" />
-                <div className="flex justify-between mt-2 text-[12px] sm:text-[13px] font-black uppercase text-green-700 dark:text-green-400">
-                  <span>Mín: 1</span>
+                <Slider value={[quantity]} onValueChange={(v) => setQuantity(v[0])} min={0} max={maxQuantity} step={1} className="py-2" />
+                <div className="flex justify-between mt-2 text-[12px] sm:text-[13px] font-black uppercase text-[#1e3a8a] dark:text-blue-400">
+                  <span>Mín: 0</span>
                   <span>Máx: {maxQuantity}</span>
                 </div>
+                {quantity === 0 ? (
+                  <div className="mt-4 p-3 bg-[#1e3a8a] border-2 border-black flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
+                    <div className="bg-white p-1 rounded-sm">
+                      <CheckCircle className="h-4 w-4 text-[#1e3a8a]" />
+                    </div>
+                    <span className="text-[11px] sm:text-[12px] font-black uppercase text-white tracking-widest leading-none">Apenas reserva do espaço físico</span>
+                  </div>
+                ) : (
+                  <div className="mt-4 p-3 bg-[#a855f7] border-2 border-black flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
+                    <div className="bg-white p-1 rounded-sm">
+                      <Monitor className="h-4 w-4 text-[#a855f7]" />
+                    </div>
+                    <span className="text-[11px] sm:text-[12px] font-black uppercase text-white tracking-widest leading-none">Espaço + {quantity} Chromebooks</span>
+                  </div>
+                )}
               </div>
             </div>
 
-            {/* RECURSOS EXTRAS */}
-            <div className="border-2 border-[#3b82f6] bg-blue-50/30 dark:bg-blue-950/20 overflow-hidden shadow-[4px_4px_0_0_rgba(59,130,246,0.15)]">
-              <div className="bg-[#3b82f6] px-3 py-2 flex items-center gap-2">
-                <Tv className="h-4 w-4 text-white" />
-                <span className="text-[11px] sm:text-[13px] font-black uppercase text-white tracking-wider">Recursos Extras</span>
-              </div>
-              <div className="p-3 sm:p-4">
-                <div className="grid grid-cols-2 gap-2 sm:gap-3">
-                  {/* TV */}
-                  <div
-                    onClick={() => setNeedsTv(!needsTv)}
-                    className={cn(
-                      "flex items-center gap-2 p-2.5 border-2 border-black dark:border-zinc-800 cursor-pointer transition-all",
-                      needsTv ? "bg-black dark:bg-blue-600 text-white shadow-none translate-x-[1px] translate-y-[1px]" : "bg-white dark:bg-zinc-900 text-black dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800 shadow-[3px_3px_0_0_#000] dark:shadow-[3px_3px_0_0_rgba(255,255,255,0.05)]"
-                    )}
-                  >
-                    <Tv className={cn("h-4 w-4", needsTv ? "text-white" : "text-black dark:text-zinc-400")} />
-                    <span className="text-[11px] sm:text-[13px] font-black uppercase">TV</span>
-                  </div>
+            {/* RECURSOS EXTRAS - Apenas para Sala Google */}
+            {classroom === 'Sala Google' && (
+              <div className="border-2 border-[#3b82f6] bg-blue-50/30 dark:bg-blue-950/20 overflow-hidden shadow-[4px_4px_0_0_rgba(59,130,246,0.15)] animate-in fade-in zoom-in-95 duration-200">
+                <div className="bg-[#3b82f6] px-3 py-2 flex items-center gap-2">
+                  <Tv className="h-4 w-4 text-white" />
+                  <span className="text-[11px] sm:text-[13px] font-black uppercase text-white tracking-wider">Recursos Extras</span>
+                </div>
+                <div className="p-3 sm:p-4">
+                  <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                    {/* TV */}
+                    <div
+                      onClick={() => setNeedsTv(!needsTv)}
+                      className={cn(
+                        "flex items-center gap-2 p-2.5 border-2 border-black dark:border-zinc-800 cursor-pointer transition-all",
+                        needsTv ? "bg-black dark:bg-blue-600 text-white shadow-none translate-x-[1px] translate-y-[1px]" : "bg-white dark:bg-zinc-900 text-black dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800 shadow-[3px_3px_0_0_#000] dark:shadow-[3px_3px_0_0_rgba(255,255,255,0.05)]"
+                      )}
+                    >
+                      <Tv className={cn("h-4 w-4", needsTv ? "text-white" : "text-black dark:text-zinc-400")} />
+                      <span className="text-[11px] sm:text-[13px] font-black uppercase">TV</span>
+                    </div>
 
-                  {/* SOM */}
-                  <div
-                    onClick={() => setNeedsSound(!needsSound)}
-                    className={cn(
-                      "flex items-center gap-2 p-2.5 border-2 border-black dark:border-zinc-800 cursor-pointer transition-all",
-                      needsSound ? "bg-black dark:bg-blue-600 text-white shadow-none translate-x-[1px] translate-y-[1px]" : "bg-white dark:bg-zinc-900 text-black dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800 shadow-[3px_3px_0_0_#000] dark:shadow-[3px_3px_0_0_rgba(255,255,255,0.05)]"
-                    )}
-                  >
-                    <Volume2 className={cn("h-4 w-4", needsSound ? "text-white" : "text-black dark:text-zinc-400")} />
-                    <span className="text-[11px] sm:text-[13px] font-black uppercase">Som</span>
-                  </div>
+                    {/* SOM */}
+                    <div
+                      onClick={() => setNeedsSound(!needsSound)}
+                      className={cn(
+                        "flex items-center gap-2 p-2.5 border-2 border-black dark:border-zinc-800 cursor-pointer transition-all",
+                        needsSound ? "bg-black dark:bg-blue-600 text-white shadow-none translate-x-[1px] translate-y-[1px]" : "bg-white dark:bg-zinc-900 text-black dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800 shadow-[3px_3px_0_0_#000] dark:shadow-[3px_3px_0_0_rgba(255,255,255,0.05)]"
+                      )}
+                    >
+                      <Volume2 className={cn("h-4 w-4", needsSound ? "text-white" : "text-black dark:text-zinc-400")} />
+                      <span className="text-[11px] sm:text-[13px] font-black uppercase">Som</span>
+                    </div>
 
-                  {/* MIC */}
-                  <div
-                    onClick={() => setNeedsMic(!needsMic)}
-                    className={cn(
-                      "flex items-center gap-2 p-2.5 border-2 border-black dark:border-zinc-800 cursor-pointer transition-all min-h-[50px]",
-                      needsMic ? "bg-black dark:bg-blue-600 text-white shadow-none translate-x-[1px] translate-y-[1px]" : "bg-white dark:bg-zinc-900 text-black dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800 shadow-[3px_3px_0_0_#000] dark:shadow-[3px_3px_0_0_rgba(255,255,255,0.05)]"
-                    )}
-                  >
-                    <Mic className={cn("h-4 w-4", needsMic ? "text-white" : "text-black dark:text-zinc-400")} />
-                    <span className="text-[11px] sm:text-[13px] font-black uppercase">Mic</span>
+                    {/* MIC */}
+                    <div
+                      onClick={() => setNeedsMic(!needsMic)}
+                      className={cn(
+                        "flex items-center gap-2 p-2.5 border-2 border-black dark:border-zinc-800 cursor-pointer transition-all min-h-[50px]",
+                        needsMic ? "bg-black dark:bg-blue-600 text-white shadow-none translate-x-[1px] translate-y-[1px]" : "bg-white dark:bg-zinc-900 text-black dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800 shadow-[3px_3px_0_0_#000] dark:shadow-[3px_3px_0_0_rgba(255,255,255,0.05)]"
+                      )}
+                    >
+                      <Mic className={cn("h-4 w-4", needsMic ? "text-white" : "text-black dark:text-zinc-400")} />
+                      <span className="text-[11px] sm:text-[13px] font-black uppercase">Mic</span>
 
-                    {needsMic && (
-                      <div className="flex items-center gap-2 ml-auto" onClick={(e) => e.stopPropagation()}>
-                        <button
-                          type="button"
-                          onClick={() => setMicQuantity(Math.max(1, micQuantity - 1))}
-                          className="w-7 h-7 flex items-center justify-center bg-white dark:bg-zinc-800 text-black dark:text-white border-2 border-black dark:border-white/20 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors shadow-[2px_2px_0_0_#000] dark:shadow-none active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
-                        >
-                          <Minus className="h-3 w-3" />
-                        </button>
-                        <span className="w-4 text-center text-xs sm:text-sm font-black text-white">{micQuantity}</span>
-                        <button
-                          type="button"
-                          onClick={() => setMicQuantity(micQuantity + 1)}
-                          className="w-7 h-7 flex items-center justify-center bg-white dark:bg-zinc-800 text-black dark:text-white border-2 border-black dark:border-white/20 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors shadow-[2px_2px_0_0_#000] dark:shadow-none active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
-                        >
-                          <Plus className="h-3 w-3" />
-                        </button>
+                      {needsMic && (
+                        <div className="flex items-center gap-2 ml-auto" onClick={(e) => e.stopPropagation()}>
+                          <button
+                            type="button"
+                            onClick={() => setMicQuantity(Math.max(1, micQuantity - 1))}
+                            className="w-7 h-7 flex items-center justify-center bg-white dark:bg-zinc-800 text-black dark:text-white border-2 border-black dark:border-white/20 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors shadow-[2px_2px_0_0_#000] dark:shadow-none active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
+                          >
+                            <Minus className="h-3 w-3" />
+                          </button>
+                          <span className="w-4 text-center text-xs sm:text-sm font-black text-white">{micQuantity}</span>
+                          <button
+                            type="button"
+                            onClick={() => setMicQuantity(micQuantity + 1)}
+                            className="w-7 h-7 flex items-center justify-center bg-white dark:bg-zinc-800 text-black dark:text-white border-2 border-black dark:border-white/20 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors shadow-[2px_2px_0_0_#000] dark:shadow-none active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
+                          >
+                            <Plus className="h-3 w-3" />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* MINECRAFT */}
+                    <div
+                      onClick={() => setIsMinecraft(!isMinecraft)}
+                      className={cn(
+                        "flex items-center gap-2 p-2.5 border-2 border-green-600 dark:border-green-500 cursor-pointer transition-all",
+                        isMinecraft ? "bg-[#22c55e] text-white shadow-none translate-x-[1px] translate-y-[1px]" : "bg-white dark:bg-zinc-900 text-black dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800 shadow-[3px_3px_0_0_#000] dark:shadow-[3px_3px_0_0_rgba(255,255,255,0.05)]"
+                      )}
+                    >
+                      <Monitor className={cn("h-4 w-4", isMinecraft ? "text-white" : "text-black dark:text-zinc-400")} />
+                      <div className="flex flex-col">
+                        <span className="text-[11px] sm:text-[13px] font-black uppercase leading-none">Minecraft</span>
+                        <span className="text-[9px] font-black uppercase opacity-60 dark:opacity-80">TI</span>
                       </div>
-                    )}
-                  </div>
-
-                  {/* MINECRAFT */}
-                  <div
-                    onClick={() => setIsMinecraft(!isMinecraft)}
-                    className={cn(
-                      "flex items-center gap-2 p-2.5 border-2 border-green-600 dark:border-green-500 cursor-pointer transition-all",
-                      isMinecraft ? "bg-[#22c55e] text-white shadow-none translate-x-[1px] translate-y-[1px]" : "bg-white dark:bg-zinc-900 text-black dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800 shadow-[3px_3px_0_0_#000] dark:shadow-[3px_3px_0_0_rgba(255,255,255,0.05)]"
-                    )}
-                  >
-                    <Monitor className={cn("h-4 w-4", isMinecraft ? "text-white" : "text-black dark:text-zinc-400")} />
-                    <div className="flex flex-col">
-                      <span className="text-[11px] sm:text-[13px] font-black uppercase leading-none">Minecraft</span>
-                      <span className="text-[9px] font-black uppercase opacity-60 dark:opacity-80">TI</span>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
+            )}
 
           </div>
         </form>
@@ -588,7 +622,7 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
           </Button>
           <Button
             type="submit"
-            disabled={isSaving || !classroom.trim() || quantity <= 0}
+            disabled={isSaving || !classroom.trim() || quantity < 0}
             onClick={handleSubmit}
             className="w-full sm:w-auto sm:flex-[2] h-10 sm:h-11 font-black uppercase bg-gradient-to-r from-blue-500 to-violet-600 hover:from-blue-600 hover:to-violet-700 text-white border-2 border-black rounded-none shadow-[3px_3px_0_0_#000] text-xs sm:text-sm disabled:opacity-50 order-1 sm:order-2"
           >

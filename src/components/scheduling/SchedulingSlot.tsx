@@ -53,9 +53,9 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
     const restantes = totalAvailableChromebooks - jaReservados;
     const myReservation = allReservationsForSlot.find(res => res.created_by === currentUser?.id);
 
-    const isAvailable = jaReservados === 0;
-    const isPartial = jaReservados > 0 && restantes > 0;
-    const isFull = restantes <= 0 && jaReservados > 0;
+    const isAvailable = allReservationsForSlot.length === 0;
+    const isPartial = !isAvailable && restantes > 0;
+    const isFull = !isAvailable && restantes <= 0;
     const hasMinecraft = allReservationsForSlot.some(res => res.is_minecraft);
 
     const [hourStr, minuteStr] = timeSlot.split('h');
@@ -95,6 +95,13 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
                       MINECRAFT
                     </span>
                   </>
+                ) : myReservation.quantity_requested === 0 ? (
+                  <>
+                    <CheckCircle className="h-3 w-3 text-info shrink-0" />
+                    <span className="text-[10px] font-black uppercase text-info truncate">
+                      ESPAÇO RESERVADO
+                    </span>
+                  </>
                 ) : (
                   <>
                     <CheckCircle className="h-3 w-3 text-info shrink-0" />
@@ -107,12 +114,18 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
               <p className="text-[10px] font-bold text-foreground truncate">
                 {myReservation.justification}
               </p>
-              <div className="flex items-center gap-1">
-                <Monitor className="h-2.5 w-2.5 text-muted-foreground" />
-                <span className="text-[9px] font-bold text-muted-foreground">
-                  {myReservation.quantity_requested} CB
+              {myReservation.quantity_requested > 0 ? (
+                <>
+                  <Monitor className="h-2.5 w-2.5 text-muted-foreground" />
+                  <span className="text-[9px] font-bold text-muted-foreground">
+                    {myReservation.quantity_requested} CB
+                  </span>
+                </>
+              ) : (
+                <span className="text-[9px] font-black uppercase text-info/70 ">
+                  Apenas Sala
                 </span>
-              </div>
+              )}
             </div>
           </TooltipTrigger>
           <TooltipContent className="border-3 border-foreground/20 rounded-none shadow-[4px_4px_0px_0px_hsl(var(--foreground)/0.1)]">
@@ -121,7 +134,7 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
               {myReservation.justification}
             </p>
             <p className="text-xs text-muted-foreground">
-              {myReservation.prof_name && myReservation.prof_name !== 'Usuário Desconhecido' ? myReservation.prof_name : (myReservation.prof_email || 'Usuário Desconhecido')} · {myReservation.quantity_requested} Chromebooks
+              {myReservation.prof_name && myReservation.prof_name !== 'Usuário Desconhecido' ? myReservation.prof_name : (myReservation.prof_email || 'Usuário Desconhecido')} · {myReservation.quantity_requested > 0 ? `${myReservation.quantity_requested} Chromebooks` : 'Reserva de Espaço'}
               {myReservation.classroom && ` · Sala: ${myReservation.classroom}`}
             </p>
             <p className="text-[10px] font-black text-blue-600 mt-2 uppercase tracking-tighter italic">Clique para ver detalhes e opções</p>
@@ -180,7 +193,7 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
                 )}
               </div>
               <p className="text-[10px] font-bold text-foreground">
-                {jaReservados}/{totalAvailableChromebooks} 💻
+                {jaReservados > 0 ? `${jaReservados}/${totalAvailableChromebooks} 💻` : "Apenas Espaço"}
               </p>
               <p className="text-[9px] text-muted-foreground truncate">
                 {allReservationsForSlot.length > 1
@@ -205,7 +218,9 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
                     {res.prof_name && res.prof_name !== 'Usuário Desconhecido' ? res.prof_name : (res.prof_email || 'Usuário Desconhecido')}
                     {res.classroom && <span className="ml-2 text-[9px] px-1.5 bg-info/10 text-info">SALA: {res.classroom}</span>}
                   </p>
-                  <p className="text-muted-foreground mb-1">{res.justification} · {res.quantity_requested} CB</p>
+                  <p className="text-muted-foreground mb-1">
+                    {res.justification} · {res.quantity_requested > 0 ? `${res.quantity_requested} CB` : "Apenas Espaço"}
+                  </p>
                   {res.associated_loans && res.associated_loans.length > 0 && (
                     <div className="flex flex-wrap gap-1 mt-1 mb-2">
                       {res.associated_loans.map((loan, lIdx) => (
@@ -292,7 +307,7 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
                     <>
                       <Monitor className="h-3 w-3 text-warning shrink-0 group-hover:scale-110 transition-transform" />
                       <span className="text-[10px] font-black uppercase text-warning truncate">
-                        Disponível
+                        {allReservationsForSlot.length > 0 ? "SALA EM USO" : "Disponível"}
                       </span>
                     </>
                   )}
@@ -318,7 +333,9 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
                       {res.prof_name && res.prof_name !== 'Usuário Desconhecido' ? res.prof_name : (res.prof_email || 'Usuário Desconhecido')}
                       {res.classroom && <span className="ml-2 text-[9px] px-1.5 bg-info/10 text-info">SALA: {res.classroom}</span>}
                     </p>
-                    <p className="text-muted-foreground mb-1">{res.justification} · {res.quantity_requested} CB</p>
+                    <p className="text-muted-foreground mb-1">
+                      {res.justification} · {res.quantity_requested > 0 ? `${res.quantity_requested} CB` : "Apenas Espaço"}
+                    </p>
                     {(isSuperAdmin || res.created_by === currentUser?.id) && (
                       <Button
                         variant="destructive"
