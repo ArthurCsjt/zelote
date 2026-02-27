@@ -33,7 +33,7 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
   const { role, isAdmin } = useProfileRole();
   const { deleteReservation } = useDatabase();
   const navigate = useNavigate();
-  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [isDetailsOpen, setIsDetailsOpen] = useState<string | false>(false);
 
   const isSuperAdmin = role === 'super_admin';
 
@@ -70,157 +70,105 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
 
   const pastSlotClasses = isPast ? "opacity-40 cursor-not-allowed pointer-events-none" : "";
 
-  // MY RESERVATION - Neo Brutal Style
-  if (myReservation) {
-    return (
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <div
-              className={cn(
-                "h-16 p-2 border-3 transition-all flex flex-col justify-center gap-0.5 cursor-pointer",
-                myReservation.is_minecraft
-                  ? "border-[#3c8527] bg-[#3c8527]/10 shadow-[3px_3px_0px_0px_#3c8527/0.3]"
-                  : "border-info bg-info/10 shadow-[3px_3px_0px_0px_hsl(var(--info)/0.3)]",
-                "hover:-translate-y-0.5 hover:shadow-[5px_5px_0px_0px_rgba(0,0,0,0.1)]",
-                pastSlotClasses
-              )}
-              onClick={() => setIsDetailsOpen(true)}
-            >
-              <div className="flex items-center gap-1">
-                {myReservation.is_minecraft ? (
-                  <>
-                    <Monitor className="h-3 w-3 text-[#3c8527] shrink-0" />
-                    <span className="text-[10px] font-black uppercase text-[#3c8527] truncate">
-                      MINECRAFT
-                    </span>
-                  </>
-                ) : myReservation.quantity_requested === 0 ? (
-                  <>
-                    <CheckCircle className="h-3 w-3 text-info shrink-0" />
-                    <span className="text-[10px] font-black uppercase text-info truncate">
-                      ESPAÇO RESERVADO
-                    </span>
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle className="h-3 w-3 text-info shrink-0" />
-                    <span className="text-[10px] font-black uppercase text-info truncate">
-                      Minha Reserva
-                    </span>
-                  </>
-                )}
+  if (isAvailable) {
+    if (isPast) {
+      return (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className={cn(
+                "min-h-16 border-3 border-dashed border-foreground/10 bg-muted/10",
+                "flex items-center justify-center gap-1",
+                "opacity-40 cursor-not-allowed"
+              )}>
+                <Clock className="h-4 w-4 text-muted-foreground" />
+                <span className="text-[10px] font-bold text-muted-foreground uppercase">Expirado</span>
               </div>
-              <p className="text-[10px] font-bold text-foreground truncate">
-                {myReservation.justification}
-              </p>
-              {myReservation.quantity_requested > 0 ? (
-                <>
-                  <Monitor className="h-2.5 w-2.5 text-muted-foreground" />
-                  <span className="text-[9px] font-bold text-muted-foreground">
-                    {myReservation.quantity_requested} CB
-                  </span>
-                </>
-              ) : (
-                <span className="text-[9px] font-black uppercase text-info/70 ">
-                  Apenas Sala
-                </span>
-              )}
-            </div>
-          </TooltipTrigger>
-          <TooltipContent className="border-3 border-foreground/20 rounded-none shadow-[4px_4px_0px_0px_hsl(var(--foreground)/0.1)]">
-            <p className="font-bold text-sm">
-              {myReservation.is_minecraft && <span className="text-[#3c8527] mr-2">[MINECRAFT]</span>}
-              {myReservation.justification}
-            </p>
-            <p className="text-xs text-muted-foreground">
-              {myReservation.prof_name && myReservation.prof_name !== 'Usuário Desconhecido' ? myReservation.prof_name : (myReservation.prof_email || 'Usuário Desconhecido')} · {myReservation.quantity_requested > 0 ? `${myReservation.quantity_requested} Chromebooks` : 'Reserva de Espaço'}
-              {myReservation.classroom && ` · Sala: ${myReservation.classroom}`}
-            </p>
-            <p className="text-[10px] font-black text-blue-600 mt-2 uppercase tracking-tighter italic">Clique para ver detalhes e opções</p>
-          </TooltipContent>
-        </Tooltip>
+            </TooltipTrigger>
+            <TooltipContent className="border-3 border-foreground/20 rounded-none">
+              <p className="text-xs font-medium">Horário já expirou</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      );
+    }
 
-        <ReservationDetailsDialog
-          open={isDetailsOpen}
-          onOpenChange={setIsDetailsOpen}
-          reservation={myReservation}
-          date={date}
-          isOwner={true}
-          isAdmin={!!isAdmin}
-          isResponsible={!!isResponsible}
-          onCancel={() => {
-            deleteReservation(myReservation!.id).then((success: boolean) => {
-              if (success) {
-                onReservationSuccess();
-                setIsDetailsOpen(false);
-              }
-            });
-          }}
-        />
-      </TooltipProvider>
+    // AVAILABLE (EMPTY) - Neo Brutal Style
+    return (
+      <ReservationDialog
+        date={date}
+        timeSlot={timeSlot}
+        totalAvailableChromebooks={totalAvailableChromebooks}
+        currentReservations={allReservationsForSlot}
+        onReservationSuccess={onReservationSuccess}
+        maxQuantity={totalAvailableChromebooks}
+      >
+        <div className={cn(
+          "min-h-16 border-3 border-dashed border-foreground/20 bg-background",
+          "flex items-center justify-center cursor-pointer group transition-all",
+          "hover:border-primary hover:bg-primary/5",
+          "hover:shadow-[3px_3px_0px_0px_hsl(var(--primary)/0.2)] hover:-translate-x-0.5 hover:-translate-y-0.5"
+        )}>
+          <Plus className="h-5 w-5 text-muted-foreground group-hover:text-primary group-hover:scale-110 transition-all" />
+        </div>
+      </ReservationDialog>
     );
   }
 
-  // FULL - Neo Brutal Style
-  if (isFull) {
-    return (
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <div className={cn(
-              "h-16 p-2 border-3 transition-all flex flex-col justify-center gap-0.5 cursor-not-allowed",
-              (allReservationsForSlot.some(r => r.is_minecraft))
-                ? "border-[#3c8527] bg-[#3c8527]/20 shadow-[3px_3px_0px_0px_#3c8527/0.3]"
-                : "border-error bg-error/10 shadow-[3px_3px_0px_0px_hsl(var(--error)/0.3)]",
-              pastSlotClasses
-            )}>
-              <div className="flex items-center gap-1">
-                {allReservationsForSlot.some(r => r.is_minecraft) ? (
-                  <>
-                    <Monitor className="h-3 w-3 text-[#3c8527] shrink-0" />
-                    <span className="text-[10px] font-black uppercase text-[#3c8527] truncate">
-                      MINECRAFT
-                    </span>
-                  </>
-                ) : (
-                  <>
-                    <AlertTriangle className="h-3 w-3 text-error shrink-0" />
-                    <span className="text-[10px] font-black uppercase text-error truncate">
-                      Esgotado
-                    </span>
-                  </>
-                )}
-              </div>
-              <p className="text-[10px] font-bold text-foreground">
-                {jaReservados > 0 ? `${jaReservados}/${totalAvailableChromebooks} 💻` : "Apenas Espaço"}
-              </p>
-              <p className="text-[9px] text-muted-foreground truncate">
-                {allReservationsForSlot.length > 1
-                  ? `${allReservationsForSlot.length} reservas`
-                  : (allReservationsForSlot[0]?.prof_name && allReservationsForSlot[0]?.prof_name !== 'Usuário Desconhecido'
-                    ? allReservationsForSlot[0]?.prof_name
-                    : (allReservationsForSlot[0]?.prof_email || 'Usuário Desconhecido'))
-                }
-              </p>
-            </div>
-          </TooltipTrigger>
-          <TooltipContent side="top" className="max-w-xs border-3 border-foreground/20 rounded-none shadow-[4px_4px_0px_0px_hsl(var(--foreground)/0.1)]">
-            <div className="space-y-2">
-              <p className="font-black text-sm uppercase">Reservas neste horário:</p>
-              {allReservationsForSlot.map((res, idx) => (
-                <div key={idx} className={cn(
-                  "text-xs border-l-2 pl-2",
-                  res.is_minecraft ? "border-[#3c8527]" : "border-error"
-                )}>
-                  <p className="font-bold">
+  // Se tivermos reservas (Full ou Partial)
+  const content = (
+    <div className={cn(
+      "min-h-16 p-1 border-3 transition-all flex flex-col gap-1",
+      isFull
+        ? "border-error bg-error/10 cursor-not-allowed"
+        : "border-warning bg-warning/10 cursor-pointer hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] hover:-translate-x-0.5 hover:-translate-y-0.5",
+      pastSlotClasses
+    )}>
+      {allReservationsForSlot.map((res) => {
+        const isThisMine = res.created_by === currentUser?.id;
+        const roomName = res.classroom ? res.classroom.toUpperCase() : "ESPAÇO";
+        let label = "";
+
+        if (res.quantity_requested === 0) {
+          label = `${roomName} RESERVADA`;
+        } else {
+          label = res.classroom ? `${roomName} + ${res.quantity_requested} CB` : `${res.quantity_requested} CB`;
+        }
+
+        return (
+          <TooltipProvider key={res.id}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div
+                  className={cn(
+                    "w-full text-[9px] sm:text-[10px] leading-tight font-black uppercase truncate px-1.5 py-2 border-2 border-black text-center transition-all hover:-translate-y-[2px] cursor-pointer",
+                    isThisMine
+                      ? "bg-blue-600 text-white shadow-[3px_3px_0_0_#000]"
+                      : res.is_minecraft
+                        ? "bg-[#3c8527] text-white shadow-[3px_3px_0_0_#000]"
+                        : "bg-white text-black dark:bg-zinc-800 dark:text-zinc-100 shadow-[3px_3px_0_0_#000]",
+                  )}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (isThisMine || isAdmin || isResponsible) {
+                      setIsDetailsOpen(res.id);
+                    }
+                  }}
+                >
+                  {label}
+                </div>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="max-w-sm border-3 border-foreground/20 rounded-none shadow-[4px_4px_0px_0px_hsl(var(--foreground)/0.1)] p-3">
+                <div className="space-y-2">
+                  <p className="font-bold text-sm leading-tight">
                     {res.is_minecraft && <span className="text-[#3c8527] mr-1">[MINECRAFT]</span>}
                     {res.prof_name && res.prof_name !== 'Usuário Desconhecido' ? res.prof_name : (res.prof_email || 'Usuário Desconhecido')}
-                    {res.classroom && <span className="ml-2 text-[9px] px-1.5 bg-info/10 text-info">SALA: {res.classroom}</span>}
+                    {res.classroom && <span className="ml-2 text-[10px] px-1.5 py-0.5 border border-info text-info">SALA: {res.classroom}</span>}
                   </p>
-                  <p className="text-muted-foreground mb-1">
-                    {res.justification} · {res.quantity_requested > 0 ? `${res.quantity_requested} CB` : "Apenas Espaço"}
+                  <p className="text-muted-foreground text-xs">
+                    {res.justification || "Sem justificativa"} · {res.quantity_requested > 0 ? `${res.quantity_requested} CB` : "Apenas Espaço"}
                   </p>
+
                   {res.associated_loans && res.associated_loans.length > 0 && (
                     <div className="flex flex-wrap gap-1 mt-1 mb-2">
                       {res.associated_loans.map((loan, lIdx) => (
@@ -230,121 +178,20 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
                       ))}
                     </div>
                   )}
-                  {(isSuperAdmin || res.created_by === currentUser?.id) && (
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      className="h-6 px-2 text-[9px] font-black uppercase rounded-none border-2 border-foreground mb-2"
-                      onClick={() => deleteReservation(res.id).then((success: boolean) => success && onReservationSuccess())}
-                    >
-                      <Trash2 className="h-3 w-3 mr-1" />
-                      {res.created_by === currentUser?.id ? 'Cancelar' : 'Remover'}
-                    </Button>
-                  )}
 
-                  {isResponsible && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="h-6 px-2 text-[9px] font-black uppercase rounded-none border-2 border-primary bg-primary/5 hover:bg-primary hover:text-white transition-all ml-2 mb-2"
-                      onClick={() => {
-                        navigate('/', {
-                          state: {
-                            fromScheduling: true,
-                            reservationData: {
-                              ...res,
-                              date: date,
-                              time_slot: timeSlot
-                            }
-                          }
-                        });
-                      }}
-                    >
-                      <ArrowRight className="h-3 w-3 mr-1" />
-                      Iniciar Empréstimo
-                    </Button>
-                  )}
-                </div>
-              ))}
-            </div>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-    );
-  }
-
-  // PARTIAL - Neo Brutal Style
-  if (isPartial) {
-    return (
-      <ReservationDialog
-        date={date}
-        timeSlot={timeSlot}
-        totalAvailableChromebooks={totalAvailableChromebooks}
-        currentReservations={allReservationsForSlot}
-        onReservationSuccess={onReservationSuccess}
-        maxQuantity={restantes}
-      >
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div className={cn(
-                "h-16 p-2 border-3 transition-all flex flex-col justify-center gap-0.5 cursor-pointer group",
-                allReservationsForSlot.some(r => r.is_minecraft)
-                  ? "border-[#3c8527] bg-[#3c8527]/10"
-                  : "border-warning bg-warning/10",
-                "hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] hover:-translate-x-0.5 hover:-translate-y-0.5",
-                pastSlotClasses
-              )}>
-                <div className="flex items-center gap-1">
-                  {allReservationsForSlot.some(r => r.is_minecraft) ? (
-                    <>
-                      <Monitor className="h-3 w-3 text-[#3c8527] shrink-0" />
-                      <span className="text-[10px] font-black uppercase text-[#3c8527] truncate">
-                        MINECRAFT
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      <Monitor className="h-3 w-3 text-warning shrink-0 group-hover:scale-110 transition-transform" />
-                      <span className="text-[10px] font-black uppercase text-warning truncate">
-                        {allReservationsForSlot.length > 0 ? "SALA EM USO" : "Disponível"}
-                      </span>
-                    </>
-                  )}
-                </div>
-                <p className="text-[10px] font-bold text-foreground">
-                  {restantes}/{totalAvailableChromebooks} 💻
-                </p>
-                <p className="text-[9px] text-muted-foreground">
-                  {jaReservados} reservados
-                </p>
-              </div>
-            </TooltipTrigger>
-            <TooltipContent side="top" className="max-w-xs border-3 border-foreground/20 rounded-none shadow-[4px_4px_0px_0px_hsl(var(--foreground)/0.1)]">
-              <div className="space-y-2">
-                <p className="font-black text-sm uppercase">Reservas existentes:</p>
-                {allReservationsForSlot.map((res, idx) => (
-                  <div key={idx} className={cn(
-                    "text-xs border-l-2 pl-2",
-                    res.is_minecraft ? "border-[#3c8527]" : "border-warning"
-                  )}>
-                    <p className="font-bold">
-                      {res.is_minecraft && <span className="text-[#3c8527] mr-1">[MINECRAFT]</span>}
-                      {res.prof_name && res.prof_name !== 'Usuário Desconhecido' ? res.prof_name : (res.prof_email || 'Usuário Desconhecido')}
-                      {res.classroom && <span className="ml-2 text-[9px] px-1.5 bg-info/10 text-info">SALA: {res.classroom}</span>}
-                    </p>
-                    <p className="text-muted-foreground mb-1">
-                      {res.justification} · {res.quantity_requested > 0 ? `${res.quantity_requested} CB` : "Apenas Espaço"}
-                    </p>
-                    {(isSuperAdmin || res.created_by === currentUser?.id) && (
+                  <div className="flex gap-2 pt-2">
+                    {(isThisMine || isSuperAdmin) && (
                       <Button
                         variant="destructive"
                         size="sm"
-                        className="h-6 px-2 text-[9px] font-black uppercase rounded-none border-2 border-foreground mb-2"
-                        onClick={() => deleteReservation(res.id).then((success: boolean) => success && onReservationSuccess())}
+                        className="h-6 px-2 text-[9px] font-black uppercase rounded-none border-2 border-foreground"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteReservation(res.id).then((success: boolean) => success && onReservationSuccess());
+                        }}
                       >
                         <Trash2 className="h-3 w-3 mr-1" />
-                        {res.created_by === currentUser?.id ? 'Cancelar' : 'Remover'}
+                        {isThisMine ? 'Cancelar' : 'Remover'}
                       </Button>
                     )}
 
@@ -352,7 +199,7 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
                       <Button
                         variant="outline"
                         size="sm"
-                        className="h-6 px-2 text-[9px] font-black uppercase rounded-none border-2 border-primary bg-primary/5 hover:bg-primary hover:text-white transition-all ml-2 mb-2"
+                        className="h-6 px-2 text-[9px] font-black uppercase rounded-none border-2 border-primary bg-primary/5 hover:bg-primary hover:text-white transition-all"
                         onClick={(e) => {
                           e.stopPropagation();
                           navigate('/', {
@@ -372,59 +219,67 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
                       </Button>
                     )}
                   </div>
-                ))}
-                <p className="pt-2 font-black text-success text-xs uppercase">
-                  Clique para reservar {restantes} restantes
-                </p>
-              </div>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      </ReservationDialog>
-    );
-  }
 
-  // PAST EMPTY
-  if (isPast) {
-    return (
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <div className={cn(
-              "h-16 border-3 border-dashed border-foreground/10 bg-muted/10",
-              "flex items-center justify-center gap-1",
-              "opacity-40 cursor-not-allowed"
-            )}>
-              <Clock className="h-3 w-3 text-muted-foreground" />
-              <span className="text-[10px] font-bold text-muted-foreground uppercase">Expirado</span>
-            </div>
-          </TooltipTrigger>
-          <TooltipContent className="border-3 border-foreground/20 rounded-none">
-            <p className="text-xs font-medium">Horário já expirou</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-    );
-  }
+                  {(isThisMine || isAdmin || isResponsible) && (
+                    <p className="text-[9px] font-black text-blue-600 uppercase tracking-tighter italic mt-1">Clique na tag para mais detalhes</p>
+                  )}
+                </div>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        );
+      })}
 
-  // AVAILABLE (EMPTY) - Neo Brutal Style
+      {/* Botão explícito para Novo Agendamento se houver espaço e não for passado */}
+      {isPartial && restantes > 0 && !isPast && (
+        <div className="mt-auto flex items-center justify-center gap-1.5 py-1.5 border-2 border-dashed border-warning bg-warning/5 hover:bg-warning/15 transition-all text-warning group/btn">
+          <Plus className="h-4 w-4 group-hover/btn:scale-125 transition-transform" />
+          <span className="text-[10px] font-black uppercase">Agendar</span>
+        </div>
+      )}
+    </div>
+  );
+
   return (
-    <ReservationDialog
-      date={date}
-      timeSlot={timeSlot}
-      totalAvailableChromebooks={totalAvailableChromebooks}
-      currentReservations={allReservationsForSlot}
-      onReservationSuccess={onReservationSuccess}
-      maxQuantity={totalAvailableChromebooks}
-    >
-      <div className={cn(
-        "h-16 border-3 border-dashed border-foreground/20 bg-background",
-        "flex items-center justify-center cursor-pointer group transition-all",
-        "hover:border-primary hover:bg-primary/5",
-        "hover:shadow-[3px_3px_0px_0px_hsl(var(--primary)/0.2)] hover:-translate-x-0.5 hover:-translate-y-0.5"
-      )}>
-        <Plus className="h-5 w-5 text-muted-foreground group-hover:text-primary group-hover:scale-110 transition-all" />
-      </div>
-    </ReservationDialog>
+    <>
+      {isPartial ? (
+        <ReservationDialog
+          date={date}
+          timeSlot={timeSlot}
+          totalAvailableChromebooks={totalAvailableChromebooks}
+          currentReservations={allReservationsForSlot}
+          onReservationSuccess={onReservationSuccess}
+          maxQuantity={restantes}
+        >
+          {content}
+        </ReservationDialog>
+      ) : (
+        content
+      )}
+
+      {isDetailsOpen && typeof isDetailsOpen === 'string' && (
+        <ReservationDetailsDialog
+          open={!!isDetailsOpen}
+          onOpenChange={(open) => {
+            if (!open) setIsDetailsOpen(false);
+          }}
+          reservation={allReservationsForSlot.find(r => r.id === isDetailsOpen)!}
+          date={date}
+          isOwner={allReservationsForSlot.find(r => r.id === isDetailsOpen)?.created_by === currentUser?.id}
+          isAdmin={!!isAdmin}
+          isResponsible={!!isResponsible}
+          onCancel={() => {
+            if (typeof isDetailsOpen === 'string') {
+              deleteReservation(isDetailsOpen).then((success: boolean) => {
+                if (success) {
+                  onReservationSuccess();
+                  setIsDetailsOpen(false);
+                }
+              });
+            }
+          }}
+        />
+      )}
+    </>
   );
 };
