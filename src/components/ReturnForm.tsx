@@ -211,9 +211,9 @@ export function ReturnForm({ onReturnSuccess, initialChromebookId }: ReturnFormP
       <div className="grid md:grid-cols-2 gap-3 relative z-10">
 
         {/* COLUNA ESQUERDA */}
-        <div className="flex flex-col gap-6 h-full">
+        <div className="flex flex-col gap-6 h-full min-w-0">
           {/* ═══ SEÇÃO 1: DISPOSITIVOS (Cor 1: Âmbar) ═══ */}
-          <div className="border-4 border-amber-500 bg-amber-100 dark:bg-amber-950/20 shadow-[6px_6px_0px_0px_rgba(245,158,11,0.3)] border-l-[6px] md:border-l-[12px] flex-1 p-0 overflow-hidden">
+          <div className="border-4 border-amber-500 bg-amber-100 dark:bg-amber-950/20 shadow-[6px_6px_0px_0px_rgba(245,158,11,0.3)] border-l-[6px] md:border-l-[12px] flex-1 p-0 overflow-hidden min-w-0">
             <CardHeader className="p-3 pb-2 border-b-3 border-amber-500/30 bg-gradient-to-r from-amber-400 to-orange-500">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-base font-black uppercase tracking-tight flex items-center gap-2 text-white">
@@ -278,7 +278,7 @@ export function ReturnForm({ onReturnSuccess, initialChromebookId }: ReturnFormP
                             : "bg-blue-100 dark:bg-blue-900/30"
                         )}
                       >
-                        <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-start justify-between gap-2 w-full min-w-0">
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-1">
                               <p className="font-bold text-sm text-black dark:text-white">{deviceId}</p>
@@ -339,9 +339,9 @@ export function ReturnForm({ onReturnSuccess, initialChromebookId }: ReturnFormP
         </div>
 
         {/* COLUNA DIREITA */}
-        <div className="space-y-6">
+        <div className="space-y-6 min-w-0">
           {/* ═══ SEÇÃO 3: SOLICITANTE DA DEVOLUÇÃO ═══ */}
-          <div className="border-4 border-violet-500 bg-violet-100 dark:bg-violet-950/20 shadow-[6px_6px_0px_0px_rgba(139,92,246,0.3)] border-l-[6px] md:border-l-[12px] p-0 overflow-hidden">
+          <div className="border-4 border-violet-500 bg-violet-100 dark:bg-violet-950/20 shadow-[6px_6px_0px_0px_rgba(139,92,246,0.3)] border-l-[6px] md:border-l-[12px] p-0 overflow-hidden min-w-0">
             <CardHeader className="p-3 pb-2 border-b-3 border-violet-500/30 bg-gradient-to-r from-violet-400 to-purple-500">
               <CardTitle className="text-base font-black uppercase tracking-tight flex items-center gap-2 text-white">
                 <User className="h-5 w-5" />
@@ -372,10 +372,10 @@ export function ReturnForm({ onReturnSuccess, initialChromebookId }: ReturnFormP
               {selectedUser && (
                 <>
                   <div className="flex items-center gap-2 text-xs text-white bg-green-500 border-3 border-green-700 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] p-3 mt-2">
-                    <CheckCircle className="h-4 w-4 text-green-700" />
-                    <div className="flex-1">
-                      <p className="font-black uppercase">{selectedUser.name}</p>
-                      <p className="font-mono">{selectedUser.email}</p>
+                    <CheckCircle className="h-4 w-4 text-green-700 shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="font-black uppercase truncate">{selectedUser.name}</p>
+                      <p className="font-mono truncate">{selectedUser.email}</p>
                     </div>
                   </div>
 
