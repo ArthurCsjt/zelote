@@ -1524,6 +1524,6 @@ export const useDatabase = () => {
     // NOTIFICAÇÕES
     getNotifications,
     markNotificationAsRead,
-    markAllNotificationsAsRead
+    markAllNotificationsAsRead,
   };
 };

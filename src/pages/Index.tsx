@@ -4,7 +4,8 @@ import { useProfileRole } from '@/hooks/use-profile-role';
 
 import { AuditHub } from '@/components/audit/AuditHub';
 import { useState, useEffect } from "react";
-import { useLocation } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { useLocation, useNavigate, Navigate } from 'react-router-dom';
 import { RegistrationHub } from "@/components/RegistrationHub";
 import Layout from "@/components/Layout";
 import { MainMenu } from "@/components/MainMenu";
@@ -15,14 +16,16 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { LoanHub } from "@/components/LoanHub";
 import { useDatabase } from "@/hooks/useDatabase";
 import { ReturnWrapper } from '@/components/ReturnWrapper';
-import { Navigate } from 'react-router-dom';
+import { LoanHistory } from '@/components/LoanHistory';
+import { isNewLoan } from '@/utils/loanCalculations';
 
-type AppView = 'menu' | 'registration' | 'dashboard' | 'inventory' | 'loan' | 'audit' | 'return' | 'scheduling' | 'quick-register';
+type AppView = 'menu' | 'registration' | 'dashboard' | 'inventory' | 'loan' | 'audit' | 'return' | 'scheduling' | 'quick-register' | 'history';
 
 const Index = () => {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const { isAdmin, loading: roleLoading, role } = useProfileRole();
-  const { loading: dbLoading } = useDatabase();
+  const { loading: dbLoading, getLoanHistory } = useDatabase();
 
   const [currentView, setCurrentView] = useState<AppView>('menu');
   const [loanTabDefault, setLoanTabDefault] = useState<'form' | 'active'>('form');
@@ -30,12 +33,21 @@ const Index = () => {
   const [showQRCodeModal, setShowQRCodeModal] = useState(false);
   const [selectedChromebookId, setSelectedChromebookId] = useState<string | null>(null);
   const location = useLocation();
+  const canSeeHistory = role === 'admin' || role === 'super_admin';
 
-  // Capturar navegação vinda do agendamento
+  const { data: history = [], isLoading: historyLoading } = useQuery({
+    queryKey: ['loan-history'],
+    queryFn: getLoanHistory,
+    enabled: currentView === 'history' && canSeeHistory
+  });
+
+  // Capturar navegação vinda do agendamento ou menu de perfil
   useEffect(() => {
     if (location.state?.fromScheduling && location.state?.reservationData) {
       setCurrentView('loan');
       setLoanTabDefault('form');
+    } else if (location.state?.view) {
+      setCurrentView(location.state.view as AppView);
     }
   }, [location.state]);
 
@@ -51,6 +63,8 @@ const Index = () => {
     setCurrentView('menu');
     setLoanTabDefault('form');
     setSelectedChromebookIdForReturn(undefined);
+    // Limpar o estado de navegação para evitar redirecionamento automático ao atualizar (F5)
+    navigate('/', { replace: true, state: {} });
   };
 
   const handleGenerateQrCode = (chromebookId: string) => {
@@ -100,6 +114,12 @@ const Index = () => {
         />;
       case 'audit':
         return <AuditHub />;
+      case 'history':
+        if (!canSeeHistory) return <div className="p-8 text-center font-bold text-red-500 uppercase">Acesso Negado</div>;
+        return <LoanHistory
+          history={history || []}
+          isNewLoan={(loan) => isNewLoan(loan.loan_date)}
+        />;
       case 'scheduling':
         return <Navigate to="/agendamento" replace />;
       default:
@@ -119,6 +139,7 @@ const Index = () => {
       case 'loan': return 'Empréstimos';
       case 'return': return 'Registrar Devolução';
       case 'audit': return 'Sistema de Contagem';
+      case 'history': return 'Histórico Completo';
       case 'scheduling': return 'Agendamento';
       default: return 'Zelote';
     }
@@ -132,12 +153,13 @@ const Index = () => {
       case 'loan': return 'Realize novos empréstimos e veja ativos';
       case 'return': return 'Registre a devolução de equipamentos';
       case 'audit': return 'Realize a contagem física do inventário';
+      case 'history': return 'Visualize todo o histórico de empréstimos e devoluções';
       case 'scheduling': return 'Reserve lotes de equipamentos para suas aulas';
       default: return 'Controle de Chromebooks';
     }
   };
 
-  const loading = dbLoading || roleLoading;
+  const loading = dbLoading || roleLoading || (currentView === 'history' && historyLoading);
 
   const menuBackgroundClass = currentView === 'menu'
     ? 'bg-background'
@@ -154,7 +176,7 @@ const Index = () => {
       >
         {loading && currentView !== 'menu' ? <div className="flex justify-center items-center h-64"><LoadingSpinner /></div> : renderCurrentView()}
       </Layout>
-      <QRCodeModal open={showQRCodeModal} onOpenChange={(open) => setShowQRCodeModal(open)} chromebookId={selectedChromebookId ?? undefined} />
+      <QRCodeModal open={showQRCodeModal} onOpenChange={(open) => setShowQRCodeModal(open)} chromebookId={selectedChromebookId as string} />
     </>
   );
 };

@@ -6,7 +6,7 @@ import type { LoanHistoryItem } from "@/types/database";
 import { Input } from "./ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { Button } from "./ui/button";
-import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "./ui/pagination";
+import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "./ui/pagination";
 import { LoanHistoryTable } from "./LoanHistoryTable";
 import { cn } from "@/lib/utils";
 
@@ -65,6 +65,39 @@ export function LoanHistory({ history, isNewLoan }: LoanHistoryProps) {
     setStatusFilter("all");
     setUserTypeFilter("all");
     setCurrentPage(1);
+  };
+
+  const getPageNumbers = () => {
+    const pages: (number | 'ellipsis')[] = [];
+    const maxVisible = 3; // Páginas ao redor da atual
+
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      pages.push(1);
+
+      if (currentPage > 3) {
+        pages.push('ellipsis');
+      }
+
+      const start = Math.max(2, currentPage - 1);
+      const end = Math.min(totalPages - 1, currentPage + 1);
+
+      if (currentPage <= 3) {
+        for (let i = 2; i <= 4; i++) pages.push(i);
+      } else if (currentPage >= totalPages - 2) {
+        for (let i = totalPages - 3; i <= totalPages - 1; i++) pages.push(i);
+      } else {
+        for (let i = start; i <= end; i++) pages.push(i);
+      }
+
+      if (currentPage < totalPages - 2) {
+        pages.push('ellipsis');
+      }
+
+      pages.push(totalPages);
+    }
+    return pages;
   };
 
   const getStatusBadgeProps = (status: LoanHistoryItem['status']) => {
@@ -379,31 +412,37 @@ export function LoanHistory({ history, isNewLoan }: LoanHistoryProps) {
 
       {/* Paginação */}
       {totalPages > 1 && (
-        <div className="neo-card p-4">
+        <div className="neo-card p-4 flex justify-center">
           <Pagination>
-            <PaginationContent>
+            <PaginationContent className="flex-wrap justify-center">
               <PaginationItem>
                 <PaginationPrevious
                   onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
                   className={cn(
-                    "neo-btn cursor-pointer font-black uppercase",
+                    "neo-btn cursor-pointer font-black uppercase text-[10px] sm:text-xs h-8 sm:h-10 px-2 sm:px-4",
                     currentPage === 1 && "pointer-events-none opacity-50"
                   )}
-                />
+                >
+                  <span className="hidden sm:inline">ANTERIOR</span>
+                </PaginationPrevious>
               </PaginationItem>
 
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                <PaginationItem key={page}>
-                  <PaginationLink
-                    isActive={currentPage === page}
-                    onClick={() => setCurrentPage(page)}
-                    className={cn(
-                      "cursor-pointer font-black",
-                      currentPage === page && "neo-btn bg-black dark:bg-white text-white dark:text-black"
-                    )}
-                  >
-                    {page}
-                  </PaginationLink>
+              {getPageNumbers().map((page, index) => (
+                <PaginationItem key={index}>
+                  {page === 'ellipsis' ? (
+                    <PaginationEllipsis className="h-8 w-8 sm:h-10 sm:w-10" />
+                  ) : (
+                    <PaginationLink
+                      isActive={currentPage === page}
+                      onClick={() => setCurrentPage(page as number)}
+                      className={cn(
+                        "cursor-pointer font-black text-xs sm:text-sm h-8 w-8 sm:h-10 sm:w-10 p-0 flex items-center justify-center",
+                        currentPage === page ? "neo-btn bg-black dark:bg-white text-white dark:text-black hover:bg-black/90" : "hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                      )}
+                    >
+                      {page}
+                    </PaginationLink>
+                  )}
                 </PaginationItem>
               ))}
 
@@ -413,10 +452,12 @@ export function LoanHistory({ history, isNewLoan }: LoanHistoryProps) {
                     setCurrentPage((prev) => Math.min(prev + 1, totalPages))
                   }
                   className={cn(
-                    "neo-btn cursor-pointer font-black uppercase",
+                    "neo-btn cursor-pointer font-black uppercase text-[10px] sm:text-xs h-8 sm:h-10 px-2 sm:px-4",
                     currentPage === totalPages && "pointer-events-none opacity-50"
                   )}
-                />
+                >
+                  <span className="hidden sm:inline">PRÓXIMO</span>
+                </PaginationNext>
               </PaginationItem>
             </PaginationContent>
           </Pagination>

@@ -136,3 +136,15 @@ export function getOverdueStatusMessage(expectedReturnDate?: Date | string | nul
 
     return 'No prazo';
 }
+
+/**
+ * Verifica se um empréstimo é "novo" (realizado nas últimas 24 horas)
+ * @param loanDate Data do empréstimo
+ * @returns true se for novo, false caso contrário
+ */
+export function isNewLoan(loanDate: Date | string): boolean {
+    const loan = typeof loanDate === 'string' ? new Date(loanDate) : loanDate;
+    const now = new Date();
+    const diffHours = differenceInMinutes(now, loan) / 60;
+    return diffHours <= 24;
+}

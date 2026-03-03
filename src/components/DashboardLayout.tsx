@@ -198,7 +198,7 @@ export function DashboardLayout({
 
   const periodOptions: { value: PeriodView | 'charts'; label: string; icon: React.ElementType }[] = [
     { value: 'charts', label: 'Análise de Uso', icon: BarChartIcon },
-    { value: 'history', label: 'Histórico Completo', icon: HistoryIcon },
+    // { value: 'history', label: 'Histórico Completo', icon: HistoryIcon },
     // { value: 'reports', label: 'Relatórios Inteligentes', icon: Brain }, // Mantido como placeholder
   ];
 

@@ -1,8 +1,8 @@
 import React from 'react';
-import { User, LogOut, ArrowLeft, Bell, Settings, Sun, Moon, Loader2, Activity, BellRing, BellOff } from 'lucide-react';
+import { User, LogOut, ArrowLeft, Bell, Settings, Sun, Moon, Loader2, Activity, BellRing, BellOff, History } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/hooks/use-theme';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useProfileRole } from '@/hooks/use-profile-role';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
@@ -15,6 +15,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { cn } from '@/lib/utils';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { useToast } from '@/hooks/use-toast';
 
 
 interface LayoutProps {
@@ -39,7 +40,9 @@ const Layout: React.FC<LayoutProps> = ({
   const navigate = useNavigate();
   const { role, loading: roleLoading } = useProfileRole();
   const { getNotifications } = useDatabase();
+  const { toast } = useToast();
   const [isStandalone, setIsStandalone] = React.useState(false);
+  const [showHistoryOnboarding, setShowHistoryOnboarding] = React.useState(false);
 
   const { data: notifications } = useQuery({
     queryKey: ['notifications'],
@@ -77,6 +80,28 @@ const Layout: React.FC<LayoutProps> = ({
     displayModeQuery.addEventListener('change', handleDisplayModeChange);
     return () => displayModeQuery.removeEventListener('change', handleDisplayModeChange);
   }, []);
+
+  // Onboarding/Announcement for Complete History relocation
+  React.useEffect(() => {
+    const hasSeenAnnouncement = localStorage.getItem('zelote_history_onboarding_vfinal');
+    const canSeeHistory = role === 'admin' || role === 'super_admin';
+    if (user && !hasSeenAnnouncement && canSeeHistory) {
+      const timer = setTimeout(() => {
+        setShowHistoryOnboarding(true);
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [user]);
+
+  const dismissOnboarding = () => {
+    setShowHistoryOnboarding(false);
+    localStorage.setItem('zelote_history_onboarding_vfinal', 'true');
+    toast({
+      title: "Confirmado! ✅",
+      description: "Você pode acessar o histórico completo no seu menu de perfil a qualquer momento.",
+      duration: 3000,
+    });
+  };
 
   const handleLogout = async () => {
     await logout();
@@ -231,6 +256,16 @@ const Layout: React.FC<LayoutProps> = ({
                       Configurações
                     </DropdownMenuItem>
 
+                    {(role === 'admin' || role === 'super_admin') && (
+                      <DropdownMenuItem
+                        onClick={() => navigate('/', { state: { view: 'history' } })}
+                        className="cursor-pointer rounded-lg focus:bg-zinc-100 dark:focus:bg-zinc-800"
+                      >
+                        <History className="h-4 w-4 mr-2 text-primary" />
+                        Histórico Completo
+                      </DropdownMenuItem>
+                    )}
+
                     <DropdownMenuItem
                       onClick={handleLogout}
                       className="cursor-pointer rounded-lg text-red-600 focus:text-red-600 focus:bg-red-50 dark:focus:bg-red-950/30"
@@ -257,6 +292,59 @@ const Layout: React.FC<LayoutProps> = ({
       </main>
 
       {isStandalone && <div className="safe-area-bottom h-16 md:h-24 no-print" />}
+
+      {/* Visual Onboarding Overlay */}
+      {showHistoryOnboarding && (
+        <div className="fixed inset-0 z-[100] flex items-start justify-end pointer-events-none no-print overflow-hidden">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] pointer-events-auto" onClick={dismissOnboarding} />
+
+          <div className="relative mt-20 mr-4 sm:mr-8 flex flex-col items-center pointer-events-auto">
+            {/* Hand-drawn style Arrow pointing up toward the Profile Trigger */}
+            <div className="relative">
+              <svg
+                width="120"
+                height="80"
+                viewBox="0 0 120 80"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                className="text-red-500 animate-bounce transition-transform"
+                style={{ filter: 'drop-shadow(2px 2px 0px rgba(0,0,0,0.5))' }}
+              >
+                <path
+                  d="M100 70C90 60 70 30 60 10M60 10L45 25M60 10L75 25"
+                  stroke="currentColor"
+                  strokeWidth="6"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+
+              {/* Text Badge following the user's sketch style */}
+              <div className="absolute top-20 right-0 transform translate-x-1/4">
+                <div className="bg-red-500 text-white font-black text-xl sm:text-2xl px-4 py-2 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] -rotate-6 whitespace-nowrap">
+                  HISTÓRICO!
+                </div>
+              </div>
+            </div>
+
+            {/* Hint Box */}
+            <div className="mt-28 max-w-[280px] bg-white dark:bg-zinc-900 p-4 border-4 border-black dark:border-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] animate-in slide-in-from-right-8 duration-500">
+              <p className="text-sm font-black uppercase tracking-tight text-black dark:text-white leading-tight">
+                MUDAMOS O <span className="text-red-500">HISTÓRICO</span> PARA CÁ!
+              </p>
+              <p className="mt-2 text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase leading-tight">
+                Acesse agendamentos e devoluções em um só lugar, de qualquer tela.
+              </p>
+              <Button
+                onClick={dismissOnboarding}
+                className="mt-4 w-full h-8 bg-black dark:bg-white text-white dark:text-black rounded-none border-2 border-transparent hover:bg-zinc-800 dark:hover:bg-zinc-200 font-black uppercase text-xs"
+              >
+                ENTENDI
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
