@@ -10,18 +10,8 @@ import logger from '@/utils/logger';
 // Expose React for devtools in iframe
 window.React = React;
 
-// Registro do Service Worker para PWA e Notificações Push
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/service-worker.js')
-      .then(registration => {
-        logger.info('ServiceWorker registrado com sucesso:', { scope: registration.scope });
-      })
-      .catch(error => {
-        logger.error('Falha ao registrar ServiceWorker:', error);
-      });
-  });
-}
+// O registro do Service Worker agora é gerenciado automaticamente pelo vite-plugin-pwa
+// via injectRegister: 'auto' config.
 
 const rootElement = document.getElementById("root");
 
