@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Layout from '@/components/Layout';
 import { useProfileRole } from '@/hooks/use-profile-role';
 import { useNavigate } from 'react-router-dom';
@@ -11,7 +11,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { EmailTestCard } from '@/components/EmailTestCard';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { Switch } from '@/components/ui/switch';
-import { BellRing, BellOff } from 'lucide-react';
+import { BellRing, BellOff, RefreshCw, Smartphone } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
 const Settings = () => {
@@ -20,6 +21,68 @@ const Settings = () => {
   const navigate = useNavigate();
 
   const { isSubscribed, subscribeToPush, unsubscribeFromPush, loading: pushLoading } = usePushNotifications();
+  const { toast } = useToast();
+
+
+
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [isInstallable, setIsInstallable] = useState(false);
+
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e: any) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      setIsInstallable(true);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    };
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      setIsInstallable(false);
+    }
+    setDeferredPrompt(null);
+  };
+
+  const checkForUpdates = async () => {
+    if (!('serviceWorker' in navigator)) return;
+
+    try {
+      const registration = await navigator.serviceWorker.getRegistration();
+      if (registration) {
+        toast({
+          title: "Buscando atualizações...",
+          description: "Verificando se há uma nova versão disponível.",
+        });
+
+        await registration.update();
+
+        // Se houver atualização, o PwaUpdatePrompt será acionado via virtual:pwa-register
+        // Se não houver após alguns segundos, avisamos o usuário
+        setTimeout(() => {
+          toast({
+            title: "Sistema Atualizado",
+            description: "Você já está utilizando a versão mais recente do Zelote.",
+          });
+        }, 3000);
+      }
+    } catch (error) {
+      console.error('Erro ao verificar atualização:', error);
+      toast({
+        title: "Erro ao verificar",
+        description: "Não foi possível buscar atualizações agora.",
+        variant: "destructive"
+      });
+    }
+  };
 
   useEffect(() => {
     if (!loading && !user) {
@@ -91,6 +154,42 @@ const Settings = () => {
               disabled={pushLoading}
               className="data-[state=checked]:bg-green-500 data-[state=unchecked]:bg-zinc-200 dark:data-[state=unchecked]:bg-zinc-800"
             />
+          </div>
+        </div>
+
+        {/* 2. Versão e Atualizações - PWA */}
+        <div className="neo-card p-6">
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-blue-500 border-2 border-black dark:border-white shadow-[3px_3px_0px_0px_#000] dark:shadow-[3px_3px_0px_0px_#fff]">
+                <Smartphone className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <h3 className="text-xl font-black uppercase tracking-tight">App e Versão</h3>
+                <p className="text-sm font-bold text-muted-foreground uppercase">
+                  v1.0.0 • {isInstallable ? "Disponível para Instalação" : "App Instalado"}
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-3">
+              {isInstallable && (
+                <Button
+                  onClick={handleInstallClick}
+                  className="neo-btn bg-green-500 hover:bg-green-600 text-white font-bold uppercase tracking-wide h-10 px-6"
+                >
+                  <Smartphone className="h-4 w-4 mr-2" />
+                  Instalar App
+                </Button>
+              )}
+              <Button
+                variant="outline"
+                onClick={checkForUpdates}
+                className="neo-btn bg-white dark:bg-zinc-900 border-2 border-black dark:border-white font-bold uppercase tracking-wide h-10 px-6 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+              >
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Verificar Atualizações
+              </Button>
+            </div>
           </div>
         </div>
 

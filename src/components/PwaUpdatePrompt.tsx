@@ -11,11 +11,26 @@ export function PwaUpdatePrompt() {
     } = useRegisterSW({
         onRegistered(r) {
             console.log('PWA: Service Worker registrado com sucesso');
+            if (r) {
+                // Verificação imediata ao registrar
+                r.update();
+
+                // Polling agressivo a cada 2 minutos para garantir detecção
+                setInterval(() => {
+                    console.log('PWA: Verificando por novas atualizações (auto)...');
+                    r.update();
+                }, 120 * 1000);
+            }
         },
         onRegisterError(error) {
             console.error('PWA: Erro no registro do Service Worker', error);
         },
     });
+
+    const handleUpdate = () => {
+        console.log('PWA: Acionando atualização do Service Worker...');
+        updateServiceWorker(true);
+    };
 
     const closePrompt = () => {
         setNeedRefresh(false);
@@ -70,7 +85,7 @@ export function PwaUpdatePrompt() {
                         Mais tarde
                     </Button>
                     <Button
-                        onClick={() => updateServiceWorker(true)}
+                        onClick={handleUpdate}
                         className="text-xs font-bold h-9 px-5 bg-primary hover:opacity-90 text-primary-foreground shadow-sm transition-all active:scale-95"
                     >
                         Atualizar agora
