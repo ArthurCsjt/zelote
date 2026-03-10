@@ -158,6 +158,21 @@ const ChromebookSearchInput: React.FC<ChromebookSearchInputProps> = ({
     );
   }
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if ((e.key === 'Enter' || e.key === 'Tab') && searchTerm) {
+      if (filteredChromebooks.length > 0) {
+        if (e.key === 'Enter') e.preventDefault();
+
+        // Priorizar match exato, caso contrário, pega o primeiro da lista
+        const exactMatch = filteredChromebooks.find(
+          cb => cb.chromebook_id.toLowerCase() === searchTerm.toLowerCase()
+        );
+
+        handleSelect(exactMatch || filteredChromebooks[0]);
+      }
+    }
+  };
+
   // Se isListMode for true OU nenhum item estiver selecionado, exibe o campo de busca
   return (
     <div className="relative space-y-2">
@@ -171,6 +186,7 @@ const ChromebookSearchInput: React.FC<ChromebookSearchInputProps> = ({
             onChange={(e) => setSearchTerm(e.target.value)}
             onFocus={() => setIsFocused(true)}
             onBlur={() => setTimeout(() => setIsFocused(false), 200)} // Pequeno delay para permitir o clique
+            onKeyDown={handleKeyDown}
             className="pl-10 w-full bg-input-bg border-input dark:bg-input-bg dark:border-input" // CORRIGIDO
             disabled={disabled || loading}
           />
