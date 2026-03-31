@@ -36,15 +36,15 @@ export const LoanHistoryTable: React.FC<LoanHistoryTableProps> = ({ history, isN
   return (
     <div className="neo-table-container">
       <div className="overflow-x-auto">
-        <Table className="neo-table min-w-[900px]">
-          <TableHeader>
-            <TableRow className="hover:bg-black dark:hover:bg-white">
-              <TableHead className="w-[120px]">Status</TableHead>
-              <TableHead className="w-[150px]">ID Chromebook</TableHead>
-              <TableHead className="w-[200px]">Solicitante</TableHead>
-              <TableHead className="hidden md:table-cell">Finalidade</TableHead>
-              <TableHead className="w-[150px]">Empréstimo</TableHead>
-              <TableHead className="w-[150px]">Devolução</TableHead>
+        <Table className="neo-table min-w-[900px] border-collapse">
+          <TableHeader className="bg-black dark:bg-white">
+            <TableRow className="hover:bg-black dark:hover:bg-white border-0">
+              <TableHead className="py-5 text-white dark:text-black font-black uppercase text-[10px] tracking-[0.2em] text-center">Status</TableHead>
+              <TableHead className="py-5 text-white dark:text-black font-black uppercase text-[10px] tracking-[0.2em]">Dispositivo</TableHead>
+              <TableHead className="py-5 text-white dark:text-black font-black uppercase text-[10px] tracking-[0.2em]">Solicitante</TableHead>
+              <TableHead className="hidden md:table-cell py-5 text-white dark:text-black font-black uppercase text-[10px] tracking-[0.2em]">Finalidade</TableHead>
+              <TableHead className="py-5 text-white dark:text-black font-black uppercase text-[10px] tracking-[0.2em]">Empréstimo</TableHead>
+              <TableHead className="py-5 text-white dark:text-black font-black uppercase text-[10px] tracking-[0.2em]">Devolução</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -57,13 +57,13 @@ export const LoanHistoryTable: React.FC<LoanHistoryTableProps> = ({ history, isN
                 <TableRow
                   key={loan.id}
                   className={cn(
-                    loan.status === 'atrasado' && 'neo-table-row-danger',
-                    isRecent && !loan.status?.includes('atrasado') && 'neo-table-row-info'
+                    "transition-all duration-200 hover:bg-zinc-100/80 dark:hover:bg-zinc-900/50 group border-b border-zinc-200 dark:border-zinc-800",
+                    isRecent && "bg-blue-50/30 dark:bg-blue-900/10"
                   )}
                 >
-                  <TableCell className="font-medium text-sm py-4">
+                  <TableCell className="py-5 text-center">
                     <div className={cn(
-                      "inline-flex items-center gap-1.5 px-3 py-1 font-bold uppercase text-[10px] tracking-wide border-2 border-black dark:border-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)]",
+                      "inline-flex items-center gap-1.5 px-3 py-1 font-black uppercase text-[9px] tracking-wider border-2 border-black dark:border-white rounded-full shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] [text-shadow:1px_1px_rgba(0,0,0,0.3)]",
                       statusInfo.bg,
                       statusInfo.color
                     )}>
@@ -71,57 +71,73 @@ export const LoanHistoryTable: React.FC<LoanHistoryTableProps> = ({ history, isN
                       {statusInfo.label}
                     </div>
                   </TableCell>
-                  <TableCell className="text-sm py-4 font-bold">
+                  <TableCell className="py-5 font-bold">
                     <div className="flex items-center gap-2">
-                      <Monitor className="h-4 w-4" />
-                      <span className="uppercase">{loan.chromebook_id}</span>
+                      <div className="p-1.5 bg-black dark:bg-white text-white dark:text-black border-2 border-black dark:border-white shadow-[2px_2px_0px_0px_rgba(0,0,0,0.2)]">
+                        <Monitor className="h-3.5 w-3.5" />
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="uppercase text-sm tracking-tight">{loan.chromebook_id}</span>
+                        {loan.chromebook_model && (
+                          <span className="text-[10px] uppercase text-muted-foreground font-black opacity-70">{loan.chromebook_model}</span>
+                        )}
+                      </div>
                       {loan.reservation_id && (
-                        <Badge className="h-4 px-1 py-0 text-[8px] font-black uppercase bg-indigo-500 text-white border-2 border-black rounded-none">
+                        <Badge className="h-4 px-1 py-0 text-[8px] font-black uppercase bg-indigo-500 text-white border-2 border-black rounded-full ml-1">
                           Reserva
                         </Badge>
                       )}
                     </div>
-                    {loan.chromebook_model && (
-                      <span className="text-[10px] uppercase text-muted-foreground block mt-0.5 ml-6">{loan.chromebook_model}</span>
+                  </TableCell>
+                  <TableCell className="py-5">
+                    <div className="flex flex-col">
+                      <span className="font-black uppercase text-sm group-hover:text-violet-600 transition-colors">{loan.student_name}</span>
+                      <div className="flex items-center gap-2 mt-1">
+                        <Badge variant="outline" className="h-4 py-0 px-1.5 text-[8px] font-black uppercase border-black/20 dark:border-white/20 text-muted-foreground rounded-full">
+                          {loan.user_type}
+                        </Badge>
+                        {loan.student_ra && (
+                          <span className="text-[9px] font-mono font-bold text-muted-foreground">RA: {loan.student_ra}</span>
+                        )}
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell className="hidden md:table-cell py-5 max-w-[250px]">
+                    {loan.purpose ? (
+                      <div className="px-3 py-1.5 border-2 border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 text-[10px] font-black uppercase tracking-tight text-zinc-600 dark:text-zinc-400 rounded-lg group-hover:border-violet-500 group-hover:text-violet-500 transition-all truncate">
+                        {loan.purpose}
+                      </div>
+                    ) : (
+                      <span className="text-[10px] font-bold text-muted-foreground italic uppercase opacity-40">— S/ Finalidade —</span>
                     )}
                   </TableCell>
-                  <TableCell className="py-4">
-                    <div className="flex flex-col">
-                      <span className="font-black uppercase text-sm">{loan.student_name}</span>
-                      <span className="text-xs text-muted-foreground uppercase flex items-center gap-1 mt-0.5">
-                        <User className="h-3 w-3" />
-                        {loan.user_type}
-                      </span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="hidden md:table-cell py-4 max-w-[250px]">
-                    <div className="p-2 border border-black/20 dark:border-white/20 bg-gray-50 dark:bg-zinc-800/50 text-xs font-medium uppercase truncate">
-                      {loan.purpose}
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-xs py-4 font-mono font-medium">
-                    <div className="flex flex-col">
-                      <span>{format(new Date(loan.loan_date), "dd/MM/yyyy HH:mm")}</span>
+                  <TableCell className="py-5 font-mono">
+                    <div className="flex flex-col gap-1">
+                      <div className="flex items-center gap-1 text-black dark:text-white font-black text-[11px]">
+                        <RotateCcw className="h-3 w-3 rotate-180" />
+                        {format(new Date(loan.loan_date), "dd/MM/yyyy HH:mm")}
+                      </div>
                       {loan.created_by_email && (
-                        <span className="text-[9px] text-muted-foreground font-sans mt-0.5 lowercase italic">Por: {loan.created_by_email}</span>
+                        <span className="text-[9px] text-muted-foreground font-black uppercase opacity-60 tracking-tighter">por: {loan.created_by_email.split('@')[0]}</span>
                       )}
                     </div>
                   </TableCell>
-                  <TableCell className="text-xs py-4 font-mono font-medium">
+                  <TableCell className="py-5 font-mono">
                     {loan.return_date ? (
-                      <div className="flex flex-col">
-                        <span className={cn(
-                          "border-black dark:border-white w-fit",
-                          loan.status === 'atrasado' ? 'text-red-700 dark:text-red-400 font-extrabold' : 'text-green-700 dark:text-green-400 font-bold'
+                      <div className="flex flex-col gap-1">
+                        <div className={cn(
+                          "flex items-center gap-1 font-black text-[11px]",
+                          loan.status === 'atrasado' ? 'text-red-600' : 'text-green-600'
                         )}>
+                          <RotateCcw className="h-3 w-3" />
                           {format(new Date(loan.return_date), "dd/MM/yyyy HH:mm")}
-                        </span>
+                        </div>
                         {loan.return_registered_by_email && (
-                          <span className="text-[9px] text-muted-foreground font-sans mt-0.5 lowercase italic">Por: {loan.return_registered_by_email}</span>
+                          <span className="text-[9px] text-muted-foreground font-black uppercase opacity-60 tracking-tighter">por: {loan.return_registered_by_email.split('@')[0]}</span>
                         )}
                       </div>
                     ) : (
-                      <Badge variant="outline" className="rounded-none border-black dark:border-white text-xs font-normal uppercase opacity-50">Ativo</Badge>
+                      <Badge variant="outline" className="rounded-full border-black dark:border-white text-[9px] font-black uppercase bg-zinc-100 dark:bg-zinc-800 shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]">Ativo</Badge>
                     )}
                   </TableCell>
                 </TableRow>
