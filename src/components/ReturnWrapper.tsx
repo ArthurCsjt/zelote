@@ -6,10 +6,11 @@ import { SectionHeader } from './Shared/SectionHeader';
 interface ReturnWrapperProps {
   onBack: () => void;
   initialChromebookId?: string;
+  initialDeviceIds?: string[];
   onReturnSuccess: () => void;
 }
 
-export const ReturnWrapper: React.FC<ReturnWrapperProps> = ({ onBack, initialChromebookId, onReturnSuccess }) => {
+export const ReturnWrapper: React.FC<ReturnWrapperProps> = ({ onBack, initialChromebookId, initialDeviceIds, onReturnSuccess }) => {
   return (
     <div className="min-h-screen relative py-[30px]">
       { /* Background grid pattern */}
@@ -29,6 +30,7 @@ export const ReturnWrapper: React.FC<ReturnWrapperProps> = ({ onBack, initialChr
         <div className="p-3 sm:p-6 border-4 border-black dark:border-white bg-white dark:bg-zinc-900 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.2)]">
           <ReturnForm
             initialChromebookId={initialChromebookId}
+            initialDeviceIds={initialDeviceIds}
             onReturnSuccess={onReturnSuccess}
           />
         </div>

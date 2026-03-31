@@ -29,7 +29,7 @@ const Index = () => {
 
   const [currentView, setCurrentView] = useState<AppView>('menu');
   const [loanTabDefault, setLoanTabDefault] = useState<'form' | 'active'>('form');
-  const [selectedChromebookIdForReturn, setSelectedChromebookIdForReturn] = useState<string | undefined>(undefined);
+  const [pendingReturnIds, setPendingReturnIds] = useState<string[]>([]);
   const [showQRCodeModal, setShowQRCodeModal] = useState(false);
   const [selectedChromebookId, setSelectedChromebookId] = useState<string | null>(null);
   const location = useLocation();
@@ -55,14 +55,18 @@ const Index = () => {
     setCurrentView(view);
     if (tab) setLoanTabDefault(tab);
     if (chromebookId && view === 'return') {
-      setSelectedChromebookIdForReturn(chromebookId);
+      setPendingReturnIds(prev => prev.includes(chromebookId) ? prev : [...prev, chromebookId]);
     }
+  };
+
+  const handleAddToPendingReturn = (chromebookId: string) => {
+    setPendingReturnIds(prev => prev.includes(chromebookId) ? prev : [...prev, chromebookId]);
   };
 
   const handleBackToMenu = () => {
     setCurrentView('menu');
     setLoanTabDefault('form');
-    setSelectedChromebookIdForReturn(undefined);
+    setPendingReturnIds([]);
     // Limpar o estado de navegação para evitar redirecionamento automático ao atualizar (F5)
     navigate('/', { replace: true, state: {} });
   };
@@ -104,12 +108,13 @@ const Index = () => {
           onBack={handleBackToMenu}
           defaultTab={loanTabDefault}
           onNavigateToReturnView={handleNavigateToReturnView}
+          onAddPendingReturn={handleAddToPendingReturn}
           initialReservationData={location.state?.reservationData}
         />;
       case 'return':
         return <ReturnWrapper
           onBack={handleBackToMenu}
-          initialChromebookId={selectedChromebookIdForReturn}
+          initialDeviceIds={pendingReturnIds}
           onReturnSuccess={handleReturnSuccess}
         />;
       case 'audit':

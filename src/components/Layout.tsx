@@ -43,7 +43,7 @@ const Layout: React.FC<LayoutProps> = ({
   const { getNotifications } = useDatabase();
   const { toast } = useToast();
   const [isStandalone, setIsStandalone] = React.useState(false);
-  const [showHistoryOnboarding, setShowHistoryOnboarding] = React.useState(false);
+
 
   const { data: notifications } = useQuery({
     queryKey: ['notifications'],
@@ -82,27 +82,7 @@ const Layout: React.FC<LayoutProps> = ({
     return () => displayModeQuery.removeEventListener('change', handleDisplayModeChange);
   }, []);
 
-  // Onboarding/Announcement for Complete History relocation
-  React.useEffect(() => {
-    const hasSeenAnnouncement = localStorage.getItem('zelote_history_onboarding_vfinal');
-    const canSeeHistory = role === 'admin' || role === 'super_admin';
-    if (user && !hasSeenAnnouncement && canSeeHistory) {
-      const timer = setTimeout(() => {
-        setShowHistoryOnboarding(true);
-      }, 1500);
-      return () => clearTimeout(timer);
-    }
-  }, [user]);
 
-  const dismissOnboarding = () => {
-    setShowHistoryOnboarding(false);
-    localStorage.setItem('zelote_history_onboarding_vfinal', 'true');
-    toast({
-      title: "Confirmado! ✅",
-      description: "Você pode acessar o histórico completo no seu menu de perfil a qualquer momento.",
-      duration: 3000,
-    });
-  };
 
   const handleLogout = async () => {
     await logout();
@@ -295,58 +275,7 @@ const Layout: React.FC<LayoutProps> = ({
 
       {isStandalone && <div className="safe-area-bottom h-16 md:h-24 no-print" />}
 
-      {/* Visual Onboarding Overlay */}
-      {showHistoryOnboarding && (
-        <div className="fixed inset-0 z-[100] flex items-start justify-end pointer-events-none no-print overflow-hidden">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] pointer-events-auto" onClick={dismissOnboarding} />
 
-          <div className="relative mt-20 mr-4 sm:mr-8 flex flex-col items-center pointer-events-auto">
-            {/* Hand-drawn style Arrow pointing up toward the Profile Trigger */}
-            <div className="relative">
-              <svg
-                width="120"
-                height="80"
-                viewBox="0 0 120 80"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                className="text-red-500 animate-bounce transition-transform"
-                style={{ filter: 'drop-shadow(2px 2px 0px rgba(0,0,0,0.5))' }}
-              >
-                <path
-                  d="M100 70C90 60 70 30 60 10M60 10L45 25M60 10L75 25"
-                  stroke="currentColor"
-                  strokeWidth="6"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-
-              {/* Text Badge following the user's sketch style */}
-              <div className="absolute top-20 right-0 transform translate-x-1/4">
-                <div className="bg-red-500 text-white font-black text-xl sm:text-2xl px-4 py-2 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] -rotate-6 whitespace-nowrap">
-                  HISTÓRICO!
-                </div>
-              </div>
-            </div>
-
-            {/* Hint Box */}
-            <div className="mt-28 max-w-[280px] bg-white dark:bg-zinc-900 p-4 border-4 border-black dark:border-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] animate-in slide-in-from-right-8 duration-500">
-              <p className="text-sm font-black uppercase tracking-tight text-black dark:text-white leading-tight">
-                MUDAMOS O <span className="text-red-500">HISTÓRICO</span> PARA CÁ!
-              </p>
-              <p className="mt-2 text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase leading-tight">
-                Acesse agendamentos e devoluções em um só lugar, de qualquer tela.
-              </p>
-              <Button
-                onClick={dismissOnboarding}
-                className="mt-4 w-full h-8 bg-black dark:bg-white text-white dark:text-black rounded-none border-2 border-transparent hover:bg-zinc-800 dark:hover:bg-zinc-200 font-black uppercase text-xs"
-              >
-                ENTENDI
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

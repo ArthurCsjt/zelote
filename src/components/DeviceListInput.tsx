@@ -114,11 +114,9 @@ export function DeviceListInput({
     const loanStatus: DeviceListItem['loanStatus'] = activeLoan ? (activeLoan.status === 'atrasado' ? 'atrasado' : 'ativo') : 'inativo';
 
     if (actionLabel === 'Empréstimo') {
-      if (chromebook.status !== 'disponivel') {
-        return { error: `Status Incorreto: ${chromebook.status.toUpperCase()}. Requerido: Disponível.` };
-      }
-      if (loanStatus === 'ativo' || loanStatus === 'atrasado') {
-        return { error: `O Chromebook ${normalizedInput} possui um empréstimo ativo no sistema.` };
+      const isBusy = chromebook.status !== 'disponivel' || loanStatus === 'ativo' || loanStatus === 'atrasado';
+      if (isBusy) {
+        return { mustReturn: true, chromebook: { ...chromebook, loanStatus } as DeviceListItem };
       }
     }
 
@@ -133,6 +131,24 @@ export function DeviceListInput({
 
   const addDevice = useCallback(async (chromebook: ChromebookSearchResult) => {
     const validation = await validateAndNormalizeInput(chromebook.chromebook_id);
+
+    if (validation.mustReturn) {
+      // Adicionar ao localStorage de devoluções pendentes
+      const pendingJson = localStorage.getItem('zelote_pending_returns');
+      let pending: string[] = pendingJson ? JSON.parse(pendingJson) : [];
+      
+      if (!pending.includes(chromebook.chromebook_id)) {
+        pending.push(chromebook.chromebook_id);
+        localStorage.setItem('zelote_pending_returns', JSON.stringify(pending));
+      }
+
+      toast({
+        title: "Enviado para Devolução",
+        description: `O Chromebook ${chromebook.chromebook_id} já está emprestado e foi enviado para a lista de devolução.`,
+        variant: "info",
+      });
+      return;
+    }
 
     if (validation.error) {
       toast({

@@ -26,6 +26,30 @@ export function MainMenu({
     return () => clearTimeout(timer);
   }, []);
 
+  const [pendingReturnCount, setPendingReturnCount] = useState(0);
+
+  // NOVO EFEITO: Monitorar devoluções pendentes no localStorage para o Badge
+  useEffect(() => {
+    const updateCount = () => {
+      const pendingJson = localStorage.getItem('zelote_pending_returns');
+      if (pendingJson) {
+        try {
+          const pending = JSON.parse(pendingJson);
+          if (Array.isArray(pending)) {
+            setPendingReturnCount(pending.length);
+            return;
+          }
+        } catch (e) {}
+      }
+      setPendingReturnCount(0);
+    };
+
+    updateCount();
+    // Verifica a cada 2 segundos se houve novas capturas no menu de empréstimo
+    const interval = setInterval(updateCount, 2000);
+    return () => clearInterval(interval);
+  }, []);
+
   const allMenuItems = [
     {
       title: 'Empréstimos',
@@ -41,7 +65,8 @@ export function MainMenu({
       action: () => onNavigate('return'),
       color: 'text-menu-amber', // Âmbar
       bg: 'bg-amber-300 dark:bg-amber-900/50',
-      roles: ['admin', 'super_admin', 'user']
+      roles: ['admin', 'super_admin', 'user'],
+      badge: pendingReturnCount > 0 ? { label: String(pendingReturnCount), variant: 'destructive' } : undefined
     },
     {
       title: 'Agendamento',

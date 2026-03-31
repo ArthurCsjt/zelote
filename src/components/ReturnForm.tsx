@@ -21,14 +21,24 @@ import { isOverdue, calculateOverdueDays, formatDetailedDuration } from '@/utils
 
 interface ReturnFormProps {
   onReturnSuccess?: () => void;
-  initialChromebookId?: string; // Adicionado para pré-seleção
+  initialChromebookId?: string;
+  initialDeviceIds?: string[]; // NOVO: Suporta múltiplos IDs iniciais
 }
 
-export function ReturnForm({ onReturnSuccess, initialChromebookId }: ReturnFormProps) {
+export function ReturnForm({ onReturnSuccess, initialChromebookId, initialDeviceIds }: ReturnFormProps) {
   const { bulkReturnChromebooks, getLoanDetailsByChromebookId, getActiveLoansByUser, loading: dbLoading } = useDatabase();
 
-  // Inicializa a lista de dispositivos com o ID inicial, se houver
-  const [deviceIds, setDeviceIds] = useState<string[]>(initialChromebookId ? [initialChromebookId] : []);
+  // Inicializa a lista de dispositivos com os IDs iniciais, se houverem
+  const [deviceIds, setDeviceIds] = useState<string[]>(() => {
+    const ids: string[] = [];
+    if (initialChromebookId) ids.push(initialChromebookId);
+    if (initialDeviceIds) {
+      initialDeviceIds.forEach(id => {
+        if (!ids.includes(id)) ids.push(id);
+      });
+    }
+    return ids;
+  });
   const [confirmChecked, setConfirmChecked] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserSearchResult | null>(null);
   const [returnData, setReturnData] = useState<ReturnFormData & { notes?: string }>({
@@ -49,6 +59,35 @@ export function ReturnForm({ onReturnSuccess, initialChromebookId }: ReturnFormP
 
   // NOVO ESTADO: Modal de confirmação
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+
+  // NOVO EFEITO: Carregar devoluções pendentes do localStorage ao montar
+  useEffect(() => {
+    const pendingJson = localStorage.getItem('zelote_pending_returns');
+    if (pendingJson) {
+      try {
+        const pending: string[] = JSON.parse(pendingJson);
+        if (Array.isArray(pending) && pending.length > 0) {
+          setDeviceIds(prev => {
+            const combined = [...prev];
+            pending.forEach(id => {
+              if (!combined.includes(id)) combined.push(id);
+            });
+            return combined;
+          });
+          
+          toast({
+            title: "Equipamentos Carregados",
+            description: `${pending.length} equipamento(s) que precisam de devolução foram adicionados.`,
+            variant: "info",
+          });
+        }
+      } catch (e) {
+        console.error('Erro ao carregar devoluções pendentes:', e);
+      } finally {
+        localStorage.removeItem('zelote_pending_returns');
+      }
+    }
+  }, []);
 
   // Efeito para limpar o formulário ao montar/resetar
   useEffect(() => {
