@@ -36,7 +36,7 @@ export default defineConfig({
         type: 'module',
       },
       injectManifest: {
-        // Removendo injectionPoint: undefined para usar o padrão self.__WB_MANIFEST
+        maximumFileSizeToCacheInBytes: 4000000,
       }
     })
   ],
