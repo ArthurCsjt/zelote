@@ -10,6 +10,9 @@ interface DeviceCardProps {
     status?: 'disponivel' | 'emprestado' | 'manutencao' | 'baixado';
     lastUsed?: string;
     condition?: 'excelente' | 'bom' | 'regular' | 'ruim';
+    manufacturer?: string | null;
+    model?: string;
+    serial_number?: string | null;
     onRemove?: () => void;
     variant?: 'loan' | 'return';
     showDetails?: boolean;
@@ -57,6 +60,9 @@ export function DeviceCard({
     status = 'disponivel',
     lastUsed,
     condition = 'bom',
+    manufacturer,
+    model,
+    serial_number,
     onRemove,
     variant = 'loan',
     showDetails = true,
@@ -108,12 +114,11 @@ export function DeviceCard({
                         </div>
 
                         <div className="flex-1 min-w-0">
-                            <p className="font-bold text-base truncate text-gray-900 dark:text-foreground group-hover:text-primary transition-colors">
-                                {deviceId}
-                            </p>
-
-                            {showDetails && (
-                                <div className="flex items-center gap-2 mt-1 flex-wrap">
+                            <div className="flex items-center gap-2">
+                                <p className="font-bold text-base truncate text-gray-900 dark:text-foreground group-hover:text-primary transition-colors">
+                                    {deviceId}
+                                </p>
+                                {showDetails && (
                                     <Badge
                                         variant="outline"
                                         className={cn(
@@ -124,12 +129,14 @@ export function DeviceCard({
                                         <StatusIcon className="h-3 w-3 mr-1" />
                                         {statusInfo.label}
                                     </Badge>
+                                )}
+                            </div>
 
-                                    {condition && (
-                                        <span className={cn("text-[10px]", conditionInfo.color)}>
-                                            {conditionInfo.label}
-                                        </span>
-                                    )}
+                            {showDetails && (manufacturer || model || serial_number) && (
+                                <div className="mt-0.5 flex flex-wrap">
+                                    <span className="text-[10px] text-muted-foreground font-bold uppercase truncate">
+                                        {[manufacturer, model, serial_number ? `S/N: ${serial_number}` : null].filter(Boolean).join(' • ')}
+                                    </span>
                                 </div>
                             )}
                         </div>
@@ -150,7 +157,7 @@ export function DeviceCard({
                                 size="sm"
                                 onClick={onRemove}
                                 className={cn(
-                                    "h-8 w-8 p-0 opacity-0 group-hover:opacity-100",
+                                    "h-8 w-8 p-0",
                                     "transition-all duration-300",
                                     "hover:bg-red-100 hover:text-red-700",
                                     "dark:hover:bg-destructive/20 dark:hover:text-destructive",

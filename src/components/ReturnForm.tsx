@@ -255,7 +255,7 @@ export function ReturnForm({ onReturnSuccess, initialChromebookId, initialDevice
           <div className="border-4 border-amber-500 bg-amber-100 dark:bg-amber-950/20 shadow-[6px_6px_0px_0px_rgba(245,158,11,0.3)] border-l-[6px] md:border-l-[12px] flex-1 p-0 overflow-hidden min-w-0">
             <CardHeader className="p-3 pb-2 border-b-3 border-amber-500/30 bg-gradient-to-r from-amber-400 to-orange-500">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-base font-black uppercase tracking-tight flex items-center gap-2 text-white">
+                <CardTitle className="text-base font-black uppercase tracking-tight flex items-center gap-2 text-white [text-shadow:1px_1px_rgba(0,0,0,0.5)]">
                   <Computer className="h-5 w-5" />
                   Dispositivos para Devolução
                 </CardTitle>
@@ -354,7 +354,7 @@ export function ReturnForm({ onReturnSuccess, initialChromebookId, initialDevice
           {/* ═══ SEÇÃO 2: OBSERVAÇÕES ═══ */}
           <div className="border-4 border-gray-500 bg-gray-100 dark:bg-gray-950/20 shadow-[6px_6px_0px_0px_rgba(107,114,128,0.3)] border-l-[6px] md:border-l-[12px] p-0 overflow-hidden">
             <CardHeader className="p-3 pb-2 border-b-3 border-gray-500/30 bg-gradient-to-r from-gray-400 to-gray-600">
-              <CardTitle className="text-base font-black uppercase tracking-tight flex items-center gap-2 text-white">
+              <CardTitle className="text-base font-black uppercase tracking-tight flex items-center gap-2 text-white [text-shadow:1px_1px_rgba(0,0,0,0.5)]">
                 <BookOpen className="h-5 w-5" />
                 Observações
               </CardTitle>
@@ -382,7 +382,7 @@ export function ReturnForm({ onReturnSuccess, initialChromebookId, initialDevice
           {/* ═══ SEÇÃO 3: SOLICITANTE DA DEVOLUÇÃO ═══ */}
           <div className="border-4 border-violet-500 bg-violet-100 dark:bg-violet-950/20 shadow-[6px_6px_0px_0px_rgba(139,92,246,0.3)] border-l-[6px] md:border-l-[12px] p-0 overflow-hidden min-w-0">
             <CardHeader className="p-3 pb-2 border-b-3 border-violet-500/30 bg-gradient-to-r from-violet-400 to-purple-500">
-              <CardTitle className="text-base font-black uppercase tracking-tight flex items-center gap-2 text-white">
+              <CardTitle className="text-base font-black uppercase tracking-tight flex items-center gap-2 text-white [text-shadow:1px_1px_rgba(0,0,0,0.5)]">
                 <User className="h-5 w-5" />
                 Solicitante da Devolução
               </CardTitle>
@@ -472,7 +472,7 @@ export function ReturnForm({ onReturnSuccess, initialChromebookId, initialDevice
         type="submit"
         size="lg"
         className={cn(
-          "w-full h-16 text-xl font-black uppercase tracking-tight",
+          "w-full h-16 text-xl font-black uppercase tracking-tight rounded-full",
           "bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700",
           "text-white border-4 border-black dark:border-white",
           "shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.9)]",

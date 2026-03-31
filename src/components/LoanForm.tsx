@@ -340,23 +340,23 @@ export function LoanForm({ onBack, initialReservationData }: LoanFormProps) {
                         {/* ═══ SEÇÃO 1: EQUIPAMENTO ═══ */}
                         <div className={cn(
                             "neo-card border-l-[12px] border-4 border-amber-500 bg-amber-100 dark:bg-amber-950/20 transition-all duration-300 shadow-[6px_6px_0px_0px_rgba(245,158,11,0.3)] h-full flex flex-col",
-                            currentStep === 1 && "ring-4 ring-amber-500 ring-offset-2 animate-gentle-pulse"
+                            currentStep === 1 && "ring-4 ring-black dark:ring-white ring-offset-2 animate-gentle-pulse"
                         )}>
                             <CardHeader className="p-3 pb-2 border-b-3 border-amber-500/30 bg-gradient-to-r from-amber-400 to-orange-500">
                                 <div className="flex items-center justify-between">
-                                    <CardTitle className="text-base font-black uppercase tracking-tight flex items-center gap-2 text-white">
+                                    <CardTitle className="text-base font-black uppercase tracking-tight flex items-center gap-2 text-white [text-shadow:1px_1px_rgba(0,0,0,0.5)]">
                                         <Computer className="h-5 w-5" />
                                         Equipamento
                                     </CardTitle>
                                     <Badge variant="outline" className={cn(
-                                        "rounded-none border-3 border-white text-white font-bold transition-colors text-xs shadow-[2px_2px_0px_0px_rgba(255,255,255,0.3)]",
+                                        "rounded-full border-2 font-black transition-all text-xs px-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]",
                                         deviceIds.length === 0
-                                            ? "bg-white/20"
-                                            : "bg-white/30"
+                                            ? "bg-white/20 border-white text-white/70 shadow-none opacity-60"
+                                            : "bg-white border-white text-orange-600 scale-110 -translate-x-1"
                                     )}>
                                         {deviceIds.length === 0
-                                            ? 'Nenhum'
-                                            : `${deviceIds.length} ${deviceIds.length === 1 ? 'PC' : 'PCs'}`
+                                            ? 'NENHUM'
+                                            : `${deviceIds.length} ${deviceIds.length === 1 ? 'CHROME' : 'CHROMES'}`
                                         }
                                     </Badge>
                                 </div>
@@ -387,10 +387,10 @@ export function LoanForm({ onBack, initialReservationData }: LoanFormProps) {
                         {/* ═══ SEÇÃO 2: SOLICITANTE ═══ */}
                         <div className={cn(
                             "neo-card border-l-[12px] border-4 border-violet-500 bg-violet-100 dark:bg-violet-950/20 transition-all duration-300 shadow-[6px_6px_0px_0px_rgba(139,92,246,0.3)]",
-                            currentStep === 2 && isDevicesAdded && "ring-4 ring-violet-500 ring-offset-2 animate-gentle-pulse"
+                            currentStep === 2 && isDevicesAdded && "ring-4 ring-black dark:ring-white ring-offset-2 animate-gentle-pulse"
                         )}>
                             <CardHeader className="p-3 pb-2 border-b-3 border-violet-500/30 bg-gradient-to-r from-violet-400 to-purple-500">
-                                <CardTitle className="text-base font-black uppercase tracking-tight flex items-center gap-2 text-white">
+                                <CardTitle className="text-base font-black uppercase tracking-tight flex items-center gap-2 text-white [text-shadow:1px_1px_rgba(0,0,0,0.5)]">
                                     <User className="h-5 w-5" />
                                     Solicitante
                                 </CardTitle>
@@ -422,10 +422,10 @@ export function LoanForm({ onBack, initialReservationData }: LoanFormProps) {
                         {/* ═══ SEÇÃO 3: FINALIDADE ═══ */}
                         <div className={cn(
                             "neo-card border-l-[12px] border-4 border-blue-500 bg-blue-100 dark:bg-blue-950/20 transition-all duration-300 shadow-[6px_6px_0px_0px_rgba(59,130,246,0.3)]",
-                            currentStep === 3 && isDevicesAdded && isUserSelected && "ring-4 ring-blue-500 ring-offset-2 animate-gentle-pulse"
+                            currentStep === 3 && isDevicesAdded && isUserSelected && "ring-4 ring-black dark:ring-white ring-offset-2 animate-gentle-pulse"
                         )}>
                             <CardHeader className="p-3 pb-2 border-b-3 border-blue-500/30 bg-gradient-to-r from-blue-400 to-cyan-500">
-                                <CardTitle className="text-base font-black uppercase tracking-tight flex items-center gap-2 text-white">
+                                <CardTitle className="text-base font-black uppercase tracking-tight flex items-center gap-2 text-white [text-shadow:1px_1px_rgba(0,0,0,0.5)]">
                                     <BookOpen className="h-5 w-5" />
                                     Finalidade (Opcional)
                                 </CardTitle>
@@ -467,10 +467,10 @@ export function LoanForm({ onBack, initialReservationData }: LoanFormProps) {
                         {/* ═══ SEÇÃO 4: PRAZO E CONFIRMAÇÃO ═══ */}
                         <div className={cn(
                             "neo-card border-l-[12px] border-4 border-green-500 bg-green-100 dark:bg-green-950/20 transition-all duration-300 shadow-[6px_6px_0px_0px_rgba(34,197,94,0.3)]",
-                            currentStep === 4 && isUserSelected && isPurposeDefined && isDevicesAdded && "ring-4 ring-green-500 ring-offset-2 animate-gentle-pulse"
+                            currentStep === 4 && isUserSelected && isPurposeDefined && isDevicesAdded && "ring-4 ring-black dark:ring-white ring-offset-2 animate-gentle-pulse"
                         )}>
                             <CardHeader className="p-3 pb-2 border-b-3 border-green-500/30 bg-gradient-to-r from-green-400 to-emerald-500">
-                                <CardTitle className="text-base font-black uppercase tracking-tight flex items-center gap-2 text-white">
+                                <CardTitle className="text-base font-black uppercase tracking-tight flex items-center gap-2 text-white [text-shadow:1px_1px_rgba(0,0,0,0.5)]">
                                     <Clock className="h-5 w-5" />
                                     Prazo (Opcional)
                                 </CardTitle>
@@ -615,7 +615,7 @@ export function LoanForm({ onBack, initialReservationData }: LoanFormProps) {
                     type="submit"
                     size="lg"
                     className={cn(
-                        "w-full h-16 text-xl font-black uppercase tracking-wide",
+                        "w-full h-16 text-xl font-black uppercase tracking-wide rounded-full",
                         "bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700",
                         "text-white border-4 border-black dark:border-white",
                         "shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.9)]",

@@ -52,12 +52,14 @@ export function DeviceListInput({
   const { getActiveLoans } = useDatabase();
   const [activeLoansCache, setActiveLoansCache] = useState<LoanHistoryItem[]>([]);
   const [isLoanCacheLoading, setIsLoanCacheLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [addedDevicesPage, setAddedDevicesPage] = useState(1);
+  const [suggestionsPage, setSuggestionsPage] = useState(1);
   const itemsPerPage = 5;
 
   // Resetar página quando o usuário ou a lista bruta mudar
   useEffect(() => {
-    setCurrentPage(1);
+    setAddedDevicesPage(1);
+    setSuggestionsPage(1);
   }, [selectedUserName]);
 
   useEffect(() => {
@@ -161,8 +163,9 @@ export function DeviceListInput({
 
     setDeviceList(prev => {
       if (!validation.chromebook) return prev;
-      const newList = [...prev, validation.chromebook];
+      const newList = [validation.chromebook, ...prev]; // Invertido: novo item no topo
       setDeviceIds(newList.map(item => item.chromebook_id));
+      setAddedDevicesPage(1); // Volta para a página 1 para ver o item recém-adicionado
       return newList;
     });
 
@@ -241,19 +244,40 @@ export function DeviceListInput({
               Dispositivos para Devolução ({deviceList.length})
             </p>
             <div className="space-y-2">
-              {deviceList.map((chromebook, index) => (
-                <DeviceCard
-                  key={chromebook.chromebook_id}
-                  deviceId={chromebook.chromebook_id}
-                  status={chromebook.status as any}
-                  condition={chromebook.condition as any}
-                  onRemove={() => removeDevice(chromebook.chromebook_id)}
-                  variant={actionLabel === 'Empréstimo' ? 'loan' : 'return'}
-                  showDetails={true}
-                  className="animate-in slide-in-from-left-3 fade-in duration-300"
-                  style={{ animationDelay: `${index * 50}ms` }}
-                />
-              ))}
+              {(() => {
+                const totalPages = Math.ceil(deviceList.length / itemsPerPage);
+                const startIndex = (addedDevicesPage - 1) * itemsPerPage;
+                const paginatedDevices = deviceList.slice(startIndex, startIndex + itemsPerPage);
+
+                return (
+                  <>
+                    {paginatedDevices.map((chromebook, index) => (
+                      <DeviceCard
+                        key={chromebook.chromebook_id}
+                        deviceId={chromebook.chromebook_id}
+                        status={chromebook.status as any}
+                        manufacturer={chromebook.manufacturer}
+                        model={chromebook.model}
+                        serial_number={chromebook.serial_number}
+                        onRemove={() => removeDevice(chromebook.chromebook_id)}
+                        variant={actionLabel === 'Empréstimo' ? 'loan' : 'return'}
+                        showDetails={true}
+                        className="animate-in slide-in-from-left-3 fade-in duration-300"
+                        style={{ animationDelay: `${index * 50}ms` }}
+                      />
+                    ))}
+
+                    {deviceList.length > itemsPerPage && (
+                      <NeoPagination
+                        currentPage={addedDevicesPage}
+                        totalPages={totalPages}
+                        onPageChange={setAddedDevicesPage}
+                        className="mt-4"
+                      />
+                    )}
+                  </>
+                );
+              })()}
             </div>
           </div>
         )}
@@ -265,7 +289,7 @@ export function DeviceListInput({
           if (suggestions.length === 0 && !loadingUserLoans && deviceList.length > 0) return null;
 
           const totalPages = Math.ceil(suggestions.length / itemsPerPage);
-          const startIndex = (currentPage - 1) * itemsPerPage;
+          const startIndex = (suggestionsPage - 1) * itemsPerPage;
           const paginatedSuggestions = suggestions.slice(startIndex, startIndex + itemsPerPage);
 
           return (
@@ -343,9 +367,9 @@ export function DeviceListInput({
                   {/* PAGINAÇÃO NEO-BRUTALISTA CENTRALIZADA */}
                   {suggestions.length > itemsPerPage && (
                     <NeoPagination
-                      currentPage={currentPage}
+                      currentPage={suggestionsPage}
                       totalPages={totalPages}
-                      onPageChange={setCurrentPage}
+                      onPageChange={setSuggestionsPage}
                       className="mt-6 mb-2"
                     />
                   )}

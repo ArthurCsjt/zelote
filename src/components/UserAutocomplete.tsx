@@ -132,6 +132,35 @@ const UserAutocomplete: React.FC<UserAutocompleteProps> = ({ selectedUser, onSel
           disabled={disabled}
         />
       </div>
+
+      {/* Sugestões de Filtro Rápido */}
+      <div className="flex gap-2 mt-2">
+        {[
+          { label: 'Aluno', type: 'aluno' },
+          { label: 'Professor', type: 'professor' },
+          { label: 'Funcionário', type: 'funcionario' }
+        ].map((btn) => (
+          <button
+            key={btn.type}
+            type="button"
+            onMouseDown={(e) => {
+              e.preventDefault(); // Impede o input de perder o foco
+              setSearchTerm(btn.type);
+              setIsFocused(true);
+              inputRef.current?.focus();
+            }}
+            className={cn(
+              "text-[10px] font-black uppercase tracking-wider px-3 py-1 border-2 transition-all rounded-full",
+              "hover:-translate-y-0.5 active:translate-y-0",
+              btn.type === 'aluno' && "bg-blue-50 border-blue-500 text-blue-700 hover:bg-blue-100 shadow-[2px_2px_0px_0px_rgba(59,130,246,1)]",
+              btn.type === 'professor' && "bg-purple-50 border-purple-500 text-purple-700 hover:bg-purple-100 shadow-[2px_2px_0px_0px_rgba(168,85,247,1)]",
+              btn.type === 'funcionario' && "bg-orange-50 border-orange-500 text-orange-700 hover:bg-orange-100 shadow-[2px_2px_0px_0px_rgba(249,115,22,1)]"
+            )}
+          >
+            {btn.label}
+          </button>
+        ))}
+      </div>
       
       {/* Lista de Sugestões (aparece abaixo do input) */}
       {isFocused && searchTerm && filteredUsers.length > 0 && (
@@ -157,7 +186,7 @@ const UserAutocomplete: React.FC<UserAutocompleteProps> = ({ selectedUser, onSel
                     key={user.id}
                     value={user.searchable}
                     onSelect={() => handleSelect(user)}
-                    className="flex items-center justify-between p-3"
+                    className="flex items-center justify-between p-3 group cursor-pointer"
                     // Usar onMouseDown para garantir que o clique funcione antes do onBlur
                     onMouseDown={(e) => { e.preventDefault(); handleSelect(user); }}
                   >
@@ -181,13 +210,22 @@ const UserAutocomplete: React.FC<UserAutocompleteProps> = ({ selectedUser, onSel
                       </div>
                     </div>
                     
-                    {/* Badge do tipo */}
-                    <Badge variant="outline" className={cn(
-                      "text-xs shrink-0 capitalize",
-                      getUserBadgeClasses(user.type)
-                    )}>
-                      {user.type}
-                    </Badge>
+                    {/* Botão de Selecionar Explícito */}
+                    <div className="flex items-center gap-2 shrink-0">
+                      <Badge variant="outline" className={cn(
+                        "text-[10px] uppercase font-black shrink-0 h-5 px-1.5",
+                        getUserBadgeClasses(user.type)
+                      )}>
+                        {user.type}
+                      </Badge>
+                      
+                      <div className={cn(
+                        "hidden sm:flex items-center gap-1 h-5 px-2 border-2 border-black bg-white text-black text-[8px] font-black uppercase shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] group-hover:bg-green-400 group-hover:translate-x-[1px] group-hover:translate-y-[1px] group-hover:shadow-none transition-all rounded-full cursor-pointer"
+                      )}>
+                        Selecionar
+                        <Check className="h-2.5 w-2.5" />
+                      </div>
+                    </div>
                   </CommandItem>
                 ))}
               </CommandGroup>

@@ -39,7 +39,7 @@ export function useUserSearch() {
       const allUsers: UserSearchResult[] = [];
 
       (alunos || []).forEach(a => {
-        const searchable = `${a.nome_completo} ${a.ra} ${a.email} ${a.turma}`.toLowerCase();
+        const searchable = `${a.nome_completo} ${a.ra} ${a.email} ${a.turma} aluno`.toLowerCase();
         allUsers.push({
           id: a.id,
           name: a.nome_completo,
@@ -52,7 +52,7 @@ export function useUserSearch() {
       });
 
       (professores || []).forEach(p => {
-        const searchable = `${p.nome_completo} ${p.email} ${p.materia || ''}`.toLowerCase();
+        const searchable = `${p.nome_completo} ${p.email} ${p.materia || ''} professor`.toLowerCase();
         allUsers.push({
           id: p.id,
           name: p.nome_completo,
@@ -64,7 +64,7 @@ export function useUserSearch() {
       });
 
       (funcionarios || []).forEach(f => {
-        const searchable = `${f.nome_completo} ${f.email}`.toLowerCase();
+        const searchable = `${f.nome_completo} ${f.email} funcionario`.toLowerCase();
         allUsers.push({
           id: f.id,
           name: f.nome_completo,
