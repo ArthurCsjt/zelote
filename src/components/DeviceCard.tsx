@@ -90,6 +90,7 @@ export function DeviceCard({
                 borderColor,
                 "animate-in slide-in-from-left-2 fade-in duration-300",
                 "bg-white dark:bg-card/50",
+                "max-w-full overflow-hidden",
                 className
             )}
             style={style}
@@ -132,9 +133,12 @@ export function DeviceCard({
                                 )}
                             </div>
 
-                            {showDetails && (manufacturer || model || serial_number) && (
-                                <div className="mt-0.5 flex flex-wrap">
-                                    <span className="text-[10px] text-muted-foreground font-bold uppercase truncate">
+                             {showDetails && (manufacturer || model || serial_number) && (
+                                <div className="mt-0.5 flex min-w-0">
+                                    <span 
+                                        className="text-[10px] text-muted-foreground font-bold uppercase truncate"
+                                        title={[manufacturer, model, serial_number ? `S/N: ${serial_number}` : null].filter(Boolean).join(' • ')}
+                                    >
                                         {[manufacturer, model, serial_number ? `S/N: ${serial_number}` : null].filter(Boolean).join(' • ')}
                                     </span>
                                 </div>

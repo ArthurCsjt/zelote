@@ -234,7 +234,7 @@ export function DeviceListInput({
       />
 
       {/* Lista de Dispositivos - NEO-BRUTALISM */}
-      <div className="mt-3 p-4 bg-white dark:bg-zinc-900 border-2 border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex-1 overflow-y-auto transition-all duration-300 min-h-[250px] flex flex-col gap-6">
+      <div className="mt-3 p-4 bg-white dark:bg-zinc-900 border-2 border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex-1 overflow-y-auto overflow-x-hidden max-w-full transition-all duration-300 min-h-[250px] flex flex-col gap-6">
 
         {/* SEÇÃO 1: Dispositivos Já Adicionados */}
         {deviceList.length > 0 && (

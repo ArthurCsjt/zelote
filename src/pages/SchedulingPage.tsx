@@ -178,7 +178,7 @@ const SchedulingPage = () => {
           {/* Month Quick Navigation Bar - Clean & Centered */}
           <div className="w-full border-t border-zinc-200 dark:border-zinc-800 pt-6 px-2">
             <div className="flex justify-center w-full">
-              <div className="flex gap-2 overflow-x-auto pb-2 px-4 w-full justify-start lg:justify-center scrollbar-hide mask-linear-fade">
+              <div className="flex gap-3 overflow-x-auto pb-4 px-4 w-full justify-start lg:justify-center scrollbar-hide mask-linear-fade">
                 {Array.from({ length: 12 }, (_, i) => {
                   const date = new Date(new Date().getFullYear(), i, 1);
                   const isCurrentMonth = i === currentDate.getMonth();
@@ -187,21 +187,30 @@ const SchedulingPage = () => {
                       key={i}
                       onClick={() => {
                         let targetDate = new Date(currentDate.getFullYear(), i, 1);
-                        // Se o dia 1º cair no final de semana, vai para a próxima segunda-feira
-                        // para garantir que ficamos no mês correto e em um dia útil.
                         if (isSaturday(targetDate)) targetDate = addDays(targetDate, 2);
                         else if (isSunday(targetDate)) targetDate = addDays(targetDate, 1);
-
                         setCurrentDate(targetDate);
                       }}
                       className={cn(
-                        "flex-shrink-0 px-2 py-2.5 text-[10px] font-black uppercase tracking-wider transition-all duration-200 border-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] hover:-translate-y-0.5 active:translate-y-0 active:shadow-none min-w-[65px]",
+                        "flex-shrink-0 px-4 py-3 text-[11px] font-black uppercase tracking-[0.15em] transition-all duration-300 border-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 active:translate-y-0 active:shadow-none min-w-[80px] relative overflow-hidden group/month",
                         isCurrentMonth
-                          ? "bg-black text-white border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,0.3)] dark:bg-white dark:text-black dark:border-white"
-                          : "bg-white text-zinc-600 border-zinc-200 hover:border-black hover:text-black dark:bg-zinc-900 dark:text-zinc-400 dark:border-zinc-700 dark:hover:border-white dark:hover:text-white"
+                          ? "bg-primary text-primary-foreground border-black dark:border-white shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] scale-110 z-10"
+                          : "bg-white text-zinc-500 border-black hover:text-black dark:bg-zinc-900 dark:text-zinc-500 dark:border-white dark:hover:text-white"
                       )}
                     >
-                      {format(date, 'MMM', { locale: ptBR }).replace('.', '')}
+                      {/* Decorative Background Bar for Active */}
+                      {isCurrentMonth && (
+                        <div className="absolute top-0 left-0 w-full h-1 bg-white/30 animate-pulse" />
+                      )}
+                      
+                      <span className="relative z-10">
+                        {format(date, 'MMM', { locale: ptBR }).replace('.', '')}
+                      </span>
+
+                      {/* Hover Glow */}
+                      {!isCurrentMonth && (
+                        <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover/month:opacity-100 transition-opacity" />
+                      )}
                     </button>
                   );
                 })}
@@ -236,24 +245,6 @@ const SchedulingPage = () => {
           </button>
         </div>
 
-        {/* Availability Pill - Premium Look */}
-        <div className="flex items-center gap-4 bg-green-500 border-4 border-black dark:border-white shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] px-4 py-3 min-w-[210px]">
-          <div className="w-10 h-10 bg-white border-3 border-black flex items-center justify-center shadow-[2px_2px_0px_0px_#000]">
-            <Monitor className="h-5 w-5 text-green-600" />
-          </div>
-          <div className="flex flex-col">
-            <span className="text-[10px] font-black text-white/80 uppercase tracking-widest leading-none mb-1">Status de Rede</span>
-            <div className="flex items-center gap-2">
-              {isLoadingTotal ? (
-                <Loader2 className="h-5 w-5 animate-spin text-white" />
-              ) : (
-                <span className="text-xl font-black text-white leading-none">
-                  {totalAvailableChromebooks} <span className="text-xs font-bold uppercase underline decoration-2 underline-offset-4">Disponíveis</span>
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* Weekend Warning */}

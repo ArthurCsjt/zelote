@@ -362,7 +362,7 @@ export function LoanForm({ onBack, initialReservationData }: LoanFormProps) {
                                 </div>
                             </CardHeader>
 
-                            <CardContent className="p-3 flex-1 flex flex-col">
+                            <CardContent className="px-2 py-3 sm:p-3 flex-1 flex flex-col">
                                 <DeviceListInput
                                     deviceIds={deviceIds}
                                     setDeviceIds={setDeviceIds}
