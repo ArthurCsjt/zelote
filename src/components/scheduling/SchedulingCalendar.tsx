@@ -28,6 +28,9 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
   onReservationSuccess,
   professores,
 }) => {
+  const [hoveredDate, setHoveredDate] = React.useState<string | null>(null);
+  const [hoveredTime, setHoveredTime] = React.useState<string | null>(null);
+  
   const weekDays = getWeekDays(currentDate);
 
   const { reservationsMap, dailyTotals, dailySlotsData } = useMemo(() => {
@@ -79,167 +82,198 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
   return (
     <div className="space-y-4">
 
-      <div
-        className="grid gap-1 min-w-[700px]"
-        style={{ gridTemplateColumns }}
-      >
+      <div className="relative border-4 border-black dark:border-white shadow-[12px_12px_0px_0px_rgba(0,0,0,0.05)] bg-white dark:bg-zinc-950 overflow-hidden">
+        {/* Global Grid Pattern for the entire calendar area */}
+        <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.07] pointer-events-none neo-brutal-dots" />
+        
+        <div
+          className="grid gap-0 min-w-[700px] relative z-10"
+          style={{ gridTemplateColumns }}
+          onMouseLeave={() => {
+            setHoveredDate(null);
+            setHoveredTime(null);
+          }}
+        >
 
-        {/* Header Row */}
-        {/* Top-Left Corner: Network Status Integration */}
-        <div className="h-36 min-w-[100px] flex flex-col items-center justify-center border-4 border-black dark:border-white bg-green-500 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] relative overflow-hidden">
-          {/* Subtle textured background for the corner too */}
-          <div className="absolute inset-0 opacity-10 pointer-events-none" 
-               style={{ 
-                 backgroundImage: `radial-gradient(circle, white 1px, transparent 1px)`,
-                 backgroundSize: '8px 8px' 
-               }} 
-          />
-          
-          <div className="relative z-10 flex flex-col items-center">
-            <div className="bg-white p-2 border-2 border-black shadow-[2px_2px_0px_0px_#000] mb-2 transform -rotate-3 hover:rotate-0 transition-transform cursor-help">
-              <Monitor className="h-5 w-5 text-green-600" />
-            </div>
-            <div className="flex flex-col items-center leading-none">
-              <span className="text-lg font-black text-white drop-shadow-[1px_1px_0px_rgba(0,0,0,0.5)]">
-                {totalAvailableChromebooks}
-              </span>
-              <span className="text-[9px] font-black uppercase text-white tracking-widest">
-                Disponíveis
-              </span>
+          {/* Header Row */}
+          {/* Top-Left Corner: Network Status Integration */}
+          <div className="h-36 min-w-[100px] flex flex-col items-center justify-center border-b-4 border-r-4 border-black dark:border-white bg-green-500 relative overflow-hidden">
+            {/* Subtle textured background for the corner too */}
+            <div className="absolute inset-0 opacity-10 pointer-events-none" 
+                 style={{ 
+                   backgroundImage: `radial-gradient(circle, white 1px, transparent 1px)`,
+                   backgroundSize: '8px 8px' 
+                 }} 
+            />
+            
+            <div className="relative z-10 flex flex-col items-center">
+              <div className="bg-white p-2 border-2 border-black shadow-[2px_2px_0px_0px_#000] mb-2 transform -rotate-3 hover:rotate-0 transition-transform cursor-help">
+                <Monitor className="h-5 w-5 text-green-600" />
+              </div>
+              <div className="flex flex-col items-center leading-none">
+                <span className="text-xl font-black text-white drop-shadow-[1px_1px_0px_rgba(0,0,0,0.5)]">
+                  {totalAvailableChromebooks}
+                </span>
+                <span className="text-[10px] font-black uppercase text-white tracking-widest">
+                  Disponíveis
+                </span>
+              </div>
             </div>
           </div>
-        </div>
-        {weekDays.map((day, index) => {
-          const isCurrentDay = isToday(day);
-          const dateKey = format(day, 'yyyy-MM-dd');
-          const totalReserved = dailyTotals.get(dateKey) || 0;
-          const daySlots = dailySlotsData.get(dateKey);
-          
-          return (
-            <div
-              key={index}
-              className={cn(
-                "h-36 flex flex-col border-4 transition-all relative group overflow-hidden",
-                isCurrentDay
-                  ? "bg-primary border-primary shadow-[4px_4px_0px_0px_hsl(var(--foreground)/0.3)]"
-                  : "bg-white dark:bg-zinc-900 border-black dark:border-white hover:bg-zinc-50 dark:hover:bg-zinc-800"
-              )}
-            >
-              {/* Background Texture Overlay - Modern Graph Paper Grid */}
-              <div className="absolute inset-0 pointer-events-none" 
-                   style={{ 
-                     backgroundImage: `
-                       linear-gradient(to right, ${isCurrentDay ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'} 1px, transparent 1px),
-                       linear-gradient(to bottom, ${isCurrentDay ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'} 1px, transparent 1px)
-                     `,
-                     backgroundSize: '20px 20px' 
-                   }} 
-              />
-              <div className="absolute inset-0 pointer-events-none" 
-                   style={{ 
-                     backgroundImage: `
-                       linear-gradient(to right, ${isCurrentDay ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)'} 1px, transparent 1px),
-                       linear-gradient(to bottom, ${isCurrentDay ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)'} 1px, transparent 1px)
-                     `,
-                     backgroundSize: '4px 4px' 
-                   }} 
-              />
+          {weekDays.map((day, index) => {
+            const isCurrentDay = isToday(day);
+            const dateKey = format(day, 'yyyy-MM-dd');
+            const totalReserved = dailyTotals.get(dateKey) || 0;
+            const daySlots = dailySlotsData.get(dateKey);
+            const isHoveredColumn = hoveredDate === dateKey;
 
-              {/* Day/Date Section */}
-              <div className={cn(
-                "flex-1 flex flex-col items-center justify-center p-2 relative z-10",
-                isCurrentDay ? "text-primary-foreground" : "text-foreground"
-              )}>
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] opacity-80 mb-0.5">
-                  {format(day, 'EEEE', { locale: ptBR })}
-                </span>
-                <span className="text-xl font-black tracking-tighter leading-none">
-                  {format(day, 'dd/MM')}
-                </span>
-              </div>
-
-              {/* Heatmap Footer - Modern Integrated Dashboard */}
-              <div className={cn(
-                "h-20 border-t-4 border-black dark:border-white relative overflow-hidden group/footer",
-                isCurrentDay ? "bg-white" : "bg-zinc-50 dark:bg-zinc-800"
-              )}>
-                {/* Content Overlay */}
-                <div className="relative z-10 p-2 flex flex-col justify-between h-full">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="bg-black text-white dark:bg-white dark:text-black px-2 py-1 text-lg font-black leading-none shadow-[2px_2px_0px_0px_rgba(0,0,0,0.2)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,0.2)]">
-                      {totalReserved}
-                    </span>
-                    <span className={cn(
-                      "text-xs font-black leading-tight tracking-tight",
-                      isCurrentDay ? "text-black" : "text-foreground"
-                    )}>
-                      Chromebooks<br />reservados.
-                    </span>
-                  </div>
-
-                  {/* Integrated Heatmap Bar - Full Width at Bottom */}
-                  <div className="flex w-full h-6 gap-[2px] mt-auto border-t-2 border-black/5 dark:border-white/5">
-                    {timeSlots.map((slot) => {
-                      const usage = daySlots?.get(slot) || 0;
-                      const rate = totalAvailableChromebooks > 0 ? (usage / totalAvailableChromebooks) * 100 : 0;
-                      
-                      let color = "bg-zinc-200 dark:bg-zinc-700/50";
-                      if (rate > 0) color = "bg-green-500 shadow-[inset_0_-2px_0_0_rgba(0,0,0,0.1)]";
-                      if (rate > 40) color = "bg-yellow-500 shadow-[inset_0_-2px_0_0_rgba(0,0,0,0.1)]";
-                      if (rate > 70) color = "bg-orange-500 shadow-[inset_0_-2px_0_0_rgba(0,0,0,0.1)]";
-                      if (rate >= 100) color = "bg-red-500 shadow-[inset_0_-2px_0_0_rgba(0,0,0,0.1)]";
-
-                      return (
-                        <div 
-                          key={slot}
-                          className={cn("flex-1 h-full transition-all duration-300 hover:scale-y-125 hover:z-20", color)}
-                          title={`${slot}: ${usage} aparelhos`}
-                        />
-                      );
-                    })}
-                  </div>
-                </div>
-                
-                {/* Floating Info on Hover */}
-                <div className="absolute top-0 right-0 p-1 opacity-0 group-hover/footer:opacity-100 transition-opacity">
-                  <Info className="h-3 w-3 text-zinc-400" />
-                </div>
-              </div>
-            </div>
-          );
-        })}
-
-        {/* Time Slots Grid */}
-        {timeSlots.map((timeSlot, timeIndex) => (
-          <React.Fragment key={timeIndex}>
-            {/* Time Label */}
-            <div className="h-16 flex items-center justify-center border-3 border-foreground/10 bg-muted/20">
-              <span className="text-xs font-black text-muted-foreground">
-                {timeSlot}
-              </span>
-            </div>
-
-            {/* Day Slots */}
-            {weekDays.map((day, dayIndex) => {
-              const dateKey = format(day, 'yyyy-MM-dd');
-              const slotKey = `${dateKey}_${timeSlot}`;
-              const reservationsForSlot = reservationsMap.get(slotKey) || [];
-
-              return (
-                <SchedulingSlot
-                  key={dayIndex}
-                  date={day}
-                  timeSlot={timeSlot}
-                  totalAvailableChromebooks={totalAvailableChromebooks}
-                  allReservationsForSlot={reservationsForSlot}
-                  currentUser={currentUser}
-                  onReservationSuccess={onReservationSuccess}
-                  professores={professores}
+            return (
+              <div
+                key={index}
+                className={cn(
+                  "h-36 flex flex-col border-b-4 border-r-4 last:border-r-0 border-black dark:border-white transition-all relative group overflow-hidden",
+                  isCurrentDay
+                    ? "bg-primary/95 text-white"
+                    : isHoveredColumn 
+                      ? "bg-primary/10 dark:bg-primary/20" 
+                      : "bg-white dark:bg-zinc-900 group-hover:bg-zinc-50 dark:group-hover:bg-zinc-800"
+                )}
+              >
+                {/* Background Texture Overlay - Modern Graph Paper Grid */}
+                <div className="absolute inset-0 pointer-events-none" 
+                     style={{ 
+                       backgroundImage: `
+                         linear-gradient(to right, ${isCurrentDay ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'} 1px, transparent 1px),
+                         linear-gradient(to bottom, ${isCurrentDay ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'} 1px, transparent 1px)
+                       `,
+                       backgroundSize: '20px 20px' 
+                     }} 
                 />
-              );
-            })}
-          </React.Fragment>
-        ))}
+
+                {/* Day/Date Section */}
+                <div className={cn(
+                  "flex-1 flex flex-col items-center justify-center p-2 relative z-10",
+                  isCurrentDay ? "text-white" : "text-foreground"
+                )}>
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] opacity-90 mb-0.5 drop-shadow-[1px_1px_0px_rgba(0,0,0,0.5)]">
+                    {format(day, 'EEEE', { locale: ptBR })}
+                  </span>
+                  <span className="text-2xl font-black tracking-tighter leading-none drop-shadow-[1.5px_1.5px_0px_rgba(0,0,0,0.5)]">
+                    {format(day, 'dd/MM')}
+                  </span>
+                </div>
+
+                {/* Heatmap Footer - Modern Integrated Dashboard */}
+                <div className={cn(
+                  "h-22 border-t-4 border-black dark:border-white relative overflow-hidden group/footer",
+                  isCurrentDay ? "bg-white dark:bg-zinc-900" : "bg-black/[0.03] dark:bg-white/[0.03]"
+                )}>
+                  {/* Content Overlay */}
+                  <div className="relative z-10 p-2 flex flex-col justify-between h-full">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="bg-black text-white dark:bg-white dark:text-black px-2 py-1 text-xl font-black leading-none shadow-[3px_3px_0px_0px_rgba(59,130,246,0.3)]">
+                        {totalReserved}
+                      </span>
+                      <span className={cn(
+                        "text-[10px] font-black leading-tight tracking-tight uppercase drop-shadow-[1px_1px_0px_rgba(0,0,0,0.1)]",
+                        "text-foreground opacity-60"
+                      )}>
+                        Reservas<br />Hoje
+                      </span>
+                    </div>
+
+                    {/* Integrated Heatmap Bar - Full Width at Bottom */}
+                    <div className="flex w-full h-8 gap-[2px] mt-auto border-t-2 border-black/10 dark:border-white/10 bg-black/5">
+                      {timeSlots.map((slot) => {
+                        const usage = daySlots?.get(slot) || 0;
+                        const rate = totalAvailableChromebooks > 0 ? (usage / totalAvailableChromebooks) * 100 : 0;
+                        
+                        let color = "bg-zinc-200/50 dark:bg-zinc-700/30";
+                        if (rate > 0) color = "bg-green-500";
+                        if (rate > 40) color = "bg-yellow-500";
+                        if (rate > 70) color = "bg-orange-500";
+                        if (rate >= 100) color = "bg-red-500";
+
+                        return (
+                          <div 
+                            key={slot}
+                            className={cn("flex-1 h-full transition-all duration-300 hover:bg-primary/20 hover:scale-y-110", color)}
+                            title={`${slot}: ${usage} aparelhos`}
+                          />
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+
+          {timeSlots.map((timeSlot, timeIndex) => {
+            const isHoveredRow = hoveredTime === timeSlot;
+
+            return (
+              <React.Fragment key={timeIndex}>
+                {/* Time Label - Modern Digital Style */}
+                <div className={cn(
+                  "min-h-[4rem] h-full flex items-center justify-center border-b-2 border-r-4 border-black/10 dark:border-white/10 transition-all",
+                  isHoveredRow ? "bg-primary/20 dark:bg-primary/30" : "bg-blue-50/50 dark:bg-blue-900/10"
+                )}>
+                  <div className={cn(
+                    "flex flex-col items-center py-2 transition-transform duration-300",
+                    isHoveredRow ? "scale-110" : ""
+                  )}>
+                    <div className={cn(
+                      "bg-white dark:bg-zinc-900 px-4 py-1.5 rounded-lg border transition-all duration-300",
+                      isHoveredRow 
+                        ? "border-primary shadow-[0px_0px_10px_rgba(59,130,246,0.2)] scale-105" 
+                        : "border-blue-200 dark:border-blue-800 shadow-[2px_2px_0px_0px_rgba(59,130,246,0.1)]"
+                    )}>
+                      <span className={cn(
+                        "text-[14px] font-black tracking-tighter transition-colors",
+                        isHoveredRow ? "text-primary" : "text-blue-900 dark:text-blue-300"
+                      )}>
+                        {timeSlot}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Day Slots */}
+                {weekDays.map((day, dayIndex) => {
+                  const dateKey = format(day, 'yyyy-MM-dd');
+                  const slotKey = `${dateKey}_${timeSlot}`;
+                  const reservationsForSlot = reservationsMap.get(slotKey) || [];
+                  const isHoveredCol = hoveredDate === dateKey;
+
+                  return (
+                    <div 
+                      key={dayIndex} 
+                      className={cn(
+                        "min-h-[4rem] h-full border-b-2 border-r-2 last:border-r-0 border-black/5 dark:border-white/5 transition-colors duration-200",
+                        isHoveredRow || isHoveredCol ? "bg-primary/[0.03] dark:bg-primary/[0.08]" : ""
+                      )}
+                      onMouseEnter={() => {
+                        setHoveredDate(dateKey);
+                        setHoveredTime(timeSlot);
+                      }}
+                    >
+                      <SchedulingSlot
+                        date={day}
+                        timeSlot={timeSlot}
+                        totalAvailableChromebooks={totalAvailableChromebooks}
+                        allReservationsForSlot={reservationsForSlot}
+                        currentUser={currentUser}
+                        onReservationSuccess={onReservationSuccess}
+                        professores={professores}
+                      />
+                    </div>
+                  );
+                })}
+              </React.Fragment>
+            );
+          })}
+        </div>
       </div>
     </div>
   );

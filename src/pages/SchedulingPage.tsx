@@ -118,132 +118,111 @@ const SchedulingPage = () => {
     </div>
 
     <div className="space-y-6 max-w-7xl mx-auto relative z-10">
-      {/* Modernized Header Section */}
-      <div className="relative overflow-hidden border-4 border-black dark:border-white bg-white dark:bg-zinc-900 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.1)] mb-8">
-        {/* Decorative Gradient Background */}
-        <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-blue-500/10 to-transparent pointer-events-none" />
-
-        <div className="relative p-6 space-y-8">
-          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
-            {/* Title Section with Premium Icon */}
-            <div className="flex flex-col gap-4">
-              <div className="flex items-center gap-5">
-                <div className="relative group">
-                  <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-none blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200" />
-                  <div className="relative w-14 h-14 border-4 border-black dark:border-white bg-white dark:bg-zinc-800 flex items-center justify-center shadow-[4px_4px_0px_0px_#000] dark:shadow-[4px_4px_0px_0px_#fff]">
-                    <Calendar className="h-7 w-7 text-blue-600 dark:text-blue-400 animate-pulse" />
-                  </div>
-                </div>
-
-                <div className="space-y-1">
-                  <h2 className="text-2xl font-black uppercase tracking-tighter text-foreground leading-none">
-                    Agendamento
-                  </h2>
-                  <div className="flex items-center gap-2">
-                    <div className="h-1 w-8 bg-blue-600" />
-                  </div>
-                </div>
+      {/* Command Center - Premium Unified Header */}
+      <div className="neo-brutal-card bg-white/70 dark:bg-zinc-950/40 backdrop-blur-xl p-6 lg:p-8 relative overflow-hidden group/header mb-8">
+        {/* Subtle Grid Pattern for Header Interior */}
+        <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.05] pointer-events-none neo-brutal-grid" />
+        
+        <div className="relative z-10 flex flex-col space-y-8">
+          {/* Top Row: Title & Modes */}
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+            <div className="flex items-center gap-5">
+              <div className="bg-black text-white dark:bg-white dark:text-black p-3.5 shadow-[4px_4px_0px_0px_rgba(59,130,246,0.5)] transform -rotate-1 group-hover/header:rotate-0 transition-transform duration-500">
+                <Calendar className="h-6 w-6" />
+              </div>
+              <div className="flex flex-col">
+                <h1 className="text-3xl font-black uppercase tracking-tighter leading-none">
+                  Agendamento
+                </h1>
+                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-600 dark:text-blue-400 mt-1.5 opacity-80">
+                  Interface de Monitoramento
+                </span>
               </div>
             </div>
 
-            {/* View Mode Toggle - Premium Styling */}
-            <div className="flex bg-zinc-100 dark:bg-zinc-800 p-1.5 border-4 border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-              <button
-                onClick={() => handleViewModeChange('weekly')}
-                className={cn(
-                  "flex items-center gap-2 px-6 py-2.5 text-xs font-black uppercase transition-all duration-200",
-                  viewMode === 'weekly'
-                    ? "bg-black text-white dark:bg-white dark:text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,0.3)]"
-                    : "text-zinc-500 hover:text-black dark:hover:text-white"
-                )}
-              >
-                <CalendarDays className="h-4 w-4" />
-                Semanal
-              </button>
-              <button
-                onClick={() => handleViewModeChange('monthly')}
-                className={cn(
-                  "flex items-center gap-2 px-6 py-2.5 text-xs font-black uppercase transition-all duration-200",
-                  viewMode === 'monthly'
-                    ? "bg-black text-white dark:bg-white dark:text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,0.3)]"
-                    : "text-zinc-500 hover:text-black dark:hover:text-white"
-                )}
-              >
-                <CalendarRange className="h-4 w-4" />
-                Histórico
-              </button>
+            {/* View Switching & Week Nav Grouped */}
+            <div className="flex flex-wrap items-center gap-4 lg:gap-6">
+              {/* Mode Toggle */}
+              <div className="flex p-1 bg-zinc-200/50 dark:bg-zinc-800/50 border-2 border-black dark:border-white shadow-[3px_3px_0px_0px_rgba(0,0,0,0.1)]">
+                <button
+                  onClick={() => handleViewModeChange('weekly')}
+                  className={cn(
+                    "flex items-center gap-2 px-6 py-2 text-[11px] font-black uppercase tracking-wider transition-all",
+                    viewMode === 'weekly'
+                      ? "bg-gradient-to-br from-blue-600 to-primary text-white shadow-[2px_2px_0px_0px_rgba(0,0,0,0.2)]"
+                      : "text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white"
+                  )}
+                >
+                  <CalendarDays className="h-4 w-4" />
+                  Semanal
+                </button>
+                <button
+                  onClick={() => handleViewModeChange('monthly')}
+                  className={cn(
+                    "flex items-center gap-2 px-6 py-2 text-[11px] font-black uppercase tracking-wider transition-all",
+                    viewMode === 'monthly'
+                      ? "bg-gradient-to-br from-blue-600 to-primary text-white shadow-[2px_2px_0px_0px_rgba(0,0,0,0.2)]"
+                      : "text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white"
+                  )}
+                >
+                  <History className="h-4 w-4" />
+                  Histórico
+                </button>
+              </div>
+
+              {/* Week Navigation Arrows - Minimalist */}
+              <div className="flex items-center bg-white dark:bg-zinc-900 border-2 border-black dark:border-white shadow-[3px_3px_0px_0px_rgba(0,0,0,0.1)]">
+                <button
+                  onClick={() => handleDateChange('prev')}
+                  disabled={isLoading}
+                  className="p-2.5 border-r-2 border-black dark:border-white hover:bg-zinc-100 dark:hover:bg-zinc-800 disabled:opacity-30 transition-colors"
+                >
+                  <ChevronLeft className="h-5 w-5" />
+                </button>
+                <div className="px-6 text-[13px] font-black uppercase tracking-tighter min-w-[180px] text-center">
+                  {displayRange}
+                </div>
+                <button
+                  onClick={() => handleDateChange('next')}
+                  disabled={isLoading}
+                  className="p-2.5 border-l-2 border-black dark:border-white hover:bg-zinc-100 dark:hover:bg-zinc-800 disabled:opacity-30 transition-colors"
+                >
+                  <ChevronRight className="h-5 w-5" />
+                </button>
+              </div>
             </div>
           </div>
 
-          {/* Month Quick Navigation Bar - Clean & Centered */}
-          <div className="w-full border-t border-zinc-200 dark:border-zinc-800 pt-6 px-2">
-            <div className="flex justify-center w-full">
-              <div className="flex gap-3 overflow-x-auto pb-4 px-4 w-full justify-start lg:justify-center scrollbar-hide mask-linear-fade">
-                {Array.from({ length: 12 }, (_, i) => {
-                  const date = new Date(new Date().getFullYear(), i, 1);
-                  const isCurrentMonth = i === currentDate.getMonth();
-                  return (
-                    <button
-                      key={i}
-                      onClick={() => {
-                        let targetDate = new Date(currentDate.getFullYear(), i, 1);
-                        if (isSaturday(targetDate)) targetDate = addDays(targetDate, 2);
-                        else if (isSunday(targetDate)) targetDate = addDays(targetDate, 1);
-                        setCurrentDate(targetDate);
-                      }}
-                      className={cn(
-                        "flex-shrink-0 px-4 py-3 text-[11px] font-black uppercase tracking-[0.15em] transition-all duration-300 border-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 active:translate-y-0 active:shadow-none min-w-[80px] relative overflow-hidden group/month",
-                        isCurrentMonth
-                          ? "bg-primary text-primary-foreground border-black dark:border-white shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] scale-110 z-10"
-                          : "bg-white text-zinc-500 border-black hover:text-black dark:bg-zinc-900 dark:text-zinc-500 dark:border-white dark:hover:text-white"
-                      )}
-                    >
-                      {/* Decorative Background Bar for Active */}
-                      {isCurrentMonth && (
-                        <div className="absolute top-0 left-0 w-full h-1 bg-white/30 animate-pulse" />
-                      )}
-                      
-                      <span className="relative z-10">
-                        {format(date, 'MMM', { locale: ptBR }).replace('.', '')}
-                      </span>
-
-                      {/* Hover Glow */}
-                      {!isCurrentMonth && (
-                        <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover/month:opacity-100 transition-opacity" />
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
+          {/* Bottom Row: Month Quick Select */}
+          <div className="pt-6 border-t border-black/5 dark:border-white/5">
+            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+              {Array.from({ length: 12 }, (_, i) => {
+                const date = new Date(new Date().getFullYear(), i, 1);
+                const isCurrentMonth = i === currentDate.getMonth();
+                return (
+                  <button
+                    key={i}
+                    onClick={() => {
+                      let targetDate = new Date(currentDate.getFullYear(), i, 1);
+                      if (isSaturday(targetDate)) targetDate = addDays(targetDate, 2);
+                      else if (isSunday(targetDate)) targetDate = addDays(targetDate, 1);
+                      setCurrentDate(targetDate);
+                    }}
+                    className={cn(
+                      "flex-shrink-0 px-3 py-2 text-[10px] font-black uppercase transition-all duration-300 border-2 shadow-[2px_3px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-0.5 min-w-[65px] relative",
+                      isCurrentMonth
+                        ? "bg-gradient-to-br from-blue-600 to-indigo-600 text-white border-black dark:border-white"
+                        : "bg-white text-zinc-500 border-black hover:text-black dark:bg-zinc-900 dark:border-white dark:hover:text-white"
+                    )}
+                  >
+                    {format(date, 'MMM', { locale: ptBR }).replace('.', '')}
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>
       </div>
-
-      {/* Navigation & Status Bar - Sleek & Modern */}
-      <div className="flex flex-col md:flex-row gap-4 mb-4">
-        {/* Date Picker Control */}
-        <div className="flex-1 flex items-center bg-white dark:bg-zinc-900 border-4 border-black dark:border-white shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] p-1">
-          <button
-            onClick={() => handleDateChange('prev')}
-            disabled={isLoading}
-            className="h-12 w-12 flex items-center justify-center border-r-4 border-black dark:border-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors disabled:opacity-50"
-          >
-            <ChevronLeft className="h-6 w-6" />
-          </button>
-
-          <div className="flex-1 text-center font-black uppercase tracking-tight text-lg py-2">
-            {displayRange}
-          </div>
-
-          <button
-            onClick={() => handleDateChange('next')}
-            disabled={isLoading}
-            className="h-12 w-12 flex items-center justify-center border-l-4 border-black dark:border-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors disabled:opacity-50"
-          >
-            <ChevronRight className="h-6 w-6" />
-          </button>
-        </div>
 
       </div>
 

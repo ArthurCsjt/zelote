@@ -77,9 +77,9 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
           <Tooltip>
             <TooltipTrigger asChild>
               <div className={cn(
-                "min-h-16 border-3 border-dashed border-foreground/10 bg-muted/10",
+                "h-full min-h-[4rem] border-2 border-dashed border-foreground/30 bg-muted/5",
                 "flex items-center justify-center gap-1",
-                "opacity-40 cursor-not-allowed"
+                "opacity-50 cursor-not-allowed"
               )}>
                 <Clock className="h-4 w-4 text-muted-foreground" />
                 <span className="text-[10px] font-bold text-muted-foreground uppercase">Expirado</span>
@@ -104,7 +104,7 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
         maxQuantity={totalAvailableChromebooks}
       >
         <div className={cn(
-          "min-h-16 border-3 border-dashed border-foreground/20 bg-background",
+          "h-full min-h-[4rem] border-2 border-dashed border-foreground/40 bg-background",
           "flex items-center justify-center cursor-pointer group transition-all",
           "hover:border-primary hover:bg-primary/5",
           "hover:shadow-[3px_3px_0px_0px_hsl(var(--primary)/0.2)] hover:-translate-x-0.5 hover:-translate-y-0.5"
@@ -118,7 +118,7 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
   // Se tivermos reservas (Full ou Partial)
   const content = (
     <div className={cn(
-      "min-h-16 p-1 border-3 transition-all flex flex-col gap-1",
+      "h-full min-h-[4rem] p-1.5 border-3 transition-all flex flex-col gap-1.5",
       isFull
         ? "border-error bg-error/10 cursor-not-allowed"
         : "border-warning bg-warning/10 cursor-pointer hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] hover:-translate-x-0.5 hover:-translate-y-0.5",
