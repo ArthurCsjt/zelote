@@ -132,8 +132,6 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
     const isDayPast = isPast(selectedDate);
 
     return (
-    return (
-    return (
       <div className="relative border-4 border-black dark:border-white bg-white dark:bg-zinc-950 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.05)] sm:shadow-[12px_12px_0px_0px_rgba(0,0,0,0.05)] overflow-hidden h-full flex flex-col min-h-0 sm:min-h-[500px]">
         {/* Background Texture */}
         <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.07] pointer-events-none neo-brutal-dots" />
