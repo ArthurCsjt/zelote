@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { format, isPast } from 'date-fns';
+import { format, isPast, isSameDay, parseISO, differenceInMinutes, addMinutes } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Calendar } from '@/components/ui/calendar';
 import { Badge } from '@/components/ui/badge';
@@ -20,6 +20,67 @@ interface SchedulingMonthViewProps {
   isLoading: boolean;
   onReservationSuccess?: () => void;
 }
+
+const ReservationTimer: React.FC<{ date: string; timeSlot: string }> = ({ date, timeSlot }) => {
+  const [now, setNow] = React.useState(new Date());
+
+  React.useEffect(() => {
+    const interval = setInterval(() => setNow(new Date()), 30000); // Update every 30s for better accuracy
+    return () => clearInterval(interval);
+  }, []);
+
+  const { startTime, endTime, isToday } = React.useMemo(() => {
+    // Parse timeSlot like "08h00"
+    const [hours, minutes] = timeSlot.toLowerCase().split('h').map(Number);
+    
+    // date is "YYYY-MM-DD"
+    const start = new Date(date + 'T' + 
+      String(hours).padStart(2, '0') + ':' + 
+      String(minutes).padStart(2, '0') + ':00');
+      
+    const end = addMinutes(start, 50); // Standard 50min duration
+    
+    return { 
+      startTime: start, 
+      endTime: end, 
+      isToday: isSameDay(new Date(), start) 
+    };
+  }, [date, timeSlot]);
+
+  if (!isToday) return null;
+
+  const diffStart = differenceInMinutes(startTime, now);
+  const diffEnd = differenceInMinutes(endTime, now);
+
+  if (diffStart > 0 && diffStart <= 60) {
+    return (
+      <span className="flex items-center gap-1.5 px-2 py-0.5 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-[9px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-tight shadow-[2px_2px_0px_0px_rgba(59,130,246,0.1)]">
+        <Clock className="h-2.5 w-2.5 animate-pulse" />
+        Inicia em {diffStart}m
+      </span>
+    );
+  }
+
+  if (diffStart <= 0 && diffEnd > 0) {
+    const isEndingSoon = diffEnd <= 10;
+    return (
+      <span className={cn(
+        "flex items-center gap-1.5 px-2 py-0.5 border text-[9px] font-black uppercase tracking-tight transition-all",
+        isEndingSoon 
+          ? "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 animate-pulse shadow-[2px_2px_0px_0px_rgba(239,68,68,0.1)]"
+          : "bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800 text-orange-600 dark:text-orange-400 shadow-[2px_2px_0px_0px_rgba(249,115,22,0.1)]"
+      )}>
+        <div className={cn(
+          "w-1.5 h-1.5 rounded-full",
+          isEndingSoon ? "bg-red-600 animate-ping" : "bg-orange-500 animate-pulse"
+        )} />
+        {isEndingSoon ? `Falta ${diffEnd}m` : `Em curso: ${diffEnd}m rest.`}
+      </span>
+    );
+  }
+
+  return null;
+};
 
 export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
   currentDate,
@@ -202,12 +263,17 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
 
                       <div className="p-3 pl-5 flex items-center justify-between gap-4">
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
+                          <div className="flex flex-col mb-1.5 min-w-0">
                             <span className="font-black text-sm truncate uppercase tracking-tight">{res.prof_name}</span>
+                            <span className="text-[10px] text-muted-foreground truncate lowercase opacity-70 font-medium">
+                              {res.prof_email}
+                            </span>
                             {isMinecraft && (
-                              <span className="text-[8px] font-black bg-[#3c8527] text-white px-1 py-0.5 rounded-none">
-                                MINECRAFT
-                              </span>
+                              <div className="mt-1">
+                                <span className="text-[8px] font-black bg-[#3c8527] text-white px-1 py-0.5 rounded-none">
+                                  MINECRAFT
+                                </span>
+                              </div>
                             )}
                           </div>
                           <div className="flex items-center gap-3 text-[10px] text-muted-foreground font-bold uppercase tracking-tight">
@@ -219,6 +285,7 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
                                 🏫 {res.classroom}
                               </span>
                             )}
+                            <ReservationTimer date={res.date} timeSlot={res.time_slot} />
                           </div>
                         </div>
 
@@ -229,17 +296,16 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
                                 <CheckCircle className="h-3 w-3" />
                               </div>
                             )}
-                            <span className="text-xl font-black italic tracking-tighter leading-none">
-                              {res.quantity_requested}<span className="text-[10px] not-italic ml-0.5 opacity-40 uppercase">cb</span>
+                            <span className="text-4xl font-black italic tracking-tighter leading-none shadow-sm">
+                              {res.quantity_requested}<span className="text-[10px] not-italic ml-1 opacity-60 uppercase font-black">Chromebooks</span>
                             </span>
                           </div>
                           
                           {!isAtendida && isResponsible && (
-                            <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className="flex items-center">
                               <Button
                                 size="sm"
-                                variant="ghost"
-                                className="h-6 px-2 text-[8px] font-black uppercase text-primary border border-primary/20 hover:bg-primary hover:text-white rounded-none"
+                                className="h-9 px-4 text-[10px] font-black uppercase bg-primary text-white border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all rounded-none"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   navigate('/', {
@@ -250,6 +316,7 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
                                   });
                                 }}
                               >
+                                <ArrowRight className="h-4 w-4 mr-2" />
                                 Iniciar Empréstimo
                               </Button>
                             </div>
@@ -263,6 +330,42 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
                           <p className="text-[10px] text-muted-foreground truncate italic opacity-80 overflow-hidden">
                             "{res.justification}"
                           </p>
+                        </div>
+                      )}
+
+                      {/* Withdrawn Chromebooks Section - Premium Neo Brutal Style */}
+                      {res.associated_loans && res.associated_loans.length > 0 && (
+                        <div className="mx-5 mb-4 p-4 bg-primary/5 dark:bg-primary/10 border-2 border-black/10 dark:border-white/10 relative overflow-hidden group/retirados">
+                          {/* Decorative pattern */}
+                          <div className="absolute inset-0 opacity-[0.03] pointer-events-none neo-brutal-dots bg-primary/20" />
+                          
+                          <div className="relative z-10 flex flex-col gap-3">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <div className="p-1.5 bg-primary text-white border-2 border-black flex items-center justify-center">
+                                  <Monitor className="h-3.5 w-3.5" />
+                                </div>
+                                <span className="text-[11px] font-black uppercase text-foreground tracking-[0.15em] flex items-center gap-2">
+                                  EQUIPAMENTOS RETIRADOS
+                                  <span className="text-primary text-base font-black">
+                                    {res.associated_loans.length}
+                                  </span>
+                                </span>
+                              </div>
+                              <div className="h-[2px] flex-1 mx-4 bg-black/5 dark:bg-white/5" />
+                            </div>
+                            
+                            <div className="flex flex-wrap gap-2.5">
+                              {res.associated_loans.map((loan, idx) => (
+                                <div
+                                  key={idx}
+                                  className="px-3 py-1.5 bg-white dark:bg-zinc-900 text-primary dark:text-blue-400 text-[10px] font-black uppercase border-2 border-black dark:border-white/20 transform hover:-translate-x-1 hover:-translate-y-1 transition-all active:translate-x-0 active:translate-y-0"
+                                >
+                                  {loan.chromebook_id}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
                         </div>
                       )}
                     </div>

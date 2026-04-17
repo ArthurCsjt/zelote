@@ -132,7 +132,7 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
         if (res.quantity_requested === 0) {
           label = `${roomName} RESERVADA`;
         } else {
-          label = res.classroom ? `${roomName} + ${res.quantity_requested} CB` : `${res.quantity_requested} CB`;
+          label = res.classroom ? `${roomName} + ${res.quantity_requested} Chromebooks` : `${res.quantity_requested} Chromebooks`;
         }
 
         return (
@@ -166,7 +166,7 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
                     {res.classroom && <span className="ml-2 text-[10px] px-1.5 py-0.5 border border-info text-info">SALA: {res.classroom}</span>}
                   </p>
                   <p className="text-muted-foreground text-xs">
-                    {res.justification || "Sem justificativa"} · {res.quantity_requested > 0 ? `${res.quantity_requested} CB` : "Apenas Espaço"}
+                    {res.justification || "Sem justificativa"} · {res.quantity_requested > 0 ? `${res.quantity_requested} Chromebooks` : "Apenas Espaço"}
                   </p>
 
                   {res.associated_loans && res.associated_loans.length > 0 && (
