@@ -368,7 +368,7 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
                 "flex flex-col items-center justify-start pt-3 relative overflow-hidden group"
               ),
               day_selected: "bg-primary text-white border-black dark:border-white font-black shadow-[inset_6px_6px_0px_0px_rgba(0,0,0,0.2)] scale-100 z-10",
-              day_today: "bg-zinc-100 dark:bg-zinc-800 text-foreground border-2 border-dashed border-black/30 dark:border-white/30",
+              day_today: "bg-primary/10 dark:bg-primary/20 text-foreground border-2 border-black dark:border-white ring-2 ring-primary ring-offset-2",
               day_outside: "text-muted-foreground opacity-30",
               day_disabled: "text-muted-foreground opacity-30",
               day_hidden: "invisible",
@@ -384,7 +384,8 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
                   <div className="relative w-full h-full flex flex-col items-center justify-between pb-2">
                     <span className={cn(
                       "text-lg transition-transform",
-                      activeModifiers.selected ? "text-white scale-110" : "text-foreground group-hover:scale-110"
+                      activeModifiers.selected ? "text-white scale-110" : "text-foreground font-black group-hover:scale-110",
+                      activeModifiers.today ? "text-primary dark:text-primary-foreground underline underline-offset-4" : ""
                     )}>
                       {date.getDate()}
                     </span>

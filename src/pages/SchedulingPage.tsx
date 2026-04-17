@@ -147,7 +147,7 @@ const SchedulingPage = () => {
                 <button
                   onClick={() => handleViewModeChange('weekly')}
                   className={cn(
-                    "flex items-center gap-2 px-6 py-2 text-[11px] font-black uppercase tracking-wider transition-all",
+                    "flex items-center gap-2 px-4 py-1.5 text-[11px] font-black uppercase tracking-wider transition-all",
                     viewMode === 'weekly'
                       ? "bg-gradient-to-br from-blue-600 to-primary text-white shadow-[2px_2px_0px_0px_rgba(0,0,0,0.2)]"
                       : "text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white"
@@ -159,7 +159,7 @@ const SchedulingPage = () => {
                 <button
                   onClick={() => handleViewModeChange('monthly')}
                   className={cn(
-                    "flex items-center gap-2 px-6 py-2 text-[11px] font-black uppercase tracking-wider transition-all",
+                    "flex items-center gap-2 px-4 py-1.5 text-[11px] font-black uppercase tracking-wider transition-all",
                     viewMode === 'monthly'
                       ? "bg-gradient-to-br from-blue-600 to-primary text-white shadow-[2px_2px_0px_0px_rgba(0,0,0,0.2)]"
                       : "text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white"
