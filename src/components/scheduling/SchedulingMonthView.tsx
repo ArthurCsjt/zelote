@@ -132,19 +132,19 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
     const isDayPast = isPast(selectedDate);
 
     return (
-      <div className="relative border-4 border-black dark:border-white bg-white dark:bg-zinc-950 shadow-[12px_12px_0px_0px_rgba(0,0,0,0.05)] overflow-hidden h-full flex flex-col min-h-[500px]">
+      <div className="relative border-4 border-black dark:border-white bg-white dark:bg-zinc-950 shadow-[12px_12px_0px_0px_rgba(0,0,0,0.05)] overflow-hidden h-full flex flex-col min-h-0 sm:min-h-[500px]">
         {/* Background Texture */}
         <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.07] pointer-events-none neo-brutal-dots" />
 
-        <div className="relative z-10 p-6 flex flex-col h-full space-y-6">
+        <div className="relative z-10 p-3 sm:p-6 flex flex-col h-full space-y-4 sm:space-y-6">
           {/* Header - Technical Display Style */}
-          <div className="border-b-4 border-black dark:border-white pb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div className="border-b-4 border-black dark:border-white pb-3 sm:pb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
             <div>
               <div className="flex items-center gap-3">
-                <div className="bg-primary p-2 border-2 border-black shadow-[3px_3px_0px_0px_#000]">
-                  <CalendarDays className="h-6 w-6 text-white" />
+                <div className="bg-primary p-1.5 sm:p-2 border-2 border-black shadow-[2px_2px_0px_0px_#000]">
+                  <CalendarDays className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
                 </div>
-                <h3 className="text-4xl font-black uppercase tracking-tighter text-foreground drop-shadow-[2px_2px_0px_rgba(0,0,0,0.1)]">
+                <h3 className="text-2xl sm:text-4xl font-black uppercase tracking-tighter text-foreground drop-shadow-sm">
                   {format(selectedDate, 'dd/MM/yyyy')}
                 </h3>
               </div>
@@ -167,58 +167,64 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
           {/* Stats Grid - Hardware Dashboard Widgets */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Total Widget */}
-            <div className="relative group overflow-hidden border-4 border-black dark:border-white p-4 bg-zinc-50 dark:bg-zinc-900 shadow-[6px_6px_0px_0px_rgba(0,0,0,0.1)] transition-all hover:-translate-y-1">
-              <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 transition-opacity">
-                <Monitor className="h-12 w-12" />
+            {/* Total Widget */}
+            <div className="relative group overflow-hidden border-2 sm:border-4 border-black dark:border-white p-3 sm:p-4 bg-zinc-50 dark:bg-zinc-900 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] transition-all">
+              <div className="absolute top-0 right-0 p-2 opacity-10">
+                <Monitor className="h-8 w-8 sm:h-12 sm:w-12" />
               </div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1 flex items-center gap-2">
-                <span className="w-1.5 h-1.5 bg-zinc-400 rounded-full" /> Total de Chromebooks
+              <p className="text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">
+                Total de Chromebooks
               </p>
               <div className="flex items-baseline gap-2">
-                <span className="text-5xl font-black text-foreground tracking-tighter">{totalAvailableChromebooks}</span>
-                <span className="text-[8px] font-bold text-muted-foreground uppercase">unidades</span>
+                <span className="text-3xl sm:text-5xl font-black text-foreground tracking-tighter">{totalAvailableChromebooks}</span>
+                <span className="text-[7px] sm:text-[8px] font-bold text-muted-foreground uppercase tracking-tight">unidades</span>
               </div>
-              <div className="mt-2 h-1 bg-zinc-200 dark:bg-zinc-800 border border-black/10">
+              <div className="mt-1.5 h-1 bg-zinc-200 dark:bg-zinc-800 border border-black/10">
                 <div className="h-full bg-black dark:bg-white w-full" />
               </div>
             </div>
 
             {/* Reserved Widget */}
-            <div className="relative group overflow-hidden border-4 border-info/50 bg-info/5 dark:bg-info/10 p-4 shadow-[6px_6px_0px_0px_hsl(var(--info)/0.2)] transition-all hover:-translate-y-1">
-              <div className="absolute top-0 right-0 p-2 opacity-15 group-hover:opacity-25 transition-opacity">
-                <Clock className="h-12 w-12 text-info" />
+            {/* Reserved Widget */}
+            <div className="relative group overflow-hidden border-2 sm:border-4 border-info/50 bg-info/5 dark:bg-info/10 p-3 sm:p-4 shadow-[4px_4px_0px_0px_hsl(var(--info)/0.2)] transition-all">
+              <div className="absolute top-0 right-0 p-2 opacity-15">
+                <Clock className="h-8 w-8 sm:h-12 sm:w-12 text-info" />
               </div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-info mb-1 flex items-center gap-2">
-                <span className="w-1.5 h-1.5 bg-info rounded-full animate-pulse" /> Reservado
+              <p className="text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-info mb-1">
+                Reservado
               </p>
               <div className="flex items-baseline gap-2">
-                <span className="text-5xl font-black text-info tracking-tighter">{totalReserved}</span>
-                <span className="text-[8px] font-bold text-info/70 uppercase">reservas</span>
+                <span className="text-3xl sm:text-5xl font-black text-info tracking-tighter">{totalReserved}</span>
+                <span className="text-[7px] sm:text-[8px] font-bold text-info/70 uppercase tracking-tight">reservas</span>
               </div>
-              <div className="mt-2 h-1 bg-info/10 border border-info/20">
+              <div className="mt-1.5 h-1 bg-info/10 border border-info/20">
                 <div 
                   className="h-full bg-info transition-all duration-1000" 
-                  style={{ width: `${(totalReserved / totalAvailableChromebooks) * 100}%` }} 
+                  style={{ width: `${Math.min(100, (totalReserved / totalAvailableChromebooks) * 100)}%` }} 
                 />
               </div>
             </div>
 
             {/* Available Widget */}
-            <div className="relative group overflow-hidden border-4 border-success/50 bg-success/5 dark:bg-success/10 p-4 shadow-[6px_6px_0px_0px_hsl(var(--success)/0.2)] transition-all hover:-translate-y-1">
-              <div className="absolute top-0 right-0 p-2 opacity-15 group-hover:opacity-25 transition-opacity">
-                <CheckCircle className="h-12 w-12 text-success" />
+            {/* Available Widget */}
+            <div className="relative group overflow-hidden border-2 sm:border-4 border-success/50 bg-success/5 dark:bg-success/10 p-3 sm:p-4 shadow-[4px_4px_0px_0px_hsl(var(--success)/0.2)] transition-all">
+              <div className="absolute top-0 right-0 p-2 opacity-15">
+                <CheckCircle className="h-8 w-8 sm:h-12 sm:w-12 text-success" />
               </div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-success mb-1 flex items-center gap-2">
-                <span className="w-1.5 h-1.5 bg-success rounded-full" /> Disponíveis
+              <p className="text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-success mb-1">
+                Disponíveis
               </p>
               <div className="flex items-baseline gap-2">
-                <span className="text-5xl font-black text-success tracking-tighter">{available}</span>
-                <span className="text-[8px] font-bold text-success/70 uppercase">disponíveis</span>
+                <span className={cn(
+                  "text-3xl sm:text-5xl font-black tracking-tighter",
+                  available < 0 ? "text-error" : "text-success"
+                )}>{available}</span>
+                <span className="text-[7px] sm:text-[8px] font-bold text-success/70 uppercase tracking-tight">Sobra/Déficit</span>
               </div>
-              <div className="mt-2 h-1 bg-success/10 border border-success/20">
+              <div className="mt-1.5 h-1 bg-success/10 border border-success/20">
                 <div 
                   className="h-full bg-success transition-all duration-1000" 
-                  style={{ width: `${(available / totalAvailableChromebooks) * 100}%` }} 
+                  style={{ width: `${Math.max(0, Math.min(100, (available / totalAvailableChromebooks) * 100))}%` }} 
                 />
               </div>
             </div>
@@ -256,29 +262,24 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
                       }}
                     >
                       {/* Status accent line */}
-                      <div className={cn(
-                        "absolute left-0 top-0 bottom-0 w-1",
-                        isMinecraft ? "bg-[#3c8527]" : isAtendida ? "bg-green-500" : "bg-primary"
-                      )} />
-
-                      <div className="p-3 pl-5 flex items-center justify-between gap-4">
+                      <div className="p-3 pl-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
                         <div className="flex-1 min-w-0">
-                          <div className="flex flex-col mb-1.5 min-w-0">
-                            <span className="font-black text-sm truncate uppercase tracking-tight">{res.prof_name}</span>
-                            <span className="text-[10px] text-muted-foreground truncate lowercase opacity-70 font-medium">
+                          <div className="flex flex-col mb-1 sm:mb-1.5 min-w-0">
+                            <span className="font-black text-sm sm:text-base truncate uppercase tracking-tight">{res.prof_name}</span>
+                            <span className="text-[9px] sm:text-[10px] text-muted-foreground truncate lowercase opacity-70 font-medium">
                               {res.prof_email}
                             </span>
                             {isMinecraft && (
                               <div className="mt-1">
-                                <span className="text-[8px] font-black bg-[#3c8527] text-white px-1 py-0.5 rounded-none">
+                                <span className="text-[7px] sm:text-[8px] font-black bg-[#3c8527] text-white px-1 py-0.5 rounded-none">
                                   MINECRAFT
                                 </span>
                               </div>
                             )}
                           </div>
-                          <div className="flex items-center gap-3 text-[10px] text-muted-foreground font-bold uppercase tracking-tight">
+                          <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-[9px] sm:text-[10px] text-muted-foreground font-bold uppercase tracking-tight">
                             <span className="flex items-center gap-1">
-                              <Clock className="h-3 w-3" /> {res.time_slot}
+                              <Clock className="h-2.5 w-2.5 sm:h-3 sm:w-3" /> {res.time_slot}
                             </span>
                             {res.classroom && (
                               <span className="flex items-center gap-1">
@@ -289,15 +290,15 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
                           </div>
                         </div>
 
-                        <div className="flex flex-col items-end gap-1.5">
+                        <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-2 sm:gap-1.5 border-t sm:border-t-0 border-black/5 dark:border-white/5 pt-2 sm:pt-0">
                           <div className="flex items-center gap-2">
                             {isAtendida && (
                               <div className="bg-green-500 text-white p-0.5 border border-black/10">
-                                <CheckCircle className="h-3 w-3" />
+                                <CheckCircle className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
                               </div>
                             )}
-                            <span className="text-4xl font-black italic tracking-tighter leading-none shadow-sm">
-                              {res.quantity_requested}<span className="text-[10px] not-italic ml-1 opacity-60 uppercase font-black">Chromebooks</span>
+                            <span className="text-2xl sm:text-4xl font-black italic tracking-tighter leading-none whitespace-nowrap">
+                              {res.quantity_requested}<span className="text-[8px] sm:text-[10px] not-italic ml-1 opacity-60 uppercase font-black">CBs</span>
                             </span>
                           </div>
                           
@@ -305,7 +306,7 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
                             <div className="flex items-center">
                               <Button
                                 size="sm"
-                                className="h-9 px-4 text-[10px] font-black uppercase bg-primary text-white border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all rounded-none"
+                                className="h-8 sm:h-9 px-3 sm:px-4 text-[9px] sm:text-[10px] font-black uppercase bg-primary text-white border-2 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:shadow-none transition-all rounded-none"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   navigate('/', {
@@ -316,8 +317,8 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
                                   });
                                 }}
                               >
-                                <ArrowRight className="h-4 w-4 mr-2" />
-                                Iniciar Empréstimo
+                                <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                                Iniciar
                               </Button>
                             </div>
                           )}
@@ -335,31 +336,31 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
 
                       {/* Withdrawn Chromebooks Section - Premium Neo Brutal Style */}
                       {res.associated_loans && res.associated_loans.length > 0 && (
-                        <div className="mx-5 mb-4 p-4 bg-primary/5 dark:bg-primary/10 border-2 border-black/10 dark:border-white/10 relative overflow-hidden group/retirados">
+                        <div className="mx-3 sm:mx-5 mb-3 sm:mb-4 p-3 sm:p-4 bg-primary/5 dark:bg-primary/10 border-2 border-black/10 dark:border-white/10 relative overflow-hidden group/retirados">
                           {/* Decorative pattern */}
                           <div className="absolute inset-0 opacity-[0.03] pointer-events-none neo-brutal-dots bg-primary/20" />
                           
-                          <div className="relative z-10 flex flex-col gap-3">
+                          <div className="relative z-10 flex flex-col gap-2 sm:gap-3">
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-2">
-                                <div className="p-1.5 bg-primary text-white border-2 border-black flex items-center justify-center">
-                                  <Monitor className="h-3.5 w-3.5" />
+                                <div className="p-1 sm:p-1.5 bg-primary text-white border-2 border-black flex items-center justify-center">
+                                  <Monitor className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                                 </div>
-                                <span className="text-[11px] font-black uppercase text-foreground tracking-[0.15em] flex items-center gap-2">
-                                  EQUIPAMENTOS RETIRADOS
-                                  <span className="text-primary text-base font-black">
+                                <span className="text-[9px] sm:text-[11px] font-black uppercase text-foreground tracking-tight sm:tracking-[0.15em] flex items-center gap-2">
+                                  RETIRADOS
+                                  <span className="text-primary text-sm sm:text-base font-black">
                                     {res.associated_loans.length}
                                   </span>
                                 </span>
                               </div>
-                              <div className="h-[2px] flex-1 mx-4 bg-black/5 dark:bg-white/5" />
+                              <div className="h-[1px] sm:h-[2px] flex-1 mx-2 sm:mx-4 bg-black/5 dark:bg-white/5" />
                             </div>
                             
-                            <div className="flex flex-wrap gap-2.5">
+                            <div className="flex flex-wrap gap-1.5 sm:gap-2.5">
                               {res.associated_loans.map((loan, idx) => (
                                 <div
                                   key={idx}
-                                  className="px-3 py-1.5 bg-white dark:bg-zinc-900 text-primary dark:text-blue-400 text-[10px] font-black uppercase border-2 border-black dark:border-white/20 transform hover:-translate-x-1 hover:-translate-y-1 transition-all active:translate-x-0 active:translate-y-0"
+                                  className="px-2 sm:px-3 py-1 sm:py-1.5 bg-white dark:bg-zinc-900 text-primary dark:text-blue-400 text-[8px] sm:text-[10px] font-black uppercase border-2 border-black dark:border-white/20"
                                 >
                                   {loan.chromebook_id}
                                 </div>
