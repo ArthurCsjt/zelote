@@ -8,8 +8,8 @@ import logger from '@/utils/logger';
 export const PWAUpdater: React.FC = () => {
   const [lastCheck, setLastCheck] = useState<number>(Date.now());
 
-  // Intervalo de verificação: 5 minutos
-  const CHECK_INTERVAL = 5 * 60 * 1000;
+  // Intervalo de verificação: 1 minuto (reduzido para refletir atualizações mais rápido)
+  const CHECK_INTERVAL = 1 * 60 * 1000;
 
   const {
     needRefresh: [needRefresh, setNeedRefresh],

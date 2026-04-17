@@ -9,7 +9,7 @@ cleanupOutdatedCaches();
 // Injeção do manifesto de precache do Vite
 precacheAndRoute(self.__WB_MANIFEST);
 
-const CACHE_NAME = 'zelote-cache-v6';
+const CACHE_NAME = 'zelote-cache-v7';
 const OFFLINE_URL = '/offline.html';
 
 // Tipos de recursos que queremos cachear agressivamente (Cache First)
