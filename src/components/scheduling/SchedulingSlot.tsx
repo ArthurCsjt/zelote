@@ -130,9 +130,15 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
         let label = "";
 
         if (res.quantity_requested === 0) {
-          label = `${roomName} RESERVADA`;
+          label = `${roomName}`;
         } else {
-          label = res.classroom ? `${roomName} + ${res.quantity_requested} Chromebooks` : `${res.quantity_requested} Chromebooks`;
+          // On mobile we use a much more compact label
+          const isSmallScreen = typeof window !== 'undefined' && window.innerWidth < 640;
+          if (isSmallScreen) {
+            label = res.classroom ? `${roomName} · ${res.quantity_requested}x` : `${res.quantity_requested}x CBs`;
+          } else {
+            label = res.classroom ? `${roomName} + ${res.quantity_requested} Chromebooks` : `${res.quantity_requested} Chromebooks`;
+          }
         }
 
         return (
@@ -141,12 +147,12 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
               <TooltipTrigger asChild>
                 <div
                   className={cn(
-                    "w-full text-[9px] sm:text-[10px] leading-tight font-black uppercase truncate px-1.5 py-2 border-2 border-black text-center transition-all hover:-translate-y-[2px] cursor-pointer",
+                    "w-full text-[8px] sm:text-[10px] leading-tight font-black uppercase truncate px-1 sm:px-1.5 py-1.5 sm:py-2 border-2 border-black text-center transition-all hover:-translate-y-[2px] cursor-pointer",
                     isThisMine
-                      ? "bg-blue-600 text-white shadow-[3px_3px_0_0_#000]"
+                      ? "bg-blue-600 text-white shadow-[2px_2px_0_0_#000] sm:shadow-[3px_3px_0_0_#000]"
                       : res.is_minecraft
-                        ? "bg-[#3c8527] text-white shadow-[3px_3px_0_0_#000]"
-                        : "bg-white text-black dark:bg-zinc-800 dark:text-zinc-100 shadow-[3px_3px_0_0_#000]",
+                        ? "bg-[#3c8527] text-white shadow-[2px_2px_0_0_#000] sm:shadow-[3px_3px_0_0_#000]"
+                        : "bg-white text-black dark:bg-zinc-800 dark:text-zinc-100 shadow-[2px_2px_0_0_#000] sm:shadow-[3px_3px_0_0_#000]",
                   )}
                   onClick={(e) => {
                     e.stopPropagation();
