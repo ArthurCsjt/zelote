@@ -193,20 +193,21 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
 
                 {/* Heatmap Footer */}
                 <div className={cn(
-                  "h-8 sm:h-22 border-t-2 sm:border-t-4 border-black dark:border-white relative overflow-hidden",
+                  "h-14 sm:h-22 border-t-2 sm:border-t-4 border-black dark:border-white relative overflow-hidden",
                   isCurrentDay ? "bg-white/10 dark:bg-zinc-900/10" : "bg-black/[0.03] dark:bg-white/[0.03]"
                 )}>
                   <div className="relative z-10 p-1 sm:p-2 flex flex-col justify-between h-full">
-                    {!isMobile && (
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="bg-black text-white dark:bg-white dark:text-black px-2 py-1 text-xl font-black leading-none shadow-[3px_3px_0px_0px_rgba(59,130,246,0.3)]">
-                          {totalReserved}
-                        </span>
-                        <span className="text-[10px] font-black leading-tight tracking-tight uppercase opacity-60">
-                          Reservas<br />Hoje
-                        </span>
-                      </div>
-                    )}
+                    <div className="flex items-center gap-1.5 sm:gap-2 mb-1">
+                      <span className={cn(
+                        "bg-black text-white dark:bg-white dark:text-black px-1.5 py-0.5 sm:px-2 sm:py-1 text-base sm:text-xl font-black leading-none shadow-[2px_2px_0px_0px_rgba(59,130,246,0.3)] sm:shadow-[3px_3px_0px_0px_rgba(59,130,246,0.3)]",
+                        isCurrentDay && "border border-white/20"
+                      )}>
+                        {totalReserved}
+                      </span>
+                      <span className="text-[7px] sm:text-[10px] font-black leading-tight tracking-tight uppercase opacity-70">
+                        Reservas<br />{isMobile ? 'Hoje' : 'Hoje'}
+                      </span>
+                    </div>
 
                     <div className="flex w-full h-2 sm:h-8 gap-[1px] sm:gap-[2px] mt-auto bg-black/5">
                       {timeSlots.map((slot) => {
