@@ -16,7 +16,6 @@ import { cn } from '@/lib/utils';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { PwaUpdatePrompt } from './PwaUpdatePrompt';
 
 
 interface LayoutProps {
@@ -270,7 +269,6 @@ const Layout: React.FC<LayoutProps> = ({
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
           {children}
         </div>
-        <PwaUpdatePrompt />
       </main>
 
       {isStandalone && <div className="safe-area-bottom h-16 md:h-24 no-print" />}
