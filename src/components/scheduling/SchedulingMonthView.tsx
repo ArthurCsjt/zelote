@@ -132,11 +132,13 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
     const isDayPast = isPast(selectedDate);
 
     return (
-      <div className="relative border-4 border-black dark:border-white bg-white dark:bg-zinc-950 shadow-[12px_12px_0px_0px_rgba(0,0,0,0.05)] overflow-hidden h-full flex flex-col min-h-0 sm:min-h-[500px]">
+    return (
+    return (
+      <div className="relative border-4 border-black dark:border-white bg-white dark:bg-zinc-950 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.05)] sm:shadow-[12px_12px_0px_0px_rgba(0,0,0,0.05)] overflow-hidden h-full flex flex-col min-h-0 sm:min-h-[500px]">
         {/* Background Texture */}
         <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.07] pointer-events-none neo-brutal-dots" />
 
-        <div className="relative z-10 p-3 sm:p-6 flex flex-col h-full space-y-4 sm:space-y-6">
+        <div className="relative z-10 p-2 sm:p-6 flex flex-col h-full space-y-4 sm:space-y-6">
           {/* Header - Technical Display Style */}
           <div className="border-b-4 border-black dark:border-white pb-3 sm:pb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
             <div>
@@ -336,7 +338,7 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
 
                       {/* Withdrawn Chromebooks Section - Premium Neo Brutal Style */}
                       {res.associated_loans && res.associated_loans.length > 0 && (
-                        <div className="mx-3 sm:mx-5 mb-3 sm:mb-4 p-3 sm:p-4 bg-primary/5 dark:bg-primary/10 border-2 border-black/10 dark:border-white/10 relative overflow-hidden group/retirados">
+                        <div className="mx-0 sm:mx-5 mb-3 sm:mb-4 p-3 sm:p-4 bg-primary/5 dark:bg-primary/10 border-2 border-black/10 dark:border-white/10 relative overflow-hidden group/retirados">
                           {/* Decorative pattern */}
                           <div className="absolute inset-0 opacity-[0.03] pointer-events-none neo-brutal-dots bg-primary/20" />
                           
@@ -424,9 +426,9 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
   };
 
   return (
-    <div className="flex flex-col lg:flex-row gap-8 items-start">
+    <div className="flex flex-col lg:flex-row gap-4 sm:gap-8 items-start">
       {/* Calendar - Technical Blueprint Style */}
-      <div className="w-full lg:w-[450px] shrink-0 border-4 border-black dark:border-white bg-white dark:bg-zinc-950 shadow-[12px_12px_0px_0px_rgba(0,0,0,0.05)] overflow-hidden">
+      <div className="w-full lg:w-[450px] shrink-0 border-4 border-black dark:border-white bg-white dark:bg-zinc-950 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.05)] sm:shadow-[12px_12px_0px_0px_rgba(0,0,0,0.05)] overflow-hidden">
         {/* Header Display */}
         <div className="bg-black text-white p-5 flex justify-between items-center border-b-4 border-black">
           <div className="flex items-center gap-3">
