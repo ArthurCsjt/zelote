@@ -125,7 +125,7 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
         >
           {/* Header Row */}
           <div className={cn(
-            "h-24 sm:h-36 flex flex-col items-center justify-center border-b-4 border-r-4 border-black dark:border-white bg-green-500 relative overflow-hidden transition-all",
+            "h-32 sm:h-36 flex flex-col items-center justify-center border-b-4 border-r-4 border-black dark:border-white bg-green-500 relative overflow-hidden transition-all",
             `min-w-[${timeColumnWidth}px]`
           )}>
             <div className="absolute inset-0 opacity-10 pointer-events-none" 
@@ -161,7 +161,7 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
               <div
                 key={index}
                 className={cn(
-                  "h-24 sm:h-36 flex flex-col border-b-4 border-r-4 last:border-r-0 border-black dark:border-white transition-all relative group overflow-hidden",
+                  "h-32 sm:h-36 flex flex-col border-b-4 border-r-4 last:border-r-0 border-black dark:border-white transition-all relative group overflow-hidden",
                   isCurrentDay
                     ? "bg-primary text-white"
                     : isHoveredColumn 
