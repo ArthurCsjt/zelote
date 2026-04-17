@@ -22,6 +22,7 @@ import UpdatePasswordPage from "./pages/UpdatePassword";
 import Layout from "./components/Layout";
 import { supabase } from "./integrations/supabase/client";
 import { cn } from "./lib/utils";
+import { PWAUpdater } from "./components/PWAUpdater";
 
 const queryClient = new QueryClient();
 
@@ -99,6 +100,7 @@ const App = () => {
           <PrintProvider>
             <BrowserRouter>
               <AuthRedirectHandler />
+              <PWAUpdater />
               <Routes>
                 <Route path="/login" element={<Login />} />
 
