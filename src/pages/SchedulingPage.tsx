@@ -270,7 +270,7 @@ const SchedulingPage = () => {
           <div className="flex items-center gap-2">
             <div className="h-4 w-4 border-2 border-[#3c8527] bg-[#3c8527]/20" />
             <div className="flex flex-col">
-              <span className="text-xs font-black uppercase tracking-tight text-[#3c8527]">Minecraft</span>
+              <span className="text-xs font-black uppercase tracking-tight text-[#3c8527] font-minecraft">Aula com Minecraft</span>
               <span className="text-[8px] font-bold uppercase text-[#3c8527]/70 -mt-1">Preparação TI</span>
             </div>
           </div>

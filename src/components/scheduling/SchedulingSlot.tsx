@@ -148,10 +148,10 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
                 <div
                   className={cn(
                     "w-full text-[8px] sm:text-[10px] leading-tight font-black uppercase truncate px-1 sm:px-1.5 py-1.5 sm:py-2 border-2 border-black text-center transition-all hover:-translate-y-[2px] cursor-pointer",
-                    isThisMine
-                      ? "bg-blue-600 text-white shadow-[2px_2px_0_0_#000] sm:shadow-[3px_3px_0_0_#000]"
-                      : res.is_minecraft
-                        ? "bg-[#3c8527] text-white shadow-[2px_2px_0_0_#000] sm:shadow-[3px_3px_0_0_#000]"
+                    res.is_minecraft
+                      ? "bg-[#2d5a27] text-white shadow-[2px_2px_0_0_#000] sm:shadow-[3px_3px_0_0_#000]"
+                      : isThisMine
+                        ? "bg-blue-600 text-white shadow-[2px_2px_0_0_#000] sm:shadow-[3px_3px_0_0_#000]"
                         : "bg-white text-black dark:bg-zinc-800 dark:text-zinc-100 shadow-[2px_2px_0_0_#000] sm:shadow-[3px_3px_0_0_#000]",
                   )}
                   onClick={(e) => {
@@ -167,7 +167,7 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
               <TooltipContent side="top" className="max-w-sm border-3 border-foreground/20 rounded-none shadow-[4px_4px_0px_0px_hsl(var(--foreground)/0.1)] p-3">
                 <div className="space-y-2">
                   <p className="font-bold text-sm leading-tight">
-                    {res.is_minecraft && <span className="text-[#3c8527] mr-1">[MINECRAFT]</span>}
+                    {res.is_minecraft && <span className="text-[#3c8527] mr-1 font-minecraft text-xs">[AULA COM MINECRAFT]</span>}
                     {res.prof_name && res.prof_name !== 'Usuário Desconhecido' ? res.prof_name : (res.prof_email || 'Usuário Desconhecido')}
                     {res.classroom && <span className="ml-2 text-[10px] px-1.5 py-0.5 border border-info text-info">SALA: {res.classroom}</span>}
                   </p>

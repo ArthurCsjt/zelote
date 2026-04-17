@@ -86,6 +86,14 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
     }
   }, [open, maxQuantity]);
 
+  // Regras de quantidade para Minecraft
+  useEffect(() => {
+    if (isMinecraft) {
+      if (quantity === 0) setQuantity(1);
+      if (quantity > 40) setQuantity(40);
+    }
+  }, [isMinecraft, quantity]);
+
   // Reset extra resources when the room is not "Sala Google"
   useEffect(() => {
     if (classroom !== 'Sala Google') {
@@ -484,9 +492,73 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
               </div>
             </div>
 
+            {/* OPÇÃO MINECRAFT - Padrão Múltiplas Datas */}
+            {classroom === 'Sala Google' && (
+              <div className="border-2 border-[#3c8527] bg-[#3c8527]/5 dark:bg-[#3c8527]/10 overflow-hidden shadow-[4px_4px_0_0_rgba(60,133,39,0.15)] mb-2">
+                <div className="bg-[#3c8527] px-3 py-3 flex items-center justify-center border-b-2 border-black">
+                  <span
+                    className="uppercase select-none text-center leading-tight"
+                    style={{
+                      fontFamily: "'Press Start 2P', cursive",
+                      fontSize: '13px',
+                      letterSpacing: '1px',
+                      color: '#FFFFFF',
+                      textShadow: '3px 3px 0px #000000'
+                    }}
+                  >
+                    Aula com Minecraft
+                  </span>
+                </div>
+
+                <div className="p-2 sm:p-3 flex items-center justify-between gap-3 bg-white/50 backdrop-blur-sm">
+                  <div className="flex-1">
+                    <p className="text-[9px] sm:text-[10px] font-black text-black/70 uppercase leading-tight">
+                      HABILITE PARA UTILIZAR O MINECRAFT EDUCATION. <br/>
+                      <span className="text-[#3c8527] font-[1000] tracking-tight">LIMITE DE 40 CHROMEBOOKS APLICADO.</span>
+                    </p>
+                  </div>
+
+                  <div className="flex border-[3px] border-black bg-black shadow-[3px_3px_0px_0px_rgba(0,0,0,0.15)] h-9">
+                    <button
+                      type="button"
+                      onClick={() => setIsMinecraft(false)}
+                      className={cn(
+                        "px-4 sm:px-6 h-full text-[10px] sm:text-[11px] font-[1000] uppercase tracking-wider transition-all",
+                        !isMinecraft 
+                          ? "bg-black text-white" 
+                          : "bg-white text-black hover:bg-zinc-50"
+                      )}
+                    >
+                      NÃO
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setIsMinecraft(true)}
+                      className={cn(
+                        "px-4 sm:px-6 h-full text-[10px] sm:text-[11px] font-[1000] uppercase tracking-wider transition-all border-l-[3px] border-black",
+                        isMinecraft 
+                          ? "bg-[#3c8527] text-white" 
+                          : "bg-white text-black hover:bg-zinc-50"
+                      )}
+                    >
+                      SIM
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* QUANTIDADE / RESERVA DE ESPAÇO */}
-            <div className="border-2 border-[#1e3a8a] bg-blue-50/30 dark:bg-blue-950/10 overflow-hidden shadow-[4px_4px_0_0_rgba(30,58,138,0.15)]">
-              <div className="bg-[#1e3a8a] px-3 py-2 flex items-center justify-between">
+            <div className={cn(
+              "border-2 transition-all duration-300",
+              isMinecraft
+                ? "border-[#3c8527] bg-green-50/30 dark:bg-green-950/10 shadow-[4px_4px_0_0_rgba(60,133,39,0.15)]"
+                : "border-[#1e3a8a] bg-blue-50/30 dark:bg-blue-950/10 shadow-[4px_4px_0_0_rgba(30,58,138,0.15)]"
+            )}>
+              <div className={cn(
+                "px-3 py-2 flex items-center justify-between transition-colors duration-300",
+                isMinecraft ? "bg-[#3c8527]" : "bg-[#1e3a8a]"
+              )}>
                 <div className="flex items-center gap-2">
                   <Monitor className={cn("h-4 w-5 text-white", quantity === 0 && "opacity-50")} />
                   <span className="text-[13px] sm:text-[15px] font-black uppercase text-white tracking-wider">
@@ -500,15 +572,28 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                 )}
               </div>
               <div className="p-4 sm:p-5">
-                <Slider value={[quantity]} onValueChange={(v) => setQuantity(v[0])} min={0} max={maxQuantity} step={1} className="py-2" />
-                <div className="flex justify-between mt-2 text-[12px] sm:text-[13px] font-black uppercase text-[#1e3a8a] dark:text-blue-400">
-                  <span>Mín: 0</span>
-                  <span>Máx: {maxQuantity}</span>
+                <Slider
+                  value={[quantity]}
+                  onValueChange={(v) => setQuantity(v[0])}
+                  min={isMinecraft ? 1 : 0}
+                  max={isMinecraft ? 40 : maxQuantity}
+                  step={1}
+                  className="py-2"
+                />
+                <div className={cn(
+                  "flex justify-between mt-2 text-[12px] sm:text-[13px] font-black uppercase transition-colors duration-300",
+                  isMinecraft ? "text-[#3c8527]" : "text-[#1e3a8a] dark:text-blue-400"
+                )}>
+                  <span>Mín: {isMinecraft ? 1 : 0}</span>
+                  <span>Máx: {isMinecraft ? 40 : maxQuantity}</span>
                 </div>
-                {quantity === 0 ? (
-                  <div className="mt-4 p-3 bg-[#1e3a8a] border-2 border-black flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
+                {quantity === 0 && !isMinecraft ? (
+                  <div className={cn(
+                    "mt-4 p-3 border-2 border-black flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300 transition-colors",
+                    isMinecraft ? "bg-[#3c8527]" : "bg-[#1e3a8a]"
+                  )}>
                     <div className="bg-white p-1 rounded-sm">
-                      <CheckCircle className="h-4 w-4 text-[#1e3a8a]" />
+                      <CheckCircle className={cn("h-4 w-4", isMinecraft ? "text-[#3c8527]" : "text-[#1e3a8a]")} />
                     </div>
                     <span className="text-[11px] sm:text-[12px] font-black uppercase text-white tracking-widest leading-none">Apenas reserva do espaço físico</span>
                   </div>
@@ -579,8 +664,9 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                           <span className="w-4 text-center text-xs sm:text-sm font-black text-white">{micQuantity}</span>
                           <button
                             type="button"
-                            onClick={() => setMicQuantity(micQuantity + 1)}
-                            className="w-7 h-7 flex items-center justify-center bg-white dark:bg-zinc-800 text-black dark:text-white border-2 border-black dark:border-white/20 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors shadow-[2px_2px_0_0_#000] dark:shadow-none active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
+                            onClick={() => setMicQuantity(Math.min(2, micQuantity + 1))}
+                            disabled={micQuantity >= 2}
+                            className="w-7 h-7 flex items-center justify-center bg-white dark:bg-zinc-800 text-black dark:text-white border-2 border-black dark:border-white/20 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors shadow-[2px_2px_0_0_#000] dark:shadow-none active:translate-x-[1px] active:translate-y-[1px] active:shadow-none disabled:opacity-30"
                           >
                             <Plus className="h-3 w-3" />
                           </button>
@@ -588,20 +674,6 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                       )}
                     </div>
 
-                    {/* MINECRAFT */}
-                    <div
-                      onClick={() => setIsMinecraft(!isMinecraft)}
-                      className={cn(
-                        "flex items-center gap-2 p-2.5 border-2 border-green-600 dark:border-green-500 cursor-pointer transition-all",
-                        isMinecraft ? "bg-[#22c55e] text-white shadow-none translate-x-[1px] translate-y-[1px]" : "bg-white dark:bg-zinc-900 text-black dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800 shadow-[3px_3px_0_0_#000] dark:shadow-[3px_3px_0_0_rgba(255,255,255,0.05)]"
-                      )}
-                    >
-                      <Monitor className={cn("h-4 w-4", isMinecraft ? "text-white" : "text-black dark:text-zinc-400")} />
-                      <div className="flex flex-col">
-                        <span className="text-[11px] sm:text-[13px] font-black uppercase leading-none">Minecraft</span>
-                        <span className="text-[9px] font-black uppercase opacity-60 dark:opacity-80">TI</span>
-                      </div>
-                    </div>
                   </div>
                 </div>
               </div>

@@ -33,7 +33,7 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
   const [isMobile, setIsMobile] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const constraintsRef = useRef<HTMLDivElement>(null);
-  
+
   const weekDays = getWeekDays(currentDate);
 
   useEffect(() => {
@@ -66,8 +66,8 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
       daySlots.set(res.time_slot, slotUsage + (res.quantity_requested || 0));
     });
 
-    return { 
-      reservationsMap: map, 
+    return {
+      reservationsMap: map,
       dailyTotals: totals,
       dailySlotsData: slotsData
     };
@@ -95,25 +95,25 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
       {/* Mobile Hint - Professional Indicator */}
       {isMobile && (
         <div className="flex items-center justify-center gap-2 mb-2 animate-pulse">
-           <GripVertical className="h-3 w-3 text-muted-foreground" />
-           <span className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">
-             Arraste lateralmente para navegar
-           </span>
+          <GripVertical className="h-3 w-3 text-muted-foreground" />
+          <span className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">
+            Arraste lateralmente para navegar
+          </span>
         </div>
       )}
 
-      <div 
+      <div
         ref={constraintsRef}
         className="relative border-4 border-black dark:border-white shadow-[12px_12px_0px_0px_rgba(0,0,0,0.05)] bg-white dark:bg-zinc-950 overflow-hidden cursor-grab active:cursor-grabbing"
       >
         <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.07] pointer-events-none neo-brutal-dots font-black text-black" />
-        
+
         <motion.div
           drag="x"
           dragConstraints={constraintsRef}
           dragElastic={0.1}
           className="grid gap-0 relative z-10 select-none"
-          style={{ 
+          style={{
             gridTemplateColumns,
             minWidth: totalMinWidth,
             width: '100%'
@@ -128,13 +128,13 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
             "h-32 sm:h-36 flex flex-col items-center justify-center border-b-4 border-r-4 border-black dark:border-white bg-green-500 relative overflow-hidden transition-all",
             `min-w-[${timeColumnWidth}px]`
           )}>
-            <div className="absolute inset-0 opacity-10 pointer-events-none" 
-                 style={{ 
-                   backgroundImage: `radial-gradient(circle, white 1px, transparent 1px)`,
-                   backgroundSize: '8px 8px' 
-                 }} 
+            <div className="absolute inset-0 opacity-10 pointer-events-none"
+              style={{
+                backgroundImage: `radial-gradient(circle, white 1px, transparent 1px)`,
+                backgroundSize: '8px 8px'
+              }}
             />
-            
+
             <div className="relative z-10 flex flex-col items-center p-2">
               <div className="bg-white p-1.5 sm:p-2 border-2 border-black shadow-[2px_2px_0px_0px_#000] mb-1 sm:mb-2 transform -rotate-3 transition-transform">
                 <Monitor className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
@@ -161,74 +161,72 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
               <div
                 key={index}
                 className={cn(
-                  "h-32 sm:h-36 flex flex-col border-b-4 border-r-4 last:border-r-0 border-black dark:border-white transition-all relative group overflow-hidden",
+                  "min-h-[8rem] sm:min-h-[9rem] flex flex-col border-b-4 border-r-4 last:border-r-0 border-black dark:border-white transition-all relative group overflow-visible",
                   isCurrentDay
                     ? "bg-primary text-white"
-                    : isHoveredColumn 
-                      ? "bg-primary/10 dark:bg-primary/20" 
+                    : isHoveredColumn
+                      ? "bg-primary/10 dark:bg-primary/20"
                       : "bg-white dark:bg-zinc-900"
                 )}
               >
-                <div className="absolute inset-0 pointer-events-none opacity-40" 
-                     style={{ 
-                       backgroundImage: `
-                         linear-gradient(to right, ${isCurrentDay ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'} 1px, transparent 1px),
-                         linear-gradient(to bottom, ${isCurrentDay ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'} 1px, transparent 1px)
-                       `,
-                       backgroundSize: '20px 20px' 
-                     }} 
-                />
+                <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+                  <div className="absolute inset-0 opacity-40"
+                    style={{
+                      backgroundImage: `
+                           linear-gradient(to right, ${isCurrentDay ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'} 1px, transparent 1px),
+                           linear-gradient(to bottom, ${isCurrentDay ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'} 1px, transparent 1px)
+                         `,
+                      backgroundSize: '20px 20px'
+                    }}
+                  />
+                </div>
 
                 <div className={cn(
-                  "flex-1 flex flex-col items-center justify-center p-1 sm:p-2 relative z-10",
+                  "flex-1 flex flex-col items-center justify-center p-2 sm:p-3 relative z-10",
                   isCurrentDay ? "text-white" : "text-foreground"
                 )}>
                   <span className="text-[8px] sm:text-[10px] font-black uppercase tracking-[0.15em] sm:tracking-[0.2em] opacity-90 mb-0.5 drop-shadow-sm">
                     {format(day, isMobile ? 'EEE' : 'EEEE', { locale: ptBR })}
                   </span>
-                  <span className="text-xl sm:text-2xl font-black tracking-tighter leading-none drop-shadow-sm">
+                  <span className="text-2xl sm:text-3xl font-black tracking-tighter leading-none xl:drop-shadow-sm">
                     {format(day, 'dd/MM')}
                   </span>
                 </div>
 
-                {/* Heatmap Footer */}
+                {/* Neo-Brutalism Heatmap Card Footer */}
                 <div className={cn(
-                  "h-14 sm:h-22 border-t-2 sm:border-t-4 border-black dark:border-white relative overflow-hidden",
-                  isCurrentDay ? "bg-white/10 dark:bg-zinc-900/10" : "bg-black/[0.03] dark:bg-white/[0.03]"
+                  "px-2 py-1.5 flex flex-col sm:px-3 sm:py-2 border-t-4 border-black dark:border-white relative z-10 bg-white dark:bg-zinc-950 justify-end"
                 )}>
-                  <div className="relative z-10 p-1 sm:p-2 flex flex-col justify-between h-full">
-                    <div className="flex items-center gap-1.5 sm:gap-2 mb-1">
-                      <span className={cn(
-                        "bg-black text-white dark:bg-white dark:text-black px-1.5 py-0.5 sm:px-2 sm:py-1 text-base sm:text-xl font-black leading-none shadow-[2px_2px_0px_0px_rgba(59,130,246,0.3)] sm:shadow-[3px_3px_0px_0px_rgba(59,130,246,0.3)]",
-                        isCurrentDay && "border border-white/20"
-                      )}>
-                        {totalReserved}
-                      </span>
-                      <span className="text-[7px] sm:text-[10px] font-black leading-tight tracking-tight uppercase opacity-70">
-                        Reservas<br />{isMobile ? 'Hoje' : 'Hoje'}
-                      </span>
-                    </div>
 
-                    <div className="flex w-full h-2 sm:h-8 gap-[1px] sm:gap-[2px] mt-auto bg-black/5">
-                      {timeSlots.map((slot) => {
-                        const usage = daySlots?.get(slot) || 0;
-                        const rate = totalAvailableChromebooks > 0 ? (usage / totalAvailableChromebooks) * 100 : 0;
-                        
-                        let color = "bg-zinc-200/50 dark:bg-zinc-700/30";
-                        if (rate > 0) color = "bg-green-500";
-                        if (rate > 40) color = "bg-yellow-500";
-                        if (rate > 70) color = "bg-orange-500";
-                        if (rate >= 100) color = "bg-red-500";
+                  {/* Grid de Calor Robusto */}
+                  <div className="flex w-full h-[24px] sm:h-[30px] gap-[2px] relative z-20 justify-start">
+                    {timeSlots.map((slot) => {
+                      const usage = daySlots?.get(slot) || 0;
+                      const rate = totalAvailableChromebooks > 0 ? (usage / totalAvailableChromebooks) * 100 : 0;
 
-                        return (
-                          <div 
-                            key={slot}
-                            className={cn("flex-1 h-full transition-all duration-300", color)}
-                            title={`${slot}: ${usage} aparelhos`}
-                          />
-                        );
-                      })}
-                    </div>
+                      let color = "bg-[#F3F4F6] dark:bg-zinc-800/40"; // Quase invisível
+                      if (rate >= 50) color = "bg-[#22C55E]";
+                      else if (rate > 0) color = "bg-[#F97316]";
+
+                      return (
+                        <div
+                          key={slot}
+                          className={cn(
+                            "flex-1 max-w-[16px] h-full relative group/tooltip cursor-default transition-all duration-200",
+                            color
+                          )}
+                        >
+                          {/* Tooltip Arredondado - Sem Seta */}
+                          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-[4px] opacity-0 group-hover/tooltip:opacity-100 pointer-events-none z-[100] transition-opacity">
+                            <div className="bg-black text-white px-2 py-1 rounded-[4px] shadow-sm whitespace-nowrap">
+                              <span className="text-[10px] font-normal tracking-wide text-white">
+                                {slot}: {usage} aparelhos
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               </div>
@@ -250,8 +248,8 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
                   )}>
                     <div className={cn(
                       "bg-white dark:bg-zinc-900 px-2 sm:px-4 py-1 sm:py-1.5 rounded-lg border transition-all duration-300 shadow-sm",
-                      isHoveredRow 
-                        ? "border-primary ring-2 ring-primary/20" 
+                      isHoveredRow
+                        ? "border-primary ring-2 ring-primary/20"
                         : "border-blue-200 dark:border-blue-800"
                     )}>
                       <span className={cn(
@@ -271,8 +269,8 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
                   const isHoveredCol = hoveredDate === dateKey;
 
                   return (
-                    <div 
-                      key={dayIndex} 
+                    <div
+                      key={dayIndex}
                       className={cn(
                         "min-h-[4rem] sm:min-h-[5rem] h-full border-b-2 border-r-2 last:border-r-0 border-black/5 dark:border-white/5 transition-colors duration-200 translate-z-0",
                         isHoveredRow || isHoveredCol ? "bg-primary/[0.03] dark:bg-primary/[0.08]" : ""
