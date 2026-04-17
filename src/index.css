@@ -1880,3 +1880,11 @@
   @apply border-b-4 border-black dark:border-white;
   background: linear-gradient(135deg, #2dd4bf 0%, #14b8a6 50%, #0d9488 100%);
 }
+/* MASCARAMENTO DO BADGE LOVABLE */
+[class*=" lovable\], [id*=\lovable\], iframe[src*=\lovable\], .lovable-badge, #lovable-edit-button, [data-lovable] {
+ display: none !important;
+ opacity: 0 !important;
+ visibility: hidden !important;
+ pointer-events: none !important;
+ z-index: -9999 !important;
+}
