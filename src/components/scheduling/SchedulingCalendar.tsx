@@ -7,7 +7,7 @@ import { SchedulingSlot } from './SchedulingSlot';
 import type { Reservation } from '@/hooks/useDatabase';
 import type { User as AuthUser } from '@supabase/supabase-js';
 import { Loader2, CheckCircle, AlertTriangle, Monitor, Laptop, Clock, Info, GripVertical } from 'lucide-react';
-import { motion, useMotionValue, useSpring } from 'framer-motion';
+import { motion, useMotionValue, useSpring, AnimatePresence } from 'framer-motion';
 
 interface SchedulingCalendarProps {
   currentDate: Date;
@@ -30,6 +30,7 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
 }) => {
   const [hoveredDate, setHoveredDate] = React.useState<string | null>(null);
   const [hoveredTime, setHoveredTime] = React.useState<string | null>(null);
+  const [hoveredHeatmapInfo, setHoveredHeatmapInfo] = React.useState<{ date: string; slot: string; usage: number } | null>(null);
   const [isMobile, setIsMobile] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const constraintsRef = useRef<HTMLDivElement>(null);
@@ -182,15 +183,49 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
                 </div>
 
                 <div className={cn(
-                  "flex-1 flex flex-col items-center justify-center p-2 sm:p-3 relative z-10",
+                  "flex-1 flex flex-col items-center justify-center p-2 sm:p-3 relative z-10 overflow-hidden",
                   isCurrentDay ? "text-white" : "text-foreground"
                 )}>
-                  <span className="text-[8px] sm:text-[10px] font-black uppercase tracking-[0.15em] sm:tracking-[0.2em] opacity-90 mb-0.5 drop-shadow-sm">
-                    {format(day, isMobile ? 'EEE' : 'EEEE', { locale: ptBR })}
-                  </span>
-                  <span className="text-2xl sm:text-3xl font-black tracking-tighter leading-none xl:drop-shadow-sm">
-                    {format(day, 'dd/MM')}
-                  </span>
+                  <AnimatePresence mode="wait">
+                    {hoveredHeatmapInfo?.date === dateKey ? (
+                      <motion.div
+                        key="info"
+                        initial={{ y: 20, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        exit={{ y: -20, opacity: 0 }}
+                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                        className="flex flex-col items-center justify-center text-center"
+                      >
+                        <span className="text-[9px] sm:text-[11px] font-black uppercase tracking-[0.2em] mb-1 text-primary">
+                          {hoveredHeatmapInfo.slot}
+                        </span>
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-xl sm:text-2xl font-black">
+                            {hoveredHeatmapInfo.usage}
+                          </span>
+                          <span className="text-[10px] font-black uppercase opacity-70">
+                            Equips
+                          </span>
+                        </div>
+                      </motion.div>
+                    ) : (
+                      <motion.div
+                        key="date"
+                        initial={{ y: 20, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        exit={{ y: -20, opacity: 0 }}
+                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                        className="flex flex-col items-center justify-center"
+                      >
+                        <span className="text-[8px] sm:text-[10px] font-black uppercase tracking-[0.15em] sm:tracking-[0.2em] opacity-90 mb-0.5 drop-shadow-sm">
+                          {format(day, isMobile ? 'EEE' : 'EEEE', { locale: ptBR })}
+                        </span>
+                        <span className="text-2xl sm:text-3xl font-black tracking-tighter leading-none xl:drop-shadow-sm">
+                          {format(day, 'dd/MM')}
+                        </span>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
 
                 {/* Neo-Brutalism Heatmap Card Footer */}
@@ -211,20 +246,16 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
                       return (
                         <div
                           key={slot}
+                          onMouseEnter={() => setHoveredHeatmapInfo({ date: dateKey, slot, usage })}
+                          onMouseLeave={() => setHoveredHeatmapInfo(null)}
                           className={cn(
-                            "flex-1 max-w-[16px] h-full relative group/tooltip cursor-default transition-all duration-200",
-                            color
+                            "flex-1 max-w-[16px] h-full relative cursor-crosshair transition-all duration-200",
+                            color,
+                            hoveredHeatmapInfo?.date === dateKey && hoveredHeatmapInfo?.slot === slot 
+                              ? "scale-y-125 ring-2 ring-black dark:ring-white z-30" 
+                              : "opacity-80 hover:opacity-100"
                           )}
-                        >
-                          {/* Tooltip Arredondado - Sem Seta */}
-                          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-[4px] opacity-0 group-hover/tooltip:opacity-100 pointer-events-none z-[100] transition-opacity">
-                            <div className="bg-black text-white px-2 py-1 rounded-[4px] shadow-sm whitespace-nowrap">
-                              <span className="text-[10px] font-normal tracking-wide text-white">
-                                {slot}: {usage} aparelhos
-                              </span>
-                            </div>
-                          </div>
-                        </div>
+                        />
                       );
                     })}
                   </div>
@@ -239,26 +270,19 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
             return (
               <React.Fragment key={timeIndex}>
                 <div className={cn(
-                  "min-h-[4rem] sm:min-h-[5rem] h-full flex items-center justify-center border-b-2 border-r-4 border-black/10 dark:border-white/10 transition-all",
-                  isHoveredRow ? "bg-primary/20 dark:bg-primary/30" : "bg-blue-50/50 dark:bg-blue-900/10"
+                  "min-h-[4rem] sm:min-h-[5rem] h-full flex items-center justify-center border-b-2 border-r-4 border-black/10 dark:border-white/10",
+                  isHoveredRow ? "bg-zinc-100 dark:bg-zinc-800" : "bg-zinc-50/50 dark:bg-zinc-900/30"
                 )}>
-                  <div className={cn(
-                    "flex flex-col items-center py-1.5 sm:py-2 transition-transform duration-300",
-                    isHoveredRow ? "scale-105 sm:scale-110" : ""
-                  )}>
+                  <div className="flex flex-col items-center">
                     <div className={cn(
-                      "bg-white dark:bg-zinc-900 px-2 sm:px-4 py-1 sm:py-1.5 rounded-lg border transition-all duration-300 shadow-sm",
-                      isHoveredRow
-                        ? "border-primary ring-2 ring-primary/20"
-                        : "border-blue-200 dark:border-blue-800"
+                      "bg-white dark:bg-zinc-950 px-3 py-1 border-2 border-black dark:border-white transition-none",
+                      isHoveredRow ? "bg-black text-white dark:bg-white dark:text-black" : "text-zinc-600 dark:text-zinc-400"
                     )}>
-                      <span className={cn(
-                        "text-[11px] sm:text-[14px] font-black tracking-tighter transition-colors",
-                        isHoveredRow ? "text-primary" : "text-blue-900 dark:text-blue-300"
-                      )}>
-                        {timeSlot}
+                      <span className="text-[11px] sm:text-[13px] font-bold tracking-tight uppercase">
+                        {timeSlot.replace('h', ':')}
                       </span>
                     </div>
+                    <div className="w-[2px] h-2 bg-black/20 dark:bg-white/20" />
                   </div>
                 </div>
 
@@ -272,8 +296,8 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
                     <div
                       key={dayIndex}
                       className={cn(
-                        "min-h-[4rem] sm:min-h-[5rem] h-full border-b-2 border-r-2 last:border-r-0 border-black/5 dark:border-white/5 transition-colors duration-200 translate-z-0",
-                        isHoveredRow || isHoveredCol ? "bg-primary/[0.03] dark:bg-primary/[0.08]" : ""
+                        "min-h-[4rem] sm:min-h-[5rem] h-full border-b border-r last:border-r-0 border-zinc-200 dark:border-zinc-800 translate-z-0",
+                        isHoveredRow || isHoveredCol ? "bg-zinc-100/50 dark:bg-zinc-800/30" : ""
                       )}
                       onMouseEnter={() => {
                         if (!isMobile) {

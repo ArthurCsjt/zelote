@@ -164,7 +164,10 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <div onClick={() => !isExpired && setOpen(true)} className={cn("cursor-pointer", isExpired && "opacity-50 cursor-not-allowed grayscale")}>
+      <div 
+        onClick={() => !isExpired && setOpen(true)} 
+        className={cn("cursor-pointer h-full flex flex-col", isExpired && "opacity-50 cursor-not-allowed grayscale")}
+      >
         {children}
       </div>
 

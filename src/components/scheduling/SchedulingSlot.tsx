@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { cn } from '@/lib/utils';
-import { Plus, Monitor, User, CheckCircle, AlertTriangle, Clock, Trash2, ArrowRight } from 'lucide-react';
+import { Plus, Monitor, User, CheckCircle, AlertTriangle, Clock, Trash2, ArrowRight, Laptop, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import type { Reservation } from '@/hooks/useDatabase';
@@ -77,12 +77,12 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
           <Tooltip>
             <TooltipTrigger asChild>
               <div className={cn(
-                "h-full min-h-[4rem] border-2 border-dashed border-foreground/30 bg-muted/5",
-                "flex items-center justify-center gap-1",
-                "opacity-50 cursor-not-allowed"
+                "h-full min-h-[4rem] border-[3px] border-dashed border-zinc-400 dark:border-zinc-600 bg-zinc-300 dark:bg-zinc-700",
+                "flex items-center justify-center gap-1.5",
+                "opacity-80 cursor-not-allowed"
               )}>
-                <Clock className="h-4 w-4 text-muted-foreground" />
-                <span className="text-[10px] font-bold text-muted-foreground uppercase">Expirado</span>
+                <Clock className="h-3.5 w-3.5 text-zinc-700 dark:text-zinc-300" />
+                <span className="text-[9px] font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-widest">Encerrado</span>
               </div>
             </TooltipTrigger>
             <TooltipContent className="border-3 border-foreground/20 rounded-none">
@@ -104,12 +104,10 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
         maxQuantity={totalAvailableChromebooks}
       >
         <div className={cn(
-          "h-full min-h-[4rem] border-2 border-dashed border-foreground/40 bg-background",
-          "flex items-center justify-center cursor-pointer group transition-all",
-          "hover:border-primary hover:bg-primary/5",
-          "hover:shadow-[3px_3px_0px_0px_hsl(var(--primary)/0.2)] hover:-translate-x-0.5 hover:-translate-y-0.5"
+          "h-full min-h-[4rem] border-[3px] border-dashed border-zinc-400 dark:border-zinc-700 bg-white dark:bg-zinc-950",
+          "flex items-center justify-center cursor-pointer group hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors"
         )}>
-          <Plus className="h-5 w-5 text-muted-foreground group-hover:text-primary group-hover:scale-110 transition-all" />
+          <Plus className="h-5 w-5 text-zinc-400 group-hover:text-zinc-700 transition-colors" />
         </div>
       </ReservationDialog>
     );
@@ -147,12 +145,12 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
               <TooltipTrigger asChild>
                 <div
                   className={cn(
-                    "w-full text-[8px] sm:text-[10px] leading-tight font-black uppercase truncate px-1 sm:px-1.5 py-1.5 sm:py-2 border-2 border-black text-center transition-all hover:-translate-y-[2px] cursor-pointer",
+                    "w-full flex-1 flex items-center justify-center text-[8px] sm:text-[10px] leading-tight font-black uppercase truncate px-1 sm:px-1.5 py-1.5 sm:py-2 border-[1px] border-black text-center transition-all hover:-translate-y-[2px] cursor-pointer",
+                    // Alta resolução no texto
+                    "text-white [text-shadow:_-1px_-1px_0_rgba(0,0,0,0.5),_1px_-1px_0_rgba(0,0,0,0.5),_-1px_1px_0_rgba(0,0,0,0.5),_1px_1px_0_rgba(0,0,0,0.5)]",
                     res.is_minecraft
-                      ? "bg-[#2d5a27] text-white shadow-[2px_2px_0_0_#000] sm:shadow-[3px_3px_0_0_#000]"
-                      : isThisMine
-                        ? "bg-blue-600 text-white shadow-[2px_2px_0_0_#000] sm:shadow-[3px_3px_0_0_#000]"
-                        : "bg-white text-black dark:bg-zinc-800 dark:text-zinc-100 shadow-[2px_2px_0_0_#000] sm:shadow-[3px_3px_0_0_#000]",
+                      ? "bg-gradient-to-br from-[#2d5a27] to-[#1e3c1a] shadow-[2px_2px_0_0_#000] sm:shadow-[3px_3px_0_0_#000]"
+                      : "bg-gradient-to-br from-blue-600 to-indigo-600 shadow-[2px_2px_0_0_#000] sm:shadow-[3px_3px_0_0_#000]",
                   )}
                   onClick={(e) => {
                     e.stopPropagation();
@@ -164,70 +162,58 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
                   {label}
                 </div>
               </TooltipTrigger>
-              <TooltipContent side="top" className="max-w-sm border-3 border-foreground/20 rounded-none shadow-[4px_4px_0px_0px_hsl(var(--foreground)/0.1)] p-3">
-                <div className="space-y-2">
-                  <p className="font-bold text-sm leading-tight">
-                    {res.is_minecraft && <span className="text-[#3c8527] mr-1 font-minecraft text-xs">[AULA COM MINECRAFT]</span>}
-                    {res.prof_name && res.prof_name !== 'Usuário Desconhecido' ? res.prof_name : (res.prof_email || 'Usuário Desconhecido')}
-                    {res.classroom && <span className="ml-2 text-[10px] px-1.5 py-0.5 border border-info text-info">SALA: {res.classroom}</span>}
-                  </p>
-                  <p className="text-muted-foreground text-xs">
-                    {res.justification || "Sem justificativa"} · {res.quantity_requested > 0 ? `${res.quantity_requested} Chromebooks` : "Apenas Espaço"}
-                  </p>
-
-                  {res.associated_loans && res.associated_loans.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-1 mb-2">
-                      {res.associated_loans.map((loan, lIdx) => (
-                        <span key={lIdx} className="text-[8px] font-black bg-blue-600 text-white px-1.5 py-0.5 border border-black">
-                          {loan.chromebook_id}
-                        </span>
-                      ))}
+              <TooltipContent 
+                side="top" 
+                sideOffset={8}
+                className="max-w-[200px] p-2.5 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-none bg-white dark:bg-zinc-950 z-[100]"
+              >
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center gap-2">
+                    <div className="flex flex-col min-w-0">
+                      <span className="text-[12px] font-black uppercase truncate leading-tight text-black dark:text-white">
+                        {res.prof_name && res.prof_name !== 'Usuário Desconhecido' ? res.prof_name : (res.prof_email?.split('@')[0] || 'Professor')}
+                      </span>
+                      <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 lowercase truncate">
+                        {res.prof_email}
+                      </span>
                     </div>
-                  )}
+                  </div>
 
-                  <div className="flex gap-2 pt-2">
-                    {(isThisMine || isSuperAdmin) && (
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        className="h-6 px-2 text-[9px] font-black uppercase rounded-none border-2 border-foreground"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          deleteReservation(res.id).then((success: boolean) => success && onReservationSuccess());
-                        }}
-                      >
-                        <Trash2 className="h-3 w-3 mr-1" />
-                        {isThisMine ? 'Cancelar' : 'Remover'}
-                      </Button>
-                    )}
-
-                    {isResponsible && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="h-6 px-2 text-[9px] font-black uppercase rounded-none border-2 border-primary bg-primary/5 hover:bg-primary hover:text-white transition-all"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          navigate('/', {
-                            state: {
-                              fromScheduling: true,
-                              reservationData: {
-                                ...res,
-                                date: date,
-                                time_slot: timeSlot
-                              }
-                            }
-                          });
-                        }}
-                      >
-                        <ArrowRight className="h-3 w-3 mr-1" />
-                        Iniciar Empréstimo
-                      </Button>
-                    )}
+                  <div className="flex flex-col gap-0.5 text-[11px] font-bold uppercase text-zinc-500 dark:text-zinc-400 border-t border-zinc-100 dark:border-zinc-800 pt-2">
+                    <span>{res.classroom || 'ESPAÇO'}</span>
+                    <span>{res.quantity_requested} Chromebooks</span>
                   </div>
 
                   {(isThisMine || isAdmin || isResponsible) && (
-                    <p className="text-[9px] font-black text-blue-600 uppercase tracking-tighter italic mt-1">Clique na tag para mais detalhes</p>
+                    <div className="flex gap-1.5 pt-1">
+                      {(isThisMine || isSuperAdmin) && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            deleteReservation(res.id).then((success: boolean) => success && onReservationSuccess());
+                          }}
+                          className="text-[10px] font-black text-red-500 uppercase hover:underline"
+                        >
+                          Remover
+                        </button>
+                      )}
+                      {isResponsible && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate('/', {
+                              state: {
+                                fromScheduling: true,
+                                reservationData: { ...res, date, time_slot: timeSlot }
+                              }
+                            });
+                          }}
+                          className="text-[10px] font-black text-primary uppercase hover:underline ml-auto"
+                        >
+                          Iniciar
+                        </button>
+                      )}
+                    </div>
                   )}
                 </div>
               </TooltipContent>
@@ -238,9 +224,9 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
 
       {/* Botão explícito para Novo Agendamento se houver espaço e não for passado */}
       {isPartial && restantes > 0 && !isPast && (
-        <div className="mt-auto flex items-center justify-center gap-1.5 py-1.5 border-2 border-dashed border-warning bg-warning/5 hover:bg-warning/15 transition-all text-warning group/btn">
-          <Plus className="h-4 w-4 group-hover/btn:scale-125 transition-transform" />
-          <span className="text-[10px] font-black uppercase">Agendar</span>
+        <div className="mt-auto flex items-center justify-center gap-1.5 py-1 border-2 border-zinc-400 dark:border-zinc-500 bg-white dark:bg-zinc-950 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors text-zinc-600 dark:text-zinc-400">
+          <Plus className="h-3 w-3" />
+          <span className="text-[9px] font-bold uppercase tracking-tight">Adicionar</span>
         </div>
       )}
     </div>
