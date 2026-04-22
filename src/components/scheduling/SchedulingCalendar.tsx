@@ -196,15 +196,15 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
                         transition={{ type: "spring", stiffness: 300, damping: 30 }}
                         className="flex flex-col items-center justify-center text-center"
                       >
-                        <span className="text-[9px] sm:text-[11px] font-black uppercase tracking-[0.2em] mb-1 text-primary">
+                        <span className="text-[11px] sm:text-[13px] font-black uppercase tracking-[0.25em] mb-1.5 text-primary">
                           {hoveredHeatmapInfo.slot}
                         </span>
-                        <div className="flex items-baseline gap-1">
-                          <span className="text-xl sm:text-2xl font-black">
+                        <div className="flex items-baseline gap-1.5">
+                          <span className="text-2xl sm:text-4xl font-black">
                             {hoveredHeatmapInfo.usage}
                           </span>
-                          <span className="text-[10px] font-black uppercase opacity-70">
-                            Equips
+                          <span className="text-[12px] sm:text-[14px] font-black uppercase opacity-80">
+                            CHROMEBOOKS
                           </span>
                         </div>
                       </motion.div>
