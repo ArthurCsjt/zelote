@@ -28,7 +28,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(session?.user ?? null);
       setLoading(false);
       const { data: { subscription } } = supabase.auth.onAuthStateChange(
-        (_event, session) => {
+        async (_event, session) => {
+          // Validação de domínio para logins OAuth (Google)
+          if (_event === 'SIGNED_IN' && session?.user) {
+            const provider = session.user.app_metadata?.provider;
+            if (provider === 'google' && !isInstitutionalEmail(session.user.email || '')) {
+              await supabase.auth.signOut();
+              localStorage.setItem(
+                'zelote_oauth_error',
+                'Acesso restrito. Use um email institucional (@colegiosaojudas.com.br, @sj.pro.br ou @sj.g12.br).'
+              );
+              return;
+            }
+          }
           setUser(session?.user ?? null);
         }
       );

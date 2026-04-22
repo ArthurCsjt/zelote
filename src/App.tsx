@@ -19,7 +19,9 @@ import Settings from "./pages/Settings";
 import { PrintPreviewPage } from "./pages/PrintPreviewPage";
 import SchedulingPage from "./pages/SchedulingPage";
 import UpdatePasswordPage from "./pages/UpdatePassword";
+import AuthCallback from "./pages/AuthCallback";
 import Layout from "./components/Layout";
+
 import { supabase } from "./integrations/supabase/client";
 import { cn } from "./lib/utils";
 import { PWAUpdater } from "./components/PWAUpdater";
@@ -104,7 +106,11 @@ const App = () => {
               <Routes>
                 <Route path="/login" element={<Login />} />
 
+                {/* ROTA DE CALLBACK DO OAUTH (Google, etc.) */}
+                <Route path="/auth/callback" element={<AuthCallback />} />
+
                 <Route path="/update-password" element={<UpdatePasswordPage />} />
+
 
                 <Route path="/" element={
                   <ProtectedRoute>

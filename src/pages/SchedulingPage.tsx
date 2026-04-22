@@ -140,17 +140,17 @@ const SchedulingPage = () => {
               </div>
             </div>
 
-            {/* View Switching & Week Nav Grouped */}
-            <div className="flex flex-wrap items-center gap-4 lg:gap-6">
+            {/* View Switching & Week Nav — unified control bar */}
+            <div className="flex w-full lg:w-auto items-center border-2 border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,0.15)] overflow-hidden bg-white dark:bg-zinc-900">
               {/* Mode Toggle */}
-              <div className="flex w-full sm:w-auto p-1 bg-zinc-200/50 dark:bg-zinc-800/50 border-2 border-black dark:border-white shadow-[3px_3px_0px_0px_rgba(0,0,0,0.1)]">
+              <div className="flex p-1 bg-zinc-100/80 dark:bg-zinc-800/60">
                 <button
                   onClick={() => handleViewModeChange('weekly')}
                   className={cn(
-                    "flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 sm:px-4 py-1.5 text-[9px] sm:text-[11px] font-black uppercase tracking-wider transition-all",
+                    "flex items-center gap-1.5 px-3 sm:px-4 py-1.5 text-[9px] sm:text-[11px] font-black uppercase tracking-wider transition-all duration-200",
                     viewMode === 'weekly'
-                      ? "bg-gradient-to-br from-blue-600 to-primary text-white shadow-[2px_2px_0px_0px_rgba(0,0,0,0.2)]"
-                      : "text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white"
+                      ? "bg-gradient-to-br from-blue-600 to-primary text-white shadow-[2px_2px_0px_0px_rgba(0,0,0,0.25)]"
+                      : "text-zinc-500 dark:text-zinc-400 hover:text-black dark:hover:text-white"
                   )}
                 >
                   <CalendarDays className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
@@ -159,10 +159,10 @@ const SchedulingPage = () => {
                 <button
                   onClick={() => handleViewModeChange('monthly')}
                   className={cn(
-                    "flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 sm:px-4 py-1.5 text-[9px] sm:text-[11px] font-black uppercase tracking-wider transition-all",
+                    "flex items-center gap-1.5 px-3 sm:px-4 py-1.5 text-[9px] sm:text-[11px] font-black uppercase tracking-wider transition-all duration-200",
                     viewMode === 'monthly'
-                      ? "bg-gradient-to-br from-blue-600 to-primary text-white shadow-[2px_2px_0px_0px_rgba(0,0,0,0.2)]"
-                      : "text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white"
+                      ? "bg-gradient-to-br from-blue-600 to-primary text-white shadow-[2px_2px_0px_0px_rgba(0,0,0,0.25)]"
+                      : "text-zinc-500 dark:text-zinc-400 hover:text-black dark:hover:text-white"
                   )}
                 >
                   <History className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
@@ -170,22 +170,25 @@ const SchedulingPage = () => {
                 </button>
               </div>
 
-              {/* Week Navigation Arrows - Minimalist */}
-              <div className="flex w-full sm:w-auto items-center bg-white dark:bg-zinc-900 border-2 border-black dark:border-white shadow-[3px_3px_0px_0px_rgba(0,0,0,0.1)]">
+              {/* Divider */}
+              <div className="w-px self-stretch bg-black dark:bg-white opacity-20" />
+
+              {/* Date Navigator */}
+              <div className="flex items-center">
                 <button
                   onClick={() => handleDateChange('prev')}
                   disabled={isLoading}
-                  className="p-2 sm:p-2.5 border-r-2 border-black dark:border-white hover:bg-zinc-100 dark:hover:bg-zinc-800 disabled:opacity-30 transition-colors"
+                  className="p-2 sm:p-2.5 border-r border-black/20 dark:border-white/20 hover:bg-zinc-100 dark:hover:bg-zinc-800 disabled:opacity-30 transition-colors"
                 >
                   <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5" />
                 </button>
-                <div className="flex-1 sm:flex-none px-4 sm:px-6 text-[11px] sm:text-[13px] font-black uppercase tracking-tighter min-w-0 sm:min-w-[180px] text-center truncate">
+                <div className="px-4 sm:px-6 text-[10px] sm:text-[12px] font-black uppercase tracking-tight min-w-[140px] sm:min-w-[200px] text-center whitespace-nowrap">
                   {displayRange}
                 </div>
                 <button
                   onClick={() => handleDateChange('next')}
                   disabled={isLoading}
-                  className="p-2 sm:p-2.5 border-l-2 border-black dark:border-white hover:bg-zinc-100 dark:hover:bg-zinc-800 disabled:opacity-30 transition-colors"
+                  className="p-2 sm:p-2.5 border-l border-black/20 dark:border-white/20 hover:bg-zinc-100 dark:hover:bg-zinc-800 disabled:opacity-30 transition-colors"
                 >
                   <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5" />
                 </button>
