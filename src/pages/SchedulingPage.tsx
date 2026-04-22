@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import Layout from '@/components/Layout';
 import { Button } from '@/components/ui/button';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
@@ -119,7 +120,12 @@ const SchedulingPage = () => {
 
     <div className="space-y-4 sm:space-y-6 max-w-7xl mx-auto relative z-10">
       {/* Command Center - Ultra-Slim Header */}
-      <div className="neo-brutal-card bg-zinc-50 dark:bg-zinc-900/50 p-2 sm:p-3 relative overflow-hidden group/header mb-2 border-black/10">
+      <motion.div 
+        initial={{ opacity: 0, y: -30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+        className="neo-brutal-card bg-zinc-50 dark:bg-zinc-900/50 p-2 sm:p-3 relative overflow-hidden group/header mb-2 border-black/10"
+      >
         {/* Subtle Grid Pattern for Header Interior */}
         <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.05] pointer-events-none neo-brutal-grid" />
         
@@ -211,23 +217,28 @@ const SchedulingPage = () => {
             </div>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Weekend Warning */}
       {viewMode === 'weekly' && getWeekDays(currentDate).length === 0 && <div className="mt-4 p-3 border-3 border-warning/50 bg-warning/10 flex items-center gap-2">
-        <AlertTriangle className="h-5 w-5 text-warning" />
-        <span className="text-sm font-bold text-warning-foreground">
-          Esta semana não contém dias úteis (Segunda a Sexta).
-        </span>
-      </div>}
+          <AlertTriangle className="h-5 w-5 text-warning" />
+          <span className="text-sm font-bold uppercase tracking-tight">
+            Final de semana selecionado. Não há horários disponíveis.
+          </span>
+        </div>}
 
       {/* Calendar Grid - Neo Brutal - Slimmer */}
-      <div className="neo-brutal-card p-1 sm:p-2 overflow-hidden border">
+      <motion.div 
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 1.4, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+        className="neo-brutal-card p-1 sm:p-2 overflow-hidden border"
+      >
         {viewMode === 'weekly' ? <SchedulingCalendar currentDate={currentDate} reservations={reservations} totalAvailableChromebooks={totalAvailableChromebooks} currentUser={user} isLoading={isLoading} onReservationSuccess={handleReservationSuccess} professores={professores.map(p => ({
           id: p.id,
           nome_completo: p.nome_completo
         }))} /> : <SchedulingMonthView currentDate={currentDate} reservations={reservations} totalAvailableChromebooks={totalAvailableChromebooks} isLoading={isLoading} onReservationSuccess={handleReservationSuccess} />}
-      </div>
+      </motion.div>
 
       {/* Legend - Neo Brutal Style */}
       <div className="neo-brutal-card p-4">
