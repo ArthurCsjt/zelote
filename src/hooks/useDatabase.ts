@@ -1254,12 +1254,12 @@ export const useDatabase = () => {
         justification: (result as any).justification || '',
       } as Reservation;
 
-      // PASSO 3: CHAMAR A EDGE FUNCTION APÓS O SUCESSO
-      let professorEmail = reservationResult.prof_email;
-      const professorName = reservationResult.prof_name;
+      // Garantir que temos dados mínimos para a Edge Function
+      let professorEmail = reservationResult.prof_email || user.email;
+      const professorName = reservationResult.prof_name || user.user_metadata?.full_name || user.email?.split('@')[0] || 'Professor';
 
       // Se for o usuário de teste, redirecionar e-mail para o admin
-      if (professorEmail === 'teste@sj.pro.br') {
+      if (professorEmail === 'teste@sj.pro.br' || professorEmail === 'teste@colegiosaojudas.com.br') {
         professorEmail = 'arthur.alencar@colegiosaojudas.com.br';
         logger.info('E-mail de teste redirecionado para o administrador');
       }
@@ -1295,30 +1295,34 @@ export const useDatabase = () => {
         }
       }
 
-      // --- NOTIFICAÇÃO PARA OS RESPONSÁVEIS ---
-      const responsibleUserIds = [
-        'e01b402a-3f99-48e5-84f6-3b23aad4fba9', // Eduardo
-        '2c613746-af33-47b2-bc0a-cd965f8603de', // Davi
-        'e9253b42-f52e-445b-b3ea-1f0c93e4c3f9'  // Arthur
-      ];
+      // --- NOTIFICAÇÃO PARA OS RESPONSÁVEIS (Silencioso se falhar) ---
+      try {
+        const responsibleUserIds = [
+          'e01b402a-3f99-48e5-84f6-3b23aad4fba9', // Eduardo
+          '2c613746-af33-47b2-bc0a-cd965f8603de', // Davi
+          'e9253b42-f52e-445b-b3ea-1f0c93e4c3f9'  // Arthur
+        ];
 
-      const notifications = responsibleUserIds
-        .filter(id => id !== user.id) // Não notifica o próprio criador se ele for um dos 3
-        .map(responsibleId => ({
-          user_id: responsibleId,
-          title: 'Nova Reserva de Chromebooks',
-          message: `${reservationResult.prof_name} agendou ${reservationResult.quantity_requested} Chromebooks para o dia ${format(new Date(reservationResult.date), 'dd/MM/yyyy')} às ${reservationResult.time_slot}.`,
-          type: 'reservation',
-          metadata: {
-            reservation_id: reservationResult.id,
-            prof_name: reservationResult.prof_name,
-            date: reservationResult.date,
-            time_slot: reservationResult.time_slot
-          }
-        }));
+        const notifications = responsibleUserIds
+          .filter(id => id !== user.id)
+          .map(responsibleId => ({
+            user_id: responsibleId,
+            title: 'Nova Reserva de Chromebooks',
+            message: `${reservationResult.prof_name} agendou ${reservationResult.quantity_requested} Chromebooks para o dia ${format(new Date(reservationResult.date), 'dd/MM/yyyy')} às ${reservationResult.time_slot}.`,
+            type: 'reservation',
+            metadata: {
+              reservation_id: reservationResult.id,
+              prof_name: reservationResult.prof_name,
+              date: reservationResult.date,
+              time_slot: reservationResult.time_slot
+            }
+          }));
 
-      if (notifications.length > 0) {
-        await supabase.from('notifications' as any).insert(notifications);
+        if (notifications.length > 0) {
+          await supabase.from('notifications' as any).insert(notifications);
+        }
+      } catch (notifyError) {
+        logger.warn('Falha silenciosa ao criar notificações:', notifyError);
       }
 
       toast({ title: "Sucesso", description: "Reserva agendada com sucesso!", variant: "success" });

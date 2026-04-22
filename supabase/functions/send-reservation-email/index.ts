@@ -152,8 +152,11 @@ serve(async (req) => {
       classroom
     } = payload;
 
-    if (!toEmail || !professorName || !justification || !date || !time || !quantity) {
-      return new Response(JSON.stringify({ error: 'Dados de reserva incompletos.' }), {
+    // Converte quantity para número para evitar falso 400 quando quantity_requested = null ou 0
+    const safeQuantity = Number(quantity) || 0;
+    if (!toEmail || !professorName || !justification || !date || !time) {
+      console.error('Payload incompleto:', { toEmail: !!toEmail, professorName: !!professorName, justification: !!justification, date: !!date, time: !!time });
+      return new Response(JSON.stringify({ error: 'Dados de reserva incompletos.', missing: { toEmail: !toEmail, professorName: !professorName, justification: !justification, date: !date, time: !time } }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 400,
       });
@@ -166,7 +169,7 @@ serve(async (req) => {
       justification,
       date,
       time,
-      quantity,
+      quantity: safeQuantity,
       needs_tv,
       needs_sound,
       needs_mic,
