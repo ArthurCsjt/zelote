@@ -316,9 +316,12 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
                       const usage = daySlots?.get(slot) || 0;
                       const rate = totalAvailableChromebooks > 0 ? (usage / totalAvailableChromebooks) * 100 : 0;
 
-                      let color = "bg-[#F3F4F6] dark:bg-zinc-800/40"; // Quase invisível
-                      if (rate >= 50) color = "bg-[#22C55E]";
-                      else if (rate > 0) color = "bg-[#F97316]";
+                      // Cores espelham os estados dos slots: cinza → laranja → vermelho
+                      let color = "bg-zinc-200/60 dark:bg-zinc-700/30"; // Vazio / Disponível
+                      if (rate >= 100) color = "bg-red-600 dark:bg-red-500";           // Esgotado
+                      else if (rate >= 75) color = "bg-orange-600 dark:bg-orange-500"; // Quase cheio
+                      else if (rate >= 30) color = "bg-orange-400 dark:bg-orange-400"; // Parcial
+                      else if (rate > 0)  color = "bg-amber-300 dark:bg-amber-400";    // Pouco uso
 
                       return (
                         <div
