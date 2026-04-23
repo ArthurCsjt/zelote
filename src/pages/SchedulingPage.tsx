@@ -192,35 +192,78 @@ const SchedulingPage = () => {
             </div>
           </div>
 
-          {/* RIGHT COLUMN: Months 2x6 */}
-          <div className="grid grid-rows-2 grid-cols-6 gap-1 w-full lg:w-auto lg:ml-auto">
-            {Array.from({ length: 12 }, (_, i) => {
-              const date = new Date(new Date().getFullYear(), i, 1);
-              const isCurrentMonth = i === currentDate.getMonth();
-              const isThisMonth = i === new Date().getMonth() && currentDate.getFullYear() === new Date().getFullYear();
-              return (
+          {/* RIGHT COLUMN: Year Selector + Months Grid */}
+          <div className="flex flex-col gap-2 w-full lg:w-auto lg:ml-auto">
+            {/* Year navigator + label */}
+            <div className="flex items-center justify-between lg:justify-end gap-2">
+              <span className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">
+                Selecionar mês
+              </span>
+              <div className="flex h-7 border-2 border-black dark:border-white bg-white dark:bg-zinc-900 shadow-[2px_2px_0_0_#000] dark:shadow-[2px_2px_0_0_#fff]">
                 <button
-                  key={i}
-                  onClick={() => {
-                    let targetDate = new Date(currentDate.getFullYear(), i, 1);
-                    if (isSaturday(targetDate)) targetDate = addDays(targetDate, 2);
-                    else if (isSunday(targetDate)) targetDate = addDays(targetDate, 1);
-                    setCurrentDate(targetDate);
-                  }}
-                  className={cn(
-                    "h-7 w-full lg:w-12 text-[10px] font-black uppercase tracking-tight border-2 transition-all duration-150 flex items-center justify-center",
-                    isCurrentMonth
-                      ? "bg-primary text-primary-foreground border-black dark:border-white translate-y-[2px] shadow-none"
-                      : cn(
-                          "bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 hover:-translate-y-0.5 hover:shadow-[3px_3px_0_0_#000] dark:hover:shadow-[3px_3px_0_0_#fff] shadow-[2px_2px_0_0_#000] dark:shadow-[2px_2px_0_0_#fff]",
-                          isThisMonth ? "border-primary" : "border-black dark:border-white"
-                        )
-                  )}
+                  onClick={() => setCurrentDate(new Date(currentDate.getFullYear() - 1, currentDate.getMonth(), 1))}
+                  className="flex items-center justify-center w-6 border-r-2 border-black dark:border-white hover:bg-primary hover:text-primary-foreground transition-colors"
+                  aria-label="Ano anterior"
                 >
-                  {format(date, 'MMM', { locale: ptBR }).replace('.', '')}
+                  <ChevronLeft className="h-3 w-3" strokeWidth={3} />
                 </button>
-              );
-            })}
+                <div className="flex items-center justify-center px-2.5 text-[10px] font-black tracking-wider text-black dark:text-white tabular-nums">
+                  {currentDate.getFullYear()}
+                </div>
+                <button
+                  onClick={() => setCurrentDate(new Date(currentDate.getFullYear() + 1, currentDate.getMonth(), 1))}
+                  className="flex items-center justify-center w-6 border-l-2 border-black dark:border-white hover:bg-primary hover:text-primary-foreground transition-colors"
+                  aria-label="Próximo ano"
+                >
+                  <ChevronRight className="h-3 w-3" strokeWidth={3} />
+                </button>
+              </div>
+            </div>
+
+            {/* Months grid - card container */}
+            <div className="p-2 border-2 border-black dark:border-white bg-zinc-50 dark:bg-zinc-950 shadow-[3px_3px_0_0_#000] dark:shadow-[3px_3px_0_0_#fff]">
+              <div className="grid grid-rows-2 grid-cols-6 gap-1.5 w-full lg:w-auto">
+                {Array.from({ length: 12 }, (_, i) => {
+                  const date = new Date(new Date().getFullYear(), i, 1);
+                  const isCurrentMonth = i === currentDate.getMonth();
+                  const isThisMonth = i === new Date().getMonth() && currentDate.getFullYear() === new Date().getFullYear();
+                  return (
+                    <button
+                      key={i}
+                      onClick={() => {
+                        let targetDate = new Date(currentDate.getFullYear(), i, 1);
+                        if (isSaturday(targetDate)) targetDate = addDays(targetDate, 2);
+                        else if (isSunday(targetDate)) targetDate = addDays(targetDate, 1);
+                        setCurrentDate(targetDate);
+                      }}
+                      className={cn(
+                        "group relative h-9 w-full lg:w-14 text-[10px] font-black uppercase tracking-wider border-2 transition-all duration-200 flex flex-col items-center justify-center overflow-hidden",
+                        isCurrentMonth
+                          ? "bg-primary text-primary-foreground border-black dark:border-white translate-y-[2px] translate-x-[2px] shadow-none"
+                          : cn(
+                              "bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 shadow-[2px_2px_0_0_#000] dark:shadow-[2px_2px_0_0_#fff]",
+                              "hover:-translate-y-0.5 hover:-translate-x-0.5 hover:shadow-[4px_4px_0_0_#000] dark:hover:shadow-[4px_4px_0_0_#fff] hover:bg-primary/10",
+                              isThisMonth ? "border-primary border-[2.5px]" : "border-black dark:border-white"
+                            )
+                      )}
+                    >
+                      {/* Month abbreviation */}
+                      <span className="leading-none">
+                        {format(date, 'MMM', { locale: ptBR }).replace('.', '')}
+                      </span>
+                      {/* Today indicator dot */}
+                      {isThisMonth && !isCurrentMonth && (
+                        <span className="absolute top-0.5 right-0.5 h-1.5 w-1.5 bg-primary rounded-full" />
+                      )}
+                      {/* Active corner accent */}
+                      {isCurrentMonth && (
+                        <span className="absolute top-0 right-0 h-2 w-2 bg-primary-foreground/30" />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           </div>
         </div>
       </motion.div>
