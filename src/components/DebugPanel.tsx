@@ -73,7 +73,7 @@ export const DebugPanel = () => {
       // Adicionar dados de exemplo
       const { data, error } = await supabase
         .from('chromebooks')
-        .insert(sampleChromebooks)
+        .insert(sampleChromebooks as any)
         .select();
 
       if (error) {
