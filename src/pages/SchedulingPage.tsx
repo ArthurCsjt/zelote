@@ -265,53 +265,6 @@ const SchedulingPage = () => {
             </div>
           </div>
         </div>
-
-            {/* Months grid - card container */}
-            <div className="p-2 border-2 border-black dark:border-white bg-zinc-50 dark:bg-zinc-950 shadow-[3px_3px_0_0_#000] dark:shadow-[3px_3px_0_0_#fff]">
-              <div className="grid grid-rows-2 grid-cols-6 gap-1.5 w-full lg:w-auto">
-                {Array.from({ length: 12 }, (_, i) => {
-                  const date = new Date(new Date().getFullYear(), i, 1);
-                  const isCurrentMonth = i === currentDate.getMonth();
-                  const isThisMonth = i === new Date().getMonth() && currentDate.getFullYear() === new Date().getFullYear();
-                  return (
-                    <button
-                      key={i}
-                      onClick={() => {
-                        let targetDate = new Date(currentDate.getFullYear(), i, 1);
-                        if (isSaturday(targetDate)) targetDate = addDays(targetDate, 2);
-                        else if (isSunday(targetDate)) targetDate = addDays(targetDate, 1);
-                        setCurrentDate(targetDate);
-                      }}
-                      className={cn(
-                        "group relative h-9 w-full lg:w-14 text-[10px] font-black uppercase tracking-wider border-2 transition-all duration-200 flex flex-col items-center justify-center overflow-hidden",
-                        isCurrentMonth
-                          ? "bg-primary text-primary-foreground border-black dark:border-white translate-y-[2px] translate-x-[2px] shadow-none"
-                          : cn(
-                              "bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 shadow-[2px_2px_0_0_#000] dark:shadow-[2px_2px_0_0_#fff]",
-                              "hover:-translate-y-0.5 hover:-translate-x-0.5 hover:shadow-[4px_4px_0_0_#000] dark:hover:shadow-[4px_4px_0_0_#fff] hover:bg-primary/10",
-                              isThisMonth ? "border-primary border-[2.5px]" : "border-black dark:border-white"
-                            )
-                      )}
-                    >
-                      {/* Month abbreviation */}
-                      <span className="leading-none">
-                        {format(date, 'MMM', { locale: ptBR }).replace('.', '')}
-                      </span>
-                      {/* Today indicator dot */}
-                      {isThisMonth && !isCurrentMonth && (
-                        <span className="absolute top-0.5 right-0.5 h-1.5 w-1.5 bg-primary rounded-full" />
-                      )}
-                      {/* Active corner accent */}
-                      {isCurrentMonth && (
-                        <span className="absolute top-0 right-0 h-2 w-2 bg-primary-foreground/30" />
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        </div>
       </motion.div>
 
       {/* Weekend Warning */}
