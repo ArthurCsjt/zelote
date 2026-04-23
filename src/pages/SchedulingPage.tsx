@@ -120,101 +120,107 @@ const SchedulingPage = () => {
 
     <div className="space-y-4 sm:space-y-6 max-w-7xl mx-auto relative z-10">
       {/* Command Center - Ultra-Slim Header */}
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: -30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
-        className="neo-brutal-card bg-zinc-50 dark:bg-zinc-900/50 p-2 sm:p-3 relative overflow-hidden group/header mb-2 border-black/10"
+        className="bg-white dark:bg-zinc-900 p-3 sm:p-4 border-2 border-black dark:border-white shadow-[4px_4px_0_0_#000] dark:shadow-[4px_4px_0_0_#fff] mb-2"
       >
-        {/* Subtle Grid Pattern for Header Interior */}
-        <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.05] pointer-events-none neo-brutal-grid" />
-        
-        <div className="relative z-10 flex flex-col space-y-4 sm:space-y-8">
-          {/* Top Row: Split Layout */}
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-            {/* Left Side: Title, Mode & Week Navigator */}
-            <div className="flex flex-col gap-3">
-              <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2 px-3 py-1 border border-black dark:border-white bg-white dark:bg-zinc-900 shadow-[2px_2px_0px_0px_rgba(0,0,0,1),4px_4px_0px_0px_rgba(156,163,175,0.4)]">
-                <div className="text-black dark:text-white">
+        <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+          {/* LEFT COLUMN */}
+          <div className="flex flex-col gap-2.5 w-full lg:w-auto">
+            {/* Row 1: Title + Toggle */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+              {/* Title pill */}
+              <div className="flex items-stretch h-9 border-2 border-black dark:border-white bg-white dark:bg-zinc-900 shadow-[3px_3px_0_0_#000] dark:shadow-[3px_3px_0_0_#fff] w-fit">
+                <div className="flex items-center justify-center w-9 bg-black dark:bg-white text-white dark:text-black border-r-2 border-black dark:border-white">
                   <Calendar className="h-4 w-4" />
                 </div>
-                <h1 className="text-base sm:text-xl font-black uppercase tracking-tighter leading-none text-black dark:text-white">
+                <h1 className="flex items-center px-3 text-sm font-black uppercase tracking-tighter text-black dark:text-white whitespace-nowrap">
                   Agendamento
                 </h1>
               </div>
 
-                {/* View Switching */}
-                <div className="flex ml-4 border border-black dark:border-white overflow-hidden bg-white dark:bg-zinc-900 scale-90 origin-left">
-                  <button
-                    onClick={() => handleViewModeChange('weekly')}
-                    className={cn(
-                      "px-3 py-1 text-[8px] font-black uppercase tracking-wider transition-all duration-200",
-                      viewMode === 'weekly' ? "bg-primary text-white" : "text-zinc-500 hover:text-black"
-                    )}
-                  >
-                    Semanal
-                  </button>
-                  <button
-                    onClick={() => setViewMode('monthly')}
-                    className={cn(
-                      "px-3 py-1 text-[8px] font-black uppercase tracking-wider transition-all duration-200",
-                      viewMode === 'monthly' ? "bg-primary text-white" : "text-zinc-500 hover:text-black"
-                    )}
-                  >
-                    Histórico
-                  </button>
-                </div>
-              </div>
-
-              {/* Date Navigator */}
-              <div className="flex items-center border border-black dark:border-white bg-white dark:bg-zinc-900 w-fit shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)]">
+              {/* View toggle */}
+              <div className="flex h-9 border-2 border-black dark:border-white bg-white dark:bg-zinc-900 shadow-[3px_3px_0_0_#000] dark:shadow-[3px_3px_0_0_#fff] w-fit overflow-hidden">
                 <button
-                  onClick={() => handleDateChange('prev')}
-                  disabled={isLoading}
-                  className="p-1.5 border-r border-black/20 dark:border-white/20 hover:bg-zinc-100 dark:hover:bg-zinc-800 disabled:opacity-30 transition-colors"
+                  onClick={() => handleViewModeChange('weekly')}
+                  className={cn(
+                    "px-4 text-[10px] font-black uppercase tracking-wider transition-all duration-150 border-r-2 border-black dark:border-white",
+                    viewMode === 'weekly'
+                      ? "bg-primary text-primary-foreground shadow-[inset_2px_2px_0_0_rgba(0,0,0,0.25)]"
+                      : "bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                  )}
                 >
-                  <ChevronLeft className="h-3.5 w-3.5" />
+                  Semanal
                 </button>
-                <div className="px-4 text-[9px] sm:text-[11px] font-black uppercase tracking-tight min-w-[140px] sm:min-w-[180px] text-center whitespace-nowrap">
-                  {displayRange}
-                </div>
                 <button
-                  onClick={() => handleDateChange('next')}
-                  disabled={isLoading}
-                  className="p-1.5 border-l border-black/20 dark:border-white/20 hover:bg-zinc-100 dark:hover:bg-zinc-800 disabled:opacity-30 transition-colors"
+                  onClick={() => handleViewModeChange('monthly')}
+                  className={cn(
+                    "px-4 text-[10px] font-black uppercase tracking-wider transition-all duration-150",
+                    viewMode === 'monthly'
+                      ? "bg-primary text-primary-foreground shadow-[inset_2px_2px_0_0_rgba(0,0,0,0.25)]"
+                      : "bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                  )}
                 >
-                  <ChevronRight className="h-3.5 w-3.5" />
+                  Histórico
                 </button>
               </div>
             </div>
 
-            {/* Right Side: Month Grid (2x6) */}
-            <div className="grid grid-rows-2 grid-cols-6 gap-1.5 w-fit ml-auto lg:ml-0">
-              {Array.from({ length: 12 }, (_, i) => {
-                const date = new Date(new Date().getFullYear(), i, 1);
-                const isCurrentMonth = i === currentDate.getMonth();
-                return (
-                  <button
-                    key={i}
-                    onClick={() => {
-                      let targetDate = new Date(currentDate.getFullYear(), i, 1);
-                      if (isSaturday(targetDate)) targetDate = addDays(targetDate, 2);
-                      else if (isSunday(targetDate)) targetDate = addDays(targetDate, 1);
-                      setCurrentDate(targetDate);
-                    }}
-                    className={cn(
-                      "px-2 py-0.5 text-[8px] font-black uppercase transition-all duration-300 border shadow-[1px_1px_0px_0px_#000] hover:shadow-[2px_2px_0px_0px_#000] hover:-translate-y-0.5 min-w-[42px] text-center",
-                      isCurrentMonth
-                        ? "bg-primary text-white border-black dark:border-white"
-                        : "bg-white text-zinc-500 border-black hover:text-black dark:bg-zinc-900 dark:border-white dark:hover:text-white"
-                    )}
-                  >
-                    {format(date, 'MMM', { locale: ptBR }).replace('.', '')}
-                  </button>
-                );
-              })}
+            {/* Row 2: Date Navigator */}
+            <div className="flex h-9 border-2 border-black dark:border-white bg-white dark:bg-zinc-900 shadow-[3px_3px_0_0_#000] dark:shadow-[3px_3px_0_0_#fff] w-full sm:w-fit min-w-0 sm:min-w-[280px]">
+              <button
+                onClick={() => handleDateChange('prev')}
+                disabled={isLoading}
+                className="flex items-center justify-center w-9 border-r-2 border-black dark:border-white hover:bg-primary/10 disabled:opacity-30 transition-colors"
+                aria-label="Anterior"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              <div className="flex-1 flex items-center justify-center px-4 text-[11px] font-black uppercase tracking-tight text-black dark:text-white whitespace-nowrap">
+                {displayRange}
+              </div>
+              <button
+                onClick={() => handleDateChange('next')}
+                disabled={isLoading}
+                className="flex items-center justify-center w-9 border-l-2 border-black dark:border-white hover:bg-primary/10 disabled:opacity-30 transition-colors"
+                aria-label="Próximo"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
             </div>
+          </div>
+
+          {/* RIGHT COLUMN: Months 2x6 */}
+          <div className="grid grid-rows-2 grid-cols-6 gap-1 w-full lg:w-auto lg:ml-auto">
+            {Array.from({ length: 12 }, (_, i) => {
+              const date = new Date(new Date().getFullYear(), i, 1);
+              const isCurrentMonth = i === currentDate.getMonth();
+              const isThisMonth = i === new Date().getMonth() && currentDate.getFullYear() === new Date().getFullYear();
+              return (
+                <button
+                  key={i}
+                  onClick={() => {
+                    let targetDate = new Date(currentDate.getFullYear(), i, 1);
+                    if (isSaturday(targetDate)) targetDate = addDays(targetDate, 2);
+                    else if (isSunday(targetDate)) targetDate = addDays(targetDate, 1);
+                    setCurrentDate(targetDate);
+                  }}
+                  className={cn(
+                    "h-7 w-full lg:w-12 text-[10px] font-black uppercase tracking-tight border-2 transition-all duration-150 flex items-center justify-center",
+                    isCurrentMonth
+                      ? "bg-primary text-primary-foreground border-black dark:border-white translate-y-[2px] shadow-none"
+                      : cn(
+                          "bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 hover:-translate-y-0.5 hover:shadow-[3px_3px_0_0_#000] dark:hover:shadow-[3px_3px_0_0_#fff] shadow-[2px_2px_0_0_#000] dark:shadow-[2px_2px_0_0_#fff]",
+                          isThisMonth ? "border-primary" : "border-black dark:border-white"
+                        )
+                  )}
+                >
+                  {format(date, 'MMM', { locale: ptBR }).replace('.', '')}
+                </button>
+              );
+            })}
           </div>
         </div>
       </motion.div>
