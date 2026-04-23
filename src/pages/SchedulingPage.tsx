@@ -128,21 +128,21 @@ const SchedulingPage = () => {
       >
         <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
           {/* LEFT COLUMN */}
-          <div className="flex flex-col gap-2.5 w-full lg:w-auto">
+          <div className="flex flex-col gap-3 w-full lg:w-auto">
             {/* Row 1: Title + Toggle */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
-              {/* Title pill */}
-              <div className="flex items-stretch h-11 border-2 border-black dark:border-white bg-white dark:bg-zinc-900 shadow-[3px_3px_0_0_#000] dark:shadow-[3px_3px_0_0_#fff] w-fit">
-                <div className="flex items-center justify-center w-11 bg-primary text-primary-foreground border-r-2 border-black dark:border-white">
+              {/* Title pill - centralizado */}
+              <div className="flex items-stretch h-11 border-2 border-black dark:border-white bg-white dark:bg-zinc-900 shadow-[3px_3px_0_0_#000] dark:shadow-[3px_3px_0_0_#fff] flex-1 sm:flex-initial">
+                <div className="flex items-center justify-center w-11 bg-primary text-primary-foreground border-r-2 border-black dark:border-white shrink-0">
                   <Calendar className="h-5 w-5" strokeWidth={2.5} />
                 </div>
-                <h1 className="flex items-center px-4 text-base sm:text-lg font-black uppercase tracking-tight text-black dark:text-white whitespace-nowrap">
+                <h1 className="flex-1 flex items-center justify-center px-6 text-base sm:text-lg font-black uppercase tracking-tight text-black dark:text-white whitespace-nowrap">
                   Agendamento
                 </h1>
               </div>
 
               {/* View toggle */}
-              <div className="flex h-11 border-2 border-black dark:border-white bg-white dark:bg-zinc-900 shadow-[3px_3px_0_0_#000] dark:shadow-[3px_3px_0_0_#fff] w-fit overflow-hidden">
+              <div className="flex h-11 border-2 border-black dark:border-white bg-white dark:bg-zinc-900 shadow-[3px_3px_0_0_#000] dark:shadow-[3px_3px_0_0_#fff] overflow-hidden">
                 <button
                   onClick={() => handleViewModeChange('weekly')}
                   className={cn(
@@ -168,26 +168,26 @@ const SchedulingPage = () => {
               </div>
             </div>
 
-            {/* Row 2: Date Navigator — alinhado ao final do toggle Histórico */}
-            <div className="flex h-10 border-2 border-black dark:border-white bg-white dark:bg-zinc-900 shadow-[3px_3px_0_0_#000] dark:shadow-[3px_3px_0_0_#fff] w-full">
+            {/* Row 2: Date Navigator com pontas coloridas */}
+            <div className="flex h-11 border-2 border-black dark:border-white bg-white dark:bg-zinc-900 shadow-[3px_3px_0_0_#000] dark:shadow-[3px_3px_0_0_#fff] w-full">
               <button
                 onClick={() => handleDateChange('prev')}
                 disabled={isLoading}
-                className="flex items-center justify-center w-10 border-r-2 border-black dark:border-white hover:bg-primary/10 disabled:opacity-30 transition-colors shrink-0"
+                className="flex items-center justify-center w-12 bg-primary text-primary-foreground border-r-2 border-black dark:border-white hover:bg-primary/90 disabled:opacity-30 transition-colors shrink-0"
                 aria-label="Anterior"
               >
-                <ChevronLeft className="h-4 w-4" />
+                <ChevronLeft className="h-5 w-5" strokeWidth={3} />
               </button>
-              <div className="flex-1 flex items-center justify-center px-4 text-[11px] font-black uppercase tracking-tight text-black dark:text-white whitespace-nowrap">
+              <div className="flex-1 flex items-center justify-center px-4 text-[11px] sm:text-xs font-black uppercase tracking-wider text-black dark:text-white whitespace-nowrap">
                 {displayRange}
               </div>
               <button
                 onClick={() => handleDateChange('next')}
                 disabled={isLoading}
-                className="flex items-center justify-center w-10 border-l-2 border-black dark:border-white hover:bg-primary/10 disabled:opacity-30 transition-colors shrink-0"
+                className="flex items-center justify-center w-12 bg-primary text-primary-foreground border-l-2 border-black dark:border-white hover:bg-primary/90 disabled:opacity-30 transition-colors shrink-0"
                 aria-label="Próximo"
               >
-                <ChevronRight className="h-4 w-4" />
+                <ChevronRight className="h-5 w-5" strokeWidth={3} />
               </button>
             </div>
           </div>
