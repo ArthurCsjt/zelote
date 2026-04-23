@@ -126,10 +126,9 @@ const SchedulingPage = () => {
         transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
         className="bg-white dark:bg-zinc-900 p-3 sm:p-4 border-2 border-black dark:border-white shadow-[4px_4px_0_0_#000] dark:shadow-[4px_4px_0_0_#fff] mb-2"
       >
-        <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
-          {/* LEFT COLUMN */}
-          <div className="flex flex-col gap-3 w-full lg:w-auto">
-            {/* Row 1: Title + Toggle */}
+        <div className="flex flex-col gap-3">
+          {/* ROW 1: Title + Toggle (left) | Year selector (right) */}
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
               {/* Title pill - centralizado */}
               <div className="flex items-stretch h-11 border-2 border-black dark:border-white bg-white dark:bg-zinc-900 shadow-[3px_3px_0_0_#000] dark:shadow-[3px_3px_0_0_#fff] flex-1 sm:flex-initial">
@@ -168,32 +167,6 @@ const SchedulingPage = () => {
               </div>
             </div>
 
-            {/* Row 2: Date Navigator com pontas coloridas */}
-            <div className="flex h-11 border-2 border-black dark:border-white bg-white dark:bg-zinc-900 shadow-[3px_3px_0_0_#000] dark:shadow-[3px_3px_0_0_#fff] w-full">
-              <button
-                onClick={() => handleDateChange('prev')}
-                disabled={isLoading}
-                className="flex items-center justify-center w-12 bg-primary text-primary-foreground border-r-2 border-black dark:border-white hover:bg-primary/90 disabled:opacity-30 transition-colors shrink-0"
-                aria-label="Anterior"
-              >
-                <ChevronLeft className="h-5 w-5" strokeWidth={3} />
-              </button>
-              <div className="flex-1 flex items-center justify-center px-4 text-[11px] sm:text-xs font-black uppercase tracking-wider text-black dark:text-white whitespace-nowrap">
-                {displayRange}
-              </div>
-              <button
-                onClick={() => handleDateChange('next')}
-                disabled={isLoading}
-                className="flex items-center justify-center w-12 bg-primary text-primary-foreground border-l-2 border-black dark:border-white hover:bg-primary/90 disabled:opacity-30 transition-colors shrink-0"
-                aria-label="Próximo"
-              >
-                <ChevronRight className="h-5 w-5" strokeWidth={3} />
-              </button>
-            </div>
-          </div>
-
-          {/* RIGHT COLUMN: Year Selector + Months Grid */}
-          <div className="flex flex-col gap-2 w-full lg:w-auto lg:ml-auto">
             {/* Year navigator + label */}
             <div className="flex items-center justify-between lg:justify-end gap-2">
               <span className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">
@@ -219,6 +192,79 @@ const SchedulingPage = () => {
                 </button>
               </div>
             </div>
+          </div>
+
+          {/* ROW 2: Date Navigator (left) | Months Grid (right) — alinhados */}
+          <div className="flex flex-col lg:flex-row lg:items-stretch lg:justify-between gap-3">
+            {/* Date Navigator com pontas coloridas */}
+            <div className="flex h-[68px] border-2 border-black dark:border-white bg-white dark:bg-zinc-900 shadow-[3px_3px_0_0_#000] dark:shadow-[3px_3px_0_0_#fff] flex-1 lg:max-w-md">
+              <button
+                onClick={() => handleDateChange('prev')}
+                disabled={isLoading}
+                className="flex items-center justify-center w-14 bg-primary text-primary-foreground border-r-2 border-black dark:border-white hover:bg-primary/90 disabled:opacity-30 transition-colors shrink-0"
+                aria-label="Anterior"
+              >
+                <ChevronLeft className="h-6 w-6" strokeWidth={3} />
+              </button>
+              <div className="flex-1 flex items-center justify-center px-4 text-[11px] sm:text-xs font-black uppercase tracking-wider text-black dark:text-white whitespace-nowrap text-center">
+                {displayRange}
+              </div>
+              <button
+                onClick={() => handleDateChange('next')}
+                disabled={isLoading}
+                className="flex items-center justify-center w-14 bg-primary text-primary-foreground border-l-2 border-black dark:border-white hover:bg-primary/90 disabled:opacity-30 transition-colors shrink-0"
+                aria-label="Próximo"
+              >
+                <ChevronRight className="h-6 w-6" strokeWidth={3} />
+              </button>
+            </div>
+
+            {/* Months grid - card container */}
+            <div className="p-2 border-2 border-black dark:border-white bg-zinc-50 dark:bg-zinc-950 shadow-[3px_3px_0_0_#000] dark:shadow-[3px_3px_0_0_#fff]">
+              <div className="grid grid-rows-2 grid-cols-6 gap-1.5 w-full lg:w-auto h-full">
+                {Array.from({ length: 12 }, (_, i) => {
+                  const date = new Date(new Date().getFullYear(), i, 1);
+                  const isCurrentMonth = i === currentDate.getMonth();
+                  const isThisMonth = i === new Date().getMonth() && currentDate.getFullYear() === new Date().getFullYear();
+                  return (
+                    <button
+                      key={i}
+                      onClick={() => {
+                        let targetDate = new Date(currentDate.getFullYear(), i, 1);
+                        if (isSaturday(targetDate)) targetDate = addDays(targetDate, 2);
+                        else if (isSunday(targetDate)) targetDate = addDays(targetDate, 1);
+                        setCurrentDate(targetDate);
+                      }}
+                      className={cn(
+                        "group relative w-full lg:w-14 text-[10px] font-black uppercase tracking-wider border-2 transition-all duration-200 flex flex-col items-center justify-center overflow-hidden",
+                        isCurrentMonth
+                          ? "bg-primary text-primary-foreground border-black dark:border-white translate-y-[2px] translate-x-[2px] shadow-none"
+                          : cn(
+                              "bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 shadow-[2px_2px_0_0_#000] dark:shadow-[2px_2px_0_0_#fff]",
+                              "hover:-translate-y-0.5 hover:-translate-x-0.5 hover:shadow-[4px_4px_0_0_#000] dark:hover:shadow-[4px_4px_0_0_#fff] hover:bg-primary/10",
+                              isThisMonth ? "border-primary border-[2.5px]" : "border-black dark:border-white"
+                            )
+                      )}
+                    >
+                      {/* Month abbreviation */}
+                      <span className="leading-none">
+                        {format(date, 'MMM', { locale: ptBR }).replace('.', '')}
+                      </span>
+                      {/* Today indicator dot */}
+                      {isThisMonth && !isCurrentMonth && (
+                        <span className="absolute top-0.5 right-0.5 h-1.5 w-1.5 bg-primary rounded-full" />
+                      )}
+                      {/* Active corner accent */}
+                      {isCurrentMonth && (
+                        <span className="absolute top-0 right-0 h-2 w-2 bg-primary-foreground/30" />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
 
             {/* Months grid - card container */}
             <div className="p-2 border-2 border-black dark:border-white bg-zinc-50 dark:bg-zinc-950 shadow-[3px_3px_0_0_#000] dark:shadow-[3px_3px_0_0_#fff]">
