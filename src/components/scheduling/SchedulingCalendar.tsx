@@ -196,7 +196,10 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
                         transition={{ type: "spring", stiffness: 300, damping: 30 }}
                         className="flex flex-col items-center justify-center text-center"
                       >
-                        <span className="text-[11px] sm:text-[13px] font-black uppercase tracking-[0.25em] mb-1.5 text-primary">
+                        <span className={cn(
+                          "text-[11px] sm:text-[13px] font-black uppercase tracking-[0.25em] mb-1.5",
+                          isCurrentDay ? "text-white/90" : "text-primary"
+                        )}>
                           {hoveredHeatmapInfo.slot}
                         </span>
                         <div className="flex items-baseline gap-1.5">

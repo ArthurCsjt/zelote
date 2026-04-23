@@ -68,7 +68,7 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
     return { jaReservados, restantes, myReservation, isAvailable, isPartial, isFull, isPast, hasMinecraft };
   }, [allReservationsForSlot, totalAvailableChromebooks, currentUser, date, timeSlot]);
 
-  const pastSlotClasses = isPast ? "opacity-40 cursor-not-allowed pointer-events-none" : "";
+  const pastSlotClasses = isPast ? "opacity-40" : "";
 
   if (isAvailable) {
     if (isPast) {
@@ -145,7 +145,9 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
               <TooltipTrigger asChild>
                 <div
                   className={cn(
-                    "w-full flex-1 flex items-center justify-center text-[8px] sm:text-[10px] leading-tight font-black uppercase truncate px-1 sm:px-1.5 py-1.5 sm:py-2 border-[1px] border-black text-center transition-all hover:-translate-y-[2px] cursor-pointer",
+                    "w-full flex-1 flex items-center justify-center text-[8px] sm:text-[10px] leading-tight font-black uppercase truncate px-1 sm:px-1.5 py-1.5 sm:py-2 border-[1px] border-black text-center transition-all",
+                    !isPast && "hover:-translate-y-[2px] cursor-pointer",
+                    isPast && "cursor-default",
                     // Alta resolução no texto
                     "text-white [text-shadow:_-1px_-1px_0_rgba(0,0,0,0.5),_1px_-1px_0_rgba(0,0,0,0.5),_-1px_1px_0_rgba(0,0,0,0.5),_1px_1px_0_rgba(0,0,0,0.5)]",
                     res.is_minecraft
@@ -154,6 +156,7 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
                   )}
                   onClick={(e) => {
                     e.stopPropagation();
+                    if (isPast) return; // Bloqueia clique no passado
                     if (isThisMine || isAdmin || isResponsible) {
                       setIsDetailsOpen(res.id);
                     }
@@ -234,7 +237,7 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
 
   return (
     <>
-      {isPartial ? (
+      {isPartial && !isPast ? (
         <ReservationDialog
           date={date}
           timeSlot={timeSlot}
