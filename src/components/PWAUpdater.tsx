@@ -35,7 +35,18 @@ export const PWAUpdater: React.FC = () => {
 
   useEffect(() => {
     if (needRefresh) {
-      logger.info('Nova atualização detectada! Mostrando notificação profissional.');
+      // Verifica se o app está rodando como PWA instalado (standalone)
+      const isPWA = window.matchMedia('(display-mode: standalone)').matches || 
+                    (window.navigator as any).standalone || 
+                    document.referrer.includes('android-app://');
+
+      if (!isPWA) {
+        logger.info('Web detectado: Atualizando automaticamente para a versão mais recente.');
+        updateServiceWorker(true);
+        return;
+      }
+
+      logger.info('PWA detectado: Mostrando notificação de atualização.');
       
       const toastId = toast.custom((t) => (
         <div className={cn(
