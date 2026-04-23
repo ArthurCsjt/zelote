@@ -132,21 +132,21 @@ const SchedulingPage = () => {
             {/* Row 1: Title + Toggle */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
               {/* Title pill */}
-              <div className="flex items-stretch h-9 border-2 border-black dark:border-white bg-white dark:bg-zinc-900 shadow-[3px_3px_0_0_#000] dark:shadow-[3px_3px_0_0_#fff] w-fit">
-                <div className="flex items-center justify-center w-9 bg-black dark:bg-white text-white dark:text-black border-r-2 border-black dark:border-white">
-                  <Calendar className="h-4 w-4" />
+              <div className="flex items-stretch h-11 border-2 border-black dark:border-white bg-white dark:bg-zinc-900 shadow-[3px_3px_0_0_#000] dark:shadow-[3px_3px_0_0_#fff] w-fit">
+                <div className="flex items-center justify-center w-11 bg-primary text-primary-foreground border-r-2 border-black dark:border-white">
+                  <Calendar className="h-5 w-5" strokeWidth={2.5} />
                 </div>
-                <h1 className="flex items-center px-3 text-sm font-black uppercase tracking-tighter text-black dark:text-white whitespace-nowrap">
+                <h1 className="flex items-center px-4 text-base sm:text-lg font-black uppercase tracking-tight text-black dark:text-white whitespace-nowrap">
                   Agendamento
                 </h1>
               </div>
 
               {/* View toggle */}
-              <div className="flex h-9 border-2 border-black dark:border-white bg-white dark:bg-zinc-900 shadow-[3px_3px_0_0_#000] dark:shadow-[3px_3px_0_0_#fff] w-fit overflow-hidden">
+              <div className="flex h-11 border-2 border-black dark:border-white bg-white dark:bg-zinc-900 shadow-[3px_3px_0_0_#000] dark:shadow-[3px_3px_0_0_#fff] w-fit overflow-hidden">
                 <button
                   onClick={() => handleViewModeChange('weekly')}
                   className={cn(
-                    "px-4 text-[10px] font-black uppercase tracking-wider transition-all duration-150 border-r-2 border-black dark:border-white",
+                    "px-5 text-[11px] font-black uppercase tracking-wider transition-all duration-150 border-r-2 border-black dark:border-white",
                     viewMode === 'weekly'
                       ? "bg-primary text-primary-foreground shadow-[inset_2px_2px_0_0_rgba(0,0,0,0.25)]"
                       : "bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800"
@@ -157,7 +157,7 @@ const SchedulingPage = () => {
                 <button
                   onClick={() => handleViewModeChange('monthly')}
                   className={cn(
-                    "px-4 text-[10px] font-black uppercase tracking-wider transition-all duration-150",
+                    "px-5 text-[11px] font-black uppercase tracking-wider transition-all duration-150",
                     viewMode === 'monthly'
                       ? "bg-primary text-primary-foreground shadow-[inset_2px_2px_0_0_rgba(0,0,0,0.25)]"
                       : "bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800"
@@ -168,12 +168,12 @@ const SchedulingPage = () => {
               </div>
             </div>
 
-            {/* Row 2: Date Navigator */}
-            <div className="flex h-9 border-2 border-black dark:border-white bg-white dark:bg-zinc-900 shadow-[3px_3px_0_0_#000] dark:shadow-[3px_3px_0_0_#fff] w-full sm:w-fit min-w-0 sm:min-w-[280px]">
+            {/* Row 2: Date Navigator — alinhado ao final do toggle Histórico */}
+            <div className="flex h-10 border-2 border-black dark:border-white bg-white dark:bg-zinc-900 shadow-[3px_3px_0_0_#000] dark:shadow-[3px_3px_0_0_#fff] w-full">
               <button
                 onClick={() => handleDateChange('prev')}
                 disabled={isLoading}
-                className="flex items-center justify-center w-9 border-r-2 border-black dark:border-white hover:bg-primary/10 disabled:opacity-30 transition-colors"
+                className="flex items-center justify-center w-10 border-r-2 border-black dark:border-white hover:bg-primary/10 disabled:opacity-30 transition-colors shrink-0"
                 aria-label="Anterior"
               >
                 <ChevronLeft className="h-4 w-4" />
@@ -184,7 +184,7 @@ const SchedulingPage = () => {
               <button
                 onClick={() => handleDateChange('next')}
                 disabled={isLoading}
-                className="flex items-center justify-center w-9 border-l-2 border-black dark:border-white hover:bg-primary/10 disabled:opacity-30 transition-colors"
+                className="flex items-center justify-center w-10 border-l-2 border-black dark:border-white hover:bg-primary/10 disabled:opacity-30 transition-colors shrink-0"
                 aria-label="Próximo"
               >
                 <ChevronRight className="h-4 w-4" />
