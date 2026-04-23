@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { toast } from '@/hooks/use-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import Layout from '@/components/Layout';
 import { Button } from '@/components/ui/button';
@@ -31,7 +32,9 @@ const SchedulingPage = () => {
   } = useAuth();
   const {
     getReservationsForWeek,
-    getTotalAvailableChromebooks
+    getTotalAvailableChromebooks,
+    getSystemSetting,
+    updateSystemSetting
   } = useDatabase();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -105,6 +108,47 @@ const SchedulingPage = () => {
       setCurrentDate(startOfMonth(new Date()));
     }
   };
+  const LIMIT_KEY = 'zelote_chromebook_operational_limit';
+
+  // Lê do localStorage imediatamente, com fallback para o total físico
+  const [operationalLimit, setOperationalLimit] = useState<number>(() => {
+    const stored = localStorage.getItem(LIMIT_KEY);
+    return stored ? parseInt(stored) : 0;
+  });
+
+  // Quando o total físico carrega, usa como fallback se não houver valor salvo
+  useEffect(() => {
+    const stored = localStorage.getItem(LIMIT_KEY);
+    if (!stored && totalAvailableChromebooks > 0) {
+      setOperationalLimit(totalAvailableChromebooks);
+    }
+  }, [totalAvailableChromebooks]);
+
+  // Tenta buscar do banco em segundo plano para sincronizar entre dispositivos
+  useEffect(() => {
+    if (!isLoadingTotal && totalAvailableChromebooks > 0) {
+      getSystemSetting('chromebook_operational_limit', null).then((val) => {
+        if (val !== null && val !== undefined) {
+          const parsed = typeof val === 'number' ? val : parseInt(val);
+          if (!isNaN(parsed)) {
+            setOperationalLimit(parsed);
+            localStorage.setItem(LIMIT_KEY, parsed.toString());
+          }
+        }
+      }).catch(() => {/* silencioso se tabela não existir */});
+    }
+  }, [isLoadingTotal, totalAvailableChromebooks]);
+
+  const handleUpdateLimit = async (newLimit: number) => {
+    // 1. Atualiza o estado React imediatamente (feedback visual instantâneo)
+    setOperationalLimit(newLimit);
+    // 2. Persiste no localStorage (funciona sempre)
+    localStorage.setItem(LIMIT_KEY, newLimit.toString());
+    // 3. Tenta salvar no banco em segundo plano
+    updateSystemSetting('chromebook_operational_limit', newLimit).catch(() => {/* silencioso */});
+    toast({ title: "✓ Limite atualizado", description: `Limite operacional definido para ${newLimit} Chromebooks.`, variant: "success" });
+  };
+
   const handleReservationSuccess = () => {
     refetch();
     queryClient.invalidateQueries({
@@ -282,10 +326,26 @@ const SchedulingPage = () => {
         transition={{ duration: 1.4, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
         className="neo-brutal-card p-1 sm:p-2 overflow-hidden border"
       >
-        {viewMode === 'weekly' ? <SchedulingCalendar currentDate={currentDate} reservations={reservations} totalAvailableChromebooks={totalAvailableChromebooks} currentUser={user} isLoading={isLoading} onReservationSuccess={handleReservationSuccess} professores={professores.map(p => ({
-          id: p.id,
-          nome_completo: p.nome_completo
-        }))} /> : <SchedulingMonthView currentDate={currentDate} reservations={reservations} totalAvailableChromebooks={totalAvailableChromebooks} isLoading={isLoading} onReservationSuccess={handleReservationSuccess} />}
+        {viewMode === 'weekly' ? <SchedulingCalendar 
+          currentDate={currentDate} 
+          reservations={reservations} 
+          totalAvailableChromebooks={operationalLimit} 
+          physicalTotal={totalAvailableChromebooks}
+          currentUser={user} 
+          isLoading={isLoading} 
+          onReservationSuccess={handleReservationSuccess} 
+          onUpdateLimit={handleUpdateLimit}
+          professores={professores.map(p => ({
+            id: p.id,
+            nome_completo: p.nome_completo
+          }))} 
+        /> : <SchedulingMonthView 
+          currentDate={currentDate} 
+          reservations={reservations} 
+          totalAvailableChromebooks={operationalLimit} 
+          isLoading={isLoading} 
+          onReservationSuccess={handleReservationSuccess} 
+        />}
       </motion.div>
 
       {/* Legend - Neo Brutal Style */}

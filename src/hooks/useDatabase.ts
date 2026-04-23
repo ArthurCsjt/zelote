@@ -1492,6 +1492,47 @@ export const useDatabase = () => {
     }
   }, [user]);
 
+  // --- SYSTEM SETTINGS OPERATIONS ---
+  const getSystemSetting = useCallback(async (key: string, defaultValue: any = null): Promise<any> => {
+    try {
+      const { data, error } = await supabase
+        .from('system_settings')
+        .select('value')
+        .eq('key', key)
+        .single();
+
+      if (error) {
+        if (error.code === 'PGRST116') return defaultValue; // Chave não encontrada
+        throw error;
+      }
+      return data.value;
+    } catch (error: any) {
+      logger.error(`Erro ao buscar configuração ${key}:`, error);
+      return defaultValue;
+    }
+  }, []);
+
+  const updateSystemSetting = useCallback(async (key: string, value: any): Promise<boolean> => {
+    if (!user) return false;
+    try {
+      const { error } = await supabase
+        .from('system_settings')
+        .upsert({ 
+          key, 
+          value, 
+          updated_at: new Date().toISOString(),
+          updated_by: user.id 
+        });
+
+      if (error) throw error;
+      return true;
+    } catch (error: any) {
+      logger.error(`Erro ao atualizar configuração ${key}:`, error);
+      toast({ title: "Erro", description: `Falha ao salvar configuração: ${error.message}`, variant: "destructive" });
+      return false;
+    }
+  }, [user]);
+
   return {
     loading,
     createChromebook,
@@ -1529,5 +1570,8 @@ export const useDatabase = () => {
     getNotifications,
     markNotificationAsRead,
     markAllNotificationsAsRead,
+    // SYSTEM SETTINGS
+    getSystemSetting,
+    updateSystemSetting,
   };
 };

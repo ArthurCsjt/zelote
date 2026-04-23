@@ -16,7 +16,9 @@ interface SchedulingCalendarProps {
   currentUser: AuthUser | null;
   isLoading: boolean;
   onReservationSuccess: () => void;
+  onUpdateLimit: (newLimit: number) => void;
   professores: { id: string; nome_completo: string }[];
+  physicalTotal?: number;
 }
 
 export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
@@ -26,8 +28,18 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
   currentUser,
   isLoading,
   onReservationSuccess,
+  onUpdateLimit,
   professores,
+  physicalTotal = 0,
 }) => {
+  const [isEditingLimit, setIsEditingLimit] = useState(false);
+  const [newLimit, setNewLimit] = useState(totalAvailableChromebooks.toString());
+
+  // Sincroniza o valor do input quando a prop muda (ex: após carregar do banco)
+  useEffect(() => {
+    setNewLimit(totalAvailableChromebooks.toString());
+  }, [totalAvailableChromebooks]);
+
   const [hoveredDate, setHoveredDate] = React.useState<string | null>(null);
   const [hoveredTime, setHoveredTime] = React.useState<string | null>(null);
   const [hoveredHeatmapInfo, setHoveredHeatmapInfo] = React.useState<{ date: string; slot: string; usage: number } | null>(null);
@@ -136,18 +148,80 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
               }}
             />
 
-            <div className="relative z-10 flex flex-col items-center p-2">
-              <div className="bg-white p-1.5 sm:p-2 border-2 border-black shadow-[2px_2px_0px_0px_#000] mb-1 sm:mb-2 transform -rotate-3 transition-transform">
-                <Monitor className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
-              </div>
-              <div className="flex flex-col items-center leading-none">
-                <span className="text-lg sm:text-xl font-black text-white drop-shadow-[1px_1px_0px_rgba(0,0,0,0.5)]">
-                  {totalAvailableChromebooks}
-                </span>
-                <span className="text-[8px] sm:text-[10px] font-black uppercase text-white tracking-widest text-center">
-                  {isMobile ? 'Disp.' : 'Disponíveis'}
-                </span>
-              </div>
+            <div 
+              className={cn(
+                "relative z-10 flex flex-col items-center p-2",
+                (currentUser?.email === 'arthur.alencar@colegiosaojudas.com.br' || (currentUser as any)?.role === 'admin') && "cursor-pointer group/edit"
+              )}
+              onClick={() => {
+                if (currentUser?.email === 'arthur.alencar@colegiosaojudas.com.br' || (currentUser as any)?.role === 'admin') {
+                  setIsEditingLimit(true);
+                }
+              }}
+            >
+              {isEditingLimit ? (
+                <div className="flex flex-col items-center gap-1.5 animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
+                  <input
+                    type="number"
+                    value={newLimit}
+                    onChange={(e) => setNewLimit(e.target.value)}
+                    className="w-16 h-8 text-center bg-white border-2 border-black text-black font-black text-sm focus:outline-none focus:ring-0"
+                    autoFocus
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        const val = parseInt(newLimit);
+                        if (!isNaN(val) && val >= 0) {
+                          onUpdateLimit(val);
+                          setIsEditingLimit(false);
+                        }
+                      }
+                      if (e.key === 'Escape') {
+                        setIsEditingLimit(false);
+                        setNewLimit(totalAvailableChromebooks.toString());
+                      }
+                    }}
+                  />
+                  <div className="flex gap-1">
+                    <button 
+                      onClick={() => {
+                        const val = parseInt(newLimit);
+                        if (!isNaN(val) && val >= 0) {
+                          onUpdateLimit(val);
+                          setIsEditingLimit(false);
+                        }
+                      }}
+                      className="bg-black text-white text-[8px] px-2 py-0.5 font-black uppercase"
+                    >
+                      Salvar
+                    </button>
+                    <button 
+                      onClick={() => setIsEditingLimit(false)}
+                      className="bg-white text-black border border-black text-[8px] px-2 py-0.5 font-black uppercase"
+                    >
+                      X
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div className="bg-white p-1.5 sm:p-2 border-2 border-black shadow-[2px_2px_0px_0px_#000] mb-1 sm:mb-2 transform -rotate-3 transition-transform group-hover/edit:rotate-0">
+                    <Monitor className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
+                  </div>
+                  <div className="flex flex-col items-center leading-none">
+                    <span className="text-lg sm:text-xl font-black text-white drop-shadow-[1px_1px_0px_rgba(0,0,0,0.5)]">
+                      {totalAvailableChromebooks}
+                    </span>
+                    <span className="text-[8px] sm:text-[10px] font-black uppercase text-white tracking-widest text-center">
+                      {isMobile ? 'Disp.' : 'Disponíveis'}
+                    </span>
+                    {(currentUser?.email === 'arthur.alencar@colegiosaojudas.com.br' || (currentUser as any)?.role === 'admin') && (
+                      <span className="text-[7px] font-bold text-white/60 uppercase mt-1">
+                        Físico: {physicalTotal}
+                      </span>
+                    )}
+                  </div>
+                </>
+              )}
             </div>
           </div>
 
