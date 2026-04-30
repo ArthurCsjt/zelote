@@ -179,7 +179,7 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
         {children}
       </div>
 
-      <DialogContent className="sm:max-w-[580px] max-h-[90vh] overflow-y-auto border-[4px] border-black dark:border-zinc-800 rounded-none shadow-[10px_10px_0px_0px_#000] dark:shadow-[10px_10px_0px_0px_rgba(255,255,255,0.05)] p-0 outline-none bg-white dark:bg-zinc-950 text-black dark:text-zinc-100 selection:bg-yellow-300 selection:text-black">
+      <DialogContent className="w-[94vw] sm:w-full sm:max-w-[580px] max-h-[90vh] overflow-y-auto border-[4px] border-black dark:border-zinc-800 rounded-none shadow-[4px_4px_0px_0px_#000] sm:shadow-[10px_10px_0px_0px_#000] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.05)] sm:dark:shadow-[10px_10px_0px_0px_rgba(255,255,255,0.05)] p-0 outline-none bg-white dark:bg-zinc-950 text-black dark:text-zinc-100 selection:bg-yellow-300 selection:text-black">
 
         {/* HEADER */}
         <DialogHeader className="p-5 sm:p-6 border-b-[5px] border-black bg-[#3b82f6] text-white relative shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] z-10">
@@ -347,7 +347,7 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
 
               <div className="p-3 sm:p-4">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <p className="text-[11px] sm:text-[13px] font-bold text-zinc-700 dark:text-zinc-300 leading-snug max-w-[280px]">
+                  <p className="text-[11px] sm:text-[13px] font-bold text-zinc-700 dark:text-zinc-300 leading-snug max-w-full sm:max-w-[280px]">
                     Economize tempo reservando o mesmo horário para outros dias.
                   </p>
 
@@ -366,7 +366,7 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                       type="button"
                       onClick={() => setIsMultiMode(true)}
                       className={cn(
-                        "px-4 sm:px-6 py-2 text-[10px] sm:text-xs font-black uppercase transition-all border-l-2 border-black dark:border-zinc-700",
+                        "px-3 sm:px-6 py-2 text-[10px] sm:text-xs font-black uppercase transition-all border-l-2 border-black dark:border-zinc-700",
                         isMultiMode ? "bg-[#1e3a8a] text-white" : "bg-white dark:bg-zinc-900 text-zinc-400 dark:text-zinc-500 hover:text-black dark:hover:text-white"
                       )}
                     >
@@ -446,7 +446,7 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                           disabled={isOccupied}
                           onClick={() => { setClassroom(s); setShowCustomClassroom(false); }}
                           className={cn(
-                            "px-2 sm:px-2.5 py-1 sm:py-1.5 text-[9px] sm:text-[10px] font-black border-2 border-black uppercase transition-all relative overflow-hidden min-h-[36px] min-w-[90px] flex items-center justify-center bg-white dark:bg-zinc-900",
+                            "px-2 sm:px-2.5 py-1 sm:py-1.5 text-[9px] sm:text-[10px] font-black border-2 border-black uppercase transition-all relative overflow-hidden min-h-[36px] min-w-[80px] sm:min-w-[90px] flex-1 sm:flex-none flex items-center justify-center bg-white dark:bg-zinc-900",
                             classroom === s && !showCustomClassroom
                               ? "bg-[#1e3a8a] text-white shadow-[2px_2px_0_0_#000] translate-x-[1px] translate-y-[1px] shadow-none"
                               : isOccupied

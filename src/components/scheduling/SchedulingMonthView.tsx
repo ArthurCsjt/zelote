@@ -32,18 +32,18 @@ const ReservationTimer: React.FC<{ date: string; timeSlot: string }> = ({ date, 
   const { startTime, endTime, isToday } = React.useMemo(() => {
     // Parse timeSlot like "08h00"
     const [hours, minutes] = timeSlot.toLowerCase().split('h').map(Number);
-    
+
     // date is "YYYY-MM-DD"
-    const start = new Date(date + 'T' + 
-      String(hours).padStart(2, '0') + ':' + 
+    const start = new Date(date + 'T' +
+      String(hours).padStart(2, '0') + ':' +
       String(minutes).padStart(2, '0') + ':00');
-      
+
     const end = addMinutes(start, 50); // Standard 50min duration
-    
-    return { 
-      startTime: start, 
-      endTime: end, 
-      isToday: isSameDay(new Date(), start) 
+
+    return {
+      startTime: start,
+      endTime: end,
+      isToday: isSameDay(new Date(), start)
     };
   }, [date, timeSlot]);
 
@@ -66,7 +66,7 @@ const ReservationTimer: React.FC<{ date: string; timeSlot: string }> = ({ date, 
     return (
       <span className={cn(
         "flex items-center gap-1.5 px-2 py-0.5 border text-[10px] sm:text-[11px] font-black uppercase tracking-tight transition-all",
-        isEndingSoon 
+        isEndingSoon
           ? "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 animate-pulse shadow-[2px_2px_0px_0px_rgba(239,68,68,0.1)]"
           : "bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800 text-orange-700 dark:text-orange-300 shadow-[2px_2px_0px_0px_rgba(249,115,22,0.1)]"
       )}>
@@ -132,7 +132,7 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
     const isDayPast = isPast(selectedDate);
 
     return (
-      <div className="relative w-full border-4 border-black dark:border-white bg-white dark:bg-zinc-950 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.05)] sm:shadow-[12px_12px_0px_0px_rgba(0,0,0,0.05)] overflow-hidden h-full flex flex-col min-h-0 sm:min-h-[500px] rounded-none">
+      <div className="relative w-full border-4 border-black dark:border-white bg-white dark:bg-zinc-950 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.05)] sm:shadow-[12px_12px_0px_0px_rgba(0,0,0,0.05)] overflow-hidden h-full flex flex-col min-h-0 sm:min-h-[500px] rounded-2xl">
         {/* Background Texture */}
         <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.07] pointer-events-none neo-brutal-dots" />
 
@@ -153,9 +153,9 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
                 {isDayPast ? 'Leitura de Dados Históricos' : 'Monitoramento de Recursos em Tempo Real'}
               </p>
             </div>
-            
+
             {!isDayPast && (
-              <Button 
+              <Button
                 onClick={() => navigate('/agendamento')}
                 className="bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 rounded-none border-2 border-black dark:border-white font-black uppercase italic tracking-wider shadow-[4px_4px_0px_0px_rgba(59,130,246,0.5)] transform hover:-translate-x-1 hover:-translate-y-1 transition-all"
               >
@@ -199,9 +199,9 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
                   <span className="text-[7px] sm:text-[8px] font-bold text-info/70 uppercase tracking-tight">reservas</span>
                 </div>
                 <div className="mt-1.5 h-1 bg-info/10 border border-info/20">
-                  <div 
-                    className="h-full bg-info transition-all duration-1000" 
-                    style={{ width: `${Math.min(100, (totalReserved / totalAvailableChromebooks) * 100)}%` }} 
+                  <div
+                    className="h-full bg-info transition-all duration-1000"
+                    style={{ width: `${Math.min(100, (totalReserved / totalAvailableChromebooks) * 100)}%` }}
                   />
                 </div>
               </div>
@@ -223,9 +223,9 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
                   <span className="text-[7px] sm:text-[8px] font-bold text-success/70 uppercase tracking-tight">Sobra/Déficit</span>
                 </div>
                 <div className="mt-1.5 h-1 bg-success/10 border border-success/20">
-                  <div 
-                    className="h-full bg-success transition-all duration-1000" 
-                    style={{ width: `${Math.max(0, Math.min(100, (available / totalAvailableChromebooks) * 100))}%` }} 
+                  <div
+                    className="h-full bg-success transition-all duration-1000"
+                    style={{ width: `${Math.max(0, Math.min(100, (available / totalAvailableChromebooks) * 100))}%` }}
                   />
                 </div>
               </div>
@@ -303,7 +303,7 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
                               {res.quantity_requested}<span className="text-[9px] sm:text-[11px] not-italic ml-1 opacity-80 uppercase font-black">CBs</span>
                             </span>
                           </div>
-                          
+
                           {!isAtendida && isResponsible && (
                             <div className="flex items-center">
                               <Button
@@ -341,7 +341,7 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
                         <div className="mx-0 sm:mx-5 mb-3 sm:mb-4 p-3 sm:p-4 bg-primary/5 dark:bg-primary/10 border-2 border-black/10 dark:border-white/10 relative overflow-hidden group/retirados">
                           {/* Decorative pattern */}
                           <div className="absolute inset-0 opacity-[0.03] pointer-events-none neo-brutal-dots bg-primary/20" />
-                          
+
                           <div className="relative z-10 flex flex-col gap-2 sm:gap-3">
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-2">
@@ -357,7 +357,7 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
                               </div>
                               <div className="h-[1px] sm:h-[2px] flex-1 mx-2 sm:mx-4 bg-black/5 dark:bg-white/5" />
                             </div>
-                            
+
                             <div className="flex flex-wrap gap-1.5 sm:gap-2.5">
                               {res.associated_loans.map((loan, idx) => (
                                 <div
@@ -387,11 +387,11 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
                 <p className="text-[10px] text-muted-foreground/40 font-bold uppercase tracking-widest mt-2">
                   Nenhum registro encontrado para este ciclo
                 </p>
-                <Button 
-                   variant="outline"
-                   size="sm"
-                   className="mt-8 border-2 border-muted-foreground/20 rounded-none font-black text-[10px] uppercase tracking-widest hover:border-primary hover:text-primary transition-all px-8 h-10"
-                   onClick={() => navigate('/agendamento')}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="mt-8 border-2 border-muted-foreground/20 rounded-none font-black text-[10px] uppercase tracking-widest hover:border-primary hover:text-primary transition-all px-8 h-10"
+                  onClick={() => navigate('/agendamento')}
                 >
                   Ver Grade de Agendamentos
                 </Button>
@@ -399,7 +399,7 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
             )}
           </div>
         </div>
-        
+
         {/* Modals integration */}
         {dayReservations.length > 0 && selectedReservation && (
           <ReservationDetailsDialog
@@ -428,7 +428,7 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
   return (
     <div className="flex flex-col lg:flex-row gap-4 sm:gap-8 items-stretch lg:items-start">
       {/* Calendar - Technical Blueprint Style */}
-      <div className="w-full lg:w-[450px] shrink-0 border-4 border-black dark:border-white bg-white dark:bg-zinc-950 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.05)] sm:shadow-[12px_12px_0px_0px_rgba(0,0,0,0.05)] overflow-hidden rounded-none">
+      <div className="w-full lg:w-[450px] shrink-0 border-4 border-black dark:border-white bg-white dark:bg-zinc-950 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.05)] sm:shadow-[12px_12px_0px_0px_rgba(0,0,0,0.05)] overflow-hidden rounded-2xl">
         {/* Header Display */}
         <div className="bg-black text-white p-5 flex justify-between items-center border-b-4 border-black">
           <div className="flex items-center gap-3">
@@ -495,7 +495,7 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
                     )}>
                       {date.getDate()}
                     </span>
-                    
+
                     {/* Occupancy Indicators - Tech Bars */}
                     {tRes > 0 && (
                       <div className="flex gap-0.5 mt-auto px-1.5 w-full justify-center">

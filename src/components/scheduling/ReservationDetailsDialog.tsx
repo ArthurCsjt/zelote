@@ -51,9 +51,9 @@ export const ReservationDetailsDialog: React.FC<ReservationDetailsDialogProps> =
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-[500px] border-4 border-black dark:border-white rounded-none shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.1)] bg-background p-0 overflow-hidden outline-none">
+            <DialogContent className="w-[94vw] sm:w-full sm:max-w-[500px] border-4 border-black dark:border-white rounded-none shadow-[4px_4px_0px_0px_#000] sm:shadow-[8px_8px_0px_0px_#000] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.1)] sm:dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.1)] bg-background p-0 overflow-hidden outline-none">
 
-                <DialogHeader className="p-6 border-b-4 border-black dark:border-white bg-blue-500 space-y-0">
+                <DialogHeader className="p-4 sm:p-6 border-b-4 border-black dark:border-white bg-blue-500 space-y-0">
                     <div className="flex items-center gap-4 text-left">
                         <div className="w-12 h-12 border-4 border-black bg-white flex items-center justify-center shadow-[4px_4px_0px_0px_#000] shrink-0">
                             <Info className="h-6 w-6 text-blue-600" />
@@ -83,21 +83,21 @@ export const ReservationDetailsDialog: React.FC<ReservationDetailsDialogProps> =
                     <div className="border-4 border-black dark:border-white bg-white dark:bg-zinc-900 p-5 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] relative overflow-hidden">
                         <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/5 -rotate-12 translate-x-8 -translate-y-8" />
 
-                        <div className="grid grid-cols-[1fr_auto] gap-4 items-start relative z-10">
+                        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-6 relative z-10">
                             <div className="flex items-center gap-4 min-w-0">
-                                <div className="w-14 h-14 rounded-none border-4 border-black bg-blue-100 flex items-center justify-center shrink-0">
-                                    <User className="h-8 w-8 text-blue-600" />
+                                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-none border-4 border-black bg-blue-100 flex items-center justify-center shrink-0">
+                                    <User className="h-7 w-7 sm:h-8 sm:w-8 text-blue-600" />
                                 </div>
                                 <div className="space-y-0.5 min-w-0">
-                                    <p className="font-black text-xl uppercase leading-none tracking-tight truncate">{reservation.prof_name}</p>
-                                    <p className="text-xs font-bold text-muted-foreground truncate">{reservation.prof_email}</p>
+                                    <p className="font-black text-lg sm:text-xl uppercase leading-none tracking-tight truncate">{reservation.prof_name}</p>
+                                    <p className="text-[10px] sm:text-xs font-bold text-muted-foreground truncate">{reservation.prof_email}</p>
                                 </div>
                             </div>
-                            <div className="flex flex-col items-end">
-                                <span className="text-[10px] font-black uppercase text-blue-600 dark:text-blue-400 mb-1 tracking-wider whitespace-nowrap">Unidades Requisitadas</span>
-                                <div className="bg-black text-white px-4 py-2 border-4 border-black font-black text-2xl shadow-[4px_4px_0px_0px_#3b82f6] leading-none flex items-baseline gap-2 whitespace-nowrap">
+                            <div className="flex flex-col items-start sm:items-end">
+                                <span className="text-[9px] sm:text-[10px] font-black uppercase text-blue-600 dark:text-blue-400 mb-1 tracking-wider whitespace-nowrap">Unidades Requisitadas</span>
+                                <div className="bg-black text-white px-3 sm:px-4 py-1.5 sm:py-2 border-4 border-black font-black text-xl sm:text-2xl shadow-[3px_3px_0_0_#3b82f6] sm:shadow-[4px_4px_0px_0px_#3b82f6] leading-none flex items-baseline gap-2 whitespace-nowrap">
                                     {reservation.quantity_requested}
-                                    <span className="text-[10px] uppercase tracking-widest text-blue-400">CHROMEBOOKS</span>
+                                    <span className="text-[9px] sm:text-[10px] uppercase tracking-widest text-blue-400">CHROMEBOOKS</span>
                                 </div>
                             </div>
                         </div>
@@ -187,7 +187,7 @@ export const ReservationDetailsDialog: React.FC<ReservationDetailsDialogProps> =
                     )}
                 </div>
 
-                <DialogFooter className="p-6 bg-zinc-50 dark:bg-zinc-900 border-t-4 border-black dark:border-white grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <DialogFooter className="p-4 sm:p-6 bg-zinc-50 dark:bg-zinc-900 border-t-4 border-black dark:border-white grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {(isAdmin || isOwner) ? (
                         <Button
                             variant="destructive"
