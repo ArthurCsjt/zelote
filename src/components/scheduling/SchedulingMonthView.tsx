@@ -132,7 +132,7 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
     const isDayPast = isPast(selectedDate);
 
     return (
-      <div className="relative w-full border-4 border-black dark:border-white bg-white dark:bg-zinc-950 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.05)] sm:shadow-[12px_12px_0px_0px_rgba(0,0,0,0.05)] overflow-hidden h-full flex flex-col min-h-0 sm:min-h-[500px]">
+      <div className="relative w-full border-4 border-black dark:border-white bg-white dark:bg-zinc-950 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.05)] sm:shadow-[12px_12px_0px_0px_rgba(0,0,0,0.05)] overflow-hidden h-full flex flex-col min-h-0 sm:min-h-[500px] rounded-2xl">
         {/* Background Texture */}
         <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.07] pointer-events-none neo-brutal-dots" />
 
@@ -428,7 +428,7 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
   return (
     <div className="flex flex-col lg:flex-row gap-4 sm:gap-8 items-stretch lg:items-start">
       {/* Calendar - Technical Blueprint Style */}
-      <div className="w-full lg:w-[450px] shrink-0 border-4 border-black dark:border-white bg-white dark:bg-zinc-950 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.05)] sm:shadow-[12px_12px_0px_0px_rgba(0,0,0,0.05)] overflow-hidden">
+      <div className="w-full lg:w-[450px] shrink-0 border-4 border-black dark:border-white bg-white dark:bg-zinc-950 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.05)] sm:shadow-[12px_12px_0px_0px_rgba(0,0,0,0.05)] overflow-hidden rounded-2xl">
         {/* Header Display */}
         <div className="bg-black text-white p-5 flex justify-between items-center border-b-4 border-black">
           <div className="flex items-center gap-3">

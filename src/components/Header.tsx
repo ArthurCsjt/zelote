@@ -20,9 +20,6 @@ export function Header() {
           <h1 className="text-xl sm:text-3xl font-bold text-gray-800 break-words">
             Zelote
           </h1>
-          <p className="text-sm sm:text-base text-gray-500">
-            Controle de empréstimos e devoluções
-          </p>
         </div>
         
         {isAuthenticated && (
