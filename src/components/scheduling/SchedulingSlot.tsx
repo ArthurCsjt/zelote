@@ -168,7 +168,7 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
               <TooltipContent 
                 side="top" 
                 sideOffset={8}
-                className="max-w-[200px] p-2.5 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-none bg-white dark:bg-zinc-950 z-[100]"
+                className="max-w-[200px] p-2.5 border-2 border-black dark:border-white rounded-none shadow-none bg-white dark:bg-zinc-950 z-[100]"
               >
                 <div className="flex flex-col gap-2">
                   <div className="flex items-center gap-2">

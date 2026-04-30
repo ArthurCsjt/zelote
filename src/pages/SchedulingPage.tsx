@@ -180,33 +180,31 @@ const SchedulingPage = () => {
             {/* ROW 1: Glued Title + Padded Toggle */}
             <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between">
             {/* Identificador Industrial de Agendamento */}
-            <div className="flex items-center gap-4 h-14 px-6 border-b-[3px] border-r-[3px] border-black dark:border-white bg-white dark:bg-zinc-900 shrink-0 group relative overflow-hidden">
+            <div className="flex items-center gap-3 lg:gap-4 h-12 lg:h-14 px-4 lg:px-6 border-b-[3px] border-r-[3px] border-black dark:border-white bg-white dark:bg-zinc-900 shrink-0 group relative overflow-hidden">
               {/* Efeito de brilho sutil no hover */}
               <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               
               <div className="relative flex items-center justify-center">
                 <div className="absolute inset-0 bg-primary/20 blur-sm rounded-full animate-pulse group-hover:bg-primary/30 transition-all" />
-                <Calendar className="h-6 w-6 text-primary relative z-10" strokeWidth={2.5} />
+                <Calendar className="h-5 w-5 lg:h-6 lg:w-6 text-primary relative z-10" strokeWidth={2.5} />
                 {/* Ponto de status ativo */}
-                <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-primary rounded-full border-[3px] border-white dark:border-zinc-900 z-20" />
+                <div className="absolute -top-0.5 -right-0.5 w-2 lg:w-2.5 h-2 lg:h-2.5 bg-primary rounded-full border-[3px] border-white dark:border-zinc-900 z-20" />
               </div>
 
               <div className="flex flex-col justify-center leading-tight relative z-10">
-                <h1 className="text-lg sm:text-xl font-[1000] uppercase tracking-[0.1em] text-black dark:text-white">
+                <h1 className="text-sm lg:text-xl font-[1000] uppercase tracking-[0.1em] text-black dark:text-white">
                   Agendamento
                 </h1>
                 <div className="flex items-center gap-2">
-                  <span className="text-[8px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">
+                  <span className="text-[7px] lg:text-[8px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">
                     Unidade de Controle
                   </span>
-                  <div className="h-[1px] w-4 bg-zinc-200 dark:bg-zinc-800" />
-                  <span className="text-[8px] font-black text-primary uppercase">v2.4</span>
                 </div>
               </div>
             </div>
 
               {/* Right side: View Toggle - Com padding para não encostar na borda direita */}
-              <div className="flex items-center p-3 sm:p-4 sm:pb-0 lg:pb-4">
+              <div className="flex items-center p-2 lg:p-4 lg:pb-4">
                 <div className="flex h-8 border-[3px] border-black dark:border-zinc-700 bg-white dark:bg-zinc-950 shadow-none overflow-hidden transition-all rounded-none">
                   <button
                     onClick={() => handleViewModeChange('weekly')}
@@ -234,33 +232,33 @@ const SchedulingPage = () => {
               </div>
             </div>
 
-            <div className="p-3 sm:p-4 pt-0 flex flex-col gap-3">
+            <div className="p-2 lg:p-4 pt-0 flex flex-col gap-3">
               {/* ROW 2: Date Navigator (left) | Months Grid (right) — alinhados */}
               <div className="flex flex-col lg:flex-row lg:items-stretch lg:justify-between gap-3">
             {/* Date Navigator com pontas coloridas */}
             {/* Date Navigator Estilo "Hub de Controle" */}
-            <div className="flex h-14 border-[3px] border-black dark:border-zinc-700 bg-white dark:bg-zinc-950 shadow-none flex-1 lg:max-w-2xl overflow-hidden transition-all rounded-none group/nav">
+            <div className="flex h-12 lg:h-14 border-[3px] border-black dark:border-zinc-700 bg-white dark:bg-zinc-950 shadow-none flex-1 lg:max-w-2xl overflow-hidden transition-all rounded-none group/nav">
               <button
                 onClick={() => handleDateChange('prev')}
                 disabled={isLoading}
-                className="flex items-center justify-center w-14 border-r-[3px] border-black dark:border-zinc-700 bg-zinc-50 dark:bg-white/[0.03] hover:bg-primary hover:text-white dark:hover:bg-primary transition-all active:scale-95 disabled:opacity-30 shrink-0"
+                className="flex items-center justify-center w-12 lg:w-14 border-r-[3px] border-black dark:border-zinc-700 bg-zinc-50 dark:bg-white/[0.03] hover:bg-primary hover:text-white dark:hover:bg-primary transition-all active:scale-95 disabled:opacity-30 shrink-0"
                 aria-label="Anterior"
               >
-                <ChevronLeft className="h-5 w-5" strokeWidth={3} />
+                <ChevronLeft className="h-4 w-4 lg:h-5 lg:w-5" strokeWidth={3} />
               </button>
               
-              <div className="flex-1 flex flex-col items-center justify-center px-4 relative overflow-hidden group">
+              <div className="flex-1 flex flex-col items-center justify-center px-2 lg:px-4 relative overflow-hidden group">
                 {/* Indicador de topo sutil */}
                 <div className="absolute top-0 left-0 right-0 h-[1px] bg-black/5 dark:bg-white/5" />
                 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 lg:gap-2">
                   <div className="w-1 h-1 rounded-full bg-primary animate-pulse" />
-                  <span className="text-[10px] sm:text-[11px] font-[1000] uppercase tracking-[0.15em] text-black dark:text-white whitespace-nowrap text-center">
+                  <span className="text-[9px] lg:text-[11px] font-[1000] uppercase tracking-[0.1em] lg:tracking-[0.15em] text-black dark:text-white whitespace-nowrap text-center">
                     {displayRange}
                   </span>
                 </div>
                 
-                <span className="text-[7px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-[0.3em] mt-1 transition-all group-hover/nav:text-primary">
+                <span className="hidden lg:block text-[7px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-[0.3em] mt-1 transition-all group-hover/nav:text-primary">
                   Janela de Tempo Ativa
                 </span>
 
@@ -271,15 +269,15 @@ const SchedulingPage = () => {
               <button
                 onClick={() => handleDateChange('next')}
                 disabled={isLoading}
-                className="flex items-center justify-center w-14 border-l-[3px] border-black dark:border-zinc-700 bg-zinc-50 dark:bg-white/[0.03] hover:bg-primary hover:text-white dark:hover:bg-primary transition-all active:scale-95 disabled:opacity-30 shrink-0"
+                className="flex items-center justify-center w-12 lg:w-14 border-l-[3px] border-black dark:border-zinc-700 bg-zinc-50 dark:bg-white/[0.03] hover:bg-primary hover:text-white dark:hover:bg-primary transition-all active:scale-95 disabled:opacity-30 shrink-0"
                 aria-label="Próximo"
               >
-                <ChevronRight className="h-5 w-5" strokeWidth={3} />
+                <ChevronRight className="h-4 w-4 lg:h-5 lg:w-5" strokeWidth={3} />
               </button>
             </div>
 
             {/* Months grid - card container */}
-            <div className="h-14 px-3 border-[3px] border-black dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-950 shadow-none flex flex-col sm:flex-row items-center gap-3 rounded-none">
+            <div className="h-12 lg:h-14 px-2 lg:px-3 border-[3px] border-black dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-950 shadow-none flex flex-col sm:flex-row items-center gap-2 lg:gap-3 rounded-none">
               {/* Year selector mais discreto */}
               <div className="flex items-center gap-0.5 shrink-0 pr-3 border-r border-black/10 dark:border-white/10">
                 <button
