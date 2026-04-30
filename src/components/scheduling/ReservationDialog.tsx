@@ -54,7 +54,15 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
   const [open, setOpen] = useState(false);
   const { createReservation, bulkCreateReservations, loading: isSaving } = useDatabase();
   const { user } = useAuth();
-  const { isAdmin } = useProfileRole();
+  const { role, isAdmin } = useProfileRole();
+
+  const isSuperAdmin = role === 'super_admin';
+  const responsibleEmails = [
+    'eduardo.cardoso@colegiosaojudas.com.br',
+    'davi.rossin@colegiosaojudas.com.br',
+    'arthur.alencar@colegiosaojudas.com.br'
+  ];
+  const isResponsible = isSuperAdmin || (user?.email && responsibleEmails.includes(user.email));
 
   const [justification, setJustification] = useState<string>('');
   const [quantity, setQuantity] = useState<number>(0);
@@ -202,28 +210,31 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
         <form onSubmit={handleSubmit} className="flex-1">
           <div className="p-4 sm:p-5 space-y-5">
 
-            {/* STATUS GRID */}
-            <div className="grid grid-cols-2 gap-5 pt-2">
-              <div className="flex flex-col items-center justify-center p-6 border-[4px] border-black bg-[#00FF00]/10 dark:bg-green-950/20 shadow-[6px_6px_0px_0px_#000] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[8px_8px_0px_0px_#000] transition-all group">
-                <div className="mb-2">
-                  <span className="text-[10px] sm:text-[11px] font-[1000] uppercase text-black dark:text-white tracking-widest">Disponíveis</span>
+            {/* STATUS GRID - Restricted to Admin/Responsible */}
+            {(isAdmin || isResponsible) && (
+              <div className="grid grid-cols-2 gap-5 pt-2">
+                <div className="flex flex-col items-center justify-center p-6 border-[4px] border-black bg-[#00FF00]/10 dark:bg-green-950/20 shadow-[6px_6px_0px_0px_#000] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[8px_8px_0px_0px_#000] transition-all group">
+                  <div className="mb-2">
+                    <span className="text-[10px] sm:text-[11px] font-[1000] uppercase text-black dark:text-white tracking-widest">Disponíveis</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Monitor className="h-6 w-6 text-green-600 dark:text-[#4ADE80] stroke-[3]" />
+                    <span className="text-4xl sm:text-5xl font-[1000] text-black dark:text-white leading-none tracking-tighter">{available}</span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <Monitor className="h-6 w-6 text-green-600 dark:text-[#4ADE80] stroke-[3]" />
-                  <span className="text-4xl sm:text-5xl font-[1000] text-black dark:text-white leading-none tracking-tighter">{available}</span>
-                </div>
-              </div>
 
-              <div className="flex flex-col items-center justify-center p-6 border-[4px] border-black bg-[#8B5CF6]/10 dark:bg-purple-950/20 shadow-[6px_6px_0px_0px_#000] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[8px_8px_0px_0px_#000] transition-all group">
-                <div className="mb-2">
-                  <span className="text-[10px] sm:text-[11px] font-[1000] uppercase text-black dark:text-white tracking-widest">Reservados</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <User className="h-6 w-6 text-purple-600 dark:text-[#8B5CF6] stroke-[3]" />
-                  <span className="text-4xl sm:text-5xl font-[1000] text-black dark:text-white leading-none tracking-tighter">{totalReserved}</span>
+                <div className="flex flex-col items-center justify-center p-6 border-[4px] border-black bg-[#8B5CF6]/10 dark:bg-purple-950/20 shadow-[6px_6px_0px_0px_#000] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[8px_8px_0px_0px_#000] transition-all group">
+                  <div className="mb-2">
+                    <span className="text-[10px] sm:text-[11px] font-[1000] uppercase text-black dark:text-white tracking-widest">Reservados</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <User className="h-6 w-6 text-purple-600 dark:text-[#8B5CF6] stroke-[3]" />
+                    <span className="text-4xl sm:text-5xl font-[1000] text-black dark:text-white leading-none tracking-tighter">{totalReserved}</span>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
+
 
 
             {/* RESERVAS EXISTENTES */}
@@ -252,7 +263,7 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                             <span className="text-[12px] sm:text-sm font-[1000] uppercase text-black dark:text-white truncate leading-tight">
                               {res.prof_name || 'Professor'}
                             </span>
-                            <span className="text-[9px] sm:text-[11px] font-[900] text-zinc-500 dark:text-zinc-400 lowercase truncate opacity-80 tracking-tight">
+                            <span className="text-[11px] sm:text-[12px] font-[900] text-zinc-500 dark:text-zinc-400 lowercase truncate tracking-tight">
                               {res.prof_email}
                             </span>
                           </div>
@@ -287,25 +298,25 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                           {res.needs_tv && (
                             <div className="flex items-center gap-2 bg-zinc-100 dark:bg-zinc-800/50 px-2 py-1 border-2 border-dashed border-black/30 dark:border-white/20">
                               <Tv className="h-4 w-4 text-black dark:text-zinc-300 stroke-[3]" />
-                              <span className="text-[9px] font-[1000] uppercase tracking-wider text-black dark:text-zinc-300">TV</span>
+                              <span className="text-[11px] font-[1000] uppercase tracking-wider text-black dark:text-zinc-300">TV</span>
                             </div>
                           )}
                           {res.needs_sound && (
                             <div className="flex items-center gap-2 bg-zinc-100 dark:bg-zinc-800/50 px-2 py-1 border-2 border-dashed border-black/30 dark:border-white/20">
                               <Volume2 className="h-4 w-4 text-black dark:text-zinc-300 stroke-[3]" />
-                              <span className="text-[9px] font-[1000] uppercase tracking-wider text-black dark:text-zinc-300">SOM</span>
+                              <span className="text-[11px] font-[1000] uppercase tracking-wider text-black dark:text-zinc-300">SOM</span>
                             </div>
                           )}
                           {res.needs_mic && (
                             <div className="flex items-center gap-2 bg-zinc-100 dark:bg-zinc-800/50 px-2 py-1 border-2 border-dashed border-black/30 dark:border-white/20">
                               <Mic className="h-4 w-4 text-black dark:text-zinc-300 stroke-[3]" />
-                              <span className="text-[9px] font-[1000] uppercase tracking-wider text-black dark:text-zinc-300">MIC ({res.mic_quantity})</span>
+                              <span className="text-[11px] font-[1000] uppercase tracking-wider text-black dark:text-zinc-300">MIC ({res.mic_quantity})</span>
                             </div>
                           )}
                           {res.is_minecraft && (
                             <div className="flex items-center gap-2 bg-green-100 dark:bg-green-900/30 px-2 py-1 border-2 border-black">
                               <Monitor className="h-4 w-4 text-green-700 dark:text-[#4ADE80] stroke-[3]" />
-                              <span className="text-[9px] font-[1000] uppercase tracking-wider text-green-700 dark:text-[#4ADE80]">MINECRAFT</span>
+                              <span className="text-[11px] font-[1000] uppercase tracking-wider text-green-700 dark:text-[#4ADE80]">MINECRAFT</span>
                             </div>
                           )}
                         </div>

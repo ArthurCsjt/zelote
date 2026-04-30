@@ -168,14 +168,14 @@ const SchedulingPage = () => {
         initial={{ opacity: 0, y: -30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
-        className="bg-white dark:bg-zinc-900 p-3 sm:p-4 border-2 border-black dark:border-white shadow-[4px_4px_0_0_#000] dark:shadow-[4px_4px_0_0_#fff] mb-2"
+        className="bg-white dark:bg-zinc-900 p-3 sm:p-4 border-2 border-black dark:border-white shadow-[4px_4px_0_0_#000] dark:shadow-[4px_4px_0_0_#fff] mb-2 rounded-[24px]"
       >
         <div className="flex flex-col gap-3">
           {/* ROW 1: Title + Toggle (left) | Year selector (right) */}
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
               {/* Title pill - centralizado */}
-              <div className="flex items-stretch h-11 border-2 border-black dark:border-white bg-white dark:bg-zinc-900 shadow-[3px_3px_0_0_#000] dark:shadow-[3px_3px_0_0_#fff] flex-1 sm:flex-initial">
+              <div className="flex items-stretch h-11 border-2 border-black dark:border-white bg-white dark:bg-zinc-900 shadow-[3px_3px_0_0_#000] dark:shadow-[3px_3px_0_0_#fff] flex-1 sm:flex-initial rounded-xl overflow-hidden">
                 <div className="flex items-center justify-center w-11 bg-primary text-primary-foreground border-r-2 border-black dark:border-white shrink-0">
                   <Calendar className="h-5 w-5" strokeWidth={2.5} />
                 </div>
@@ -183,16 +183,17 @@ const SchedulingPage = () => {
                   Agendamento
                 </h1>
               </div>
+            </div>
 
-              {/* View toggle */}
-              <div className="flex h-11 border-2 border-black dark:border-white bg-white dark:bg-zinc-900 shadow-[3px_3px_0_0_#000] dark:shadow-[3px_3px_0_0_#fff] overflow-hidden">
+            <div className="flex items-center justify-end">
+              <div className="flex h-8 border-2 border-black dark:border-zinc-700 bg-white dark:bg-zinc-950 shadow-none overflow-hidden transition-all rounded-lg">
                 <button
                   onClick={() => handleViewModeChange('weekly')}
                   className={cn(
-                    "px-5 text-[11px] font-black uppercase tracking-wider transition-all duration-150 border-r-2 border-black dark:border-white",
+                    "px-4 text-[9px] font-[1000] uppercase tracking-widest transition-all duration-150 border-r-2 border-black dark:border-zinc-700",
                     viewMode === 'weekly'
-                      ? "bg-primary text-primary-foreground shadow-[inset_2px_2px_0_0_rgba(0,0,0,0.25)]"
-                      : "bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                      ? "bg-primary text-primary-foreground shadow-[inset_1px_1px_0_0_rgba(0,0,0,0.2)]"
+                      : "bg-white dark:bg-zinc-950 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-900"
                   )}
                 >
                   Semanal
@@ -200,39 +201,13 @@ const SchedulingPage = () => {
                 <button
                   onClick={() => handleViewModeChange('monthly')}
                   className={cn(
-                    "px-5 text-[11px] font-black uppercase tracking-wider transition-all duration-150",
+                    "px-4 text-[9px] font-[1000] uppercase tracking-widest transition-all duration-150",
                     viewMode === 'monthly'
-                      ? "bg-primary text-primary-foreground shadow-[inset_2px_2px_0_0_rgba(0,0,0,0.25)]"
-                      : "bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                      ? "bg-primary text-primary-foreground shadow-[inset_1px_1px_0_0_rgba(0,0,0,0.2)]"
+                      : "bg-white dark:bg-zinc-950 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-900"
                   )}
                 >
                   Histórico
-                </button>
-              </div>
-            </div>
-
-            {/* Year navigator + label */}
-            <div className="flex items-center justify-between lg:justify-end gap-2">
-              <span className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">
-                Selecionar mês
-              </span>
-              <div className="flex h-7 border-2 border-black dark:border-white bg-white dark:bg-zinc-900 shadow-[2px_2px_0_0_#000] dark:shadow-[2px_2px_0_0_#fff]">
-                <button
-                  onClick={() => setCurrentDate(new Date(currentDate.getFullYear() - 1, currentDate.getMonth(), 1))}
-                  className="flex items-center justify-center w-6 border-r-2 border-black dark:border-white hover:bg-primary hover:text-primary-foreground transition-colors"
-                  aria-label="Ano anterior"
-                >
-                  <ChevronLeft className="h-3 w-3" strokeWidth={3} />
-                </button>
-                <div className="flex items-center justify-center px-2.5 text-[10px] font-black tracking-wider text-black dark:text-white tabular-nums">
-                  {currentDate.getFullYear()}
-                </div>
-                <button
-                  onClick={() => setCurrentDate(new Date(currentDate.getFullYear() + 1, currentDate.getMonth(), 1))}
-                  className="flex items-center justify-center w-6 border-l-2 border-black dark:border-white hover:bg-primary hover:text-primary-foreground transition-colors"
-                  aria-label="Próximo ano"
-                >
-                  <ChevronRight className="h-3 w-3" strokeWidth={3} />
                 </button>
               </div>
             </div>
@@ -241,30 +216,50 @@ const SchedulingPage = () => {
           {/* ROW 2: Date Navigator (left) | Months Grid (right) — alinhados */}
           <div className="flex flex-col lg:flex-row lg:items-stretch lg:justify-between gap-3">
             {/* Date Navigator com pontas coloridas */}
-            <div className="flex h-[68px] border-2 border-black dark:border-white bg-white dark:bg-zinc-900 shadow-[3px_3px_0_0_#000] dark:shadow-[3px_3px_0_0_#fff] flex-1 lg:max-w-md">
+            {/* Date Navigator com estilo mais discreto */}
+            <div className="flex h-12 border-2 border-black dark:border-zinc-700 bg-white dark:bg-zinc-950 shadow-none flex-1 lg:max-w-sm overflow-hidden transition-all rounded-xl">
               <button
                 onClick={() => handleDateChange('prev')}
                 disabled={isLoading}
-                className="flex items-center justify-center w-14 bg-primary text-primary-foreground border-r-2 border-black dark:border-white hover:bg-primary/90 disabled:opacity-30 transition-colors shrink-0"
+                className="flex items-center justify-center w-12 border-r-2 border-black dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-900 text-zinc-900 dark:text-zinc-100 disabled:opacity-30 transition-colors shrink-0"
                 aria-label="Anterior"
               >
-                <ChevronLeft className="h-6 w-6" strokeWidth={3} />
+                <ChevronLeft className="h-5 w-5" strokeWidth={2.5} />
               </button>
-              <div className="flex-1 flex items-center justify-center px-4 text-[11px] sm:text-xs font-black uppercase tracking-wider text-black dark:text-white whitespace-nowrap text-center">
+              <div className="flex-1 flex items-center justify-center px-4 text-[10px] sm:text-[11px] font-[1000] uppercase tracking-widest text-black dark:text-white whitespace-nowrap text-center">
                 {displayRange}
               </div>
               <button
                 onClick={() => handleDateChange('next')}
                 disabled={isLoading}
-                className="flex items-center justify-center w-14 bg-primary text-primary-foreground border-l-2 border-black dark:border-white hover:bg-primary/90 disabled:opacity-30 transition-colors shrink-0"
+                className="flex items-center justify-center w-12 border-l-2 border-black dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-900 text-zinc-900 dark:text-zinc-100 disabled:opacity-30 transition-colors shrink-0"
                 aria-label="Próximo"
               >
-                <ChevronRight className="h-6 w-6" strokeWidth={3} />
+                <ChevronRight className="h-5 w-5" strokeWidth={2.5} />
               </button>
             </div>
 
             {/* Months grid - card container */}
-            <div className="p-2 border-2 border-black dark:border-white bg-zinc-50 dark:bg-zinc-950 shadow-[3px_3px_0_0_#000] dark:shadow-[3px_3px_0_0_#fff]">
+            <div className="p-2 border-2 border-black dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-950 shadow-none flex flex-col sm:flex-row items-center gap-3 rounded-2xl">
+              {/* Year selector antes dos meses */}
+              <div className="flex h-9 border-2 border-black dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-none shrink-0">
+                <button
+                  onClick={() => setCurrentDate(new Date(currentDate.getFullYear() - 1, currentDate.getMonth(), 1))}
+                  className="flex items-center justify-center w-8 border-r-2 border-black dark:border-zinc-700 hover:bg-primary hover:text-white transition-colors"
+                >
+                  <ChevronLeft className="h-4 w-4" strokeWidth={3} />
+                </button>
+                <div className="flex items-center justify-center px-3 text-[11px] font-[1000] text-black dark:text-white tabular-nums">
+                  {currentDate.getFullYear()}
+                </div>
+                <button
+                  onClick={() => setCurrentDate(new Date(currentDate.getFullYear() + 1, currentDate.getMonth(), 1))}
+                  className="flex items-center justify-center w-8 border-l-2 border-black dark:border-zinc-700 hover:bg-primary hover:text-white transition-colors"
+                >
+                  <ChevronRight className="h-4 w-4" strokeWidth={3} />
+                </button>
+              </div>
+
               <div className="grid grid-rows-2 grid-cols-6 gap-1.5 w-full lg:w-auto h-full">
                 {Array.from({ length: 12 }, (_, i) => {
                   const date = new Date(new Date().getFullYear(), i, 1);
@@ -284,8 +279,8 @@ const SchedulingPage = () => {
                         isCurrentMonth
                           ? "bg-primary text-primary-foreground border-black dark:border-white translate-y-[2px] translate-x-[2px] shadow-none"
                           : cn(
-                              "bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 shadow-[2px_2px_0_0_#000] dark:shadow-[2px_2px_0_0_#fff]",
-                              "hover:-translate-y-0.5 hover:-translate-x-0.5 hover:shadow-[4px_4px_0_0_#000] dark:hover:shadow-[4px_4px_0_0_#fff] hover:bg-primary/10",
+                              "bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 shadow-none",
+                              "hover:bg-primary/10",
                               isThisMonth ? "border-primary border-[2.5px]" : "border-black dark:border-white"
                             )
                       )}

@@ -103,14 +103,21 @@ export const ReservationDetailsDialog: React.FC<ReservationDetailsDialogProps> =
                         </div>
 
                         <div className="mt-6 space-y-4 relative z-10">
-                            <div className="p-4 bg-zinc-100 dark:bg-zinc-800 border-l-8 border-blue-500 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.05)]">
-                                <p className={cn(
-                                    "text-base font-bold leading-tight",
-                                    reservation.justification ? "italic text-foreground" : "text-muted-foreground opacity-50 uppercase text-xs tracking-widest not-italic"
-                                )}>
-                                    {reservation.justification ? `"${reservation.justification}"` : "Sem justificativa informada"}
-                                </p>
-                            </div>
+                            {reservation.justification && (
+                                <div className="relative group">
+                                    <div className="absolute -top-3 left-4 bg-blue-600 text-white px-2.5 py-0.5 border-2 border-black text-[9px] font-[1000] uppercase tracking-[0.2em] z-10 shadow-[2px_2px_0px_0px_#000]">
+                                        Justificativa
+                                    </div>
+                                    <div className={cn(
+                                        "p-5 border-[3px] transition-all duration-300",
+                                        "bg-white dark:bg-zinc-900 border-black dark:border-white shadow-[6px_6px_0px_0px_#3b82f6] dark:shadow-[6px_6px_0px_0px_rgba(59,130,246,0.3)]"
+                                    )}>
+                                        <p className="text-sm sm:text-base font-black leading-relaxed text-zinc-800 dark:text-zinc-100 italic">
+                                            "{reservation.justification}"
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
 
                             <div className="flex flex-wrap gap-2">
                                 {reservation.classroom && (
@@ -128,57 +135,56 @@ export const ReservationDetailsDialog: React.FC<ReservationDetailsDialogProps> =
                     </div>
 
                     {/* Resources & Status Row */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        {/* Extra Resources */}
-                        {(reservation.needs_tv || reservation.needs_sound || reservation.needs_mic) ? (
-                            <div className="border-4 border-black dark:border-white bg-amber-50 dark:bg-amber-900/10 p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.05)]">
-                                <p className="text-[10px] font-black uppercase text-amber-600 dark:text-amber-400 mb-2 flex items-center gap-1">
-                                    <Plus className="h-3 w-3" /> Recursos Extras
-                                </p>
-                                <div className="space-y-1.5">
-                                    {reservation.needs_tv && (
-                                        <div className="flex items-center gap-2 text-xs font-black uppercase">
-                                            <Tv className="h-4 w-4 text-amber-600" /> TV
-                                        </div>
-                                    )}
-                                    {reservation.needs_sound && (
-                                        <div className="flex items-center gap-2 text-xs font-black uppercase">
-                                            <Volume2 className="h-4 w-4 text-amber-600" /> SOM
-                                        </div>
-                                    )}
-                                    {reservation.needs_mic && (
-                                        <div className="flex items-center gap-2 text-xs font-black uppercase">
-                                            <Mic className="h-4 w-4 text-amber-600" /> {reservation.mic_quantity} MIC
-                                        </div>
-                                    )}
+                    {(reservation.needs_tv || reservation.needs_sound || reservation.needs_mic || (reservation.associated_loans && reservation.associated_loans.length > 0)) && (
+                        <div className={cn(
+                            "grid gap-4",
+                            (reservation.needs_tv || reservation.needs_sound || reservation.needs_mic) && (reservation.associated_loans && reservation.associated_loans.length > 0) 
+                                ? "grid-cols-1 sm:grid-cols-2" 
+                                : "grid-cols-1"
+                        )}>
+                            {/* Extra Resources */}
+                            {(reservation.needs_tv || reservation.needs_sound || reservation.needs_mic) && (
+                                <div className="border-4 border-black dark:border-white bg-amber-50 dark:bg-amber-900/10 p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.05)]">
+                                    <p className="text-[10px] font-black uppercase text-amber-600 dark:text-amber-400 mb-2 flex items-center gap-1">
+                                        <Plus className="h-3 w-3" /> Recursos Extras
+                                    </p>
+                                    <div className="space-y-1.5">
+                                        {reservation.needs_tv && (
+                                            <div className="flex items-center gap-2 text-xs font-black uppercase">
+                                                <Tv className="h-4 w-4 text-amber-600" /> TV
+                                            </div>
+                                        )}
+                                        {reservation.needs_sound && (
+                                            <div className="flex items-center gap-2 text-xs font-black uppercase">
+                                                <Volume2 className="h-4 w-4 text-amber-600" /> SOM
+                                            </div>
+                                        )}
+                                        {reservation.needs_mic && (
+                                            <div className="flex items-center gap-2 text-xs font-black uppercase">
+                                                <Mic className="h-4 w-4 text-amber-600" /> {reservation.mic_quantity} MIC
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
-                            </div>
-                        ) : (
-                            <div className="border-4 border-dashed border-zinc-200 dark:border-zinc-800 p-4 flex items-center justify-center opacity-40">
-                                <p className="text-[10px] font-black uppercase text-zinc-400">Sem itens extras</p>
-                            </div>
-                        )}
+                            )}
 
-                        {/* Loans Status */}
-                        {reservation.associated_loans && reservation.associated_loans.length > 0 ? (
-                            <div className="border-4 border-black dark:border-white bg-blue-50 dark:bg-blue-900/10 p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.05)]">
-                                <p className="text-[10px] font-black uppercase text-blue-600 dark:text-blue-400 mb-2 flex items-center gap-1">
-                                    <Monitor className="h-4 w-4" /> Retirados ({reservation.associated_loans.length})
-                                </p>
-                                <div className="flex flex-wrap gap-1.5">
-                                    {reservation.associated_loans.map((loan, idx) => (
-                                        <span key={idx} className="bg-blue-600 text-white border border-black font-black text-[9px] px-1.5 py-0.5 shadow-[1px_1px_0_0_#000]">
-                                            {loan.chromebook_id}
-                                        </span>
-                                    ))}
+                            {/* Loans Status */}
+                            {reservation.associated_loans && reservation.associated_loans.length > 0 && (
+                                <div className="border-4 border-black dark:border-white bg-blue-50 dark:bg-blue-900/10 p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.05)]">
+                                    <p className="text-[10px] font-black uppercase text-blue-600 dark:text-blue-400 mb-2 flex items-center gap-1">
+                                        <Monitor className="h-4 w-4" /> Retirados ({reservation.associated_loans.length})
+                                    </p>
+                                    <div className="flex flex-wrap gap-1.5">
+                                        {reservation.associated_loans.map((loan, idx) => (
+                                            <span key={idx} className="bg-blue-600 text-white border border-black font-black text-[9px] px-1.5 py-0.5 shadow-[1px_1px_0_0_#000]">
+                                                {loan.chromebook_id}
+                                            </span>
+                                        ))}
+                                    </div>
                                 </div>
-                            </div>
-                        ) : (
-                            <div className="border-4 border-dashed border-zinc-200 dark:border-zinc-800 p-4 flex items-center justify-center opacity-40">
-                                <p className="text-[10px] font-black uppercase text-zinc-400">Nada retirado ainda</p>
-                            </div>
-                        )}
-                    </div>
+                            )}
+                        </div>
+                    )}
                 </div>
 
                 <DialogFooter className="p-6 bg-zinc-50 dark:bg-zinc-900 border-t-4 border-black dark:border-white grid grid-cols-1 sm:grid-cols-2 gap-4">

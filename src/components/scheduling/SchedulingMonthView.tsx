@@ -54,8 +54,8 @@ const ReservationTimer: React.FC<{ date: string; timeSlot: string }> = ({ date, 
 
   if (diffStart > 0 && diffStart <= 60) {
     return (
-      <span className="flex items-center gap-1.5 px-2 py-0.5 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-[9px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-tight shadow-[2px_2px_0px_0px_rgba(59,130,246,0.1)]">
-        <Clock className="h-2.5 w-2.5 animate-pulse" />
+      <span className="flex items-center gap-1.5 px-2 py-0.5 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-[10px] sm:text-[11px] font-black text-blue-700 dark:text-blue-300 uppercase tracking-tight shadow-[2px_2px_0px_0px_rgba(59,130,246,0.1)]">
+        <Clock className="h-3 w-3 animate-pulse" />
         Inicia em {diffStart}m
       </span>
     );
@@ -65,10 +65,10 @@ const ReservationTimer: React.FC<{ date: string; timeSlot: string }> = ({ date, 
     const isEndingSoon = diffEnd <= 10;
     return (
       <span className={cn(
-        "flex items-center gap-1.5 px-2 py-0.5 border text-[9px] font-black uppercase tracking-tight transition-all",
+        "flex items-center gap-1.5 px-2 py-0.5 border text-[10px] sm:text-[11px] font-black uppercase tracking-tight transition-all",
         isEndingSoon 
-          ? "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 animate-pulse shadow-[2px_2px_0px_0px_rgba(239,68,68,0.1)]"
-          : "bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800 text-orange-600 dark:text-orange-400 shadow-[2px_2px_0px_0px_rgba(249,115,22,0.1)]"
+          ? "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 animate-pulse shadow-[2px_2px_0px_0px_rgba(239,68,68,0.1)]"
+          : "bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800 text-orange-700 dark:text-orange-300 shadow-[2px_2px_0px_0px_rgba(249,115,22,0.1)]"
       )}>
         <div className={cn(
           "w-1.5 h-1.5 rounded-full",
@@ -164,71 +164,73 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
             )}
           </div>
 
-          {/* Stats Grid - Hardware Dashboard Widgets */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Total Widget */}
-            {/* Total Widget */}
-            <div className="relative group overflow-hidden border-2 sm:border-4 border-black dark:border-white p-3 sm:p-4 bg-zinc-50 dark:bg-zinc-900 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] transition-all">
-              <div className="absolute top-0 right-0 p-2 opacity-10">
-                <Monitor className="h-8 w-8 sm:h-12 sm:w-12" />
+          {/* Stats Grid - Hardware Dashboard Widgets - Restricted to Admin/Responsible */}
+          {(isAdmin || isResponsible) && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Total Widget */}
+              {/* Total Widget */}
+              <div className="relative group overflow-hidden border-2 sm:border-4 border-black dark:border-white p-3 sm:p-4 bg-zinc-50 dark:bg-zinc-900 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] transition-all">
+                <div className="absolute top-0 right-0 p-2 opacity-10">
+                  <Monitor className="h-8 w-8 sm:h-12 sm:w-12" />
+                </div>
+                <p className="text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">
+                  Total de Chromebooks
+                </p>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-3xl sm:text-5xl font-black text-foreground tracking-tighter">{totalAvailableChromebooks}</span>
+                  <span className="text-[7px] sm:text-[8px] font-bold text-muted-foreground uppercase tracking-tight">unidades</span>
+                </div>
+                <div className="mt-1.5 h-1 bg-zinc-200 dark:bg-zinc-800 border border-black/10">
+                  <div className="h-full bg-black dark:bg-white w-full" />
+                </div>
               </div>
-              <p className="text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">
-                Total de Chromebooks
-              </p>
-              <div className="flex items-baseline gap-2">
-                <span className="text-3xl sm:text-5xl font-black text-foreground tracking-tighter">{totalAvailableChromebooks}</span>
-                <span className="text-[7px] sm:text-[8px] font-bold text-muted-foreground uppercase tracking-tight">unidades</span>
-              </div>
-              <div className="mt-1.5 h-1 bg-zinc-200 dark:bg-zinc-800 border border-black/10">
-                <div className="h-full bg-black dark:bg-white w-full" />
-              </div>
-            </div>
 
-            {/* Reserved Widget */}
-            {/* Reserved Widget */}
-            <div className="relative group overflow-hidden border-2 sm:border-4 border-info/50 bg-info/5 dark:bg-info/10 p-3 sm:p-4 shadow-[4px_4px_0px_0px_hsl(var(--info)/0.2)] transition-all">
-              <div className="absolute top-0 right-0 p-2 opacity-15">
-                <Clock className="h-8 w-8 sm:h-12 sm:w-12 text-info" />
+              {/* Reserved Widget */}
+              {/* Reserved Widget */}
+              <div className="relative group overflow-hidden border-2 sm:border-4 border-info/50 bg-info/5 dark:bg-info/10 p-3 sm:p-4 shadow-[4px_4px_0px_0px_hsl(var(--info)/0.2)] transition-all">
+                <div className="absolute top-0 right-0 p-2 opacity-15">
+                  <Clock className="h-8 w-8 sm:h-12 sm:w-12 text-info" />
+                </div>
+                <p className="text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-info mb-1">
+                  Reservado
+                </p>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-3xl sm:text-5xl font-black text-info tracking-tighter">{totalReserved}</span>
+                  <span className="text-[7px] sm:text-[8px] font-bold text-info/70 uppercase tracking-tight">reservas</span>
+                </div>
+                <div className="mt-1.5 h-1 bg-info/10 border border-info/20">
+                  <div 
+                    className="h-full bg-info transition-all duration-1000" 
+                    style={{ width: `${Math.min(100, (totalReserved / totalAvailableChromebooks) * 100)}%` }} 
+                  />
+                </div>
               </div>
-              <p className="text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-info mb-1">
-                Reservado
-              </p>
-              <div className="flex items-baseline gap-2">
-                <span className="text-3xl sm:text-5xl font-black text-info tracking-tighter">{totalReserved}</span>
-                <span className="text-[7px] sm:text-[8px] font-bold text-info/70 uppercase tracking-tight">reservas</span>
-              </div>
-              <div className="mt-1.5 h-1 bg-info/10 border border-info/20">
-                <div 
-                  className="h-full bg-info transition-all duration-1000" 
-                  style={{ width: `${Math.min(100, (totalReserved / totalAvailableChromebooks) * 100)}%` }} 
-                />
-              </div>
-            </div>
 
-            {/* Available Widget */}
-            {/* Available Widget */}
-            <div className="relative group overflow-hidden border-2 sm:border-4 border-success/50 bg-success/5 dark:bg-success/10 p-3 sm:p-4 shadow-[4px_4px_0px_0px_hsl(var(--success)/0.2)] transition-all">
-              <div className="absolute top-0 right-0 p-2 opacity-15">
-                <CheckCircle className="h-8 w-8 sm:h-12 sm:w-12 text-success" />
-              </div>
-              <p className="text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-success mb-1">
-                Disponíveis
-              </p>
-              <div className="flex items-baseline gap-2">
-                <span className={cn(
-                  "text-3xl sm:text-5xl font-black tracking-tighter",
-                  available < 0 ? "text-error" : "text-success"
-                )}>{available}</span>
-                <span className="text-[7px] sm:text-[8px] font-bold text-success/70 uppercase tracking-tight">Sobra/Déficit</span>
-              </div>
-              <div className="mt-1.5 h-1 bg-success/10 border border-success/20">
-                <div 
-                  className="h-full bg-success transition-all duration-1000" 
-                  style={{ width: `${Math.max(0, Math.min(100, (available / totalAvailableChromebooks) * 100))}%` }} 
-                />
+              {/* Available Widget */}
+              {/* Available Widget */}
+              <div className="relative group overflow-hidden border-2 sm:border-4 border-success/50 bg-success/5 dark:bg-success/10 p-3 sm:p-4 shadow-[4px_4px_0px_0px_hsl(var(--success)/0.2)] transition-all">
+                <div className="absolute top-0 right-0 p-2 opacity-15">
+                  <CheckCircle className="h-8 w-8 sm:h-12 sm:w-12 text-success" />
+                </div>
+                <p className="text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-success mb-1">
+                  Disponíveis
+                </p>
+                <div className="flex items-baseline gap-2">
+                  <span className={cn(
+                    "text-3xl sm:text-5xl font-black tracking-tighter",
+                    available < 0 ? "text-error" : "text-success"
+                  )}>{available}</span>
+                  <span className="text-[7px] sm:text-[8px] font-bold text-success/70 uppercase tracking-tight">Sobra/Déficit</span>
+                </div>
+                <div className="mt-1.5 h-1 bg-success/10 border border-success/20">
+                  <div 
+                    className="h-full bg-success transition-all duration-1000" 
+                    style={{ width: `${Math.max(0, Math.min(100, (available / totalAvailableChromebooks) * 100))}%` }} 
+                  />
+                </div>
               </div>
             </div>
-          </div>
+          )}
 
           {/* Reservations List */}
           <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar border-t-4 border-black/10 dark:border-white/10 pt-4">
@@ -266,7 +268,7 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
                         <div className="flex-1 min-w-0">
                           <div className="flex flex-col mb-1 sm:mb-1.5 min-w-0">
                             <span className="font-black text-sm sm:text-base truncate uppercase tracking-tight">{res.prof_name}</span>
-                            <span className="text-[9px] sm:text-[10px] text-muted-foreground truncate lowercase opacity-70 font-medium">
+                            <span className="text-[11px] sm:text-[12px] text-zinc-500 dark:text-zinc-400 truncate lowercase font-bold">
                               {res.prof_email}
                             </span>
                             {isMinecraft && (
@@ -277,9 +279,9 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
                               </div>
                             )}
                           </div>
-                          <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-[9px] sm:text-[10px] text-muted-foreground font-bold uppercase tracking-tight">
+                          <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-[11px] sm:text-xs text-zinc-600 dark:text-zinc-300 font-black uppercase tracking-tight">
                             <span className="flex items-center gap-1">
-                              <Clock className="h-2.5 w-2.5 sm:h-3 sm:w-3" /> {res.time_slot}
+                              <Clock className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> {res.time_slot}
                             </span>
                             {res.classroom && (
                               <span className="flex items-center gap-1">
@@ -298,7 +300,7 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
                               </div>
                             )}
                             <span className="text-2xl sm:text-4xl font-black italic tracking-tighter leading-none whitespace-nowrap">
-                              {res.quantity_requested}<span className="text-[8px] sm:text-[10px] not-italic ml-1 opacity-60 uppercase font-black">CBs</span>
+                              {res.quantity_requested}<span className="text-[9px] sm:text-[11px] not-italic ml-1 opacity-80 uppercase font-black">CBs</span>
                             </span>
                           </div>
                           
@@ -328,7 +330,7 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
                       {/* Quick description preview */}
                       {res.justification && (
                         <div className="px-5 pb-2">
-                          <p className="text-[10px] text-muted-foreground truncate italic opacity-80 overflow-hidden">
+                          <p className="text-[11px] sm:text-[12px] text-foreground/80 truncate italic overflow-hidden font-medium">
                             "{res.justification}"
                           </p>
                         </div>
