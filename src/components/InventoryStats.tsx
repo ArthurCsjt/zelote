@@ -67,7 +67,7 @@ export function InventoryStats({ chromebooks }: InventoryStatsProps) {
   );
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
+    <div className="grid gap-4 grid-cols-[repeat(auto-fit,minmax(240px,1fr))] mb-6">
       <StatCard
         title="Total de Equipamentos"
         value={total}
