@@ -9,13 +9,9 @@ interface QRCodeStickerProps {
 }
 
 export const QRCodeSticker: React.FC<QRCodeStickerProps> = ({ item, className }) => {
-  // Dados encurtados para diminuir a densidade do QR Code e facilitar a leitura
-  const qrData = JSON.stringify({
-    i: item.chromebook_id,
-    m: item.model,
-    s: item.serial_number,
-    p: item.patrimony_number,
-  });
+  // Para leitura ultra-rápida, usamos apenas o ID no QR Code. 
+  // O sistema busca o restante dos dados no banco ao escanear.
+  const qrData = item.chromebook_id;
 
   return (
     <div
@@ -32,13 +28,13 @@ export const QRCodeSticker: React.FC<QRCodeStickerProps> = ({ item, className })
       <div className="flex-shrink-0 mt-1">
         <QRCodeSVG
           value={qrData}
-          // Tamanho 75px com margem interna para facilitar o foco
-          size={75}
+          // Tamanho aumentado para 90px para máxima visibilidade
+          size={90}
           level="M"
-          includeMargin={true}
+          includeMargin={false}
           bgColor="#FFFFFF"
           fgColor="#000000"
-          style={{ width: '75px', height: '75px' }}
+          style={{ width: '90px', height: '90px' }}
         />
       </div>
 
