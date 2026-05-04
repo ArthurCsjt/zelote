@@ -1,0 +1,1 @@
+{"query": "SELECT tablename, policyname, cmd FROM pg_policies WHERE schemaname = 'public'"}

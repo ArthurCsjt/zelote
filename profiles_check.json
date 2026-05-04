@@ -1,0 +1,11 @@
+[{"id":"2c613746-af33-47b2-bc0a-cd965f8603de","email":"davi.rossin@colegiosaojudas.com.br","name":"Davi Rossin","role":"admin"}, 
+ {"id":"68719892-d37c-4b08-89fd-3e63cb10dd7e","email":"marilia.duru@sj.pro.br","name":"marilia.duru@sj.pro.br","role":"professor"}, 
+ {"id":"421fb7e2-eb44-43e0-a597-cff83163495c","email":"jose.silva@colegiosaojudas.com.br","name":"Jose Silva","role":"user"}, 
+ {"id":"85cfef27-c6f2-4522-bd7a-02179e3fdf90","email":"roberta.test@sj.pro.br","name":"roberta.test@sj.pro.br","role":"professor"}, 
+ {"id":"706a9a41-9494-4133-b4db-9d98b0178b98","email":"fabio@colegiosaojudas.com.br","name":"Fabio","role":"admin"}, 
+ {"id":"a8beaf76-14bf-40e8-9e49-b82bdec77b24","email":"teste@sj.pro.br","name":"Teste","role":"professor"}, 
+ {"id":"d5ead62d-183a-4dac-b14c-e1b54b8fb41c","email":"test@sj.pro.br","name":"Test User","role":"professor"}, 
+ {"id":"e9253b42-f52e-445b-b3ea-1f0c93e4c3f9","email":"arthur.alencar@colegiosaojudas.com.br","name":"Arthur","role":"super_admin"}, 
+ {"id":"e2f0e613-3174-4282-bc22-85c9d627126d","email":"gabriela.mazuchi@colegiosaojudas.com.br","name":"Gabriela Mazuchi","role":"admin"}, 
+ {"id":"e01b402a-3f99-48e5-84f6-3b23aad4fba9","email":"eduardo.cardoso@colegiosaojudas.com.br","name":"Eduardo Cardoso","role":"admin"}, 
+ {"id":"f28a3163-7a80-419b-92e9-1be4cd80a3d9","email":"reginaldo@colegiosaojudas.com.br","name":"reginaldo@colegiosaojudas.com.br","role":"admin"}]

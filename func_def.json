@@ -1,0 +1,1 @@
+[{"prosrc":"\nDECLARE\n  result json;\nBEGIN\n  -- Apenas permite a execução de comandos SELECT para segurança\n  IF lower(trim(query)) NOT LIKE 'select%' THEN\n    RAISE EXCEPTION 'Apenas consultas SELECT são permitidas.';\n  END IF;\n\n  EXECUTE 'SELECT json_agg(t) FROM (' || query || ') t' INTO result;\n  RETURN COALESCE(result, '[]'::json);\nEND;\n"}]
