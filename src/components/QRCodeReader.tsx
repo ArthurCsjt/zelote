@@ -103,6 +103,11 @@ export function QRCodeReader({ open, onOpenChange, onScan }: QRCodeReaderProps) 
     };
 
     const onScanSuccess = (decodedText: string) => {
+      // Feedback tátil para PWA (celular vibra ao ler com sucesso)
+      if (navigator.vibrate) {
+        navigator.vibrate(100);
+      }
+
       // Stop scanning immediately upon success
       if (scannerRef.current) {
         scannerRef.current.stop().catch(e => console.error("Error stopping scanner after success:", e));

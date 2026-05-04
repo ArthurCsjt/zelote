@@ -90,9 +90,12 @@ export function sanitizeQRCodeData(data: string): string {
   try {
     // Tenta fazer parse como JSON
     const parsed = JSON.parse(data);
-    if (parsed && typeof parsed === 'object' && parsed.id) {
-      // Normaliza o ID extraído do QR Code
-      return normalizeChromebookId(sanitizeString(parsed.id));
+    if (parsed && typeof parsed === 'object') {
+      // Aceita tanto a chave antiga 'id' quanto a nova encurtada 'i'
+      const id = parsed.i || parsed.id;
+      if (id) {
+        return normalizeChromebookId(sanitizeString(id));
+      }
     }
   } catch {
     // Se não for JSON válido, sanitiza como string e normaliza

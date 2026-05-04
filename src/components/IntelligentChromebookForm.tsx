@@ -48,11 +48,11 @@ const parseQRCodeData = (data: string): Partial<FormData> => {
     const json = JSON.parse(data);
     if (json && typeof json === 'object') {
       return {
-        chromebookId: json.id || '',
-        model: json.model || '',
-        serialNumber: json.serial || '',
-        patrimonyNumber: json.pat || '',
-        manufacturer: json.manufacturer || (json.model?.split(' ')[1] || 'Outro'),
+        chromebookId: json.i || json.id || '',
+        model: json.m || json.model || '',
+        serialNumber: json.s || json.serial || '',
+        patrimonyNumber: json.p || json.pat || '',
+        manufacturer: json.manufacturer || ((json.m || json.model)?.split(' ')[1] || 'Outro'),
       };
     }
   } catch {

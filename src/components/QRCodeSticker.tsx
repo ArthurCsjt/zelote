@@ -9,46 +9,48 @@ interface QRCodeStickerProps {
 }
 
 export const QRCodeSticker: React.FC<QRCodeStickerProps> = ({ item, className }) => {
-  // Dados essenciais para o QR Code (JSON string)
+  // Dados encurtados para diminuir a densidade do QR Code e facilitar a leitura
   const qrData = JSON.stringify({
-    id: item.chromebook_id,
-    model: item.model,
-    serial: item.serial_number,
-    pat: item.patrimony_number,
+    i: item.chromebook_id,
+    m: item.model,
+    s: item.serial_number,
+    p: item.patrimony_number,
   });
 
   return (
     <div
       className={cn(
-        // Estilos de tela
-        "p-2 border border-gray-300 rounded-md flex flex-col items-center text-center bg-white shadow-sm",
-        // Estilos de impressão: Fundo branco, texto preto, borda tracejada, dimensões fixas
-        "print:w-[5cm] print:h-[5.5cm] print:p-2 print:border-dashed print:border-gray-500 print:break-inside-avoid print:bg-white print:text-black",
+        // Estilos de tela (Simulação do tamanho real)
+        "p-1 border border-gray-300 flex flex-col items-center justify-between bg-white shadow-sm overflow-hidden",
+        // Estilos de impressão: Quadrado perfeito (4x3cm), sem arredondamento, borda sólida fina para corte
+        "print:w-[4cm] print:h-[3cm] print:p-1 print:border print:border-gray-400 print:rounded-none print:shadow-none print:break-inside-avoid print:bg-white print:text-black",
         className
       )}
-      // Adicionando dimensões fixas para a visualização em tela para simular o tamanho de impressão
-      style={{ width: '100%', maxWidth: '190px', height: '208px' }}
+      // Dimensões na tela proporcionais ao tamanho de impressão (4:3)
+      style={{ width: '150px', height: '112px' }}
     >
-      <div className="flex-shrink-0">
+      <div className="flex-shrink-0 mt-1">
         <QRCodeSVG
           value={qrData}
-          // Tamanho otimizado para leitura confiável por câmeras (120px)
-          size={120}
-          level="H"
-          includeMargin={false}
+          // Tamanho 75px com margem interna para facilitar o foco
+          size={75}
+          level="M"
+          includeMargin={true}
           bgColor="#FFFFFF"
           fgColor="#000000"
-          style={{ width: '120px', height: '120px' }}
+          style={{ width: '75px', height: '75px' }}
         />
       </div>
 
-      <div className="mt-1 flex-1 flex flex-col justify-center min-h-0">
-        <h3 className="text-sm font-bold text-gray-900 truncate w-full print:text-black">
+      <div className="flex flex-col items-center justify-center w-full min-h-0 leading-none">
+        <h3 className="text-[11px] font-bold text-gray-900 truncate w-full print:text-black text-center">
           {item.chromebook_id}
         </h3>
-        <p className="text-[9px] text-gray-600 leading-tight mt-0.5 truncate w-full print:text-black/80">
-          S/N: {item.serial_number || 'N/A'}
-        </p>
+        {item.serial_number && (
+          <p className="text-[7px] text-gray-500 truncate w-full print:text-black/70 text-center mt-0.5">
+            S/N: {item.serial_number}
+          </p>
+        )}
       </div>
     </div>
   );
