@@ -231,6 +231,7 @@ export function DeviceListInput({
         filterStatus={filterStatus === 'emprestado' ? 'ativo' : 'disponivel'}
         onScanClick={() => setIsQRReaderOpen(true)}
         isListMode={true}
+        keepFocusAfterSelect={true}
       />
 
       {/* Lista de Dispositivos - NEO-BRUTALISM */}

@@ -17,6 +17,8 @@ interface ChromebookSearchInputProps {
   onScanClick: () => void;
   /** Se true, o componente não exibe o cartão de confirmação, apenas o input. */
   isListMode?: boolean;
+  /** Se true, o campo mantém o foco após selecionar um item (ideal para scanners físicos). */
+  keepFocusAfterSelect?: boolean;
 }
 
 const ChromebookSearchInput: React.FC<ChromebookSearchInputProps> = ({
@@ -27,6 +29,7 @@ const ChromebookSearchInput: React.FC<ChromebookSearchInputProps> = ({
   filterStatus = 'all',
   onScanClick,
   isListMode = false,
+  keepFocusAfterSelect = false,
 }) => {
   const { chromebooks, loading } = useChromebookSearch();
   const [searchTerm, setSearchTerm] = useState('');
@@ -109,8 +112,11 @@ const ChromebookSearchInput: React.FC<ChromebookSearchInputProps> = ({
   const handleSelect = (chromebook: ChromebookSearchResult) => {
     onSelect(chromebook);
     setSearchTerm('');
-    setIsFocused(false);
-    inputRef.current?.blur();
+    
+    if (!keepFocusAfterSelect) {
+      setIsFocused(false);
+      inputRef.current?.blur();
+    }
   };
 
   // Se isListMode for false E um item estiver selecionado, exibe o card de confirmação
