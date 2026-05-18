@@ -155,7 +155,7 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
                     // Alta resolução no texto
                     "text-white [text-shadow:_-1px_-1px_0_rgba(0,0,0,0.5),_1px_-1px_0_rgba(0,0,0,0.5),_-1px_1px_0_rgba(0,0,0,0.5),_1px_1px_0_rgba(0,0,0,0.5)]",
                     isManutencaoRes
-                      ? "bg-[#FF8C00] shadow-[2px_2px_0_0_#000] sm:shadow-[3px_3px_0_0_#000] hover:bg-[#E65C00]"
+                      ? "bg-[#52525B] shadow-[2px_2px_0_0_#000] sm:shadow-[3px_3px_0_0_#000] hover:bg-[#3F3F46]"
                       : res.is_minecraft
                         ? "bg-gradient-to-br from-[#2d5a27] to-[#1e3c1a] shadow-[2px_2px_0_0_#000] sm:shadow-[3px_3px_0_0_#000]"
                         : "bg-gradient-to-br from-blue-600 to-indigo-600 shadow-[2px_2px_0_0_#000] sm:shadow-[3px_3px_0_0_#000]",
@@ -174,7 +174,7 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
               <TooltipContent
                 side="top"
                 sideOffset={8}
-                className="max-w-[200px] p-2.5 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-none bg-white dark:bg-zinc-950 z-[100]"
+                className="max-w-[200px] p-2.5 border-2 border-black dark:border-zinc-700 rounded-none shadow-[3px_3px_0_0_#000] dark:shadow-[3px_3px_0_0_rgba(255,255,255,0.1)] bg-white dark:bg-zinc-900 z-[100]"
               >
                 <div className="flex flex-col gap-2">
                   <div className="flex items-center gap-2">
@@ -182,16 +182,22 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
                       <span className="text-[12px] font-black uppercase truncate leading-tight text-black dark:text-white">
                         {res.prof_name && res.prof_name !== 'Usuário Desconhecido' ? res.prof_name : (res.prof_email?.split('@')[0] || 'Professor')}
                       </span>
-                      <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 lowercase truncate">
+                      <span className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 lowercase truncate">
                         {res.prof_email}
                       </span>
                     </div>
                   </div>
 
-                  <div className="flex flex-col gap-0.5 text-[11px] font-bold uppercase text-zinc-500 dark:text-zinc-400 border-t border-zinc-100 dark:border-zinc-800 pt-2">
+                  <div className="flex flex-col gap-0.5 text-[11px] font-black uppercase text-zinc-800 dark:text-zinc-200 border-t-2 border-black dark:border-zinc-700 pt-2">
                     <span>{res.classroom || 'ESPAÇO'}</span>
                     {!isManutencao && <span>{res.quantity_requested} Chromebooks</span>}
                   </div>
+
+                  {res.justification && (
+                    <div className="text-[10px] font-bold italic text-zinc-700 dark:text-zinc-300 border-t-2 border-dashed border-black/20 dark:border-zinc-700 pt-1.5 mt-1 normal-case break-words max-w-[180px]">
+                      "{res.justification}"
+                    </div>
+                  )}
 
                   {(isThisMine || isAdmin || isResponsible) && (
                     <div className="flex gap-1.5 pt-1">

@@ -94,11 +94,11 @@ export const ReservationDetailsDialog: React.FC<ReservationDetailsDialogProps> =
 
                 <DialogHeader className={cn(
                     "p-3 sm:p-4 border-b-4 border-black dark:border-white space-y-0 relative",
-                    isMaintRes ? "bg-[#FF8C00]" : "bg-blue-500"
+                    isMaintRes ? "bg-[#52525B]" : "bg-blue-500"
                 )}>
                     <div className="flex items-center gap-3 text-left">
                         <div className="w-10 h-10 border-4 border-black bg-white flex items-center justify-center shadow-[3px_3px_0px_0px_#000] shrink-0">
-                            <Info className={cn("h-5 w-5", isMaintRes ? "text-[#FF8C00]" : "text-blue-600")} />
+                            <Info className={cn("h-5 w-5", isMaintRes ? "text-[#52525B]" : "text-blue-600")} />
                         </div>
                         <div className="flex flex-col">
                             <DialogTitle className="text-xl sm:text-2xl font-black uppercase tracking-tighter text-white drop-shadow-[2px_2px_0_#000] leading-none">
@@ -125,7 +125,7 @@ export const ReservationDetailsDialog: React.FC<ReservationDetailsDialogProps> =
                     <div className="border-4 border-black dark:border-white bg-white dark:bg-zinc-900 p-3.5 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] relative overflow-hidden">
                         <div className={cn(
                             "absolute top-0 right-0 w-24 h-24 -rotate-12 translate-x-8 -translate-y-8",
-                            isMaintRes ? "bg-amber-500/5" : "bg-blue-500/5"
+                            isMaintRes ? "bg-zinc-500/5" : "bg-blue-500/5"
                         )} />
 
                         <div className="flex flex-col gap-4 relative z-10 w-full">
@@ -133,9 +133,9 @@ export const ReservationDetailsDialog: React.FC<ReservationDetailsDialogProps> =
                             <div className="flex flex-col items-center text-center gap-2 w-full">
                                 <div className={cn(
                                     "w-11 h-11 sm:w-12 sm:h-12 rounded-none border-4 border-black flex items-center justify-center shrink-0 shadow-[2px_2px_0px_0px_#000]",
-                                    isMaintRes ? "bg-amber-100" : "bg-blue-100"
+                                    isMaintRes ? "bg-zinc-100 dark:bg-zinc-800" : "bg-blue-100"
                                 )}>
-                                    <User className={cn("h-6 w-6 sm:h-7 w-7", isMaintRes ? "text-[#FF8C00]" : "text-blue-600")} />
+                                    <User className={cn("h-6 w-6 sm:h-7 w-7", isMaintRes ? "text-[#52525B]" : "text-blue-600")} />
                                 </div>
                                 <div className="space-y-0.5 w-full">
                                     <p className="font-black text-sm sm:text-base uppercase leading-tight tracking-tight break-words text-zinc-900 dark:text-zinc-50 px-2" title={profile.name}>
@@ -197,14 +197,14 @@ export const ReservationDetailsDialog: React.FC<ReservationDetailsDialogProps> =
                                 <div className="relative group mt-1">
                                     <div className={cn(
                                         "absolute -top-3 left-4 text-white px-2.5 py-0.5 border-2 border-black text-[8px] font-[1000] uppercase tracking-[0.2em] z-10 shadow-[2px_2px_0px_0px_#000]",
-                                        isMaintRes ? "bg-[#FF8C00]" : "bg-blue-600"
+                                        isMaintRes ? "bg-[#52525B]" : "bg-blue-600"
                                     )}>
                                         {isMaintRes ? "Motivo do Serviço" : "Justificativa"}
                                     </div>
                                     <div className={cn(
                                         "py-2.5 px-3.5 border-[3px] transition-all duration-300",
                                         "bg-white dark:bg-zinc-900 border-black dark:border-white",
-                                        isMaintRes ? "shadow-[4px_4px_0px_0px_#FF8C00]" : "shadow-[4px_4px_0px_0px_#3b82f6] dark:shadow-[4px_4px_0px_0px_rgba(59,130,246,0.3)]"
+                                        isMaintRes ? "shadow-[4px_4px_0px_0px_#52525B]" : "shadow-[4px_4px_0px_0px_#3b82f6] dark:shadow-[4px_4px_0px_0px_rgba(59,130,246,0.3)]"
                                     )}>
                                         <p className="text-xs sm:text-sm font-black leading-relaxed text-zinc-800 dark:text-zinc-100 italic">
                                             "{reservation.justification}"

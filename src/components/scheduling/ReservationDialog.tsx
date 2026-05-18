@@ -258,7 +258,7 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                         className={cn(
                           "border-[3px] bg-white dark:bg-zinc-900 transition-all hover:translate-x-[-2px] hover:translate-y-[-2px] overflow-hidden",
                           isMaint
-                            ? "border-[#FF8C00] shadow-[6px_6px_0px_0px_#FF8C00] hover:shadow-[8px_8px_0px_0px_#FF8C00]"
+                            ? "border-[#52525B] shadow-[6px_6px_0px_0px_#52525B] hover:shadow-[8px_8px_0px_0px_#52525B]"
                             : "border-black dark:border-zinc-800 shadow-[6px_6px_0px_0px_#000] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.05)] hover:shadow-[8px_8px_0px_0px_#000]"
                         )}
                       >
@@ -277,7 +277,7 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                             </div>
                           </div>
                           {isMaint ? (
-                            <Badge className="bg-[#FF8C00] text-white border-[3px] border-black rounded-none h-8 text-[10px] font-[1000] uppercase px-3 shadow-[4px_4px_0px_0px_#000] shrink-0 hover:scale-105 active:scale-95 transition-all cursor-default flex items-center gap-1">
+                            <Badge className="bg-[#52525B] text-white border-[3px] border-black rounded-none h-8 text-[10px] font-[1000] uppercase px-3 shadow-[4px_4px_0px_0px_#000] shrink-0 hover:scale-105 active:scale-95 transition-all cursor-default flex items-center gap-1">
                               ⚠️ MANUTENÇÃO
                             </Badge>
                           ) : !isManutencao ? (

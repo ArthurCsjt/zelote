@@ -258,7 +258,7 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
                       className={cn(
                         "group relative border-2 transition-all hover:bg-zinc-50 dark:hover:bg-white/[0.02] bg-white dark:bg-black/20",
                         isManutencaoRes 
-                          ? "border-[#FF8C00] shadow-[2px_2px_0_0_#FF8C00]" 
+                          ? "border-[#52525B] shadow-[2px_2px_0_0_#52525B]" 
                           : isMinecraft 
                             ? "border-[#3c8527]/50" 
                             : "border-black/5 dark:border-white/5",
