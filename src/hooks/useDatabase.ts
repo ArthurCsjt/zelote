@@ -75,6 +75,7 @@ export interface Reservation extends ReservationData {
   // Detalhes do professor (para exibição)
   prof_name: string;
   prof_email: string;
+  prof_role?: string;
   associated_loans?: { chromebook_id: string }[];
 }
 
@@ -1169,7 +1170,7 @@ export const useDatabase = () => {
         .from('reservations')
         .select(`
           *,
-          prof_data:profiles!professor_id (name, email),
+          prof_data:profiles!professor_id (name, email, role),
           loans (
             chromebooks (chromebook_id)
           )
@@ -1199,6 +1200,7 @@ export const useDatabase = () => {
           ...res,
           prof_name: profName && profName !== 'Usuário Desconhecido' ? profName : (profEmail || 'Usuário Desconhecido'),
           prof_email: profEmail || '',
+          prof_role: profData?.role || '',
           justification: (res as any).justification || '',
           associated_loans: associatedLoans
         };

@@ -93,6 +93,7 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
   const navigate = useNavigate();
   const { user: currentUser } = useAuth();
   const { role, isAdmin } = useProfileRole();
+  const isManutencao = role === 'manutencao';
   const { deleteReservation } = useDatabase();
   const [selectedReservation, setSelectedReservation] = useState<Reservation | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
@@ -249,13 +250,18 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
                 {dayReservations.map((res) => {
                   const isMinecraft = res.is_minecraft;
                   const isAtendida = res.associated_loans && res.associated_loans.length >= res.quantity_requested;
+                  const isManutencaoRes = res.prof_role === 'manutencao' || res.prof_email === 'paulo.geremias@colegiosaojudas.com.br' || res.prof_email === 'ivo@colegiosaojudas.com.br' || res.prof_email === 'manutencao.teste@colegiosaojudas.com.br';
 
                   return (
                     <div
                       key={res.id}
                       className={cn(
                         "group relative border-2 transition-all hover:bg-zinc-50 dark:hover:bg-white/[0.02] bg-white dark:bg-black/20",
-                        isMinecraft ? "border-[#3c8527]/50" : "border-black/5 dark:border-white/5",
+                        isManutencaoRes 
+                          ? "border-[#FF8C00] shadow-[2px_2px_0_0_#FF8C00]" 
+                          : isMinecraft 
+                            ? "border-[#3c8527]/50" 
+                            : "border-black/5 dark:border-white/5",
                         "cursor-pointer overflow-hidden shadow-sm"
                       )}
                       onClick={() => {
@@ -299,9 +305,15 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
                                 <CheckCircle className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
                               </div>
                             )}
-                            <span className="text-2xl sm:text-4xl font-black italic tracking-tighter leading-none whitespace-nowrap">
-                              {res.quantity_requested}<span className="text-[9px] sm:text-[11px] not-italic ml-1 opacity-80 uppercase font-black">CBs</span>
-                            </span>
+                            {!isManutencao ? (
+                              <span className="text-2xl sm:text-4xl font-black italic tracking-tighter leading-none whitespace-nowrap">
+                                {res.quantity_requested}<span className="text-[9px] sm:text-[11px] not-italic ml-1 opacity-80 uppercase font-black">CBs</span>
+                              </span>
+                            ) : (
+                              <span className="text-xs font-black uppercase text-zinc-500 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 border-2 border-black px-2 py-0.5 shadow-[2px_2px_0px_0px_#000]">
+                                Reservado
+                              </span>
+                            )}
                           </div>
 
                           {!isAtendida && isResponsible && (
@@ -337,7 +349,7 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
                       )}
 
                       {/* Withdrawn Chromebooks Section - Premium Neo Brutal Style */}
-                      {res.associated_loans && res.associated_loans.length > 0 && (
+                      {!isManutencao && res.associated_loans && res.associated_loans.length > 0 && (
                         <div className="mx-0 sm:mx-5 mb-3 sm:mb-4 p-3 sm:p-4 bg-primary/5 dark:bg-primary/10 border-2 border-black/10 dark:border-white/10 relative overflow-hidden group/retirados">
                           {/* Decorative pattern */}
                           <div className="absolute inset-0 opacity-[0.03] pointer-events-none neo-brutal-dots bg-primary/20" />
@@ -497,7 +509,7 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
                     </span>
 
                     {/* Occupancy Indicators - Tech Bars */}
-                    {tRes > 0 && (
+                    {tRes > 0 && !isManutencao && (
                       <div className="flex gap-0.5 mt-auto px-1.5 w-full justify-center">
                         <div className={cn(
                           "h-1.5 flex-1 rounded-none border-[0.5px] border-black/10 transition-all",

@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from "@/hooks/use-toast";
-import { useProfileRole } from '@/hooks/use-profile-role'; // Importando useProfileRole
+import { useProfileRole, type ProfileRole } from '@/hooks/use-profile-role'; // Importando useProfileRole
 
 // Importando todos os componentes de UI necessários
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -26,7 +26,7 @@ type UserProfile = {
   name: string | null;
   first_name: string | null;
   last_name: string | null;
-  role: 'admin' | 'user' | 'super_admin';
+  role: ProfileRole;
   last_sign_in_at: string | null;
 };
 
@@ -43,7 +43,7 @@ const ProfileEditDialog: React.FC<ProfileEditDialogProps> = ({ open, onOpenChang
   const [name, setName] = useState(user?.name || '');
   const [firstName, setFirstName] = useState(user?.first_name || '');
   const [lastName, setLastName] = useState(user?.last_name || '');
-  const [role, setRole] = useState<'admin' | 'user' | 'super_admin'>(user?.role || 'user');
+  const [role, setRole] = useState<ProfileRole>(user?.role || 'user');
   const [isSaving, setIsSaving] = useState(false);
   const { isAdmin, role: currentRole } = useProfileRole();
 
@@ -136,12 +136,13 @@ const ProfileEditDialog: React.FC<ProfileEditDialogProps> = ({ open, onOpenChang
           </div>
           <div className="space-y-2">
             <Label htmlFor="role" className="text-xs font-bold uppercase">Função de Acesso</Label>
-            <Select value={role} onValueChange={(v: 'admin' | 'user' | 'super_admin') => setRole(v)} disabled={!canEditRole || isSaving}>
+            <Select value={role || 'user'} onValueChange={(v: ProfileRole) => setRole(v)} disabled={!canEditRole || isSaving}>
               <SelectTrigger className="neo-input h-10">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent className="border-3 border-black dark:border-white rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
                 <SelectItem value="user" className="font-bold uppercase text-xs">Padrão (Apenas Empréstimo/Devolução)</SelectItem>
+                <SelectItem value="manutencao" className="font-bold uppercase text-xs">Manutenção (Apenas Agendamento)</SelectItem>
                 <SelectItem value="admin" className="font-bold uppercase text-xs">Admin (Gerenciamento de Inventário e Usuários)</SelectItem>
                 {canSetSuperAdmin && <SelectItem value="super_admin" className="font-bold uppercase text-xs">Super Admin (Acesso Total)</SelectItem>}
               </SelectContent>
@@ -248,7 +249,7 @@ export const UserManagement = () => {
       // Garantir que a role seja mapeada corretamente
       return (data || []).map(u => ({
         ...u,
-        role: u.role as 'admin' | 'user' | 'super_admin'
+        role: u.role as ProfileRole
       })) as UserProfile[];
     },
     // Desabilita a consulta se o usuário não for admin ou se o papel ainda estiver carregando
@@ -325,10 +326,12 @@ export const UserManagement = () => {
                 <Badge variant="outline" className={cn(
                   user.role === 'super_admin' && 'bg-purple-100 text-purple-800 border-purple-300',
                   user.role === 'admin' && 'bg-blue-100 text-blue-800 border-blue-300',
+                  user.role === 'manutencao' && 'bg-amber-100 text-amber-800 border-amber-300',
+                  user.role === 'professor' && 'bg-green-100 text-green-800 border-green-300',
                   user.role === 'user' && 'bg-gray-100 text-gray-800 border-gray-300',
                   'capitalize'
                 )}>
-                  {user.role.replace('_', ' ')}
+                  {user.role?.replace('_', ' ') || 'Padrão'}
                 </Badge>
 
                 {currentUser && user.id !== currentUser.id ? (

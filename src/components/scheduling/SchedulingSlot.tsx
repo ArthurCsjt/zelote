@@ -123,11 +123,15 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
       pastSlotClasses
     )}>
       {allReservationsForSlot.map((res) => {
+        const isManutencao = role === 'manutencao';
+        const isManutencaoRes = res.prof_role === 'manutencao' || res.prof_email === 'paulo.geremias@colegiosaojudas.com.br' || res.prof_email === 'ivo@colegiosaojudas.com.br' || res.prof_email === 'manutencao.teste@colegiosaojudas.com.br';
         const isThisMine = res.created_by === currentUser?.id;
         const roomName = res.classroom ? res.classroom.toUpperCase() : "ESPAÇO";
         let label = "";
 
-        if (res.quantity_requested === 0) {
+        if (isManutencao) {
+          label = `${roomName}`;
+        } else if (res.quantity_requested === 0) {
           label = `${roomName}`;
         } else {
           // On mobile we use a much more compact label
@@ -150,9 +154,11 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
                     isPast && "cursor-default",
                     // Alta resolução no texto
                     "text-white [text-shadow:_-1px_-1px_0_rgba(0,0,0,0.5),_1px_-1px_0_rgba(0,0,0,0.5),_-1px_1px_0_rgba(0,0,0,0.5),_1px_1px_0_rgba(0,0,0,0.5)]",
-                    res.is_minecraft
-                      ? "bg-gradient-to-br from-[#2d5a27] to-[#1e3c1a] shadow-[2px_2px_0_0_#000] sm:shadow-[3px_3px_0_0_#000]"
-                      : "bg-gradient-to-br from-blue-600 to-indigo-600 shadow-[2px_2px_0_0_#000] sm:shadow-[3px_3px_0_0_#000]",
+                    isManutencaoRes
+                      ? "bg-[#FF8C00] shadow-[2px_2px_0_0_#000] sm:shadow-[3px_3px_0_0_#000] hover:bg-[#E65C00]"
+                      : res.is_minecraft
+                        ? "bg-gradient-to-br from-[#2d5a27] to-[#1e3c1a] shadow-[2px_2px_0_0_#000] sm:shadow-[3px_3px_0_0_#000]"
+                        : "bg-gradient-to-br from-blue-600 to-indigo-600 shadow-[2px_2px_0_0_#000] sm:shadow-[3px_3px_0_0_#000]",
                   )}
                   onClick={(e) => {
                     e.stopPropagation();
@@ -184,7 +190,7 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
 
                   <div className="flex flex-col gap-0.5 text-[11px] font-bold uppercase text-zinc-500 dark:text-zinc-400 border-t border-zinc-100 dark:border-zinc-800 pt-2">
                     <span>{res.classroom || 'ESPAÇO'}</span>
-                    <span>{res.quantity_requested} Chromebooks</span>
+                    {!isManutencao && <span>{res.quantity_requested} Chromebooks</span>}
                   </div>
 
                   {(isThisMine || isAdmin || isResponsible) && (

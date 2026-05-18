@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import logger from '@/utils/logger';
 
-export type ProfileRole = 'admin' | 'user' | 'super_admin' | 'professor' | 'teacher' | null;
+export type ProfileRole = 'admin' | 'user' | 'super_admin' | 'professor' | 'teacher' | 'manutencao' | null;
 
 export function useProfileRole() {
   const { user } = useAuth();
@@ -30,7 +30,18 @@ export function useProfileRole() {
 
         if (isMounted) {
           // O RPC retorna a role como uma string (text)
-          const fetchedRole = (data as ProfileRole) ?? 'user';
+          let fetchedRole = (data as ProfileRole) ?? 'user';
+          
+          // Auto-assign 'manutencao' role based on specific emails
+          const email = user.email?.toLowerCase();
+          if (
+            email === 'paulo.geremias@colegiosaojudas.com.br' || 
+            email === 'ivo@colegiosaojudas.com.br' || 
+            email === 'manutencao.teste@colegiosaojudas.com.br'
+          ) {
+            fetchedRole = 'manutencao';
+          }
+          
           logger.debug(`User ID: ${user.id}, Fetched Role: ${fetchedRole}`);
           setRole(fetchedRole);
         }
