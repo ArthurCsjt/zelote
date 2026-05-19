@@ -1,4 +1,4 @@
-import React, { useState, ReactNode, useEffect } from 'react';
+import React, { useState, ReactNode, useEffect, useRef, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -6,15 +6,16 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, Calendar, Monitor, Info, Save, Tv, Volume2, Mic, User, ListFilter, CalendarDays, X as CloseIcon, ArrowRight, Plus, Minus, CheckCircle } from 'lucide-react';
+import { Loader2, Calendar, Monitor, Info, Save, Tv, Volume2, Mic, User, ListFilter, CalendarDays, X as CloseIcon, ArrowRight, Plus, Minus, CheckCircle, Search, ChevronDown, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { useDatabase, ReservationData, Reservation } from '@/hooks/useDatabase';
+import { useDatabase, ReservationData, Reservation, Space } from '@/hooks/useDatabase';
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfileRole } from '@/hooks/use-profile-role';
 import { Calendar as CalendarUI } from '@/components/ui/calendar';
+import { SuggestiveSearch } from '@/components/ui/SuggestiveSearch';
 
 interface ReservationDialogProps {
   children: ReactNode;
@@ -52,7 +53,7 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
   }, []);
 
   const [open, setOpen] = useState(false);
-  const { createReservation, bulkCreateReservations, loading: isSaving } = useDatabase();
+  const { createReservation, bulkCreateReservations, loading: isSaving, getSpaces, createSpace, deleteSpace } = useDatabase();
   const { user } = useAuth();
   const { role, isAdmin } = useProfileRole();
   const isManutencao = role === 'manutencao';
@@ -76,8 +77,46 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
   const [extraDates, setExtraDates] = useState<Date[]>([]);
   const [isMultiMode, setIsMultiMode] = useState(false);
   const [showCalendar, setShowCalendar] = useState(false);
-  const [showCustomClassroom, setShowCustomClassroom] = useState(false);
 
+  // States for Spaces management
+  const [spaces, setSpaces] = useState<Space[]>([]);
+  const [spaceSearch, setSpaceSearch] = useState<string>('');
+  const [isSpaceDropdownOpen, setIsSpaceDropdownOpen] = useState(false);
+  const [newSpaceName, setNewSpaceName] = useState('');
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Dynamic suggestions for classroom booking
+  const searchSuggestions = useMemo(() => {
+    if (spaces.length > 0) {
+      return [
+        "Selecione ou digite a sala/turma...",
+        ...spaces.map(s => `Ex: ${s.name}`),
+        "Digite uma turma personalizada..."
+      ];
+    }
+    return [
+      "Selecione ou digite a sala/turma...",
+      "Ex: Sala Maker",
+      "Ex: Sala Google",
+      "Ex: Sala de Estudos",
+      "Digite uma turma personalizada..."
+    ];
+  }, [spaces]);
+
+  // Click outside to close spaces dropdown
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsSpaceDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  // Fetch spaces on dialog open
   useEffect(() => {
     if (open) {
       setJustification('');
@@ -91,9 +130,13 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
       setExtraDates([]);
       setIsMultiMode(false);
       setShowCalendar(false);
-      setShowCustomClassroom(false);
+
+      // Load spaces from db
+      getSpaces().then(data => {
+        setSpaces(data);
+      });
     }
-  }, [open, maxQuantity]);
+  }, [open, getSpaces, maxQuantity]);
 
   // Regras de quantidade para Minecraft
   useEffect(() => {
@@ -459,63 +502,178 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                 </span>
               </div>
               <div className="p-3 sm:p-4 space-y-3">
-                <div className="space-y-2">
-                  <Label className="text-[11px] sm:text-xs font-black uppercase text-[#3B82F6] dark:text-blue-400 tracking-wider">Sala / Turma <span className="text-red-500">*</span></Label>
-                  <div className="flex flex-wrap gap-1.5">
-                    {['Sala Google', 'Sala Maker', 'Sala de Estudos', 'Sala de Artes'].map((s) => {
-                      const isOccupied = currentReservations.some(res => res.classroom === s);
-                      return (
-                        <button
-                          key={s}
-                          type="button"
-                          disabled={isOccupied}
-                          onClick={() => { setClassroom(s); setShowCustomClassroom(false); }}
-                          className={cn(
-                            "px-2 sm:px-2.5 py-1 sm:py-1.5 text-[9px] sm:text-[10px] font-black border-2 border-black uppercase transition-all relative overflow-hidden min-h-[36px] min-w-[80px] sm:min-w-[90px] flex-1 sm:flex-none flex items-center justify-center bg-white dark:bg-zinc-900",
-                            classroom === s && !showCustomClassroom
-                              ? "bg-[#1e3a8a] text-white shadow-[2px_2px_0_0_#000] translate-x-[1px] translate-y-[1px] shadow-none"
-                              : isOccupied
-                                ? "bg-zinc-100 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-600 border-zinc-300 dark:border-zinc-700 cursor-not-allowed"
-                                : "bg-white dark:bg-zinc-900 text-black dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800 shadow-[2px_2px_0_0_#000] dark:shadow-[2px_2px_0_0_rgba(255,255,255,0.1)]"
-                          )}
-                        >
-                          {isOccupied ? (
-                            <div className="h-5 overflow-hidden w-full relative">
-                              <div className="flex flex-col h-full animate-[alternate-texts_4s_infinite_cubic-bezier(0.7,0,0.3,1)]">
-                                <span className="h-5 flex items-center justify-center shrink-0 text-zinc-400 dark:text-zinc-600">
-                                  {s}
-                                </span>
-                                <div className="h-5 flex items-center justify-center shrink-0">
-                                  <span className="bg-[#EF4444] text-white border border-black text-[8px] font-black uppercase shadow-[1px_1px_0_0_#000] px-1.5 py-0.5">
-                                    Ocupada
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-                          ) : (
-                            <span>{s}</span>
-                          )}
-                        </button>
-                      );
-                    })}
-                    <button
-                      type="button"
-                      onClick={() => { setShowCustomClassroom(true); setClassroom(''); }}
-                      className={cn(
-                        "px-2.5 py-1 sm:py-1.5 text-[10px] sm:text-xs font-black border-2 border-black dark:border-zinc-800 uppercase transition-all shadow-[2px_2px_0_0_#000] dark:shadow-[2px_2px_0_0_rgba(255,255,255,0.1)]",
-                        showCustomClassroom ? "bg-[#1e3a8a] text-white" : "bg-white dark:bg-zinc-900 text-black dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800"
-                      )}
-                    >
-                      +
-                    </button>
-                  </div>
-                  {showCustomClassroom && (
-                    <Input
+                <div className="space-y-1.5 relative" ref={dropdownRef}>
+                  <Label className="text-[11px] sm:text-xs font-black uppercase text-[#3B82F6] dark:text-blue-400 tracking-wider">
+                    Sala / Turma <span className="text-red-500">*</span>
+                  </Label>
+                  
+                  {/* Traditional Search/Combobox Input Container */}
+                  <div className="relative">
+                    <SuggestiveSearch
                       value={classroom}
-                      onChange={(e) => setClassroom(e.target.value)}
-                      placeholder="Nome da sala ou turma..."
-                      className="border-2 border-black rounded-none h-8 mt-2 text-xs font-bold focus-visible:ring-0 focus-visible:border-[#3B82F6]"
+                      onChange={(val) => {
+                        setClassroom(val);
+                        setIsSpaceDropdownOpen(true);
+                      }}
+                      onFocus={() => setIsSpaceDropdownOpen(true)}
+                      suggestions={searchSuggestions}
+                      effect="typewriter"
+                      className={cn(
+                        "w-full border border-zinc-300 dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded-none h-10 transition-all",
+                        isSpaceDropdownOpen && "border-zinc-400 dark:border-zinc-700"
+                      )}
+                      inputClassName="px-3 pr-14 w-full h-full bg-transparent text-xs font-bold uppercase outline-none text-black dark:text-zinc-100 placeholder:normal-case placeholder:text-zinc-400"
                     />
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5 z-10">
+                      {classroom && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setClassroom('');
+                            setIsSpaceDropdownOpen(true);
+                          }}
+                          className="text-zinc-400 hover:text-black dark:hover:text-white transition-colors"
+                        >
+                          <CloseIcon className="h-3.5 w-3.5" />
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setIsSpaceDropdownOpen(!isSpaceDropdownOpen);
+                        }}
+                        className="text-zinc-400 hover:text-black dark:hover:text-white transition-colors"
+                      >
+                        <ChevronDown className={cn("h-4 w-4 transition-transform duration-200", isSpaceDropdownOpen && "rotate-180")} />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Dropdown Panel */}
+                  {isSpaceDropdownOpen && (
+                    <div className="relative z-10 w-full mt-1.5 border border-zinc-300 dark:border-zinc-800 bg-white dark:bg-zinc-950 shadow-sm animate-in fade-in slide-in-from-top-1 duration-100">
+                      {/* Spaces List */}
+                      <div className="max-h-[180px] overflow-y-auto divide-y divide-zinc-100 dark:divide-zinc-900 pb-2">
+                        {spaces.filter(s => s.name.toLowerCase().includes(classroom.toLowerCase())).length === 0 ? (
+                          <div className="p-3 text-center text-xs text-zinc-400 dark:text-zinc-500 font-bold uppercase">
+                            Nenhum espaço encontrado
+                          </div>
+                        ) : (
+                          spaces
+                            .filter(s => s.name.toLowerCase().includes(classroom.toLowerCase()))
+                            .map((s) => {
+                              const isOccupied = currentReservations.some(res => res.classroom?.toLowerCase() === s.name.toLowerCase());
+                              return (
+                                <div
+                                  key={s.id}
+                                  onClick={() => {
+                                    if (isOccupied) return;
+                                    setClassroom(s.name);
+                                    setIsSpaceDropdownOpen(false);
+                                  }}
+                                  className={cn(
+                                    "w-full flex items-center justify-between px-3 py-2 text-left transition-colors cursor-pointer group",
+                                    isOccupied 
+                                      ? "bg-zinc-50 dark:bg-zinc-900/50 cursor-not-allowed opacity-60" 
+                                      : "hover:bg-zinc-50 dark:hover:bg-zinc-900",
+                                    classroom === s.name && "bg-blue-50 dark:bg-blue-950/20"
+                                  )}
+                                >
+                                  <div className="flex items-center gap-2 min-w-0">
+                                    <span 
+                                      className="w-1.5 h-1.5 rounded-full shrink-0" 
+                                      style={{ backgroundColor: s.color || '#3B82F6' }}
+                                    />
+                                    <span className={cn(
+                                      "text-xs font-bold uppercase truncate",
+                                      classroom === s.name ? "text-[#1e3a8a] dark:text-blue-400" : "text-black dark:text-zinc-200"
+                                    )}>
+                                      {s.name}
+                                    </span>
+                                    {isOccupied && (
+                                      <span className="ml-2 bg-red-100 dark:bg-red-950/50 text-red-600 dark:text-red-400 text-[8px] font-bold uppercase px-1.5 py-0.5 shrink-0 rounded-sm">
+                                        Ocupada
+                                      </span>
+                                    )}
+                                  </div>
+
+                                  {/* Actions (Delete Space) - Admins only */}
+                                  {isAdmin && (
+                                    <button
+                                      type="button"
+                                      onClick={async (e) => {
+                                        e.stopPropagation();
+                                        if (confirm(`Tem certeza que deseja remover o espaço "${s.name}"?`)) {
+                                          const success = await deleteSpace(s.id);
+                                          if (success) {
+                                            const updated = await getSpaces();
+                                            setSpaces(updated);
+                                            if (classroom === s.name) {
+                                              setClassroom('');
+                                            }
+                                          }
+                                        }
+                                      }}
+                                      className="p-1 text-zinc-400 hover:text-red-500 rounded-sm transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
+                                    >
+                                      <Trash2 className="h-3.5 w-3.5" />
+                                    </button>
+                                  )}
+                                </div>
+                              );
+                            })
+                        )}
+                      </div>
+
+                      {/* Add New Space panel (Admins only) */}
+                      {isAdmin && (
+                        <div className="p-2.5 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 flex flex-col gap-1.5">
+                          <span className="text-[9px] font-bold uppercase text-zinc-500 dark:text-zinc-400 tracking-wider">
+                            Adicionar Espaço/Turma
+                          </span>
+                          <div className="flex gap-1.5">
+                            <Input
+                              placeholder="Nome da sala ou turma..."
+                              value={newSpaceName}
+                              onChange={(e) => setNewSpaceName(e.target.value)}
+                              onKeyDown={async (e) => {
+                                if (e.key === 'Enter') {
+                                  e.preventDefault();
+                                  if (!newSpaceName.trim()) return;
+                                  const created = await createSpace(newSpaceName, '#3B82F6');
+                                  if (created) {
+                                    setNewSpaceName('');
+                                    const updated = await getSpaces();
+                                    setSpaces(updated);
+                                    setClassroom(created.name);
+                                    setIsSpaceDropdownOpen(false);
+                                  }
+                                }
+                              }}
+                              className="h-8 border border-zinc-300 dark:border-zinc-700 rounded-sm text-xs font-bold bg-white dark:bg-zinc-800 focus-visible:ring-0 focus-visible:border-zinc-400"
+                            />
+                            <Button
+                              type="button"
+                              onClick={async () => {
+                                if (!newSpaceName.trim()) return;
+                                const created = await createSpace(newSpaceName, '#3B82F6');
+                                if (created) {
+                                  setNewSpaceName('');
+                                  const updated = await getSpaces();
+                                  setSpaces(updated);
+                                  setClassroom(created.name);
+                                  setIsSpaceDropdownOpen(false);
+                                }
+                              }}
+                              className="h-8 bg-zinc-900 text-white hover:bg-zinc-800 rounded-sm px-3.5 py-0 text-xs font-bold transition-all shrink-0"
+                            >
+                              +
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   )}
                 </div>
 

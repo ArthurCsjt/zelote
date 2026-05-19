@@ -79,6 +79,15 @@ export interface Reservation extends ReservationData {
   associated_loans?: { chromebook_id: string }[];
 }
 
+export interface Space {
+  id: string;
+  name: string;
+  color: string;
+  capacity: number | null;
+  created_at: string;
+}
+
+
 
 // REMOVIDO: Validações de domínio movidas para @/utils/emailValidation
 // Usar: validateEmailDomain(email, userType) do utilitário
@@ -1535,6 +1544,79 @@ export const useDatabase = () => {
     }
   }, [user]);
 
+  const getSpaces = useCallback(async (): Promise<Space[]> => {
+    try {
+      const { data, error } = await supabase
+        .from('spaces')
+        .select('*')
+        .order('name', { ascending: true });
+      if (error) throw error;
+      return (data || []) as Space[];
+    } catch (error: any) {
+      logger.error('Erro ao buscar espaços:', error);
+      return [];
+    }
+  }, []);
+
+  const createSpace = useCallback(async (name: string, color: string = '#3B82F6', capacity?: number): Promise<Space | null> => {
+    if (!user) {
+      toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
+      return null;
+    }
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('spaces')
+        .insert({
+          name: name.trim(),
+          color,
+          capacity: capacity || null
+        })
+        .select()
+        .single();
+      if (error) throw error;
+      toast({ title: "Sucesso", description: "Espaço/Turma cadastrado com sucesso!", variant: "success" });
+      return data as Space;
+    } catch (error: any) {
+      logger.error('Erro ao criar espaço:', error);
+      toast({
+        title: "Erro ao cadastrar",
+        description: error.message,
+        variant: "destructive"
+      });
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
+
+  const deleteSpace = useCallback(async (id: string): Promise<boolean> => {
+    if (!user) {
+      toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
+      return false;
+    }
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from('spaces')
+        .delete()
+        .eq('id', id);
+      if (error) throw error;
+      toast({ title: "Sucesso", description: "Espaço/Turma removido com sucesso!", variant: "success" });
+      return true;
+    } catch (error: any) {
+      logger.error('Erro ao remover espaço:', error);
+      toast({
+        title: "Erro ao remover",
+        description: error.message.includes('foreign key') ? "Este espaço está associado a uma ou mais reservas e não pode ser excluído." : error.message,
+        variant: "destructive"
+      });
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
+
   return {
     loading,
     createChromebook,
@@ -1575,5 +1657,9 @@ export const useDatabase = () => {
     // SYSTEM SETTINGS
     getSystemSetting,
     updateSystemSetting,
+    // ESPAÇOS
+    getSpaces,
+    createSpace,
+    deleteSpace,
   };
 };
