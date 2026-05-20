@@ -252,18 +252,14 @@ const SchedulingPage = () => {
                     {/* Indicador de topo sutil */}
                     <div className="absolute top-0 left-0 right-0 h-[1px] bg-black/5 dark:bg-white/5" />
 
-                    <div className="flex items-center justify-center gap-1.5">
-                      <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse shrink-0 hidden sm:block" />
-                      <span className="text-[9px] sm:text-[11px] font-[1000] uppercase tracking-[0.04em] sm:tracking-[0.12em] text-zinc-900 dark:text-zinc-50 text-center leading-snug break-words max-w-[190px] sm:max-w-none">
+                    <div className="flex items-center justify-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-primary animate-pulse shrink-0" />
+                      <span className="text-[11px] sm:text-[13px] md:text-sm font-[1000] uppercase tracking-[0.06em] sm:tracking-[0.1em] text-zinc-900 dark:text-zinc-50 text-center leading-snug break-words">
                         <span className="whitespace-normal md:whitespace-nowrap block">
                           {displayRange}
                         </span>
                       </span>
                     </div>
-
-                    <span className="text-[6.5px] sm:text-[8px] font-black text-primary/70 dark:text-blue-400/80 bg-primary/5 dark:bg-blue-500/10 px-2 py-0.5 border border-primary/20 dark:border-blue-500/20 uppercase tracking-[0.2em] mt-0.5 sm:mt-1.5 rounded-sm transition-colors group-hover/nav:bg-primary/10">
-                      Janela de Tempo Ativa
-                    </span>
 
                     {/* Grid de fundo ultra sutil */}
                     <div className="absolute inset-0 opacity-[0.02] pointer-events-none neo-brutal-dots scale-50" />
@@ -395,7 +391,7 @@ const SchedulingPage = () => {
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1.4, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-        className="neo-brutal-card p-1 sm:p-2 overflow-hidden border"
+        className="w-full overflow-visible"
       >
         {viewMode === 'weekly' ? <SchedulingCalendar
           currentDate={currentDate}

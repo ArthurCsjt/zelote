@@ -91,6 +91,7 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
   const dayColumnMinWidth = isMobile ? 120 : 160;
   const totalMinWidth = timeColumnWidth + (weekDays.length * dayColumnMinWidth);
   const gridTemplateColumns = `${timeColumnWidth}px repeat(${weekDays.length}, 1fr)`;
+  const GridContainer = (isMobile ? 'div' : motion.div) as any;
 
   if (isLoading) {
     return (
@@ -179,30 +180,36 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
 
       <div
         ref={constraintsRef}
-        className="relative border-4 border-black dark:border-white shadow-[12px_12px_0px_0px_rgba(0,0,0,0.05)] bg-white dark:bg-zinc-950 overflow-hidden cursor-grab active:cursor-grabbing"
+        className="relative border-4 border-black dark:border-white shadow-[12px_12px_0px_0px_rgba(0,0,0,0.05)] bg-white dark:bg-zinc-950 overflow-x-auto md:overflow-hidden scrollbar-none cursor-grab active:cursor-grabbing"
       >
         <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.07] pointer-events-none neo-brutal-dots font-black text-black" />
 
-        <motion.div
-          drag="x"
-          dragConstraints={constraintsRef}
-          dragElastic={0.1}
+        <GridContainer
+          {...(!isMobile ? {
+            drag: "x",
+            dragConstraints: constraintsRef,
+            dragElastic: 0.1,
+            onMouseLeave: () => {
+              setHoveredDate(null);
+              setHoveredTime(null);
+            }
+          } : {})}
           className="grid gap-0 relative z-10 select-none"
           style={{
             gridTemplateColumns,
             minWidth: totalMinWidth,
-            width: '100%'
-          }}
-          onMouseLeave={() => {
-            setHoveredDate(null);
-            setHoveredTime(null);
+            width: '100%',
+            touchAction: isMobile ? 'pan-x pan-y' : 'none'
           }}
         >
           {/* Header Row */}
-          <div className={cn(
-            "h-32 sm:h-36 flex flex-col border-b-4 border-r-4 border-black dark:border-white bg-white dark:bg-zinc-900 relative overflow-hidden transition-all",
-            `min-w-[${timeColumnWidth}px]`
-          )}>
+          <div 
+            className={cn(
+              "h-32 sm:h-36 flex flex-col border-b-4 border-r-4 border-black dark:border-white bg-white dark:bg-zinc-900 relative overflow-hidden transition-all sticky left-0 z-30",
+              `min-w-[${timeColumnWidth}px]`
+            )}
+            style={{ left: -4 }}
+          >
             <div className="absolute inset-0 opacity-[0.05] dark:opacity-10 pointer-events-none z-0"
               style={{
                 backgroundImage: `radial-gradient(circle, currentColor 1px, transparent 1px)`,
@@ -287,20 +294,27 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
             </div>
 
             {/* Bottom Half - Heatmap Indicator Label aligned with daily heatmaps */}
-            <div 
-              className="px-1.5 py-1.5 sm:px-3 sm:py-2 border-t-4 border-black dark:border-white relative z-10 flex flex-col justify-center items-center h-[40px] sm:h-[50px] select-none shrink-0 w-full overflow-hidden"
-              style={{
-                background: 'linear-gradient(to right, #f4f4f5 0%, #fde047 25%, #fb923c 50%, #ea580c 75%, #dc2626 100%)'
-              }}
-            >
-              <span className="text-[7.5px] sm:text-[9.5px] font-[1000] uppercase tracking-tight text-black drop-shadow-[1px_1px_0px_rgba(255,255,255,0.95)] text-center leading-none">
-                Mapa de Calor
-              </span>
-              <div className="flex items-center gap-1 mt-1 sm:mt-1.5 text-black drop-shadow-[1px_1px_0px_rgba(255,255,255,0.95)] shrink-0 scale-95 sm:scale-100 transition-transform">
-                <span className="text-[5.5px] sm:text-[7.5px] font-[1000] uppercase tracking-wider leading-none">
-                  Chromebooks
+            <div className="px-1 py-1 sm:px-2 sm:py-1.5 border-t-4 border-black dark:border-white bg-zinc-50 dark:bg-zinc-950 relative z-10 flex flex-col justify-between items-center h-[40px] sm:h-[50px] select-none shrink-0 w-full overflow-hidden">
+              <div className="flex-1 flex flex-col justify-center items-center">
+                <span className="text-[7.5px] sm:text-[9.5px] font-[1000] uppercase tracking-tight text-black dark:text-white text-center leading-none">
+                  Mapa de Calor
                 </span>
-                <ArrowRight className="h-2 w-2 sm:h-2.5 sm:w-2.5 stroke-[3.5]" />
+                <div className="flex items-center gap-0.5 mt-0.5 text-zinc-500 dark:text-zinc-400 shrink-0 scale-90 sm:scale-100 transition-transform">
+                  <span className="text-[5.5px] sm:text-[7.5px] font-[1000] uppercase tracking-wider leading-none">
+                    Chromebooks
+                  </span>
+                  <ArrowRight className="h-1.5 w-1.5 sm:h-2 sm:w-2 stroke-[3.5]" />
+                </div>
+              </div>
+
+              {/* Discrete block legend perfectly matching the 6 heatmap columns */}
+              <div className="flex w-full h-[6px] sm:h-[8px] gap-[2px] relative z-20 justify-center px-1 sm:px-2 mt-1">
+                <div className="flex-1 bg-zinc-200/60 dark:bg-zinc-700/30 rounded-[1px]" title="Livre (0%)" />
+                <div className="flex-1 bg-amber-300 dark:bg-amber-400 rounded-[1px]" title="Pouco Uso" />
+                <div className="flex-1 bg-orange-400 dark:bg-orange-400 rounded-[1px]" title="Parcial" />
+                <div className="flex-1 bg-orange-500 dark:bg-orange-500 rounded-[1px]" title="Alto Uso" />
+                <div className="flex-1 bg-orange-600 dark:bg-orange-600 rounded-[1px]" title="Quase Cheio" />
+                <div className="flex-1 bg-red-600 dark:bg-red-500 rounded-[1px]" title="Esgotado (100%)" />
               </div>
             </div>
           </div>
@@ -429,10 +443,13 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
 
             return (
               <React.Fragment key={timeIndex}>
-                <div className={cn(
-                  "min-h-[4rem] sm:min-h-[5rem] h-full flex items-center justify-center border-b-2 border-r-4 border-black/10 dark:border-white/10",
-                  isHoveredRow ? "bg-zinc-100 dark:bg-zinc-800" : "bg-zinc-50/50 dark:bg-zinc-900/30"
-                )}>
+                <div 
+                  className={cn(
+                    "min-h-[4rem] sm:min-h-[5rem] h-full flex items-center justify-center border-b-2 border-r-4 border-black/10 dark:border-white/10 sticky left-0 z-20 shadow-[2px_0_0_0_#000_inset]",
+                    isHoveredRow ? "bg-zinc-100 dark:bg-zinc-800" : "bg-zinc-50 dark:bg-zinc-950"
+                  )}
+                  style={{ left: -4 }}
+                >
                   <div className="flex flex-col items-center">
                     <div className={cn(
                       "bg-white dark:bg-zinc-950 px-3 py-1 border-2 border-black dark:border-white transition-none",
@@ -481,7 +498,7 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
               </React.Fragment>
             );
           })}
-        </motion.div>
+        </GridContainer>
       </div>
     </div>
   );
