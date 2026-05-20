@@ -6,7 +6,7 @@ import { timeSlots, getWeekDays } from '@/utils/scheduling';
 import { SchedulingSlot } from './SchedulingSlot';
 import type { Reservation } from '@/hooks/useDatabase';
 import type { User as AuthUser } from '@supabase/supabase-js';
-import { Loader2, CheckCircle, AlertTriangle, Monitor, Laptop, Clock, Info, GripVertical } from 'lucide-react';
+import { Loader2, CheckCircle, AlertTriangle, Monitor, Laptop, Clock, Info, GripVertical, ArrowRight, ArrowDown } from 'lucide-react';
 import { motion, useMotionValue, useSpring, AnimatePresence } from 'framer-motion';
 
 interface SchedulingCalendarProps {
@@ -200,90 +200,108 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
         >
           {/* Header Row */}
           <div className={cn(
-            "h-32 sm:h-36 flex flex-col items-center justify-center border-b-4 border-r-4 border-black dark:border-white bg-green-500 relative overflow-hidden transition-all",
+            "h-32 sm:h-36 flex flex-col border-b-4 border-r-4 border-black dark:border-white bg-white dark:bg-zinc-900 relative overflow-hidden transition-all",
             `min-w-[${timeColumnWidth}px]`
           )}>
-            <div className="absolute inset-0 opacity-10 pointer-events-none"
+            <div className="absolute inset-0 opacity-[0.05] dark:opacity-10 pointer-events-none z-0"
               style={{
-                backgroundImage: `radial-gradient(circle, white 1px, transparent 1px)`,
+                backgroundImage: `radial-gradient(circle, currentColor 1px, transparent 1px)`,
                 backgroundSize: '8px 8px'
               }}
             />
 
-            <div
-              className={cn(
-                "relative z-10 flex flex-col items-center p-2",
-                (currentUser?.email === 'arthur.alencar@colegiosaojudas.com.br' || (currentUser as any)?.role === 'admin') && "cursor-pointer group/edit"
-              )}
-              onClick={() => {
-                if (currentUser?.email === 'arthur.alencar@colegiosaojudas.com.br' || (currentUser as any)?.role === 'admin') {
-                  setIsEditingLimit(true);
-                }
-              }}
-            >
-              {isEditingLimit ? (
-                <div className="flex flex-col items-center gap-1.5 animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
-                  <input
-                    type="number"
-                    value={newLimit}
-                    onChange={(e) => setNewLimit(e.target.value)}
-                    className="w-16 h-8 text-center bg-white border-2 border-black text-black font-black text-sm focus:outline-none focus:ring-0"
-                    autoFocus
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        const val = parseInt(newLimit);
-                        if (!isNaN(val) && val >= 0) {
-                          onUpdateLimit(val);
-                          setIsEditingLimit(false);
+            {/* Top Half - Available Chromebooks */}
+            <div className="flex-1 flex flex-col items-center justify-center relative z-10">
+              <div
+                className={cn(
+                  "relative z-10 flex flex-col items-center p-1 sm:p-2",
+                  (currentUser?.email === 'arthur.alencar@colegiosaojudas.com.br' || (currentUser as any)?.role === 'admin') && "cursor-pointer group/edit"
+                )}
+                onClick={() => {
+                  if (currentUser?.email === 'arthur.alencar@colegiosaojudas.com.br' || (currentUser as any)?.role === 'admin') {
+                    setIsEditingLimit(true);
+                  }
+                }}
+              >
+                {isEditingLimit ? (
+                  <div className="flex flex-col items-center gap-1 animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
+                    <input
+                      type="number"
+                      value={newLimit}
+                      onChange={(e) => setNewLimit(e.target.value)}
+                      className="w-12 h-6 text-center bg-white border-2 border-black text-black font-black text-[11px] focus:outline-none focus:ring-0"
+                      autoFocus
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          const val = parseInt(newLimit);
+                          if (!isNaN(val) && val >= 0) {
+                            onUpdateLimit(val);
+                            setIsEditingLimit(false);
+                          }
                         }
-                      }
-                      if (e.key === 'Escape') {
-                        setIsEditingLimit(false);
-                        setNewLimit(totalAvailableChromebooks.toString());
-                      }
-                    }}
-                  />
-                  <div className="flex gap-1">
-                    <button
-                      onClick={() => {
-                        const val = parseInt(newLimit);
-                        if (!isNaN(val) && val >= 0) {
-                          onUpdateLimit(val);
+                        if (e.key === 'Escape') {
                           setIsEditingLimit(false);
+                          setNewLimit(totalAvailableChromebooks.toString());
                         }
                       }}
-                      className="bg-black text-white text-[8px] px-2 py-0.5 font-black uppercase"
-                    >
-                      Salvar
-                    </button>
-                    <button
-                      onClick={() => setIsEditingLimit(false)}
-                      className="bg-white text-black border border-black text-[8px] px-2 py-0.5 font-black uppercase"
-                    >
-                      X
-                    </button>
+                    />
+                    <div className="flex gap-1">
+                      <button
+                        onClick={() => {
+                          const val = parseInt(newLimit);
+                          if (!isNaN(val) && val >= 0) {
+                            onUpdateLimit(val);
+                            setIsEditingLimit(false);
+                          }
+                        }}
+                        className="bg-black text-white text-[7px] px-1 py-0.5 font-black uppercase"
+                      >
+                        Salvar
+                      </button>
+                      <button
+                        onClick={() => setIsEditingLimit(false)}
+                        className="bg-white text-black border border-black text-[7px] px-1 py-0.5 font-black uppercase"
+                      >
+                        X
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ) : (
-                <>
-                  <div className="bg-white p-1.5 sm:p-2 border-2 border-black shadow-[2px_2px_0px_0px_#000] mb-1 sm:mb-2 transform -rotate-3 transition-transform group-hover/edit:rotate-0">
-                    <Monitor className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
-                  </div>
-                  <div className="flex flex-col items-center leading-none">
-                    <span className="text-lg sm:text-xl font-black text-white drop-shadow-[1px_1px_0px_rgba(0,0,0,0.5)]">
-                      {totalAvailableChromebooks}
-                    </span>
-                    <span className="text-[8px] sm:text-[10px] font-black uppercase text-white tracking-widest text-center">
-                      {isMobile ? 'Disp.' : 'Disponíveis'}
-                    </span>
-                    {(currentUser?.email === 'arthur.alencar@colegiosaojudas.com.br' || (currentUser as any)?.role === 'admin') && (
-                      <span className="text-[7px] font-bold text-white/60 uppercase mt-1">
-                        Físico: {physicalTotal}
+                ) : (
+                  <>
+                    <div className="flex flex-col items-center leading-none">
+                      <span className="text-xl sm:text-2xl font-[1000] text-black dark:text-white">
+                        {totalAvailableChromebooks}
                       </span>
-                    )}
-                  </div>
-                </>
-              )}
+                      <span className="text-[7px] sm:text-[9px] font-black uppercase text-zinc-500 dark:text-zinc-400 tracking-widest text-center mt-1">
+                        {isMobile ? 'Disp.' : 'Disponíveis'}
+                      </span>
+                      {(currentUser?.email === 'arthur.alencar@colegiosaojudas.com.br' || (currentUser as any)?.role === 'admin') && (
+                        <span className="text-[6px] sm:text-[7px] font-bold text-zinc-400 dark:text-zinc-500 uppercase mt-1">
+                          Físico: {physicalTotal}
+                        </span>
+                      )}
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Bottom Half - Heatmap Indicator Label aligned with daily heatmaps */}
+            <div 
+              className="px-1.5 py-1.5 sm:px-3 sm:py-2 border-t-4 border-black dark:border-white relative z-10 flex flex-col justify-center items-center h-[40px] sm:h-[50px] select-none shrink-0 w-full overflow-hidden"
+              style={{
+                background: 'linear-gradient(to right, #f4f4f5 0%, #fde047 25%, #fb923c 50%, #ea580c 75%, #dc2626 100%)'
+              }}
+            >
+              <span className="text-[7.5px] sm:text-[9.5px] font-[1000] uppercase tracking-tight text-black drop-shadow-[1px_1px_0px_rgba(255,255,255,0.95)] text-center leading-none">
+                Mapa de Calor
+              </span>
+              <div className="flex items-center gap-1 mt-1 sm:mt-1.5 text-black drop-shadow-[1px_1px_0px_rgba(255,255,255,0.95)] shrink-0 scale-95 sm:scale-100 transition-transform">
+                <span className="text-[5.5px] sm:text-[7.5px] font-[1000] uppercase tracking-wider leading-none">
+                  Chromebooks
+                </span>
+                <ArrowRight className="h-2 w-2 sm:h-2.5 sm:w-2.5 stroke-[3.5]" />
+              </div>
             </div>
           </div>
 

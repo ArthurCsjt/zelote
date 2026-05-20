@@ -105,3 +105,30 @@ const addDays = (date: Date, days: number): Date => {
   result.setDate(result.getDate() + days);
   return result;
 };
+
+/**
+ * Lista de e-mails de admins e responsáveis com acesso total aos fluxos de agendamentos.
+ */
+export const responsibleEmails = [
+  'eduardo.cardoso@colegiosaojudas.com.br',
+  'davi.rossin@colegiosaojudas.com.br',
+  'arthur.alencar@colegiosaojudas.com.br',
+  'gabriela.mazuchi@colegiosaojudas.com.br'
+];
+
+/**
+ * Detecta se o espaço/sala selecionado é elegível para Chromebooks e Minecraft
+ * de forma robusta e independente de acentuação gráfica.
+ */
+export const isChromebookSpace = (classroom: string): boolean => {
+  if (!classroom) return false;
+  const normalized = classroom
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, ""); // Remove acentos
+  
+  return (
+    normalized.includes('sala google') ||
+    normalized.includes('professores e funcionarios')
+  );
+};

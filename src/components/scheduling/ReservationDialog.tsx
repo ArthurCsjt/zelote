@@ -16,6 +16,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useProfileRole } from '@/hooks/use-profile-role';
 import { Calendar as CalendarUI } from '@/components/ui/calendar';
 import { SuggestiveSearch } from '@/components/ui/SuggestiveSearch';
+import { responsibleEmails, isChromebookSpace as checkChromebookSpace } from '@/utils/scheduling';
+
 interface ExtendedSpace extends Space {
   isVirtual?: boolean;
 }
@@ -77,12 +79,6 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
   const isManutencao = role === 'manutencao';
 
   const isSuperAdmin = role === 'super_admin';
-  const responsibleEmails = [
-    'eduardo.cardoso@colegiosaojudas.com.br',
-    'davi.rossin@colegiosaojudas.com.br',
-    'arthur.alencar@colegiosaojudas.com.br',
-    'gabriela.mazuchi@colegiosaojudas.com.br'
-  ];
   const isResponsible = isSuperAdmin || (user?.email && responsibleEmails.includes(user.email));
 
   const [justification, setJustification] = useState<string>('');
@@ -94,13 +90,7 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
   const [isMinecraft, setIsMinecraft] = useState(false);
   const [classroom, setClassroom] = useState<string>('');
   const isChromebookSpace = useMemo(() => {
-    if (!classroom) return false;
-    const lowerClassroom = classroom.toLowerCase();
-    return (
-      lowerClassroom.includes('sala google') ||
-      lowerClassroom.includes('professores e funcionários') ||
-      lowerClassroom.includes('professores e funcionarios')
-    );
+    return checkChromebookSpace(classroom);
   }, [classroom]);
 
   const [extraDates, setExtraDates] = useState<Date[]>([]);
@@ -302,8 +292,8 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
 
             {/* STATUS GRID - Restricted to Admin/Responsible */}
             {(isAdmin || isResponsible) && (
-              <div className="grid grid-cols-2 gap-5 pt-2">
-                <div className="flex flex-col items-center justify-center p-6 border-[4px] border-black bg-[#00FF00]/10 dark:bg-green-950/20 shadow-[6px_6px_0px_0px_#000] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[8px_8px_0px_0px_#000] transition-all group">
+              <div className="grid grid-cols-2 gap-3 sm:gap-5 pt-2">
+                <div className="flex flex-col items-center justify-center p-3 sm:p-6 border-[4px] border-black bg-[#00FF00]/10 dark:bg-green-950/20 shadow-[6px_6px_0px_0px_#000] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[8px_8px_0px_0px_#000] transition-all group">
                   <div className="mb-2">
                     <span className="text-[10px] sm:text-[11px] font-[1000] uppercase text-black dark:text-white tracking-widest">Disponíveis</span>
                   </div>
@@ -313,7 +303,7 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                   </div>
                 </div>
 
-                <div className="flex flex-col items-center justify-center p-6 border-[4px] border-black bg-[#8B5CF6]/10 dark:bg-purple-950/20 shadow-[6px_6px_0px_0px_#000] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[8px_8px_0px_0px_#000] transition-all group">
+                <div className="flex flex-col items-center justify-center p-3 sm:p-6 border-[4px] border-black bg-[#8B5CF6]/10 dark:bg-purple-950/20 shadow-[6px_6px_0px_0px_#000] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[8px_8px_0px_0px_#000] transition-all group">
                   <div className="mb-2">
                     <span className="text-[10px] sm:text-[11px] font-[1000] uppercase text-black dark:text-white tracking-widest">Reservados</span>
                   </div>
@@ -351,7 +341,7 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                             : "border-black dark:border-zinc-800 shadow-[6px_6px_0px_0px_#000] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.05)] hover:shadow-[8px_8px_0px_0px_#000]"
                         )}
                       >
-                        <div className="flex items-center justify-between bg-zinc-50 dark:bg-zinc-800/50 px-4 py-3 border-b-[3px] border-black dark:border-zinc-700">
+                        <div className="flex items-center justify-between bg-zinc-50 dark:bg-zinc-800/50 px-2.5 py-2 sm:px-4 sm:py-3 border-b-[3px] border-black dark:border-zinc-700">
                           <div className="flex items-center gap-3 overflow-hidden">
                             <div className="w-10 h-10 flex items-center justify-center bg-white border-[3px] border-black rounded-full shrink-0 shadow-[3px_3px_0_0_#000]">
                               <User className="h-5 w-5 text-black stroke-[3]" />
@@ -380,7 +370,7 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                           )}
                         </div>
 
-                        <div className="p-4 flex flex-col gap-3.5">
+                        <div className="p-3 sm:p-4 flex flex-col gap-2.5 sm:gap-3.5">
                           <div className="flex items-center gap-3">
                             <div className="bg-[#3B82F6] px-2.5 py-1 border-[2px] border-black shadow-[3px_3px_0_0_#000] -rotate-1">
                               <span className="text-[10px] sm:text-[11px] font-[1000] uppercase text-white tracking-widest">Sala / Turma</span>

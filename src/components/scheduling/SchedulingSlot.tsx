@@ -11,6 +11,8 @@ import { useProfileRole } from '@/hooks/use-profile-role';
 import { useDatabase } from '@/hooks/useDatabase';
 import { ReservationDetailsDialog } from './ReservationDetailsDialog';
 
+import { responsibleEmails } from '@/utils/scheduling';
+
 interface SchedulingSlotProps {
   date: Date;
   timeSlot: string;
@@ -36,14 +38,6 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
   const [isDetailsOpen, setIsDetailsOpen] = useState<string | false>(false);
 
   const isSuperAdmin = role === 'super_admin';
-
-  // Lista de e-mails responsáveis pela sala google (conforme solicitado pelo usuário)
-  const responsibleEmails = [
-    'eduardo.cardoso@colegiosaojudas.com.br',
-    'davi.rossin@colegiosaojudas.com.br',
-    'arthur.alencar@colegiosaojudas.com.br',
-    'gabriela.mazuchi@colegiosaojudas.com.br'
-  ];
 
   const isResponsible = useMemo(() => {
     return isSuperAdmin || (currentUser?.email && responsibleEmails.includes(currentUser.email));

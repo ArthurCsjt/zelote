@@ -13,6 +13,8 @@ import { useDatabase } from '@/hooks/useDatabase';
 import { ReservationDetailsDialog } from './ReservationDetailsDialog';
 import type { Reservation } from '@/hooks/useDatabase';
 
+import { responsibleEmails } from '@/utils/scheduling';
+
 interface SchedulingMonthViewProps {
   currentDate: Date;
   reservations: Reservation[];
@@ -99,14 +101,6 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
   const isSuperAdmin = role === 'super_admin';
-
-  // Lista de e-mails responsáveis pela sala google
-  const responsibleEmails = [
-    'eduardo.cardoso@colegiosaojudas.com.br',
-    'davi.rossin@colegiosaojudas.com.br',
-    'arthur.alencar@colegiosaojudas.com.br',
-    'gabriela.mazuchi@colegiosaojudas.com.br'
-  ];
 
   const isResponsible = useMemo(() => {
     return isSuperAdmin || (currentUser?.email && responsibleEmails.includes(currentUser.email));

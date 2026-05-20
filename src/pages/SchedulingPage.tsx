@@ -468,6 +468,25 @@ const SchedulingPage = () => {
               Aula com Minecraft
             </span>
           </div>
+
+          {/* Mini Legenda do Mapa de Calor (Discreta e Inline - Apenas Visão Semanal) */}
+          {viewMode === 'weekly' && (
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-zinc-50/20 dark:bg-zinc-900/10 border-2 border-black dark:border-zinc-800 rounded-none shadow-[2px_2px_0_0_#000] dark:shadow-[2px_2px_0_0_rgba(255,255,255,0.02)] transition-all">
+              <span className="text-[10px] font-black uppercase tracking-wider text-zinc-500">
+                Mapa de Calor:
+              </span>
+              <div className="flex gap-[1px] h-3.5 w-16 border border-black/30 dark:border-white/20 p-[1px] bg-white dark:bg-zinc-900 shrink-0">
+                <div className="flex-1 bg-zinc-200/60 dark:bg-zinc-700/30 hover:scale-110 transition-transform cursor-help" title="Totalmente Livre (0% de uso)" />
+                <div className="flex-1 bg-amber-300 dark:bg-amber-400 hover:scale-110 transition-transform cursor-help" title="Pouco Uso (1% a 29% reservado)" />
+                <div className="flex-1 bg-orange-400 hover:scale-110 transition-transform cursor-help" title="Uso Parcial (30% a 74% reservado)" />
+                <div className="flex-1 bg-orange-600 dark:bg-orange-500 hover:scale-110 transition-transform cursor-help" title="Alta Ocupação (75% a 99% reservado)" />
+                <div className="flex-1 bg-red-600 dark:bg-red-500 hover:scale-110 transition-transform cursor-help" title="Totalmente Esgotado (100% de ocupação)" />
+              </div>
+              <span className="text-[9px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-tight hidden sm:inline">
+                (Passe o cursor sobre os blocos do dia)
+              </span>
+            </div>
+          )}
         </div>
       </div>
     </div>
