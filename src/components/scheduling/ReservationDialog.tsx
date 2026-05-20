@@ -80,7 +80,8 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
   const responsibleEmails = [
     'eduardo.cardoso@colegiosaojudas.com.br',
     'davi.rossin@colegiosaojudas.com.br',
-    'arthur.alencar@colegiosaojudas.com.br'
+    'arthur.alencar@colegiosaojudas.com.br',
+    'gabriela.mazuchi@colegiosaojudas.com.br'
   ];
   const isResponsible = isSuperAdmin || (user?.email && responsibleEmails.includes(user.email));
 
@@ -92,6 +93,16 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
   const [micQuantity, setMicQuantity] = useState(1);
   const [isMinecraft, setIsMinecraft] = useState(false);
   const [classroom, setClassroom] = useState<string>('');
+  const isChromebookSpace = useMemo(() => {
+    if (!classroom) return false;
+    const lowerClassroom = classroom.toLowerCase();
+    return (
+      lowerClassroom.includes('sala google') ||
+      lowerClassroom.includes('professores e funcionários') ||
+      lowerClassroom.includes('professores e funcionarios')
+    );
+  }, [classroom]);
+
   const [extraDates, setExtraDates] = useState<Date[]>([]);
   const [isMultiMode, setIsMultiMode] = useState(false);
   const [showCalendar, setShowCalendar] = useState(false);
@@ -181,16 +192,16 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
     }
   }, [isMinecraft, quantity]);
 
-  // Reset extra resources when the room is not "Sala Google"
+  // Reset extra resources when the room is not eligible for Chromebooks
   useEffect(() => {
-    if (classroom !== 'Sala Google') {
+    if (!isChromebookSpace) {
       setNeedsTv(false);
       setNeedsSound(false);
       setNeedsMic(false);
       setMicQuantity(1);
       setIsMinecraft(false);
     }
-  }, [classroom]);
+  }, [isChromebookSpace]);
 
   const isExpired = date < new Date(new Date().setHours(0, 0, 0, 0));
 
@@ -762,7 +773,7 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
             </div>
 
             {/* OPÇÃO MINECRAFT - Padrão Múltiplas Datas */}
-            {!isManutencao && classroom === 'Sala Google' && (
+            {!isManutencao && isChromebookSpace && (
               <div className="border-2 border-[#3c8527] bg-[#3c8527]/5 dark:bg-[#3c8527]/10 overflow-hidden shadow-[4px_4px_0_0_rgba(60,133,39,0.15)] mb-2">
                 <div className="bg-[#3c8527] px-3 py-3 flex items-center justify-center border-b-2 border-black">
                   <span
@@ -879,8 +890,8 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
               </div>
             )}
 
-            {/* RECURSOS EXTRAS - Apenas para Sala Google */}
-            {classroom === 'Sala Google' && !isManutencao && (
+            {/* RECURSOS EXTRAS - Apenas para Sala Google e Chromebooks */}
+            {isChromebookSpace && !isManutencao && (
               <div className="border-2 border-[#1e3a8a] bg-[#1e3a8a]/5 dark:bg-[#1e3a8a]/10 overflow-hidden shadow-[4px_4px_0_0_rgba(30,58,138,0.15)] animate-in fade-in zoom-in-95 duration-200">
                 <div className="bg-[#1e3a8a] px-3 py-2 flex items-center gap-2">
                   <Tv className="h-4 w-4 text-white" />

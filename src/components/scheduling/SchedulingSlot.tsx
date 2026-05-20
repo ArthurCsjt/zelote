@@ -41,7 +41,8 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
   const responsibleEmails = [
     'eduardo.cardoso@colegiosaojudas.com.br',
     'davi.rossin@colegiosaojudas.com.br',
-    'arthur.alencar@colegiosaojudas.com.br'
+    'arthur.alencar@colegiosaojudas.com.br',
+    'gabriela.mazuchi@colegiosaojudas.com.br'
   ];
 
   const isResponsible = useMemo(() => {

@@ -28,7 +28,7 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [currentMode, setCurrentMode] = useState<AuthMode>('login');
 
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState("gabriela.mazuchi@colegiosaojudas.com.br");
   const [password, setPassword] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
