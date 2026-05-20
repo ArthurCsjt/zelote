@@ -1885,6 +1885,17 @@
   @apply border-b-4 border-black dark:border-white;
   background: linear-gradient(135deg, #2dd4bf 0%, #14b8a6 50%, #0d9488 100%);
 }
+/* Hide scrollbar for Chrome, Safari and Opera */
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.scrollbar-none {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
 /* MASCARAMENTO DO BADGE LOVABLE */
 [class*="lovable"], [id*="lovable"], iframe[src*="lovable"], .lovable-badge, #lovable-edit-button, [data-lovable] {
  display: none !important;

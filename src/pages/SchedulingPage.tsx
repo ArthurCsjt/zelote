@@ -178,22 +178,22 @@ const SchedulingPage = () => {
         >
           <div className="flex flex-col">
             {/* ROW 1: Centered Title Block (Tema Agendamento) */}
-            <div className="w-full flex flex-col sm:flex-row items-center justify-between p-4 sm:p-5 border-b-[3px] border-black dark:border-zinc-800 bg-zinc-50/30 dark:bg-zinc-950/10 relative overflow-hidden group">
+            <div className="w-full flex flex-col md:flex-row items-center justify-between p-3 md:p-5 border-b-[3px] border-black dark:border-zinc-800 bg-zinc-50/30 dark:bg-zinc-950/10 relative overflow-hidden group gap-4 md:gap-0">
               {/* Subtle background grid pattern */}
               <div className="absolute inset-0 opacity-[0.02] pointer-events-none neo-brutal-dots scale-70" />
 
-              {/* Centered Title */}
-              <div className="flex flex-col sm:flex-row items-center gap-3.5 sm:gap-4 relative z-10 w-full sm:w-auto text-center sm:text-left justify-center sm:justify-start">
+              {/* Centered Title - Block 1 on mobile */}
+              <div className="flex flex-col md:flex-row items-center gap-3.5 md:gap-4 relative z-10 w-full md:w-auto text-center md:text-left justify-center md:justify-start">
                 {/* Square Neo-Brutalist Icon Badge */}
                 <div className="relative flex items-center justify-center p-2.5 bg-primary text-primary-foreground border-[3px] border-black dark:border-zinc-700 shadow-[3px_3px_0_0_#000] dark:shadow-[3px_3px_0_0_rgba(255,255,255,0.05)] rounded-lg shrink-0 group-hover:translate-x-[-1px] group-hover:translate-y-[-1px] group-hover:shadow-[4px_4px_0_0_#000] transition-all duration-200">
                   <Calendar className="h-6 w-6" strokeWidth={2.5} />
                 </div>
 
                 <div className="flex flex-col justify-center leading-tight">
-                  <h1 className="text-xl sm:text-2xl font-[1000] uppercase tracking-[0.12em] text-black dark:text-white">
+                  <h1 className="text-[1.2rem] md:text-2xl font-[1000] uppercase tracking-[0.12em] text-black dark:text-white">
                     Agendamento
                   </h1>
-                  <div className="flex items-center gap-2 mt-1 justify-center sm:justify-start">
+                  <div className="flex items-center gap-2 mt-1 justify-center md:justify-start">
                     <span className="text-[9px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-[0.18em]">
                       Unidade de Controle
                     </span>
@@ -205,13 +205,13 @@ const SchedulingPage = () => {
                 </div>
               </div>
 
-              {/* View Toggle - Com padding para não encostar na borda direita */}
-              <div className="flex items-center justify-center mt-4 sm:mt-0 relative z-10">
-                <div className="flex h-9 border-[3px] border-black dark:border-zinc-700 bg-white dark:bg-zinc-950 shadow-[2px_2px_0_0_#000] dark:shadow-[2px_2px_0_0_rgba(255,255,255,0.05)] overflow-hidden transition-all rounded-lg">
+              {/* View Toggle - Block 2 on mobile */}
+              <div className="flex items-center justify-center relative z-10 w-full md:w-auto">
+                <div className="flex w-full md:w-auto h-11 md:h-9 border-[3px] border-black dark:border-zinc-700 bg-white dark:bg-zinc-950 shadow-[2px_2px_0_0_#000] dark:shadow-[2px_2px_0_0_rgba(255,255,255,0.05)] overflow-hidden transition-all rounded-xl md:rounded-lg">
                   <button
                     onClick={() => handleViewModeChange('weekly')}
                     className={cn(
-                      "px-5 text-[10px] font-[1000] uppercase tracking-widest transition-all duration-150 border-r-[3px] border-black dark:border-zinc-700",
+                      "flex-1 md:flex-none md:px-5 h-full text-[10px] font-[1000] uppercase tracking-widest transition-all duration-150 border-r-[3px] border-black dark:border-zinc-700",
                       viewMode === 'weekly'
                         ? "bg-primary text-primary-foreground shadow-[inset_1px_1px_0_0_rgba(0,0,0,0.2)]"
                         : "bg-white dark:bg-zinc-950 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-900"
@@ -222,7 +222,7 @@ const SchedulingPage = () => {
                   <button
                     onClick={() => handleViewModeChange('monthly')}
                     className={cn(
-                      "px-5 text-[10px] font-[1000] uppercase tracking-widest transition-all duration-150",
+                      "flex-1 md:flex-none md:px-5 h-full text-[10px] font-[1000] uppercase tracking-widest transition-all duration-150",
                       viewMode === 'monthly'
                         ? "bg-primary text-primary-foreground shadow-[inset_1px_1px_0_0_rgba(0,0,0,0.2)]"
                         : "bg-white dark:bg-zinc-950 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-900"
@@ -234,33 +234,34 @@ const SchedulingPage = () => {
               </div>
             </div>
 
-            <div className="p-3 sm:p-4 pt-0 flex flex-col gap-3">
-              {/* ROW 2: Date Navigator (left) | Months Grid (right) — alinhados */}
-              <div className="flex flex-col lg:flex-row lg:items-stretch lg:justify-between gap-3">
-                {/* Date Navigator com pontas coloridas */}
-                {/* Date Navigator Estilo "Hub de Controle" */}
-                <div className="flex h-13 sm:h-14 border-2 sm:border-[3px] border-black dark:border-zinc-700 bg-white dark:bg-zinc-950 shadow-[2px_2px_0_0_#000] sm:shadow-[3px_3px_0_0_#000] dark:shadow-[2px_2px_0_0_rgba(255,255,255,0.05)] flex-1 lg:max-w-2xl overflow-hidden transition-all rounded-xl group/nav hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[4px_4px_0_0_#000] dark:hover:shadow-[4px_4px_0_0_rgba(255,255,255,0.08)]">
+            <div className="p-3 md:p-4 pt-0 flex flex-col gap-3">
+              {/* ROW 2: Date Navigator (left) | Months Grid (right) */}
+              <div className="flex flex-col md:flex-row md:items-stretch md:justify-between gap-3">
+                {/* Date Navigator - Block 3 on mobile */}
+                <div className="flex w-full md:flex-1 h-14 border-2 md:border-[3px] border-black dark:border-zinc-700 bg-white dark:bg-zinc-950 shadow-[2px_2px_0_0_#000] md:shadow-[3px_3px_0_0_#000] dark:shadow-[2px_2px_0_0_rgba(255,255,255,0.05)] overflow-hidden transition-all rounded-xl group/nav hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[4px_4px_0_0_#000] dark:hover:shadow-[4px_4px_0_0_rgba(255,255,255,0.08)]">
                   <button
                     onClick={() => handleDateChange('prev')}
                     disabled={isLoading}
-                    className="flex items-center justify-center w-11 sm:w-14 border-r-2 sm:border-r-[3px] border-black dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900/40 hover:bg-primary hover:text-white dark:hover:bg-primary transition-all active:scale-95 disabled:opacity-30 shrink-0 rounded-l-[9px]"
+                    className="flex items-center justify-center w-12 md:w-14 border-r-2 md:border-r-[3px] border-black dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900/40 hover:bg-primary hover:text-white dark:hover:bg-primary transition-all active:scale-95 disabled:opacity-30 shrink-0 rounded-l-[9px]"
                     aria-label="Anterior"
                   >
-                    <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5" strokeWidth={3} />
+                    <ChevronLeft className="h-5 w-5" strokeWidth={3} />
                   </button>
 
-                  <div className="flex-1 flex flex-col items-center justify-center px-3 sm:px-4 relative overflow-hidden group">
+                  <div className="flex-1 flex flex-col items-center justify-center px-2 md:px-4 relative overflow-hidden group text-center py-1">
                     {/* Indicador de topo sutil */}
                     <div className="absolute top-0 left-0 right-0 h-[1px] bg-black/5 dark:bg-white/5" />
 
-                    <div className="flex items-center gap-1.5 sm:gap-2">
-                      <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse shrink-0" />
-                      <span className="text-[9px] sm:text-[11px] font-[1000] uppercase tracking-[0.04em] sm:tracking-[0.12em] text-zinc-900 dark:text-zinc-50 whitespace-nowrap text-center">
-                        {displayRange}
+                    <div className="flex items-center justify-center gap-1.5">
+                      <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse shrink-0 hidden sm:block" />
+                      <span className="text-[9px] sm:text-[11px] font-[1000] uppercase tracking-[0.04em] sm:tracking-[0.12em] text-zinc-900 dark:text-zinc-50 text-center leading-snug break-words max-w-[190px] sm:max-w-none">
+                        <span className="whitespace-normal md:whitespace-nowrap block">
+                          {displayRange}
+                        </span>
                       </span>
                     </div>
 
-                    <span className="text-[7px] sm:text-[8px] font-black text-primary/70 dark:text-blue-400/80 bg-primary/5 dark:bg-blue-500/10 px-2 py-0.5 border border-primary/20 dark:border-blue-500/20 uppercase tracking-[0.2em] mt-1 sm:mt-1.5 rounded-sm transition-colors group-hover/nav:bg-primary/10">
+                    <span className="text-[6.5px] sm:text-[8px] font-black text-primary/70 dark:text-blue-400/80 bg-primary/5 dark:bg-blue-500/10 px-2 py-0.5 border border-primary/20 dark:border-blue-500/20 uppercase tracking-[0.2em] mt-0.5 sm:mt-1.5 rounded-sm transition-colors group-hover/nav:bg-primary/10">
                       Janela de Tempo Ativa
                     </span>
 
@@ -271,44 +272,42 @@ const SchedulingPage = () => {
                   <button
                     onClick={() => handleDateChange('next')}
                     disabled={isLoading}
-                    className="flex items-center justify-center w-11 sm:w-14 border-l-2 sm:border-l-[3px] border-black dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900/40 hover:bg-primary hover:text-white dark:hover:bg-primary transition-all active:scale-95 disabled:opacity-30 shrink-0 rounded-r-[9px]"
+                    className="flex items-center justify-center w-12 md:w-14 border-l-2 md:border-l-[3px] border-black dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900/40 hover:bg-primary hover:text-white dark:hover:bg-primary transition-all active:scale-95 disabled:opacity-30 shrink-0 rounded-r-[9px]"
                     aria-label="Próximo"
                   >
-                    <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5" strokeWidth={3} />
+                    <ChevronRight className="h-5 w-5" strokeWidth={3} />
                   </button>
                 </div>
 
-                {/* Months grid - card container */}
-                <div className="h-13 sm:h-14 px-2 sm:px-3 border-2 sm:border-[3px] border-black dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-950 shadow-[2px_2px_0_0_#000] sm:shadow-[3px_3px_0_0_#000] dark:shadow-[2px_2px_0_0_rgba(255,255,255,0.05)] flex flex-row items-center gap-2 sm:gap-3 rounded-xl transition-all hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[4px_4px_0_0_#000] dark:hover:shadow-[4px_4px_0_0_rgba(255,255,255,0.08)] overflow-x-auto scrollbar-none shrink-0">
-                  {/* Year selector mais discreto */}
-                  <div className="flex items-center gap-0.5 shrink-0 pr-2 sm:pr-3 border-r border-black/10 dark:border-white/10">
+                {/* Months Grid & Year Selector - Block 4 on mobile */}
+                <div className="flex flex-col md:flex-row items-center md:h-14 p-3 md:py-0 md:px-3 border-2 md:border-[3px] border-black dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-950 shadow-[2px_2px_0_0_#000] md:shadow-[3px_3px_0_0_#000] dark:shadow-[2px_2px_0_0_rgba(255,255,255,0.05)] rounded-xl transition-all hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[4px_4px_0_0_#000] dark:hover:shadow-[4px_4px_0_0_rgba(255,255,255,0.08)] w-full md:w-auto overflow-hidden gap-3 md:gap-3">
+                  {/* Year selector */}
+                  <div className="flex items-center justify-center gap-2 shrink-0 w-full md:w-auto pb-2 md:pb-0 border-b md:border-b-0 md:border-r border-black/10 dark:border-white/10 h-11 md:h-full">
                     <button
                       onClick={() => setCurrentDate(new Date(currentDate.getFullYear() - 1, currentDate.getMonth(), 1))}
-                      className="p-0.5 sm:p-1 text-zinc-400 hover:text-primary transition-colors"
+                      className="p-2 text-zinc-400 hover:text-primary transition-colors flex items-center justify-center min-w-[36px] min-h-[36px]"
                     >
-                      <ChevronLeft className="h-3 sm:h-3.5 sm:w-3.5" strokeWidth={3} />
+                      <ChevronLeft className="h-4 w-4" strokeWidth={3} />
                     </button>
-                    <div className="px-0.5 sm:px-1 text-[10px] sm:text-[11px] font-black text-zinc-900 dark:text-zinc-100 tabular-nums">
+                    <div className="px-2 text-xs md:text-[11px] font-black text-zinc-900 dark:text-zinc-100 tabular-nums">
                       {currentDate.getFullYear()}
                     </div>
                     <button
                       onClick={() => setCurrentDate(new Date(currentDate.getFullYear() + 1, currentDate.getMonth(), 1))}
-                      className="p-0.5 sm:p-1 text-zinc-400 hover:text-primary transition-colors"
+                      className="p-2 text-zinc-400 hover:text-primary transition-colors flex items-center justify-center min-w-[36px] min-h-[36px]"
                     >
-                      <ChevronRight className="h-3 sm:h-3.5 sm:w-3.5" strokeWidth={3} />
+                      <ChevronRight className="h-4 w-4" strokeWidth={3} />
                     </button>
                   </div>
 
-                  {/* Months list - expansível e elegante */}
-                  <div className="flex items-center gap-x-0.5 h-full overflow-hidden">
+                  {/* Months list */}
+                  <div className="flex items-center gap-x-1 h-11 md:h-full w-full md:w-auto overflow-x-auto scrollbar-none scroll-smooth">
                     <AnimatePresence mode="popLayout">
                       {Array.from({ length: 12 }, (_, i) => {
                         const date = new Date(new Date().getFullYear(), i, 1);
                         const isCurrentMonth = i === currentDate.getMonth();
                         const isTodayMonth = i === new Date().getMonth() && currentDate.getFullYear() === new Date().getFullYear();
 
-                        // Lógica para mostrar apenas o atual + próximos 3, ou todos se expandido
-                        // Também garante que o mês selecionado apareça
                         const todayIdx = new Date().getMonth();
                         const isVisibleByDefault = (i >= todayIdx && i <= todayIdx + 3) || (todayIdx > 8 && i < (todayIdx + 4) % 12);
                         const shouldShow = isMonthsExpanded || isVisibleByDefault || isCurrentMonth;
@@ -329,7 +328,7 @@ const SchedulingPage = () => {
                               setCurrentDate(targetDate);
                             }}
                             className={cn(
-                              "relative px-1.5 sm:px-2.5 h-full text-[9px] sm:text-[10px] font-black uppercase tracking-tight transition-all duration-200 flex items-center justify-center group shrink-0",
+                              "relative px-3 md:px-2.5 h-full text-[10px] font-black uppercase tracking-tight transition-all duration-200 flex items-center justify-center group shrink-0 min-w-[44px] min-h-[44px]",
                               isCurrentMonth
                                 ? "text-primary"
                                 : "text-zinc-400 dark:text-zinc-600 hover:text-black dark:hover:text-white"
@@ -342,17 +341,17 @@ const SchedulingPage = () => {
                             {isCurrentMonth && (
                               <motion.div
                                 layoutId="activeMonthUnderline"
-                                className="absolute bottom-1 left-1.5 right-1.5 sm:bottom-2 sm:left-2 sm:right-2 h-0.5 bg-primary rounded-full"
+                                className="absolute bottom-1.5 left-2 right-2 md:bottom-2 md:left-2 md:right-2 h-0.5 bg-primary rounded-full"
                                 transition={{ type: "spring", stiffness: 380, damping: 30 }}
                               />
                             )}
 
                             {isTodayMonth && !isCurrentMonth && (
-                              <div className="absolute top-2 right-0.5 sm:top-3 sm:right-1 w-1 h-1 bg-primary rounded-full animate-pulse" />
+                              <div className="absolute top-2 right-1 w-1 h-1 bg-primary rounded-full animate-pulse" />
                             )}
 
                             {!isCurrentMonth && (
-                              <div className="absolute bottom-1 left-1.5 right-1.5 sm:bottom-2 sm:left-2 sm:right-2 h-0.5 bg-zinc-200 dark:bg-zinc-800 scale-x-0 group-hover:scale-x-100 transition-transform duration-200 rounded-full" />
+                              <div className="absolute bottom-1.5 left-2 right-2 md:bottom-2 md:left-2 md:right-2 h-0.5 bg-zinc-200 dark:bg-zinc-800 scale-x-0 group-hover:scale-x-100 transition-transform duration-200 rounded-full" />
                             )}
                           </motion.button>
                         );
@@ -362,7 +361,7 @@ const SchedulingPage = () => {
                     {/* Botão discreto para expandir/recolher */}
                     <button
                       onClick={() => setIsMonthsExpanded(!isMonthsExpanded)}
-                      className="ml-1 p-1 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors group"
+                      className="ml-1 p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors group shrink-0 min-w-[36px] min-h-[36px] flex items-center justify-center"
                       title={isMonthsExpanded ? "Ver menos" : "Ver todos os meses"}
                     >
                       <motion.div
@@ -370,7 +369,7 @@ const SchedulingPage = () => {
                         transition={{ type: "spring", stiffness: 200 }}
                       >
                         <Plus className={cn(
-                          "h-3.5 w-3.5 transition-colors",
+                          "h-4 w-4 md:h-3.5 md:w-3.5 transition-colors",
                           isMonthsExpanded ? "text-primary" : "text-zinc-400 group-hover:text-black dark:group-hover:text-white"
                         )} />
                       </motion.div>
