@@ -177,41 +177,41 @@ const SchedulingPage = () => {
           className="bg-white dark:bg-zinc-900 border-[3px] border-black dark:border-white overflow-hidden relative z-0"
         >
           <div className="flex flex-col">
-            {/* ROW 1: Glued Title + Padded Toggle */}
-            <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between">
-              {/* Identificador Industrial de Agendamento */}
-              <div className="flex items-center gap-4 h-14 px-6 border-b-[3px] border-r-[3px] border-black dark:border-white bg-white dark:bg-zinc-900 shrink-0 group relative overflow-hidden">
-                {/* Efeito de brilho sutil no hover */}
-                <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            {/* ROW 1: Centered Title Block (Tema Agendamento) */}
+            <div className="w-full flex flex-col sm:flex-row items-center justify-between p-4 sm:p-5 border-b-[3px] border-black dark:border-zinc-800 bg-zinc-50/30 dark:bg-zinc-950/10 relative overflow-hidden group">
+              {/* Subtle background grid pattern */}
+              <div className="absolute inset-0 opacity-[0.02] pointer-events-none neo-brutal-dots scale-70" />
 
-                <div className="relative flex items-center justify-center">
-                  <div className="absolute inset-0 bg-primary/20 blur-sm rounded-full animate-pulse group-hover:bg-primary/30 transition-all" />
-                  <Calendar className="h-6 w-6 text-primary relative z-10" strokeWidth={2.5} />
-                  {/* Ponto de status ativo */}
-                  <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-primary rounded-full border-[3px] border-white dark:border-zinc-900 z-20" />
+              {/* Centered Title */}
+              <div className="flex flex-col sm:flex-row items-center gap-3.5 sm:gap-4 relative z-10 w-full sm:w-auto text-center sm:text-left justify-center sm:justify-start">
+                {/* Square Neo-Brutalist Icon Badge */}
+                <div className="relative flex items-center justify-center p-2.5 bg-primary text-primary-foreground border-[3px] border-black dark:border-zinc-700 shadow-[3px_3px_0_0_#000] dark:shadow-[3px_3px_0_0_rgba(255,255,255,0.05)] rounded-none shrink-0 group-hover:translate-x-[-1px] group-hover:translate-y-[-1px] group-hover:shadow-[4px_4px_0_0_#000] transition-all duration-200">
+                  <Calendar className="h-6 w-6" strokeWidth={2.5} />
                 </div>
 
-                <div className="flex flex-col justify-center leading-tight relative z-10">
-                  <h1 className="text-lg sm:text-xl font-[1000] uppercase tracking-[0.1em] text-black dark:text-white">
+                <div className="flex flex-col justify-center leading-tight">
+                  <h1 className="text-xl sm:text-2xl font-[1000] uppercase tracking-[0.12em] text-black dark:text-white">
                     Agendamento
                   </h1>
-                  <div className="flex items-center gap-2">
-                    <span className="text-[8px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">
+                  <div className="flex items-center gap-2 mt-1 justify-center sm:justify-start">
+                    <span className="text-[9px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-[0.18em]">
                       Unidade de Controle
                     </span>
-                    <div className="h-[1px] w-4 bg-zinc-200 dark:bg-zinc-800" />
-                    <span className="text-[8px] font-black text-primary uppercase">v2.4</span>
+                    <div className="h-[2px] w-4 bg-zinc-300 dark:bg-zinc-700" />
+                    <span className="px-1.5 py-0.5 text-[8px] font-[1000] bg-primary/10 dark:bg-primary/20 text-primary dark:text-blue-400 border border-primary/20 uppercase tracking-widest shrink-0">
+                      v2.4
+                    </span>
                   </div>
                 </div>
               </div>
 
-              {/* Right side: View Toggle - Com padding para não encostar na borda direita */}
-              <div className="flex items-center p-3 sm:p-4 sm:pb-0 lg:pb-4">
-                <div className="flex h-8 border-[3px] border-black dark:border-zinc-700 bg-white dark:bg-zinc-950 shadow-none overflow-hidden transition-all rounded-none">
+              {/* View Toggle - Com padding para não encostar na borda direita */}
+              <div className="flex items-center justify-center mt-4 sm:mt-0 relative z-10">
+                <div className="flex h-9 border-[3px] border-black dark:border-zinc-700 bg-white dark:bg-zinc-950 shadow-[2px_2px_0_0_#000] dark:shadow-[2px_2px_0_0_rgba(255,255,255,0.05)] overflow-hidden transition-all rounded-none">
                   <button
                     onClick={() => handleViewModeChange('weekly')}
                     className={cn(
-                      "px-4 text-[9px] font-[1000] uppercase tracking-widest transition-all duration-150 border-r-[3px] border-black dark:border-zinc-700",
+                      "px-5 text-[10px] font-[1000] uppercase tracking-widest transition-all duration-150 border-r-[3px] border-black dark:border-zinc-700",
                       viewMode === 'weekly'
                         ? "bg-primary text-primary-foreground shadow-[inset_1px_1px_0_0_rgba(0,0,0,0.2)]"
                         : "bg-white dark:bg-zinc-950 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-900"
@@ -222,7 +222,7 @@ const SchedulingPage = () => {
                   <button
                     onClick={() => handleViewModeChange('monthly')}
                     className={cn(
-                      "px-4 text-[9px] font-[1000] uppercase tracking-widest transition-all duration-150",
+                      "px-5 text-[10px] font-[1000] uppercase tracking-widest transition-all duration-150",
                       viewMode === 'monthly'
                         ? "bg-primary text-primary-foreground shadow-[inset_1px_1px_0_0_rgba(0,0,0,0.2)]"
                         : "bg-white dark:bg-zinc-950 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-900"
@@ -239,11 +239,11 @@ const SchedulingPage = () => {
               <div className="flex flex-col lg:flex-row lg:items-stretch lg:justify-between gap-3">
                 {/* Date Navigator com pontas coloridas */}
                 {/* Date Navigator Estilo "Hub de Controle" */}
-                <div className="flex h-14 border-[3px] border-black dark:border-zinc-700 bg-white dark:bg-zinc-950 shadow-none flex-1 lg:max-w-2xl overflow-hidden transition-all rounded-none group/nav">
+                <div className="flex h-14 border-[3px] border-black dark:border-zinc-700 bg-white dark:bg-zinc-950 shadow-[3px_3px_0_0_#000] dark:shadow-[3px_3px_0_0_rgba(255,255,255,0.05)] flex-1 lg:max-w-2xl overflow-hidden transition-all rounded-xl group/nav hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[4px_4px_0_0_#000] dark:hover:shadow-[4px_4px_0_0_rgba(255,255,255,0.08)]">
                   <button
                     onClick={() => handleDateChange('prev')}
                     disabled={isLoading}
-                    className="flex items-center justify-center w-14 border-r-[3px] border-black dark:border-zinc-700 bg-zinc-50 dark:bg-white/[0.03] hover:bg-primary hover:text-white dark:hover:bg-primary transition-all active:scale-95 disabled:opacity-30 shrink-0"
+                    className="flex items-center justify-center w-14 border-r-[3px] border-black dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900/40 hover:bg-primary hover:text-white dark:hover:bg-primary transition-all active:scale-95 disabled:opacity-30 shrink-0 rounded-l-[9px]"
                     aria-label="Anterior"
                   >
                     <ChevronLeft className="h-5 w-5" strokeWidth={3} />
@@ -254,13 +254,13 @@ const SchedulingPage = () => {
                     <div className="absolute top-0 left-0 right-0 h-[1px] bg-black/5 dark:bg-white/5" />
 
                     <div className="flex items-center gap-2">
-                      <div className="w-1 h-1 rounded-full bg-primary animate-pulse" />
-                      <span className="text-[10px] sm:text-[11px] font-[1000] uppercase tracking-[0.15em] text-black dark:text-white whitespace-nowrap text-center">
+                      <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                      <span className="text-[10px] sm:text-[11px] font-[1000] uppercase tracking-[0.12em] text-zinc-900 dark:text-zinc-50 whitespace-nowrap text-center">
                         {displayRange}
                       </span>
                     </div>
 
-                    <span className="text-[7px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-[0.3em] mt-1 transition-all group-hover/nav:text-primary">
+                    <span className="text-[8px] font-black text-primary/70 dark:text-blue-400/80 bg-primary/5 dark:bg-blue-500/10 px-2 py-0.5 border border-primary/20 dark:border-blue-500/20 uppercase tracking-[0.2em] mt-1.5 rounded-sm transition-colors group-hover/nav:bg-primary/10">
                       Janela de Tempo Ativa
                     </span>
 
@@ -271,7 +271,7 @@ const SchedulingPage = () => {
                   <button
                     onClick={() => handleDateChange('next')}
                     disabled={isLoading}
-                    className="flex items-center justify-center w-14 border-l-[3px] border-black dark:border-zinc-700 bg-zinc-50 dark:bg-white/[0.03] hover:bg-primary hover:text-white dark:hover:bg-primary transition-all active:scale-95 disabled:opacity-30 shrink-0"
+                    className="flex items-center justify-center w-14 border-l-[3px] border-black dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900/40 hover:bg-primary hover:text-white dark:hover:bg-primary transition-all active:scale-95 disabled:opacity-30 shrink-0 rounded-r-[9px]"
                     aria-label="Próximo"
                   >
                     <ChevronRight className="h-5 w-5" strokeWidth={3} />
@@ -279,7 +279,7 @@ const SchedulingPage = () => {
                 </div>
 
                 {/* Months grid - card container */}
-                <div className="h-14 px-3 border-[3px] border-black dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-950 shadow-none flex flex-col sm:flex-row items-center gap-3 rounded-none">
+                <div className="h-14 px-3 border-[3px] border-black dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-950 shadow-[3px_3px_0_0_#000] dark:shadow-[3px_3px_0_0_rgba(255,255,255,0.05)] flex flex-row items-center gap-3 rounded-xl transition-all hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[4px_4px_0_0_#000] dark:hover:shadow-[4px_4px_0_0_rgba(255,255,255,0.08)] overflow-x-auto scrollbar-none shrink-0">
                   {/* Year selector mais discreto */}
                   <div className="flex items-center gap-0.5 shrink-0 pr-3 border-r border-black/10 dark:border-white/10">
                     <button
@@ -422,7 +422,7 @@ const SchedulingPage = () => {
 
       {/* Legend - Neo Brutal Style */}
       <div className="py-2 bg-transparent">
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap items-center justify-center gap-3">
           <div className="flex items-center gap-2 mr-2">
             <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500">
               Legenda:

@@ -127,21 +127,6 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
         const isManutencaoRes = res.prof_role === 'manutencao' || res.prof_email === 'paulo.geremias@colegiosaojudas.com.br' || res.prof_email === 'ivo@colegiosaojudas.com.br' || res.prof_email === 'manutencao.teste@colegiosaojudas.com.br';
         const isThisMine = res.created_by === currentUser?.id;
         const roomName = res.classroom ? res.classroom.toUpperCase() : "ESPAÇO";
-        let label = "";
-
-        if (isManutencao) {
-          label = `${roomName}`;
-        } else if (res.quantity_requested === 0) {
-          label = `${roomName}`;
-        } else {
-          // On mobile we use a much more compact label
-          const isSmallScreen = typeof window !== 'undefined' && window.innerWidth < 640;
-          if (isSmallScreen) {
-            label = res.classroom ? `${roomName} · ${res.quantity_requested}x` : `${res.quantity_requested}x CBs`;
-          } else {
-            label = res.classroom ? `${roomName} + ${res.quantity_requested} Chromebooks` : `${res.quantity_requested} Chromebooks`;
-          }
-        }
 
         return (
           <TooltipProvider key={res.id}>
@@ -168,7 +153,20 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
                     }
                   }}
                 >
-                  {label}
+                  {isManutencaoRes || res.quantity_requested === 0 ? (
+                    <span className="truncate">{roomName}</span>
+                  ) : (
+                    <span className="truncate">
+                      {/* Mobile version */}
+                      <span className="sm:hidden block">
+                        {res.classroom ? `${roomName} · ${res.quantity_requested}x` : `${res.quantity_requested}x`}
+                      </span>
+                      {/* Desktop version */}
+                      <span className="hidden sm:block">
+                        {res.classroom ? `${roomName} + ${res.quantity_requested} Chromebooks` : `${res.quantity_requested} Chromebooks`}
+                      </span>
+                    </span>
+                  )}
                 </div>
               </TooltipTrigger>
               <TooltipContent

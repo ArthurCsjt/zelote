@@ -177,7 +177,7 @@ export const ReservationDetailsDialog: React.FC<ReservationDetailsDialogProps> =
                                     (isManutencao || isMaintRes) ? "col-span-1 sm:col-span-2" : ""
                                 )}>
                                     <span className="text-[8px] sm:text-[9px] font-black uppercase text-black/60 tracking-wider flex items-center gap-1">
-                                        🏫 LOCAL DE AULA
+                                        LOCAL DE AULA
                                     </span>
                                     <div className="mt-1 flex items-center justify-between gap-2 text-black">
                                         <span className="text-base sm:text-lg font-[1000] leading-none tracking-tight uppercase truncate" title={reservation.classroom || "NÃO DEFINIDA"}>

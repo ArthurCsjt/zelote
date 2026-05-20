@@ -626,7 +626,9 @@ export const SuggestiveSearch: React.FC<SuggestiveSearchProps> = ({
           style={{
             position: "absolute",
             left:
-              leftOffsetPx != null
+              showLeading
+                ? "36px"
+                : leftOffsetPx != null
                 ? `${leftOffsetPx}px`
                 : "12px",
             right: rightOffsetPx != null ? `${rightOffsetPx}px` : "12px",

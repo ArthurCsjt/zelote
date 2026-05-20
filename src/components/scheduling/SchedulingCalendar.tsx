@@ -86,22 +86,84 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
     };
   }, [reservations]);
 
-  if (isLoading) {
-    return (
-      <div className="flex flex-col justify-center items-center h-96 gap-4">
-        <Loader2 className="h-12 w-12 animate-spin text-primary" />
-        <p className="text-lg font-bold uppercase tracking-wide text-muted-foreground">
-          Carregando agendamentos...
-        </p>
-      </div>
-    );
-  }
-
   // Responsive sizes
   const timeColumnWidth = isMobile ? 60 : 100;
   const dayColumnMinWidth = isMobile ? 120 : 160;
   const totalMinWidth = timeColumnWidth + (weekDays.length * dayColumnMinWidth);
   const gridTemplateColumns = `${timeColumnWidth}px repeat(${weekDays.length}, 1fr)`;
+
+  if (isLoading) {
+    return (
+      <div className="space-y-4 relative overflow-hidden">
+        {/* Mobile Hint - Professional Indicator */}
+        {isMobile && (
+          <div className="flex items-center justify-center gap-2 mb-2 opacity-50">
+            <GripVertical className="h-3 w-3 text-muted-foreground" />
+            <span className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">
+              Carregando estrutura...
+            </span>
+          </div>
+        )}
+
+        <div className="relative border-4 border-black dark:border-white shadow-[12px_12px_0px_0px_rgba(0,0,0,0.05)] bg-white dark:bg-zinc-950 overflow-hidden">
+          <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.07] pointer-events-none neo-brutal-dots font-black text-black" />
+
+          <div
+            className="grid gap-0 relative z-10 select-none animate-pulse"
+            style={{
+              gridTemplateColumns,
+              minWidth: totalMinWidth,
+              width: '100%'
+            }}
+          >
+            {/* Header Row: Total Chromebooks Skeleton */}
+            <div className={cn(
+              "h-32 sm:h-36 flex flex-col items-center justify-center border-b-4 border-r-4 border-black dark:border-white bg-zinc-200 dark:bg-zinc-800 relative overflow-hidden",
+              `min-w-[${timeColumnWidth}px]`
+            )}>
+              <div className="w-8 h-8 rounded bg-zinc-300 dark:bg-zinc-700 animate-pulse mb-2" />
+              <div className="w-12 h-4 rounded bg-zinc-300 dark:bg-zinc-700 animate-pulse" />
+            </div>
+
+            {/* Header Row: 5 Week Days Skeletons */}
+            {weekDays.map((_, index) => (
+              <div
+                key={index}
+                className="min-h-[8rem] sm:min-h-[9rem] flex flex-col border-b-4 border-r-4 last:border-r-0 border-black dark:border-white bg-zinc-50 dark:bg-zinc-900/50 p-3 sm:p-4 justify-between"
+              >
+                <div className="w-16 h-3 rounded bg-zinc-200 dark:bg-zinc-800 animate-pulse" />
+                <div className="w-10 h-6 rounded bg-zinc-200 dark:bg-zinc-800 animate-pulse" />
+                <div className="w-full h-4 rounded bg-zinc-200 dark:bg-zinc-800 animate-pulse mt-2" />
+              </div>
+            ))}
+
+            {/* Time Slot Rows (6 periods) */}
+            {timeSlots.map((timeSlot, timeIndex) => (
+              <React.Fragment key={timeIndex}>
+                {/* Time Column Cell */}
+                <div className="min-h-[4rem] sm:min-h-[5rem] h-full flex items-center justify-center border-b-2 border-r-4 border-black/10 dark:border-white/10 bg-zinc-100/50 dark:bg-zinc-900/20">
+                  <div className="w-12 h-6 rounded bg-zinc-200 dark:bg-zinc-800 animate-pulse" />
+                </div>
+
+                {/* 5 Slots */}
+                {weekDays.map((_, dayIndex) => (
+                  <div
+                    key={dayIndex}
+                    className="min-h-[4rem] sm:min-h-[5rem] h-full border-b border-r last:border-r-0 border-zinc-200 dark:border-zinc-800 p-2 flex items-center justify-center bg-zinc-50/20 dark:bg-zinc-950/20"
+                  >
+                    <div className="w-full h-full min-h-[3rem] border-2 border-dashed border-zinc-200 dark:border-zinc-800 flex flex-col items-center justify-center p-2 gap-1 animate-pulse">
+                      <div className="w-1/2 h-2.5 rounded bg-zinc-100 dark:bg-zinc-900" />
+                      <div className="w-3/4 h-2 rounded bg-zinc-100 dark:bg-zinc-900" />
+                    </div>
+                  </div>
+                ))}
+              </React.Fragment>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4 relative overflow-hidden">

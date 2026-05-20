@@ -16,6 +16,24 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useProfileRole } from '@/hooks/use-profile-role';
 import { Calendar as CalendarUI } from '@/components/ui/calendar';
 import { SuggestiveSearch } from '@/components/ui/SuggestiveSearch';
+interface ExtendedSpace extends Space {
+  isVirtual?: boolean;
+}
+
+const DEFAULT_TURMAS = [
+  "1CEXL - CURSO EXTRA LIVRE",
+  "1EFMA - 1º ANO MANHÃ A",
+  "1EFTB - 1º ANO TARDE B",
+  "1EFTC - 1º ANO TARDE C",
+  "2CEXL - CURSO EXTRA LIVRE",
+  "IF1TB - INFANTIL I - TARDE B",
+  "IF2TB - INFANTIL II - TARDE B",
+  "IF2TC - INFANTIL II - TARDE C",
+  "IF3TB - INFANTIL III - TARDE B",
+  "IF3TC - INFANTIL III - TARDE C",
+  "MATTB - MATERNAL TARDE B",
+  "MIMTB - MINIMATERNAL TARDE B"
+];
 
 interface ReservationDialogProps {
   children: ReactNode;
@@ -86,12 +104,28 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  // Merge static default classes with database spaces to show in dropdown
+  const combinedSpaces = useMemo<ExtendedSpace[]>(() => {
+    const virtualSpaces: ExtendedSpace[] = DEFAULT_TURMAS.map((name, index) => ({
+      id: `virtual-${index}`,
+      name,
+      color: '#3B82F6', // Neo-Brutalist standard blue
+      isVirtual: true
+    }));
+    
+    // Avoid duplicates if database already has a space with the same name
+    const dbSpaceNames = new Set(spaces.map(s => s.name.toLowerCase()));
+    const filteredVirtuals = virtualSpaces.filter(v => !dbSpaceNames.has(v.name.toLowerCase()));
+    
+    return [...spaces, ...filteredVirtuals];
+  }, [spaces]);
+
   // Dynamic suggestions for classroom booking
   const searchSuggestions = useMemo(() => {
-    if (spaces.length > 0) {
+    if (combinedSpaces.length > 0) {
       return [
         "Selecione ou digite a sala/turma...",
-        ...spaces.map(s => `Ex: ${s.name}`),
+        ...combinedSpaces.map(s => `Ex: ${s.name}`),
         "Digite uma turma personalizada..."
       ];
     }
@@ -102,7 +136,7 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
       "Ex: Sala de Estudos",
       "Digite uma turma personalizada..."
     ];
-  }, [spaces]);
+  }, [combinedSpaces]);
 
   // Click outside to close spaces dropdown
   useEffect(() => {
@@ -519,11 +553,13 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                       onFocus={() => setIsSpaceDropdownOpen(true)}
                       suggestions={searchSuggestions}
                       effect="typewriter"
+                      showLeading={true}
+                      Leading={() => <Search className="h-3.5 w-3.5 text-zinc-400/80 dark:text-zinc-500/80" strokeWidth={2.5} />}
                       className={cn(
-                        "w-full border-2 border-black dark:border-zinc-700 bg-white dark:bg-zinc-900 rounded-none h-10 transition-all shadow-[2px_2px_0_0_#000] dark:shadow-[2px_2px_0_0_rgba(255,255,255,0.05)]",
+                        "w-full border-2 border-black dark:border-zinc-700 bg-white dark:bg-zinc-900 rounded-xl h-10 transition-all shadow-[2px_2px_0_0_#000] dark:shadow-[2px_2px_0_0_rgba(255,255,255,0.05)]",
                         isSpaceDropdownOpen && "border-[#1e3a8a]"
                       )}
-                      inputClassName="px-3 pr-14 w-full h-full bg-transparent text-xs font-bold uppercase outline-none text-black dark:text-zinc-100 placeholder:normal-case placeholder:text-zinc-400"
+                      inputClassName="pl-9 pr-14 w-full h-full bg-transparent text-xs font-bold uppercase outline-none text-black dark:text-zinc-100 placeholder:normal-case placeholder:text-zinc-400"
                     />
                     <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5 z-10">
                       {classroom && (
@@ -553,23 +589,23 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
 
                   {/* Dropdown Panel */}
                   {isSpaceDropdownOpen && (
-                    <div className="relative z-10 w-full mt-1.5 border border-zinc-300 dark:border-zinc-800 bg-white dark:bg-zinc-950 shadow-sm animate-in fade-in slide-in-from-top-1 duration-100">
+                    <div className="relative z-10 w-full mt-1.5 border-2 border-black dark:border-zinc-700 bg-white dark:bg-zinc-950 shadow-[3px_3px_0_0_#000] dark:shadow-[3px_3px_0_0_rgba(255,255,255,0.05)] rounded-xl overflow-hidden animate-in fade-in slide-in-from-top-1 duration-100">
                       {/* Spaces List */}
                       <div className="max-h-[180px] overflow-y-auto divide-y divide-zinc-100 dark:divide-zinc-900 pb-2">
-                        {spaces.filter(s => s.name.toLowerCase().includes(classroom.toLowerCase())).length === 0 ? (
+                        {combinedSpaces.filter(s => s.name.toLowerCase().includes(classroom.toLowerCase())).length === 0 ? (
                           <div className="p-3 text-center text-xs text-zinc-400 dark:text-zinc-500 font-bold uppercase">
                             Nenhum espaço encontrado
                           </div>
                         ) : (
-                          spaces
+                          combinedSpaces
                             .filter(s => s.name.toLowerCase().includes(classroom.toLowerCase()))
                             .map((s) => {
                               const isOccupied = currentReservations.some(res => res.classroom?.toLowerCase() === s.name.toLowerCase());
                               return (
                                 <div
                                   key={s.id}
-                                                                     onClick={(e) => {
-                                                                        if ((e.target as HTMLElement).closest('button')) return;
+                                  onClick={(e) => {
+                                    if ((e.target as HTMLElement).closest('button')) return;
                                     if (isOccupied) return;
                                     setClassroom(s.name);
                                     setIsSpaceDropdownOpen(false);
@@ -601,7 +637,7 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                                   </div>
 
                                   {/* Actions (Delete Space) - Admins only */}
-                                  {isAdmin && (
+                                  {isAdmin && !s.isVirtual && (
                                     <div className="flex items-center gap-1.5 shrink-0 z-20">
                                       {confirmDeleteId === s.id ? (
                                         <div className="flex items-center gap-1.5 animate-in fade-in slide-in-from-right-1 duration-150">

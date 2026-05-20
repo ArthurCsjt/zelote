@@ -137,28 +137,28 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
         {/* Background Texture */}
         <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.07] pointer-events-none neo-brutal-dots" />
 
-        <div className="relative z-10 p-2 sm:p-6 flex flex-col h-full space-y-4 sm:space-y-6">
+        <div className="relative z-10 p-3 sm:p-5 flex flex-col h-full space-y-3 sm:space-y-4">
           {/* Header - Technical Display Style */}
-          <div className="border-b-4 border-black dark:border-white pb-3 sm:pb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
+          <div className="border-b-2 border-black dark:border-zinc-800 pb-2 sm:pb-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-3">
             <div>
-              <div className="flex items-center gap-3">
-                <div className="bg-primary p-1.5 sm:p-2 border-2 border-black shadow-[2px_2px_0px_0px_#000]">
-                  <CalendarDays className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+              <div className="flex items-center gap-2.5">
+                <div className="bg-primary p-1 border-2 border-black shadow-[1.5px_1.5px_0_0_#000] dark:shadow-[1.5px_1.5px_0_0_rgba(255,255,255,0.05)]">
+                  <CalendarDays className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
                 </div>
-                <h3 className="text-2xl sm:text-4xl font-black uppercase tracking-tighter text-foreground drop-shadow-sm">
+                <h3 className="text-xl sm:text-2xl font-black uppercase tracking-tighter text-foreground drop-shadow-sm">
                   {format(selectedDate, 'dd/MM/yyyy')}
                 </h3>
               </div>
-              <p className="text-xs font-black text-muted-foreground uppercase tracking-widest mt-2 flex items-center gap-2">
-                <div className="w-2 h-2 bg-primary animate-pulse rounded-full" />
-                {isDayPast ? 'Leitura de Dados Históricos' : 'Monitoramento de Recursos em Tempo Real'}
+              <p className="text-[9px] sm:text-xs font-black text-muted-foreground uppercase tracking-wider mt-1 flex items-center gap-1.5">
+                <div className="w-1.5 h-1.5 bg-primary animate-pulse rounded-full" />
+                {isDayPast ? 'Leitura de Dados Históricos' : 'Monitoramento em Tempo Real'}
               </p>
             </div>
 
             {!isDayPast && (
               <Button
                 onClick={() => navigate('/agendamento')}
-                className="bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 rounded-none border-2 border-black dark:border-white font-black uppercase italic tracking-wider shadow-[4px_4px_0px_0px_rgba(59,130,246,0.5)] transform hover:-translate-x-1 hover:-translate-y-1 transition-all"
+                className="bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 rounded-none border-2 border-black dark:border-white font-black uppercase italic text-xs tracking-wider shadow-[3px_3px_0_0_rgba(59,130,246,0.5)] transform hover:-translate-x-0.5 hover:-translate-y-0.5 transition-all py-1 h-8"
               >
                 Nova Reserva
               </Button>
@@ -167,67 +167,49 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
 
           {/* Stats Grid - Hardware Dashboard Widgets - Restricted to Admin/Responsible */}
           {(isAdmin || isResponsible) && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               {/* Total Widget */}
-              {/* Total Widget */}
-              <div className="relative group overflow-hidden border-2 sm:border-4 border-black dark:border-white p-3 sm:p-4 bg-zinc-50 dark:bg-zinc-900 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] transition-all">
-                <div className="absolute top-0 right-0 p-2 opacity-10">
-                  <Monitor className="h-8 w-8 sm:h-12 sm:w-12" />
+              <div className="relative overflow-hidden border-2 border-black dark:border-zinc-700 py-1.5 px-3 bg-zinc-50/50 dark:bg-zinc-900/50 shadow-[2px_2px_0_0_#000] dark:shadow-[2px_2px_0_0_rgba(255,255,255,0.05)] transition-all flex items-center justify-between">
+                <div className="min-w-0">
+                  <p className="text-[9px] font-black uppercase tracking-wider text-muted-foreground">
+                    Total
+                  </p>
+                  <p className="text-[7px] font-bold text-muted-foreground uppercase tracking-tight">Chromebooks</p>
                 </div>
-                <p className="text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">
-                  Total de Chromebooks
-                </p>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-3xl sm:text-5xl font-black text-foreground tracking-tighter">{totalAvailableChromebooks}</span>
-                  <span className="text-[7px] sm:text-[8px] font-bold text-muted-foreground uppercase tracking-tight">unidades</span>
-                </div>
-                <div className="mt-1.5 h-1 bg-zinc-200 dark:bg-zinc-800 border border-black/10">
-                  <div className="h-full bg-black dark:bg-white w-full" />
+                <div className="flex items-baseline gap-1 shrink-0">
+                  <span className="text-2xl font-[1000] text-foreground tracking-tighter leading-none">{totalAvailableChromebooks}</span>
+                  <span className="text-[8px] font-bold text-muted-foreground uppercase">unid</span>
                 </div>
               </div>
 
               {/* Reserved Widget */}
-              {/* Reserved Widget */}
-              <div className="relative group overflow-hidden border-2 sm:border-4 border-info/50 bg-info/5 dark:bg-info/10 p-3 sm:p-4 shadow-[4px_4px_0px_0px_hsl(var(--info)/0.2)] transition-all">
-                <div className="absolute top-0 right-0 p-2 opacity-15">
-                  <Clock className="h-8 w-8 sm:h-12 sm:w-12 text-info" />
+              <div className="relative overflow-hidden border-2 border-info bg-info/5 dark:bg-info/10 py-1.5 px-3 shadow-[2px_2px_0_0_hsl(var(--info)/0.2)] transition-all flex items-center justify-between">
+                <div className="min-w-0">
+                  <p className="text-[9px] font-black uppercase tracking-wider text-info">
+                    Reservado
+                  </p>
+                  <p className="text-[7px] font-bold text-info/70 uppercase tracking-tight">Reservas Ativas</p>
                 </div>
-                <p className="text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-info mb-1">
-                  Reservado
-                </p>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-3xl sm:text-5xl font-black text-info tracking-tighter">{totalReserved}</span>
-                  <span className="text-[7px] sm:text-[8px] font-bold text-info/70 uppercase tracking-tight">reservas</span>
-                </div>
-                <div className="mt-1.5 h-1 bg-info/10 border border-info/20">
-                  <div
-                    className="h-full bg-info transition-all duration-1000"
-                    style={{ width: `${Math.min(100, (totalReserved / totalAvailableChromebooks) * 100)}%` }}
-                  />
+                <div className="flex items-baseline gap-1 shrink-0">
+                  <span className="text-2xl font-[1000] text-info tracking-tighter leading-none">{totalReserved}</span>
+                  <span className="text-[8px] font-bold text-info/70 uppercase">unid</span>
                 </div>
               </div>
 
               {/* Available Widget */}
-              {/* Available Widget */}
-              <div className="relative group overflow-hidden border-2 sm:border-4 border-success/50 bg-success/5 dark:bg-success/10 p-3 sm:p-4 shadow-[4px_4px_0px_0px_hsl(var(--success)/0.2)] transition-all">
-                <div className="absolute top-0 right-0 p-2 opacity-15">
-                  <CheckCircle className="h-8 w-8 sm:h-12 sm:w-12 text-success" />
+              <div className="relative overflow-hidden border-2 border-success bg-success/5 dark:bg-success/10 py-1.5 px-3 shadow-[2px_2px_0_0_hsl(var(--success)/0.2)] transition-all flex items-center justify-between">
+                <div className="min-w-0">
+                  <p className="text-[9px] font-black uppercase tracking-wider text-success">
+                    Disponíveis
+                  </p>
+                  <p className="text-[7px] font-bold text-success/70 uppercase tracking-tight">Sobra/Déficit</p>
                 </div>
-                <p className="text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-success mb-1">
-                  Disponíveis
-                </p>
-                <div className="flex items-baseline gap-2">
+                <div className="flex items-baseline gap-1 shrink-0">
                   <span className={cn(
-                    "text-3xl sm:text-5xl font-black tracking-tighter",
+                    "text-2xl font-[1000] tracking-tighter leading-none",
                     available < 0 ? "text-error" : "text-success"
                   )}>{available}</span>
-                  <span className="text-[7px] sm:text-[8px] font-bold text-success/70 uppercase tracking-tight">Sobra/Déficit</span>
-                </div>
-                <div className="mt-1.5 h-1 bg-success/10 border border-success/20">
-                  <div
-                    className="h-full bg-success transition-all duration-1000"
-                    style={{ width: `${Math.max(0, Math.min(100, (available / totalAvailableChromebooks) * 100))}%` }}
-                  />
+                  <span className="text-[8px] font-bold text-success/70 uppercase">unid</span>
                 </div>
               </div>
             </div>
@@ -251,67 +233,69 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
                   const isMinecraft = res.is_minecraft;
                   const isAtendida = res.associated_loans && res.associated_loans.length >= res.quantity_requested;
                   const isManutencaoRes = res.prof_role === 'manutencao' || res.prof_email === 'paulo.geremias@colegiosaojudas.com.br' || res.prof_email === 'ivo@colegiosaojudas.com.br' || res.prof_email === 'manutencao.teste@colegiosaojudas.com.br';
+                  const displayName = res.prof_name.includes('@') ? res.prof_name.split('@')[0] : res.prof_name;
 
                   return (
                     <div
                       key={res.id}
                       className={cn(
-                        "group relative border-2 transition-all hover:bg-zinc-50 dark:hover:bg-white/[0.02] bg-white dark:bg-black/20",
+                        "group relative border-[3px] transition-all cursor-pointer overflow-hidden rounded-xl",
                         isManutencaoRes
-                          ? "border-[#52525B] shadow-[2px_2px_0_0_#52525B]"
+                          ? "border-zinc-500 dark:border-zinc-600 bg-zinc-50/50 dark:bg-zinc-900/50 shadow-[3px_3px_0_0_#52525b] hover:shadow-[4px_4px_0_0_#52525b]"
                           : isMinecraft
-                            ? "border-[#3c8527]/50"
-                            : "border-black/5 dark:border-white/5",
-                        "cursor-pointer overflow-hidden shadow-sm"
+                            ? "border-[#3c8527] bg-[#3c8527]/5 dark:bg-[#3c8527]/10 shadow-[3px_3px_0_0_#3c8527] hover:shadow-[4px_4px_0_0_#3c8527]"
+                            : "border-black dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-[3px_3px_0_0_#000] dark:shadow-[3px_3px_0_0_rgba(255,255,255,0.05)] hover:shadow-[4px_4px_0_0_#000] dark:hover:shadow-[4px_4px_0_0_rgba(255,255,255,0.08)]",
+                        "hover:-translate-x-0.5 hover:-translate-y-0.5"
                       )}
                       onClick={() => {
                         setSelectedReservation(res);
                         setIsDetailsOpen(true);
                       }}
                     >
-                      {/* Status accent line */}
-                      <div className="p-3 pl-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+                      <div className="p-3.5 pl-4 sm:pl-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
                         <div className="flex-1 min-w-0">
-                          <div className="flex flex-col mb-1 sm:mb-1.5 min-w-0">
-                            <span className="font-black text-sm sm:text-base truncate uppercase tracking-tight">{res.prof_name}</span>
-                            <span className="text-[11px] sm:text-[12px] text-zinc-500 dark:text-zinc-400 truncate lowercase font-bold">
+                          <div className="flex flex-col min-w-0">
+                            <span className="font-[1000] text-sm sm:text-base truncate uppercase tracking-tight text-black dark:text-white">{displayName}</span>
+                            <span className="text-[10px] sm:text-[11px] text-zinc-500 dark:text-zinc-400 truncate lowercase font-bold">
                               {res.prof_email}
                             </span>
                             {isMinecraft && (
                               <div className="mt-1">
-                                <span className="text-[7px] sm:text-[8px] font-black bg-[#3c8527] text-white px-1 py-0.5 rounded-none">
+                                <span className="text-[8px] font-black bg-[#3c8527] text-white px-1.5 py-0.5 rounded-none">
                                   MINECRAFT
                                 </span>
                               </div>
                             )}
                           </div>
-                          <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-[11px] sm:text-xs text-zinc-600 dark:text-zinc-300 font-black uppercase tracking-tight">
-                            <span className="flex items-center gap-1">
-                              <Clock className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> {res.time_slot}
+                          
+                          {/* Badges container */}
+                          <div className="flex flex-wrap items-center gap-2 mt-2.5">
+                            <span className="flex items-center gap-1 px-2 py-0.5 bg-zinc-100 dark:bg-zinc-800 border border-black/25 dark:border-white/10 text-[9px] sm:text-[10px] font-black uppercase text-zinc-700 dark:text-zinc-300">
+                              <Clock className="h-3 w-3" /> {res.time_slot}
                             </span>
                             {res.classroom && (
-                              <span className="flex items-center gap-1">
-                                🏫 {res.classroom}
+                              <span className="px-2.5 py-0.5 bg-primary text-white dark:bg-blue-600 border border-black dark:border-zinc-700 text-[9px] sm:text-[10px] font-[1000] uppercase tracking-wider shadow-[1.5px_1.5px_0_0_#000] dark:shadow-[1.5px_1.5px_0_0_rgba(255,255,255,0.15)] rounded-md">
+                                {res.classroom}
                               </span>
                             )}
                             <ReservationTimer date={res.date} timeSlot={res.time_slot} />
                           </div>
                         </div>
 
-                        <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-2 sm:gap-1.5 border-t sm:border-t-0 border-black/5 dark:border-white/5 pt-2 sm:pt-0">
+                        <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-3 border-t sm:border-t-0 border-zinc-100 dark:border-zinc-800/80 pt-2 sm:pt-0 shrink-0">
                           <div className="flex items-center gap-2">
                             {isAtendida && (
-                              <div className="bg-green-500 text-white p-0.5 border border-black/10">
-                                <CheckCircle className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+                              <div className="bg-emerald-500 text-white p-0.5 border border-black/10 flex items-center justify-center">
+                                <CheckCircle className="h-3 w-3" />
                               </div>
                             )}
-                            {!isManutencao ? (
-                              <span className="text-2xl sm:text-4xl font-black italic tracking-tighter leading-none whitespace-nowrap">
-                                {res.quantity_requested}<span className="text-[9px] sm:text-[11px] not-italic ml-1 opacity-80 uppercase font-black">CBs</span>
+                            {!isManutencaoRes ? (
+                              <span className="text-2xl sm:text-3xl font-[1000] italic tracking-tighter leading-none whitespace-nowrap text-black dark:text-white drop-shadow-sm">
+                                {res.quantity_requested}<span className="text-[10px] sm:text-[11px] not-italic ml-0.5 opacity-80 uppercase font-black">CBs</span>
                               </span>
                             ) : (
-                              <span className="text-xs font-black uppercase text-zinc-500 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 border-2 border-black px-2 py-0.5 shadow-[2px_2px_0px_0px_#000]">
-                                Reservado
+                              <span className="text-[10px] font-[1000] uppercase text-zinc-600 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 border-2 border-black dark:border-zinc-700 px-2 py-1 shadow-[2px_2px_0px_0px_#000]">
+                                MANUTENÇÃO
                               </span>
                             )}
                           </div>
@@ -320,7 +304,7 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
                             <div className="flex items-center">
                               <Button
                                 size="sm"
-                                className="h-8 sm:h-9 px-3 sm:px-4 text-[9px] sm:text-[10px] font-black uppercase bg-primary text-white border-2 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:shadow-none transition-all rounded-none"
+                                className="h-8 px-4 text-[10px] font-[1000] uppercase bg-primary text-white border-[2.5px] border-black shadow-[3px_3px_0_0_#000] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all duration-150 rounded-none shrink-0"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   navigate('/', {
@@ -331,7 +315,7 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
                                   });
                                 }}
                               >
-                                <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                                <ArrowRight className="h-3.5 w-3.5 mr-1.5" />
                                 Iniciar
                               </Button>
                             </div>
@@ -339,12 +323,14 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
                         </div>
                       </div>
 
-                      {/* Quick description preview */}
+                      {/* Speech callout justification preview */}
                       {res.justification && (
-                        <div className="px-5 pb-2">
-                          <p className="text-[11px] sm:text-[12px] text-foreground/80 truncate italic overflow-hidden font-medium">
-                            "{res.justification}"
-                          </p>
+                        <div className="px-5 pb-3.5 pt-0.5">
+                          <div className="pl-3 border-l-[3px] border-primary/30 dark:border-primary/50 py-0.5">
+                            <p className="text-[11px] sm:text-xs text-zinc-600 dark:text-zinc-300 italic font-medium leading-relaxed">
+                              "{res.justification}"
+                            </p>
+                          </div>
                         </div>
                       )}
 
@@ -477,17 +463,17 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
               nav_button_previous: "hidden",
               nav_button_next: "hidden",
               table: "w-full border-collapse",
-              head_row: "flex",
-              head_cell: "text-muted-foreground w-full font-black text-[11px] uppercase pb-6 tracking-widest",
-              row: "flex w-full mt-2",
-              cell: "h-16 w-full text-center text-sm p-0 relative focus-within:relative focus-within:z-20",
+              head_row: "flex w-full border-b border-zinc-150 dark:border-zinc-800/80 pb-2.5",
+              head_cell: "text-zinc-400 dark:text-zinc-500 w-full font-[900] text-[10px] sm:text-[11px] uppercase tracking-[0.2em] text-center",
+              row: "flex w-full mt-1.5",
+              cell: "h-16 w-full text-center text-sm p-0 relative focus-within:relative focus-within:z-20 border border-zinc-100/70 dark:border-zinc-900/40 first:border-l-0 last:border-r-0",
               day: cn(
-                "h-16 w-full p-0 font-bold border-2 border-transparent hover:border-black dark:hover:border-white transition-all rounded-none",
-                "flex flex-col items-center justify-start pt-3 relative overflow-hidden group"
+                "h-16 w-full p-0 font-bold transition-all rounded-none",
+                "flex flex-col items-center justify-between pb-2 pt-2.5 relative overflow-hidden group bg-transparent hover:bg-zinc-50 dark:hover:bg-zinc-900/30"
               ),
-              day_selected: "bg-primary text-white border-black dark:border-white font-black shadow-[inset_6px_6px_0px_0px_rgba(0,0,0,0.2)] scale-100 z-10",
-              day_today: "bg-primary/10 dark:bg-primary/20 text-foreground border-2 border-black dark:border-white ring-2 ring-primary ring-offset-2",
-              day_outside: "text-muted-foreground opacity-30",
+              day_selected: "!bg-primary !text-white !border-2 !border-black dark:!border-white font-[1000] shadow-[3px_3px_0_0_#000] dark:shadow-[3px_3px_0_0_rgba(255,255,255,0.15)] scale-[0.96] z-20 rounded-xl",
+              day_today: "bg-primary/5 dark:bg-primary/10 text-primary dark:text-blue-400 border-[3px] border-primary dark:border-blue-500 font-[1000] rounded-xl z-10 aria-selected:!bg-primary aria-selected:!text-white aria-selected:!border-2 aria-selected:!border-black dark:aria-selected:!border-white",
+              day_outside: "text-muted-foreground opacity-30 pointer-events-none bg-zinc-50/40 dark:bg-zinc-950/20",
               day_disabled: "text-muted-foreground opacity-30",
               day_hidden: "invisible",
             }}
@@ -499,31 +485,34 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
                 const rate = (tRes / totalAvailableChromebooks) * 100;
 
                 return (
-                  <div className="relative w-full h-full flex flex-col items-center justify-between pb-2">
+                  <div className="relative w-full h-full flex flex-col items-center justify-between pb-1">
                     <span className={cn(
-                      "text-lg transition-transform",
-                      activeModifiers.selected ? "text-white scale-110" : "text-foreground font-black group-hover:scale-110",
-                      activeModifiers.today ? "text-primary dark:text-primary-foreground underline underline-offset-4" : ""
+                      "text-base transition-all font-[900]",
+                      activeModifiers.selected
+                        ? "text-white scale-110 drop-shadow-[0_1px_2px_rgba(0,0,0,0.2)]"
+                        : activeModifiers.today
+                          ? "text-primary dark:text-blue-400 font-[1000]"
+                          : "text-zinc-800 dark:text-zinc-200 group-hover:text-black dark:group-hover:text-white group-hover:scale-110"
                     )}>
                       {date.getDate()}
                     </span>
 
                     {/* Occupancy Indicators - Tech Bars */}
                     {tRes > 0 && !isManutencao && (
-                      <div className="flex gap-0.5 mt-auto px-1.5 w-full justify-center">
+                      <div className="flex gap-1 mt-auto px-1 w-full justify-center">
                         <div className={cn(
-                          "h-1.5 flex-1 rounded-none border-[0.5px] border-black/10 transition-all",
-                          rate > 0 ? "bg-green-500" : "bg-zinc-500/10"
+                          "h-1.5 w-3.5 transition-all border border-black/10 dark:border-white/5",
+                          rate > 0 ? "bg-emerald-500 shadow-[1px_1px_0_0_rgba(0,0,0,0.15)]" : "bg-zinc-100 dark:bg-zinc-800"
                         )} />
                         {totalAvailableChromebooks > 30 && (
                           <>
                             <div className={cn(
-                              "h-1.5 flex-1 rounded-none border-[0.5px] border-black/10 transition-all",
-                              rate > 50 ? "bg-yellow-500" : "bg-zinc-500/10"
+                              "h-1.5 w-3.5 transition-all border border-black/10 dark:border-white/5",
+                              rate > 50 ? "bg-amber-500 shadow-[1px_1px_0_0_rgba(0,0,0,0.15)]" : "bg-zinc-100 dark:bg-zinc-800"
                             )} />
                             <div className={cn(
-                              "h-1.5 flex-1 rounded-none border-[0.5px] border-black/10 transition-all",
-                              rate >= 90 ? "bg-red-500" : "bg-zinc-500/10"
+                              "h-1.5 w-3.5 transition-all border border-black/10 dark:border-white/5",
+                              rate >= 90 ? "bg-rose-500 shadow-[1px_1px_0_0_rgba(0,0,0,0.15)]" : "bg-zinc-100 dark:bg-zinc-800"
                             )} />
                           </>
                         )}
