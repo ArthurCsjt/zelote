@@ -148,7 +148,7 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
               }}
             />
 
-            <div 
+            <div
               className={cn(
                 "relative z-10 flex flex-col items-center p-2",
                 (currentUser?.email === 'arthur.alencar@colegiosaojudas.com.br' || (currentUser as any)?.role === 'admin') && "cursor-pointer group/edit"
@@ -182,7 +182,7 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
                     }}
                   />
                   <div className="flex gap-1">
-                    <button 
+                    <button
                       onClick={() => {
                         const val = parseInt(newLimit);
                         if (!isNaN(val) && val >= 0) {
@@ -194,7 +194,7 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
                     >
                       Salvar
                     </button>
-                    <button 
+                    <button
                       onClick={() => setIsEditingLimit(false)}
                       className="bg-white text-black border border-black text-[8px] px-2 py-0.5 font-black uppercase"
                     >
@@ -321,7 +321,7 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
                       if (rate >= 100) color = "bg-red-600 dark:bg-red-500";           // Esgotado
                       else if (rate >= 75) color = "bg-orange-600 dark:bg-orange-500"; // Quase cheio
                       else if (rate >= 30) color = "bg-orange-400 dark:bg-orange-400"; // Parcial
-                      else if (rate > 0)  color = "bg-amber-300 dark:bg-amber-400";    // Pouco uso
+                      else if (rate > 0) color = "bg-amber-300 dark:bg-amber-400";    // Pouco uso
 
                       return (
                         <div
@@ -331,8 +331,8 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
                           className={cn(
                             "flex-1 max-w-[16px] h-full relative cursor-crosshair transition-all duration-200",
                             color,
-                            hoveredHeatmapInfo?.date === dateKey && hoveredHeatmapInfo?.slot === slot 
-                              ? "scale-y-125 ring-2 ring-black dark:ring-white z-30" 
+                            hoveredHeatmapInfo?.date === dateKey && hoveredHeatmapInfo?.slot === slot
+                              ? "scale-y-125 ring-2 ring-black dark:ring-white z-30"
                               : "opacity-80 hover:opacity-100"
                           )}
                         />

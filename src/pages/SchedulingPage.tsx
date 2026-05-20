@@ -421,38 +421,52 @@ const SchedulingPage = () => {
       </motion.div>
 
       {/* Legend - Neo Brutal Style */}
-      <div className="neo-brutal-card p-4">
-        <div className="flex flex-wrap items-center gap-x-8 gap-y-4">
-          <h3 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mr-2">
-            Legenda:
-          </h3>
-
-          <div className="flex items-center gap-2">
-            <div className="h-4 w-4 border-2 border-info bg-info/20" />
-            <span className="text-xs font-bold uppercase tracking-tight text-foreground/80">Minha Reserva</span>
+      <div className="py-2 bg-transparent">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-2 mr-2">
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500">
+              Legenda:
+            </span>
           </div>
 
-          <div className="flex items-center gap-2">
-            <div className="h-4 w-4 border-2 border-dashed border-foreground/30 bg-muted/10" />
-            <span className="text-xs font-bold uppercase tracking-tight text-foreground/80">Disponível</span>
+          {/* Minha Reserva */}
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-blue-50/40 dark:bg-blue-950/10 border-2 border-black dark:border-zinc-800 rounded-none shadow-[2px_2px_0_0_#000] dark:shadow-[2px_2px_0_0_rgba(255,255,255,0.05)] transition-all">
+            <div className="h-2 w-2 rounded-full bg-[#3B82F6] shadow-[0_0_8px_rgba(59,130,246,0.6)] shrink-0 animate-pulse" />
+            <span className="text-[10px] font-black uppercase tracking-wider text-blue-700 dark:text-blue-400">
+              Minha Reserva
+            </span>
           </div>
 
-          <div className="flex items-center gap-2">
-            <div className="h-4 w-4 border-2 border-warning bg-warning/20" />
-            <span className="text-xs font-bold uppercase tracking-tight text-foreground/80">Parcial</span>
+          {/* Disponível */}
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-zinc-50/40 dark:bg-zinc-900/40 border-2 border-dashed border-zinc-300 dark:border-zinc-850 rounded-none shadow-[2px_2px_0_0_rgba(0,0,0,0.02)] transition-all">
+            <div className="h-2 w-2 rounded-full border border-dashed border-zinc-400 dark:border-zinc-600 bg-transparent shrink-0" />
+            <span className="text-[10px] font-black uppercase tracking-wider text-zinc-600 dark:text-zinc-400">
+              Disponível
+            </span>
           </div>
 
-          <div className="flex items-center gap-2">
-            <div className="h-4 w-4 border-2 border-error bg-error/20" />
-            <span className="text-xs font-bold uppercase tracking-tight text-foreground/80">Esgotado</span>
+          {/* Parcial */}
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-amber-50/40 dark:bg-amber-950/10 border-2 border-black dark:border-zinc-800 rounded-none shadow-[2px_2px_0_0_#000] dark:shadow-[2px_2px_0_0_rgba(255,255,255,0.05)] transition-all">
+            <div className="h-2 w-2 rounded-full bg-[#EAB308] shadow-[0_0_8px_rgba(245,158,11,0.6)] shrink-0" />
+            <span className="text-[10px] font-black uppercase tracking-wider text-amber-700 dark:text-amber-400">
+              Parcial
+            </span>
           </div>
 
-          <div className="flex items-center gap-2">
-            <div className="h-4 w-4 border-2 border-[#3c8527] bg-[#3c8527]/20" />
-            <div className="flex flex-col">
-              <span className="text-xs font-black uppercase tracking-tight text-[#3c8527] font-minecraft">Aula com Minecraft</span>
-              <span className="text-[8px] font-bold uppercase text-[#3c8527]/70 -mt-1">Preparação TI</span>
-            </div>
+          {/* Esgotado */}
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-rose-50/40 dark:bg-rose-950/10 border-2 border-black dark:border-zinc-800 rounded-none shadow-[2px_2px_0_0_#000] dark:shadow-[2px_2px_0_0_rgba(255,255,255,0.05)] transition-all">
+            <div className="h-2 w-2 rounded-full bg-[#EF4444] shadow-[0_0_8px_rgba(244,63,94,0.6)] shrink-0" />
+            <span className="text-[10px] font-black uppercase tracking-wider text-rose-700 dark:text-rose-405">
+              Esgotado
+            </span>
+          </div>
+
+          {/* Minecraft */}
+          <div className="flex items-center gap-2.5 px-3 py-1.5 bg-emerald-50/40 dark:bg-emerald-950/10 border-2 border-black dark:border-zinc-800 rounded-none shadow-[2px_2px_0_0_#000] dark:shadow-[2px_2px_0_0_rgba(255,255,255,0.05)] transition-all">
+            <div className="h-2 w-2 rounded-full bg-[#10B981] shadow-[0_0_8px_rgba(16,185,129,0.6)] shrink-0 animate-pulse" />
+            <span className="text-[10px] font-black uppercase tracking-wider text-emerald-700 dark:text-emerald-400 font-minecraft">
+              Aula com Minecraft
+            </span>
           </div>
         </div>
       </div>
@@ -460,4 +474,4 @@ const SchedulingPage = () => {
   </Layout>;
 };
 export default SchedulingPage;
-
+
