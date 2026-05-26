@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Printer, QrCode, AlertTriangle, ListChecks, Loader2, X } from 'lucide-react';
+import { ArrowLeft, Printer, QrCode, AlertTriangle, ListChecks, Loader2, X, Download } from 'lucide-react';
 import type { Chromebook } from '@/types/database';
 import { QRCodeSticker } from '@/components/QRCodeSticker';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import logger from '@/utils/logger';
+import JSZip from 'jszip';
 
 // Este componente não deve usar useNavigate ou usePrintContext, pois está em uma nova aba.
 
@@ -17,6 +18,7 @@ export const PrintPreviewPage: React.FC = () => {
   // Alterando o tipo de estado para 2 ou 4, conforme solicitado
   const [columns, setColumns] = useState<2 | 4>(4);
   const [isLoading, setIsLoading] = useState(true);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   // 1. Recuperação de Dados (Sem Auto-Print)
   useEffect(() => {
@@ -34,6 +36,118 @@ export const PrintPreviewPage: React.FC = () => {
 
   const handlePrint = () => {
     window.print();
+  };
+
+  const handleDownloadPNGs = async () => {
+    if (printItems.length === 0 || isDownloading) return;
+    setIsDownloading(true);
+
+    try {
+      const zip = new JSZip();
+
+      for (const item of printItems) {
+        // Encontra o elemento do adesivo correspondente
+        const container = document.querySelector(`[data-sticker-id="${item.chromebook_id}"]`);
+        if (!container) continue;
+
+        const svgElement = container.querySelector('svg');
+        if (!svgElement) continue;
+
+        // Cria um canvas em alta resolução (aspecto 4:3, ex: 1600x1200)
+        const canvas = document.createElement('canvas');
+        canvas.width = 1600;
+        canvas.height = 1200;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) continue;
+
+        // 1. Fundo Branco
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // 2. Renderizar QR Code SVG (escalado)
+        await new Promise<void>((resolve, reject) => {
+          try {
+            const svgString = new XMLSerializer().serializeToString(svgElement);
+            const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+            const url = URL.createObjectURL(svgBlob);
+            const img = new Image();
+            img.onload = () => {
+              // Posiciona e escala o QR Code (850x850px, centralizado verticalmente na esquerda com margem de 80px)
+              ctx.drawImage(img, 80, 175, 850, 850);
+              URL.revokeObjectURL(url);
+              resolve();
+            };
+            img.onerror = (e) => {
+              URL.revokeObjectURL(url);
+              reject(e);
+            };
+            img.src = url;
+          } catch (err) {
+            reject(err);
+          }
+        });
+
+        // 3. Renderizar Textos no lado direito
+        // Centralizado no espaço restante: X = 1265
+        const centerX = 1265;
+
+        // Título (ID do Chromebook)
+        ctx.fillStyle = '#111827'; // gray-900
+        ctx.font = '900 140px Inter, system-ui, -apple-system, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+
+        const hasSerial = !!item.serial_number;
+        const titleY = hasSerial ? 545 : 600;
+        ctx.fillText(item.chromebook_id, centerX, titleY);
+
+        // Número de Série (menor e mais claro)
+        if (hasSerial && item.serial_number) {
+          ctx.fillStyle = '#6B7280'; // gray-500
+
+          let serialFontSize = 70;
+          ctx.font = `bold ${serialFontSize}px Inter, system-ui, -apple-system, sans-serif`;
+
+          // Ajusta a escala da fonte caso o texto seja muito longo
+          const maxTextWidth = 480; // Margem segura
+          const serialText = item.serial_number;
+          let textWidth = ctx.measureText(serialText).width;
+
+          if (textWidth > maxTextWidth) {
+            serialFontSize = Math.floor(serialFontSize * (maxTextWidth / textWidth));
+            ctx.font = `bold ${serialFontSize}px Inter, system-ui, -apple-system, sans-serif`;
+          }
+
+          ctx.fillText(serialText, centerX, 690);
+        }
+
+        // Converte o canvas para Blob PNG
+        const blob = await new Promise<Blob | null>((resolve) => {
+          canvas.toBlob((b) => resolve(b), 'image/png');
+        });
+
+        if (blob) {
+          zip.file(`qrcode_${item.chromebook_id}.png`, blob);
+        }
+      }
+
+      // Gera o arquivo ZIP e faz o download
+      const content = await zip.generateAsync({ type: 'blob' });
+      const zipUrl = URL.createObjectURL(content);
+
+      const link = document.createElement('a');
+      link.href = zipUrl;
+      link.download = `qrcodes_${new Date().toISOString().split('T')[0]}.zip`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(zipUrl);
+
+    } catch (error) {
+      logger.error('Erro ao gerar PNGs de alta resolução', error);
+    } finally {
+      setIsDownloading(false);
+    }
   };
 
   const handleClose = () => {
@@ -110,6 +224,22 @@ export const PrintPreviewPage: React.FC = () => {
               4 Colunas
             </button>
           </div>
+
+          <button
+            onClick={handleDownloadPNGs}
+            disabled={isDownloading}
+            className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 text-white px-6 py-2 rounded-lg font-semibold flex items-center gap-2 transition-colors disabled:opacity-75"
+          >
+            {isDownloading ? (
+              <>
+                <Loader2 size={18} className="animate-spin" /> Gerando ZIP...
+              </>
+            ) : (
+              <>
+                <Download size={18} /> Baixar PNGs
+              </>
+            )}
+          </button>
 
           <button
             onClick={handlePrint}

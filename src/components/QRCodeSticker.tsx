@@ -24,6 +24,7 @@ export const QRCodeSticker: React.FC<QRCodeStickerProps> = ({ item, className })
       )}
       // Dimensões na tela proporcionais ao tamanho de impressão (4:3)
       style={{ width: '160px', height: '120px' }}
+      data-sticker-id={item.chromebook_id}
     >
       {/* Lado Esquerdo: QR Code */}
       <div className="flex-shrink-0 flex items-center justify-center">
