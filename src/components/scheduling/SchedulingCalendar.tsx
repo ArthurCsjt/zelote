@@ -339,12 +339,16 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
                 className={cn(
                   "min-h-[8rem] sm:min-h-[9rem] flex flex-col border-b-4 border-r-4 last:border-r-0 border-black dark:border-white transition-all relative group overflow-visible",
                   isCurrentDay
-                    ? "bg-primary text-white"
+                    ? "bg-gradient-to-br from-primary via-primary to-primary/85 text-white"
                     : isHoveredColumn
                       ? "bg-primary/10 dark:bg-primary/20"
                       : "bg-white dark:bg-zinc-900"
                 )}
               >
+                {/* Today accent stripe */}
+                {isCurrentDay && (
+                  <div className="absolute top-0 left-0 right-0 h-1.5 bg-black dark:bg-white z-20" />
+                )}
                 <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
                   <div className="absolute inset-0 opacity-40"
                     style={{
@@ -356,6 +360,7 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
                     }}
                   />
                 </div>
+
 
                 <div className={cn(
                   "flex-1 flex flex-col items-center justify-center p-2 sm:p-3 relative z-10 overflow-hidden",
