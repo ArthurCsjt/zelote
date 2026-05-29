@@ -275,20 +275,27 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
                   </div>
                 ) : (
                   <>
-                    <div className="flex flex-col items-center leading-none">
-                      <span className="text-xl sm:text-2xl font-[1000] text-black dark:text-white">
+                    <div className="flex flex-col items-center leading-none gap-1">
+                      <div className="flex items-center gap-1.5">
+                        <Monitor className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-primary" strokeWidth={3} />
+                        <span className="text-[8px] sm:text-[9px] font-black uppercase text-zinc-400 dark:text-zinc-500 tracking-[0.2em]">
+                          Frota
+                        </span>
+                      </div>
+                      <span className="text-2xl sm:text-3xl font-black tabular-nums text-black dark:text-white tracking-tighter">
                         {totalAvailableChromebooks}
                       </span>
-                      <span className="text-[7px] sm:text-[9px] font-black uppercase text-zinc-500 dark:text-zinc-400 tracking-widest text-center mt-1">
+                      <span className="text-[7px] sm:text-[9px] font-black uppercase text-zinc-600 dark:text-zinc-300 tracking-[0.25em] text-center">
                         {isMobile ? 'Disp.' : 'Disponíveis'}
                       </span>
                       {(currentUser?.email === 'arthur.alencar@colegiosaojudas.com.br' || (currentUser as any)?.role === 'admin') && (
-                        <span className="text-[6px] sm:text-[7px] font-bold text-zinc-400 dark:text-zinc-500 uppercase mt-1">
-                          Físico: {physicalTotal}
+                        <span className="text-[6px] sm:text-[7px] font-black tabular-nums px-1.5 py-0.5 border border-black/40 dark:border-white/30 bg-zinc-50 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">
+                          Físico · {physicalTotal}
                         </span>
                       )}
                     </div>
                   </>
+
                 )}
               </div>
             </div>
@@ -332,12 +339,16 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
                 className={cn(
                   "min-h-[8rem] sm:min-h-[9rem] flex flex-col border-b-4 border-r-4 last:border-r-0 border-black dark:border-white transition-all relative group overflow-visible",
                   isCurrentDay
-                    ? "bg-primary text-white"
+                    ? "bg-gradient-to-br from-primary via-primary to-primary/85 text-white"
                     : isHoveredColumn
                       ? "bg-primary/10 dark:bg-primary/20"
                       : "bg-white dark:bg-zinc-900"
                 )}
               >
+                {/* Today accent stripe */}
+                {isCurrentDay && (
+                  <div className="absolute top-0 left-0 right-0 h-1.5 bg-black dark:bg-white z-20" />
+                )}
                 <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
                   <div className="absolute inset-0 opacity-40"
                     style={{
@@ -349,6 +360,7 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
                     }}
                   />
                 </div>
+
 
                 <div className={cn(
                   "flex-1 flex flex-col items-center justify-center p-2 sm:p-3 relative z-10 overflow-hidden",
@@ -386,15 +398,34 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
                         animate={{ y: 0, opacity: 1 }}
                         exit={{ y: -20, opacity: 0 }}
                         transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                        className="flex flex-col items-center justify-center"
+                        className="flex flex-col items-center justify-center gap-1"
                       >
-                        <span className="text-[8px] sm:text-[10px] font-black uppercase tracking-[0.15em] sm:tracking-[0.2em] opacity-90 mb-0.5 drop-shadow-sm">
+                        <span className={cn(
+                          "text-[8px] sm:text-[10px] font-black uppercase tracking-[0.2em] sm:tracking-[0.28em] mb-0.5",
+                          isCurrentDay
+                            ? "px-2 py-0.5 bg-white text-primary border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)]"
+                            : "text-zinc-500 dark:text-zinc-400"
+                        )}>
                           {format(day, isMobile ? 'EEE' : 'EEEE', { locale: ptBR })}
                         </span>
-                        <span className="text-2xl sm:text-3xl font-black tracking-tighter leading-none xl:drop-shadow-sm">
-                          {format(day, 'dd/MM')}
-                        </span>
+                        <div className="flex items-baseline gap-0.5 leading-none">
+                          <span className="text-2xl sm:text-4xl font-black tabular-nums tracking-tighter">
+                            {format(day, 'dd')}
+                          </span>
+                          <span className={cn(
+                            "text-sm sm:text-base font-black tabular-nums",
+                            isCurrentDay ? "text-white/70" : "text-zinc-400 dark:text-zinc-500"
+                          )}>
+                            /{format(day, 'MM')}
+                          </span>
+                        </div>
+                        {isCurrentDay && (
+                          <span className="text-[7px] sm:text-[8px] font-black uppercase tracking-[0.3em] text-white/90 mt-0.5">
+                            ● Hoje
+                          </span>
+                        )}
                       </motion.div>
+
                     )}
                   </AnimatePresence>
                 </div>
