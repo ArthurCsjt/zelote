@@ -398,15 +398,34 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
                         animate={{ y: 0, opacity: 1 }}
                         exit={{ y: -20, opacity: 0 }}
                         transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                        className="flex flex-col items-center justify-center"
+                        className="flex flex-col items-center justify-center gap-1"
                       >
-                        <span className="text-[8px] sm:text-[10px] font-black uppercase tracking-[0.15em] sm:tracking-[0.2em] opacity-90 mb-0.5 drop-shadow-sm">
+                        <span className={cn(
+                          "text-[8px] sm:text-[10px] font-black uppercase tracking-[0.2em] sm:tracking-[0.28em] mb-0.5",
+                          isCurrentDay
+                            ? "px-2 py-0.5 bg-white text-primary border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)]"
+                            : "text-zinc-500 dark:text-zinc-400"
+                        )}>
                           {format(day, isMobile ? 'EEE' : 'EEEE', { locale: ptBR })}
                         </span>
-                        <span className="text-2xl sm:text-3xl font-black tracking-tighter leading-none xl:drop-shadow-sm">
-                          {format(day, 'dd/MM')}
-                        </span>
+                        <div className="flex items-baseline gap-0.5 leading-none">
+                          <span className="text-2xl sm:text-4xl font-black tabular-nums tracking-tighter">
+                            {format(day, 'dd')}
+                          </span>
+                          <span className={cn(
+                            "text-sm sm:text-base font-black tabular-nums",
+                            isCurrentDay ? "text-white/70" : "text-zinc-400 dark:text-zinc-500"
+                          )}>
+                            /{format(day, 'MM')}
+                          </span>
+                        </div>
+                        {isCurrentDay && (
+                          <span className="text-[7px] sm:text-[8px] font-black uppercase tracking-[0.3em] text-white/90 mt-0.5">
+                            ● Hoje
+                          </span>
+                        )}
                       </motion.div>
+
                     )}
                   </AnimatePresence>
                 </div>
