@@ -275,20 +275,27 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
                   </div>
                 ) : (
                   <>
-                    <div className="flex flex-col items-center leading-none">
-                      <span className="text-xl sm:text-2xl font-[1000] text-black dark:text-white">
+                    <div className="flex flex-col items-center leading-none gap-1">
+                      <div className="flex items-center gap-1.5">
+                        <Monitor className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-primary" strokeWidth={3} />
+                        <span className="text-[8px] sm:text-[9px] font-black uppercase text-zinc-400 dark:text-zinc-500 tracking-[0.2em]">
+                          Frota
+                        </span>
+                      </div>
+                      <span className="text-2xl sm:text-3xl font-black tabular-nums text-black dark:text-white tracking-tighter">
                         {totalAvailableChromebooks}
                       </span>
-                      <span className="text-[7px] sm:text-[9px] font-black uppercase text-zinc-500 dark:text-zinc-400 tracking-widest text-center mt-1">
+                      <span className="text-[7px] sm:text-[9px] font-black uppercase text-zinc-600 dark:text-zinc-300 tracking-[0.25em] text-center">
                         {isMobile ? 'Disp.' : 'Disponíveis'}
                       </span>
                       {(currentUser?.email === 'arthur.alencar@colegiosaojudas.com.br' || (currentUser as any)?.role === 'admin') && (
-                        <span className="text-[6px] sm:text-[7px] font-bold text-zinc-400 dark:text-zinc-500 uppercase mt-1">
-                          Físico: {physicalTotal}
+                        <span className="text-[6px] sm:text-[7px] font-black tabular-nums px-1.5 py-0.5 border border-black/40 dark:border-white/30 bg-zinc-50 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">
+                          Físico · {physicalTotal}
                         </span>
                       )}
                     </div>
                   </>
+
                 )}
               </div>
             </div>
