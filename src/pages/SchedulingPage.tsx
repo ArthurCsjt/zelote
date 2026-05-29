@@ -166,217 +166,169 @@ const SchedulingPage = () => {
 
     <div className="space-y-4 sm:space-y-6 max-w-7xl mx-auto relative z-10">
       {/* Command Center - Ultra-Slim Header */}
-      <div className="relative mb-2">
-        {/* Camada da Sombra - Reta conforme pedido */}
-        <div className="absolute inset-0 translate-x-[4px] translate-y-[4px] bg-black dark:bg-white rounded-none -z-10" />
-
-        <motion.div
-          initial={{ opacity: 0, y: -30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
-          className="bg-white dark:bg-zinc-900 border-[3px] border-black dark:border-white overflow-hidden relative z-0"
-        >
-          <div className="flex flex-col">
-            {/* ROW 1: Centered Title Block (Tema Agendamento) */}
-            <div className="w-full flex flex-col md:flex-row items-center justify-between p-3 md:p-5 border-b-[3px] border-black dark:border-zinc-800 bg-zinc-50/30 dark:bg-zinc-950/10 relative overflow-hidden group gap-4 md:gap-0">
-              {/* Subtle background grid pattern */}
-              <div className="absolute inset-0 opacity-[0.02] pointer-events-none neo-brutal-dots scale-70" />
-
-              {/* Centered Title - Block 1 on mobile */}
-              <div className="flex flex-col md:flex-row items-center gap-3.5 md:gap-4 relative z-10 w-full md:w-auto text-center md:text-left justify-center md:justify-start">
-                {/* Square Neo-Brutalist Icon Badge */}
-                <div className="relative flex items-center justify-center p-2.5 bg-primary text-primary-foreground border-[3px] border-black dark:border-zinc-700 shadow-[3px_3px_0_0_#000] dark:shadow-[3px_3px_0_0_rgba(255,255,255,0.05)] rounded-lg shrink-0 group-hover:translate-x-[-1px] group-hover:translate-y-[-1px] group-hover:shadow-[4px_4px_0_0_#000] transition-all duration-200">
-                  <Calendar className="h-6 w-6" strokeWidth={2.5} />
-                </div>
-
-                <div className="flex flex-col justify-center leading-tight">
-                  <h1 className="text-[1.2rem] md:text-2xl font-[1000] uppercase tracking-[0.12em] text-black dark:text-white">
-                    Agendamento
-                  </h1>
-                  <div className="flex items-center gap-2 mt-1 justify-center md:justify-start">
-                    <span className="text-[9px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-[0.18em]">
-                      Unidade de Controle
-                    </span>
-                    <div className="h-[2px] w-4 bg-zinc-300 dark:bg-zinc-700" />
-                    <span className="px-1.5 py-0.5 text-[8px] font-[1000] bg-primary/10 dark:bg-primary/20 text-primary dark:text-blue-400 border border-primary/20 uppercase tracking-widest shrink-0">
-                      v2.4
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* View Toggle - Block 2 on mobile */}
-              <div className="flex items-center justify-center relative z-10 w-full md:w-auto">
-                <div className="flex w-full md:w-auto h-11 md:h-9 border-[3px] border-black dark:border-zinc-700 bg-white dark:bg-zinc-950 shadow-[2px_2px_0_0_#000] dark:shadow-[2px_2px_0_0_rgba(255,255,255,0.05)] overflow-hidden transition-all rounded-xl md:rounded-lg">
-                  <button
-                    onClick={() => handleViewModeChange('weekly')}
-                    className={cn(
-                      "flex-1 md:flex-none md:px-5 h-full text-[10px] font-[1000] uppercase tracking-widest transition-all duration-150 border-r-[3px] border-black dark:border-zinc-700",
-                      viewMode === 'weekly'
-                        ? "bg-primary text-primary-foreground shadow-[inset_1px_1px_0_0_rgba(0,0,0,0.2)]"
-                        : "bg-white dark:bg-zinc-950 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-900"
-                    )}
-                  >
-                    Semanal
-                  </button>
-                  <button
-                    onClick={() => handleViewModeChange('monthly')}
-                    className={cn(
-                      "flex-1 md:flex-none md:px-5 h-full text-[10px] font-[1000] uppercase tracking-widest transition-all duration-150",
-                      viewMode === 'monthly'
-                        ? "bg-primary text-primary-foreground shadow-[inset_1px_1px_0_0_rgba(0,0,0,0.2)]"
-                        : "bg-white dark:bg-zinc-950 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-900"
-                    )}
-                  >
-                    Histórico
-                  </button>
-                </div>
-              </div>
+      <motion.div
+        initial={{ opacity: 0, y: -30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 1.0, ease: [0.22, 1, 0.36, 1] }}
+        className="mb-2 bg-white dark:bg-zinc-900 border-[3px] border-black dark:border-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.9)] flex flex-col overflow-hidden"
+      >
+        {/* ROW 1: Title + View Toggle */}
+        <div className="p-4 md:p-6 border-b-[3px] border-black dark:border-white flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div className="flex items-center gap-4 md:gap-5">
+            {/* Icon badge */}
+            <div className="w-12 h-12 md:w-14 md:h-14 bg-white dark:bg-zinc-950 border-[3px] border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.85)] flex items-center justify-center shrink-0">
+              <Calendar className="h-6 w-6 md:h-7 md:w-7 text-black dark:text-white" strokeWidth={3} />
             </div>
-
-            <div className="p-3 md:p-4 pt-0 flex flex-col gap-3">
-              {/* ROW 2: Date Navigator (left) | Months Grid (right) */}
-              <div className="flex flex-col md:flex-row md:items-stretch md:justify-between gap-3">
-                {/* Date Navigator - Block 3 on mobile */}
-                <div className="flex w-full md:flex-1 h-14 border-2 md:border-[3px] border-black dark:border-zinc-700 bg-white dark:bg-zinc-950 shadow-[2px_2px_0_0_#000] md:shadow-[3px_3px_0_0_#000] dark:shadow-[2px_2px_0_0_rgba(255,255,255,0.05)] overflow-hidden transition-all rounded-xl group/nav hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[4px_4px_0_0_#000] dark:hover:shadow-[4px_4px_0_0_rgba(255,255,255,0.08)]">
-                  <button
-                    onClick={() => handleDateChange('prev')}
-                    disabled={isLoading}
-                    className="flex items-center justify-center w-12 md:w-14 border-r-2 md:border-r-[3px] border-black dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900/40 hover:bg-primary hover:text-white dark:hover:bg-primary transition-all active:scale-95 disabled:opacity-30 shrink-0 rounded-l-[9px]"
-                    aria-label="Anterior"
-                  >
-                    <ChevronLeft className="h-5 w-5" strokeWidth={3} />
-                  </button>
-
-                  <div className="flex-1 flex flex-col items-center justify-center px-2 md:px-4 relative overflow-hidden group text-center py-1">
-                    {/* Indicador de topo sutil */}
-                    <div className="absolute top-0 left-0 right-0 h-[1px] bg-black/5 dark:bg-white/5" />
-
-                    <div className="flex items-center justify-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-primary animate-pulse shrink-0" />
-                      <span className="text-[11px] sm:text-[13px] md:text-sm font-[1000] uppercase tracking-[0.06em] sm:tracking-[0.1em] text-zinc-900 dark:text-zinc-50 text-center leading-snug break-words">
-                        <span className="whitespace-normal md:whitespace-nowrap block">
-                          {displayRange}
-                        </span>
-                      </span>
-                    </div>
-
-                    {/* Grid de fundo ultra sutil */}
-                    <div className="absolute inset-0 opacity-[0.02] pointer-events-none neo-brutal-dots scale-50" />
-                  </div>
-
-                  <button
-                    onClick={() => handleDateChange('next')}
-                    disabled={isLoading}
-                    className="flex items-center justify-center w-12 md:w-14 border-l-2 md:border-l-[3px] border-black dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900/40 hover:bg-primary hover:text-white dark:hover:bg-primary transition-all active:scale-95 disabled:opacity-30 shrink-0 rounded-r-[9px]"
-                    aria-label="Próximo"
-                  >
-                    <ChevronRight className="h-5 w-5" strokeWidth={3} />
-                  </button>
-                </div>
-
-                {/* Months Grid & Year Selector - Block 4 on mobile */}
-                <div className="flex flex-col md:flex-row items-center md:h-14 p-3 md:py-0 md:px-3 border-2 md:border-[3px] border-black dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-950 shadow-[2px_2px_0_0_#000] md:shadow-[3px_3px_0_0_#000] dark:shadow-[2px_2px_0_0_rgba(255,255,255,0.05)] rounded-xl transition-all hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[4px_4px_0_0_#000] dark:hover:shadow-[4px_4px_0_0_rgba(255,255,255,0.08)] w-full md:w-auto overflow-hidden gap-3 md:gap-3">
-                  {/* Year selector */}
-                  <div className="flex items-center justify-center gap-2 shrink-0 w-full md:w-auto pb-2 md:pb-0 border-b md:border-b-0 md:border-r border-black/10 dark:border-white/10 h-11 md:h-full">
-                    <button
-                      onClick={() => setCurrentDate(new Date(currentDate.getFullYear() - 1, currentDate.getMonth(), 1))}
-                      className="p-2 text-zinc-400 hover:text-primary transition-colors flex items-center justify-center min-w-[36px] min-h-[36px]"
-                    >
-                      <ChevronLeft className="h-4 w-4" strokeWidth={3} />
-                    </button>
-                    <div className="px-2 text-xs md:text-[11px] font-black text-zinc-900 dark:text-zinc-100 tabular-nums">
-                      {currentDate.getFullYear()}
-                    </div>
-                    <button
-                      onClick={() => setCurrentDate(new Date(currentDate.getFullYear() + 1, currentDate.getMonth(), 1))}
-                      className="p-2 text-zinc-400 hover:text-primary transition-colors flex items-center justify-center min-w-[36px] min-h-[36px]"
-                    >
-                      <ChevronRight className="h-4 w-4" strokeWidth={3} />
-                    </button>
-                  </div>
-
-                  {/* Months list */}
-                  <div className="flex items-center gap-x-1 h-11 md:h-full w-full md:w-auto overflow-x-auto scrollbar-none scroll-smooth">
-                    <AnimatePresence mode="popLayout">
-                      {Array.from({ length: 12 }, (_, i) => {
-                        const date = new Date(new Date().getFullYear(), i, 1);
-                        const isCurrentMonth = i === currentDate.getMonth();
-                        const isTodayMonth = i === new Date().getMonth() && currentDate.getFullYear() === new Date().getFullYear();
-
-                        const todayIdx = new Date().getMonth();
-                        const isVisibleByDefault = (i >= todayIdx && i <= todayIdx + 3) || (todayIdx > 8 && i < (todayIdx + 4) % 12);
-                        const shouldShow = isMonthsExpanded || isVisibleByDefault || isCurrentMonth;
-
-                        if (!shouldShow) return null;
-
-                        return (
-                          <motion.button
-                            key={i}
-                            layout
-                            initial={{ opacity: 0, x: -10 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, scale: 0.9 }}
-                            onClick={() => {
-                              let targetDate = new Date(currentDate.getFullYear(), i, 1);
-                              if (isSaturday(targetDate)) targetDate = addDays(targetDate, 2);
-                              else if (isSunday(targetDate)) targetDate = addDays(targetDate, 1);
-                              setCurrentDate(targetDate);
-                            }}
-                            className={cn(
-                              "relative px-3 md:px-2.5 h-full text-[10px] font-black uppercase tracking-tight transition-all duration-200 flex items-center justify-center group shrink-0 min-w-[44px] min-h-[44px]",
-                              isCurrentMonth
-                                ? "text-primary"
-                                : "text-zinc-400 dark:text-zinc-600 hover:text-black dark:hover:text-white"
-                            )}
-                          >
-                            <span className="relative z-10">
-                              {format(date, 'MMM', { locale: ptBR }).replace('.', '')}
-                            </span>
-
-                            {isCurrentMonth && (
-                              <motion.div
-                                layoutId="activeMonthUnderline"
-                                className="absolute bottom-1.5 left-2 right-2 md:bottom-2 md:left-2 md:right-2 h-0.5 bg-primary rounded-full"
-                                transition={{ type: "spring", stiffness: 380, damping: 30 }}
-                              />
-                            )}
-
-                            {isTodayMonth && !isCurrentMonth && (
-                              <div className="absolute top-2 right-1 w-1 h-1 bg-primary rounded-full animate-pulse" />
-                            )}
-
-                            {!isCurrentMonth && (
-                              <div className="absolute bottom-1.5 left-2 right-2 md:bottom-2 md:left-2 md:right-2 h-0.5 bg-zinc-200 dark:bg-zinc-800 scale-x-0 group-hover:scale-x-100 transition-transform duration-200 rounded-full" />
-                            )}
-                          </motion.button>
-                        );
-                      })}
-                    </AnimatePresence>
-
-                    {/* Botão discreto para expandir/recolher */}
-                    <button
-                      onClick={() => setIsMonthsExpanded(!isMonthsExpanded)}
-                      className="ml-1 p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors group shrink-0 min-w-[36px] min-h-[36px] flex items-center justify-center"
-                      title={isMonthsExpanded ? "Ver menos" : "Ver todos os meses"}
-                    >
-                      <motion.div
-                        animate={{ rotate: isMonthsExpanded ? 45 : 0 }}
-                        transition={{ type: "spring", stiffness: 200 }}
-                      >
-                        <Plus className={cn(
-                          "h-4 w-4 md:h-3.5 md:w-3.5 transition-colors",
-                          isMonthsExpanded ? "text-primary" : "text-zinc-400 group-hover:text-black dark:group-hover:text-white"
-                        )} />
-                      </motion.div>
-                    </button>
-                  </div>
-                </div>
+            <div>
+              <h1 className="text-2xl md:text-4xl font-black tracking-tighter uppercase leading-none text-black dark:text-white">
+                Agendamento
+              </h1>
+              <div className="flex items-center gap-2 mt-1.5">
+                <span className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">
+                  Unidade de Controle
+                </span>
+                <span className="h-[1px] w-4 bg-zinc-300 dark:bg-zinc-700" />
+                <span className="text-[10px] font-black px-1.5 py-0.5 border border-black dark:border-white bg-primary/10 text-primary uppercase tracking-widest">
+                  v2.4
+                </span>
               </div>
             </div>
           </div>
-        </motion.div>
-      </div>
+
+          {/* View Toggle */}
+          <div className="flex border-[3px] border-black dark:border-white p-1 bg-white dark:bg-zinc-950 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.85)] w-full md:w-auto">
+            <button
+              onClick={() => handleViewModeChange('weekly')}
+              className={cn(
+                "flex-1 md:flex-none px-6 py-2 font-black text-xs uppercase tracking-wider transition-colors border-r-[3px] border-black dark:border-white",
+                viewMode === 'weekly'
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-white dark:bg-zinc-950 text-black dark:text-white hover:bg-zinc-100 dark:hover:bg-zinc-900"
+              )}
+            >
+              Semanal
+            </button>
+            <button
+              onClick={() => handleViewModeChange('monthly')}
+              className={cn(
+                "flex-1 md:flex-none px-6 py-2 font-black text-xs uppercase tracking-wider transition-colors",
+                viewMode === 'monthly'
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-white dark:bg-zinc-950 text-black dark:text-white hover:bg-zinc-100 dark:hover:bg-zinc-900"
+              )}
+            >
+              Histórico
+            </button>
+          </div>
+        </div>
+
+        {/* ROW 2: Week Selector + Year/Months */}
+        <div className="p-4 md:p-5 bg-zinc-50 dark:bg-zinc-950/40 flex flex-col lg:flex-row gap-4 items-stretch">
+          {/* Week Selector Bar */}
+          <div className="flex-grow flex items-stretch border-[3px] border-black dark:border-white bg-white dark:bg-zinc-900 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.85)] transition-transform hover:-translate-x-0.5 hover:-translate-y-0.5">
+            <button
+              onClick={() => handleDateChange('prev')}
+              disabled={isLoading}
+              className="px-4 border-r-[3px] border-black dark:border-white hover:bg-primary/10 transition-colors disabled:opacity-30 flex items-center justify-center"
+              aria-label="Anterior"
+            >
+              <ChevronLeft className="h-5 w-5 text-black dark:text-white" strokeWidth={3} />
+            </button>
+            <div className="flex-grow py-3 px-4 md:px-6 flex items-center justify-center gap-3 text-center">
+              <div className="w-2.5 h-2.5 rounded-full bg-primary animate-pulse shrink-0" />
+              <span className="text-xs md:text-sm font-black uppercase tracking-tight text-zinc-900 dark:text-zinc-50">
+                {displayRange}
+              </span>
+            </div>
+            <button
+              onClick={() => handleDateChange('next')}
+              disabled={isLoading}
+              className="px-4 border-l-[3px] border-black dark:border-white hover:bg-primary/10 transition-colors disabled:opacity-30 flex items-center justify-center"
+              aria-label="Próximo"
+            >
+              <ChevronRight className="h-5 w-5 text-black dark:text-white" strokeWidth={3} />
+            </button>
+          </div>
+
+          {/* Year + Months */}
+          <div className="flex border-[3px] border-black dark:border-white bg-white dark:bg-zinc-900 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.85)]">
+            {/* Year Selector */}
+            <div className="flex items-center px-3 md:px-4 border-r-[3px] border-black dark:border-white">
+              <button
+                onClick={() => setCurrentDate(new Date(currentDate.getFullYear() - 1, currentDate.getMonth(), 1))}
+                className="p-1 text-zinc-400 hover:text-black dark:hover:text-white transition-colors"
+                aria-label="Ano anterior"
+              >
+                <ChevronLeft className="h-3.5 w-3.5" strokeWidth={4} />
+              </button>
+              <span className="mx-2 md:mx-3 text-sm font-black tabular-nums text-black dark:text-white">
+                {currentDate.getFullYear()}
+              </span>
+              <button
+                onClick={() => setCurrentDate(new Date(currentDate.getFullYear() + 1, currentDate.getMonth(), 1))}
+                className="p-1 text-zinc-400 hover:text-black dark:hover:text-white transition-colors"
+                aria-label="Próximo ano"
+              >
+                <ChevronRight className="h-3.5 w-3.5" strokeWidth={4} />
+              </button>
+            </div>
+
+            {/* Months */}
+            <div className="flex items-center px-2">
+              <div className="flex gap-1 overflow-x-auto scrollbar-none">
+                <AnimatePresence mode="popLayout">
+                  {Array.from({ length: 12 }, (_, i) => {
+                    const date = new Date(currentDate.getFullYear(), i, 1);
+                    const isCurrentMonth = i === currentDate.getMonth();
+                    const isTodayMonth = i === new Date().getMonth() && currentDate.getFullYear() === new Date().getFullYear();
+                    const todayIdx = new Date().getMonth();
+                    const isVisibleByDefault = (i >= todayIdx && i <= todayIdx + 3) || (todayIdx > 8 && i < (todayIdx + 4) % 12);
+                    const shouldShow = isMonthsExpanded || isVisibleByDefault || isCurrentMonth;
+                    if (!shouldShow) return null;
+
+                    return (
+                      <motion.button
+                        key={i}
+                        layout
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, scale: 0.9 }}
+                        onClick={() => {
+                          let targetDate = new Date(currentDate.getFullYear(), i, 1);
+                          if (isSaturday(targetDate)) targetDate = addDays(targetDate, 2);
+                          else if (isSunday(targetDate)) targetDate = addDays(targetDate, 1);
+                          setCurrentDate(targetDate);
+                        }}
+                        className={cn(
+                          "relative px-3 py-2 text-[11px] font-black uppercase tracking-wider transition-colors shrink-0",
+                          isCurrentMonth
+                            ? "text-primary border-b-[3px] border-primary"
+                            : "text-zinc-400 dark:text-zinc-500 hover:text-black dark:hover:text-white"
+                        )}
+                      >
+                        {format(date, 'MMM', { locale: ptBR }).replace('.', '')}
+                        {isTodayMonth && !isCurrentMonth && (
+                          <div className="absolute top-1.5 right-1 w-1 h-1 bg-primary rounded-full animate-pulse" />
+                        )}
+                      </motion.button>
+                    );
+                  })}
+                </AnimatePresence>
+              </div>
+              <button
+                onClick={() => setIsMonthsExpanded(!isMonthsExpanded)}
+                className="p-3 hover:bg-zinc-50 dark:hover:bg-zinc-800 border-l-[3px] border-black dark:border-white transition-colors"
+                title={isMonthsExpanded ? "Ver menos" : "Ver todos os meses"}
+                aria-label="Alternar meses"
+              >
+                <motion.div animate={{ rotate: isMonthsExpanded ? 45 : 0 }} transition={{ type: "spring", stiffness: 200 }}>
+                  <Plus className="h-4 w-4 text-black dark:text-white" strokeWidth={4} />
+                </motion.div>
+              </button>
+            </div>
+          </div>
+        </div>
+      </motion.div>
 
       {/* Weekend Warning */}
       {viewMode === 'weekly' && getWeekDays(currentDate).length === 0 && <div className="mt-4 p-3 border-3 border-warning/50 bg-warning/10 flex items-center gap-2">
