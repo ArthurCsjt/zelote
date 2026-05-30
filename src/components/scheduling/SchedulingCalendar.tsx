@@ -289,7 +289,7 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
                         {isMobile ? 'Disp.' : 'Disponíveis'}
                       </span>
                       {(currentUser?.email === 'arthur.alencar@colegiosaojudas.com.br' || (currentUser as any)?.role === 'admin') && (
-                        <span className="text-[6px] sm:text-[7px] font-black tabular-nums px-1.5 py-0.5 border border-black/40 dark:border-white/30 bg-zinc-50 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">
+                        <span className="hidden sm:inline-block text-[6px] sm:text-[7px] font-black tabular-nums px-1.5 py-0.5 border border-black/40 dark:border-white/30 bg-zinc-50 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">
                           Físico · {physicalTotal}
                         </span>
                       )}
