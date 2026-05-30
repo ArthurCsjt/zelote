@@ -87,8 +87,8 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
   }, [reservations]);
 
   // Responsive sizes
-  const timeColumnWidth = isMobile ? 60 : 100;
-  const dayColumnMinWidth = isMobile ? 120 : 160;
+  const timeColumnWidth = isMobile ? 88 : 100;
+  const dayColumnMinWidth = isMobile ? 110 : 160;
   const totalMinWidth = timeColumnWidth + (weekDays.length * dayColumnMinWidth);
   const gridTemplateColumns = `${timeColumnWidth}px repeat(${weekDays.length}, 1fr)`;
   const GridContainer = (isMobile ? 'div' : motion.div) as any;
