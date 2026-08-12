@@ -1,0 +1,179 @@
+import React from 'react';
+import { GlassCard } from './ui/GlassCard';
+import { Badge } from './ui/badge';
+import { Button } from './ui/button';
+import { Computer, X, Clock, CheckCircle, AlertCircle } from 'lucide-react';
+import { cn } from '@/lib/utils';
+
+interface DeviceCardProps {
+    deviceId: string;
+    status?: 'disponivel' | 'emprestado' | 'manutencao' | 'baixado';
+    lastUsed?: string;
+    condition?: 'excelente' | 'bom' | 'regular' | 'ruim';
+    manufacturer?: string | null;
+    model?: string;
+    serial_number?: string | null;
+    onRemove?: () => void;
+    variant?: 'loan' | 'return';
+    showDetails?: boolean;
+    className?: string;
+    style?: React.CSSProperties;
+}
+
+const statusConfig = {
+    disponivel: {
+        label: 'Disponível',
+        color: 'bg-green-100 text-green-700 border-green-300 dark:bg-green-900/30 dark:text-green-400 dark:border-green-500/30',
+        icon: CheckCircle,
+    },
+    emprestado: {
+        label: 'Emprestado',
+        color: 'bg-blue-100 text-blue-700 border-blue-300 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-500/30',
+        icon: Clock,
+    },
+    manutencao: {
+        label: 'Manutenção',
+        color: 'bg-amber-100 text-amber-700 border-amber-300 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-500/30',
+        icon: AlertCircle,
+    },
+    baixado: {
+        label: 'Baixado',
+        color: 'bg-red-100 text-red-700 border-red-300 dark:bg-red-900/30 dark:text-red-400 dark:border-red-500/30',
+        icon: X,
+    },
+    fixo: {
+        label: 'Fixo',
+        color: 'bg-purple-100 text-purple-700 border-purple-300 dark:bg-purple-900/30 dark:text-purple-400 dark:border-purple-500/30',
+        icon: Computer,
+    },
+};
+
+const conditionConfig = {
+    excelente: { label: 'Excelente', color: 'text-green-700 dark:text-green-400 font-semibold' },
+    bom: { label: 'Bom', color: 'text-blue-700 dark:text-blue-400 font-semibold' },
+    regular: { label: 'Regular', color: 'text-amber-700 dark:text-amber-400 font-semibold' },
+    ruim: { label: 'Ruim', color: 'text-red-700 dark:text-red-400 font-semibold' },
+};
+
+export function DeviceCard({
+    deviceId,
+    status = 'disponivel',
+    lastUsed,
+    condition = 'bom',
+    manufacturer,
+    model,
+    serial_number,
+    onRemove,
+    variant = 'loan',
+    showDetails = true,
+    className,
+    style,
+}: DeviceCardProps) {
+    const safeStatus = (status || 'disponivel').toLowerCase() as keyof typeof statusConfig;
+    const safeCondition = (condition || 'bom').toLowerCase() as keyof typeof conditionConfig;
+
+    const statusInfo = statusConfig[safeStatus] || statusConfig.disponivel;
+    const conditionInfo = conditionConfig[safeCondition] || conditionConfig.bom;
+    const StatusIcon = statusInfo.icon || CheckCircle;
+
+    const borderColor = variant === 'loan'
+        ? 'border-l-amber-600 dark:border-l-amber-500'
+        : 'border-l-blue-600 dark:border-l-blue-500';
+
+    return (
+        <GlassCard
+            className={cn(
+                "group relative overflow-hidden transition-all duration-300",
+                "hover:shadow-xl hover:-translate-y-0.5",
+                "border-l-4 border-2",
+                "border-gray-300 dark:border-border/40",
+                borderColor,
+                "animate-in slide-in-from-left-2 fade-in duration-300",
+                "bg-white dark:bg-card/50",
+                "max-w-full overflow-hidden",
+                className
+            )}
+            style={style}
+        >
+            {/* Background gradient on hover */}
+            <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+            <div className="relative p-2.5 sm:p-3 w-full">
+                <div className="flex items-center justify-between gap-2 sm:gap-3 w-full min-w-0">
+                    {/* Left side - Icon and ID */}
+                    <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                        <div className={cn(
+                            "p-1.5 sm:p-2 rounded-lg transition-all duration-300 shrink-0",
+                            "bg-gradient-to-br from-amber-200 to-amber-100",
+                            "dark:from-amber-500/10 dark:to-amber-500/5",
+                            "group-hover:from-amber-300 group-hover:to-amber-200",
+                            "dark:group-hover:from-amber-500/20 dark:group-hover:to-amber-500/10",
+                            "group-hover:scale-110",
+                            "border-2 border-amber-300 dark:border-amber-500/20"
+                        )}>
+                            <Computer className="h-4 w-4 sm:h-5 sm:w-5 text-amber-800 dark:text-amber-400" />
+                        </div>
+
+                        <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                                <p className="font-bold text-xs sm:text-base truncate text-gray-900 dark:text-foreground group-hover:text-primary transition-colors">
+                                    {deviceId}
+                                </p>
+                                {showDetails && (
+                                    <Badge
+                                        variant="outline"
+                                        className={cn(
+                                            "text-[9px] sm:text-[10px] h-4 sm:h-5 px-1.5 sm:px-2 font-semibold border-2 shrink-0",
+                                            statusInfo.color
+                                        )}
+                                    >
+                                        <StatusIcon className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-1" />
+                                        {statusInfo.label}
+                                    </Badge>
+                                )}
+                            </div>
+
+                             {showDetails && (manufacturer || model || serial_number) && (
+                                <div className="mt-0.5 flex min-w-0">
+                                    <span 
+                                        className="text-[9px] sm:text-[10px] text-muted-foreground font-bold uppercase truncate"
+                                        title={[manufacturer, model, serial_number ? `S/N: ${serial_number}` : null].filter(Boolean).join(' • ')}
+                                    >
+                                        {[manufacturer, model, serial_number ? `S/N: ${serial_number}` : null].filter(Boolean).join(' • ')}
+                                    </span>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Right side - Details and Remove button */}
+                    <div className="flex items-center gap-2 shrink-0">
+                        {showDetails && lastUsed && (
+                            <div className="text-right hidden sm:block">
+                                <p className="text-[10px] text-gray-600 dark:text-muted-foreground font-semibold">Último uso</p>
+                                <p className="text-xs font-bold text-gray-900 dark:text-foreground">{lastUsed}</p>
+                            </div>
+                        )}
+
+                        {onRemove && (
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={onRemove}
+                                className={cn(
+                                    "h-8 w-8 p-0",
+                                    "transition-all duration-300",
+                                    "hover:bg-red-100 hover:text-red-700",
+                                    "dark:hover:bg-destructive/20 dark:hover:text-destructive",
+                                    "border-2 border-transparent hover:border-red-300 dark:hover:border-destructive/30"
+                                )}
+                            >
+                                <X className="h-4 w-4" />
+                            </Button>
+                        )}
+                    </div>
+                </div>
+            </div>
+        </GlassCard>
+    );
+}
