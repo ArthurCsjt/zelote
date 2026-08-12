@@ -66,11 +66,13 @@ export function QRCodeReader({ open, onOpenChange, onScan }: QRCodeReaderProps) 
       isMounted = false;
       cleanupScanner();
     };
-  }, [open]); // Dependency array only needs 'open'
+  }, [open]);
 
   const lastScannedCodeRef = useRef<string>('');
   const lastScannedTimeRef = useRef<number>(0);
+  const scannedCodesSetRef = useRef<Set<string>>(new Set());
   const [lastScannedText, setLastScannedText] = useState<string>('');
+  const [alreadyScannedAlert, setAlreadyScannedAlert] = useState<string>('');
 
   const startScanning = async () => {
     setIsLoading(true);
@@ -78,7 +80,9 @@ export function QRCodeReader({ open, onOpenChange, onScan }: QRCodeReaderProps) 
     setShowManualInput(false); 
     lastScannedCodeRef.current = '';
     lastScannedTimeRef.current = 0;
+    scannedCodesSetRef.current.clear();
     setLastScannedText('');
+    setAlreadyScannedAlert('');
 
     // Verificar se tem câmera disponível
     try {
@@ -111,30 +115,53 @@ export function QRCodeReader({ open, onOpenChange, onScan }: QRCodeReaderProps) 
 
     const onScanSuccess = (decodedText: string) => {
       const now = Date.now();
-      const isSameCode = decodedText === lastScannedCodeRef.current;
+      const cleanCode = decodedText.trim();
+      const isAlreadyInSession = scannedCodesSetRef.current.has(cleanCode);
+      const isSameCode = cleanCode === lastScannedCodeRef.current;
       const timeSinceLastScan = now - lastScannedTimeRef.current;
 
-      // Trava de 2.5 segundos se for exatamente o mesmo QR Code no campo da câmera
-      if (isSameCode && timeSinceLastScan < 2500) {
+      // Se o QR Code já foi lido anteriormente nesta sessão de escaneamento
+      if (isAlreadyInSession || isSameCode) {
+        // Debounce de 2 segundos para não ficar disparando o aviso sem parar a cada frame
+        if (timeSinceLastScan < 2000) {
+          return;
+        }
+
+        lastScannedTimeRef.current = now;
+        setAlreadyScannedAlert(cleanCode);
+
+        toast({
+          title: '⚠️ Já foi lido!',
+          description: `O código ${cleanCode} já está registrado.`,
+          variant: 'destructive', // Using destructive as warning fallback
+          duration: 2000,
+        });
+
+        // Vibração dupla para diferenciar aviso de já lido
+        if (navigator.vibrate) {
+          navigator.vibrate([50, 50, 50]);
+        }
         return;
       }
 
-      // Atualiza referências do último scan aceito
-      lastScannedCodeRef.current = decodedText;
+      // NOVO CÓDIGO LIDO COM SUCESSO:
+      scannedCodesSetRef.current.add(cleanCode);
+      lastScannedCodeRef.current = cleanCode;
       lastScannedTimeRef.current = now;
-      setLastScannedText(decodedText);
+      setLastScannedText(cleanCode);
+      setAlreadyScannedAlert('');
 
-      // Feedback tátil para PWA (celular vibra ao ler com sucesso)
+      // Feedback tátil para PWA (celular vibra 1 vez ao ler novo com sucesso)
       if (navigator.vibrate) {
         navigator.vibrate(100);
       }
 
       // Envia os dados lidos para o formulário
-      onScan(decodedText);
+      onScan(cleanCode);
       toast({
         title: '✓ QR Code lido!',
-        description: `Código: ${decodedText}`,
-        variant: 'success',
+        description: `Código: ${cleanCode}`,
+        variant: 'default',
         duration: 2000,
       });
     };
@@ -204,11 +231,15 @@ export function QRCodeReader({ open, onOpenChange, onScan }: QRCodeReaderProps) 
                 <Loader2 className="h-8 w-8 animate-spin text-white" />
               </div>
             )}
-            {lastScannedText && (
+            {alreadyScannedAlert ? (
+              <div className="absolute top-2 left-2 right-2 z-10 bg-amber-500 text-black text-xs font-black p-2.5 rounded shadow-lg text-center animate-bounce border-2 border-black">
+                ⚠️ O CÓDIGO {alreadyScannedAlert} JÁ FOI LIDO!
+              </div>
+            ) : lastScannedText ? (
               <div className="absolute top-2 left-2 right-2 z-10 bg-green-600 text-white text-xs font-bold p-2 rounded shadow-md text-center animate-in fade-in slide-in-from-top-2">
                 ✓ ÚLTIMO LIDO: {lastScannedText}
               </div>
-            )}
+            ) : null}
             <div id={QR_SCANNER_ELEMENT_ID} className="w-full min-h-[300px] rounded-md overflow-hidden bg-gray-200" />
           </div>
         )}
