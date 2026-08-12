@@ -339,20 +339,31 @@ export function LoanForm({ onBack, initialReservationData }: LoanFormProps) {
 
                         {/* ═══ SEÇÃO 1: EQUIPAMENTO ═══ */}
                         <div className={cn(
-                            "neo-card border-l-[12px] border-4 border-amber-500 bg-amber-100 dark:bg-amber-950/20 transition-all duration-300 shadow-[6px_6px_0px_0px_rgba(245,158,11,0.3)] h-full flex flex-col",
-                            currentStep === 1 && "ring-4 ring-black dark:ring-white ring-offset-2 animate-gentle-pulse"
+                            "neo-card border-l-[12px] border-4 transition-all duration-300 h-full flex flex-col",
+                            isDevicesAdded 
+                                ? "border-l-emerald-500 border-emerald-300 dark:border-emerald-700 bg-emerald-50/50 dark:bg-emerald-950/20 shadow-[6px_6px_0px_0px_rgba(16,185,129,0.3)]"
+                                : currentStep === 1 
+                                    ? "border-l-amber-500 border-amber-400 dark:border-amber-600 bg-amber-50 dark:bg-amber-950/20 shadow-[6px_6px_0px_0px_rgba(245,158,11,0.3)] ring-4 ring-amber-400 dark:ring-amber-500 ring-offset-2 animate-gentle-pulse"
+                                    : "border-l-red-500 border-red-300 dark:border-red-800 bg-red-50/30 dark:bg-red-950/10 shadow-[6px_6px_0px_0px_rgba(239,68,68,0.2)]"
                         )}>
-                            <CardHeader className="p-3 pb-2 border-b-3 border-amber-500/30 bg-gradient-to-r from-amber-400 to-orange-500">
+                            <CardHeader className={cn(
+                                "p-3 pb-2 border-b-3 transition-colors",
+                                isDevicesAdded
+                                    ? "border-emerald-500/30 bg-gradient-to-r from-emerald-500 to-teal-600"
+                                    : currentStep === 1
+                                        ? "border-amber-500/30 bg-gradient-to-r from-amber-400 to-orange-500"
+                                        : "border-red-500/30 bg-gradient-to-r from-red-500 to-rose-600"
+                            )}>
                                 <div className="flex items-center justify-between">
                                     <CardTitle className="text-base font-black uppercase tracking-tight flex items-center gap-2 text-white [text-shadow:1px_1px_rgba(0,0,0,0.5)]">
-                                        <Computer className="h-5 w-5" />
+                                        {isDevicesAdded ? <CheckCircle className="h-5 w-5 text-white" /> : <Computer className="h-5 w-5" />}
                                         Equipamento
                                     </CardTitle>
                                     <Badge variant="outline" className={cn(
                                         "rounded-full border-2 font-black transition-all text-xs px-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]",
                                         deviceIds.length === 0
                                             ? "bg-white/20 border-white text-white/70 shadow-none opacity-60"
-                                            : "bg-white border-white text-orange-600 scale-110 -translate-x-1"
+                                            : "bg-white border-white text-emerald-600 scale-110 -translate-x-1"
                                     )}>
                                         {deviceIds.length === 0
                                             ? 'NENHUM'
@@ -386,12 +397,23 @@ export function LoanForm({ onBack, initialReservationData }: LoanFormProps) {
                     <div className="space-y-6">
                         {/* ═══ SEÇÃO 2: SOLICITANTE ═══ */}
                         <div className={cn(
-                            "neo-card border-l-[12px] border-4 border-violet-500 bg-violet-100 dark:bg-violet-950/20 transition-all duration-300 shadow-[6px_6px_0px_0px_rgba(139,92,246,0.3)]",
-                            currentStep === 2 && isDevicesAdded && "ring-4 ring-black dark:ring-white ring-offset-2 animate-gentle-pulse"
+                            "neo-card border-l-[12px] border-4 transition-all duration-300",
+                            isUserSelected
+                                ? "border-l-emerald-500 border-emerald-300 dark:border-emerald-700 bg-emerald-50/50 dark:bg-emerald-950/20 shadow-[6px_6px_0px_0px_rgba(16,185,129,0.3)]"
+                                : currentStep === 2 && isDevicesAdded
+                                    ? "border-l-amber-500 border-amber-400 dark:border-amber-600 bg-amber-50 dark:bg-amber-950/20 shadow-[6px_6px_0px_0px_rgba(245,158,11,0.3)] ring-4 ring-amber-400 dark:ring-amber-500 ring-offset-2 animate-gentle-pulse"
+                                    : "border-l-red-500 border-red-300 dark:border-red-800 bg-red-50/30 dark:bg-red-950/10 shadow-[6px_6px_0px_0px_rgba(239,68,68,0.2)]"
                         )}>
-                            <CardHeader className="p-3 pb-2 border-b-3 border-violet-500/30 bg-gradient-to-r from-violet-400 to-purple-500">
+                            <CardHeader className={cn(
+                                "p-3 pb-2 border-b-3 transition-colors",
+                                isUserSelected
+                                    ? "border-emerald-500/30 bg-gradient-to-r from-emerald-500 to-teal-600"
+                                    : currentStep === 2 && isDevicesAdded
+                                        ? "border-amber-500/30 bg-gradient-to-r from-amber-400 to-orange-500"
+                                        : "border-red-500/30 bg-gradient-to-r from-red-500 to-rose-600"
+                            )}>
                                 <CardTitle className="text-base font-black uppercase tracking-tight flex items-center gap-2 text-white [text-shadow:1px_1px_rgba(0,0,0,0.5)]">
-                                    <User className="h-5 w-5" />
+                                    {isUserSelected ? <CheckCircle className="h-5 w-5 text-white" /> : <User className="h-5 w-5" />}
                                     Solicitante
                                 </CardTitle>
                             </CardHeader>
@@ -421,12 +443,23 @@ export function LoanForm({ onBack, initialReservationData }: LoanFormProps) {
                         </div>
                         {/* ═══ SEÇÃO 3: FINALIDADE ═══ */}
                         <div className={cn(
-                            "neo-card border-l-[12px] border-4 border-blue-500 bg-blue-100 dark:bg-blue-950/20 transition-all duration-300 shadow-[6px_6px_0px_0px_rgba(59,130,246,0.3)]",
-                            currentStep === 3 && isDevicesAdded && isUserSelected && "ring-4 ring-black dark:ring-white ring-offset-2 animate-gentle-pulse"
+                            "neo-card border-l-[12px] border-4 transition-all duration-300",
+                            isPurposeDefined
+                                ? "border-l-emerald-500 border-emerald-300 dark:border-emerald-700 bg-emerald-50/50 dark:bg-emerald-950/20 shadow-[6px_6px_0px_0px_rgba(16,185,129,0.3)]"
+                                : formData.purpose.trim() && !isPurposeConfirmed
+                                    ? "border-l-red-500 border-red-400 bg-red-50 dark:bg-red-950/20 shadow-[6px_6px_0px_0px_rgba(239,68,68,0.3)]"
+                                    : "border-l-amber-500 border-amber-400 dark:border-amber-600 bg-amber-50 dark:bg-amber-950/20 shadow-[6px_6px_0px_0px_rgba(245,158,11,0.3)]"
                         )}>
-                            <CardHeader className="p-3 pb-2 border-b-3 border-blue-500/30 bg-gradient-to-r from-blue-400 to-cyan-500">
+                            <CardHeader className={cn(
+                                "p-3 pb-2 border-b-3 transition-colors",
+                                isPurposeDefined
+                                    ? "border-emerald-500/30 bg-gradient-to-r from-emerald-500 to-teal-600"
+                                    : formData.purpose.trim() && !isPurposeConfirmed
+                                        ? "border-red-500/30 bg-gradient-to-r from-red-500 to-rose-600"
+                                        : "border-blue-500/30 bg-gradient-to-r from-blue-400 to-cyan-500"
+                            )}>
                                 <CardTitle className="text-base font-black uppercase tracking-tight flex items-center gap-2 text-white [text-shadow:1px_1px_rgba(0,0,0,0.5)]">
-                                    <BookOpen className="h-5 w-5" />
+                                    {isPurposeDefined ? <CheckCircle className="h-5 w-5 text-white" /> : <BookOpen className="h-5 w-5" />}
                                     Finalidade (Opcional)
                                 </CardTitle>
                             </CardHeader>
@@ -466,12 +499,14 @@ export function LoanForm({ onBack, initialReservationData }: LoanFormProps) {
 
                         {/* ═══ SEÇÃO 4: PRAZO E CONFIRMAÇÃO ═══ */}
                         <div className={cn(
-                            "neo-card border-l-[12px] border-4 border-green-500 bg-green-100 dark:bg-green-950/20 transition-all duration-300 shadow-[6px_6px_0px_0px_rgba(34,197,94,0.3)]",
-                            currentStep === 4 && isUserSelected && isPurposeDefined && isDevicesAdded && "ring-4 ring-black dark:ring-white ring-offset-2 animate-gentle-pulse"
+                            "neo-card border-l-[12px] border-4 transition-all duration-300",
+                            hasReturnDeadline && formData.expectedReturnDate
+                                ? "border-l-emerald-500 border-emerald-300 dark:border-emerald-700 bg-emerald-50/50 dark:bg-emerald-950/20 shadow-[6px_6px_0px_0px_rgba(16,185,129,0.3)]"
+                                : "border-l-emerald-500/60 border-emerald-200 dark:border-emerald-900 bg-green-50/20 dark:bg-green-950/10 shadow-[6px_6px_0px_0px_rgba(34,197,94,0.15)]"
                         )}>
-                            <CardHeader className="p-3 pb-2 border-b-3 border-green-500/30 bg-gradient-to-r from-green-400 to-emerald-500">
+                            <CardHeader className="p-3 pb-2 border-b-3 border-emerald-500/30 bg-gradient-to-r from-emerald-500 to-teal-600">
                                 <CardTitle className="text-base font-black uppercase tracking-tight flex items-center gap-2 text-white [text-shadow:1px_1px_rgba(0,0,0,0.5)]">
-                                    <Clock className="h-5 w-5" />
+                                    {hasReturnDeadline && formData.expectedReturnDate ? <CheckCircle className="h-5 w-5 text-white" /> : <Clock className="h-5 w-5" />}
                                     Prazo (Opcional)
                                 </CardTitle>
                             </CardHeader>
