@@ -68,10 +68,17 @@ export function QRCodeReader({ open, onOpenChange, onScan }: QRCodeReaderProps) 
     };
   }, [open]); // Dependency array only needs 'open'
 
+  const lastScannedCodeRef = useRef<string>('');
+  const lastScannedTimeRef = useRef<number>(0);
+  const [lastScannedText, setLastScannedText] = useState<string>('');
+
   const startScanning = async () => {
     setIsLoading(true);
     setError('');
     setShowManualInput(false); 
+    lastScannedCodeRef.current = '';
+    lastScannedTimeRef.current = 0;
+    setLastScannedText('');
 
     // Verificar se tem câmera disponível
     try {
@@ -103,6 +110,20 @@ export function QRCodeReader({ open, onOpenChange, onScan }: QRCodeReaderProps) 
     };
 
     const onScanSuccess = (decodedText: string) => {
+      const now = Date.now();
+      const isSameCode = decodedText === lastScannedCodeRef.current;
+      const timeSinceLastScan = now - lastScannedTimeRef.current;
+
+      // Trava de 2.5 segundos se for exatamente o mesmo QR Code no campo da câmera
+      if (isSameCode && timeSinceLastScan < 2500) {
+        return;
+      }
+
+      // Atualiza referências do último scan aceito
+      lastScannedCodeRef.current = decodedText;
+      lastScannedTimeRef.current = now;
+      setLastScannedText(decodedText);
+
       // Feedback tátil para PWA (celular vibra ao ler com sucesso)
       if (navigator.vibrate) {
         navigator.vibrate(100);
@@ -111,11 +132,11 @@ export function QRCodeReader({ open, onOpenChange, onScan }: QRCodeReaderProps) 
       // Envia os dados lidos para o formulário
       onScan(decodedText);
       toast({
-        title: 'QR Code lido!',
+        title: '✓ QR Code lido!',
         description: `Código: ${decodedText}`,
+        variant: 'success',
+        duration: 2000,
       });
-      // O modal permanece aberto para permitir leitura de múltiplos QR Codes com agilidade.
-      // O leitor continua ativo para o próximo código.
     };
 
     const onScanFailure = (errorMessage: string) => {
@@ -181,6 +202,11 @@ export function QRCodeReader({ open, onOpenChange, onScan }: QRCodeReaderProps) 
             {isLoading && (
               <div className="absolute inset-0 flex items-center justify-center bg-black/50 z-10 rounded-md">
                 <Loader2 className="h-8 w-8 animate-spin text-white" />
+              </div>
+            )}
+            {lastScannedText && (
+              <div className="absolute top-2 left-2 right-2 z-10 bg-green-600 text-white text-xs font-bold p-2 rounded shadow-md text-center animate-in fade-in slide-in-from-top-2">
+                ✓ ÚLTIMO LIDO: {lastScannedText}
               </div>
             )}
             <div id={QR_SCANNER_ELEMENT_ID} className="w-full min-h-[300px] rounded-md overflow-hidden bg-gray-200" />
