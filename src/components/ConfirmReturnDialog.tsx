@@ -24,6 +24,7 @@ interface ConfirmReturnDialogProps {
         email: string;
         notes?: string;
     };
+    userActiveLoans?: LoanHistoryItem[]; // Empréstimos ativos do usuário
     onConfirm: () => void;
     loading?: boolean;
 }
@@ -34,9 +35,14 @@ export function ConfirmReturnDialog({
     deviceIds,
     loanDetails,
     returnData,
+    userActiveLoans = [],
     onConfirm,
     loading = false
 }: ConfirmReturnDialogProps) {
+    // Calcula os dispositivos que permanecem pendentes com este usuário
+    const remainingLoans = userActiveLoans.filter(loan => !deviceIds.includes(loan.chromebook_id));
+    const remainingCount = remainingLoans.length;
+
     // Calcula estatísticas gerais
     const overdueCount = deviceIds.filter(id => {
         const loan = loanDetails.get(id);
@@ -146,6 +152,40 @@ export function ConfirmReturnDialog({
                             )}
                         </div>
                     </div>
+
+                    {/* ALERTA DE DISPOSITIVOS FALTANTES / PENDENTES COM O USUÁRIO */}
+                    {remainingCount > 0 ? (
+                        <div className="p-3 bg-amber-100 dark:bg-amber-950/40 border-3 border-amber-600 shadow-[3px_3px_0px_0px_rgba(217,119,6,0.4)] animate-in fade-in zoom-in-95">
+                            <div className="flex items-center justify-between mb-1.5">
+                                <div className="flex items-center gap-1.5 font-black uppercase text-xs text-amber-900 dark:text-amber-300">
+                                    <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0" />
+                                    <span>PENDÊNCIAS RESTANTES ({remainingCount})</span>
+                                </div>
+                                <Badge variant="outline" className="bg-amber-500 text-black font-black text-[10px] border-black rounded-none">
+                                    Falta{remainingCount > 1 ? 'm' : ''} {remainingCount}
+                                </Badge>
+                            </div>
+                            <p className="text-[11px] font-bold text-amber-950 dark:text-amber-200 mb-2 leading-tight">
+                                Este solicitante ainda continuará com {remainingCount} Chromebook{remainingCount > 1 ? 's' : ''} em aberto após esta devolução:
+                            </p>
+                            <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto p-1 bg-white/60 dark:bg-black/40 border border-amber-400">
+                                {remainingLoans.map(loan => (
+                                    <span
+                                        key={loan.id}
+                                        className="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-200 dark:bg-amber-900/60 border border-amber-600 font-mono font-black text-xs text-amber-950 dark:text-amber-100"
+                                    >
+                                        <Computer className="h-3 w-3" />
+                                        {loan.chromebook_id}
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+                    ) : userActiveLoans.length > 0 ? (
+                        <div className="p-2.5 bg-emerald-100 dark:bg-emerald-950/30 border-2 border-emerald-600 flex items-center gap-2 text-xs font-black uppercase text-emerald-800 dark:text-emerald-300">
+                            <CheckCircle className="h-4 w-4 text-emerald-600 shrink-0" />
+                            <span>Devolução completa! Todos os Chromebooks deste solicitante serão quitados.</span>
+                        </div>
+                    ) : null}
 
                     {/* Observações (se houver) */}
                     {returnData.notes && returnData.notes.trim() && (
