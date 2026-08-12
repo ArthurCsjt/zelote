@@ -163,6 +163,10 @@ export function DeviceListInput({
 
     setDeviceList(prev => {
       if (!validation.chromebook) return prev;
+      // Previne qualquer adição duplicada mesmo que aconteça em chamadas concorrentes
+      if (prev.some(item => item.chromebook_id === validation.chromebook?.chromebook_id)) {
+        return prev;
+      }
       const newList = [validation.chromebook, ...prev]; // Invertido: novo item no topo
       setDeviceIds(newList.map(item => item.chromebook_id));
       setAddedDevicesPage(1); // Volta para a página 1 para ver o item recém-adicionado
@@ -181,6 +185,17 @@ export function DeviceListInput({
     const sanitizedId = sanitizeQRCodeData(data);
 
     if (typeof sanitizedId === 'string' && sanitizedId) {
+      const normalized = normalizeChromebookId(sanitizedId);
+      if (normalized && deviceIds.includes(normalized)) {
+        toast({
+          title: "Dispositivo já adicionado",
+          description: `O Chromebook ${normalized} já está na lista.`,
+          variant: "warning",
+          duration: 2000,
+        });
+        return;
+      }
+
       const validation = await validateAndNormalizeInput(sanitizedId);
       if (validation.error) {
         toast({
