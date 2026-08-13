@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { Button } from "./ui/button";
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "./ui/pagination";
 import { cn } from "@/lib/utils";
+import { ZeloteTimeline } from "./ui/release-time-line";
 
 interface LoanHistoryProps {
   history: LoanHistoryItem[];
@@ -19,6 +20,7 @@ export function LoanHistory({ history, isNewLoan }: LoanHistoryProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [userTypeFilter, setUserTypeFilter] = useState<string>("all");
+  const [viewMode, setViewMode] = useState<'list' | 'timeline'>('list');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
@@ -122,7 +124,7 @@ export function LoanHistory({ history, isNewLoan }: LoanHistoryProps) {
     <div className="space-y-6">
       {/* Header */}
       <div className="neo-card p-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="p-3 bg-violet-500 dark:bg-violet-600 border-2 border-black dark:border-white shadow-[3px_3px_0px_0px_#000] dark:shadow-[3px_3px_0px_0px_#fff]">
               <Clock className="h-6 w-6 text-white" />
@@ -135,6 +137,39 @@ export function LoanHistory({ history, isNewLoan }: LoanHistoryProps) {
             </div>
           </div>
 
+          {/* Botão discreto de alternância de visualização */}
+          <div className="flex items-center gap-1 p-1 bg-zinc-100 dark:bg-zinc-800 border-2 border-black dark:border-white shadow-[2px_2px_0_0_#000] dark:shadow-[2px_2px_0_0_#fff]">
+            <Button
+              type="button"
+              variant={viewMode === 'list' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => setViewMode('list')}
+              className={cn(
+                "h-8 text-xs font-black uppercase tracking-wider rounded-none transition-all",
+                viewMode === 'list'
+                  ? "bg-black text-white dark:bg-white dark:text-black shadow-none"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <List className="h-3.5 w-3.5 mr-1" />
+              Lista
+            </Button>
+            <Button
+              type="button"
+              variant={viewMode === 'timeline' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => setViewMode('timeline')}
+              className={cn(
+                "h-8 text-xs font-black uppercase tracking-wider rounded-none transition-all",
+                viewMode === 'timeline'
+                  ? "bg-amber-400 text-black border-2 border-black shadow-[1px_1px_0_0_#000]"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <Clock className="h-3.5 w-3.5 mr-1" />
+              Linha do Tempo
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -201,6 +236,8 @@ export function LoanHistory({ history, isNewLoan }: LoanHistoryProps) {
             <p className="text-sm font-bold text-muted-foreground uppercase">Ajuste os filtros ou a pesquisa</p>
           </div>
         </div>
+      ) : viewMode === 'timeline' ? (
+        <ZeloteTimeline history={filteredHistory} />
       ) : (
         <div className="space-y-2">
           {/* ═══ JOURNEY HEADERS ═══ */}
