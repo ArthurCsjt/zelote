@@ -12,11 +12,10 @@ interface LoanHubProps {
   defaultTab?: 'form' | 'active';
   // NOVO: Função para navegar para a view 'return' de nível superior
   onNavigateToReturnView: (chromebookId: string) => void;
-  onAddPendingReturn: (chromebookId: string) => void;
   initialReservationData?: any;
 }
 
-export const LoanHub = ({ onBack, defaultTab = 'form', onNavigateToReturnView, onAddPendingReturn, initialReservationData }: LoanHubProps) => {
+export const LoanHub = ({ onBack, defaultTab = 'form', onNavigateToReturnView, initialReservationData }: LoanHubProps) => {
   const { getLoanHistory } = useDatabase();
   const [activeLoans, setActiveLoans] = useState<LoanHistoryItem[]>([]);
   const [loanHistory, setLoanHistory] = useState<LoanHistoryItem[]>([]);
@@ -45,8 +44,6 @@ export const LoanHub = ({ onBack, defaultTab = 'form', onNavigateToReturnView, o
         <div className="p-0">
           <LoanForm
             initialReservationData={initialReservationData}
-            onAddPendingReturn={onAddPendingReturn}
-            onNavigateToReturnView={onNavigateToReturnView}
           />
         </div>
       ),

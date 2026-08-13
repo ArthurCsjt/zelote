@@ -71,12 +71,15 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
   const {
     totalActive = 0,
     loansByUserType = {},
-    filteredLoans = [],
     topLoanContexts = [],
   } = stats || {};
 
-  // Garante que filteredLoans.length seja seguro para divisão
-  const totalLoansInPeriod = filteredLoans.length || 1;
+  // Total de empréstimos no período (soma por tipo de usuário)
+  const totalLoansInPeriod =
+    (loansByUserType.aluno || 0) +
+    (loansByUserType.professor || 0) +
+    (loansByUserType.funcionario || 0) ||
+    1;
 
   // Mapeamento de cores para o gráfico de duração
   const DURATION_COLORS: Record<string, string> = {

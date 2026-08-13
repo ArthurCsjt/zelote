@@ -73,14 +73,6 @@ const Login = () => {
     setIsLoading(false);
   };
 
-  const handleGoogleLogin = async () => {
-    setIsLoading(true);
-    await loginWithGoogle();
-    // A página redireciona para o Google; o setIsLoading abaixo é só precaução
-    setIsLoading(false);
-  };
-
-
   const handleRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);

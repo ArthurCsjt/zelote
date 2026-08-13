@@ -59,10 +59,6 @@ const Index = () => {
     }
   };
 
-  const handleAddToPendingReturn = (chromebookId: string) => {
-    setPendingReturnIds(prev => prev.includes(chromebookId) ? prev : [...prev, chromebookId]);
-  };
-
   const handleBackToMenu = () => {
     setCurrentView('menu');
     setLoanTabDefault('form');
@@ -108,7 +104,6 @@ const Index = () => {
           onBack={handleBackToMenu}
           defaultTab={loanTabDefault}
           onNavigateToReturnView={handleNavigateToReturnView}
-          onAddPendingReturn={handleAddToPendingReturn}
           initialReservationData={location.state?.reservationData}
         />;
       case 'return':

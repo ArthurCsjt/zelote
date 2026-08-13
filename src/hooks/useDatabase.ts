@@ -1333,7 +1333,7 @@ export const useDatabase = () => {
           await supabase.from('notifications' as any).insert(notifications);
         }
       } catch (notifyError) {
-        logger.warn('Falha silenciosa ao criar notificações:', notifyError);
+        logger.warn('Falha silenciosa ao criar notificações:', { error: notifyError });
       }
 
       toast({ title: "Sucesso", description: "Reserva agendada com sucesso!", variant: "success" });

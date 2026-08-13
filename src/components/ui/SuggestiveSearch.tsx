@@ -78,7 +78,7 @@ export const TypewriterEffect: React.FC<EffectRendererProps> = ({
   const [phase, setPhase] = useState<"typing" | "paused" | "deleting">(
     "typing"
   );
-  const timers = useRef<ReturnType<typeof window.setTimeout>[]>([]);
+  const timers = useRef<number[]>([]);
 
   useEffect(() => {
     setPhase("typing");
@@ -221,7 +221,7 @@ export const SlideEffect: React.FC<EffectRendererProps> = ({
   containerRef,
 }) => {
   const [phase, setPhase] = useState<"enter" | "pause" | "exit">("enter");
-  const timers = useRef<ReturnType<typeof window.setTimeout>[]>([]);
+  const timers = useRef<number[]>([]);
 
   useEffect(() => {
     setPhase("enter");
@@ -241,10 +241,9 @@ export const SlideEffect: React.FC<EffectRendererProps> = ({
     }
   }, [isActive]);
 
-  if (!isActive) return null;
-
-  if (prefersReducedMotion) {
-    useEffect(() => {
+  useEffect(() => {
+    if (!isActive) return;
+    if (prefersReducedMotion) {
       if (!allowDelete) return;
       const t = window.setTimeout(
         () => onDeleteComplete?.(),
@@ -252,7 +251,12 @@ export const SlideEffect: React.FC<EffectRendererProps> = ({
       );
       timers.current.push(t);
       return () => timers.current.forEach(clearTimeout);
-    }, [onDeleteComplete, pauseAfterTypeMs, allowDelete]);
+    }
+  }, [isActive, prefersReducedMotion, allowDelete, pauseAfterTypeMs, onDeleteComplete]);
+
+  if (!isActive) return null;
+
+  if (prefersReducedMotion) {
     return (
       <span className="text-xs text-zinc-400 select-none">{text}</span>
     );
@@ -323,7 +327,7 @@ export const FadeEffect: React.FC<EffectRendererProps> = ({
   containerRef,
 }) => {
   const [phase, setPhase] = useState<"fadeIn" | "hold" | "fadeOut">("fadeIn");
-  const timers = useRef<ReturnType<typeof window.setTimeout>[]>([]);
+  const timers = useRef<number[]>([]);
 
   useEffect(() => {
     setPhase("fadeIn");
@@ -343,10 +347,9 @@ export const FadeEffect: React.FC<EffectRendererProps> = ({
     }
   }, [isActive]);
 
-  if (!isActive) return null;
-
-  if (prefersReducedMotion) {
-    useEffect(() => {
+  useEffect(() => {
+    if (!isActive) return;
+    if (prefersReducedMotion) {
       if (!allowDelete) return;
       const t = window.setTimeout(
         () => onDeleteComplete?.(),
@@ -354,7 +357,12 @@ export const FadeEffect: React.FC<EffectRendererProps> = ({
       );
       timers.current.push(t);
       return () => timers.current.forEach(clearTimeout);
-    }, [onDeleteComplete, pauseAfterTypeMs, allowDelete]);
+    }
+  }, [isActive, prefersReducedMotion, allowDelete, pauseAfterTypeMs, onDeleteComplete]);
+
+  if (!isActive) return null;
+
+  if (prefersReducedMotion) {
     return (
       <span className="text-xs text-zinc-400 select-none">{text}</span>
     );
@@ -527,10 +535,10 @@ export const SuggestiveSearch: React.FC<SuggestiveSearchProps> = ({
     const metrics = ctx.measureText(longestSuggestion);
     const measured = Math.ceil(metrics.width) + 8;
     setMeasuredLongestTextPx(measured);
-  }, [longestSuggestion, inputRef.current]);
+  }, [longestSuggestion]);
 
   // choose effect component
-  const builtinMap: Record<BuiltinEffect, React.ComponentType<any>> = {
+  const builtinMap: Record<BuiltinEffect, React.ComponentType<EffectRendererProps>> = {
     typewriter: TypewriterEffect,
     slide: SlideEffect,
     fade: FadeEffect,
