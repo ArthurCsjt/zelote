@@ -557,7 +557,8 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                       Leading={() => <Search className="h-3.5 w-3.5 text-zinc-400/80 dark:text-zinc-500/80" strokeWidth={2.5} />}
                       className={cn(
                         "w-full border-2 border-black dark:border-zinc-700 bg-white dark:bg-zinc-900 rounded-xl h-10 transition-all shadow-[2px_2px_0_0_#000] dark:shadow-[2px_2px_0_0_rgba(255,255,255,0.05)]",
-                        isSpaceDropdownOpen && "border-[#1e3a8a]"
+                        isSpaceDropdownOpen && "border-[#1e3a8a]",
+                        currentReservations.find(res => res.classroom?.toLowerCase() === classroom.trim().toLowerCase()) && "border-red-500 ring-2 ring-red-500/30"
                       )}
                       inputClassName="pl-9 pr-14 w-full h-full bg-transparent text-xs font-bold uppercase outline-none text-black dark:text-zinc-100 placeholder:normal-case placeholder:text-zinc-400"
                     />
@@ -586,6 +587,27 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                       </button>
                     </div>
                   </div>
+
+                  {/* ALERTA EM TEMPO REAL DE SALA OCUPADA */}
+                  {(() => {
+                    const conflictingReservation = currentReservations.find(
+                      res => classroom.trim() && res.classroom?.toLowerCase() === classroom.trim().toLowerCase()
+                    );
+
+                    if (!conflictingReservation) return null;
+
+                    return (
+                      <div className="mt-2 p-2.5 bg-red-100 dark:bg-red-950/50 border-2 border-red-600 dark:border-red-500 text-red-900 dark:text-red-200 text-xs font-black uppercase shadow-[3px_3px_0_0_rgba(220,38,38,0.3)] animate-in fade-in slide-in-from-top-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400 shrink-0" />
+                          <span>SALA OCUPADA NESTE HORÁRIO!</span>
+                        </div>
+                        <p className="text-[11px] font-bold text-red-800 dark:text-red-300 leading-tight">
+                          Reservada por <span className="underline font-black">{conflictingReservation.prof_name || conflictingReservation.prof_email}</span> ({conflictingReservation.quantity_requested} Chromebooks).
+                        </p>
+                      </div>
+                    );
+                  })()}
 
                   {/* Dropdown Panel */}
                   {isSpaceDropdownOpen && (
@@ -965,7 +987,7 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
           </Button>
           <Button
             type="submit"
-            disabled={isSaving || !classroom.trim() || quantity < 0}
+            disabled={isSaving || !classroom.trim() || quantity < 0 || currentReservations.some(res => classroom.trim() && res.classroom?.toLowerCase() === classroom.trim().toLowerCase())}
             onClick={handleSubmit}
             className="w-full sm:w-auto sm:flex-[2] h-11 sm:h-12 font-[1000] uppercase tracking-wider bg-[#3B82F6] hover:bg-[#2563EB] text-white border-[2px] sm:border-[3px] border-black rounded-none shadow-[3px_3px_0_0_#000] sm:shadow-[4px_4px_0_0_#000] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none text-xs sm:text-sm disabled:opacity-50 disabled:hover:translate-x-0 disabled:hover:translate-y-0 disabled:hover:shadow-[3px_3px_0_0_#000] sm:disabled:hover:shadow-[4px_4px_0_0_#000] transition-all flex items-center justify-center gap-2"
           >
