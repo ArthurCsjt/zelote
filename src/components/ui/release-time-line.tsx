@@ -27,14 +27,16 @@ interface LoanGroup {
   loans: LoanHistoryItem[];
 }
 
-// Agrupa empréstimos pelo mesmo email dentro de janela de 5 minutos (lotes)
+// Agrupa empréstimos pelo mesmo email + mesmo segundo exato do loan_date.
+// Como o bulkCreateLoans faz um único .insert() em lote, todos os registros
+// de uma confirmação chegam com o mesmo timestamp (ao nível de segundo).
 function groupByEmailAndWindow(history: LoanHistoryItem[]): LoanGroup[] {
   const map = new Map<string, LoanGroup>();
 
   for (const loan of history) {
+    // Trunca ao segundo exato para identificar o lote de confirmação
     const d = new Date(loan.loan_date);
-    d.setSeconds(0, 0);
-    d.setMinutes(Math.floor(d.getMinutes() / 5) * 5);
+    d.setMilliseconds(0);
     const key = `${loan.student_email}__${d.toISOString()}`;
 
     if (!map.has(key)) {
