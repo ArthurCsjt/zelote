@@ -1,11 +1,8 @@
-<svg width="300" height="80" viewBox="0 0 300 80" xmlns="http://www.w3.org/2000/svg">
-  <!-- Hard Shadow (Smaller offset to allow more space for text) -->
-  <rect x="4" y="4" width="296" height="76" fill="#000000"/>
-  
-  <!-- Main Container -->
-  <rect x="0" y="0" width="296" height="76" fill="#0a84ff" stroke="#000000" stroke-width="3"/>
-  
-  <!-- Main Text - Maximized Size, Simple, Bold -->
-  <!-- Using Arial Black for maximum weight -->
-  <text x="148" y="57" font-family="Arial Black, Impact, sans-serif" font-weight="900" font-size="52" text-anchor="middle" fill="#ffffff">ZELOTE</text>
+<svg width="160" height="44" viewBox="0 0 160 44" xmlns="http://www.w3.org/2000/svg">
+  <!-- Hard shadow offset -->
+  <rect x="3" y="3" width="154" height="38" fill="#000000"/>
+  <!-- White container -->
+  <rect x="0" y="0" width="154" height="38" fill="#ffffff" stroke="#000000" stroke-width="2.5"/>
+  <!-- Bold black text -->
+  <text x="77" y="27" font-family="Arial Black, Impact, Arial, sans-serif" font-weight="900" font-size="22" text-anchor="middle" fill="#000000" letter-spacing="3">ZELOTE</text>
 </svg>

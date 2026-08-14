@@ -167,27 +167,28 @@ const Layout: React.FC<LayoutProps> = ({
                   <SheetTrigger asChild>
                     <Button
                       variant="ghost"
-                      size="icon"
-                      className="h-9 w-9 rounded-full hover:bg-white/10 text-white hover:text-white transition-colors relative"
+                      size="sm"
+                      className="h-8 px-2.5 gap-1.5 rounded-none border border-white/20 hover:border-white/50 hover:bg-white/10 text-white hover:text-white transition-all duration-200"
                       title="Abrir Linha do Tempo"
                     >
-                      <Clock className="h-5 w-5 text-amber-300" />
+                      <Clock className="h-3.5 w-3.5 text-amber-300 shrink-0" />
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-white/80 hidden sm:inline">Timeline</span>
                     </Button>
                   </SheetTrigger>
                   <SheetContent side="left" hideCloseButton className="w-full sm:w-[520px] sm:max-w-[540px] p-0 border-none bg-transparent shadow-none overflow-hidden flex flex-col h-full z-50">
-                    {/* BARRA SUPERIOR DISCRETA: ALINHAMENTO PERFEITO EM H-7 (28PX) */}
-                    <div className="p-3 sm:px-4 sm:pt-4 bg-transparent flex items-stretch gap-1.5 shrink-0 z-20 h-11">
-                      <div className="relative flex-1 flex items-center h-7">
-                        <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-black dark:text-white pointer-events-none z-10" />
+                    {/* BARRA SUPERIOR: ALINHAMENTO PERFEITO EM H-8 (32PX) COM MESMA BORDA */}
+                    <div className="p-3 sm:px-4 sm:pt-4 bg-transparent flex items-center gap-2 shrink-0 z-20 h-12">
+                      <div className="relative flex-1 flex items-center h-8">
+                        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-black dark:text-white pointer-events-none z-10" />
                         <Input
                           value={timelineSearch}
                           onChange={(e) => setTimelineSearch(e.target.value)}
                           placeholder="PESQUISAR..."
-                          className="pl-7 pr-2 h-7 py-0 text-[10px] font-bold uppercase rounded-none border-2 border-black dark:border-white bg-white dark:bg-zinc-900 text-black dark:text-white shadow-none focus-visible:ring-0 flex-1 leading-none box-border"
+                          className="pl-8 pr-2 h-8 py-0 text-xs font-bold uppercase rounded-none border-2 border-black dark:border-white bg-white dark:bg-zinc-900 text-black dark:text-white shadow-none focus-visible:ring-0 flex-1 leading-none box-border"
                         />
                       </div>
                       <Select value={timelineFilter} onValueChange={setTimelineFilter}>
-                        <SelectTrigger className="w-[90px] h-7 py-0 px-2 text-[10px] font-bold uppercase rounded-none border-2 border-black dark:border-white bg-white dark:bg-zinc-900 text-black dark:text-white shadow-none flex items-center justify-between leading-none box-border">
+                        <SelectTrigger className="w-[105px] h-8 py-0 px-2 text-xs font-bold uppercase rounded-none border-2 border-black dark:border-white bg-white dark:bg-zinc-900 text-black dark:text-white shadow-none flex items-center justify-between leading-none box-border">
                           <SelectValue placeholder="FILTRO" />
                         </SelectTrigger>
                         <SelectContent className="rounded-none border-2 border-black font-black uppercase text-xs">
@@ -197,8 +198,8 @@ const Layout: React.FC<LayoutProps> = ({
                           <SelectItem value="atrasado">ATRASADOS</SelectItem>
                         </SelectContent>
                       </Select>
-                      <SheetClose className="h-7 w-7 shrink-0 flex items-center justify-center rounded-none border-2 border-black dark:border-white bg-white dark:bg-zinc-900 text-black dark:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors shadow-none box-border">
-                        <X className="h-3 w-3 stroke-[2.5]" />
+                      <SheetClose className="h-8 w-8 shrink-0 flex items-center justify-center rounded-none border-2 border-black dark:border-white bg-white dark:bg-zinc-900 text-black dark:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors shadow-none box-border">
+                        <X className="h-3.5 w-3.5 stroke-[2.5]" />
                       </SheetClose>
                     </div>
 
