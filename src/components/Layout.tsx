@@ -177,7 +177,7 @@ const Layout: React.FC<LayoutProps> = ({
                   </SheetTrigger>
                   <SheetContent side="left" hideCloseButton className="w-full sm:w-[520px] sm:max-w-[540px] p-0 border-none bg-transparent shadow-none overflow-hidden flex flex-col h-full z-50">
                     {/* BARRA SUPERIOR: ALINHAMENTO PERFEITO EM H-8 (32PX) COM MESMA BORDA */}
-                    <div className="p-3 sm:px-4 sm:pt-4 bg-transparent flex items-center gap-2 shrink-0 z-20 h-12">
+                    <div className="p-3 pb-1 sm:px-4 sm:pt-4 sm:pb-1 bg-transparent flex items-center gap-2 shrink-0 z-20">
                       <div className="relative flex-1 flex items-center h-8">
                         <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-black dark:text-white pointer-events-none z-10" />
                         <Input
@@ -203,7 +203,7 @@ const Layout: React.FC<LayoutProps> = ({
                       </SheetClose>
                     </div>
 
-                    <div ref={scrollContainerRef} className="flex-1 overflow-x-hidden overflow-y-auto no-scrollbar p-3.5 sm:p-5">
+                    <div ref={scrollContainerRef} className="flex-1 overflow-x-hidden overflow-y-auto no-scrollbar px-3.5 pt-0 pb-5 sm:px-5 sm:pt-0 sm:pb-5">
                       {historyLoading ? (
                         <div className="flex items-center justify-center p-12">
                           <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -214,6 +214,7 @@ const Layout: React.FC<LayoutProps> = ({
                           searchTerm={timelineSearch}
                           statusFilter={timelineFilter}
                           containerRef={scrollContainerRef}
+                          onSelectEmail={(email) => setTimelineSearch(email)}
                         />
                       )}
                     </div>

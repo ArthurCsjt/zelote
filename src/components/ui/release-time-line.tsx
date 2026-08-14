@@ -16,6 +16,7 @@ export interface ZeloteTimelineProps {
   statusFilter?: string;
   containerRef?: React.RefObject<HTMLElement | null>;
   className?: string;
+  onSelectEmail?: (email: string) => void;
 }
 
 interface LoanGroup {
@@ -87,12 +88,31 @@ function groupByEmailAndWindow(history: LoanHistoryItem[]): LoanGroup[] {
   return Array.from(map.values());
 }
 
-export function ZeloteTimeline({ history, searchTerm = "", statusFilter = "all", containerRef, className }: ZeloteTimelineProps) {
+export function ZeloteTimeline({ history, searchTerm = "", statusFilter = "all", containerRef, className, onSelectEmail }: ZeloteTimelineProps) {
   const contentRef = useRef<HTMLDivElement>(null);
   const [height, setHeight] = useState(0);
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
   const [visibleLimit, setVisibleLimit] = useState(30);
   const [dateFilter, setDateFilter] = useState<string>("all"); // "all" | "today" | "yesterday" | "this_week"
+
+  // Usuários com empréstimo ativo no momento, ordenados por empréstimo mais antigo
+  const activeUsers = useMemo(() => {
+    const activeMap = new Map<string, string>(); // email -> oldest loan_date
+    for (const item of history) {
+      if (item.status === 'ativo' || item.status === 'atrasado') {
+        const email = item.student_email;
+        if (!email) continue;
+        const existing = activeMap.get(email);
+        if (!existing || item.loan_date < existing) {
+          activeMap.set(email, item.loan_date);
+        }
+      }
+    }
+    // Ordenar pelo empréstimo mais antigo primeiro
+    return Array.from(activeMap.entries())
+      .sort((a, b) => new Date(a[1]).getTime() - new Date(b[1]).getTime())
+      .map(([email]) => email);
+  }, [history]);
 
   const filteredHistory = useMemo(() => {
     let result = history;
@@ -172,8 +192,56 @@ export function ZeloteTimeline({ history, searchTerm = "", statusFilter = "all",
     return email.replace("@", "\u200B@");
   };
 
+  const handlePillClick = (email: string) => {
+    if (!onSelectEmail) return;
+    const currentTerm = searchTerm.trim().toLowerCase();
+    if (currentTerm === email.toLowerCase()) {
+      onSelectEmail("");
+    } else {
+      onSelectEmail(email);
+    }
+    if (containerRef?.current) {
+      containerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
   return (
-    <div ref={contentRef} className={cn("relative w-full max-w-full font-sans py-1 select-none overflow-hidden min-w-0", className)}>
+    <div ref={contentRef} className={cn("relative w-full max-w-full font-sans pt-0 pb-1 select-none overflow-hidden min-w-0", className)}>
+      {/* ══ ATALHO DISCRETO DE USUÁRIOS COM EMPRÉSTIMOS ATIVOS ══ */}
+      {activeUsers.length > 0 && (
+        <div className="flex items-center gap-2 px-1 mt-0 mb-3 z-30 relative min-w-0">
+          <span className="text-[10px] font-extrabold text-zinc-700 dark:text-zinc-300 uppercase shrink-0 tracking-wider">
+            ATIVOS AGORA:
+          </span>
+          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 min-w-0 flex-1 scroll-smooth">
+            {activeUsers.map((email) => {
+              const isSelected = searchTerm.trim().toLowerCase() === email.toLowerCase();
+              return (
+                <button
+                  key={email}
+                  onClick={() => handlePillClick(email)}
+                  aria-pressed={isSelected}
+                  className={cn(
+                    "inline-flex items-center gap-1.5 h-6 px-2.5 rounded-full text-[10.5px] font-normal transition-all duration-150 shrink-0 border cursor-pointer select-none",
+                    isSelected
+                      ? "bg-black text-white dark:bg-white dark:text-black border-black dark:border-white font-semibold"
+                      : "bg-[#F3F4F6] dark:bg-zinc-800/80 text-[#374151] dark:text-zinc-300 border-[#E5E7EB] dark:border-zinc-700 hover:bg-[#E5E7EB] dark:hover:bg-zinc-700"
+                  )}
+                >
+                  <span className={cn(
+                    "w-1.5 h-1.5 rounded-full shrink-0",
+                    isSelected ? "bg-amber-400 dark:bg-amber-500" : "bg-[#FFC700]"
+                  )} />
+                  <span className="truncate max-w-[130px] sm:max-w-[160px]">
+                    {email.split("@")[0]}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* ══ BARRA DE FILTROS RÁPIDOS DE DATA (PILLS LEVES) + CONTADOR ══ */}
       <div className="flex items-center justify-between gap-1.5 px-1 mb-4 flex-wrap z-30 relative">
         <div className="flex items-center gap-1.5 flex-wrap">
