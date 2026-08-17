@@ -3,8 +3,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { AuthContext, AuthContextType } from "@/contexts/AuthContext";
 import type { User } from "@supabase/supabase-js";
 import logger from '@/utils/logger';
-import { isInstitutionalEmail } from '@/utils/emailValidation';
+import { isInstitutionalEmail, isStudentEmail } from '@/utils/emailValidation';
 import { validatePassword } from '@/utils/passwordValidation';
+import { syncUserToInventory } from '@/utils/userSync';
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -25,21 +26,48 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        if (isStudentEmail(session.user.email || '')) {
+          supabase.auth.signOut();
+          setUser(null);
+          setLoading(false);
+          return;
+        }
+        syncUserToInventory(session.user);
+      }
       setUser(session?.user ?? null);
       setLoading(false);
+
       const { data: { subscription } } = supabase.auth.onAuthStateChange(
         async (_event, session) => {
-          // Validação de domínio para logins OAuth (Google)
           if (_event === 'SIGNED_IN' && session?.user) {
-            const provider = session.user.app_metadata?.provider;
-            if (provider === 'google' && !isInstitutionalEmail(session.user.email || '')) {
+            const userEmail = session.user.email || '';
+
+            // Bloqueia contas de Alunos (@sj.g12.br) de fazer login no app Zelote
+            if (isStudentEmail(userEmail)) {
               await supabase.auth.signOut();
               localStorage.setItem(
                 'zelote_oauth_error',
-                'Acesso restrito. Use um email institucional (@colegiosaojudas.com.br, @sj.pro.br ou @sj.g12.br).'
+                'Contas de alunos (@sj.g12.br) não têm permissão de login no sistema. O cadastro de alunos é gerenciado exclusivamente no inventário.'
               );
+              setUser(null);
               return;
             }
+
+            // Validação de domínio para logins OAuth (Google)
+            const provider = session.user.app_metadata?.provider;
+            if (provider === 'google' && !isInstitutionalEmail(userEmail)) {
+              await supabase.auth.signOut();
+              localStorage.setItem(
+                'zelote_oauth_error',
+                'Acesso restrito. Use um email institucional (@colegiosaojudas.com.br ou @sj.pro.br).'
+              );
+              setUser(null);
+              return;
+            }
+
+            // Sincroniza automaticamente o usuário (Professor/Funcionário) com o inventário
+            syncUserToInventory(session.user);
           }
           setUser(session?.user ?? null);
         }
@@ -51,7 +79,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const login = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (isStudentEmail(email)) {
+      return {
+        success: false,
+        error: "Contas de alunos (@sj.g12.br) não têm permissão de login no sistema. O cadastro de alunos é gerenciado exclusivamente no inventário."
+      };
+    }
+
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (!error && data?.user) {
+      syncUserToInventory(data.user);
+    }
     return { success: !error, error: error?.message || null };
   };
 
@@ -64,13 +102,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const register = async (email: string, password: string, firstName: string, lastName: string) => {
-    if (!verifyEmail(email)) {
-      return { success: false, error: "O registro é permitido apenas com domínios institucionais permitidos." };
+    if (isStudentEmail(email)) {
+      return {
+        success: false,
+        error: "Contas de alunos (@sj.g12.br) não têm permissão de cadastro no sistema. Alunos são cadastrados exclusivamente no inventário."
+      };
     }
+
+    if (!verifyEmail(email)) {
+      return { success: false, error: "O registro é permitido apenas com domínios institucionais permitidos (@sj.pro.br ou @colegiosaojudas.com.br)." };
+    }
+
     if (!validatePassword(password).isValid) {
       return { success: false, error: "A senha não atende aos requisitos mínimos de segurança (8+ caracteres, maiúsculas, números e símbolos)." };
     }
-    const { error } = await supabase.auth.signUp({
+
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -80,6 +127,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
       }
     });
+
+    if (!error && data?.user) {
+      syncUserToInventory(data.user);
+    }
+
     return { success: !error, error: error?.message || null };
   };
 

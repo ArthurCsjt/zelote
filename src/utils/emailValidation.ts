@@ -112,3 +112,13 @@ export function isInstitutionalEmail(email: string): boolean {
   const normalizedEmail = email.trim().toLowerCase();
   return INSTITUTIONAL_DOMAINS.some(d => normalizedEmail.endsWith(d.toLowerCase()));
 }
+
+/**
+ * Valida se o email pertence ao domínio de ALUNO (@sj.g12.br)
+ */
+export function isStudentEmail(email: string): boolean {
+  if (!email || typeof email !== 'string') return false;
+  const normalizedEmail = email.trim().toLowerCase();
+  return EMAIL_DOMAINS.ALUNO.some(d => normalizedEmail.endsWith(d.toLowerCase()));
+}
+
