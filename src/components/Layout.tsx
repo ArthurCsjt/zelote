@@ -8,7 +8,6 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ActivityFeed } from './ActivityFeed';
 import { NotificationFeed } from './NotificationFeed';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useDatabase } from '@/hooks/useDatabase';
@@ -161,21 +160,30 @@ const Layout: React.FC<LayoutProps> = ({
 
             <div className="flex items-center space-x-2">
 
-              {/* Botão de Linha do Tempo (Discreto no Canto Direito) */}
+              {/* Botão de Linha do Tempo (Discreto no Canto Direito - Estilo Pilula de Perfil) */}
               {canSeeHistory && (
                 <Sheet open={timelineOpen} onOpenChange={setTimelineOpen}>
                   <SheetTrigger asChild>
                     <Button
                       variant="ghost"
-                      size="sm"
-                      className="h-8 px-2.5 gap-1.5 rounded-none border border-white/20 hover:border-white/50 hover:bg-white/10 text-white hover:text-white transition-all duration-200"
+                      className={cn(
+                        "h-9 pl-1 pr-2 sm:pr-3 rounded-full border border-white/20 bg-white/10 backdrop-blur-md hover:bg-white/20 flex items-center gap-2 transition-all duration-300",
+                        "text-white hover:text-white hover:border-white/40"
+                      )}
                       title="Abrir Linha do Tempo"
                     >
-                      <Clock className="h-3.5 w-3.5 text-amber-300 shrink-0" />
-                      <span className="text-[10px] font-bold uppercase tracking-widest text-white/80 hidden sm:inline">Timeline</span>
+                      <div className="h-7 w-7 rounded-full bg-amber-400 flex items-center justify-center text-black font-bold ring-2 ring-white/20">
+                        <Clock className="h-3.5 w-3.5 stroke-[2.5]" />
+                      </div>
+                      <span className="text-sm font-medium hidden sm:inline text-white/90">Timeline</span>
                     </Button>
                   </SheetTrigger>
-                  <SheetContent side="left" hideCloseButton className="w-full sm:w-[520px] sm:max-w-[540px] p-0 border-none bg-transparent shadow-none overflow-hidden flex flex-col h-full z-50">
+                  <SheetContent
+                    side="left"
+                    hideCloseButton
+                    onOpenAutoFocus={(e) => e.preventDefault()}
+                    className="w-full sm:w-[520px] sm:max-w-[540px] p-0 border-none bg-transparent shadow-none overflow-hidden flex flex-col h-full z-50"
+                  >
                     {/* BARRA SUPERIOR: ALINHAMENTO PERFEITO EM H-8 (32PX) COM MESMA BORDA */}
                     <div className="p-3 pb-1 sm:px-4 sm:pt-4 sm:pb-1 bg-transparent flex items-center gap-2 shrink-0 z-20">
                       <div className="relative flex-1 flex items-center h-8">
@@ -239,27 +247,7 @@ const Layout: React.FC<LayoutProps> = ({
                     className="p-0 w-80 sm:w-96 bg-card/95 backdrop-blur-xl border-border shadow-xl rounded-xl overflow-hidden"
                     align="end"
                   >
-                    <Tabs defaultValue="notifications" className="w-full">
-                      <TabsList className="w-full rounded-none bg-muted/50 p-0 h-10 border-b-2 border-black/10 dark:border-white/10">
-                        <TabsTrigger value="notifications" className="flex-1 rounded-none data-[state=active]:bg-blue-500 data-[state=active]:text-white uppercase font-black text-[10px] tracking-widest gap-2">
-                          <Bell className="h-3 w-3" />
-                          Notificações
-                          {unreadCount > 0 && (
-                            <span className="bg-white text-blue-600 px-1 rounded-sm text-[8px]">{unreadCount}</span>
-                          )}
-                        </TabsTrigger>
-                        <TabsTrigger value="activity" className="flex-1 rounded-none data-[state=active]:bg-yellow-400 data-[state=active]:text-black uppercase font-black text-[10px] tracking-widest gap-2">
-                          <Activity className="h-3 w-3" />
-                          Atividade
-                        </TabsTrigger>
-                      </TabsList>
-                      <TabsContent value="notifications" className="m-0 border-none outline-none">
-                        <NotificationFeed />
-                      </TabsContent>
-                      <TabsContent value="activity" className="m-0 border-none outline-none">
-                        <ActivityFeed />
-                      </TabsContent>
-                    </Tabs>
+                    <NotificationFeed />
                   </PopoverContent>
                 </Popover>
               )}
