@@ -161,7 +161,7 @@ export function UserInventory() {
       (user.turma && user.turma.toLowerCase().includes(searchTerm.toLowerCase()));
 
     const matchesType = typeFilter === 'all' || user.tipo === typeFilter;
-    const matchesClass = classFilter === 'all' || user.turma === classFilter;
+    const matchesClass = classFilter === 'all' || user.tipo !== 'Aluno' || user.turma === classFilter;
 
     return matchesSearch && matchesType && matchesClass;
   });
@@ -293,7 +293,7 @@ export function UserInventory() {
             <span className="text-xs font-bold uppercase text-gray-500">Tipo</span>
             <div className="relative">
               <Filter className="absolute left-3 top-3 h-5 w-5 text-black dark:text-white pointer-events-none z-10" />
-              <Select value={typeFilter} onValueChange={setTypeFilter}>
+              <Select value={typeFilter} onValueChange={(val) => { setTypeFilter(val); if (val !== 'Aluno') setClassFilter('all'); }}>
                 <SelectTrigger className="w-full pl-10 border-2 border-black dark:border-white rounded-none h-12 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] bg-white dark:bg-zinc-950 font-bold uppercase text-xs focus:ring-0">
                   <SelectValue placeholder="TIPO DE USUÁRIO" />
                 </SelectTrigger>
