@@ -1,11 +1,12 @@
-import React, { useState, useMemo, useRef } from 'react';
-import { Check, ChevronsUpDown, User, GraduationCap, Briefcase, Search, Loader2, CheckCircle, X } from 'lucide-react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
+import { Check, ChevronsUpDown, User, GraduationCap, Briefcase, Search, Loader2, CheckCircle, X, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useUserSearch, UserSearchResult } from '@/hooks/useUserSearch';
+import { useDatabase } from '@/hooks/useDatabase';
 import { Badge } from './ui/badge';
 import { GlassCard } from './ui/GlassCard'; // Importando GlassCard
 
@@ -14,14 +15,78 @@ interface UserAutocompleteProps {
   onSelect: (user: UserSearchResult) => void;
   onClear: () => void;
   disabled: boolean;
+  filterActiveOnly?: boolean;
 }
 
-const UserAutocomplete: React.FC<UserAutocompleteProps> = ({ selectedUser, onSelect, onClear, disabled }) => {
+const UserAutocomplete: React.FC<UserAutocompleteProps> = ({ selectedUser, onSelect, onClear, disabled, filterActiveOnly = false }) => {
   const { users, loading } = useUserSearch();
+  const { getLoanHistory } = useDatabase();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedType, setSelectedType] = useState<'aluno' | 'professor' | 'funcionario' | null>(null);
   const [isFocused, setIsFocused] = useState(false);
+  const [recentUsers, setRecentUsers] = useState<UserSearchResult[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Mouse drag scroll state for recent pills
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [scrollLeft, setScrollLeft] = useState(0);
+  const [hasDragged, setHasDragged] = useState(false);
+
+  const handleDragStart = (e: React.MouseEvent) => {
+    if (!scrollContainerRef.current) return;
+    setIsDragging(true);
+    setHasDragged(false);
+    setStartX(e.pageX - scrollContainerRef.current.offsetLeft);
+    setScrollLeft(scrollContainerRef.current.scrollLeft);
+  };
+
+  const handleDragEnd = () => {
+    setIsDragging(false);
+  };
+
+  const handleDragMove = (e: React.MouseEvent) => {
+    if (!isDragging || !scrollContainerRef.current) return;
+    const x = e.pageX - scrollContainerRef.current.offsetLeft;
+    const walk = (x - startX) * 1.5;
+    if (Math.abs(walk) > 5) {
+      setHasDragged(true);
+    }
+    scrollContainerRef.current.scrollLeft = scrollLeft - walk;
+  };
+
+  // Efeito para carregar solicitantes recentes/ativos de forma assíncrona
+  useEffect(() => {
+    let isMounted = true;
+    getLoanHistory().then((history) => {
+      if (!isMounted || !history) return;
+
+      const filteredHistory = filterActiveOnly
+        ? history.filter(h => h.status === 'ativo' || h.status === 'atrasado')
+        : history;
+
+      const map = new Map<string, UserSearchResult>();
+      for (const item of filteredHistory) {
+        const key = item.student_email || item.student_ra || item.student_name;
+        if (!key || map.has(key)) continue;
+
+        map.set(key, {
+          id: key,
+          name: item.student_name,
+          email: item.student_email,
+          ra: item.student_ra || undefined,
+          type: (item.user_type as any) || 'aluno',
+          searchable: `${item.student_name} ${item.student_email} ${item.student_ra || ''}`.toLowerCase(),
+        });
+        if (map.size >= 6) break;
+      }
+
+      setRecentUsers(Array.from(map.values()));
+    }).catch((err) => console.error("Erro ao carregar solicitantes recentes:", err));
+
+    return () => { isMounted = false; };
+  }, [getLoanHistory, filterActiveOnly]);
 
   const filteredUsers = useMemo(() => {
     if (!isFocused) return [];
@@ -190,8 +255,51 @@ const UserAutocomplete: React.FC<UserAutocompleteProps> = ({ selectedUser, onSel
           );
         })}
       </div>
-      
-      {/* Lista de Sugestões (aparece abaixo do input) */}
+
+      {/* Solicitantes Recentes / Ativos (Pills Rápidos de 1-Clique com Arrasto por Mouse) */}
+      {recentUsers.length > 0 && !selectedUser && (
+        <div className="mt-2.5 space-y-1">
+          <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-muted-foreground">
+            <Clock className="h-3 w-3 text-amber-500 shrink-0" />
+            <span>{filterActiveOnly ? "Ativos Com Equipamento:" : "Solicitantes Recentes:"}</span>
+          </div>
+          <div
+            ref={scrollContainerRef}
+            onMouseDown={handleDragStart}
+            onMouseLeave={handleDragEnd}
+            onMouseUp={handleDragEnd}
+            onMouseMove={handleDragMove}
+            className={cn(
+              "flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1 select-none",
+              isDragging ? "cursor-grabbing" : "cursor-grab"
+            )}
+          >
+            {recentUsers.map((rUser) => (
+              <button
+                key={rUser.email || rUser.name}
+                type="button"
+                onClick={() => {
+                  if (!hasDragged) {
+                    handleSelect(rUser);
+                  }
+                }}
+                className={cn(
+                  "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10.5px] font-bold uppercase transition-all shrink-0 cursor-pointer border transition-all duration-150",
+                  "hover:scale-[1.02] active:scale-[0.98]",
+                  filterActiveOnly
+                    ? "bg-amber-500/10 text-amber-900 dark:text-amber-300 border-amber-500/40 hover:bg-amber-500/20"
+                    : "bg-blue-500/10 text-blue-900 dark:text-blue-300 border-blue-500/40 hover:bg-blue-500/20"
+                )}
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0 animate-pulse" />
+                <span className="truncate max-w-[130px] sm:max-w-[170px]">
+                  {rUser.name || rUser.email.split('@')[0]}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
       {isFocused && (searchTerm || selectedType) && filteredUsers.length > 0 && (
         <ScrollArea 
           onMouseDown={(e) => e.preventDefault()}

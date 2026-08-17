@@ -414,6 +414,7 @@ export function ReturnForm({ onReturnSuccess, initialChromebookId, initialDevice
                   onSelect={handleUserSelect}
                   onClear={handleUserClear}
                   disabled={dbLoading}
+                  filterActiveOnly={true}
                 />
               </div>
 
