@@ -35,14 +35,14 @@ export function InventoryStats({ chromebooks }: InventoryStatsProps) {
   }) => (
     <div 
       className={cn(
-        "neo-stat-card animate-fadeIn neo-pattern-dots relative overflow-visible"
+        "neo-stat-card animate-fadeIn neo-pattern-dots relative overflow-hidden"
       )} 
       style={{ animationDelay: `${delay}ms` }}
     >
-      {/* Sticker decorativo */}
+      {/* Sticker decorativo — fica dentro do card no canto superior direito */}
       {sticker && (
         <div className={cn(
-          "neo-sticker neo-sticker-top-right",
+          "absolute top-2 right-2 px-2 py-0.5 font-black uppercase text-[10px] text-black border-2 border-black z-10",
           sticker.color
         )}>
           {sticker.text}
@@ -50,10 +50,13 @@ export function InventoryStats({ chromebooks }: InventoryStatsProps) {
       )}
       
       <div className="flex flex-row items-center justify-between space-y-0 pb-3">
-        <h3 className="text-xs font-black uppercase tracking-tight text-muted-foreground">
+        <h3 className="text-xs font-black uppercase tracking-tight text-muted-foreground pr-2 leading-tight">
           {title}
         </h3>
-        <div className={cn("neo-stat-icon-box", iconBg)}>
+        <div className={cn(
+          "shrink-0 p-2 border-2 border-black dark:border-white",
+          iconBg
+        )}>
           <Icon className="h-5 w-5 text-black dark:text-white" strokeWidth={2.5} />
         </div>
       </div>
