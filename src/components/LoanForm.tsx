@@ -322,7 +322,6 @@ export function LoanForm({ onBack, initialReservationData }: LoanFormProps) {
         );
     };
 
-
     // === RENDERIZAÇÃO DA INTERFACE (UI) ===
     return (
         <div className="animate-fade-in">
@@ -330,21 +329,21 @@ export function LoanForm({ onBack, initialReservationData }: LoanFormProps) {
             {/* NOVO: Cabeçalho de Passos */}
 
 
-            <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
+            <form onSubmit={handleSubmit} className="space-y-6 relative z-10 w-full max-w-full overflow-hidden min-w-0">
 
-                <div className="grid md:grid-cols-2 gap-6">
+                <div className="grid md:grid-cols-2 gap-6 w-full min-w-0">
 
                     {/* ═══ COLUNA ESQUERDA (EQUIPAMENTO) ═══ */}
-                    <div className="h-full flex flex-col">
+                    <div className="h-full flex flex-col w-full min-w-0">
 
                         {/* ═══ SEÇÃO 1: EQUIPAMENTO ═══ */}
                         <div className={cn(
-                            "neo-card border-l-[12px] border-4 transition-all duration-300 h-full flex flex-col",
+                            "neo-card border-l-6 md:border-l-[12px] border-2 md:border-4 transition-all duration-300 h-full flex flex-col w-full max-w-full overflow-hidden min-w-0",
                             isDevicesAdded 
-                                ? "border-l-emerald-500 border-emerald-300 dark:border-emerald-700 bg-emerald-50/50 dark:bg-emerald-950/20 shadow-[6px_6px_0px_0px_rgba(16,185,129,0.3)]"
+                                ? "border-l-emerald-500 border-emerald-300 dark:border-emerald-700 bg-emerald-50/50 dark:bg-emerald-950/20 shadow-[3px_3px_0px_0px_rgba(16,185,129,0.3)] md:shadow-[6px_6px_0px_0px_rgba(16,185,129,0.3)]"
                                 : currentStep === 1 
-                                    ? "border-l-amber-500 border-amber-400 dark:border-amber-600 bg-amber-50 dark:bg-amber-950/20 shadow-[6px_6px_0px_0px_rgba(245,158,11,0.3)] ring-4 ring-amber-400 dark:ring-amber-500 ring-offset-2 animate-gentle-pulse"
-                                    : "border-l-red-500 border-red-300 dark:border-red-800 bg-red-50/30 dark:bg-red-950/10 shadow-[6px_6px_0px_0px_rgba(239,68,68,0.2)]"
+                                    ? "border-l-amber-500 border-amber-400 dark:border-amber-600 bg-amber-50 dark:bg-amber-950/20 shadow-[3px_3px_0px_0px_rgba(245,158,11,0.3)] md:shadow-[6px_6px_0px_0px_rgba(245,158,11,0.3)] ring-4 ring-amber-400 dark:ring-amber-500 ring-offset-2 animate-gentle-pulse"
+                                    : "border-l-red-500 border-red-300 dark:border-red-800 bg-red-50/30 dark:bg-red-950/10 shadow-[3px_3px_0px_0px_rgba(239,68,68,0.2)] md:shadow-[6px_6px_0px_0px_rgba(239,68,68,0.2)]"
                         )}>
                             <CardHeader className={cn(
                                 "p-3 pb-2 border-b-3 transition-colors",
@@ -394,15 +393,15 @@ export function LoanForm({ onBack, initialReservationData }: LoanFormProps) {
                     </div>
 
                     {/* ═══ COLUNA DIREITA (SOLICITANTE, FINALIDADE, PRAZO) ═══ */}
-                    <div className="space-y-6">
+                    <div className="space-y-6 w-full min-w-0">
                         {/* ═══ SEÇÃO 2: SOLICITANTE ═══ */}
                         <div className={cn(
-                            "neo-card border-l-[12px] border-4 transition-all duration-300",
+                            "neo-card border-l-6 md:border-l-[12px] border-2 md:border-4 transition-all duration-300 w-full max-w-full overflow-hidden min-w-0",
                             isUserSelected
-                                ? "border-l-emerald-500 border-emerald-300 dark:border-emerald-700 bg-emerald-50/50 dark:bg-emerald-950/20 shadow-[6px_6px_0px_0px_rgba(16,185,129,0.3)]"
+                                ? "border-l-emerald-500 border-emerald-300 dark:border-emerald-700 bg-emerald-50/50 dark:bg-emerald-950/20 shadow-[3px_3px_0px_0px_rgba(16,185,129,0.3)] md:shadow-[6px_6px_0px_0px_rgba(16,185,129,0.3)]"
                                 : currentStep === 2 && isDevicesAdded
-                                    ? "border-l-amber-500 border-amber-400 dark:border-amber-600 bg-amber-50 dark:bg-amber-950/20 shadow-[6px_6px_0px_0px_rgba(245,158,11,0.3)] ring-4 ring-amber-400 dark:ring-amber-500 ring-offset-2 animate-gentle-pulse"
-                                    : "border-l-red-500 border-red-300 dark:border-red-800 bg-red-50/30 dark:bg-red-950/10 shadow-[6px_6px_0px_0px_rgba(239,68,68,0.2)]"
+                                    ? "border-l-amber-500 border-amber-400 dark:border-amber-600 bg-amber-50 dark:bg-amber-950/20 shadow-[3px_3px_0px_0px_rgba(245,158,11,0.3)] md:shadow-[6px_6px_0px_0px_rgba(245,158,11,0.3)] ring-4 ring-amber-400 dark:ring-amber-500 ring-offset-2 animate-gentle-pulse"
+                                    : "border-l-red-500 border-red-300 dark:border-red-800 bg-red-50/30 dark:bg-red-950/10 shadow-[3px_3px_0px_0px_rgba(239,68,68,0.2)] md:shadow-[6px_6px_0px_0px_rgba(239,68,68,0.2)]"
                         )}>
                             <CardHeader className={cn(
                                 "p-3 pb-2 border-b-3 transition-colors",
@@ -443,12 +442,12 @@ export function LoanForm({ onBack, initialReservationData }: LoanFormProps) {
                         </div>
                         {/* ═══ SEÇÃO 3: FINALIDADE ═══ */}
                         <div className={cn(
-                            "neo-card border-l-[12px] border-4 transition-all duration-300",
+                            "neo-card border-l-6 md:border-l-[12px] border-2 md:border-4 transition-all duration-300 w-full max-w-full overflow-hidden min-w-0",
                             isPurposeDefined
-                                ? "border-l-emerald-500 border-emerald-300 dark:border-emerald-700 bg-emerald-50/50 dark:bg-emerald-950/20 shadow-[6px_6px_0px_0px_rgba(16,185,129,0.3)]"
+                                ? "border-l-emerald-500 border-emerald-300 dark:border-emerald-700 bg-emerald-50/50 dark:bg-emerald-950/20 shadow-[3px_3px_0px_0px_rgba(16,185,129,0.3)] md:shadow-[6px_6px_0px_0px_rgba(16,185,129,0.3)]"
                                 : formData.purpose.trim() && !isPurposeConfirmed
-                                    ? "border-l-red-500 border-red-400 bg-red-50 dark:bg-red-950/20 shadow-[6px_6px_0px_0px_rgba(239,68,68,0.3)]"
-                                    : "border-l-amber-500 border-amber-400 dark:border-amber-600 bg-amber-50 dark:bg-amber-950/20 shadow-[6px_6px_0px_0px_rgba(245,158,11,0.3)]"
+                                    ? "border-l-red-500 border-red-400 bg-red-50 dark:bg-red-950/20 shadow-[3px_3px_0px_0px_rgba(239,68,68,0.3)] md:shadow-[6px_6px_0px_0px_rgba(239,68,68,0.3)]"
+                                    : "border-l-amber-500 border-amber-400 dark:border-amber-600 bg-amber-50 dark:bg-amber-950/20 shadow-[3px_3px_0px_0px_rgba(245,158,11,0.3)] md:shadow-[6px_6px_0px_0px_rgba(245,158,11,0.3)]"
                         )}>
                             <CardHeader className={cn(
                                 "p-3 pb-2 border-b-3 transition-colors",
@@ -499,10 +498,10 @@ export function LoanForm({ onBack, initialReservationData }: LoanFormProps) {
 
                         {/* ═══ SEÇÃO 4: PRAZO E CONFIRMAÇÃO ═══ */}
                         <div className={cn(
-                            "neo-card border-l-[12px] border-4 transition-all duration-300",
+                            "neo-card border-l-6 md:border-l-[12px] border-2 md:border-4 transition-all duration-300 w-full max-w-full overflow-hidden min-w-0",
                             hasReturnDeadline && formData.expectedReturnDate
-                                ? "border-l-emerald-500 border-emerald-300 dark:border-emerald-700 bg-emerald-50/50 dark:bg-emerald-950/20 shadow-[6px_6px_0px_0px_rgba(16,185,129,0.3)]"
-                                : "border-l-emerald-500/60 border-emerald-200 dark:border-emerald-900 bg-green-50/20 dark:bg-green-950/10 shadow-[6px_6px_0px_0px_rgba(34,197,94,0.15)]"
+                                ? "border-l-emerald-500 border-emerald-300 dark:border-emerald-700 bg-emerald-50/50 dark:bg-emerald-950/20 shadow-[3px_3px_0px_0px_rgba(16,185,129,0.3)] md:shadow-[6px_6px_0px_0px_rgba(16,185,129,0.3)]"
+                                : "border-l-emerald-500/60 border-emerald-200 dark:border-emerald-900 bg-green-50/20 dark:bg-green-950/10 shadow-[3px_3px_0px_0px_rgba(34,197,94,0.15)] md:shadow-[6px_6px_0px_0px_rgba(34,197,94,0.15)]"
                         )}>
                             <CardHeader className="p-3 pb-2 border-b-3 border-emerald-500/30 bg-gradient-to-r from-emerald-500 to-teal-600">
                                 <CardTitle className="text-base font-black uppercase tracking-tight flex items-center gap-2 text-white [text-shadow:1px_1px_rgba(0,0,0,0.5)]">
@@ -653,7 +652,7 @@ export function LoanForm({ onBack, initialReservationData }: LoanFormProps) {
                         "w-full h-16 text-xl font-black uppercase tracking-wide rounded-full",
                         "bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700",
                         "text-white border-4 border-black dark:border-white",
-                        "shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.9)]",
+                        "shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] md:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.9)] md:dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.9)]",
                         "hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px]",
                         "active:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-x-[6px] active:translate-y-[6px]",
                         "transition-all duration-150",
