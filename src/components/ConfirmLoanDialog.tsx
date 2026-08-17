@@ -119,9 +119,10 @@ export function ConfirmLoanDialog({
                 <DialogFooter className="neo-dialog-footer">
                     <Button
                         variant="outline"
+                        type="button"
                         onClick={() => onOpenChange(false)}
                         disabled={loading}
-                        className="h-12 neo-btn-lg bg-white dark:bg-zinc-800 text-black dark:text-white flex-1"
+                        className="h-12 border-3 border-black dark:border-white bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-black dark:text-white font-black uppercase text-sm shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.9)] active:translate-x-[2px] active:translate-y-[2px] transition-all flex-1"
                     >
                         CANCELAR
                     </Button>

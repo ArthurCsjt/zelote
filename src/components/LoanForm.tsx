@@ -645,26 +645,27 @@ export function LoanForm({ onBack, initialReservationData }: LoanFormProps) {
                 </div>
 
                 {/* ═══ BOTÃO DE SUBMISSÃO ═══ */}
-                <Button
-                    type="submit"
-                    size="lg"
-                    className={cn(
-                        "w-full h-16 text-xl font-black uppercase tracking-wide rounded-full",
-                        "bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700",
-                        "text-white border-4 border-black dark:border-white",
-                        "shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] md:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.9)] md:dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.9)]",
-                        "hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px]",
-                        "active:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-x-[6px] active:translate-y-[6px]",
-                        "transition-all duration-150",
-                        "disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:translate-x-[8px] disabled:translate-y-[8px]"
-                    )}
-                    disabled={
-                        loading ||
-                        !isDevicesAdded ||
-                        !isUserSelected ||
-                        !isPurposeDefined
-                    }
-                >
+                <div className="pt-2 pb-4">
+                    <Button
+                        type="submit"
+                        size="lg"
+                        className={cn(
+                            "w-full h-16 text-lg sm:text-xl font-black uppercase tracking-wide rounded-2xl",
+                            "bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700",
+                            "text-white border-4 border-black dark:border-white",
+                            "shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] md:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.9)] md:dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.9)]",
+                            "hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px]",
+                            "active:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-x-[4px] active:translate-y-[4px]",
+                            "transition-all duration-150",
+                            "disabled:opacity-60 disabled:cursor-not-allowed disabled:shadow-none disabled:transform-none disabled:bg-gray-300 dark:disabled:bg-zinc-800 disabled:text-gray-600 dark:disabled:text-zinc-400"
+                        )}
+                        disabled={
+                            loading ||
+                            !isDevicesAdded ||
+                            !isUserSelected ||
+                            !isPurposeDefined
+                        }
+                    >
                     {loading ? (
                         <>
                             <Loader2 className="mr-2 h-6 w-6 animate-spin" />
@@ -692,6 +693,7 @@ export function LoanForm({ onBack, initialReservationData }: LoanFormProps) {
                         </>
                     )}
                 </Button>
+                </div>
             </form>
 
             {/* Modal de Confirmação */}
