@@ -69,7 +69,11 @@ function groupByEmailAndWindow(history: LoanHistoryItem[]): LoanGroup[] {
     group.loans.push(loan);
 
     if (loan.chromebook_id) {
-      group.chromebooks.push({ id: loan.chromebook_id, model: loan.chromebook_model ?? undefined });
+      group.chromebooks.push({
+        id: loan.chromebook_id,
+        model: loan.chromebook_model ?? undefined,
+        returned: Boolean(loan.return_date) || loan.status === 'devolvido',
+      });
     }
 
     const priority: Record<string, number> = { atrasado: 3, ativo: 2, devolvido: 1 };
