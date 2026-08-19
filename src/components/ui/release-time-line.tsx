@@ -410,8 +410,15 @@ export function ZeloteTimeline({ history, searchTerm = "", statusFilter = "all",
                           <Badge
                             key={`${cb.id}-${ci}`}
                             variant="outline"
-                            className="bg-white dark:bg-zinc-900 border-2 border-black dark:border-white text-black dark:text-white font-mono font-bold text-xs px-2.5 py-0.5 rounded-sm shadow-none"
+                            className={cn(
+                              "border-2 font-mono font-bold text-xs px-2.5 py-0.5 rounded-sm shadow-none inline-flex items-center gap-1",
+                              cb.returned
+                                ? "bg-zinc-100 dark:bg-zinc-800 border-zinc-400 dark:border-zinc-600 text-zinc-500 dark:text-zinc-400 line-through decoration-2"
+                                : "bg-white dark:bg-zinc-900 border-black dark:border-white text-black dark:text-white"
+                            )}
+                            title={cb.returned ? "Devolvido" : "Pendente"}
                           >
+                            {cb.returned && <X className="h-3 w-3 shrink-0 text-red-600 no-underline" strokeWidth={3} />}
                             {cb.id}
                           </Badge>
                         ))}
