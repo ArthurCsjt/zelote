@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState, useMemo } from "react";
 import { format, isToday, isYesterday, isThisWeek } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Monitor, User, UserCheck, Clock, CheckCircle2, AlertTriangle, RotateCcw, BookOpen, Layers, ChevronDown } from "lucide-react";
+import { Monitor, User, UserCheck, Clock, CheckCircle2, AlertTriangle, RotateCcw, BookOpen, Layers, ChevronDown, X } from "lucide-react";
 import { useScroll, useTransform, motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
