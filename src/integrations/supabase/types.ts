@@ -189,6 +189,27 @@ export type Database = {
           },
         ]
       }
+      email_rules: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          role: Database["public"]["Enums"]["user_role"]
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          role: Database["public"]["Enums"]["user_role"]
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          role?: Database["public"]["Enums"]["user_role"]
+        }
+        Relationships: []
+      }
       funcionarios: {
         Row: {
           created_at: string
@@ -954,7 +975,7 @@ export type Database = {
         | "fora_uso"
         | "fixo"
       loan_type: "individual" | "lote"
-      user_role: "super_admin" | "admin" | "user" | "professor"
+      user_role: "super_admin" | "admin" | "user" | "professor" | "manutencao"
       user_type: "aluno" | "professor" | "funcionario"
     }
     CompositeTypes: {
@@ -1091,7 +1112,7 @@ export const Constants = {
         "fixo",
       ],
       loan_type: ["individual", "lote"],
-      user_role: ["super_admin", "admin", "user", "professor"],
+      user_role: ["super_admin", "admin", "user", "professor", "manutencao"],
       user_type: ["aluno", "professor", "funcionario"],
     },
   },
