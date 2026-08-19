@@ -411,15 +411,19 @@ export function ZeloteTimeline({ history, searchTerm = "", statusFilter = "all",
                             key={`${cb.id}-${ci}`}
                             variant="outline"
                             className={cn(
-                              "border-2 font-mono font-bold text-xs px-2.5 py-0.5 rounded-sm shadow-none inline-flex items-center gap-1",
+                              "border-2 font-mono font-bold text-xs px-2.5 py-0.5 rounded-sm shadow-none inline-flex items-center gap-1.5",
                               cb.returned
-                                ? "bg-zinc-100 dark:bg-zinc-800 border-zinc-400 dark:border-zinc-600 text-zinc-500 dark:text-zinc-400 line-through decoration-2"
+                                ? "bg-zinc-100 dark:bg-zinc-800 border-zinc-300 dark:border-zinc-600 text-zinc-400 dark:text-zinc-500"
                                 : "bg-white dark:bg-zinc-900 border-black dark:border-white text-black dark:text-white"
                             )}
                             title={cb.returned ? "Devolvido" : "Pendente"}
                           >
-                            {cb.returned && <X className="h-3 w-3 shrink-0 text-red-600 no-underline" strokeWidth={3} />}
-                            {cb.id}
+                            {cb.returned && (
+                              <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-red-100 dark:bg-red-900/40 border border-red-400 dark:border-red-600 shrink-0">
+                                <X className="h-2.5 w-2.5 text-red-600 dark:text-red-400" strokeWidth={3} />
+                              </span>
+                            )}
+                            <span className={cn(cb.returned && "line-through decoration-red-400/60")}>{cb.id}</span>
                           </Badge>
                         ))}
 
