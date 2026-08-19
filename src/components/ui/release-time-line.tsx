@@ -411,19 +411,19 @@ export function ZeloteTimeline({ history, searchTerm = "", statusFilter = "all",
                             key={`${cb.id}-${ci}`}
                             variant="outline"
                             className={cn(
-                              "border-2 font-mono font-bold text-xs px-2.5 py-0.5 rounded-sm shadow-none inline-flex items-center gap-1.5",
+                              "border-[3px] font-mono font-black text-xs px-2.5 py-0.5 rounded-sm inline-flex items-center gap-1.5",
                               cb.returned
-                                ? "bg-zinc-100 dark:bg-zinc-800 border-zinc-300 dark:border-zinc-600 text-zinc-400 dark:text-zinc-500"
-                                : "bg-white dark:bg-zinc-900 border-black dark:border-white text-black dark:text-white"
+                                ? "bg-red-50 dark:bg-red-950/30 border-red-500 dark:border-red-500 text-red-700 dark:text-red-300 shadow-[2px_2px_0_0_rgba(239,68,68,0.35)]"
+                                : "bg-white dark:bg-zinc-900 border-black dark:border-white text-black dark:text-white shadow-[2px_2px_0_0_rgba(0,0,0,1)] dark:shadow-[2px_2px_0_0_rgba(255,255,255,0.25)]"
                             )}
                             title={cb.returned ? "Devolvido" : "Pendente"}
                           >
                             {cb.returned && (
-                              <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-red-100 dark:bg-red-900/40 border border-red-400 dark:border-red-600 shrink-0">
-                                <X className="h-2.5 w-2.5 text-red-600 dark:text-red-400" strokeWidth={3} />
+                              <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-red-500 border-2 border-black dark:border-white shrink-0 shadow-[1px_1px_0_0_rgba(0,0,0,1)]">
+                                <X className="h-3 w-3 text-white" strokeWidth={4} />
                               </span>
                             )}
-                            <span className={cn(cb.returned && "line-through decoration-red-400/60")}>{cb.id}</span>
+                            <span>{cb.id}</span>
                           </Badge>
                         ))}
 
