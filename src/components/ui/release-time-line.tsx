@@ -27,7 +27,7 @@ interface LoanGroup {
   userType: string;
   loanDate: string;
   status: string;
-  chromebooks: { id: string; model?: string }[];
+  chromebooks: { id: string; model?: string; returned?: boolean }[];
   purpose?: string;
   createdByEmail?: string;
   returnDate?: string;
