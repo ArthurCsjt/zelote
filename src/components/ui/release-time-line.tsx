@@ -322,7 +322,7 @@ export function ZeloteTimeline({ history, searchTerm = "", statusFilter = "all",
                 >
                   {/* ══ HORA E DATA: BADGE NEO-BRUTALISTA REFINADO ══ */}
                   <div className="w-[98px] shrink-0 text-right pr-1 pt-0.5 flex flex-col items-end justify-center select-none">
-                    <div className="bg-white dark:bg-zinc-900 border-2 border-black dark:border-white p-1.5 shadow-[2.5px_2.5px_0px_0px_#000] dark:shadow-[2.5px_2.5px_0px_0px_#fff] text-center w-full transition-transform group-hover:scale-[1.02]">
+                    <div className="bg-white dark:bg-zinc-900 border-2 border-black dark:border-white p-1.5 shadow-[2.5px_2.5px_0px_0px_#000] dark:shadow-[2.5px_2.5px_0px_0px_#fff] text-center w-full">
                       <div className="text-base sm:text-lg font-black font-mono tabular-nums leading-none tracking-tight text-black dark:text-white">
                         {loanTimeStr}
                       </div>
@@ -343,7 +343,7 @@ export function ZeloteTimeline({ history, searchTerm = "", statusFilter = "all",
                   {/* CARD NEO-BRUTALISTA REORGANIZADO EM 3 ZONAS */}
                   <article
                     className={cn(
-                      "flex-1 min-w-0 w-full max-w-full overflow-hidden border-[3px] border-black dark:border-white p-3.5 sm:p-4 rounded-none transition-all duration-200 space-y-3 hover:-translate-y-0.5 hover:shadow-[6px_6px_0px_0px_#000] dark:hover:shadow-[6px_6px_0px_0px_#fff] shadow-[4px_4px_0px_0px_#000] dark:shadow-[4px_4px_0px_0px_#fff]",
+                      "flex-1 min-w-0 w-full max-w-full overflow-hidden border-[3px] border-black dark:border-white p-3.5 sm:p-4 rounded-none space-y-3 shadow-[4px_4px_0px_0px_#000] dark:shadow-[4px_4px_0px_0px_#fff]",
                       isReturned
                         ? "bg-[#F0FDF4] dark:bg-emerald-950"
                         : isOverdue
@@ -411,10 +411,10 @@ export function ZeloteTimeline({ history, searchTerm = "", statusFilter = "all",
                             key={`${cb.id}-${ci}`}
                             variant="outline"
                             className={cn(
-                              "font-mono font-black text-xs px-2.5 py-0.5 rounded-sm inline-flex items-center gap-1.5",
+                              "font-mono font-bold text-xs px-2.5 py-0.5 rounded-sm inline-flex items-center gap-1.5",
                               cb.returned
-                                ? "border-2 bg-white dark:bg-zinc-900 border-zinc-400 dark:border-zinc-600 text-zinc-500 dark:text-zinc-400 shadow-none"
-                                : "border-[3px] bg-white dark:bg-zinc-900 border-black dark:border-white text-black dark:text-white shadow-[2px_2px_0_0_rgba(0,0,0,1)] dark:shadow-[2px_2px_0_0_rgba(255,255,255,0.25)]"
+                                ? "border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-400 dark:text-zinc-500 shadow-none"
+                                : "border border-black dark:border-white bg-white dark:bg-zinc-900 text-black dark:text-white shadow-none"
                             )}
                             title={cb.returned ? "Devolvido" : "Pendente"}
                           >

@@ -49,6 +49,30 @@ const Layout: React.FC<LayoutProps> = ({
   const [timelineOpen, setTimelineOpen] = React.useState(false);
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
 
+  const touchStartXRef = React.useRef<number | null>(null);
+  const touchStartYRef = React.useRef<number | null>(null);
+
+  const handleTimelineTouchStart = (e: React.TouchEvent) => {
+    touchStartXRef.current = e.touches[0].clientX;
+    touchStartYRef.current = e.touches[0].clientY;
+  };
+
+  const handleTimelineTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartXRef.current === null || touchStartYRef.current === null) return;
+    const endX = e.changedTouches[0].clientX;
+    const endY = e.changedTouches[0].clientY;
+    const deltaX = endX - touchStartXRef.current;
+    const deltaY = endY - touchStartYRef.current;
+
+    // Fechar ao arrastar para a esquerda no mobile (deltaX negativo > 45px e movimento horizontal)
+    if (deltaX < -45 && Math.abs(deltaX) > Math.abs(deltaY) * 1.1) {
+      setTimelineOpen(false);
+    }
+
+    touchStartXRef.current = null;
+    touchStartYRef.current = null;
+  };
+
   const [timelineSearch, setTimelineSearch] = React.useState('');
   const [timelineFilter, setTimelineFilter] = React.useState('all');
 
@@ -182,6 +206,8 @@ const Layout: React.FC<LayoutProps> = ({
                     side="left"
                     hideCloseButton
                     onOpenAutoFocus={(e) => e.preventDefault()}
+                    onTouchStart={handleTimelineTouchStart}
+                    onTouchEnd={handleTimelineTouchEnd}
                     className="w-full sm:w-[520px] sm:max-w-[540px] p-0 border-none bg-transparent shadow-none overflow-hidden flex flex-col h-full z-50"
                   >
                     {/* BARRA SUPERIOR: ALINHAMENTO PERFEITO EM H-8 (32PX) COM MESMA BORDA */}
