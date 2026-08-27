@@ -8,13 +8,15 @@ import { useChromebookSearch, ChromebookSearchResult } from '@/hooks/useChromebo
 import { cn } from '@/lib/utils';
 import ChromebookSearchInput from './ChromebookSearchInput';
 import { useDatabase } from '@/hooks/useDatabase';
-import type { LoanHistoryItem } from '@/types/database';
+import type { LoanHistoryItem, ReturnFormData } from '@/types/database';
 import { DeviceCard } from './DeviceCard';
 import { Checkbox } from './ui/checkbox';
 import { Button } from './ui/button';
 import { Loader2 } from 'lucide-react';
 import { Badge } from './ui/badge';
 import { NeoPagination } from './ui/NeoPagination';
+import { QuickReturnDialog } from './QuickReturnDialog';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface DeviceListItem extends ChromebookSearchResult {
   loanStatus: 'ativo' | 'inativo' | 'atrasado' | 'desconhecido';
@@ -48,13 +50,22 @@ export function DeviceListInput({
 }: DeviceListInputProps) {
   const [deviceList, setDeviceList] = useState<DeviceListItem[]>([]);
   const [isQRReaderOpen, setIsQRReaderOpen] = useState(false);
-  const { chromebooks, loading: searchLoading } = useChromebookSearch();
-  const { getActiveLoans } = useDatabase();
+  const { chromebooks, loading: searchLoading, fetchChromebooks } = useChromebookSearch();
+  const { getActiveLoans, returnChromebookById } = useDatabase();
+  const queryClient = useQueryClient();
+
   const [activeLoansCache, setActiveLoansCache] = useState<LoanHistoryItem[]>([]);
   const [isLoanCacheLoading, setIsLoanCacheLoading] = useState(true);
   const [addedDevicesPage, setAddedDevicesPage] = useState(1);
   const [suggestionsPage, setSuggestionsPage] = useState(1);
   const itemsPerPage = 5;
+
+  // Estado para o diálogo de devolução rápida
+  const [quickReturnTarget, setQuickReturnTarget] = useState<{
+    chromebook: ChromebookSearchResult;
+    activeLoan: LoanHistoryItem;
+  } | null>(null);
+  const [isReturningQuickly, setIsReturningQuickly] = useState(false);
 
   // Resetar página quando o usuário ou a lista bruta mudar
   useEffect(() => {
@@ -116,9 +127,13 @@ export function DeviceListInput({
     const loanStatus: DeviceListItem['loanStatus'] = activeLoan ? (activeLoan.status === 'atrasado' ? 'atrasado' : 'ativo') : 'inativo';
 
     if (actionLabel === 'Empréstimo') {
-      const isBusy = chromebook.status !== 'disponivel' || loanStatus === 'ativo' || loanStatus === 'atrasado';
+      const isBusy = (activeLoan && (loanStatus === 'ativo' || loanStatus === 'atrasado')) || (chromebook.status === 'emprestado' && activeLoan);
       if (isBusy) {
-        return { mustReturn: true, chromebook: { ...chromebook, loanStatus } as DeviceListItem };
+        return {
+          mustQuickReturn: true,
+          chromebook: { ...chromebook, loanStatus } as DeviceListItem,
+          activeLoan: activeLoan || null
+        };
       }
     }
 
@@ -134,22 +149,16 @@ export function DeviceListInput({
   const addDevice = useCallback(async (chromebook: ChromebookSearchResult) => {
     const validation = await validateAndNormalizeInput(chromebook.chromebook_id);
 
-    if (validation.mustReturn) {
-      // Adicionar ao localStorage de devoluções pendentes
-      const pendingJson = localStorage.getItem('zelote_pending_returns');
-      let pending: string[] = pendingJson ? JSON.parse(pendingJson) : [];
-      
-      if (!pending.includes(chromebook.chromebook_id)) {
-        pending.push(chromebook.chromebook_id);
-        localStorage.setItem('zelote_pending_returns', JSON.stringify(pending));
+    if (validation.mustQuickReturn) {
+      if (validation.activeLoan) {
+        setQuickReturnTarget({
+          chromebook: validation.chromebook,
+          activeLoan: validation.activeLoan
+        });
+        return;
       }
 
-      toast({
-        title: "Enviado para Devolução",
-        description: `O Chromebook ${chromebook.chromebook_id} já está emprestado e foi enviado para a lista de devolução.`,
-        variant: "info",
-      });
-      return;
+      // Se não tiver empréstimo ativo registrado, adiciona normalmente
     }
 
     if (validation.error) {
@@ -180,6 +189,79 @@ export function DeviceListInput({
       duration: 2000,
     });
   }, [validateAndNormalizeInput, setDeviceIds]);
+
+  const handleConfirmQuickReturn = async () => {
+    if (!quickReturnTarget) return;
+
+    setIsReturningQuickly(true);
+    try {
+      const { chromebook, activeLoan } = quickReturnTarget;
+      const returnData: ReturnFormData & { notes?: string } = {
+        name: activeLoan.student_name,
+        ra: activeLoan.student_ra || '',
+        email: activeLoan.student_email,
+        type: activeLoan.loan_type,
+        userType: activeLoan.user_type,
+        notes: `Devolução Rápida realizada durante novo empréstimo. Solicitante original: ${activeLoan.student_name} (${activeLoan.student_email}).`
+      };
+
+      const success = await returnChromebookById(chromebook.chromebook_id, returnData);
+      if (success) {
+        // 1. Remove do cache local de empréstimos ativos
+        setActiveLoansCache(prev => prev.filter(loan => loan.chromebook_id !== chromebook.chromebook_id));
+
+        // 2. Remove do localStorage de devoluções pendentes se existir
+        const pendingJson = localStorage.getItem('zelote_pending_returns');
+        if (pendingJson) {
+          try {
+            const pending: string[] = JSON.parse(pendingJson);
+            const filtered = pending.filter(id => id !== chromebook.chromebook_id);
+            localStorage.setItem('zelote_pending_returns', JSON.stringify(filtered));
+          } catch (e) {}
+        }
+
+        // 3. Adiciona imediatamente o Chromebook à lista de empréstimo atual
+        const availableDevice: DeviceListItem = {
+          ...chromebook,
+          status: 'disponivel',
+          loanStatus: 'inativo',
+        };
+
+        setDeviceList(prev => {
+          if (prev.some(item => item.chromebook_id === chromebook.chromebook_id)) {
+            return prev;
+          }
+          const newList = [availableDevice, ...prev];
+          setDeviceIds(newList.map(item => item.chromebook_id));
+          setAddedDevicesPage(1);
+          return newList;
+        });
+
+        // 4. Recarrega o inventário de busca e invalida caches globais
+        await fetchChromebooks();
+        queryClient.invalidateQueries({ queryKey: ['chromebooks'] });
+        queryClient.invalidateQueries({ queryKey: ['active-loans'] });
+        queryClient.invalidateQueries({ queryKey: ['loan-history'] });
+        queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
+
+        toast({
+          title: "Devolução Realizada com Sucesso",
+          description: `O Chromebook ${chromebook.chromebook_id} foi devolvido e adicionado à lista do novo empréstimo.`,
+          variant: "success",
+        });
+
+        setQuickReturnTarget(null);
+      }
+    } catch (err: any) {
+      toast({
+        title: "Erro na Devolução",
+        description: err.message || "Não foi possível concluir a devolução do equipamento.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsReturningQuickly(false);
+    }
+  };
 
   const handleQRCodeScan = async (data: string) => {
     const sanitizedId = sanitizeQRCodeData(data);
@@ -422,6 +504,17 @@ export function DeviceListInput({
         open={isQRReaderOpen}
         onOpenChange={setIsQRReaderOpen}
         onScan={handleQRCodeScan}
+      />
+
+      <QuickReturnDialog
+        open={!!quickReturnTarget}
+        onOpenChange={(open) => {
+          if (!open) setQuickReturnTarget(null);
+        }}
+        chromebook={quickReturnTarget?.chromebook || null}
+        activeLoan={quickReturnTarget?.activeLoan || null}
+        onConfirm={handleConfirmQuickReturn}
+        loading={isReturningQuickly}
       />
     </div>
   );
