@@ -26,6 +26,8 @@ import { DeviceListInput } from "./DeviceListInput";
 import { Textarea } from "./ui/textarea";
 import { ConfirmLoanDialog } from "./ConfirmLoanDialog"; // NOVO IMPORT
 
+import { formatLocalDate } from "@/utils/dateUtils";
+
 // Define a interface dos dados do formulário de empréstimo
 interface LoanFormData {
     studentName: string;
@@ -80,7 +82,7 @@ export function LoanForm({ onBack, initialReservationData }: LoanFormProps) {
                     email: foundUser.email,
                     userType: foundUser.type,
                     purpose: reservation.justification,
-                    notes: `Reserva do dia ${format(new Date(reservation.date), 'dd/MM/yyyy')} às ${reservation.time_slot}. Quantidade solicitada: ${reservation.quantity_requested} Chromebooks.`,
+                    notes: `Reserva do dia ${formatLocalDate(reservation.date)} às ${reservation.time_slot}. Quantidade solicitada: ${reservation.quantity_requested} Chromebooks.`,
                     reservationId: reservation.id,
                 }));
                 // Confirma automaticamente a finalidade se houver uma justificativa
@@ -95,7 +97,7 @@ export function LoanForm({ onBack, initialReservationData }: LoanFormProps) {
                     email: reservation.prof_email || '',
                     purpose: reservation.justification || '',
                     userType: 'professor',
-                    notes: `Reserva do dia ${format(new Date(reservation.date), 'dd/MM/yyyy')} às ${reservation.time_slot}. Quantidade solicitada: ${reservation.quantity_requested} Chromebooks.`,
+                    notes: `Reserva do dia ${formatLocalDate(reservation.date)} às ${reservation.time_slot}. Quantidade solicitada: ${reservation.quantity_requested} Chromebooks.`,
                     reservationId: reservation.id,
                 }));
             }

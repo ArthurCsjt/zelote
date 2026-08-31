@@ -14,6 +14,7 @@ import type {
   TeacherData
 } from '@/types/database';
 import { format } from 'date-fns'; // Importando format para formatar a data
+import { formatLocalDate, formatISOLocal } from '@/utils/dateUtils';
 import logger from '@/utils/logger';
 import { validateEmailDomain, EMAIL_DOMAINS } from '@/utils/emailValidation';
 import { isNetworkError, getSupabaseErrorMessage, handleSupabaseError, retryWithBackoff } from '@/utils/networkErrors';
@@ -331,7 +332,7 @@ export const useDatabase = () => {
           purpose: data.purpose,
           user_type: data.userType,
           loan_type: data.loanType,
-          expected_return_date: data.expectedReturnDate?.toISOString(),
+          expected_return_date: formatISOLocal(data.expectedReturnDate),
           created_by: user.id,
           reservation_id: data.reservationId
         })
@@ -403,7 +404,7 @@ export const useDatabase = () => {
           purpose: data.purpose,
           user_type: data.userType,
           loan_type: data.loanType,
-          expected_return_date: data.expectedReturnDate?.toISOString(),
+          expected_return_date: formatISOLocal(data.expectedReturnDate),
           created_by: user.id,
           reservation_id: data.reservationId
         });
@@ -1280,7 +1281,7 @@ export const useDatabase = () => {
           toEmail: professorEmail,
           professorName: professorName,
           justification: reservationResult.justification,
-          date: format(new Date(reservationResult.date), 'dd/MM/yyyy'),
+          date: formatLocalDate(reservationResult.date),
           time: reservationResult.time_slot,
           quantity: reservationResult.quantity_requested,
           needs_tv: reservationResult.needs_tv,
@@ -1319,7 +1320,7 @@ export const useDatabase = () => {
           .map(responsibleId => ({
             user_id: responsibleId,
             title: 'Nova Reserva de Chromebooks',
-            message: `${reservationResult.prof_name} agendou ${reservationResult.quantity_requested} Chromebooks para o dia ${format(new Date(reservationResult.date), 'dd/MM/yyyy')} às ${reservationResult.time_slot}.`,
+            message: `${reservationResult.prof_name} agendou ${reservationResult.quantity_requested} Chromebooks para o dia ${formatLocalDate(reservationResult.date)} às ${reservationResult.time_slot}.`,
             type: 'reservation',
             metadata: {
               reservation_id: reservationResult.id,
