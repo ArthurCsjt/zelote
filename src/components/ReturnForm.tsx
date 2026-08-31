@@ -228,14 +228,21 @@ export function ReturnForm({ onReturnSuccess, initialChromebookId, initialDevice
         if (remaining.length > 0) {
           toast({
             title: "⚠️ Devolução Parcial Concluída",
-            description: `Restam ${remaining.length} Chromebook(s) com este solicitante: ${remaining.map(r => r.chromebook_id).join(', ')}`,
+            description: `${successCount} Chromebook(s) devolvido(s). Restam ${remaining.length} com este solicitante: ${remaining.map(r => r.chromebook_id).join(', ')}`,
             variant: "warning",
             duration: 5000,
           });
         } else if (userActiveLoans.length > 0) {
           toast({
             title: "✓ Devolução Total Concluída",
-            description: `Todos os Chromebooks do solicitante foram devolvidos.`,
+            description: `${successCount} Chromebook(s) devolvido(s) com sucesso. Todos os itens foram entregues.`,
+            variant: "success",
+            duration: 4000,
+          });
+        } else {
+          toast({
+            title: "✓ Devolução Concluída",
+            description: `${successCount} Chromebook(s) devolvido(s) com sucesso.`,
             variant: "success",
             duration: 4000,
           });

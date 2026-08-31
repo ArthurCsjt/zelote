@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, Calendar, Monitor, Info, Save, Tv, Volume2, Mic, User, ListFilter, CalendarDays, X as CloseIcon, ArrowRight, Plus, Minus, CheckCircle, Search, ChevronDown, Trash2, AlertTriangle } from 'lucide-react';
+import { Loader2, Calendar, Monitor, Info, Save, Tv, Volume2, Mic, User, ListFilter, CalendarDays, X as CloseIcon, ArrowRight, Plus, Minus, CheckCircle, Search, ChevronDown, Trash2, AlertTriangle, History } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useDatabase, ReservationData, Reservation, Space } from '@/hooks/useDatabase';
@@ -104,6 +104,30 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
   const [newSpaceName, setNewSpaceName] = useState('');
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Armazenamento dos últimos espaços acessados/usados pelo professor
+  const RECENT_SPACES_KEY = 'zelote_recent_classrooms';
+  const [recentClassrooms, setRecentClassrooms] = useState<string[]>(() => {
+    try {
+      const stored = localStorage.getItem(RECENT_SPACES_KEY);
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const saveRecentClassroom = (roomName: string) => {
+    if (!roomName || !roomName.trim()) return;
+    const clean = roomName.trim();
+    setRecentClassrooms(prev => {
+      const filtered = prev.filter(r => r.toLowerCase() !== clean.toLowerCase());
+      const updated = [clean, ...filtered].slice(0, 5); // Mantém os 5 mais recentes
+      try {
+        localStorage.setItem(RECENT_SPACES_KEY, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+  };
 
   // Merge static default classes with database spaces to show in dropdown
   const combinedSpaces = useMemo<ExtendedSpace[]>(() => {
@@ -232,6 +256,7 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
     if (isMultiMode && extraDates.length > 0) {
       const result = await bulkCreateReservations(allDates, baseData);
       if (result.success) {
+        saveRecentClassroom(classroom.trim());
         setOpen(false);
         onReservationSuccess();
       }
@@ -241,6 +266,7 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
         date: format(date, 'yyyy-MM-dd')
       });
       if (result) {
+        saveRecentClassroom(classroom.trim());
         setOpen(false);
         onReservationSuccess();
       }
@@ -259,10 +285,10 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
         {children}
       </div>
 
-      <DialogContent className="w-[95vw] sm:w-full sm:max-w-[600px] max-h-[92vh] overflow-y-auto border-[3px] sm:border-[4px] border-black dark:border-zinc-800 rounded-none shadow-[4px_4px_0px_0px_#000] sm:shadow-[10px_10px_0px_0px_#000] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.05)] sm:dark:shadow-[10px_10px_0px_0px_rgba(255,255,255,0.05)] p-0 outline-none bg-white dark:bg-zinc-950 text-black dark:text-zinc-100 selection:bg-yellow-300 selection:text-black">
+      <DialogContent className="w-[calc(100vw-16px)] sm:w-full sm:max-w-[600px] max-h-[90dvh] flex flex-col p-0 border-[3px] sm:border-[4px] border-black dark:border-zinc-800 rounded-none shadow-[4px_4px_0px_0px_#000] sm:shadow-[10px_10px_0px_0px_#000] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.05)] sm:dark:shadow-[10px_10px_0px_0px_rgba(255,255,255,0.05)] outline-none bg-white dark:bg-zinc-950 text-black dark:text-zinc-100 selection:bg-yellow-300 selection:text-black">
 
         {/* HEADER */}
-        <DialogHeader className="p-3 sm:p-5 border-b-[4px] sm:border-b-[5px] border-black bg-[#3b82f6] text-white relative z-10 space-y-0">
+        <DialogHeader className="shrink-0 p-3 sm:p-5 border-b-[4px] sm:border-b-[5px] border-black bg-[#3b82f6] text-white relative z-10 space-y-0">
           <div className="flex items-center gap-2.5 sm:gap-4 pr-12 sm:pr-14">
             <div className="bg-white p-2 sm:p-2.5 border-[2px] sm:border-[3px] border-black shadow-[3px_3px_0_0_#000] sm:shadow-[4px_4px_0_0_#000] shrink-0">
               <CalendarDays className="h-5 w-5 sm:h-6 sm:w-6 text-black stroke-[3]" />
@@ -289,7 +315,11 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
           </button>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="flex-1">
+        <form
+          onSubmit={handleSubmit}
+          className="flex-1 min-h-0 overflow-y-auto"
+          style={{ WebkitOverflowScrolling: 'touch' }}
+        >
           <div className="p-3 sm:p-5 space-y-4 sm:space-y-5">
 
             {/* STATUS GRID - Restricted to Admin/Responsible */}
@@ -612,6 +642,50 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                   {/* Dropdown Panel */}
                   {isSpaceDropdownOpen && (
                     <div className="relative z-10 w-full mt-1.5 border-2 border-black dark:border-zinc-700 bg-white dark:bg-zinc-950 shadow-[3px_3px_0_0_#000] dark:shadow-[3px_3px_0_0_rgba(255,255,255,0.05)] rounded-xl overflow-hidden animate-in fade-in slide-in-from-top-1 duration-100">
+                      {/* Seção: Últimos Acessados / Recentes */}
+                      {recentClassrooms.length > 0 && !classroom && (
+                        <div className="p-2.5 bg-blue-50/70 dark:bg-blue-950/40 border-b-2 border-black/10 dark:border-zinc-800">
+                          <div className="flex items-center gap-1.5 mb-1.5 px-0.5">
+                            <History className="h-3.5 w-3.5 text-[#1e3a8a] dark:text-blue-400" />
+                            <span className="text-[10px] font-black uppercase text-[#1e3a8a] dark:text-blue-300 tracking-wider">
+                              Últimos Acessados:
+                            </span>
+                          </div>
+                          <div className="flex flex-wrap gap-1.5">
+                            {recentClassrooms.map((recentName, idx) => {
+                              const isOccupied = currentReservations.some(res => res.classroom?.toLowerCase() === recentName.toLowerCase());
+                              return (
+                                <button
+                                  key={idx}
+                                  type="button"
+                                  disabled={isOccupied}
+                                  onClick={() => {
+                                    if (isOccupied) return;
+                                    setClassroom(recentName);
+                                    saveRecentClassroom(recentName);
+                                    setIsSpaceDropdownOpen(false);
+                                  }}
+                                  className={cn(
+                                    "px-2.5 py-1 text-[10px] font-bold uppercase border-2 border-black shadow-[2px_2px_0_0_#000] rounded-none transition-all flex items-center gap-1",
+                                    isOccupied
+                                      ? "bg-zinc-100 dark:bg-zinc-800 text-zinc-400 line-through cursor-not-allowed opacity-60 shadow-none border-zinc-400"
+                                      : "bg-white hover:bg-yellow-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-black dark:text-white hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none active:translate-x-[2px] active:translate-y-[2px]"
+                                  )}
+                                >
+                                  <span>{recentName}</span>
+                                  {isOccupied && <span className="text-[8px] text-red-500 font-black no-underline">(Ocupada)</span>}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Header da Lista de Salas */}
+                      <div className="px-3 pt-2 pb-1 bg-zinc-50/50 dark:bg-zinc-900/30 text-[9px] font-black uppercase text-zinc-400 dark:text-zinc-500 tracking-widest">
+                        {recentClassrooms.length > 0 && !classroom ? "Todos os Espaços / Turmas:" : "Selecione a Sala / Turma:"}
+                      </div>
+
                       {/* Spaces List */}
                       <div className="max-h-[180px] overflow-y-auto divide-y divide-zinc-100 dark:divide-zinc-900 pb-2">
                         {combinedSpaces.filter(s => s.name.toLowerCase().includes(classroom.toLowerCase())).length === 0 ? (
@@ -630,6 +704,7 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                                     if ((e.target as HTMLElement).closest('button')) return;
                                     if (isOccupied) return;
                                     setClassroom(s.name);
+                                    saveRecentClassroom(s.name);
                                     setIsSpaceDropdownOpen(false);
                                   }}
                                   className={cn(
@@ -976,7 +1051,7 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
         </form>
 
         {/* FOOTER */}
-        <DialogFooter className="p-3 sm:p-5 bg-zinc-50 dark:bg-zinc-900/50 border-t-[3px] sm:border-t-[4px] border-black dark:border-zinc-800 flex flex-col-reverse sm:flex-row gap-2 sm:gap-3 sticky bottom-0">
+        <DialogFooter className="shrink-0 p-3 sm:p-5 bg-white dark:bg-zinc-950 border-t-[3px] sm:border-t-[4px] border-black dark:border-zinc-800 flex flex-col-reverse sm:flex-row gap-2 sm:gap-3 z-30 shadow-[0_-6px_14px_rgba(0,0,0,0.08)]">
           <Button
             type="button"
             variant="outline"

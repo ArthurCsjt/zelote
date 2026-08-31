@@ -123,8 +123,16 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
 
     const dateKey = format(selectedDate, 'yyyy-MM-dd');
     const dayReservations = reservationsByDay.get(dateKey) || [];
-    const totalReserved = dayReservations.reduce((sum, res) => sum + res.quantity_requested, 0);
-    const available = totalAvailableChromebooks - totalReserved;
+
+    // Calcula o pico de uso simultâneo no maior horário do dia (evita soma errônea entre horários diferentes)
+    const slotUsageMap = new Map<string, number>();
+    dayReservations.forEach(res => {
+      const current = slotUsageMap.get(res.time_slot) || 0;
+      slotUsageMap.set(res.time_slot, current + (res.quantity_requested || 0));
+    });
+
+    const peakReserved = slotUsageMap.size > 0 ? Math.max(...Array.from(slotUsageMap.values())) : 0;
+    const available = Math.max(0, totalAvailableChromebooks - peakReserved);
     const isDayPast = isPast(selectedDate);
 
     return (
@@ -175,39 +183,39 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
                 </div>
               </div>
 
-              {/* Reserved Widget */}
+              {/* Peak Usage Widget */}
               <div className="relative overflow-hidden border-2 border-info bg-info/5 dark:bg-info/10 py-2 px-3 shadow-[2px_2px_0_0_hsl(var(--info)/0.4)] transition-all flex items-center justify-between gap-2">
                 <div className="min-w-0">
                   <p className="text-[9px] font-black uppercase tracking-wider text-info leading-none">
-                    Reservado
+                    Pico de Uso
                   </p>
-                  <p className="text-[7px] font-bold text-info/70 uppercase tracking-tight mt-1 leading-none">Ativas</p>
+                  <p className="text-[7px] font-bold text-info/70 uppercase tracking-tight mt-1 leading-none">Maior Horário</p>
                 </div>
                 <div className="flex items-baseline gap-0.5 shrink-0">
-                  <span className="text-xl sm:text-2xl font-[1000] text-info tracking-tighter leading-none">{totalReserved}</span>
+                  <span className="text-xl sm:text-2xl font-[1000] text-info tracking-tighter leading-none">{peakReserved}</span>
                   <span className="text-[8px] font-bold text-info/70 uppercase">un</span>
                 </div>
               </div>
 
-              {/* Available Widget */}
+              {/* Available in Peak Widget */}
               <div className={cn(
                 "relative overflow-hidden border-2 py-2 px-3 transition-all flex items-center justify-between gap-2",
-                available < 0
+                available <= 0 && peakReserved > 0
                   ? "border-error bg-error/5 dark:bg-error/10 shadow-[2px_2px_0_0_hsl(var(--error)/0.4)]"
                   : "border-success bg-success/5 dark:bg-success/10 shadow-[2px_2px_0_0_hsl(var(--success)/0.4)]"
               )}>
                 <div className="min-w-0">
-                  <p className={cn("text-[9px] font-black uppercase tracking-wider leading-none", available < 0 ? "text-error" : "text-success")}>
+                  <p className={cn("text-[9px] font-black uppercase tracking-wider leading-none", available <= 0 && peakReserved > 0 ? "text-error" : "text-success")}>
                     Disponível
                   </p>
-                  <p className={cn("text-[7px] font-bold uppercase tracking-tight mt-1 leading-none", available < 0 ? "text-error/70" : "text-success/70")}>Saldo</p>
+                  <p className={cn("text-[7px] font-bold uppercase tracking-tight mt-1 leading-none", available <= 0 && peakReserved > 0 ? "text-error/70" : "text-success/70")}>Saldo Mín.</p>
                 </div>
                 <div className="flex items-baseline gap-0.5 shrink-0">
                   <span className={cn(
                     "text-xl sm:text-2xl font-[1000] tracking-tighter leading-none",
-                    available < 0 ? "text-error" : "text-success"
+                    available <= 0 && peakReserved > 0 ? "text-error" : "text-success"
                   )}>{available}</span>
-                  <span className={cn("text-[8px] font-bold uppercase", available < 0 ? "text-error/70" : "text-success/70")}>un</span>
+                  <span className={cn("text-[8px] font-bold uppercase", available <= 0 && peakReserved > 0 ? "text-error/70" : "text-success/70")}>un</span>
                 </div>
               </div>
             </div>

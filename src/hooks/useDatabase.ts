@@ -267,9 +267,9 @@ export const useDatabase = () => {
     }
   }, [user]);
 
-  const syncChromebookStatus = useCallback(async (chromebookId: string): Promise<string | null> => {
+  const syncChromebookStatus = useCallback(async (chromebookId: string, showToast = true): Promise<string | null> => {
     if (!user) {
-      toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
+      if (showToast) toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
       return null;
     }
     setLoading(true);
@@ -281,17 +281,20 @@ export const useDatabase = () => {
         return data;
       }, 2, 500); // 2 tentativas, 500ms de delay base
 
-      // MANTIDO: Este toast é específico e útil para o painel de alertas.
-      toast({ title: "Sincronização Concluída", description: data, variant: "info" });
+      if (showToast) {
+        toast({ title: "Sincronização Concluída", description: data, variant: "info" });
+      }
       return data;
     } catch (error: any) {
       const errorInfo = handleSupabaseError(error);
 
-      toast({
-        title: errorInfo.isNetwork ? "Erro de Conexão" : "Erro de Sincronização",
-        description: errorInfo.message,
-        variant: "destructive"
-      });
+      if (showToast) {
+        toast({
+          title: errorInfo.isNetwork ? "Erro de Conexão" : "Erro de Sincronização",
+          description: errorInfo.message,
+          variant: "destructive"
+        });
+      }
 
       logger.error('Erro ao sincronizar status do chromebook', error, { chromebookId, errorInfo });
       return null;
@@ -447,8 +450,8 @@ export const useDatabase = () => {
           throw new Error(`Falha ao inserir ${loansToInsert.length} empréstimos.`);
         } else {
           successCount = loansToInsert.length;
-          // Sincroniza status dos chromebooks inseridos
-          Promise.all(successfullyLoanedIds.map(id => syncChromebookStatus(id))).catch(e => logger.warn('Erro ao sincronizar status pós-lote', e));
+          // Sincroniza status dos chromebooks inseridos silenciosamente (sem spam de toast)
+          Promise.all(successfullyLoanedIds.map(id => syncChromebookStatus(id, false))).catch(e => logger.warn('Erro ao sincronizar status pós-lote', e));
         }
       }
     } catch (e: any) {
@@ -771,13 +774,13 @@ export const useDatabase = () => {
         } else {
           successCount = returnsToInsert.length;
 
-          // 2. Sincroniza o status de todos os Chromebooks devolvidos
+          // 2. Sincroniza o status de todos os Chromebooks devolvidos silenciosamente (sem spam de toast)
           const successfullyReturnedIds = returnsToInsert.map(r => {
             const loan = activeLoans.find(l => l.id === r.loan_id);
             return loan?.chromebook_id;
           }).filter((id): id is string => !!id);
 
-          await Promise.all(successfullyReturnedIds.map(id => syncChromebookStatus(id)));
+          await Promise.all(successfullyReturnedIds.map(id => syncChromebookStatus(id, false)));
         }
       }
     } catch (e: any) {
@@ -1391,6 +1394,30 @@ export const useDatabase = () => {
 
     setLoading(true);
     try {
+      // Checar se a sala já está ocupada em alguma das datas para o mesmo time_slot
+      if (baseData.classroom && baseData.classroom.trim()) {
+        const { data: existingReservations } = await supabase
+          .from('reservations')
+          .select('date, classroom')
+          .in('date', dates)
+          .eq('time_slot', baseData.time_slot);
+
+        if (existingReservations && existingReservations.length > 0) {
+          const conflictingDates = existingReservations
+            .filter(r => r.classroom?.trim().toLowerCase() === baseData.classroom.trim().toLowerCase())
+            .map(r => formatLocalDate(r.date));
+
+          if (conflictingDates.length > 0) {
+            toast({
+              title: "Conflito de Sala em Múltiplas Datas",
+              description: `A sala "${baseData.classroom}" já está ocupada em: ${conflictingDates.join(', ')}.`,
+              variant: "destructive"
+            });
+            return { success: false, count: 0 };
+          }
+        }
+      }
+
       const inserts = dates.map(date => ({
         date,
         time_slot: baseData.time_slot,
