@@ -8,6 +8,7 @@ import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { toast } from "@/hooks/use-toast";
 import { CameraOff, Loader2, Keyboard } from "lucide-react";
+import { soundEffects } from "@/utils/audioFeedback";
 
 interface QRCodeReaderProps {
   open: boolean;
@@ -70,7 +71,8 @@ export function QRCodeReader({ open, onOpenChange, onScan }: QRCodeReaderProps) 
 
   const lastScannedCodeRef = useRef<string>('');
   const lastScannedTimeRef = useRef<number>(0);
-  const scannedCodesSetRef = useRef<Set<string>>(new Set());
+  const scannedCodesSetRef.current = scannedCodesSetRef.current || new Set<string>();
+  const scannedCodesSetRefInst = useRef<Set<string>>(new Set());
   const [lastScannedText, setLastScannedText] = useState<string>('');
   const [alreadyScannedAlert, setAlreadyScannedAlert] = useState<string>('');
 
@@ -80,7 +82,7 @@ export function QRCodeReader({ open, onOpenChange, onScan }: QRCodeReaderProps) 
     setShowManualInput(false); 
     lastScannedCodeRef.current = '';
     lastScannedTimeRef.current = 0;
-    scannedCodesSetRef.current.clear();
+    scannedCodesSetRefInst.current.clear();
     setLastScannedText('');
     setAlreadyScannedAlert('');
 
@@ -116,7 +118,7 @@ export function QRCodeReader({ open, onOpenChange, onScan }: QRCodeReaderProps) 
     const onScanSuccess = (decodedText: string) => {
       const now = Date.now();
       const cleanCode = decodedText.trim();
-      const isAlreadyInSession = scannedCodesSetRef.current.has(cleanCode);
+      const isAlreadyInSession = scannedCodesSetRefInst.current.has(cleanCode);
       const isSameCode = cleanCode === lastScannedCodeRef.current;
       const timeSinceLastScan = now - lastScannedTimeRef.current;
 
@@ -130,6 +132,9 @@ export function QRCodeReader({ open, onOpenChange, onScan }: QRCodeReaderProps) 
         lastScannedTimeRef.current = now;
         setAlreadyScannedAlert(cleanCode);
 
+        // Feedback sonoro e vibratório de aviso/repetido
+        soundEffects.triggerWarningFeedback();
+
         toast({
           title: '⚠️ Já foi lido!',
           description: `O código ${cleanCode} já está registrado.`,
@@ -137,24 +142,18 @@ export function QRCodeReader({ open, onOpenChange, onScan }: QRCodeReaderProps) 
           duration: 2000,
         });
 
-        // Vibração dupla para diferenciar aviso de já lido
-        if (navigator.vibrate) {
-          navigator.vibrate([50, 50, 50]);
-        }
         return;
       }
 
       // NOVO CÓDIGO LIDO COM SUCESSO:
-      scannedCodesSetRef.current.add(cleanCode);
+      scannedCodesSetRefInst.current.add(cleanCode);
       lastScannedCodeRef.current = cleanCode;
       lastScannedTimeRef.current = now;
       setLastScannedText(cleanCode);
       setAlreadyScannedAlert('');
 
-      // Feedback tátil para PWA (celular vibra 1 vez ao ler novo com sucesso)
-      if (navigator.vibrate) {
-        navigator.vibrate(100);
-      }
+      // Feedback sonoro (Beep) e háptico (vibração) de sucesso
+      soundEffects.triggerSuccessFeedback();
 
       // Envia os dados lidos para o formulário
       onScan(cleanCode);
