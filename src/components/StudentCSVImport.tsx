@@ -12,6 +12,8 @@ import { GlassCard } from './ui/GlassCard';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 
+import { sanitizeCSVValue } from '@/utils/security';
+
 interface StudentCSVData {
   nome_completo: string;
   ra: string;
@@ -174,10 +176,10 @@ export function StudentCSVImport() {
   const processParsedData = (data: any[]) => {
     const parsed: ParsedStudent[] = data.map((row: any) => {
       const studentData = {
-        nome_completo: String(row.nome_completo || row[0] || '').trim(),
-        ra: String(row.ra || row[1] || '').trim(),
-        email: String(row.email || row[2] || '').trim(),
-        turma: String(row.turma || row[3] || '').trim(),
+        nome_completo: sanitizeCSVValue(row.nome_completo || row[0]),
+        ra: sanitizeCSVValue(row.ra || row[1]),
+        email: sanitizeCSVValue(row.email || row[2]).toLowerCase(),
+        turma: sanitizeCSVValue(row.turma || row[3]),
       };
 
       const validation = validateStudent(studentData);

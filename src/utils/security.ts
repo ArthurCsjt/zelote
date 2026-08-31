@@ -176,3 +176,19 @@ export function validateLoanFormData(data: any): {
     sanitizedData
   };
 }
+
+/**
+ * Sanitiza valores de células CSV para prevenir injeção de fórmulas (CSV Injection)
+ * Remove ou escapa caracteres iniciais perigosos como '=', '+', '-', '@', '\t', '\r'
+ */
+export function sanitizeCSVValue(input: string | null | undefined): string {
+  if (!input) return '';
+  let str = sanitizeString(String(input).trim());
+
+  // Se começar com caracteres de fórmula perigosos, remove ou prefixa com aspa simples
+  while (/^[=+\-@\t\r]/.test(str)) {
+    str = str.substring(1).trim();
+  }
+
+  return limitStringLength(str, 255);
+}

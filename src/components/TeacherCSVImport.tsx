@@ -13,6 +13,7 @@ import { cn } from '@/lib/utils';
 import type { TeacherData } from '@/types/database';
 import { validateEmailDomain } from '@/utils/emailValidation';
 import { supabase } from '@/integrations/supabase/client';
+import { sanitizeCSVValue } from '@/utils/security';
 
 interface TeacherCSVData extends TeacherData {
   // Herda nome_completo, email, materia
@@ -172,9 +173,9 @@ export function TeacherCSVImport() {
   const processParsedData = (data: any[]) => {
     const parsed: ParsedTeacher[] = data.map((row: any) => {
       const teacherData: TeacherCSVData = {
-        nome_completo: String(row.nome_completo || row[0] || '').trim(),
-        email: String(row.email || row[1] || '').trim(),
-        materia: String(row.materia || row[2] || '').trim(),
+        nome_completo: sanitizeCSVValue(row.nome_completo || row[0]),
+        email: sanitizeCSVValue(row.email || row[1]).toLowerCase(),
+        materia: sanitizeCSVValue(row.materia || row[2]),
       };
 
       const validation = validateTeacher(teacherData);

@@ -311,15 +311,28 @@ export const useDatabase = () => {
 
     setLoading(true);
     try {
+      // 1. Verifica status do chromebook
       const { data: chromebook, error: chromebookError } = await supabase
         .from('chromebooks')
-        .select('id')
+        .select('id, chromebook_id, status')
         .eq('chromebook_id', data.chromebookId)
         .eq('status', 'disponivel')
         .single();
 
       if (chromebookError || !chromebook) {
         throw new Error('Chromebook não encontrado ou não está disponível');
+      }
+
+      // 2. Dupla validação contra empréstimo ativo concorrente
+      const { data: activeLoan } = await supabase
+        .from('loan_history')
+        .select('id, student_name')
+        .eq('chromebook_id', data.chromebookId)
+        .in('status', ['ativo', 'atrasado'])
+        .maybeSingle();
+
+      if (activeLoan) {
+        throw new Error(`O Chromebook ${data.chromebookId} acabou de ser emprestado para ${activeLoan.student_name}.`);
       }
 
       const { data: result, error } = await supabase
@@ -341,6 +354,9 @@ export const useDatabase = () => {
 
       if (error) throw error;
 
+      // Sincroniza status no banco
+      await syncChromebookStatus(data.chromebookId);
+
       // Trigger Push Notification
       triggerPushNotification(
         "Novo Empréstimo",
@@ -348,7 +364,6 @@ export const useDatabase = () => {
         '/dashboard'
       );
 
-      // REMOVIDO: Toast de sucesso genérico. O componente chamador fará o toast de sucesso em lote.
       return result as unknown as Loan;
     } catch (error: any) {
       toast({ title: "Erro ao registrar empréstimo", description: error.message, variant: "destructive" });
@@ -356,7 +371,7 @@ export const useDatabase = () => {
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [user, syncChromebookStatus]);
 
   const bulkCreateLoans = useCallback(async (loanDataList: LoanFormData[]): Promise<{ successCount: number, errorCount: number }> => {
     if (!user) {
@@ -370,6 +385,8 @@ export const useDatabase = () => {
 
     try {
       const chromebookIds = loanDataList.map(d => d.chromebookId);
+      
+      // 1. Busca status dos chromebooks
       const { data: chromebooks, error: cbError } = await supabase
         .from('chromebooks')
         .select('id, chromebook_id, status')
@@ -379,18 +396,27 @@ export const useDatabase = () => {
         throw new Error("Falha ao buscar Chromebooks.");
       }
 
+      // 2. Busca empréstimos ativos concorrentes para os mesmos IDs
+      const { data: activeLoans } = await supabase
+        .from('loan_history')
+        .select('chromebook_id, student_name')
+        .in('chromebook_id', chromebookIds)
+        .in('status', ['ativo', 'atrasado']);
+
+      const activeLoanMap = new Set((activeLoans || []).map(l => l.chromebook_id));
       const chromebookMap = new Map(chromebooks.map(cb => [cb.chromebook_id, cb]));
       const loansToInsert = [];
+      const successfullyLoanedIds: string[] = [];
 
       for (const data of loanDataList) {
         const chromebook = chromebookMap.get(data.chromebookId);
+        const hasActiveLoan = activeLoanMap.has(data.chromebookId);
 
-        if (!chromebook || chromebook.status !== 'disponivel') {
+        if (!chromebook || chromebook.status !== 'disponivel' || hasActiveLoan) {
           errorCount++;
-          // Toast específico para o item que falhou
           toast({
-            title: "Erro no Lote",
-            description: `Chromebook ${data.chromebookId} não encontrado ou não está disponível.`,
+            title: "Item Indisponível",
+            description: `Chromebook ${data.chromebookId} já possui empréstimo ativo ou não está disponível.`,
             variant: "destructive"
           });
           continue;
@@ -408,6 +434,7 @@ export const useDatabase = () => {
           created_by: user.id,
           reservation_id: data.reservationId
         });
+        successfullyLoanedIds.push(data.chromebookId);
       }
 
       if (loansToInsert.length > 0) {
@@ -420,6 +447,8 @@ export const useDatabase = () => {
           throw new Error(`Falha ao inserir ${loansToInsert.length} empréstimos.`);
         } else {
           successCount = loansToInsert.length;
+          // Sincroniza status dos chromebooks inseridos
+          Promise.all(successfullyLoanedIds.map(id => syncChromebookStatus(id))).catch(e => logger.warn('Erro ao sincronizar status pós-lote', e));
         }
       }
     } catch (e: any) {

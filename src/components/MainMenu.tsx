@@ -28,7 +28,7 @@ export function MainMenu({
 
   const [pendingReturnCount, setPendingReturnCount] = useState(0);
 
-  // NOVO EFEITO: Monitorar devoluções pendentes no localStorage para o Badge
+  // EFEITO OTIMIZADO: Monitorar devoluções pendentes reativamente sem polling
   useEffect(() => {
     const updateCount = () => {
       const pendingJson = localStorage.getItem('zelote_pending_returns');
@@ -45,9 +45,17 @@ export function MainMenu({
     };
 
     updateCount();
-    // Verifica a cada 2 segundos se houve novas capturas no menu de empréstimo
-    const interval = setInterval(updateCount, 2000);
-    return () => clearInterval(interval);
+
+    // Escuta mudanças de storage (entre abas), retorno ao foco da janela e evento interno
+    window.addEventListener('storage', updateCount);
+    window.addEventListener('focus', updateCount);
+    window.addEventListener('zelote_pending_returns_updated', updateCount);
+
+    return () => {
+      window.removeEventListener('storage', updateCount);
+      window.removeEventListener('focus', updateCount);
+      window.removeEventListener('zelote_pending_returns_updated', updateCount);
+    };
   }, []);
 
   const allMenuItems = [
