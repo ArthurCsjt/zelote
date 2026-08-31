@@ -71,8 +71,7 @@ export function QRCodeReader({ open, onOpenChange, onScan }: QRCodeReaderProps) 
 
   const lastScannedCodeRef = useRef<string>('');
   const lastScannedTimeRef = useRef<number>(0);
-  const scannedCodesSetRef.current = scannedCodesSetRef.current || new Set<string>();
-  const scannedCodesSetRefInst = useRef<Set<string>>(new Set());
+  const scannedCodesSetRef = useRef<Set<string>>(new Set());
   const [lastScannedText, setLastScannedText] = useState<string>('');
   const [alreadyScannedAlert, setAlreadyScannedAlert] = useState<string>('');
 
@@ -82,7 +81,7 @@ export function QRCodeReader({ open, onOpenChange, onScan }: QRCodeReaderProps) 
     setShowManualInput(false); 
     lastScannedCodeRef.current = '';
     lastScannedTimeRef.current = 0;
-    scannedCodesSetRefInst.current.clear();
+    scannedCodesSetRef.current.clear();
     setLastScannedText('');
     setAlreadyScannedAlert('');
 
@@ -118,7 +117,7 @@ export function QRCodeReader({ open, onOpenChange, onScan }: QRCodeReaderProps) 
     const onScanSuccess = (decodedText: string) => {
       const now = Date.now();
       const cleanCode = decodedText.trim();
-      const isAlreadyInSession = scannedCodesSetRefInst.current.has(cleanCode);
+      const isAlreadyInSession = scannedCodesSetRef.current.has(cleanCode);
       const isSameCode = cleanCode === lastScannedCodeRef.current;
       const timeSinceLastScan = now - lastScannedTimeRef.current;
 
@@ -146,7 +145,7 @@ export function QRCodeReader({ open, onOpenChange, onScan }: QRCodeReaderProps) 
       }
 
       // NOVO CÓDIGO LIDO COM SUCESSO:
-      scannedCodesSetRefInst.current.add(cleanCode);
+      scannedCodesSetRef.current.add(cleanCode);
       lastScannedCodeRef.current = cleanCode;
       lastScannedTimeRef.current = now;
       setLastScannedText(cleanCode);
