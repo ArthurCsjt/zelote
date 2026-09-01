@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import Layout from '@/components/Layout';
 import { useProfileRole } from '@/hooks/use-profile-role';
 import { useNavigate } from 'react-router-dom';
@@ -6,10 +6,11 @@ import { CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { UserManagement } from './parts/UserManagement';
 import { DataMaintenance } from '@/components/DataMaintenance';
 import { Button } from '@/components/ui/button';
-import { LogOut, Loader2, Settings as SettingsIcon } from 'lucide-react';
+import { LogOut, Loader2, Settings as SettingsIcon, Download, HelpCircle, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { EmailTestCard } from '@/components/EmailTestCard';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
+import { usePWAInstall } from '@/contexts/PWAInstallContext';
 import { Switch } from '@/components/ui/switch';
 import { BellRing, BellOff, RefreshCw, Smartphone } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -21,36 +22,8 @@ const Settings = () => {
   const navigate = useNavigate();
 
   const { isSubscribed, subscribeToPush, unsubscribeFromPush, loading: pushLoading } = usePushNotifications();
+  const { isInstalled, isInstallable, isIOS, isAndroid, promptInstall, openInstallGuide } = usePWAInstall();
   const { toast } = useToast();
-
-
-
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
-  const [isInstallable, setIsInstallable] = useState(false);
-
-  useEffect(() => {
-    const handleBeforeInstallPrompt = (e: any) => {
-      e.preventDefault();
-      setDeferredPrompt(e);
-      setIsInstallable(true);
-    };
-
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-
-    return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    };
-  }, []);
-
-  const handleInstallClick = async () => {
-    if (!deferredPrompt) return;
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    if (outcome === 'accepted') {
-      setIsInstallable(false);
-    }
-    setDeferredPrompt(null);
-  };
 
   const checkForUpdates = async () => {
     if (!('serviceWorker' in navigator)) return;
@@ -65,8 +38,6 @@ const Settings = () => {
 
         await registration.update();
 
-        // Se houver atualização, o PwaUpdatePrompt será acionado via virtual:pwa-register
-        // Se não houver após alguns segundos, avisamos o usuário
         setTimeout(() => {
           toast({
             title: "Sistema Atualizado",
@@ -157,34 +128,58 @@ const Settings = () => {
           </div>
         </div>
 
-        {/* 2. Versão e Atualizações - PWA */}
+        {/* 2. Aplicativo Zelote & Instalação (PWA) */}
         <div className="neo-card p-6">
-          <div className="flex items-center justify-between gap-4 flex-wrap">
-            <div className="flex items-center gap-3">
-              <div className="p-3 bg-blue-500 border-2 border-black dark:border-white shadow-[3px_3px_0px_0px_#000] dark:shadow-[3px_3px_0px_0px_#fff]">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex items-start md:items-center gap-3">
+              <div className="p-3 bg-blue-500 border-2 border-black dark:border-white shadow-[3px_3px_0px_0px_#000] dark:shadow-[3px_3px_0px_0px_#fff] shrink-0">
                 <Smartphone className="h-6 w-6 text-white" />
               </div>
               <div>
-                <h3 className="text-xl font-black uppercase tracking-tight">App e Versão</h3>
+                <div className="flex items-center gap-2 mb-1 flex-wrap">
+                  <h3 className="text-xl font-black uppercase tracking-tight">Aplicativo Zelote</h3>
+                  {isInstalled ? (
+                    <span className="inline-flex items-center gap-1 text-[11px] font-black uppercase px-2 py-0.5 bg-green-500 text-white border border-black shadow-[2px_2px_0px_0px_#000]">
+                      <CheckCircle2 className="h-3 w-3" /> Instalado
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 text-[11px] font-black uppercase px-2 py-0.5 bg-amber-400 text-black border border-black shadow-[2px_2px_0px_0px_#000]">
+                      {isIOS ? '📱 iOS / Safari' : isAndroid ? '📱 Android' : '💻 Navegador Web'}
+                    </span>
+                  )}
+                </div>
                 <p className="text-sm font-bold text-muted-foreground uppercase">
-                  v1.0.0 • {isInstallable ? "Disponível para Instalação" : "App Instalado"}
+                  {isInstalled
+                    ? "Rodando em modo aplicativo nativo no dispositivo"
+                    : "Instale no celular para acesso rápido pela tela inicial e notificações"}
                 </p>
               </div>
             </div>
-            <div className="flex gap-3">
-              {isInstallable && (
+
+            <div className="flex flex-wrap gap-2.5 items-center">
+              {!isInstalled ? (
                 <Button
-                  onClick={handleInstallClick}
-                  className="neo-btn bg-green-500 hover:bg-green-600 text-white font-bold uppercase tracking-wide h-10 px-6"
+                  onClick={() => promptInstall()}
+                  className="neo-btn bg-green-500 hover:bg-green-600 text-white font-bold uppercase tracking-wide h-10 px-5 shadow-[3px_3px_0px_0px_#000]"
                 >
-                  <Smartphone className="h-4 w-4 mr-2" />
-                  Instalar App
+                  <Download className="h-4 w-4 mr-2" />
+                  Baixar / Instalar App
+                </Button>
+              ) : (
+                <Button
+                  variant="outline"
+                  onClick={openInstallGuide}
+                  className="neo-btn bg-zinc-100 dark:bg-zinc-800 border-2 border-black dark:border-white font-bold uppercase tracking-wide h-10 px-4"
+                >
+                  <HelpCircle className="h-4 w-4 mr-1.5" />
+                  Instruções
                 </Button>
               )}
+
               <Button
                 variant="outline"
                 onClick={checkForUpdates}
-                className="neo-btn bg-white dark:bg-zinc-900 border-2 border-black dark:border-white font-bold uppercase tracking-wide h-10 px-6 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                className="neo-btn bg-white dark:bg-zinc-900 border-2 border-black dark:border-white font-bold uppercase tracking-wide h-10 px-4 hover:bg-zinc-100 dark:hover:bg-zinc-800"
               >
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Verificar Atualizações

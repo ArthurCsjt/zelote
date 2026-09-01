@@ -25,6 +25,9 @@ import Layout from "./components/Layout";
 import { supabase } from "./integrations/supabase/client";
 import { cn } from "./lib/utils";
 import { PWAUpdater } from "./components/PWAUpdater";
+import { PWAInstallProvider } from "./contexts/PWAInstallContext";
+import { PWAInstallPrompt } from "./components/PWAInstallPrompt";
+import { PWAInstallGuideModal } from "./components/PWAInstallGuideModal";
 
 const queryClient = new QueryClient();
 
@@ -98,47 +101,51 @@ const App = () => {
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
-          {/* REMOVIDO: DatabaseProvider - usar useDatabase hook diretamente nos componentes */}
-          <PrintProvider>
-            <BrowserRouter>
-              <AuthRedirectHandler />
-              <PWAUpdater />
-              <Routes>
-                <Route path="/login" element={<Login />} />
+          <PWAInstallProvider>
+            {/* REMOVIDO: DatabaseProvider - usar useDatabase hook diretamente nos componentes */}
+            <PrintProvider>
+              <BrowserRouter>
+                <AuthRedirectHandler />
+                <PWAUpdater />
+                <PWAInstallPrompt />
+                <PWAInstallGuideModal />
+                <Routes>
+                  <Route path="/login" element={<Login />} />
 
-                {/* ROTA DE CALLBACK DO OAUTH (Google, etc.) */}
-                <Route path="/auth/callback" element={<AuthCallback />} />
+                  {/* ROTA DE CALLBACK DO OAUTH (Google, etc.) */}
+                  <Route path="/auth/callback" element={<AuthCallback />} />
 
-                <Route path="/update-password" element={<UpdatePasswordPage />} />
+                  <Route path="/update-password" element={<UpdatePasswordPage />} />
 
 
-                <Route path="/" element={
-                  <ProtectedRoute>
-                    <Index />
-                  </ProtectedRoute>
-                } />
+                  <Route path="/" element={
+                    <ProtectedRoute>
+                      <Index />
+                    </ProtectedRoute>
+                  } />
 
-                <Route path="/settings" element={
-                  <ProtectedRoute>
-                    <Settings />
-                  </ProtectedRoute>
-                } />
+                  <Route path="/settings" element={
+                    <ProtectedRoute>
+                      <Settings />
+                    </ProtectedRoute>
+                  } />
 
-                {/* ROTA DE IMPRESSÃO: Não usa ProtectedRoute nem Layout */}
-                <Route path="/print-preview" element={<PrintPreviewPage />} />
+                  {/* ROTA DE IMPRESSÃO: Não usa ProtectedRoute nem Layout */}
+                  <Route path="/print-preview" element={<PrintPreviewPage />} />
 
-                {/* ROTA DE AGENDAMENTO */}
-                <Route path="/agendamento" element={
-                  <ProtectedRoute>
-                    <SchedulingPage />
-                  </ProtectedRoute>
-                } />
+                  {/* ROTA DE AGENDAMENTO */}
+                  <Route path="/agendamento" element={
+                    <ProtectedRoute>
+                      <SchedulingPage />
+                    </ProtectedRoute>
+                  } />
 
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </BrowserRouter>
-            <ToasterWrapper />
-          </PrintProvider>
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </BrowserRouter>
+              <ToasterWrapper />
+            </PrintProvider>
+          </PWAInstallProvider>
         </AuthProvider>
       </QueryClientProvider>
     </ErrorBoundary>
