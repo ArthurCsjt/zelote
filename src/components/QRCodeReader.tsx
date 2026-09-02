@@ -284,7 +284,7 @@ export function QRCodeReader({
                 )}
               </div>
 
-              {/* Lado Direito: BADGE CONTADOR DE QR CODES (HUD) */}
+              {/* Lado Direito: BADGE CONTADOR DE QR CODES (HUD) - mostra apenas leituras da sessão atual */}
               <div
                 className={cn(
                   "shrink-0 bg-blue-600 text-white border-2 border-black font-black shadow-[3px_3px_0px_0px_#000]",
@@ -294,13 +294,8 @@ export function QRCodeReader({
               >
                 <QrCode className="h-3.5 w-3.5" />
                 <span>
-                  <strong>{totalCount}</strong> {totalCount === 1 ? 'LIDO' : 'LIDOS'}
+                  <strong>{sessionScannedList.length}</strong> {sessionScannedList.length === 1 ? 'LIDO' : 'LIDOS'}
                 </span>
-                {sessionScannedList.length > 0 && initialCount > 0 && (
-                  <span className="text-[10px] bg-white/20 px-1 py-0.2 rounded font-bold">
-                    +{sessionScannedList.length}
-                  </span>
-                )}
               </div>
             </div>
 
