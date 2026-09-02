@@ -51,7 +51,7 @@ export function DeviceListInput({
   const [deviceList, setDeviceList] = useState<DeviceListItem[]>([]);
   const [isQRReaderOpen, setIsQRReaderOpen] = useState(false);
   const { chromebooks, loading: searchLoading, fetchChromebooks } = useChromebookSearch();
-  const { getActiveLoans, returnChromebookById } = useDatabase();
+  const { getActiveLoans, returnChromebookById, syncChromebookStatus } = useDatabase();
   const queryClient = useQueryClient();
 
   const [activeLoansCache, setActiveLoansCache] = useState<LoanHistoryItem[]>([]);
@@ -90,15 +90,29 @@ export function DeviceListInput({
         if (!chromebook) return null;
 
         const activeLoan = activeLoansCache.find(loan => loan.chromebook_id === id);
+        const hasActiveLoan = !!activeLoan;
+
+        // Calcula o status real com base na posse ativa
+        let computedStatus = chromebook.status;
+        if (hasActiveLoan) {
+          computedStatus = 'emprestado';
+        } else if (computedStatus === 'emprestado') {
+          // Se não há empréstimo ativo no sistema, o status real para novo empréstimo é disponível
+          computedStatus = 'disponivel';
+        }
 
         return {
           ...chromebook,
+          status: computedStatus,
           loanStatus: activeLoan ? (activeLoan.status === 'atrasado' ? 'atrasado' : 'ativo') : 'inativo'
         } as DeviceListItem;
       })
       .filter((cb): cb is DeviceListItem => !!cb);
 
-    if (initialList.length !== deviceList.length || initialList.some((item, index) => item.id !== deviceList[index]?.id)) {
+    if (
+      initialList.length !== deviceList.length ||
+      initialList.some((item, index) => item.id !== deviceList[index]?.id || item.status !== deviceList[index]?.status)
+    ) {
       setDeviceList(initialList);
     }
   }, [deviceIds, chromebooks, activeLoansCache]);
@@ -125,13 +139,26 @@ export function DeviceListInput({
 
     const activeLoan = activeLoansCache.find(loan => loan.chromebook_id === normalizedInput);
     const loanStatus: DeviceListItem['loanStatus'] = activeLoan ? (activeLoan.status === 'atrasado' ? 'atrasado' : 'ativo') : 'inativo';
+    const hasActiveLoan = !!activeLoan;
+
+    // Resolução de status dinâmico
+    let computedStatus = chromebook.status;
+    if (hasActiveLoan) {
+      computedStatus = 'emprestado';
+    } else if (computedStatus === 'emprestado') {
+      computedStatus = 'disponivel';
+      // Sincroniza silenciosamente com o banco de dados em background para corrigir discrepâncias
+      if (syncChromebookStatus) {
+        syncChromebookStatus(chromebook.chromebook_id, false).catch(() => {});
+      }
+    }
 
     if (actionLabel === 'Empréstimo') {
       const isBusy = (activeLoan && (loanStatus === 'ativo' || loanStatus === 'atrasado')) || (chromebook.status === 'emprestado' && activeLoan);
       if (isBusy) {
         return {
           mustQuickReturn: true,
-          chromebook: { ...chromebook, loanStatus } as DeviceListItem,
+          chromebook: { ...chromebook, status: computedStatus, loanStatus } as DeviceListItem,
           activeLoan: activeLoan || null
         };
       }
@@ -143,8 +170,8 @@ export function DeviceListInput({
       }
     }
 
-    return { chromebook: { ...chromebook, loanStatus } as DeviceListItem };
-  }, [deviceList, chromebooks, actionLabel, activeLoansCache]);
+    return { chromebook: { ...chromebook, status: computedStatus, loanStatus } as DeviceListItem };
+  }, [deviceList, chromebooks, actionLabel, activeLoansCache, syncChromebookStatus]);
 
   const addDevice = useCallback(async (chromebook: ChromebookSearchResult) => {
     const validation = await validateAndNormalizeInput(chromebook.chromebook_id);
@@ -504,6 +531,9 @@ export function DeviceListInput({
         open={isQRReaderOpen}
         onOpenChange={setIsQRReaderOpen}
         onScan={handleQRCodeScan}
+        initialCount={deviceList.length}
+        existingCodes={deviceList.map(d => d.chromebook_id)}
+        title={actionLabel === 'Empréstimo' ? 'Escanear para Empréstimo' : 'Escanear para Devolução'}
       />
 
       <QuickReturnDialog

@@ -304,6 +304,9 @@ export const AuditScanner = () => {
         open={isScannerOpen}
         onOpenChange={setIsScannerOpen}
         onScan={handleScanSuccess}
+        initialCount={countedItems.length}
+        existingCodes={countedItems.map(c => c.chromebook_id)}
+        title="Auditoria de Inventário"
       />
     </>
   );
