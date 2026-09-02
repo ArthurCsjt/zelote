@@ -867,20 +867,25 @@
 }
 
 /* --- QR Scanner Fixes --- */
-#qr-code-reader {
+#qr-code-reader,
+#qr-code-scanner-container {
   width: 100%;
-  max-width: 400px;
   margin: 0 auto;
-  aspect-ratio: 1/1;
-  border-radius: var(--radius);
+  border-radius: 0;
   overflow: hidden;
   position: relative;
+  border: none !important;
 }
 
-#qr-code-reader video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+#qr-code-reader video,
+#qr-code-scanner-container video {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+}
+
+#qr-code-scanner-container img {
+  display: none !important;
 }
 
 /* PWA and Layout specific styles */

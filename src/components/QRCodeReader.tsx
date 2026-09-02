@@ -304,6 +304,73 @@ export function QRCodeReader({
               </div>
             </div>
 
+            {/* HUD VIEWFINDER COM 4 PONTAS ULTRA DESTACADAS */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+              <div
+                className={cn(
+                  "relative w-[230px] h-[230px] sm:w-[250px] sm:h-[250px] transition-all duration-200",
+                  justScannedAnim && "scale-105"
+                )}
+              >
+                {/* 1. CANTO SUPERIOR ESQUERDO */}
+                <div
+                  className={cn(
+                    "absolute -top-1 -left-1 w-9 h-9 border-t-[6px] border-l-[6px] transition-all duration-200",
+                    justScannedAnim
+                      ? "border-green-400 drop-shadow-[0_0_18px_#22c55e]"
+                      : alreadyScannedAlert
+                      ? "border-amber-400 drop-shadow-[0_0_18px_#f59e0b]"
+                      : "border-white/90 drop-shadow-[0_0_8px_rgba(0,0,0,0.9)]"
+                  )}
+                />
+
+                {/* 2. CANTO SUPERIOR DIREITO */}
+                <div
+                  className={cn(
+                    "absolute -top-1 -right-1 w-9 h-9 border-t-[6px] border-r-[6px] transition-all duration-200",
+                    justScannedAnim
+                      ? "border-green-400 drop-shadow-[0_0_18px_#22c55e]"
+                      : alreadyScannedAlert
+                      ? "border-amber-400 drop-shadow-[0_0_18px_#f59e0b]"
+                      : "border-white/90 drop-shadow-[0_0_8px_rgba(0,0,0,0.9)]"
+                  )}
+                />
+
+                {/* 3. CANTO INFERIOR ESQUERDO */}
+                <div
+                  className={cn(
+                    "absolute -bottom-1 -left-1 w-9 h-9 border-b-[6px] border-l-[6px] transition-all duration-200",
+                    justScannedAnim
+                      ? "border-green-400 drop-shadow-[0_0_18px_#22c55e]"
+                      : alreadyScannedAlert
+                      ? "border-amber-400 drop-shadow-[0_0_18px_#f59e0b]"
+                      : "border-white/90 drop-shadow-[0_0_8px_rgba(0,0,0,0.9)]"
+                  )}
+                />
+
+                {/* 4. CANTO INFERIOR DIREITO */}
+                <div
+                  className={cn(
+                    "absolute -bottom-1 -right-1 w-9 h-9 border-b-[6px] border-r-[6px] transition-all duration-200",
+                    justScannedAnim
+                      ? "border-green-400 drop-shadow-[0_0_18px_#22c55e]"
+                      : alreadyScannedAlert
+                      ? "border-amber-400 drop-shadow-[0_0_18px_#f59e0b]"
+                      : "border-white/90 drop-shadow-[0_0_8px_rgba(0,0,0,0.9)]"
+                  )}
+                />
+
+                {/* FLASH DE SUCESSO / LEITURA NO CENTRO DA MIRA */}
+                {justScannedAnim && (
+                  <div className="absolute inset-0 bg-green-500/25 border-2 border-green-400 shadow-[0_0_30px_#22c55e,inset_0_0_20px_#22c55e] flex items-center justify-center animate-in zoom-in-75 duration-200">
+                    <div className="bg-green-500 text-black p-3 rounded-full border-2 border-black shadow-[0_0_20px_#22c55e]">
+                      <Check className="h-8 w-8 stroke-[3]" />
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
             {/* CONTAINER DA CÂMERA */}
             <div id={QR_SCANNER_ELEMENT_ID} className="w-full min-h-[290px] sm:min-h-[320px] bg-zinc-900" />
 
