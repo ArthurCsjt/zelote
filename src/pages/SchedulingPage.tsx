@@ -127,7 +127,6 @@ const SchedulingPage = () => {
     }
   }, [totalAvailableChromebooks]);
 
-  // Tenta buscar do banco em segundo plano para sincronizar entre dispositivos
   useEffect(() => {
     if (!isLoadingTotal && totalAvailableChromebooks > 0) {
       getSystemSetting('chromebook_operational_limit', null).then((val) => {
@@ -140,7 +139,7 @@ const SchedulingPage = () => {
         }
       }).catch(() => {/* silencioso se tabela não existir */ });
     }
-  }, [isLoadingTotal, totalAvailableChromebooks]);
+  }, [isLoadingTotal, totalAvailableChromebooks, getSystemSetting]);
 
   const handleUpdateLimit = async (newLimit: number) => {
     // 1. Atualiza o estado React imediatamente (feedback visual instantâneo)

@@ -27,6 +27,30 @@ export function usePushNotifications() {
     const [loading, setLoading] = useState(true);
     const [subscription, setSubscription] = useState<PushSubscription | null>(null);
 
+    const saveSubscriptionToDb = useCallback(async (sub: PushSubscription) => {
+        if (!user) return;
+
+        // Serializa o objeto
+        const subJson = sub.toJSON();
+
+        if (!subJson.keys || !subJson.endpoint) return;
+
+        // Salva ou atualiza no Supabase
+        // Usamos upsert baseado no endpoint que é unique
+        const { error } = await supabase
+            .from('push_subscriptions')
+            .upsert({
+                user_id: user.id,
+                endpoint: subJson.endpoint,
+                p256dh: subJson.keys.p256dh,
+                auth: subJson.keys.auth,
+            }, { onConflict: 'endpoint' });
+
+        if (error) {
+            console.error('Erro ao salvar inscrição no DB:', error);
+        }
+    }, [user]);
+
     // Verifica o status da inscrição atual
     const checkSubscription = useCallback(async () => {
         if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
@@ -55,35 +79,11 @@ export function usePushNotifications() {
         } finally {
             setLoading(false);
         }
-    }, [user]);
+    }, [user, saveSubscriptionToDb]);
 
     useEffect(() => {
         checkSubscription();
     }, [checkSubscription]);
-
-    const saveSubscriptionToDb = async (sub: PushSubscription) => {
-        if (!user) return;
-
-        // Serializa o objeto
-        const subJson = sub.toJSON();
-
-        if (!subJson.keys || !subJson.endpoint) return;
-
-        // Salva ou atualiza no Supabase
-        // Usamos upsert baseado no endpoint que é unique
-        const { error } = await supabase
-            .from('push_subscriptions')
-            .upsert({
-                user_id: user.id,
-                endpoint: subJson.endpoint,
-                p256dh: subJson.keys.p256dh,
-                auth: subJson.keys.auth,
-            }, { onConflict: 'endpoint' });
-
-        if (error) {
-            console.error('Erro ao salvar inscrição no DB:', error);
-        }
-    };
 
     const subscribeToPush = async () => {
         if (!('serviceWorker' in navigator)) {

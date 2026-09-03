@@ -118,7 +118,8 @@ export function limitStringLength(input: string, maxLength: number = 1000): stri
  */
 export function removeSpecialChars(input: string): string {
   if (!input) return '';
-  return input.replace(/[<>\"'&\x00-\x1f\x7f-\x9f]/g, '');
+  // eslint-disable-next-line no-control-regex
+  return input.replace(/[<>"'&\x00-\x1f\x7f-\x9f]/g, '');
 }
 
 /**

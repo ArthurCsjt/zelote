@@ -111,7 +111,7 @@ export const PrintPreviewPage: React.FC = () => {
           // Ajusta a escala da fonte caso o texto seja muito longo
           const maxTextWidth = 480; // Margem segura
           const serialText = item.serial_number;
-          let textWidth = ctx.measureText(serialText).width;
+          const textWidth = ctx.measureText(serialText).width;
 
           if (textWidth > maxTextWidth) {
             serialFontSize = Math.floor(serialFontSize * (maxTextWidth / textWidth));
