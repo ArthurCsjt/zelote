@@ -70,6 +70,17 @@ export default defineConfig({
     },
     dedupe: ['react', 'react-dom'],
   },
+  build: {
+    chunkSizeWarningLimit: 800,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-pdf': ['jspdf'],
+          'vendor-charts': ['recharts'],
+        }
+      }
+    }
+  },
   server: {
     host: true,   // Permite acesso pela rede
     // Removendo https: true

@@ -12,14 +12,7 @@ import { AuditProvider } from './providers/AuditProvider';
 import logger from "@/utils/logger";
 
 import { ErrorBoundary } from "./components/ErrorBoundary";
-import Index from "./pages/Index";
-import Login from "./pages/Login";
-import NotFound from "./pages/NotFound";
-import Settings from "./pages/Settings";
-import { PrintPreviewPage } from "./pages/PrintPreviewPage";
-import SchedulingPage from "./pages/SchedulingPage";
-import UpdatePasswordPage from "./pages/UpdatePassword";
-import AuthCallback from "./pages/AuthCallback";
+import { LoadingSpinner } from "./components/ui/loading-spinner";
 import Layout from "./components/Layout";
 
 import { supabase } from "./integrations/supabase/client";
@@ -29,7 +22,35 @@ import { PWAInstallProvider } from "./contexts/PWAInstallContext";
 import { PWAInstallPrompt } from "./components/PWAInstallPrompt";
 import { PWAInstallGuideModal } from "./components/PWAInstallGuideModal";
 
-const queryClient = new QueryClient();
+// Code-splitting via React.lazy para carregamento sob demanda ultrarrápido
+const Index = React.lazy(() => import("./pages/Index"));
+const Login = React.lazy(() => import("./pages/Login"));
+const NotFound = React.lazy(() => import("./pages/NotFound"));
+const Settings = React.lazy(() => import("./pages/Settings"));
+const PrintPreviewPage = React.lazy(() => import("./pages/PrintPreviewPage").then(m => ({ default: m.PrintPreviewPage })));
+const SchedulingPage = React.lazy(() => import("./pages/SchedulingPage"));
+const UpdatePasswordPage = React.lazy(() => import("./pages/UpdatePassword"));
+const AuthCallback = React.lazy(() => import("./pages/AuthCallback"));
+
+// Fallback visual leve durante o carregamento de novas rotas
+const PageLoadingFallback = () => (
+  <div className="min-h-[60vh] flex flex-col items-center justify-center gap-3 p-8">
+    <LoadingSpinner size="lg" className="border-blue-600 border-t-transparent" />
+    <span className="text-xs font-black uppercase tracking-wider text-muted-foreground">Carregando página...</span>
+  </div>
+);
+
+// Cache Inteligente do TanStack Query: evita refetches excessivos em mobile
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 2, // 2 minutos de dados considerados frescos
+      gcTime: 1000 * 60 * 10,   // 10 minutos de retenção em memória
+      refetchOnWindowFocus: false, // Não re-dispara requisições ao alternar abas no celular
+      retry: 1,
+    },
+  },
+});
 
 /**
  * Componente que escuta eventos globais de autenticação e hash da URL
@@ -109,39 +130,40 @@ const App = () => {
                 <PWAUpdater />
                 <PWAInstallPrompt />
                 <PWAInstallGuideModal />
-                <Routes>
-                  <Route path="/login" element={<Login />} />
+                <React.Suspense fallback={<PageLoadingFallback />}>
+                  <Routes>
+                    <Route path="/login" element={<Login />} />
 
-                  {/* ROTA DE CALLBACK DO OAUTH (Google, etc.) */}
-                  <Route path="/auth/callback" element={<AuthCallback />} />
+                    {/* ROTA DE CALLBACK DO OAUTH (Google, etc.) */}
+                    <Route path="/auth/callback" element={<AuthCallback />} />
 
-                  <Route path="/update-password" element={<UpdatePasswordPage />} />
+                    <Route path="/update-password" element={<UpdatePasswordPage />} />
 
+                    <Route path="/" element={
+                      <ProtectedRoute>
+                        <Index />
+                      </ProtectedRoute>
+                    } />
 
-                  <Route path="/" element={
-                    <ProtectedRoute>
-                      <Index />
-                    </ProtectedRoute>
-                  } />
+                    <Route path="/settings" element={
+                      <ProtectedRoute>
+                        <Settings />
+                      </ProtectedRoute>
+                    } />
 
-                  <Route path="/settings" element={
-                    <ProtectedRoute>
-                      <Settings />
-                    </ProtectedRoute>
-                  } />
+                    {/* ROTA DE IMPRESSÃO: Não usa ProtectedRoute nem Layout */}
+                    <Route path="/print-preview" element={<PrintPreviewPage />} />
 
-                  {/* ROTA DE IMPRESSÃO: Não usa ProtectedRoute nem Layout */}
-                  <Route path="/print-preview" element={<PrintPreviewPage />} />
+                    {/* ROTA DE AGENDAMENTO */}
+                    <Route path="/agendamento" element={
+                      <ProtectedRoute>
+                        <SchedulingPage />
+                      </ProtectedRoute>
+                    } />
 
-                  {/* ROTA DE AGENDAMENTO */}
-                  <Route path="/agendamento" element={
-                    <ProtectedRoute>
-                      <SchedulingPage />
-                    </ProtectedRoute>
-                  } />
-
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </React.Suspense>
               </BrowserRouter>
               <ToasterWrapper />
             </PrintProvider>
