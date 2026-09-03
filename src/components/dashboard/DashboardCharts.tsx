@@ -1,7 +1,7 @@
 import React from 'react';
 import { CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line } from "recharts";
-import { BarChart as BarChartIcon, PieChart as PieChartIcon, Users, TrendingUp, AlertTriangle, Loader2, BookOpen, Activity, GraduationCap, Briefcase, UserCheck } from "lucide-react";
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, AreaChart, Area } from "recharts";
+import { BarChart as BarChartIcon, PieChart as PieChartIcon, Users, TrendingUp, AlertTriangle, Loader2, BookOpen, Activity, GraduationCap, Briefcase, UserCheck, Zap } from "lucide-react";
 import { ChartContainer, ChartTooltipContent, ChartLegendContent } from "@/components/ui/chart";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { cn } from '@/lib/utils';
@@ -53,17 +53,11 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
     );
   }
 
-  // Cores para o gráfico de pizza de Status
-  const COLORS = ['#2563EB', '#22C55E'];
-
   // Renderiza o histórico completo
   if (periodView === 'history') {
     return <LoanHistory history={history} isNewLoan={isNewLoan} />;
   }
 
-  // Renderiza os gráficos para o intervalo de tempo selecionado
-
-  const chartTitle = periodChartData.length > 2 ? 'Atividade Diária' : 'Atividade Horária';
   const chartDescription = periodChartData.length > 2 ? 'Movimentação ao longo dos dias selecionados' : 'Movimentação ao longo das horas selecionadas';
   const chartDataKey = 'label';
 
@@ -72,7 +66,13 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
     totalActive = 0,
     loansByUserType = {},
     topLoanContexts = [],
+    peakHour = null,
+    fleetDistribution = [],
   } = stats || {};
+
+  // Total de empréstimos e devoluções no gráfico
+  const totalLoansInChart = periodChartData.reduce((acc, curr) => acc + (curr.empréstimos || 0), 0);
+  const totalReturnsInChart = periodChartData.reduce((acc, curr) => acc + (curr.devoluções || 0), 0);
 
   // Total de empréstimos no período (soma por tipo de usuário)
   const totalLoansInPeriod =
@@ -81,40 +81,39 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
     (loansByUserType.funcionario || 0) ||
     1;
 
-  // Mapeamento de cores para o gráfico de duração
-  const DURATION_COLORS: Record<string, string> = {
-    Aluno: '#3B82F6', // Azul (menu-blue)
-    Professor: '#10B981', // Verde (menu-green)
-    Funcionario: '#F59E0B', // Laranja (menu-amber)
-  };
-
-  // Mapeamento de dados para o gráfico de duração (garantindo que o nome seja a chave)
-  const durationChartData = durationData.map((d: any) => ({
-    name: d.name,
-    minutos: d.minutos,
-    color: DURATION_COLORS[d.name] || '#9CA3AF',
-  }));
+  // Dados da Frota Completa (4 fatias)
+  const fleetData = fleetDistribution.length > 0 ? fleetDistribution : [
+    { name: "Livres", value: availableChromebooks, color: "#22C55E" },
+    { name: "Fixos em Sala", value: stats?.totalFixed || 0, color: "#3B82F6" },
+    { name: "Em Uso Agora", value: totalActive, color: "#F59E0B" },
+    { name: "Manutenção", value: stats?.totalMaintenance || 0, color: "#EF4444" },
+  ];
 
   const getAnimationClass = (delay: number) =>
     isMounted ? `animate-fadeIn animation-delay-${delay}` : 'opacity-0';
 
-
   return (
     <>
       <div className="grid gap-8 grid-cols-1 lg:grid-cols-2">
+        {/* GRÁFICO 1: Atividade (Empréstimos vs Devoluções) */}
         <div className={cn("border-4 border-black dark:border-white bg-white dark:bg-zinc-900 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.2)]", getAnimationClass(600))}>
-          <CardHeader className="flex flex-row items-center justify-between border-b-4 border-black dark:border-white bg-gray-50 dark:bg-zinc-900/50 p-6">
+          <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b-4 border-black dark:border-white bg-gray-50 dark:bg-zinc-900/50 p-4 sm:p-6">
             <div>
-              <CardTitle className="text-xl font-black uppercase">Gráfico de Atividade</CardTitle>
-              <CardDescription className="font-mono text-xs font-bold text-gray-500 mt-1">
+              <CardTitle className="text-lg sm:text-xl font-black uppercase">Gráfico de Atividade</CardTitle>
+              <CardDescription className="font-mono text-xs font-bold text-gray-500 mt-0.5">
                 {chartDescription}
               </CardDescription>
             </div>
-            <div className="p-2 border-2 border-black dark:border-white bg-white dark:bg-zinc-900 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)]">
-              <BarChartIcon className="h-5 w-5 text-black dark:text-white" />
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="px-2 py-0.5 text-xs font-mono font-bold bg-blue-100 text-blue-900 dark:bg-blue-950 dark:text-blue-200 border border-black">
+                {totalLoansInChart} Saídas
+              </span>
+              <span className="px-2 py-0.5 text-xs font-mono font-bold bg-green-100 text-green-900 dark:bg-green-950 dark:text-green-200 border border-black">
+                {totalReturnsInChart} Retornos
+              </span>
             </div>
           </CardHeader>
-          <CardContent className="h-[350px] p-6">
+          <CardContent className="h-[350px] p-4 sm:p-6">
             <ChartContainer
               config={{
                 empréstimos: { label: "Empréstimos", color: "#2563EB" },
@@ -153,20 +152,23 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
           </CardContent>
         </div>
 
-        {/* NOVO GRÁFICO: Ocupação Horária */}
+        {/* GRÁFICO 2: Ocupação Horária (com Gradiente e Pico) */}
         <div className={cn("border-4 border-black dark:border-white bg-white dark:bg-zinc-900 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.2)]", getAnimationClass(700))}>
-          <CardHeader className="flex flex-row items-center justify-between border-b-4 border-black dark:border-white bg-gray-50 dark:bg-zinc-900/50 p-6">
+          <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b-4 border-black dark:border-white bg-gray-50 dark:bg-zinc-900/50 p-4 sm:p-6">
             <div>
-              <CardTitle className="text-xl font-black uppercase">Taxa de Ocupação Horária</CardTitle>
-              <CardDescription className="font-mono text-xs font-bold text-gray-500 mt-1">
-                Ocupação do inventário móvel no período
+              <CardTitle className="text-lg sm:text-xl font-black uppercase">Taxa de Ocupação da Frota</CardTitle>
+              <CardDescription className="font-mono text-xs font-bold text-gray-500 mt-0.5">
+                Demanda percentual ao longo do tempo
               </CardDescription>
             </div>
-            <div className="p-2 border-2 border-black dark:border-white bg-white dark:bg-zinc-900 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)]">
-              <TrendingUp className="h-5 w-5 text-black dark:text-white" />
-            </div>
+            {peakHour && (
+              <Badge className="bg-amber-400 text-black border-2 border-black font-black uppercase text-[10px] tracking-tight shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] rounded-none">
+                <Zap className="h-3 w-3 mr-1" />
+                Pico: {peakHour.label} ({peakHour.occupancy}%)
+              </Badge>
+            )}
           </CardHeader>
-          <CardContent className="h-[350px] p-6">
+          <CardContent className="h-[350px] p-4 sm:p-6">
             <ChartContainer
               config={{
                 ocupação: { label: "Ocupação (%)", color: "#EF4444" },
@@ -174,7 +176,13 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
               className="w-full h-full"
             >
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={periodChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <AreaChart data={periodChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="occupancyGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#EF4444" stopOpacity={0.35}/>
+                      <stop offset="95%" stopColor="#EF4444" stopOpacity={0.0}/>
+                    </linearGradient>
+                  </defs>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
                   <XAxis dataKey={chartDataKey} tick={{ fontSize: 11, fontWeight: 'bold' }} stroke="#000" />
                   <YAxis
@@ -186,16 +194,18 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
                   <Tooltip content={<ChartTooltipContent className="border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-none" />} />
                   <Legend content={<ChartLegendContent />} wrapperStyle={{ fontSize: '12px', paddingTop: '20px', fontWeight: 'bold' }} />
 
-                  <Line
+                  <Area
                     type="monotone"
                     dataKey="ocupação"
                     stroke="#EF4444"
                     strokeWidth={3}
+                    fillOpacity={1}
+                    fill="url(#occupancyGradient)"
                     dot={{ stroke: '#000', strokeWidth: 2, r: 4, fill: '#EF4444' }}
                     activeDot={{ stroke: '#000', strokeWidth: 2, r: 6, fill: '#EF4444' }}
                     name="Ocupação (%)"
                   />
-                </LineChart>
+                </AreaChart>
               </ResponsiveContainer>
             </ChartContainer>
           </CardContent>
@@ -203,12 +213,13 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
       </div>
 
       <div className="grid gap-8 grid-cols-1 md:grid-cols-2 mt-8">
+        {/* GRÁFICO 3: Raio-X da Frota Completa (Livres, Fixos, Em Uso, Manutenção) */}
         <div className={cn("border-4 border-black dark:border-white bg-white dark:bg-zinc-900 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.2)]", getAnimationClass(800))}>
           <CardHeader className="flex flex-row items-center justify-between border-b-4 border-black dark:border-white bg-gray-50 dark:bg-zinc-900/50 p-6">
             <div>
-              <CardTitle className="text-xl font-black uppercase">Status dos Chromebooks</CardTitle>
+              <CardTitle className="text-xl font-black uppercase">Raio-X da Frota Completa</CardTitle>
               <CardDescription className="font-mono text-xs font-bold text-gray-500 mt-1">
-                Total de {totalChromebooks} equipamentos
+                Total de {totalChromebooks} equipamentos cadastrados
               </CardDescription>
             </div>
             <div className="p-2 border-2 border-black dark:border-white bg-white dark:bg-zinc-900 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)]">
@@ -218,27 +229,30 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
           <CardContent className="h-[350px] flex items-center justify-center p-6">
             <ChartContainer
               config={{
-                'Em Uso': { label: "Em Uso", color: "#3B82F6" },
-                'Disponíveis': { label: "Disponíveis", color: "#22C55E" },
+                'Livres p/ Empréstimo': { label: "Livres", color: "#22C55E" },
+                'Fixos em Sala': { label: "Fixos", color: "#3B82F6" },
+                'Em Uso Agora': { label: "Em Uso", color: "#F59E0B" },
+                'Em Manutenção': { label: "Manutenção", color: "#EF4444" },
               }}
               className="w-full h-full"
             >
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
                   <Pie
-                    data={[{ name: "Em Uso", value: totalActive }, { name: "Disponíveis", value: availableChromebooks }]}
+                    data={fleetData}
                     cx="50%"
                     cy="50%"
-                    innerRadius={60}
-                    outerRadius={90}
-                    fill="#8884d8"
+                    innerRadius={55}
+                    outerRadius={88}
                     paddingAngle={2}
                     dataKey="value"
                     stroke="#000"
                     strokeWidth={2}
-                    label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
+                    label={({ name, value }) => value > 0 ? `${name}: ${value}` : ''}
                   >
-                    {[{ name: "Em Uso", value: totalActive }, { name: "Disponíveis", value: availableChromebooks }].map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index]} stroke="#000" strokeWidth={2} />)}
+                    {fleetData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} stroke="#000" strokeWidth={2} />
+                    ))}
                   </Pie>
                   <Tooltip content={<ChartTooltipContent className="border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-none" />} />
                   <Legend content={<ChartLegendContent />} wrapperStyle={{ fontSize: '12px', paddingTop: '20px', fontWeight: 'bold' }} />

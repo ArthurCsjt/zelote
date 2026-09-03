@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { useDatabase } from '@/hooks/useDatabase';
+import { useDatabase, type Reservation } from '@/hooks/useDatabase';
 import { toast } from '@/hooks/use-toast';
 import type { LoanHistoryItem, Chromebook } from '@/types/database';
 import { format, startOfDay, isToday, isWithinInterval, subDays, differenceInMinutes, differenceInDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth, addDays, endOfDay } from "date-fns";
@@ -16,20 +16,48 @@ export interface TopLoanContext {
   userType: string;
 }
 
+export interface FixedClassroomGroup {
+  classroom: string;
+  count: number;
+  items: Chromebook[];
+}
+
+export interface DashboardOverdueLoan {
+  id: string;
+  chromebook_id: string;
+  student_name: string;
+  student_email: string;
+  user_type: string;
+  loan_date: string;
+  expected_return_date: string;
+  hoursOverdue: number;
+  daysOverdue: number;
+}
+
 export interface DashboardStats {
   totalChromebooks: number;
   availableChromebooks: number;
   totalActive: number;
+  totalFixed: number;
+  fixedByClassroom: FixedClassroomGroup[];
+  totalMaintenance: number;
+  maintenanceItems: Chromebook[];
+  overdueLoans: DashboardOverdueLoan[];
+  overdueCount: number;
+  todayReservationsCount: number;
+  todayChromebooksReserved: number;
+  fleetDistribution: { name: string; value: number; color: string }[];
+  peakHour: { label: string; count: number; occupancy: number } | null;
   totalInventoryUsageRate: number;
-  usageRateColor: 'green' | 'yellow' | 'red'; // NOVO: Cor semafórica
+  usageRateColor: 'green' | 'yellow' | 'red'; // Cor semafórica
   averageUsageTime: number;
   completionRate: number;
   loansByUserType: Record<string, number>;
   userTypeData: { name: string; value: number }[];
   durationData: { name: string; minutos: number }[];
   maxOccupancyRate: number; // Taxa de ocupação máxima
-  occupancyRateColor: 'green' | 'yellow' | 'red'; // NOVO: Cor semafórica para pico
-  topLoanContexts: TopLoanContext[]; // NOVO CAMPO
+  occupancyRateColor: 'green' | 'yellow' | 'red'; // Cor semafórica para pico
+  topLoanContexts: TopLoanContext[];
   totalMovable: number;
   availableMovable: number;
   reserveRate: number;
@@ -43,33 +71,39 @@ export interface DashboardStats {
 }
 
 export function useDashboardData(
-  startDate: Date | null, // NOVO: Data de início explícita
-  endDate: Date | null,   // NOVO: Data de fim explícita
+  startDate: Date | null,
+  endDate: Date | null,
   startHour: number = 7,
   endHour: number = 19
 ) {
-  const { getLoanHistory, getChromebooks } = useDatabase();
+  const { getLoanHistory, getChromebooks, getReservationsForWeek } = useDatabase();
   const [history, setHistory] = useState<LoanHistoryItem[]>([]);
   const [chromebooks, setChromebooks] = useState<Chromebook[]>([]);
+  const [reservations, setReservations] = useState<Reservation[]>([]);
   const [loading, setLoading] = useState(true);
 
   // --- Data Fetching ---
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const [historyData, chromebooksData] = await Promise.all([
+      const todayStr = format(new Date(), 'yyyy-MM-dd');
+      const nextWeekStr = format(addDays(new Date(), 7), 'yyyy-MM-dd');
+
+      const [historyData, chromebooksData, reservationsData] = await Promise.all([
         getLoanHistory(),
-        getChromebooks()
+        getChromebooks(),
+        getReservationsForWeek(todayStr, nextWeekStr).catch(() => [] as Reservation[])
       ]);
       setHistory(historyData);
       setChromebooks(chromebooksData);
+      setReservations(reservationsData || []);
     } catch (error) {
       logger.error('Erro ao buscar dados do dashboard', error);
       toast({ title: "Erro de Sincronização", description: "Falha ao carregar dados do inventário/empréstimos.", variant: "destructive" });
     } finally {
       setLoading(false);
     }
-  }, [getLoanHistory, getChromebooks]);
+  }, [getLoanHistory, getChromebooks, getReservationsForWeek]);
 
   useEffect(() => {
     fetchData();
@@ -78,13 +112,11 @@ export function useDashboardData(
   // --- Filtering by Period ---
   const { filteredLoans, filteredReturns } = useMemo(() => {
     if (!startDate || !endDate) {
-      // Se não houver datas definidas, retorna o histórico completo (comportamento padrão para 'history' view)
       return { filteredLoans: history, filteredReturns: history.filter(loan => loan.return_date) };
     }
 
     const loans = history.filter(loan => {
       const loanDate = new Date(loan.loan_date);
-      // Filtra empréstimos que começaram dentro do intervalo [startDate, endDate]
       return isWithinInterval(loanDate, { start: startDate, end: endDate });
     });
 
@@ -92,216 +124,6 @@ export function useDashboardData(
 
     return { filteredLoans: loans, filteredReturns: returns };
   }, [history, startDate, endDate]);
-
-  // --- Calculations ---
-  const stats = useMemo((): DashboardStats => {
-    const totalChromebooks = chromebooks.length;
-
-    // Chromebooks que podem ser emprestados (exclui 'fixo' e 'fora_uso')
-    const availableForLoan = chromebooks.filter(cb =>
-      cb.status !== 'fixo' && cb.status !== 'fora_uso'
-    ).length;
-
-    const availableChromebooks = chromebooks.filter(cb => cb.status === 'disponivel').length;
-    const activeLoans = history.filter(loan => !loan.return_date);
-    const totalActive = activeLoans.length;
-
-    // Taxa de Uso do Inventário (ativos / total de móveis)
-    const totalInventoryUsageRate = availableForLoan > 0 ? (totalActive / availableForLoan) * 100 : 0;
-
-    // Cor semafórica para Taxa de Uso (Tempo Real)
-    const usageRateColor: 'green' | 'yellow' | 'red' =
-      totalInventoryUsageRate < 60 ? 'green' :
-        totalInventoryUsageRate < 85 ? 'yellow' : 'red';
-
-
-    // Estatísticas de Devolução
-    const completedLoans = filteredLoans.filter(loan => loan.return_date);
-    const completionRate = filteredLoans.length > 0 ? completedLoans.length / filteredLoans.length * 100 : 0;
-
-    const averageUsageTime = completedLoans.reduce((acc, loan) => {
-      if (loan.return_date) {
-        const duration = differenceInMinutes(new Date(loan.return_date), new Date(loan.loan_date));
-        return acc + duration;
-      }
-      return acc;
-    }, 0) / (completedLoans.length || 1);
-
-    // Uso por Tipo de Usuário
-    const loansByUserType = filteredLoans.reduce((acc, loan) => {
-      const userType = loan.user_type || 'aluno';
-      acc[userType] = (acc[userType] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
-
-    const userTypeData = Object.entries(loansByUserType).map(([type, count]) => ({
-      name: type.charAt(0).toUpperCase() + type.slice(1),
-      value: count
-    }));
-
-    // Duração Média por Tipo de Usuário
-    const averageLoanDurations = completedLoans.reduce((acc, loan) => {
-      if (loan.return_date) {
-        const durationMinutes = differenceInMinutes(new Date(loan.return_date), new Date(loan.loan_date));
-        if (!acc[loan.user_type || 'aluno']) {
-          acc[loan.user_type || 'aluno'] = { total: 0, count: 0 };
-        }
-        acc[loan.user_type || 'aluno'].total += durationMinutes;
-        acc[loan.user_type || 'aluno'].count += 1;
-      }
-      return acc;
-    }, {} as Record<string, { total: number; count: number; }>);
-
-    const durationData = Object.entries(averageLoanDurations).map(([type, data]) => ({
-      name: type.charAt(0).toUpperCase() + type.slice(1),
-      minutos: Math.round(data.total / data.count)
-    }));
-
-    // CÁLCULO: Taxa de Ocupação Máxima no Período Filtrado (startHour a endHour)
-    let maxOccupancyRate = 0;
-
-    if (availableForLoan > 0 && startDate && endDate && startHour <= endHour) {
-      let maxConcurrentLoans = 0;
-
-      // 1. Definir o intervalo de tempo para checagem
-      const checkPoints: Date[] = [];
-      let currentDate = startOfDay(startDate);
-      const endLimitDate = endOfDay(endDate);
-
-      while (currentDate <= endLimitDate) {
-        for (let hour = startHour; hour <= endHour; hour++) {
-          const checkTime = new Date(currentDate);
-          checkTime.setHours(hour, 30, 0, 0); // Checa no meio da hora
-
-          // Garante que o ponto de checagem esteja dentro do intervalo [startDate, endDate]
-          if (checkTime >= startDate && checkTime <= endDate) {
-            checkPoints.push(checkTime);
-          }
-        }
-        currentDate = addDays(currentDate, 1);
-      }
-
-      // 2. Calcular o pico de empréstimos ativos em cada ponto de checagem
-      checkPoints.forEach(checkTime => {
-        let concurrentLoans = 0;
-
-        history.forEach(loan => {
-          const loanStart = new Date(loan.loan_date);
-          // Se o empréstimo não foi devolvido, consideramos que ele está ativo até agora
-          const loanEnd = loan.return_date ? new Date(loan.return_date) : new Date();
-
-          // Verifica se o empréstimo estava ativo no checkTime
-          if (checkTime >= loanStart && checkTime <= loanEnd) {
-            concurrentLoans++;
-          }
-        });
-
-        if (concurrentLoans > maxConcurrentLoans) {
-          maxConcurrentLoans = concurrentLoans;
-        }
-      });
-
-      maxOccupancyRate = (maxConcurrentLoans / availableForLoan) * 100;
-    }
-
-    // Cor semafórica para Taxa de Ocupação (Pico)
-    const occupancyRateColor: 'green' | 'yellow' | 'red' =
-      maxOccupancyRate < 60 ? 'green' :
-        maxOccupancyRate < 85 ? 'yellow' : 'red';
-
-    // CÁLCULO: Top Contextos de Empréstimo (Solicitante + Finalidade)
-    const contextCounts = filteredLoans.reduce((acc, loan) => {
-      const contextKey = `${loan.student_email}:${loan.purpose}`;
-      if (!acc[contextKey]) {
-        acc[contextKey] = {
-          context: `${loan.student_name} (${loan.purpose})`,
-          name: loan.student_name,
-          purpose: loan.purpose,
-          count: 0,
-          userType: loan.user_type,
-        };
-      }
-      acc[contextKey].count += 1;
-      return acc;
-    }, {} as Record<string, TopLoanContext>);
-
-    const topLoanContexts = Object.values(contextCounts)
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 10); // ALTERADO DE 5 PARA 10
-
-
-    return {
-      totalChromebooks,
-      availableChromebooks,
-      totalActive,
-      totalInventoryUsageRate,
-      usageRateColor, // NOVO
-      averageUsageTime,
-      completionRate,
-      loansByUserType,
-      userTypeData,
-      durationData,
-      maxOccupancyRate: Math.min(100, maxOccupancyRate), // Limita a 100%
-      occupancyRateColor, // NOVO
-      topLoanContexts, // NOVO
-      totalMovable: availableForLoan,
-      availableMovable: availableForLoan - totalActive,
-      reserveRate: availableForLoan > 0 ? ((availableForLoan - totalActive) / availableForLoan) * 100 : 0,
-      deltas: (() => {
-        if (!startDate || !endDate || isNaN(startDate.getTime()) || isNaN(endDate.getTime())) return undefined;
-
-        const duration = differenceInDays(endDate, startDate) + 1;
-        const prevStart = subDays(startDate, duration);
-        const prevEnd = subDays(startDate, 1);
-
-        const prevLoans = history.filter(loan => isWithinInterval(new Date(loan.loan_date), { start: prevStart, end: prevEnd }));
-        const prevReturns = prevLoans.filter(loan => loan.return_date);
-
-        // Volume Delta
-        const loanVolumeDelta = prevLoans.length > 0 ? ((filteredLoans.length - prevLoans.length) / prevLoans.length) * 100 : 0;
-
-        // Avg Time Delta
-        const prevAvgTime = prevReturns.reduce((acc, loan) => acc + differenceInMinutes(new Date(loan.return_date!), new Date(loan.loan_date)), 0) / (prevReturns.length || 1);
-        const avgTimeDelta = prevAvgTime > 0 ? ((averageUsageTime - prevAvgTime) / prevAvgTime) * 100 : 0;
-
-        // Pico Delta (Simplificado: usamos o Pico do período anterior)
-        let maxPrevConcurrent = 0;
-        const checkPoints: Date[] = [];
-        let curr = startOfDay(prevStart);
-        while (curr <= endOfDay(prevEnd)) {
-          for (let h = startHour; h <= endHour; h++) {
-            const ct = new Date(curr);
-            ct.setHours(h, 30);
-            if (ct >= prevStart && ct <= prevEnd) checkPoints.push(ct);
-          }
-          curr = addDays(curr, 1);
-        }
-        checkPoints.forEach(ct => {
-          let count = 0;
-          history.forEach(l => {
-            const s = new Date(l.loan_date);
-            const e = l.return_date ? new Date(l.return_date) : new Date();
-            if (ct >= s && ct <= e) count++;
-          });
-          maxPrevConcurrent = Math.max(maxPrevConcurrent, count);
-        });
-        const prevMaxRate = availableForLoan > 0 ? (maxPrevConcurrent / availableForLoan) * 100 : 0;
-        const maxOccupancyDelta = prevMaxRate > 0 ? ((maxOccupancyRate - prevMaxRate) / prevMaxRate) * 100 : 0;
-
-        // Completion Rate Delta
-        const prevCompletionRate = prevLoans.length > 0 ? (prevReturns.length / prevLoans.length) * 100 : 0;
-        const completionRateDelta = prevCompletionRate > 0 ? ((completionRate - prevCompletionRate) / prevCompletionRate) * 100 : 0;
-
-        return {
-          usageRate: 0, // Instantâneo não tem comparativo histórico direto nesse contexto
-          maxOccupancy: maxOccupancyDelta,
-          loanVolume: loanVolumeDelta,
-          avgTime: avgTimeDelta,
-          completionRate: completionRateDelta
-        };
-      })(),
-    };
-  }, [chromebooks, history, filteredLoans, startHour, endHour, startDate, endDate]);
 
   // --- Period Data for Charts (Hourly/Daily) ---
   const periodChartData = useMemo(() => {
@@ -358,8 +180,6 @@ export function useDashboardData(
 
         // Avança para a próxima hora
         currentHour = new Date(currentHour.getTime() + 3600000);
-
-        // Se ultrapassarmos o endLimit, paramos
         if (currentHour > endLimit) break;
       }
       return data;
@@ -372,9 +192,12 @@ export function useDashboardData(
       const endLimit = startOfDay(endDate);
 
       while (currentDate <= endLimit) {
+        const dayEnd = new Date(currentDate);
+        dayEnd.setHours(23, 59, 59, 999);
+
         const dailyLoans = history.filter(loan => isWithinInterval(new Date(loan.loan_date), {
           start: startOfDay(currentDate),
-          end: new Date(currentDate.setHours(23, 59, 59, 999))
+          end: dayEnd
         }));
 
         // CÁLCULO DE OCUPAÇÃO DIÁRIA MÁXIMA
@@ -411,6 +234,290 @@ export function useDashboardData(
     }
   }, [chromebooks, history, startDate, endDate, startHour, endHour]);
 
+  // --- Calculations ---
+  const stats = useMemo((): DashboardStats => {
+    const totalChromebooks = chromebooks.length;
+
+    // Chromebooks que podem ser emprestados (exclui 'fixo' e 'fora_uso')
+    const availableForLoan = chromebooks.filter(cb =>
+      cb.status !== 'fixo' && cb.status !== 'fora_uso'
+    ).length;
+
+    const availableChromebooks = chromebooks.filter(cb => cb.status === 'disponivel').length;
+    const activeLoans = history.filter(loan => !loan.return_date);
+    const totalActive = activeLoans.length;
+
+    // --- Chromebooks Fixos por Sala ---
+    const fixedChromebooks = chromebooks.filter(cb => cb.status === 'fixo');
+    const totalFixed = fixedChromebooks.length;
+
+    const classroomMap = new Map<string, Chromebook[]>();
+    fixedChromebooks.forEach(cb => {
+      const room = (cb.classroom || cb.location || 'Sem sala definida').trim();
+      if (!classroomMap.has(room)) {
+        classroomMap.set(room, []);
+      }
+      classroomMap.get(room)!.push(cb);
+    });
+
+    const fixedByClassroom: FixedClassroomGroup[] = Array.from(classroomMap.entries())
+      .map(([classroom, items]) => ({
+        classroom,
+        count: items.length,
+        items: items.sort((a, b) => a.chromebook_id.localeCompare(b.chromebook_id)),
+      }))
+      .sort((a, b) => b.count - a.count);
+
+    // --- Empréstimos Atrasados (Overdue) ---
+    const now = new Date();
+    const overdueLoans: DashboardOverdueLoan[] = activeLoans
+      .filter(loan => loan.expected_return_date && new Date(loan.expected_return_date) < now)
+      .map(loan => {
+        const expDate = new Date(loan.expected_return_date!);
+        const diffMinutes = differenceInMinutes(now, expDate);
+        return {
+          id: loan.id,
+          chromebook_id: loan.chromebook_id,
+          student_name: loan.student_name,
+          student_email: loan.student_email,
+          user_type: loan.user_type || 'aluno',
+          loan_date: loan.loan_date,
+          expected_return_date: loan.expected_return_date!,
+          hoursOverdue: Math.max(0, Math.floor(diffMinutes / 60)),
+          daysOverdue: Math.max(0, Math.floor(diffMinutes / (60 * 24))),
+        };
+      })
+      .sort((a, b) => b.hoursOverdue - a.hoursOverdue);
+
+    const overdueCount = overdueLoans.length;
+
+    // --- Reservas de Hoje ---
+    const todayStr = format(new Date(), 'yyyy-MM-dd');
+    const todayReservations = reservations.filter(r => r.date === todayStr);
+    const todayReservationsCount = todayReservations.length;
+    const todayChromebooksReserved = todayReservations.reduce(
+      (acc, r) => acc + (r.quantity_requested || 0),
+      0
+    );
+
+    // --- Manutenção / Defeito ---
+    const maintenanceItems = chromebooks.filter(
+      cb => cb.status === 'manutencao' || cb.status === 'fora_uso'
+    );
+    const totalMaintenance = maintenanceItems.length;
+
+    // --- Raio-X da Frota Completa ---
+    const fleetDistribution = [
+      { name: 'Livres p/ Empréstimo', value: availableChromebooks, color: '#22C55E' },
+      { name: 'Fixos em Sala', value: totalFixed, color: '#3B82F6' },
+      { name: 'Em Uso Agora', value: totalActive, color: '#F59E0B' },
+      { name: 'Em Manutenção', value: totalMaintenance, color: '#EF4444' },
+    ];
+
+    // --- Ponto de Pico Horário ---
+    let peakHour: { label: string; count: number; occupancy: number } | null = null;
+    if (periodChartData && periodChartData.length > 0) {
+      const maxEntry = [...periodChartData].sort((a, b) => (b.empréstimos || 0) - (a.empréstimos || 0) || (b.ocupação || 0) - (a.ocupação || 0))[0];
+      if (maxEntry && ((maxEntry.empréstimos || 0) > 0 || (maxEntry.ocupação || 0) > 0)) {
+        peakHour = {
+          label: maxEntry.label,
+          count: maxEntry.empréstimos || 0,
+          occupancy: Math.round(maxEntry.ocupação || 0),
+        };
+      }
+    }
+
+    // Taxa de Uso do Inventário (ativos / total de móveis)
+    const totalInventoryUsageRate = availableForLoan > 0 ? (totalActive / availableForLoan) * 100 : 0;
+
+    // Cor semafórica para Taxa de Uso (Tempo Real)
+    const usageRateColor: 'green' | 'yellow' | 'red' =
+      totalInventoryUsageRate < 60 ? 'green' :
+        totalInventoryUsageRate < 85 ? 'yellow' : 'red';
+
+    // Estatísticas de Devolução
+    const completedLoans = filteredLoans.filter(loan => loan.return_date);
+    const completionRate = filteredLoans.length > 0 ? completedLoans.length / filteredLoans.length * 100 : 0;
+
+    const averageUsageTime = completedLoans.reduce((acc, loan) => {
+      if (loan.return_date) {
+        const duration = differenceInMinutes(new Date(loan.return_date), new Date(loan.loan_date));
+        return acc + duration;
+      }
+      return acc;
+    }, 0) / (completedLoans.length || 1);
+
+    // Uso por Tipo de Usuário
+    const loansByUserType = filteredLoans.reduce((acc, loan) => {
+      const userType = loan.user_type || 'aluno';
+      acc[userType] = (acc[userType] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    const userTypeData = Object.entries(loansByUserType).map(([type, count]) => ({
+      name: type.charAt(0).toUpperCase() + type.slice(1),
+      value: count
+    }));
+
+    // Duração Média por Tipo de Usuário
+    const averageLoanDurations = completedLoans.reduce((acc, loan) => {
+      if (loan.return_date) {
+        const durationMinutes = differenceInMinutes(new Date(loan.return_date), new Date(loan.loan_date));
+        if (!acc[loan.user_type || 'aluno']) {
+          acc[loan.user_type || 'aluno'] = { total: 0, count: 0 };
+        }
+        acc[loan.user_type || 'aluno'].total += durationMinutes;
+        acc[loan.user_type || 'aluno'].count += 1;
+      }
+      return acc;
+    }, {} as Record<string, { total: number; count: number; }>);
+
+    const durationData = Object.entries(averageLoanDurations).map(([type, data]) => ({
+      name: type.charAt(0).toUpperCase() + type.slice(1),
+      minutos: Math.round(data.total / data.count)
+    }));
+
+    // Taxa de Ocupação Máxima no Período Filtrado
+    let maxOccupancyRate = 0;
+    if (availableForLoan > 0 && startDate && endDate && startHour <= endHour) {
+      let maxConcurrentLoans = 0;
+      const checkPoints: Date[] = [];
+      let currentDate = startOfDay(startDate);
+      const endLimitDate = endOfDay(endDate);
+
+      while (currentDate <= endLimitDate) {
+        for (let hour = startHour; hour <= endHour; hour++) {
+          const checkTime = new Date(currentDate);
+          checkTime.setHours(hour, 30, 0, 0);
+
+          if (checkTime >= startDate && checkTime <= endDate) {
+            checkPoints.push(checkTime);
+          }
+        }
+        currentDate = addDays(currentDate, 1);
+      }
+
+      checkPoints.forEach(checkTime => {
+        let concurrentLoans = 0;
+        history.forEach(loan => {
+          const loanStart = new Date(loan.loan_date);
+          const loanEnd = loan.return_date ? new Date(loan.return_date) : new Date();
+
+          if (checkTime >= loanStart && checkTime <= loanEnd) {
+            concurrentLoans++;
+          }
+        });
+
+        if (concurrentLoans > maxConcurrentLoans) {
+          maxConcurrentLoans = concurrentLoans;
+        }
+      });
+
+      maxOccupancyRate = (maxConcurrentLoans / availableForLoan) * 100;
+    }
+
+    const occupancyRateColor: 'green' | 'yellow' | 'red' =
+      maxOccupancyRate < 60 ? 'green' :
+        maxOccupancyRate < 85 ? 'yellow' : 'red';
+
+    // Top Contextos de Empréstimo
+    const contextCounts = filteredLoans.reduce((acc, loan) => {
+      const contextKey = `${loan.student_email}:${loan.purpose}`;
+      if (!acc[contextKey]) {
+        acc[contextKey] = {
+          context: `${loan.student_name} (${loan.purpose})`,
+          name: loan.student_name,
+          purpose: loan.purpose,
+          count: 0,
+          userType: loan.user_type,
+        };
+      }
+      acc[contextKey].count += 1;
+      return acc;
+    }, {} as Record<string, TopLoanContext>);
+
+    const topLoanContexts = Object.values(contextCounts)
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 10);
+
+    return {
+      totalChromebooks,
+      availableChromebooks,
+      totalActive,
+      totalFixed,
+      fixedByClassroom,
+      totalMaintenance,
+      maintenanceItems,
+      overdueLoans,
+      overdueCount,
+      todayReservationsCount,
+      todayChromebooksReserved,
+      fleetDistribution,
+      peakHour,
+      totalInventoryUsageRate,
+      usageRateColor,
+      averageUsageTime,
+      completionRate,
+      loansByUserType,
+      userTypeData,
+      durationData,
+      maxOccupancyRate: Math.min(100, maxOccupancyRate),
+      occupancyRateColor,
+      topLoanContexts,
+      totalMovable: availableForLoan,
+      availableMovable: availableForLoan - totalActive,
+      reserveRate: availableForLoan > 0 ? ((availableForLoan - totalActive) / availableForLoan) * 100 : 0,
+      deltas: (() => {
+        if (!startDate || !endDate || isNaN(startDate.getTime()) || isNaN(endDate.getTime())) return undefined;
+
+        const duration = differenceInDays(endDate, startDate) + 1;
+        const prevStart = subDays(startDate, duration);
+        const prevEnd = subDays(startDate, 1);
+
+        const prevLoans = history.filter(loan => isWithinInterval(new Date(loan.loan_date), { start: prevStart, end: prevEnd }));
+        const prevReturns = prevLoans.filter(loan => loan.return_date);
+
+        const loanVolumeDelta = prevLoans.length > 0 ? ((filteredLoans.length - prevLoans.length) / prevLoans.length) * 100 : 0;
+
+        const prevAvgTime = prevReturns.reduce((acc, loan) => acc + differenceInMinutes(new Date(loan.return_date!), new Date(loan.loan_date)), 0) / (prevReturns.length || 1);
+        const avgTimeDelta = prevAvgTime > 0 ? ((averageUsageTime - prevAvgTime) / prevAvgTime) * 100 : 0;
+
+        let maxPrevConcurrent = 0;
+        const checkPoints: Date[] = [];
+        let curr = startOfDay(prevStart);
+        while (curr <= endOfDay(prevEnd)) {
+          for (let h = startHour; h <= endHour; h++) {
+            const ct = new Date(curr);
+            ct.setHours(h, 30);
+            if (ct >= prevStart && ct <= prevEnd) checkPoints.push(ct);
+          }
+          curr = addDays(curr, 1);
+        }
+        checkPoints.forEach(ct => {
+          let count = 0;
+          history.forEach(l => {
+            const s = new Date(l.loan_date);
+            const e = l.return_date ? new Date(l.return_date) : new Date();
+            if (ct >= s && ct <= e) count++;
+          });
+          maxPrevConcurrent = Math.max(maxPrevConcurrent, count);
+        });
+        const prevMaxRate = availableForLoan > 0 ? (maxPrevConcurrent / availableForLoan) * 100 : 0;
+        const maxOccupancyDelta = prevMaxRate > 0 ? ((maxOccupancyRate - prevMaxRate) / prevMaxRate) * 100 : 0;
+
+        const prevCompletionRate = prevLoans.length > 0 ? (prevReturns.length / prevLoans.length) * 100 : 0;
+        const completionRateDelta = prevCompletionRate > 0 ? ((completionRate - prevCompletionRate) / prevCompletionRate) * 100 : 0;
+
+        return {
+          usageRate: 0,
+          maxOccupancy: maxOccupancyDelta,
+          loanVolume: loanVolumeDelta,
+          avgTime: avgTimeDelta,
+          completionRate: completionRateDelta
+        };
+      })(),
+    };
+  }, [chromebooks, history, reservations, filteredLoans, startHour, endHour, startDate, endDate, periodChartData]);
 
   return {
     loading,
