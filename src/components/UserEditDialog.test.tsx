@@ -84,7 +84,7 @@ describe('UserEditDialog', () => {
         const emailInput = screen.getByLabelText('E-mail *');
         fireEvent.change(emailInput, { target: { value: 'invalid@test.com' } });
 
-        expect(screen.getByText(/E-mail deve terminar com @sj.g12.br/i)).toBeInTheDocument();
+        expect(screen.getByText(/Email.*deve terminar com @sj\.g12\.br/i)).toBeInTheDocument();
         expect(screen.getByText('Salvar Alterações').closest('button')).toBeDisabled();
     });
 

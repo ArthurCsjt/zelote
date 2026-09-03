@@ -5,19 +5,25 @@ import { toast } from '@/hooks/use-toast';
 import logger from '@/utils/logger';
 import jsPDF from 'jspdf';
 
-// Create a mock function for the default export
-const jsPDFMock = vi.fn().mockImplementation(() => ({
-    internal: {
-        pageSize: {
-            getWidth: () => 210,
-            getHeight: () => 297,
+// Create a mock function for the default export using vi.hoisted
+const { jsPDFMock, mockInstance } = vi.hoisted(() => {
+    const mockInstance = {
+        internal: {
+            pageSize: {
+                getWidth: () => 210,
+                getHeight: () => 297,
+            },
         },
-    },
-    setFontSize: vi.fn(),
-    text: vi.fn(),
-    save: vi.fn(),
-    addPage: vi.fn(),
-}));
+        setFontSize: vi.fn(),
+        text: vi.fn(),
+        save: vi.fn(),
+        addPage: vi.fn(),
+    };
+    const jsPDFMock = vi.fn(function() {
+        return mockInstance;
+    });
+    return { jsPDFMock, mockInstance };
+});
 
 // Mock dependencies
 vi.mock('jspdf', () => {
