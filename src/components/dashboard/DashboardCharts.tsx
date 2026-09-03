@@ -1,15 +1,16 @@
 import React from 'react';
 import { CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, AreaChart, Area } from "recharts";
-import { BarChart as BarChartIcon, PieChart as PieChartIcon, Users, TrendingUp, AlertTriangle, Loader2, BookOpen, Activity, GraduationCap, Briefcase, UserCheck, Zap } from "lucide-react";
+import { BarChart as BarChartIcon, PieChart as PieChartIcon, Users, TrendingUp, AlertTriangle, Loader2, Activity, Zap } from "lucide-react";
 import { ChartContainer, ChartTooltipContent, ChartLegendContent } from "@/components/ui/chart";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { cn } from '@/lib/utils';
 import { LoanHistory } from "@/components/LoanHistory";
-import { TopLoanContextsPanel } from "@/components/TopLoanContextsPanel";
-import type { LoanHistoryItem, Chromebook } from "@/types/database";
+import { TodayAgendaPanel } from "@/components/dashboard/TodayAgendaPanel";
+import { LiveFeedPanel } from "@/components/dashboard/LiveFeedPanel";
+import type { LoanHistoryItem } from "@/types/database";
 import type { PeriodView, DashboardStats } from '@/hooks/useDashboardData';
-import { Progress } from '@/components/ui/progress';
+import type { Reservation } from '@/hooks/useDatabase';
 import { Badge } from '@/components/ui/badge';
 
 interface DashboardChartsProps {
@@ -23,6 +24,7 @@ interface DashboardChartsProps {
   durationData: { name: string; minutos: number }[];
   isNewLoan: (loan: LoanHistoryItem) => boolean;
   history: LoanHistoryItem[];
+  reservations: Reservation[];
   isMounted: boolean;
 }
 
@@ -37,6 +39,7 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
   durationData,
   isNewLoan,
   history,
+  reservations,
   isMounted,
 }) => {
   if (loading) {
@@ -310,56 +313,16 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
       </div>
 
       <div className="grid gap-8 grid-cols-1 md:grid-cols-2 mt-8">
-        {/* NOVO PAINEL: Top Contextos de Empréstimo */}
+        {/* PAINEL 1: Agenda Operacional (Reservas de Hoje e Amanhã) */}
         <div className={getAnimationClass(1000)}>
-          <TopLoanContextsPanel topLoanContexts={topLoanContexts} />
+          <TodayAgendaPanel reservations={reservations} />
         </div>
 
-        <div className={cn("border-4 border-black dark:border-white bg-white dark:bg-zinc-900 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.2)]", getAnimationClass(1100))}>
-          <CardHeader className="flex flex-row items-center justify-between border-b-4 border-black dark:border-white bg-gray-50 dark:bg-zinc-900/50 p-6">
-            <div>
-              <CardTitle className="text-xl font-black uppercase">Estatísticas Rápidas</CardTitle>
-              <CardDescription className="font-mono text-xs font-bold text-gray-500 mt-1">
-                Resumo do período
-              </CardDescription>
-            </div>
-            <div className="p-2 border-2 border-black dark:border-white bg-white dark:bg-zinc-900 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)]">
-              <Activity className="h-5 w-5 text-black dark:text-white" />
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-6 p-6">
-            <div className="space-y-3">
-              <div className="flex justify-between items-center">
-                <span className="text-sm font-bold flex items-center gap-2 uppercase"><GraduationCap className="h-4 w-4" /> Alunos</span>
-                <span className="font-mono text-sm font-bold bg-blue-100 px-2 py-1 border border-black">{loansByUserType.aluno || 0}</span>
-              </div>
-              <div className="h-3 w-full bg-gray-100 border border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] overflow-hidden">
-                <div className="h-full bg-blue-500" style={{ width: `${Math.min(((loansByUserType.aluno || 0) / totalLoansInPeriod) * 100, 100)}%` }} />
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <div className="flex justify-between items-center">
-                <span className="text-sm font-bold flex items-center gap-2 uppercase"><UserCheck className="h-4 w-4" /> Professores</span>
-                <span className="font-mono text-sm font-bold bg-green-100 px-2 py-1 border border-black">{loansByUserType.professor || 0}</span>
-              </div>
-              <div className="h-3 w-full bg-gray-100 border border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] overflow-hidden">
-                <div className="h-full bg-green-500" style={{ width: `${Math.min(((loansByUserType.professor || 0) / totalLoansInPeriod) * 100, 100)}%` }} />
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <div className="flex justify-between items-center">
-                <span className="text-sm font-bold flex items-center gap-2 uppercase"><Briefcase className="h-4 w-4" /> Funcionários</span>
-                <span className="font-mono text-sm font-bold bg-orange-100 px-2 py-1 border border-black">{loansByUserType.funcionario || 0}</span>
-              </div>
-              <div className="h-3 w-full bg-gray-100 border border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] overflow-hidden">
-                <div className="h-full bg-orange-500" style={{ width: `${Math.min(((loansByUserType.funcionario || 0) / totalLoansInPeriod) * 100, 100)}%` }} />
-              </div>
-            </div>
-          </CardContent>
+        {/* PAINEL 2: Feed ao Vivo de Movimentações */}
+        <div className={getAnimationClass(1100)}>
+          <LiveFeedPanel history={history} />
         </div>
       </div>
     </>
   );
-};
+};

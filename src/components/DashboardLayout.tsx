@@ -88,6 +88,7 @@ export function DashboardLayout({
     loading,
     history,
     chromebooks,
+    reservations,
     filteredLoans,
     filteredReturns,
     periodChartData,
@@ -414,6 +415,7 @@ export function DashboardLayout({
             durationData={stats?.durationData || []}
             isNewLoan={() => false}
             history={history}
+            reservations={reservations}
             isMounted={isMounted}
           />
         </div>

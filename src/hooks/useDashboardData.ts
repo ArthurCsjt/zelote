@@ -523,6 +523,7 @@ export function useDashboardData(
     loading,
     history,
     chromebooks,
+    reservations,
     filteredLoans,
     filteredReturns,
     periodChartData,
