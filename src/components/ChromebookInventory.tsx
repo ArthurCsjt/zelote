@@ -10,7 +10,7 @@ import {
   TableRow,
 } from "./ui/table";
 import { toast } from "@/hooks/use-toast";
-import { Search, Filter, Edit3, QrCode, CheckCircle, AlertCircle, XCircle, Clock, RefreshCw, Download, Trash2, MapPin, FileText, Loader2, AlertTriangle, Printer, ListChecks, X } from "lucide-react";
+import { Search, Filter, Edit3, QrCode, CheckCircle, AlertCircle, XCircle, Clock, RefreshCw, Download, Trash2, MapPin, FileText, Loader2, AlertTriangle, Printer, ListChecks, X, Factory } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -54,6 +54,8 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
   const [chromebooks, setChromebooks] = useState<ChromebookDataExtended[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [classroomFilter, setClassroomFilter] = useState<string>('all');
+  const [manufacturerFilter, setManufacturerFilter] = useState<string>('all');
 
   // Estados para Diálogos
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -120,22 +122,66 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
     };
   }, []);
 
-  // Filter Chromebooks based on search term and status with intelligent scoring
+  // Listas dinâmicas extraídas do inventário para filtros
+  const availableClassrooms = useMemo(() => {
+    const rooms = new Set<string>();
+    chromebooks.forEach(cb => {
+      if (cb.classroom && cb.classroom.trim()) {
+        rooms.add(cb.classroom.trim());
+      } else if (cb.location && cb.location.trim()) {
+        rooms.add(cb.location.trim());
+      }
+    });
+    return Array.from(rooms).sort((a, b) => a.localeCompare(b));
+  }, [chromebooks]);
+
+  const availableManufacturers = useMemo(() => {
+    const brands = new Set<string>();
+    chromebooks.forEach(cb => {
+      if (cb.manufacturer && cb.manufacturer.trim()) {
+        brands.add(cb.manufacturer.trim());
+      }
+    });
+    return Array.from(brands).sort((a, b) => a.localeCompare(b));
+  }, [chromebooks]);
+
+  // Filter Chromebooks based on search term, status, classroom and manufacturer with intelligent scoring
   const filteredChromebooks = useMemo(() => {
     let filtered = chromebooks;
 
     // 1. Filtrar por status
     if (statusFilter !== 'all') {
-      filtered = filtered.filter(cb => cb.status === statusFilter);
+      if (statusFilter === 'emprestado_fixo') {
+        filtered = filtered.filter(cb => cb.status === 'emprestado' || cb.status === 'fixo');
+      } else if (statusFilter === 'indisponiveis') {
+        filtered = filtered.filter(cb => cb.status === 'manutencao' || cb.status === 'fora_uso');
+      } else {
+        filtered = filtered.filter(cb => cb.status === statusFilter);
+      }
     }
 
-    // 2. Se não houver termo de busca, retorna a lista filtrada apenas por status
+    // 2. Filtrar por sala/localização
+    if (classroomFilter !== 'all') {
+      filtered = filtered.filter(cb => {
+        const room = (cb.classroom || cb.location || '').trim().toLowerCase();
+        return room === classroomFilter.trim().toLowerCase();
+      });
+    }
+
+    // 3. Filtrar por fabricante
+    if (manufacturerFilter !== 'all') {
+      filtered = filtered.filter(cb => {
+        return (cb.manufacturer || '').trim().toLowerCase() === manufacturerFilter.trim().toLowerCase();
+      });
+    }
+
+    // 4. Se não houver termo de busca, retorna a lista filtrada
     if (!searchTerm.trim()) return filtered;
 
     const lowerCaseSearch = searchTerm.toLowerCase();
     const isNumeric = /^\d+$/.test(searchTerm);
 
-    // 3. Aplicar sistema de pontuação (scoring)
+    // 5. Aplicar sistema de pontuação (scoring)
     return filtered
       .map(cb => {
         let score = 0;
@@ -161,10 +207,8 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
 
         // Pontuação baseada em outros campos
         if (searchable.includes(lowerCaseSearch) && score === 0) {
-          // Se for numérico e encontrou apenas em outros campos (modelo, etc), pontuação baixa
           score += isNumeric ? 10 : 30;
         } else if (searchable.includes(lowerCaseSearch)) {
-          // Bônus se já teve match no ID mas também tem no resto
           score += 5;
         }
 
@@ -172,7 +216,7 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
       })
       .filter(cb => (cb as any).score > 0)
       .sort((a, b) => (b as any).score - (a as any).score || a.chromebook_id.localeCompare(b.chromebook_id));
-  }, [chromebooks, searchTerm, statusFilter]);
+  }, [chromebooks, searchTerm, statusFilter, classroomFilter, manufacturerFilter]);
 
   // Calculate pagination
   const totalPages = Math.ceil(filteredChromebooks.length / itemsPerPage);
@@ -185,7 +229,7 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
   // Reset pagination when filters or itemsPerPage change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, statusFilter, itemsPerPage]);
+  }, [searchTerm, statusFilter, classroomFilter, manufacturerFilter, itemsPerPage]);
 
   // Get status information for display
   const getStatusInfo = (status: string) => {
@@ -219,6 +263,18 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
           color: 'text-gray-600 bg-gray-200 dark:text-muted-foreground dark:bg-muted/30',
           icon: XCircle,
           label: 'Inativo'
+        };
+      case 'emprestado_fixo':
+        return {
+          color: 'text-purple-700 bg-purple-100 dark:text-purple-300 dark:bg-purple-950/60',
+          icon: Clock,
+          label: 'Emprestados + Fixos'
+        };
+      case 'indisponiveis':
+        return {
+          color: 'text-red-700 bg-red-100 dark:text-red-300 dark:bg-red-950/60',
+          icon: AlertTriangle,
+          label: 'Indisponíveis'
         };
       default:
         return {
@@ -379,54 +435,65 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
   const isAllOnPageSelected = paginatedChromebooks.length > 0 && paginatedChromebooks.every(cb => isItemSelected(cb.id));
 
 
+  const hasActiveFilters = statusFilter !== 'all' || classroomFilter !== 'all' || manufacturerFilter !== 'all' || searchTerm.trim() !== '';
+
+  const handleClearFilters = () => {
+    setStatusFilter('all');
+    setClassroomFilter('all');
+    setManufacturerFilter('all');
+    setSearchTerm('');
+  };
+
   return (
     <div className="p-0 glass-morphism animate-fade-in relative">
-      {/* Background gradient overlay REMOVIDO */}
+      {/* Estatísticas com Interatividade de Filtro (Cards Clicáveis) */}
+      <InventoryStats
+        chromebooks={chromebooks}
+        selectedFilter={statusFilter}
+        onSelectFilter={setStatusFilter}
+      />
 
-      {/* Estatísticas e Gráfico */}
-      <InventoryStats chromebooks={chromebooks} />
-
-      {/* Painel de Busca e Filtros */}
       {/* Painel de Busca e Filtros - ESTILO NEO-BRUTALISM */}
       <div className="mb-8 p-6 border-4 border-black dark:border-white bg-white dark:bg-zinc-900 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.2)] relative z-10 animate-fadeIn animation-delay-300">
-        <h3 className="text-sm font-black uppercase mb-4 flex items-center gap-2">
-          <Filter className="h-4 w-4" /> Filtros e Ações
-        </h3>
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4">
+          <h3 className="text-sm font-black uppercase flex items-center gap-2">
+            <Filter className="h-4 w-4" /> Filtros e Ações
+          </h3>
 
-        <div className="flex flex-col sm:flex-row gap-4 items-end">
+          {hasActiveFilters && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleClearFilters}
+              className="h-8 px-3 border-2 border-black dark:border-white rounded-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] bg-red-100 hover:bg-red-200 text-red-700 font-bold uppercase text-[11px] flex items-center gap-1.5"
+            >
+              <X className="h-3.5 w-3.5" />
+              <span>Limpar Todos os Filtros</span>
+            </Button>
+          )}
+        </div>
 
+        {/* Linha 1: Busca e Botões de Ação */}
+        <div className="flex flex-col sm:flex-row gap-4 items-end mb-4">
           {/* Campo de Busca */}
           <div className="relative flex-1 w-full space-y-1">
             <span className="text-xs font-bold uppercase text-gray-500">Buscar Equipamento</span>
             <div className="relative">
-              <Search className="absolute left-3 top-3 h-5 w-5 text-black dark:text-white" />
+              <Search className="absolute left-3 top-3.5 h-5 w-5 text-black dark:text-white" />
               <Input
-                placeholder="ID, PATRIMÔNIO, MODELO, SÉRIE..."
+                placeholder="ID, PATRIMÔNIO, MODELO, SÉRIE, SALA..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10 uppercase font-mono text-sm border-2 border-black dark:border-white rounded-none h-12 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] bg-white dark:bg-zinc-950 focus-visible:ring-0"
               />
-            </div>
-          </div>
-
-          {/* Filtro de Status */}
-          <div className="relative w-full sm:w-[220px] space-y-1">
-            <span className="text-xs font-bold uppercase text-gray-500">Status</span>
-            <div className="relative">
-              <Filter className="absolute left-3 top-3 h-5 w-5 text-black dark:text-white pointer-events-none z-10" />
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-full pl-10 border-2 border-black dark:border-white rounded-none h-12 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] bg-white dark:bg-zinc-950 font-bold uppercase text-xs focus:ring-0">
-                  <SelectValue placeholder="STATUS" />
-                </SelectTrigger>
-                <SelectContent className="border-2 border-black dark:border-white rounded-none bg-white dark:bg-zinc-900 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                  <SelectItem value="all" className="uppercase font-bold text-xs">Todos</SelectItem>
-                  <SelectItem value="disponivel" className="uppercase font-bold text-xs">Disponível</SelectItem>
-                  <SelectItem value="emprestado" className="uppercase font-bold text-xs">Emprestado</SelectItem>
-                  <SelectItem value="fixo" className="uppercase font-bold text-xs">Fixo</SelectItem>
-                  <SelectItem value="manutencao" className="uppercase font-bold text-xs">Manutenção</SelectItem>
-                  <SelectItem value="fora_uso" className="uppercase font-bold text-xs">Inativo</SelectItem>
-                </SelectContent>
-              </Select>
+              {searchTerm && (
+                <button
+                  onClick={() => setSearchTerm('')}
+                  className="absolute right-3 top-3.5 text-gray-400 hover:text-black dark:hover:text-white"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
             </div>
           </div>
 
@@ -474,11 +541,82 @@ export function ChromebookInventory({ onBack, onGenerateQrCode }: ChromebookInve
           </div>
         </div>
 
-        <div className="flex justify-between items-center mt-6 pt-4 border-t-2 border-black/10 dark:border-white/10">
-          <div className="text-xs font-black uppercase text-gray-500 flex items-center gap-4">
-            Resultados: {filteredChromebooks.length} Equipamentos
+        {/* Linha 2: Os 3 Filtros Dropdown (Status, Sala/Localização, Fabricante) */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3 border-t-2 border-black/10 dark:border-white/10">
+          {/* Filtro de Status */}
+          <div className="space-y-1">
+            <span className="text-[11px] font-bold uppercase text-gray-500 flex items-center gap-1">
+              <Filter className="h-3 w-3" /> Status
+            </span>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-full border-2 border-black dark:border-white rounded-none h-11 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] bg-white dark:bg-zinc-950 font-bold uppercase text-xs focus:ring-0">
+                <SelectValue placeholder="STATUS" />
+              </SelectTrigger>
+              <SelectContent className="border-2 border-black dark:border-white rounded-none bg-white dark:bg-zinc-900 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                <SelectItem value="all" className="uppercase font-bold text-xs">Todos os Status</SelectItem>
+                <SelectItem value="disponivel" className="uppercase font-bold text-xs text-green-700">🟢 Disponível</SelectItem>
+                <SelectItem value="emprestado" className="uppercase font-bold text-xs text-purple-700">🟣 Emprestado</SelectItem>
+                <SelectItem value="fixo" className="uppercase font-bold text-xs text-blue-700">🔵 Fixo em Sala</SelectItem>
+                <SelectItem value="manutencao" className="uppercase font-bold text-xs text-red-700">🔴 Em Manutenção</SelectItem>
+                <SelectItem value="fora_uso" className="uppercase font-bold text-xs text-gray-700">⚪ Inativo / Fora de Uso</SelectItem>
+                <SelectItem value="emprestado_fixo" className="uppercase font-bold text-xs">Emprestados + Fixos</SelectItem>
+                <SelectItem value="indisponiveis" className="uppercase font-bold text-xs">Indisponíveis (Manutenção + Inativo)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
-            <span className="h-4 w-px bg-gray-300"></span>
+          {/* Filtro de Sala / Localização */}
+          <div className="space-y-1">
+            <span className="text-[11px] font-bold uppercase text-gray-500 flex items-center gap-1">
+              <MapPin className="h-3 w-3" /> Sala / Localização
+            </span>
+            <Select value={classroomFilter} onValueChange={setClassroomFilter}>
+              <SelectTrigger className="w-full border-2 border-black dark:border-white rounded-none h-11 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] bg-white dark:bg-zinc-950 font-bold uppercase text-xs focus:ring-0 truncate">
+                <SelectValue placeholder="SALA / LOCAL" />
+              </SelectTrigger>
+              <SelectContent className="border-2 border-black dark:border-white rounded-none bg-white dark:bg-zinc-900 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] max-h-60">
+                <SelectItem value="all" className="uppercase font-bold text-xs">Todas as Salas</SelectItem>
+                {availableClassrooms.map(room => {
+                  const count = chromebooks.filter(c => (c.classroom || c.location || '').trim().toLowerCase() === room.toLowerCase()).length;
+                  return (
+                    <SelectItem key={room} value={room} className="uppercase font-bold text-xs">
+                      📍 {room} ({count})
+                    </SelectItem>
+                  );
+                })}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Filtro de Fabricante / Marca */}
+          <div className="space-y-1">
+            <span className="text-[11px] font-bold uppercase text-gray-500 flex items-center gap-1">
+              <Factory className="h-3 w-3" /> Fabricante / Marca
+            </span>
+            <Select value={manufacturerFilter} onValueChange={setManufacturerFilter}>
+              <SelectTrigger className="w-full border-2 border-black dark:border-white rounded-none h-11 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] bg-white dark:bg-zinc-950 font-bold uppercase text-xs focus:ring-0 truncate">
+                <SelectValue placeholder="FABRICANTE" />
+              </SelectTrigger>
+              <SelectContent className="border-2 border-black dark:border-white rounded-none bg-white dark:bg-zinc-900 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] max-h-60">
+                <SelectItem value="all" className="uppercase font-bold text-xs">Todos os Fabricantes</SelectItem>
+                {availableManufacturers.map(brand => {
+                  const count = chromebooks.filter(c => (c.manufacturer || '').trim().toLowerCase() === brand.toLowerCase()).length;
+                  return (
+                    <SelectItem key={brand} value={brand} className="uppercase font-bold text-xs">
+                      🏭 {brand} ({count})
+                    </SelectItem>
+                  );
+                })}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        <div className="flex justify-between items-center mt-6 pt-4 border-t-2 border-black/10 dark:border-white/10 flex-wrap gap-2">
+          <div className="text-xs font-black uppercase text-gray-500 flex items-center gap-4 flex-wrap">
+            <span>Resultados: <strong className="text-black dark:text-white font-mono text-sm">{filteredChromebooks.length}</strong> de {chromebooks.length} Equipamentos</span>
+
+            <span className="h-4 w-px bg-gray-300 hidden sm:inline"></span>
 
             {/* Seletor de Itens por Página */}
             <div className="flex items-center gap-2">
