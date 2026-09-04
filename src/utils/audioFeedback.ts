@@ -2,6 +2,29 @@
  * Utilitário de feedback sonoro e háptico (Beep + Vibração)
  * Utiliza a Web Audio API nativa para gerar sons na memória sem necessidade de arquivos externos.
  */
+export const AUDIO_STORAGE_KEY = 'zelote_audio_muted';
+export const VIBRATION_STORAGE_KEY = 'zelote_vibration_muted';
+
+export function isAudioMuted(): boolean {
+  if (typeof window === 'undefined') return false;
+  return localStorage.getItem(AUDIO_STORAGE_KEY) === 'true';
+}
+
+export function setAudioMuted(muted: boolean): void {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(AUDIO_STORAGE_KEY, muted ? 'true' : 'false');
+}
+
+export function isVibrationMuted(): boolean {
+  if (typeof window === 'undefined') return false;
+  return localStorage.getItem(VIBRATION_STORAGE_KEY) === 'true';
+}
+
+export function setVibrationMuted(muted: boolean): void {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(VIBRATION_STORAGE_KEY, muted ? 'true' : 'false');
+}
+
 class SoundEffects {
   private ctx: AudioContext | null = null;
 
@@ -22,6 +45,8 @@ class SoundEffects {
    * Toca um beep curto e agradável de sucesso (80ms, 1050Hz)
    */
   playSuccessBeep(): void {
+    if (isAudioMuted()) return;
+
     try {
       const ctx = this.getContext();
       if (!ctx) return;
@@ -55,6 +80,8 @@ class SoundEffects {
    * Toca um tom duplo grave de aviso (código já escaneado / alerta)
    */
   playWarningBeep(): void {
+    if (isAudioMuted()) return;
+
     try {
       const ctx = this.getContext();
       if (!ctx) return;
@@ -87,6 +114,8 @@ class SoundEffects {
    * Executa vibração háptica no dispositivo se suportado
    */
   vibrate(pattern: number | number[] = 100): void {
+    if (isVibrationMuted()) return;
+
     if (typeof navigator !== 'undefined' && navigator.vibrate) {
       try {
         navigator.vibrate(pattern);
@@ -112,3 +141,4 @@ class SoundEffects {
 }
 
 export const soundEffects = new SoundEffects();
+
