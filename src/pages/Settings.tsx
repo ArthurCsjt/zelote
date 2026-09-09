@@ -164,9 +164,9 @@ const Settings = () => {
         {/* 1. Header Neo-Brutalista Principal */}
         <div className="neo-card p-6 bg-white dark:bg-zinc-900">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div className="flex items-center gap-3.5">
-              <div className="p-3 bg-violet-600 border-2 border-black dark:border-white shadow-[3px_3px_0px_0px_#000] dark:shadow-[3px_3px_0px_0px_#fff]">
-                <SettingsIcon className="h-7 w-7 text-white" />
+            <div className="flex items-center gap-4 sm:gap-5">
+              <div className="p-3.5 bg-violet-600 border-2 border-black dark:border-white shadow-[3px_3px_0px_0px_#000] dark:shadow-[3px_3px_0px_0px_#fff] shrink-0 flex items-center justify-center">
+                <SettingsIcon className="h-7 w-7 text-white shrink-0" />
               </div>
               <div>
                 <h2 className="text-2xl sm:text-3xl font-black uppercase tracking-tight text-foreground">
@@ -179,8 +179,8 @@ const Settings = () => {
             </div>
 
             {isAdmin && (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-violet-100 dark:bg-violet-950/60 text-violet-800 dark:text-violet-300 border-2 border-black dark:border-white text-xs font-black uppercase shadow-[2px_2px_0px_0px_#000]">
-                <Shield className="h-3.5 w-3.5" />
+              <span className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-violet-100 dark:bg-violet-950/60 text-violet-800 dark:text-violet-300 border-2 border-black dark:border-white text-xs font-black uppercase shadow-[2px_2px_0px_0px_#000] shrink-0">
+                <Shield className="h-4 w-4 shrink-0" />
                 Painel Administrativo Ativo
               </span>
             )}

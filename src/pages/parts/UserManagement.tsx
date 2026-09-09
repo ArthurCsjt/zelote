@@ -166,6 +166,53 @@ const ProfileEditDialog: React.FC<ProfileEditDialogProps> = ({ open, onOpenChang
 };
 
 
+const renderRoleBadge = (role: ProfileRole | string | null | undefined) => {
+  const normalized = role ? String(role).toLowerCase().trim() : '';
+
+  if (normalized === 'super_admin') {
+    return (
+      <span className="inline-flex items-center px-2.5 py-0.5 text-[11px] font-black uppercase border border-black shadow-[1px_1px_0px_0px_#000] bg-purple-600 text-white">
+        Super Admin
+      </span>
+    );
+  }
+  if (normalized === 'admin') {
+    return (
+      <span className="inline-flex items-center px-2.5 py-0.5 text-[11px] font-black uppercase border border-black shadow-[1px_1px_0px_0px_#000] bg-blue-600 text-white">
+        Admin
+      </span>
+    );
+  }
+  if (normalized === 'manutencao') {
+    return (
+      <span className="inline-flex items-center px-2.5 py-0.5 text-[11px] font-black uppercase border border-black shadow-[1px_1px_0px_0px_#000] bg-amber-400 text-black">
+        Manutenção
+      </span>
+    );
+  }
+  if (normalized === 'professor' || normalized === 'teacher' || normalized === 'docente') {
+    return (
+      <span className="inline-flex items-center px-2.5 py-0.5 text-[11px] font-black uppercase border border-black shadow-[1px_1px_0px_0px_#000] bg-emerald-600 text-white">
+        Professor
+      </span>
+    );
+  }
+  if (normalized === 'user' || normalized === 'operador') {
+    return (
+      <span className="inline-flex items-center px-2.5 py-0.5 text-[11px] font-black uppercase border border-black shadow-[1px_1px_0px_0px_#000] bg-zinc-800 text-white">
+        Operador
+      </span>
+    );
+  }
+
+  // Fallback seguro: NUNCA deixa texto branco sobre fundo branco
+  return (
+    <span className="inline-flex items-center px-2.5 py-0.5 text-[11px] font-black uppercase border border-black shadow-[1px_1px_0px_0px_#000] bg-zinc-200 text-zinc-900 dark:bg-zinc-700 dark:text-zinc-100">
+      {role ? String(role).replace('_', ' ') : 'Padrão'}
+    </span>
+  );
+};
+
 export const UserManagement = () => {
   const { user: currentUser } = useAuth();
   const { isAdmin, loading: roleLoading } = useProfileRole(); // Usando useProfileRole
@@ -405,9 +452,9 @@ export const UserManagement = () => {
     <div className="space-y-6">
       {/* 1. Regras de Exceção por E-mail (Preservado e Estilizado) */}
       <div className="neo-card p-6 bg-white dark:bg-zinc-900">
-        <div className="flex items-center gap-3 pb-4 border-b-2 border-black/10 dark:border-white/10 mb-4">
-          <div className="p-2.5 bg-violet-600 text-white border-2 border-black dark:border-white shadow-[2px_2px_0px_0px_#000]">
-            <Mail className="h-5 w-5" />
+        <div className="flex items-center gap-3.5 pb-4 border-b-2 border-black/10 dark:border-white/10 mb-4">
+          <div className="p-2.5 bg-violet-600 text-white border-2 border-black dark:border-white shadow-[2px_2px_0px_0px_#000] shrink-0 flex items-center justify-center">
+            <Mail className="h-5 w-5 shrink-0" />
           </div>
           <div>
             <h3 className="text-xl font-black uppercase tracking-tight">Regras de Exceção por E-mail</h3>
@@ -475,15 +522,7 @@ export const UserManagement = () => {
                   <TableRow key={rule.id} className="border-b border-black/10 dark:border-white/10 hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
                     <TableCell className="font-bold text-sm">{rule.email}</TableCell>
                     <TableCell>
-                      <span className={cn(
-                        "inline-flex items-center px-2 py-0.5 text-[11px] font-black uppercase border border-black shadow-[1px_1px_0px_0px_#000]",
-                        rule.role === 'admin' && 'bg-blue-500 text-white',
-                        rule.role === 'manutencao' && 'bg-amber-400 text-black',
-                        rule.role === 'professor' && 'bg-emerald-500 text-white',
-                        rule.role === 'user' && 'bg-zinc-800 text-white',
-                      )}>
-                        {rule.role === 'user' ? 'Operador' : rule.role?.replace('_', ' ') || 'Padrão'}
-                      </span>
+                      {renderRoleBadge(rule.role)}
                     </TableCell>
                     <TableCell className="text-right">
                       <Button 
@@ -507,9 +546,9 @@ export const UserManagement = () => {
       {/* 2. Seção de Usuários Ativos */}
       <div className="neo-card p-6 bg-white dark:bg-zinc-900">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-4 border-b-2 border-black/10 dark:border-white/10 mb-5">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-blue-600 text-white border-2 border-black dark:border-white shadow-[2px_2px_0px_0px_#000]">
-              <UserCheck className="h-5 w-5" />
+          <div className="flex items-center gap-3.5">
+            <div className="p-2.5 bg-blue-600 text-white border-2 border-black dark:border-white shadow-[2px_2px_0px_0px_#000] shrink-0 flex items-center justify-center">
+              <UserCheck className="h-5 w-5 shrink-0" />
             </div>
             <div>
               <div className="flex items-center gap-2">
@@ -603,16 +642,7 @@ export const UserManagement = () => {
                       </TableCell>
                       <TableCell className="text-sm font-medium text-muted-foreground">{user.email}</TableCell>
                       <TableCell>
-                        <span className={cn(
-                          "inline-flex items-center px-2 py-0.5 text-[11px] font-black uppercase border border-black shadow-[1px_1px_0px_0px_#000]",
-                          user.role === 'super_admin' && 'bg-purple-600 text-white',
-                          user.role === 'admin' && 'bg-blue-600 text-white',
-                          user.role === 'manutencao' && 'bg-amber-400 text-black',
-                          user.role === 'professor' && 'bg-emerald-600 text-white',
-                          user.role === 'user' && 'bg-zinc-800 text-white',
-                        )}>
-                          {user.role === 'user' ? 'Operador' : user.role?.replace('_', ' ') || 'Padrão'}
-                        </span>
+                        {renderRoleBadge(user.role)}
                       </TableCell>
                       <TableCell className="text-xs font-bold text-muted-foreground">
                         {user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleString('pt-BR', {
@@ -670,16 +700,7 @@ export const UserManagement = () => {
                         <p className="text-xs text-muted-foreground font-medium truncate max-w-[200px]">{user.email}</p>
                       </div>
                     </div>
-                    <span className={cn(
-                      "inline-flex items-center px-2 py-0.5 text-[10px] font-black uppercase border border-black shadow-[1px_1px_0px_0px_#000]",
-                      user.role === 'super_admin' && 'bg-purple-600 text-white',
-                      user.role === 'admin' && 'bg-blue-600 text-white',
-                      user.role === 'manutencao' && 'bg-amber-400 text-black',
-                      user.role === 'professor' && 'bg-emerald-600 text-white',
-                      user.role === 'user' && 'bg-zinc-800 text-white',
-                    )}>
-                      {user.role === 'user' ? 'Operador' : user.role?.replace('_', ' ') || 'Padrão'}
-                    </span>
+                    {renderRoleBadge(user.role)}
                   </div>
 
                   <div className="flex items-center justify-between text-[11px] font-bold text-muted-foreground pt-2 border-t border-black/10 dark:border-white/10">

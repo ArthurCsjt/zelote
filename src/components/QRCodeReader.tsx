@@ -233,8 +233,6 @@ export function QRCodeReader({
     startScanning();
   };
 
-  const totalCount = initialCount + sessionScannedList.length;
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg border-4 border-black dark:border-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,1)] bg-white dark:bg-zinc-950 p-4 sm:p-6">
@@ -462,7 +460,7 @@ export function QRCodeReader({
             className="w-full sm:w-auto neo-btn bg-green-600 hover:bg-green-700 text-white font-black uppercase text-xs px-5 shadow-[3px_3px_0px_0px_#000]"
           >
             <Check className="h-4 w-4 mr-1.5" />
-            Concluir Leitura ({totalCount})
+            Concluir Leitura
           </Button>
         </DialogFooter>
       </DialogContent>
