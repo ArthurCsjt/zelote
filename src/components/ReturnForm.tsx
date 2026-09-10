@@ -3,7 +3,7 @@ import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
-import { Computer, User, AlertTriangle, CheckCircle, RotateCcw, Loader2, BookOpen, X } from "lucide-react";
+import { Computer, User, AlertTriangle, CheckCircle, RotateCcw, Loader2, BookOpen, X, Sparkles, Users } from "lucide-react";
 import { Checkbox } from "./ui/checkbox";
 import { toast } from "@/hooks/use-toast";
 import { Card, CardTitle, CardHeader, CardContent } from "./ui/card";
@@ -41,6 +41,7 @@ export function ReturnForm({ onReturnSuccess, initialChromebookId, initialDevice
   });
   const [confirmChecked, setConfirmChecked] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserSearchResult | null>(null);
+  const [isManualOverride, setIsManualOverride] = useState(false);
   const [returnData, setReturnData] = useState<ReturnFormData & { notes?: string }>({
     name: "",
     ra: "",
@@ -59,6 +60,37 @@ export function ReturnForm({ onReturnSuccess, initialChromebookId, initialDevice
 
   // NOVO ESTADO: Modal de confirmação
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+
+  // Agrupa os empréstimos ativos dos dispositivos escaneados por solicitante
+  const detectedBorrowers = React.useMemo(() => {
+    const map = new Map<string, {
+      name: string;
+      email: string;
+      ra?: string;
+      userType: 'aluno' | 'professor' | 'funcionario';
+      deviceIds: string[];
+    }>();
+
+    deviceIds.forEach(id => {
+      const loan = loanDetails.get(id);
+      if (loan) {
+        const key = (loan.student_email || loan.student_name).toLowerCase().trim();
+        if (!map.has(key)) {
+          map.set(key, {
+            name: loan.student_name,
+            email: loan.student_email,
+            ra: loan.student_ra || undefined,
+            userType: (loan.user_type as any) || 'aluno',
+            deviceIds: [id],
+          });
+        } else {
+          map.get(key)!.deviceIds.push(id);
+        }
+      }
+    });
+
+    return Array.from(map.values());
+  }, [deviceIds, loanDetails]);
 
   // NOVO EFEITO: Carregar devoluções pendentes do localStorage ao montar
   useEffect(() => {
@@ -94,16 +126,62 @@ export function ReturnForm({ onReturnSuccess, initialChromebookId, initialDevice
     // Se a lista de IDs estiver vazia, garante que o usuário e a confirmação também estejam limpos
     if (deviceIds.length === 0) {
       setSelectedUser(null);
+      setIsManualOverride(false);
       setConfirmChecked(false);
       setReturnData({ name: "", ra: "", email: "", type: 'lote', userType: 'aluno', notes: '' });
       setUserActiveLoans([]);
     }
   }, [deviceIds.length]);
 
+  // NOVO EFEITO: Auto-identificação inteligente de solicitante
+  useEffect(() => {
+    // Se o operador optou por buscar ou alterar manualmente, respeita a escolha
+    if (isManualOverride) return;
+
+    if (detectedBorrowers.length === 1) {
+      const b = detectedBorrowers[0];
+      if (selectedUser?.email !== b.email || selectedUser?.name !== b.name) {
+        setSelectedUser({
+          id: b.email,
+          name: b.name,
+          email: b.email,
+          ra: b.ra || '',
+          type: b.userType,
+        });
+        setReturnData(prev => ({
+          ...prev,
+          name: b.name,
+          email: b.email,
+          ra: b.ra || '',
+          userType: b.userType,
+        }));
+      }
+    } else if (detectedBorrowers.length > 1) {
+      // Se houver mais de 1 turma/solicitante no lote e ainda não foi definido manualmente
+      if (!selectedUser || selectedUser.id === 'multi-batch') {
+        const names = detectedBorrowers.map(b => b.name).join(' & ');
+        setSelectedUser({
+          id: 'multi-batch',
+          name: `Lote Multi-Turma (${detectedBorrowers.length} Solicitantes)`,
+          email: 'multiplos@sistema',
+          ra: '',
+          type: 'professor',
+        });
+        setReturnData(prev => ({
+          ...prev,
+          name: `Devolução Conjunta: ${names}`,
+          email: 'multiplos@sistema',
+          ra: '',
+          userType: 'professor',
+        }));
+      }
+    }
+  }, [detectedBorrowers, isManualOverride, selectedUser]);
+
   // NOVO EFEITO: Buscar empréstimos ativos quando o usuário é selecionado
   useEffect(() => {
     const fetchUserLoans = async () => {
-      if (!selectedUser) {
+      if (!selectedUser || selectedUser.id === 'multi-batch') {
         setUserActiveLoans([]);
         return;
       }
@@ -154,6 +232,7 @@ export function ReturnForm({ onReturnSuccess, initialChromebookId, initialDevice
   }, [deviceIds, getLoanDetailsByChromebookId]);
 
   const handleUserSelect = (user: UserSearchResult) => {
+    setIsManualOverride(true);
     setSelectedUser(user);
     setReturnData(prev => ({
       ...prev,
@@ -166,6 +245,7 @@ export function ReturnForm({ onReturnSuccess, initialChromebookId, initialDevice
   };
 
   const handleUserClear = () => {
+    setIsManualOverride(true);
     setSelectedUser(null);
     setReturnData(prev => ({
       ...prev,
@@ -429,8 +509,99 @@ export function ReturnForm({ onReturnSuccess, initialChromebookId, initialDevice
               {!selectedUser && (
                 <p className="text-xs font-bold text-red-600 dark:text-red-400 flex items-center gap-1 mt-1">
                   <AlertTriangle className="h-3 w-3" />
-                  Selecione o solicitante.
+                  Selecione o solicitante ou bipe um Chromebook para identificação automática.
                 </p>
+              )}
+
+              {/* Tag informativa de identificação automática */}
+              {selectedUser && !isManualOverride && detectedBorrowers.length === 1 && (
+                <div className="flex items-center justify-between px-2.5 py-1.5 bg-emerald-100 dark:bg-emerald-950/60 border-2 border-emerald-600 text-emerald-900 dark:text-emerald-200 text-[11px] font-black uppercase mt-2 shadow-[2px_2px_0px_0px_#059669]">
+                  <span className="flex items-center gap-1.5">
+                    <Sparkles className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+                    Auto-identificado pelo Chromebook
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleUserClear}
+                    className="underline text-[10px] font-black text-emerald-800 dark:text-emerald-300 hover:text-black dark:hover:text-white"
+                  >
+                    Alterar
+                  </button>
+                </div>
+              )}
+
+              {/* Bloco Multi-Turma: Chegaram aparelhos de solicitantes diferentes */}
+              {detectedBorrowers.length > 1 && (
+                <div className="p-3 bg-amber-50 dark:bg-amber-950/40 border-3 border-amber-500 shadow-[3px_3px_0px_0px_rgba(245,158,11,0.5)] mt-3 space-y-2">
+                  <div className="flex items-center justify-between gap-1">
+                    <div className="flex items-center gap-1.5 font-black uppercase text-xs text-amber-900 dark:text-amber-200">
+                      <Users className="h-4 w-4 text-amber-600 shrink-0" />
+                      <span>Lote Multi-Turma ({detectedBorrowers.length} Solicitantes)</span>
+                    </div>
+                    <Badge className="bg-amber-500 text-black text-[9px] font-black uppercase rounded-none border border-black">
+                      Detectado
+                    </Badge>
+                  </div>
+                  <p className="text-[10px] font-bold text-amber-950 dark:text-amber-200 leading-tight">
+                    Foram identificados aparelhos de solicitantes/turmas diferentes. Todos serão baixados simultaneamente no sistema. Quem está no balcão entregando?
+                  </p>
+                  <div className="flex flex-wrap gap-1.5 pt-1">
+                    {detectedBorrowers.map(b => (
+                      <Button
+                        key={b.email}
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          handleUserSelect({
+                            id: b.email,
+                            name: b.name,
+                            email: b.email,
+                            ra: b.ra || '',
+                            type: b.userType,
+                          });
+                        }}
+                        className={cn(
+                          "h-7 px-2 text-[10px] font-black uppercase border-2 border-black rounded-none shadow-[1px_1px_0px_0px_#000]",
+                          selectedUser?.email === b.email ? "bg-amber-400 text-black border-black shadow-none font-black" : "bg-white dark:bg-zinc-800"
+                        )}
+                      >
+                        <User className="h-3 w-3 mr-1" />
+                        {b.name} ({b.deviceIds.length})
+                      </Button>
+                    ))}
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setIsManualOverride(true);
+                        const names = detectedBorrowers.map(b => b.name).join(' & ');
+                        setSelectedUser({
+                          id: 'multi-batch',
+                          name: `Lote Conjunto (${detectedBorrowers.length} Solicitantes)`,
+                          email: 'multiplos@sistema',
+                          ra: '',
+                          type: 'professor',
+                        });
+                        setReturnData(prev => ({
+                          ...prev,
+                          name: `Devolução Conjunta: ${names}`,
+                          email: 'multiplos@sistema',
+                          ra: '',
+                          userType: 'professor',
+                        }));
+                      }}
+                      className={cn(
+                        "h-7 px-2 text-[10px] font-black uppercase border-2 border-black rounded-none shadow-[1px_1px_0px_0px_#000]",
+                        selectedUser?.id === 'multi-batch' ? "bg-amber-400 text-black border-black shadow-none font-black" : "bg-white dark:bg-zinc-800"
+                      )}
+                    >
+                      <Users className="h-3 w-3 mr-1" />
+                      Ambos / Próprios
+                    </Button>
+                  </div>
+                </div>
               )}
 
               {selectedUser && (
@@ -443,22 +614,30 @@ export function ReturnForm({ onReturnSuccess, initialChromebookId, initialDevice
                     </div>
                   </div>
 
-                  {/* NOVA MENSAGEM INFORMATIVA COM ANIMAÇÃO ZOOM */}
-                  <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-950/30 border-3 border-blue-500 shadow-[3px_3px_0px_0px_rgba(59,130,246,0.5)] animate-zoom-pulse">
-                    <div className="flex items-start gap-2">
-                      <div className="p-1 bg-blue-500 rounded-sm mt-0.5">
-                        <BookOpen className="h-3.5 w-3.5 text-white" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-xs font-black uppercase text-black dark:text-white mb-1">
-                          📋 Próximo Passo
-                        </p>
-                        <p className="text-[10px] font-bold text-black dark:text-white leading-tight">
-                          Agora, <span className="font-black underline">selecione os dispositivos</span> na lista de "Sugeridos" à esquerda para validar quais equipamentos serão devolvidos.
-                        </p>
+                  {deviceIds.length === 0 ? (
+                    <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-950/30 border-3 border-blue-500 shadow-[3px_3px_0px_0px_rgba(59,130,246,0.5)] animate-zoom-pulse">
+                      <div className="flex items-start gap-2">
+                        <div className="p-1 bg-blue-500 rounded-sm mt-0.5">
+                          <BookOpen className="h-3.5 w-3.5 text-white" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-xs font-black uppercase text-black dark:text-white mb-1">
+                            📋 Próximo Passo
+                          </p>
+                          <p className="text-[10px] font-bold text-black dark:text-white leading-tight">
+                            Agora, <span className="font-black underline">selecione os dispositivos</span> na lista de "Sugeridos" à esquerda para validar quais equipamentos serão devolvidos.
+                          </p>
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  ) : (
+                    <div className="mt-3 p-2.5 bg-zinc-50 dark:bg-zinc-800/80 border-2 border-black dark:border-white shadow-[2px_2px_0px_0px_#000] flex items-center gap-2">
+                      <Computer className="h-4 w-4 text-primary shrink-0" />
+                      <p className="text-xs font-bold uppercase text-foreground">
+                        {deviceIds.length} {deviceIds.length === 1 ? 'Chromebook pronto' : 'Chromebooks prontos'} para baixa.
+                      </p>
+                    </div>
+                  )}
                 </>
               )}
             </CardContent>

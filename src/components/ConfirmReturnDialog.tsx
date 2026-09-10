@@ -44,6 +44,19 @@ export function ConfirmReturnDialog({
     const remainingCount = remainingLoans.length;
 
     // Calcula estatísticas gerais
+    const distinctBorrowers = React.useMemo(() => {
+        const map = new Map<string, { name: string; count: number }>();
+        deviceIds.forEach(id => {
+            const loan = loanDetails.get(id);
+            if (loan?.student_name) {
+                const key = loan.student_name.trim();
+                const prev = map.get(key) || { name: key, count: 0 };
+                map.set(key, { name: key, count: prev.count + 1 });
+            }
+        });
+        return Array.from(map.values());
+    }, [deviceIds, loanDetails]);
+
     const overdueCount = deviceIds.filter(id => {
         const loan = loanDetails.get(id);
         return loan && isOverdue(loan.expected_return_date);
@@ -78,6 +91,20 @@ export function ConfirmReturnDialog({
                             <p className="text-xs font-bold uppercase text-muted-foreground">Devolvido por</p>
                             <p className="font-black text-sm uppercase truncate">{returnData.name}</p>
                             <p className="text-xs font-mono truncate">{returnData.email}</p>
+                            {distinctBorrowers.length > 1 && (
+                                <div className="mt-2 pt-2 border-t border-amber-300 dark:border-amber-700/60">
+                                    <p className="text-[10px] font-black uppercase text-amber-800 dark:text-amber-300 mb-1">
+                                        Lote com {distinctBorrowers.length} Solicitantes Reconhecidos:
+                                    </p>
+                                    <div className="flex flex-wrap gap-1">
+                                        {distinctBorrowers.map(b => (
+                                            <span key={b.name} className="px-1.5 py-0.5 bg-white dark:bg-zinc-800 text-[10px] font-black uppercase border border-black shadow-[1px_1px_0px_0px_#000]">
+                                                {b.name} ({b.count} {b.count === 1 ? 'aparelho' : 'aparelhos'})
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
 

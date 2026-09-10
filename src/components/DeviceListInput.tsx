@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { Label } from './ui/label';
-import { Computer, ChevronLeft, ChevronRight, CheckCircle } from 'lucide-react';
+import { Computer, ChevronLeft, ChevronRight, CheckCircle, LayoutGrid, List, X } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { normalizeChromebookId, sanitizeQRCodeData } from '@/utils/security';
 import { QRCodeReader } from './QRCodeReader';
@@ -58,6 +58,7 @@ export function DeviceListInput({
   const [isLoanCacheLoading, setIsLoanCacheLoading] = useState(true);
   const [addedDevicesPage, setAddedDevicesPage] = useState(1);
   const [suggestionsPage, setSuggestionsPage] = useState(1);
+  const [viewMode, setViewMode] = useState<'cards' | 'compact'>('cards');
   const itemsPerPage = 5;
 
   // Estado para o diálogo de devolução rápida
@@ -363,46 +364,105 @@ export function DeviceListInput({
         {/* SEÇÃO 1: Dispositivos Já Adicionados */}
         {deviceList.length > 0 && (
           <div className="space-y-3 w-full max-w-full">
-            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-              <span className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-pulse" />
-              {actionLabel === 'Empréstimo' ? 'Dispositivos Adicionados' : 'Dispositivos para Devolução'} ({deviceList.length})
-            </p>
-            <div className="space-y-2 w-full max-w-full">
-              {(() => {
-                const totalPages = Math.ceil(deviceList.length / itemsPerPage);
-                const startIndex = (addedDevicesPage - 1) * itemsPerPage;
-                const paginatedDevices = deviceList.slice(startIndex, startIndex + itemsPerPage);
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                <span className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-pulse" />
+                {actionLabel === 'Empréstimo' ? 'Dispositivos Adicionados' : 'Dispositivos para Devolução'} ({deviceList.length})
+              </p>
 
-                return (
-                  <>
-                    {paginatedDevices.map((chromebook, index) => (
-                      <DeviceCard
-                        key={chromebook.chromebook_id}
-                        deviceId={chromebook.chromebook_id}
-                        status={chromebook.status as any}
-                        manufacturer={chromebook.manufacturer}
-                        model={chromebook.model}
-                        serial_number={chromebook.serial_number}
-                        onRemove={() => removeDevice(chromebook.chromebook_id)}
-                        variant={actionLabel === 'Empréstimo' ? 'loan' : 'return'}
-                        showDetails={true}
-                        className="animate-in slide-in-from-left-3 fade-in duration-300"
-                        style={{ animationDelay: `${index * 50}ms` }}
-                      />
-                    ))}
-
-                    {deviceList.length > itemsPerPage && (
-                      <NeoPagination
-                        currentPage={addedDevicesPage}
-                        totalPages={totalPages}
-                        onPageChange={setAddedDevicesPage}
-                        className="mt-4"
-                      />
+              {deviceList.length > 1 && (
+                <div className="flex items-center border-2 border-black dark:border-white shadow-[1px_1px_0px_0px_#000] bg-zinc-100 dark:bg-zinc-800 p-0.5">
+                  <button
+                    type="button"
+                    onClick={() => setViewMode('cards')}
+                    title="Modo Detalhado (Cards)"
+                    className={cn(
+                      "flex items-center gap-1 px-2 py-0.5 text-[10px] font-black uppercase transition-colors",
+                      viewMode === 'cards'
+                        ? "bg-black text-white dark:bg-white dark:text-black"
+                        : "text-muted-foreground hover:text-foreground"
                     )}
-                  </>
-                );
-              })()}
+                  >
+                    <List className="h-3 w-3" />
+                    Cards
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setViewMode('compact')}
+                    title="Modo Carrinho / Lote Compacto"
+                    className={cn(
+                      "flex items-center gap-1 px-2 py-0.5 text-[10px] font-black uppercase transition-colors",
+                      viewMode === 'compact'
+                        ? "bg-black text-white dark:bg-white dark:text-black"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    <LayoutGrid className="h-3 w-3" />
+                    Grade Lote
+                  </button>
+                </div>
+              )}
             </div>
+
+            {viewMode === 'compact' ? (
+              <div className="flex flex-wrap gap-2 max-h-72 overflow-y-auto p-2.5 bg-zinc-50 dark:bg-zinc-950 border-2 border-black dark:border-white shadow-[inset_2px_2px_0px_0px_rgba(0,0,0,0.1)]">
+                {deviceList.map(chromebook => (
+                  <div
+                    key={chromebook.chromebook_id}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-white dark:bg-zinc-900 border-2 border-black dark:border-white shadow-[2px_2px_0px_0px_#000] dark:shadow-[2px_2px_0px_0px_#fff] text-xs font-black uppercase"
+                  >
+                    <Computer className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
+                    <span className="font-mono text-xs text-foreground">{chromebook.chromebook_id}</span>
+                    <span className="text-[10px] text-muted-foreground font-semibold">({chromebook.model || 'Padrão'})</span>
+                    <button
+                      type="button"
+                      onClick={() => removeDevice(chromebook.chromebook_id)}
+                      className="ml-1 text-red-600 hover:text-red-700 dark:text-red-400 p-0.5 hover:bg-red-50 dark:hover:bg-red-950/40 rounded transition-colors"
+                      title={`Remover ${chromebook.chromebook_id}`}
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="space-y-2 w-full max-w-full">
+                {(() => {
+                  const totalPages = Math.ceil(deviceList.length / itemsPerPage);
+                  const startIndex = (addedDevicesPage - 1) * itemsPerPage;
+                  const paginatedDevices = deviceList.slice(startIndex, startIndex + itemsPerPage);
+
+                  return (
+                    <>
+                      {paginatedDevices.map((chromebook, index) => (
+                        <DeviceCard
+                          key={chromebook.chromebook_id}
+                          deviceId={chromebook.chromebook_id}
+                          status={chromebook.status as any}
+                          manufacturer={chromebook.manufacturer}
+                          model={chromebook.model}
+                          serial_number={chromebook.serial_number}
+                          onRemove={() => removeDevice(chromebook.chromebook_id)}
+                          variant={actionLabel === 'Empréstimo' ? 'loan' : 'return'}
+                          showDetails={true}
+                          className="animate-in slide-in-from-left-3 fade-in duration-300"
+                          style={{ animationDelay: `${index * 50}ms` }}
+                        />
+                      ))}
+
+                      {deviceList.length > itemsPerPage && (
+                        <NeoPagination
+                          currentPage={addedDevicesPage}
+                          totalPages={totalPages}
+                          onPageChange={setAddedDevicesPage}
+                          className="mt-4"
+                        />
+                      )}
+                    </>
+                  );
+                })()}
+              </div>
+            )}
           </div>
         )}
 
