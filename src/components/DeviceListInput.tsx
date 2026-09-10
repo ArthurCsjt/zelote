@@ -389,7 +389,7 @@ export function DeviceListInput({
                   <button
                     type="button"
                     onClick={() => setViewMode('compact')}
-                    title="Modo Grade Lote (2 Colunas)"
+                    title="Modo Grade (2 Colunas)"
                     className={cn(
                       "flex items-center gap-1 px-2.5 py-1 rounded-md text-[10px] sm:text-[11px] font-bold uppercase transition-all",
                       viewMode === 'compact'
@@ -398,7 +398,7 @@ export function DeviceListInput({
                     )}
                   >
                     <LayoutGrid className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
-                    Grade Lote
+                    Grade
                   </button>
                 </div>
               )}
