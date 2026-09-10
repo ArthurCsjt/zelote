@@ -371,33 +371,33 @@ export function DeviceListInput({
               </p>
 
               {deviceList.length > 1 && (
-                <div className="flex items-center border-2 border-black dark:border-white shadow-[1px_1px_0px_0px_#000] bg-zinc-100 dark:bg-zinc-800 p-0.5">
+                <div className="flex items-center gap-1 bg-zinc-100 dark:bg-zinc-800 p-1 rounded-lg">
                   <button
                     type="button"
                     onClick={() => setViewMode('cards')}
                     title="Modo Detalhado (Cards)"
                     className={cn(
-                      "flex items-center gap-1 px-2 py-0.5 text-[10px] font-black uppercase transition-colors",
+                      "flex items-center gap-1 px-2.5 py-1 rounded-md text-[10px] sm:text-[11px] font-bold uppercase transition-all",
                       viewMode === 'cards'
-                        ? "bg-black text-white dark:bg-white dark:text-black"
+                        ? "bg-white dark:bg-zinc-900 text-black dark:text-white shadow-xs font-black"
                         : "text-muted-foreground hover:text-foreground"
                     )}
                   >
-                    <List className="h-3 w-3" />
+                    <List className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                     Cards
                   </button>
                   <button
                     type="button"
                     onClick={() => setViewMode('compact')}
-                    title="Modo Carrinho / Lote Compacto"
+                    title="Modo Grade Lote (2 Colunas)"
                     className={cn(
-                      "flex items-center gap-1 px-2 py-0.5 text-[10px] font-black uppercase transition-colors",
+                      "flex items-center gap-1 px-2.5 py-1 rounded-md text-[10px] sm:text-[11px] font-bold uppercase transition-all",
                       viewMode === 'compact'
-                        ? "bg-black text-white dark:bg-white dark:text-black"
+                        ? "bg-white dark:bg-zinc-900 text-black dark:text-white shadow-xs font-black"
                         : "text-muted-foreground hover:text-foreground"
                     )}
                   >
-                    <LayoutGrid className="h-3 w-3" />
+                    <LayoutGrid className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                     Grade Lote
                   </button>
                 </div>
@@ -405,19 +405,23 @@ export function DeviceListInput({
             </div>
 
             {viewMode === 'compact' ? (
-              <div className="flex flex-wrap gap-2 max-h-72 overflow-y-auto p-2.5 bg-zinc-50 dark:bg-zinc-950 border-2 border-black dark:border-white shadow-[inset_2px_2px_0px_0px_rgba(0,0,0,0.1)]">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 max-h-72 overflow-y-auto p-2 bg-zinc-50/70 dark:bg-zinc-950/70 rounded-lg border border-zinc-200 dark:border-zinc-800">
                 {deviceList.map(chromebook => (
                   <div
                     key={chromebook.chromebook_id}
-                    className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-white dark:bg-zinc-900 border-2 border-black dark:border-white shadow-[2px_2px_0px_0px_#000] dark:shadow-[2px_2px_0px_0px_#fff] text-xs font-black uppercase"
+                    className="flex items-center justify-between gap-1.5 p-2 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-md shadow-xs text-xs"
                   >
-                    <Computer className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
-                    <span className="font-mono text-xs text-foreground">{chromebook.chromebook_id}</span>
-                    <span className="text-[10px] text-muted-foreground font-semibold">({chromebook.model || 'Padrão'})</span>
+                    <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                      <Computer className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
+                      <div className="flex flex-col min-w-0 leading-tight">
+                        <span className="font-mono font-black text-xs text-foreground truncate">{chromebook.chromebook_id}</span>
+                        <span className="text-[9px] text-muted-foreground truncate font-medium">{chromebook.model || 'Padrão'}</span>
+                      </div>
+                    </div>
                     <button
                       type="button"
                       onClick={() => removeDevice(chromebook.chromebook_id)}
-                      className="ml-1 text-red-600 hover:text-red-700 dark:text-red-400 p-0.5 hover:bg-red-50 dark:hover:bg-red-950/40 rounded transition-colors"
+                      className="text-zinc-400 hover:text-red-600 dark:hover:text-red-400 p-1 hover:bg-red-50 dark:hover:bg-red-950/40 rounded transition-colors shrink-0"
                       title={`Remover ${chromebook.chromebook_id}`}
                     >
                       <X className="h-3.5 w-3.5" />
