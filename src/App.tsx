@@ -8,7 +8,6 @@ import { useAuth } from "./contexts/AuthContext";
 import { useTheme } from "./hooks/use-theme";
 
 import { PrintProvider } from './contexts/PrintContext';
-import { AuditProvider } from './providers/AuditProvider';
 import logger from "@/utils/logger";
 
 import { ErrorBoundary } from "./components/ErrorBoundary";
@@ -92,8 +91,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
-  // Envolve todas as rotas protegidas com o AuditProvider
-  return <AuditProvider>{children}</AuditProvider>;
+  return <>{children}</>;
 };
 
 // Componente Wrapper para o Toaster

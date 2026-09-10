@@ -5,50 +5,97 @@ import logger from '@/utils/logger';
 
 export type ProfileRole = 'admin' | 'user' | 'super_admin' | 'professor' | 'teacher' | 'manutencao' | null;
 
+// Cache em memória compartilhado entre todas as instâncias do hook na aplicação
+let memoryRoleCache: { userId: string; role: ProfileRole } | null = null;
+let pendingRolePromise: Promise<ProfileRole> | null = null;
+
+const getCachedRole = (userId?: string): ProfileRole | null => {
+  if (!userId) return null;
+  if (memoryRoleCache && memoryRoleCache.userId === userId) {
+    return memoryRoleCache.role;
+  }
+  try {
+    const cached = sessionStorage.getItem(`zelote_role_${userId}`);
+    if (cached) {
+      memoryRoleCache = { userId, role: cached as ProfileRole };
+      return cached as ProfileRole;
+    }
+  } catch (e) {}
+  return null;
+};
+
+const setCachedRole = (userId: string, role: ProfileRole) => {
+  memoryRoleCache = { userId, role };
+  try {
+    if (role) {
+      sessionStorage.setItem(`zelote_role_${userId}`, role);
+    } else {
+      sessionStorage.removeItem(`zelote_role_${userId}`);
+    }
+  } catch (e) {}
+};
+
 export function useProfileRole() {
   const { user } = useAuth();
-  const [role, setRole] = useState<ProfileRole>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+  const userId = user?.id;
+  const cached = getCachedRole(userId);
+
+  const [role, setRole] = useState<ProfileRole>(cached);
+  const [loading, setLoading] = useState<boolean>(!cached && !!userId);
 
   useEffect(() => {
     let isMounted = true;
-    const loadRole = async () => {
-      try {
-        if (!user?.id) {
-          if (isMounted) {
-            setRole(null);
-            setLoading(false);
-          }
-          return;
-        }
 
-        // ALTERAÇÃO: Usando a função RPC get_my_role() para buscar o papel
-        // Esta função é mais robusta, pois é executada com SECURITY DEFINER no banco.
-        const { data, error } = await supabase.rpc('get_my_role');
+    if (!userId) {
+      setRole(null);
+      setLoading(false);
+      return;
+    }
 
-        if (error) throw error;
+    // Se já temos cache, atualiza o estado local imediatamente
+    const currentCached = getCachedRole(userId);
+    if (currentCached) {
+      setRole(currentCached);
+      setLoading(false);
+    }
 
-        if (isMounted) {
-          // O RPC retorna a role como uma string (text)
-          let fetchedRole = (data as ProfileRole) ?? 'user';
-          
-          logger.debug(`User ID: ${user.id}, Fetched Role: ${fetchedRole}`);
-          setRole(fetchedRole);
-        }
-      } catch (e) {
-        logger.error('Erro ao carregar função do perfil', e);
-        // Se houver erro, assume 'user' para evitar que o app trave
-        if (isMounted) setRole('user');
-      } finally {
-        if (isMounted) setLoading(false);
+    const fetchRole = async (): Promise<ProfileRole> => {
+      // Reutiliza requisição em andamento para evitar chamadas RPC concorrentes múltiplas
+      if (pendingRolePromise) {
+        return pendingRolePromise;
       }
+
+      pendingRolePromise = (async () => {
+        try {
+          const { data, error } = await supabase.rpc('get_my_role');
+          if (error) throw error;
+          const fetchedRole = (data as ProfileRole) ?? 'user';
+          setCachedRole(userId, fetchedRole);
+          return fetchedRole;
+        } catch (e) {
+          logger.error('Erro ao carregar função do perfil', e);
+          const fallbackRole = currentCached || 'user';
+          setCachedRole(userId, fallbackRole);
+          return fallbackRole;
+        } finally {
+          pendingRolePromise = null;
+        }
+      })();
+
+      return pendingRolePromise;
     };
 
-    loadRole();
+    fetchRole().then((fetchedRole) => {
+      if (isMounted) {
+        setRole(fetchedRole);
+        setLoading(false);
+      }
+    });
+
     return () => {
       isMounted = false;
     };
-  }, [user?.id]);
+  }, [userId]);
 
   const isAdmin = role === 'admin' || role === 'super_admin';
 

@@ -3,6 +3,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useProfileRole } from '@/hooks/use-profile-role';
 
 import { AuditHub } from '@/components/audit/AuditHub';
+import { AuditProvider } from '@/providers/AuditProvider';
 import { useState, useEffect } from "react";
 import { useQuery } from '@tanstack/react-query';
 import { useLocation, useNavigate, Navigate } from 'react-router-dom';
@@ -113,7 +114,11 @@ const Index = () => {
           onReturnSuccess={handleReturnSuccess}
         />;
       case 'audit':
-        return <AuditHub />;
+        return (
+          <AuditProvider>
+            <AuditHub />
+          </AuditProvider>
+        );
       case 'history':
         if (!canSeeHistory) return <div className="p-8 text-center font-bold text-red-500 uppercase">Acesso Negado</div>;
         return <LoanHistory

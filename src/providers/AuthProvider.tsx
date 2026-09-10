@@ -88,7 +88,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (!error && data?.user) {
-      syncUserToInventory(data.user);
+      setUser(data.user);
     }
     return { success: !error, error: error?.message || null };
   };
@@ -98,7 +98,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const logout = async () => {
+    try {
+      // Limpa cache de perfil/sessão ao sair
+      sessionStorage.clear();
+    } catch (e) {}
     await supabase.auth.signOut();
+    setUser(null);
   };
 
   const register = async (email: string, password: string, firstName: string, lastName: string) => {
