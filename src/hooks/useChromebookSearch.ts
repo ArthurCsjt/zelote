@@ -27,7 +27,8 @@ export function useChromebookSearch() {
       // Busca agora inclui manufacturer e patrimony_number
       const { data, error } = await supabase
         .from('chromebooks')
-        .select('id, chromebook_id, model, status, serial_number, patrimony_number, manufacturer, condition');
+        .select('id, chromebook_id, model, status, serial_number, patrimony_number, manufacturer, condition')
+        .order('chromebook_id', { ascending: true });
 
       if (error) throw new Error('Erro ao carregar inventário de Chromebooks.');
 

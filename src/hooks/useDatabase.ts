@@ -924,9 +924,12 @@ export const useDatabase = () => {
       return false;
     }
     // Validação de domínio para professor, se o email estiver sendo atualizado
-    if (data.email && !validateEmailDomain(data.email, 'professor')) {
-      toast({ title: "Erro de Validação", description: `Email de professor deve terminar com ${EMAIL_DOMAINS.PROFESSOR}`, variant: "destructive" });
-      return false;
+    if (data.email) {
+      const emailValidation = validateEmailDomain(data.email, 'professor');
+      if (!emailValidation.valid) {
+        toast({ title: "Erro de Validação", description: emailValidation.message, variant: "destructive" });
+        return false;
+      }
     }
     setLoading(true);
     try {
@@ -996,9 +999,12 @@ export const useDatabase = () => {
       return false;
     }
     // Validação de domínio para funcionário, se o email estiver sendo atualizado
-    if (data.email && !validateEmailDomain(data.email, 'funcionario')) {
-      toast({ title: "Erro de Validação", description: `Email de funcionário deve terminar com ${EMAIL_DOMAINS.FUNCIONARIO}`, variant: "destructive" });
-      return false;
+    if (data.email) {
+      const emailValidation = validateEmailDomain(data.email, 'funcionario');
+      if (!emailValidation.valid) {
+        toast({ title: "Erro de Validação", description: emailValidation.message, variant: "destructive" });
+        return false;
+      }
     }
     setLoading(true);
     try {
@@ -1483,7 +1489,7 @@ export const useDatabase = () => {
     }
   }, [user]);
 
-  const deleteReservation = async (id: string) => {
+  const deleteReservation = useCallback(async (id: string) => {
     setLoading(true);
     try {
       const { error } = await supabase
@@ -1505,7 +1511,7 @@ export const useDatabase = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   // --- NOTIFICATION OPERATIONS ---
   const getNotifications = useCallback(async (): Promise<any[]> => {
