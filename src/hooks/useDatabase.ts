@@ -66,6 +66,7 @@ export interface ReservationData {
   mic_quantity?: number;
   is_minecraft?: boolean;
   classroom?: string; // NOVO: Sala/Turma onde será utilizado
+  space_id?: string | null; // ID estrutural do espaço se vinculado
 }
 
 export interface Reservation extends ReservationData {
@@ -1283,6 +1284,7 @@ export const useDatabase = () => {
           mic_quantity: data.mic_quantity || 0,
           is_minecraft: data.is_minecraft || false,
           classroom: data.classroom || '', // NOVO: Sala/Turma
+          space_id: data.space_id || null,
           created_by: user.id,
         })
         .select(`
@@ -1436,6 +1438,7 @@ export const useDatabase = () => {
         mic_quantity: baseData.mic_quantity || 0,
         is_minecraft: baseData.is_minecraft || false,
         classroom: baseData.classroom || '',
+        space_id: baseData.space_id || null,
         created_by: user.id,
       }));
 

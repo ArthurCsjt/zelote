@@ -17,6 +17,7 @@ import { useProfileRole } from '@/hooks/use-profile-role';
 import { Calendar as CalendarUI } from '@/components/ui/calendar';
 import { SuggestiveSearch } from '@/components/ui/SuggestiveSearch';
 import { responsibleEmails, isChromebookSpace as checkChromebookSpace } from '@/utils/scheduling';
+import { ProfessorAutocomplete } from './ProfessorAutocomplete';
 
 interface ExtendedSpace extends Space {
   isVirtual?: boolean;
@@ -45,6 +46,7 @@ interface ReservationDialogProps {
   currentReservations: Reservation[];
   onReservationSuccess: () => void;
   maxQuantity: number;
+  professores?: { id: string; nome_completo: string }[];
 }
 
 export const ReservationDialog: React.FC<ReservationDialogProps> = ({
@@ -55,6 +57,7 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
   currentReservations,
   onReservationSuccess,
   maxQuantity,
+  professores = [],
 }) => {
   useEffect(() => {
     // Add custom animation for room buttons
@@ -79,7 +82,10 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
   const isManutencao = role === 'manutencao';
 
   const isSuperAdmin = role === 'super_admin';
-  const isResponsible = isSuperAdmin || (user?.email && responsibleEmails.includes(user.email));
+  const isResponsible = isAdmin || isSuperAdmin || (user?.email && responsibleEmails.includes(user.email));
+
+  const [selectedProfessorId, setSelectedProfessorId] = useState<string>('');
+  const [isBookingForOther, setIsBookingForOther] = useState(false);
 
   const [justification, setJustification] = useState<string>('');
   const [quantity, setQuantity] = useState<number>(0);
@@ -190,13 +196,15 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
       setExtraDates([]);
       setIsMultiMode(false);
       setShowCalendar(false);
+      setSelectedProfessorId(user?.id || '');
+      setIsBookingForOther(false);
 
       // Load spaces from db
       getSpaces().then(data => {
         setSpaces(data);
       });
     }
-  }, [open, getSpaces, maxQuantity]);
+  }, [open, getSpaces, maxQuantity, user?.id]);
 
   // Regras de quantidade para Minecraft
   useEffect(() => {
@@ -240,6 +248,19 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
       return;
     }
 
+    if (isBookingForOther && !selectedProfessorId) {
+      toast({
+        title: "Erro de Validação",
+        description: "Selecione o professor para quem deseja agendar.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const matchedSpace = spaces.find(s => s.name.toLowerCase() === classroom.trim().toLowerCase());
+    const spaceId = matchedSpace ? matchedSpace.id : null;
+    const targetProfessorId = (isBookingForOther && selectedProfessorId) ? selectedProfessorId : user?.id;
+
     const allDates = [date, ...extraDates].map(d => format(d, 'yyyy-MM-dd'));
     const baseData = {
       time_slot: timeSlot,
@@ -251,6 +272,8 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
       mic_quantity: needsMic ? micQuantity : 0,
       is_minecraft: isMinecraft,
       classroom: classroom.trim(),
+      space_id: spaceId,
+      professor_id: targetProfessorId,
     };
 
     if (isMultiMode && extraDates.length > 0) {
@@ -463,6 +486,71 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                 </span>
               </div>
             </div>
+
+            {/* SELEÇÃO DE PROFESSOR (APENAS ADMIN/COORDENAÇÃO) */}
+            {(isAdmin || isResponsible) && professores && professores.length > 0 && (
+              <div className="border-2 border-[#1e3a8a] bg-blue-50/30 overflow-hidden shadow-[4px_4px_0_0_rgba(30,58,138,0.15)]">
+                <div className="bg-[#1e3a8a] px-3 py-2 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <User className="h-4 w-4 text-white" />
+                    <span className="text-[11px] sm:text-[13px] font-black uppercase text-white tracking-wider">
+                      Professor Solicitante
+                    </span>
+                  </div>
+                  <span className="bg-white/20 border border-white/50 px-2 py-0.5 text-white text-[8px] sm:text-[9px] font-black uppercase">
+                    Coordenação / Admin
+                  </span>
+                </div>
+
+                <div className="p-3 sm:p-4 space-y-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <p className="text-[11px] sm:text-[13px] font-bold text-zinc-700 dark:text-zinc-300 leading-snug">
+                      Deseja agendar esta aula em nome de outro professor?
+                    </p>
+
+                    <div className="flex border-2 border-black dark:border-zinc-700 bg-white dark:bg-zinc-800 shadow-[3px_3px_0_0_#000] dark:shadow-[3px_3px_0_0_rgba(255,255,255,0.1)] self-start sm:self-center overflow-hidden">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsBookingForOther(false);
+                          setSelectedProfessorId(user?.id || '');
+                        }}
+                        className={cn(
+                          "px-4 sm:px-5 py-2 text-[11px] sm:text-[12px] font-black uppercase transition-all",
+                          !isBookingForOther ? "bg-zinc-800 text-white dark:bg-zinc-700" : "bg-white dark:bg-zinc-900 text-zinc-400 dark:text-zinc-500 hover:text-black dark:hover:text-white"
+                        )}
+                      >
+                        Para Mim
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setIsBookingForOther(true)}
+                        className={cn(
+                          "px-3 sm:px-5 py-2 text-[10px] sm:text-[12px] font-black uppercase transition-all border-l-2 border-black dark:border-zinc-700",
+                          isBookingForOther ? "bg-[#1e3a8a] text-white" : "bg-white dark:bg-zinc-900 text-zinc-400 dark:text-zinc-500 hover:text-black dark:hover:text-white"
+                        )}
+                      >
+                        Outro Professor
+                      </button>
+                    </div>
+                  </div>
+
+                  {isBookingForOther && (
+                    <div className="mt-2 pt-3 border-t-2 border-blue-200 dark:border-blue-900/50 animate-in fade-in slide-in-from-top-2">
+                      <Label className="text-[11px] sm:text-xs font-black uppercase tracking-wider text-[#1e3a8a] dark:text-blue-400 mb-2 block">
+                        Selecione o Professor: <span className="text-red-500">*</span>
+                      </Label>
+                      <ProfessorAutocomplete
+                        professores={professores}
+                        selectedProfessorId={selectedProfessorId}
+                        onSelect={(id) => setSelectedProfessorId(id)}
+                        disabled={isSaving}
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* RECORRÊNCIA */}
             {!isManutencao && (
@@ -1062,7 +1150,7 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
           </Button>
           <Button
             type="submit"
-            disabled={isSaving || !classroom.trim() || quantity < 0 || currentReservations.some(res => classroom.trim() && res.classroom?.toLowerCase() === classroom.trim().toLowerCase())}
+            disabled={isSaving || !classroom.trim() || quantity < 0 || (isBookingForOther && !selectedProfessorId) || currentReservations.some(res => classroom.trim() && res.classroom?.toLowerCase() === classroom.trim().toLowerCase())}
             onClick={handleSubmit}
             className="w-full sm:w-auto sm:flex-[2] h-11 sm:h-12 font-[1000] uppercase tracking-wider bg-[#3B82F6] hover:bg-[#2563EB] text-white border-[2px] sm:border-[3px] border-black rounded-none shadow-[3px_3px_0_0_#000] sm:shadow-[4px_4px_0_0_#000] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none text-xs sm:text-sm disabled:opacity-50 disabled:hover:translate-x-0 disabled:hover:translate-y-0 disabled:hover:shadow-[3px_3px_0_0_#000] sm:disabled:hover:shadow-[4px_4px_0_0_#000] transition-all flex items-center justify-center gap-2"
           >

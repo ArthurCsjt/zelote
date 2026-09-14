@@ -40,8 +40,8 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
   const isSuperAdmin = role === 'super_admin';
 
   const isResponsible = useMemo(() => {
-    return isSuperAdmin || (currentUser?.email && responsibleEmails.includes(currentUser.email));
-  }, [isSuperAdmin, currentUser]);
+    return isAdmin || isSuperAdmin || (currentUser?.email && responsibleEmails.includes(currentUser.email));
+  }, [isAdmin, isSuperAdmin, currentUser]);
 
   const { jaReservados, restantes, myReservation, isAvailable, isPartial, isFull, isPast } = useMemo(() => {
     const jaReservados = allReservationsForSlot.reduce((sum, res) => sum + res.quantity_requested, 0);
@@ -97,6 +97,7 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
         currentReservations={allReservationsForSlot}
         onReservationSuccess={onReservationSuccess}
         maxQuantity={totalAvailableChromebooks}
+        professores={professores}
       >
         <div className={cn(
           "h-full min-h-[4rem] border-[3px] border-dashed border-zinc-400 dark:border-zinc-700 bg-white dark:bg-zinc-950 rounded-xl",
@@ -232,17 +233,6 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
 
       {/* Botão explícito para Novo Agendamento se houver espaço e não for passado */}
       {isPartial && restantes > 0 && !isPast && (
-        <div className="mt-auto flex items-center justify-center gap-1.5 py-1 border-2 border-zinc-400 dark:border-zinc-500 bg-white dark:bg-zinc-950 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors text-zinc-600 dark:text-zinc-400 rounded-lg">
-          <Plus className="h-3 w-3" />
-          <span className="text-[9px] font-bold uppercase tracking-tight">Adicionar</span>
-        </div>
-      )}
-    </div>
-  );
-
-  return (
-    <>
-      {isPartial && !isPast ? (
         <ReservationDialog
           date={date}
           timeSlot={timeSlot}
@@ -250,12 +240,20 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
           currentReservations={allReservationsForSlot}
           onReservationSuccess={onReservationSuccess}
           maxQuantity={restantes}
+          professores={professores}
         >
-          {content}
+          <div className="mt-auto flex items-center justify-center gap-1.5 py-1 border-2 border-zinc-400 dark:border-zinc-500 bg-white dark:bg-zinc-950 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors text-zinc-600 dark:text-zinc-400 rounded-lg cursor-pointer">
+            <Plus className="h-3 w-3" />
+            <span className="text-[9px] font-bold uppercase tracking-tight">Adicionar</span>
+          </div>
         </ReservationDialog>
-      ) : (
-        content
       )}
+    </div>
+  );
+
+  return (
+    <>
+      {content}
 
       {isDetailsOpen && typeof isDetailsOpen === 'string' && (
         <ReservationDetailsDialog

@@ -157,6 +157,30 @@ const SchedulingPage = () => {
       queryKey: ['totalAvailableChromebooks']
     });
   };
+
+  // Sincronização em tempo real via Supabase Realtime
+  useEffect(() => {
+    const channel = supabase
+      .channel('schema-db-changes-reservations')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'reservations',
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['reservations'] });
+          queryClient.invalidateQueries({ queryKey: ['totalAvailableChromebooks'] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
+
   const isLoading = isLoadingTotal || isLoadingReservations || isLoadingProfessores;
 
   // ── Controls injected into the TopBar ──────────────────────────────

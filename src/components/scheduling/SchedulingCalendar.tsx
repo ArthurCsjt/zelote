@@ -8,6 +8,7 @@ import type { Reservation } from '@/hooks/useDatabase';
 import type { User as AuthUser } from '@supabase/supabase-js';
 import { Loader2, CheckCircle, AlertTriangle, Monitor, Laptop, Clock, Info, GripVertical, ArrowRight, ArrowDown } from 'lucide-react';
 import { motion, useMotionValue, useSpring, AnimatePresence } from 'framer-motion';
+import { useProfileRole } from '@/hooks/use-profile-role';
 
 interface SchedulingCalendarProps {
   currentDate: Date;
@@ -32,6 +33,9 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
   professores,
   physicalTotal = 0,
 }) => {
+  const { isAdmin } = useProfileRole();
+  const canEditLimit = isAdmin || currentUser?.email === 'arthur.alencar@colegiosaojudas.com.br';
+
   const [isEditingLimit, setIsEditingLimit] = useState(false);
   const [newLimit, setNewLimit] = useState(totalAvailableChromebooks.toString());
 
@@ -225,10 +229,10 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
               <div
                 className={cn(
                   "relative z-10 flex flex-col items-center p-1 sm:p-2 w-full",
-                  (currentUser?.email === 'arthur.alencar@colegiosaojudas.com.br' || (currentUser as any)?.role === 'admin') && "cursor-pointer group/edit animate-duration-100 hover:scale-105 duration-100"
+                  canEditLimit && "cursor-pointer group/edit animate-duration-100 hover:scale-105 duration-100"
                 )}
                 onClick={() => {
-                  if (currentUser?.email === 'arthur.alencar@colegiosaojudas.com.br' || (currentUser as any)?.role === 'admin') {
+                  if (canEditLimit) {
                     setIsEditingLimit(true);
                   }
                 }}
