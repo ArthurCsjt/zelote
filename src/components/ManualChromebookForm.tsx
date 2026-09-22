@@ -1,10 +1,10 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Textarea } from "./ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Laptop, Factory, Tag, Hash, MapPin, AlertTriangle, Loader2, CheckCircle, RefreshCw } from "lucide-react";
+import { Laptop, Tag, Hash, MapPin, AlertTriangle, Loader2, CheckCircle, Plus, X } from "lucide-react";
 import { useDatabase } from '@/hooks/useDatabase';
 import {
   Select,
@@ -19,7 +19,6 @@ interface FormData {
   chromebookId: string;
   manufacturer: string;
   model: string;
-  customModel?: string;
   series: string; // Usado como serial_number
   manufacturingYear: string;
   patrimonyNumber: string;
@@ -29,8 +28,8 @@ interface FormData {
   provisioning_status: string;
 }
 
-// Mapeamento de Fabricantes e Modelos
-const MANUFACTURER_MODELS: Record<string, string[]> = {
+// Mapeamento de Fabricantes e Modelos (base fixa)
+const BASE_MANUFACTURER_MODELS: Record<string, string[]> = {
   Acer: ['N18Q5', 'N24P1', 'N15Q8', 'N18Q12'],
   Samsung: ['XE500C13', 'XE310XBA', 'XE501C13'],
   Lenovo: ['100e Chromebook Gen 3'],
@@ -38,21 +37,27 @@ const MANUFACTURER_MODELS: Record<string, string[]> = {
   Dell: ['Chromebook 3100'],
   Multilaser: ['Chromebook M11C'],
   Positivo: ['Chromebook C464'],
-  Outro: ['Outro'],
+  Outro: [],
 };
 
-const AVAILABLE_MANUFACTURERS = Object.keys(MANUFACTURER_MODELS);
+const AVAILABLE_MANUFACTURERS = Object.keys(BASE_MANUFACTURER_MODELS);
 
 export function ManualChromebookForm({ onRegistrationSuccess }: { onRegistrationSuccess: (newChromebook: any) => void }) {
   const { createChromebook, getNextChromebookId, loading } = useDatabase();
   const { toast } = useToast();
 
+  // Estado de modelos dinâmicos (pode adicionar novos modelos por fabricante)
+  const [customModelsByManufacturer, setCustomModelsByManufacturer] = useState<Record<string, string[]>>({});
+  const [addingModel, setAddingModel] = useState(false);
+  const [newModelInput, setNewModelInput] = useState('');
+  const addModelInputRef = useRef<HTMLInputElement>(null);
+
   const [formData, setFormData] = useState<FormData>({
     chromebookId: "",
-    manufacturer: "", model: "", customModel: "", series: "",
+    manufacturer: "", model: "", series: "",
     manufacturingYear: "",
     patrimonyNumber: "",
-    mobilityStatus: 'movel', // PADRÃO: MÓVEL
+    mobilityStatus: 'movel',
     classroomLocation: "", observations: "", provisioning_status: 'provisioned',
   });
   const [loadingNextId, setLoadingNextId] = useState(false);
@@ -73,13 +78,19 @@ export function ManualChromebookForm({ onRegistrationSuccess }: { onRegistration
     fetchNextId();
   }, [fetchNextId]);
 
+  useEffect(() => {
+    if (addingModel && addModelInputRef.current) {
+      addModelInputRef.current.focus();
+    }
+  }, [addingModel]);
+
   const resetForm = () => {
     setFormData({
       chromebookId: "",
-      manufacturer: "", model: "", customModel: "", series: "",
+      manufacturer: "", model: "", series: "",
       manufacturingYear: "",
       patrimonyNumber: "",
-      mobilityStatus: 'movel', // PADRÃO: MÓVEL
+      mobilityStatus: 'movel',
       classroomLocation: "", observations: "", provisioning_status: 'provisioned',
     });
     fetchNextId();
@@ -93,18 +104,42 @@ export function ManualChromebookForm({ onRegistrationSuccess }: { onRegistration
     setFormData(prev => ({
       ...prev,
       manufacturer: value,
-      model: value === 'Outro' ? 'Outro' : '', // Pré-seleciona Outro se o fabricante for Outro
-      customModel: ''
+      model: '',
     }));
+    setAddingModel(false);
+    setNewModelInput('');
+  };
+
+  const handleAddModel = () => {
+    const trimmed = newModelInput.trim().toUpperCase();
+    if (!trimmed || !formData.manufacturer) return;
+
+    const already = getModelsForManufacturer(formData.manufacturer).includes(trimmed);
+    if (already) {
+      toast({ title: "Modelo já existe", description: `"${trimmed}" já está na lista.`, variant: "destructive" });
+      return;
+    }
+
+    setCustomModelsByManufacturer(prev => ({
+      ...prev,
+      [formData.manufacturer]: [...(prev[formData.manufacturer] || []), trimmed],
+    }));
+    setFormData(prev => ({ ...prev, model: trimmed }));
+    setAddingModel(false);
+    setNewModelInput('');
+    toast({ title: "Modelo adicionado", description: `"${trimmed}" foi adicionado à lista de ${formData.manufacturer}.` });
+  };
+
+  const getModelsForManufacturer = (manufacturer: string): string[] => {
+    const base = BASE_MANUFACTURER_MODELS[manufacturer] || [];
+    const custom = customModelsByManufacturer[manufacturer] || [];
+    return [...base, ...custom];
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const effectiveModel = formData.model === 'Outro' 
-      ? (formData.customModel?.trim() || 'Outro') 
-      : formData.model;
 
-    if (!formData.manufacturer || !effectiveModel || !formData.series.trim()) {
+    if (!formData.manufacturer || !formData.model || !formData.series.trim()) {
       toast({ title: "Erro de Validação", description: "Preencha os campos Fabricante, Modelo e Série.", variant: "destructive" });
       return;
     }
@@ -122,13 +157,12 @@ export function ManualChromebookForm({ onRegistrationSuccess }: { onRegistration
 
     const chromebookData = {
       chromebookId: formData.chromebookId.trim().toUpperCase() || undefined,
-      model: effectiveModel,
+      model: formData.model,
       serialNumber: formData.series.trim().toUpperCase(),
       patrimonyNumber: formData.patrimonyNumber.trim() || undefined,
       manufacturer: formData.manufacturer,
       condition: finalObservations || 'novo',
       location: isFixed ? formData.classroomLocation.trim().toUpperCase() : undefined,
-      // O status é definido pela mobilidade, e não pelo provisionamento
       status: isFixed ? 'fixo' as const : 'disponivel' as const,
       is_deprovisioned: formData.provisioning_status === 'deprovisioned',
     };
@@ -142,9 +176,8 @@ export function ManualChromebookForm({ onRegistrationSuccess }: { onRegistration
     }
   };
 
-  const effectiveModel = formData.model === 'Outro' ? formData.customModel?.trim() : formData.model;
-  const isFormValid = formData.manufacturer && effectiveModel && formData.series.trim();
-  const currentModels = formData.manufacturer ? MANUFACTURER_MODELS[formData.manufacturer] || ['Outro'] : [];
+  const currentModels = formData.manufacturer ? getModelsForManufacturer(formData.manufacturer) : [];
+  const isFormValid = formData.manufacturer && formData.model && formData.series.trim();
   const isFixed = formData.mobilityStatus === 'fixo';
 
   return (
@@ -214,40 +247,74 @@ export function ManualChromebookForm({ onRegistrationSuccess }: { onRegistration
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="model" className="text-xs font-bold uppercase dark:text-white">Modelo *</Label>
-              <Select
-                value={formData.model}
-                onValueChange={(value) => handleFormChange('model', value)}
-                required
-                disabled={!formData.manufacturer || currentModels.length === 0}
-              >
-                <SelectTrigger className="h-10 border-2 border-black dark:border-white rounded-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] focus:ring-0 font-bold uppercase">
-                  <SelectValue placeholder={formData.manufacturer ? "SELECIONE O MODELO" : "FABRICANTE PRIMEIRO"} />
-                </SelectTrigger>
-                <SelectContent className="border-2 border-black dark:border-white rounded-none bg-white dark:bg-zinc-900 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                  {currentModels.map(model => (
-                    <SelectItem key={model} value={model} className="font-bold uppercase text-xs">
-                      {model}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="model" className="text-xs font-bold uppercase dark:text-white">Modelo *</Label>
+                {formData.manufacturer && !addingModel && (
+                  <button
+                    type="button"
+                    onClick={() => setAddingModel(true)}
+                    className="flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-blue-700 dark:text-blue-400 bg-blue-100 dark:bg-blue-950/60 px-1.5 py-0.5 border border-blue-500 hover:bg-blue-200 dark:hover:bg-blue-900 transition-colors"
+                    title="Adicionar novo modelo"
+                  >
+                    <Plus className="h-2.5 w-2.5" />
+                    Novo Modelo
+                  </button>
+                )}
+              </div>
 
-          {formData.model === 'Outro' && (
-            <div className="space-y-1.5 pt-2">
-              <Label htmlFor="customModel" className="text-xs font-bold uppercase dark:text-white">Nome do Modelo Personalizado *</Label>
-              <Input
-                id="customModel"
-                value={formData.customModel || ''}
-                onChange={(e) => handleFormChange('customModel', e.target.value)}
-                placeholder="DIGITE O MODELO DO EQUIPAMENTO"
-                required
-                className="h-10 border-2 border-black dark:border-white rounded-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] focus-visible:ring-0 uppercase placeholder:normal-case font-bold"
-              />
+              {addingModel ? (
+                <div className="flex gap-1">
+                  <Input
+                    ref={addModelInputRef}
+                    value={newModelInput}
+                    onChange={(e) => setNewModelInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') { e.preventDefault(); handleAddModel(); }
+                      if (e.key === 'Escape') { setAddingModel(false); setNewModelInput(''); }
+                    }}
+                    placeholder="NOME DO MODELO"
+                    className="h-10 border-2 border-blue-600 dark:border-blue-400 rounded-none shadow-[2px_2px_0px_0px_rgba(0,0,200,0.4)] focus-visible:ring-0 uppercase placeholder:normal-case font-bold flex-1"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddModel}
+                    disabled={!newModelInput.trim()}
+                    className="h-10 w-10 border-2 border-black dark:border-white bg-black dark:bg-white text-white dark:text-black flex items-center justify-center hover:bg-gray-800 dark:hover:bg-gray-200 disabled:opacity-40 transition-colors flex-shrink-0"
+                    title="Confirmar"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setAddingModel(false); setNewModelInput(''); }}
+                    className="h-10 w-10 border-2 border-black dark:border-white bg-white dark:bg-zinc-900 text-black dark:text-white flex items-center justify-center hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors flex-shrink-0"
+                    title="Cancelar"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              ) : (
+                <Select
+                  value={formData.model}
+                  onValueChange={(value) => handleFormChange('model', value)}
+                  required
+                  disabled={!formData.manufacturer}
+                >
+                  <SelectTrigger className="h-10 border-2 border-black dark:border-white rounded-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] focus:ring-0 font-bold uppercase">
+                    <SelectValue placeholder={formData.manufacturer ? (currentModels.length === 0 ? "USE + PARA ADICIONAR" : "SELECIONE O MODELO") : "FABRICANTE PRIMEIRO"} />
+                  </SelectTrigger>
+                  <SelectContent className="border-2 border-black dark:border-white rounded-none bg-white dark:bg-zinc-900 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                    {currentModels.map(model => (
+                      <SelectItem key={model} value={model} className="font-bold uppercase text-xs">
+                        {model}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
             </div>
-          )}
+
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="space-y-1.5">
