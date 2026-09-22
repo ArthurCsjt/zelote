@@ -125,7 +125,19 @@ export const useDatabase = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
 
-  // --- CHROMEBOOK OPERATIONS ---
+  const getNextChromebookId = useCallback(async (): Promise<string | null> => {
+    try {
+      const { data, error } = await supabase.rpc('generate_new_chromebook_id');
+      if (error) {
+        logger.error('Erro ao obter próximo ID de Chromebook via RPC:', error);
+        return null;
+      }
+      return data;
+    } catch (err) {
+      logger.error('Exceção ao chamar generate_new_chromebook_id:', err);
+      return null;
+    }
+  }, []);
 
   const createChromebook = useCallback(async (data: ChromebookData): Promise<Chromebook | null> => {
     if (!user) {
@@ -137,6 +149,15 @@ export const useDatabase = () => {
     try {
       const payload = mapChromebookDataToDb(data, user.id);
 
+      // Se o ID não foi fornecido, gera o próximo da sequência automaticamente (ex: CHR185)
+      if (!payload.chromebook_id) {
+        const { data: newId, error: genError } = await supabase.rpc('generate_new_chromebook_id');
+        if (genError || !newId) {
+          throw new Error('Falha ao gerar o próximo ID sequencial do Chromebook.');
+        }
+        payload.chromebook_id = newId;
+      }
+
       const { data: result, error } = await supabase
         .from('chromebooks')
         .insert(payload)
@@ -145,12 +166,11 @@ export const useDatabase = () => {
 
       if (error) throw error;
 
-      // REMOVIDO: toast({ title: "Sucesso", description: "Chromebook cadastrado com sucesso" });
       return result as Chromebook;
     } catch (error: any) {
       toast({
         title: "Erro ao cadastrar Chromebook",
-        description: error.message.includes('duplicate key') ? "ID, Série ou Patrimônio já cadastrado." : error.message,
+        description: error.message?.includes('duplicate key') ? "ID, Série ou Patrimônio já cadastrado." : error.message,
         variant: "destructive"
       });
       return null;
@@ -1685,6 +1705,7 @@ export const useDatabase = () => {
 
   return {
     loading,
+    getNextChromebookId,
     createChromebook,
     getChromebooks,
     getChromebooksByStatus,

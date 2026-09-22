@@ -17,6 +17,7 @@ interface UserData {
   tipo: 'Aluno' | 'Professor' | 'Funcionário';
   ra?: string;
   turma?: string;
+  materia?: string;
 }
 
 interface UserEditDialogProps {
@@ -38,6 +39,7 @@ export function UserEditDialog({ open, onOpenChange, user, onSuccess }: UserEdit
         email: user.email,
         ra: user.ra || '',
         turma: user.turma || '',
+        materia: user.materia || '',
       });
       setEmailError('');
     }
@@ -76,9 +78,10 @@ export function UserEditDialog({ open, onOpenChange, user, onSuccess }: UserEdit
 
     let success = false;
     const payload = {
-      nome_completo: formData.nome_completo,
-      email: formData.email,
-      ...(user.tipo === 'Aluno' && { ra: formData.ra, turma: formData.turma }),
+      nome_completo: formData.nome_completo.trim(),
+      email: formData.email.trim(),
+      ...(user.tipo === 'Aluno' && { ra: formData.ra?.trim(), turma: formData.turma?.trim() }),
+      ...(user.tipo === 'Professor' && { materia: formData.materia?.trim() || null }),
     };
 
     try {
@@ -87,7 +90,7 @@ export function UserEditDialog({ open, onOpenChange, user, onSuccess }: UserEdit
           success = await updateStudent(user.id, payload);
           break;
         case 'Professor':
-          success = await updateTeacher(user.id, payload);
+          success = await updateTeacher(user.id, payload as any);
           break;
         case 'Funcionário':
           success = await updateStaff(user.id, payload);
@@ -174,6 +177,19 @@ export function UserEditDialog({ open, onOpenChange, user, onSuccess }: UserEdit
                   />
                 </div>
               </>
+            )}
+
+            {user.tipo === 'Professor' && (
+              <div className="space-y-1.5">
+                <Label htmlFor="materia" className="text-xs font-bold uppercase dark:text-white">Matéria (Opcional)</Label>
+                <Input
+                  id="materia"
+                  value={formData.materia || ''}
+                  onChange={handleInputChange('materia')}
+                  placeholder="EX: MATEMÁTICA, HISTÓRIA"
+                  className="neo-input h-10 uppercase placeholder:normal-case"
+                />
+              </div>
             )}
           </div>
 

@@ -46,6 +46,7 @@ interface User {
   detalhe?: string; // RA para alunos, turma para alunos
   turma?: string;
   ra?: string;
+  materia?: string;
   created_at: string;
 }
 
@@ -114,6 +115,8 @@ export function UserInventory() {
           nome_completo: professor.nome_completo,
           email: professor.email,
           tipo: 'Professor' as const,
+          detalhe: professor.materia || undefined,
+          materia: professor.materia || undefined,
           created_at: professor.created_at
         })),
         ...(funcionarios || []).map(funcionario => ({

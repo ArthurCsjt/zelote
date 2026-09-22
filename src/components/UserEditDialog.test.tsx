@@ -71,11 +71,12 @@ describe('UserEditDialog', () => {
         expect(screen.getByLabelText('Turma')).toHaveValue('9A');
     });
 
-    it('should not render extra fields for teachers', () => {
-        render(<UserEditDialog {...defaultProps} user={{ ...defaultProps.user, tipo: 'Professor', email: 'test@sj.pro.br' }} />);
+    it('should render teacher fields correctly', () => {
+        render(<UserEditDialog {...defaultProps} user={{ ...defaultProps.user, tipo: 'Professor', email: 'test@sj.pro.br', materia: 'Matemática' }} />);
 
         expect(screen.getByLabelText('Nome Completo *')).toBeInTheDocument();
         expect(screen.queryByLabelText('RA (Registro do Aluno)')).not.toBeInTheDocument();
+        expect(screen.getByLabelText('Matéria (Opcional)')).toHaveValue('Matemática');
     });
 
     it('should validate email on change', () => {

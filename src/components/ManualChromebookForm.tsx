@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Textarea } from "./ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Laptop, Factory, Tag, Hash, MapPin, AlertTriangle, Loader2, CheckCircle } from "lucide-react";
+import { Laptop, Factory, Tag, Hash, MapPin, AlertTriangle, Loader2, CheckCircle, RefreshCw } from "lucide-react";
 import { useDatabase } from '@/hooks/useDatabase';
 import {
   Select,
@@ -16,8 +16,10 @@ import {
 import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
 
 interface FormData {
+  chromebookId: string;
   manufacturer: string;
   model: string;
+  customModel?: string;
   series: string; // Usado como serial_number
   manufacturingYear: string;
   patrimonyNumber: string;
@@ -30,32 +32,57 @@ interface FormData {
 // Mapeamento de Fabricantes e Modelos
 const MANUFACTURER_MODELS: Record<string, string[]> = {
   Acer: ['N18Q5', 'N24P1', 'N15Q8', 'N18Q12'],
-  Samsung: ['XE500c13', 'XE310XBA', 'XE501C13', 'XE500C13'], // Adicionado XE500C13
+  Samsung: ['XE500C13', 'XE310XBA', 'XE501C13'],
   Lenovo: ['100e Chromebook Gen 3'],
+  HP: ['Chromebook 11 G8 EE', 'Chromebook 11 G9 EE'],
+  Dell: ['Chromebook 3100'],
+  Multilaser: ['Chromebook M11C'],
+  Positivo: ['Chromebook C464'],
+  Outro: ['Outro'],
 };
 
 const AVAILABLE_MANUFACTURERS = Object.keys(MANUFACTURER_MODELS);
 
 export function ManualChromebookForm({ onRegistrationSuccess }: { onRegistrationSuccess: (newChromebook: any) => void }) {
-  const { createChromebook, loading } = useDatabase();
+  const { createChromebook, getNextChromebookId, loading } = useDatabase();
   const { toast } = useToast();
 
   const [formData, setFormData] = useState<FormData>({
-    manufacturer: "", model: "", series: "",
+    chromebookId: "",
+    manufacturer: "", model: "", customModel: "", series: "",
     manufacturingYear: "",
     patrimonyNumber: "",
     mobilityStatus: 'movel', // PADRÃO: MÓVEL
     classroomLocation: "", observations: "", provisioning_status: 'provisioned',
   });
+  const [loadingNextId, setLoadingNextId] = useState(false);
+
+  const fetchNextId = useCallback(async () => {
+    setLoadingNextId(true);
+    try {
+      const nextId = await getNextChromebookId();
+      if (nextId) {
+        setFormData(prev => ({ ...prev, chromebookId: nextId }));
+      }
+    } finally {
+      setLoadingNextId(false);
+    }
+  }, [getNextChromebookId]);
+
+  useEffect(() => {
+    fetchNextId();
+  }, [fetchNextId]);
 
   const resetForm = () => {
     setFormData({
-      manufacturer: "", model: "", series: "",
+      chromebookId: "",
+      manufacturer: "", model: "", customModel: "", series: "",
       manufacturingYear: "",
       patrimonyNumber: "",
       mobilityStatus: 'movel', // PADRÃO: MÓVEL
       classroomLocation: "", observations: "", provisioning_status: 'provisioned',
     });
+    fetchNextId();
   };
 
   const handleFormChange = (field: keyof FormData, value: string | boolean) => {
@@ -66,13 +93,18 @@ export function ManualChromebookForm({ onRegistrationSuccess }: { onRegistration
     setFormData(prev => ({
       ...prev,
       manufacturer: value,
-      model: '' // Limpa o modelo ao mudar o fabricante
+      model: value === 'Outro' ? 'Outro' : '', // Pré-seleciona Outro se o fabricante for Outro
+      customModel: ''
     }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.manufacturer || !formData.model || !formData.series) {
+    const effectiveModel = formData.model === 'Outro' 
+      ? (formData.customModel?.trim() || 'Outro') 
+      : formData.model;
+
+    if (!formData.manufacturer || !effectiveModel || !formData.series.trim()) {
       toast({ title: "Erro de Validação", description: "Preencha os campos Fabricante, Modelo e Série.", variant: "destructive" });
       return;
     }
@@ -83,31 +115,36 @@ export function ManualChromebookForm({ onRegistrationSuccess }: { onRegistration
       return;
     }
 
+    const finalObservations = [
+      formData.observations.trim(),
+      formData.manufacturingYear.trim() ? `Fabricação: ${formData.manufacturingYear.trim()}` : null
+    ].filter(Boolean).join(' | ');
+
     const chromebookData = {
-      model: formData.model,
-      serialNumber: formData.series,
-      patrimonyNumber: formData.patrimonyNumber || undefined,
+      chromebookId: formData.chromebookId.trim().toUpperCase() || undefined,
+      model: effectiveModel,
+      serialNumber: formData.series.trim().toUpperCase(),
+      patrimonyNumber: formData.patrimonyNumber.trim() || undefined,
       manufacturer: formData.manufacturer,
-      // manufacturingYear não é mapeado diretamente para o DB, mas pode ser incluído em 'condition' se necessário
-      condition: formData.observations || 'novo',
-      location: isFixed ? formData.classroomLocation : undefined,
+      condition: finalObservations || 'novo',
+      location: isFixed ? formData.classroomLocation.trim().toUpperCase() : undefined,
       // O status é definido pela mobilidade, e não pelo provisionamento
       status: isFixed ? 'fixo' as const : 'disponivel' as const,
-      is_deprovisioned: formData.provisioning_status === 'deprovisioned', // PASSANDO O VALOR
+      is_deprovisioned: formData.provisioning_status === 'deprovisioned',
     };
 
     const result = await createChromebook(chromebookData);
 
     if (result) {
-      toast({ title: "Sucesso", description: `Chromebook ${result.chromebook_id} cadastrado.` });
+      toast({ title: "Sucesso", description: `Chromebook ${result.chromebook_id} cadastrado com sucesso.` });
       onRegistrationSuccess(result);
       resetForm();
     }
-    // O erro é tratado dentro do useDatabase
   };
 
-  const isFormValid = formData.manufacturer && formData.model && formData.series;
-  const currentModels = formData.manufacturer ? MANUFACTURER_MODELS[formData.manufacturer] || [] : [];
+  const effectiveModel = formData.model === 'Outro' ? formData.customModel?.trim() : formData.model;
+  const isFormValid = formData.manufacturer && effectiveModel && formData.series.trim();
+  const currentModels = formData.manufacturer ? MANUFACTURER_MODELS[formData.manufacturer] || ['Outro'] : [];
   const isFixed = formData.mobilityStatus === 'fixo';
 
   return (
@@ -118,7 +155,7 @@ export function ManualChromebookForm({ onRegistrationSuccess }: { onRegistration
           Cadastro Manual
         </h4>
         <p className="text-xs font-bold uppercase text-gray-500 dark:text-gray-400 mt-1">
-          Preencha os detalhes para registrar um novo Chromebook.
+          Preencha os detalhes para registrar um novo Chromebook na sequência.
         </p>
       </div>
 
@@ -131,7 +168,31 @@ export function ManualChromebookForm({ onRegistrationSuccess }: { onRegistration
             Identificação e Modelo
           </h4>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="chromebookId" className="text-xs font-bold uppercase flex items-center gap-1 dark:text-white">
+                  <Laptop className="h-3 w-3" /> ID Sequencial *
+                </Label>
+                <span className="text-[10px] font-black uppercase tracking-wider text-green-700 dark:text-green-400 bg-green-100 dark:bg-green-950/60 px-1.5 py-0.5 border border-green-500 flex items-center gap-1">
+                  {loadingNextId ? <Loader2 className="h-2.5 w-2.5 animate-spin" /> : null}
+                  Automático
+                </span>
+              </div>
+              <div className="relative">
+                <Input
+                  id="chromebookId"
+                  value={formData.chromebookId}
+                  readOnly
+                  placeholder={loadingNextId ? "CONSULTANDO..." : "EX: CHR185"}
+                  className="h-10 border-2 border-black dark:border-white rounded-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] focus-visible:ring-0 uppercase font-mono font-black text-sm bg-zinc-100 dark:bg-zinc-800 text-black dark:text-white cursor-not-allowed"
+                />
+              </div>
+              <p className="text-[10px] font-bold text-gray-500 dark:text-gray-400">
+                Gerado na sequência padrão do inventário para evitar saltos ou duplicidades.
+              </p>
+            </div>
+
             <div className="space-y-1.5">
               <Label htmlFor="manufacturer" className="text-xs font-bold uppercase dark:text-white">Fabricante *</Label>
               <Select
@@ -173,6 +234,20 @@ export function ManualChromebookForm({ onRegistrationSuccess }: { onRegistration
               </Select>
             </div>
           </div>
+
+          {formData.model === 'Outro' && (
+            <div className="space-y-1.5 pt-2">
+              <Label htmlFor="customModel" className="text-xs font-bold uppercase dark:text-white">Nome do Modelo Personalizado *</Label>
+              <Input
+                id="customModel"
+                value={formData.customModel || ''}
+                onChange={(e) => handleFormChange('customModel', e.target.value)}
+                placeholder="DIGITE O MODELO DO EQUIPAMENTO"
+                required
+                className="h-10 border-2 border-black dark:border-white rounded-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] focus-visible:ring-0 uppercase placeholder:normal-case font-bold"
+              />
+            </div>
+          )}
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="space-y-1.5">
