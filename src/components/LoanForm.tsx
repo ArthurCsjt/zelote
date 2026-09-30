@@ -248,8 +248,11 @@ export function LoanForm({ onBack, initialReservationData }: LoanFormProps) {
                 description: `${successCount} Chromebooks emprestados com sucesso. ${errorCount > 0 ? `(${errorCount} falha(s))` : ''}`,
                 variant: "success",
             });
-            // Invalida as queries de reserva para atualizar o agendamento
+            // Invalida as queries de histórico, estoque e reserva para atualizar imediatamente a interface
+            queryClient.invalidateQueries({ queryKey: ['loan-history'] });
+            queryClient.invalidateQueries({ queryKey: ['chromebooks'] });
             queryClient.invalidateQueries({ queryKey: ['reservations'] });
+            queryClient.invalidateQueries({ queryKey: ['active-loans'] });
         } else if (errorCount > 0) {
             // Erros já são toastados dentro do useDatabase
         }

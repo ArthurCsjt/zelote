@@ -18,6 +18,7 @@ import { Badge } from './ui/badge';
 import { ConfirmReturnDialog } from './ConfirmReturnDialog'; // NOVO IMPORT
 import type { LoanHistoryItem } from '@/types/database';
 import { isOverdue, calculateOverdueDays, formatDetailedDuration } from '@/utils/loanCalculations'; // NOVO IMPORT
+import { useQueryClient } from '@tanstack/react-query';
 
 interface ReturnFormProps {
   onReturnSuccess?: () => void;
@@ -26,6 +27,7 @@ interface ReturnFormProps {
 }
 
 export function ReturnForm({ onReturnSuccess, initialChromebookId, initialDeviceIds }: ReturnFormProps) {
+  const queryClient = useQueryClient();
   const { bulkReturnChromebooks, getLoanDetailsByChromebookId, getActiveLoansByUser, loading: dbLoading } = useDatabase();
 
   // Inicializa a lista de dispositivos com os IDs iniciais, se houverem
@@ -334,6 +336,12 @@ export function ReturnForm({ onReturnSuccess, initialChromebookId, initialDevice
         setConfirmChecked(false);
         setReturnData({ name: "", ra: "", email: "", type: 'lote', userType: 'aluno', notes: '' });
         setLoanDetails(new Map());
+
+        // Invalida cache de histórico e estoque para atualizar solicitantes recentes/ativos e inventário instantaneamente
+        queryClient.invalidateQueries({ queryKey: ['loan-history'] });
+        queryClient.invalidateQueries({ queryKey: ['chromebooks'] });
+        queryClient.invalidateQueries({ queryKey: ['active-loans'] });
+        queryClient.invalidateQueries({ queryKey: ['loans'] });
 
         onReturnSuccess?.();
       } else if (errorCount > 0) {

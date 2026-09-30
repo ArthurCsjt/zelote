@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef, useEffect } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { Check, ChevronsUpDown, User, GraduationCap, Briefcase, Search, Loader2, CheckCircle, X, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -9,6 +9,7 @@ import { useUserSearch, UserSearchResult } from '@/hooks/useUserSearch';
 import { useDatabase } from '@/hooks/useDatabase';
 import { Badge } from './ui/badge';
 import { GlassCard } from './ui/GlassCard'; // Importando GlassCard
+import { useQuery } from '@tanstack/react-query';
 
 interface UserAutocompleteProps {
   selectedUser: UserSearchResult | null;
@@ -24,7 +25,6 @@ const UserAutocomplete: React.FC<UserAutocompleteProps> = ({ selectedUser, onSel
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedType, setSelectedType] = useState<'aluno' | 'professor' | 'funcionario' | null>(null);
   const [isFocused, setIsFocused] = useState(false);
-  const [recentUsers, setRecentUsers] = useState<UserSearchResult[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Mouse drag scroll state for recent pills
@@ -56,37 +56,40 @@ const UserAutocomplete: React.FC<UserAutocompleteProps> = ({ selectedUser, onSel
     scrollContainerRef.current.scrollLeft = scrollLeft - walk;
   };
 
-  // Efeito para carregar solicitantes recentes/ativos de forma assíncrona
-  useEffect(() => {
-    let isMounted = true;
-    getLoanHistory().then((history) => {
-      if (!isMounted || !history) return;
+  // Carrega histórico reativo via TanStack Query (atualiza em tempo real sempre que um empréstimo ou devolução for realizado)
+  const { data: loanHistory = [] } = useQuery({
+    queryKey: ['loan-history'],
+    queryFn: getLoanHistory,
+    staleTime: 1000 * 10,
+    refetchOnWindowFocus: true,
+  });
 
-      const filteredHistory = filterActiveOnly
-        ? history.filter(h => h.status === 'ativo' || h.status === 'atrasado')
-        : history;
+  // Solicitantes recentes ou com equipamento ativo calculados de forma reativa e instantânea
+  const recentUsers = useMemo(() => {
+    if (!loanHistory || loanHistory.length === 0) return [];
 
-      const map = new Map<string, UserSearchResult>();
-      for (const item of filteredHistory) {
-        const key = item.student_email || item.student_ra || item.student_name;
-        if (!key || map.has(key)) continue;
+    const filteredHistory = filterActiveOnly
+      ? loanHistory.filter(h => h.status === 'ativo' || h.status === 'atrasado')
+      : loanHistory;
 
-        map.set(key, {
-          id: key,
-          name: item.student_name,
-          email: item.student_email,
-          ra: item.student_ra || undefined,
-          type: (item.user_type as any) || 'aluno',
-          searchable: `${item.student_name} ${item.student_email} ${item.student_ra || ''}`.toLowerCase(),
-        });
-        if (map.size >= 6) break;
-      }
+    const map = new Map<string, UserSearchResult>();
+    for (const item of filteredHistory) {
+      const key = item.student_email || item.student_ra || item.student_name;
+      if (!key || map.has(key)) continue;
 
-      setRecentUsers(Array.from(map.values()));
-    }).catch((err) => console.error("Erro ao carregar solicitantes recentes:", err));
+      map.set(key, {
+        id: key,
+        name: item.student_name,
+        email: item.student_email,
+        ra: item.student_ra || undefined,
+        type: (item.user_type as any) || 'aluno',
+        searchable: `${item.student_name} ${item.student_email} ${item.student_ra || ''}`.toLowerCase(),
+      });
+      if (map.size >= 8) break;
+    }
 
-    return () => { isMounted = false; };
-  }, [getLoanHistory, filterActiveOnly]);
+    return Array.from(map.values());
+  }, [loanHistory, filterActiveOnly]);
 
   const filteredUsers = useMemo(() => {
     if (!isFocused) return [];
