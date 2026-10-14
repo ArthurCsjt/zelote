@@ -34,7 +34,7 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
   physicalTotal = 0,
 }) => {
   const { isAdmin } = useProfileRole();
-  const canEditLimit = isAdmin || currentUser?.email === 'arthur.alencar@colegiosaojudas.com.br';
+  const canEditLimit = isAdmin;
 
   const [isEditingLimit, setIsEditingLimit] = useState(false);
   const [newLimit, setNewLimit] = useState(totalAvailableChromebooks.toString());

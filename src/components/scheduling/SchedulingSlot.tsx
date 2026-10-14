@@ -11,7 +11,7 @@ import { useProfileRole } from '@/hooks/use-profile-role';
 import { useDatabase } from '@/hooks/useDatabase';
 import { ReservationDetailsDialog } from './ReservationDetailsDialog';
 
-import { responsibleEmails } from '@/utils/scheduling';
+import { useSchedulingResponsible } from '@/hooks/useSchedulingResponsible';
 
 interface SchedulingSlotProps {
   date: Date;
@@ -38,10 +38,7 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
   const [isDetailsOpen, setIsDetailsOpen] = useState<string | false>(false);
 
   const isSuperAdmin = role === 'super_admin';
-
-  const isResponsible = useMemo(() => {
-    return isAdmin || isSuperAdmin || (currentUser?.email && responsibleEmails.includes(currentUser.email));
-  }, [isAdmin, isSuperAdmin, currentUser]);
+  const { isResponsible } = useSchedulingResponsible();
 
   const { jaReservados, restantes, myReservation, isAvailable, isPartial, isFull, isPast } = useMemo(() => {
     const jaReservados = allReservationsForSlot.reduce((sum, res) => sum + res.quantity_requested, 0);

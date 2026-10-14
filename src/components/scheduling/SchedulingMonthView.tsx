@@ -13,7 +13,7 @@ import { useDatabase } from '@/hooks/useDatabase';
 import { ReservationDetailsDialog } from './ReservationDetailsDialog';
 import type { Reservation } from '@/hooks/useDatabase';
 
-import { responsibleEmails } from '@/utils/scheduling';
+import { useSchedulingResponsible } from '@/hooks/useSchedulingResponsible';
 
 interface SchedulingMonthViewProps {
   currentDate: Date;
@@ -101,10 +101,7 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
   const isSuperAdmin = role === 'super_admin';
-
-  const isResponsible = useMemo(() => {
-    return isSuperAdmin || (currentUser?.email && responsibleEmails.includes(currentUser.email));
-  }, [isSuperAdmin, currentUser]);
+  const { isResponsible } = useSchedulingResponsible();
 
   const reservationsByDay = useMemo(() => {
     const map = new Map<string, Reservation[]>();

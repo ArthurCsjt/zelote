@@ -135,6 +135,16 @@ export function useDashboardData(
 
     const diffDays = differenceInMinutes(endDate, startDate) / (60 * 24);
 
+    // Pré-calcula timestamps dos empréstimos uma única vez para evitar instanciar milhões de New Date() nos loops
+    const preCalculatedLoans = history.map(loan => ({
+      loan,
+      startTime: new Date(loan.loan_date).getTime(),
+      endTime: loan.return_date ? new Date(loan.return_date).getTime() : Infinity,
+      hasReturn: !!loan.return_date,
+    }));
+
+    const nowTime = Date.now();
+
     // Se o período for menor ou igual a 2 dias, mostramos por hora
     if (diffDays <= 2) {
       const data: any[] = [];
@@ -148,33 +158,37 @@ export function useDashboardData(
         const hour = currentHour.getHours();
         const day = format(currentHour, 'dd/MM');
         const label = `${day} ${hour}h`;
+        const hourStart = currentHour.getTime();
+        const hourEnd = hourStart + 3600000;
+        const checkTime = hourStart + 1800000; // 30 min da hora atual
 
-        // Filtra empréstimos que começaram na hora atual
-        const hourLoans = history.filter(loan => {
-          const loanDate = new Date(loan.loan_date);
-          return isWithinInterval(loanDate, { start: currentHour, end: new Date(currentHour.getTime() + 3600000) });
-        });
-
-        // CÁLCULO DE OCUPAÇÃO HORÁRIA
+        let hourLoansCount = 0;
+        let hourReturnsCount = 0;
         let concurrentLoans = 0;
-        const checkTime = new Date(currentHour);
-        checkTime.setMinutes(30);
 
-        history.forEach(loan => {
-          const loanStart = new Date(loan.loan_date);
-          const loanEnd = loan.return_date ? new Date(loan.return_date) : new Date();
+        for (let i = 0; i < preCalculatedLoans.length; i++) {
+          const item = preCalculatedLoans[i];
+          // Filtra empréstimos que começaram na hora atual
+          if (item.startTime >= hourStart && item.startTime <= hourEnd) {
+            hourLoansCount++;
+            if (item.hasReturn) {
+              hourReturnsCount++;
+            }
+          }
 
-          if (checkTime >= loanStart && checkTime <= loanEnd) {
+          // CÁLCULO DE OCUPAÇÃO HORÁRIA
+          const effectiveEnd = item.endTime === Infinity ? nowTime : item.endTime;
+          if (checkTime >= item.startTime && checkTime <= effectiveEnd) {
             concurrentLoans++;
           }
-        });
+        }
 
         const occupancy = availableForLoan > 0 ? (concurrentLoans / availableForLoan) * 100 : 0;
 
         data.push({
           label: label,
-          empréstimos: hourLoans.length,
-          devoluções: hourLoans.filter(loan => loan.return_date).length,
+          empréstimos: hourLoansCount,
+          devoluções: hourReturnsCount,
           ocupação: Math.min(100, occupancy),
         });
 
@@ -194,11 +208,21 @@ export function useDashboardData(
       while (currentDate <= endLimit) {
         const dayEnd = new Date(currentDate);
         dayEnd.setHours(23, 59, 59, 999);
+        const dayStartMs = startOfDay(currentDate).getTime();
+        const dayEndMs = dayEnd.getTime();
 
-        const dailyLoans = history.filter(loan => isWithinInterval(new Date(loan.loan_date), {
-          start: startOfDay(currentDate),
-          end: dayEnd
-        }));
+        let dailyLoansCount = 0;
+        let dailyReturnsCount = 0;
+
+        for (let i = 0; i < preCalculatedLoans.length; i++) {
+          const item = preCalculatedLoans[i];
+          if (item.startTime >= dayStartMs && item.startTime <= dayEndMs) {
+            dailyLoansCount++;
+            if (item.hasReturn) {
+              dailyReturnsCount++;
+            }
+          }
+        }
 
         // CÁLCULO DE OCUPAÇÃO DIÁRIA MÁXIMA
         let maxDailyOccupancy = 0;
@@ -207,15 +231,15 @@ export function useDashboardData(
             let concurrentLoans = 0;
             const checkTime = new Date(currentDate);
             checkTime.setHours(h, 30, 0, 0);
+            const checkTimeMs = checkTime.getTime();
 
-            history.forEach(loan => {
-              const loanStart = new Date(loan.loan_date);
-              const loanEnd = loan.return_date ? new Date(loan.return_date) : new Date();
-
-              if (checkTime >= loanStart && checkTime <= loanEnd) {
+            for (let i = 0; i < preCalculatedLoans.length; i++) {
+              const item = preCalculatedLoans[i];
+              const effectiveEnd = item.endTime === Infinity ? nowTime : item.endTime;
+              if (checkTimeMs >= item.startTime && checkTimeMs <= effectiveEnd) {
                 concurrentLoans++;
               }
-            });
+            }
             maxDailyOccupancy = Math.max(maxDailyOccupancy, concurrentLoans);
           }
         }
@@ -223,8 +247,8 @@ export function useDashboardData(
 
         data.push({
           label: format(currentDate, "dd/MM"),
-          empréstimos: dailyLoans.length,
-          devoluções: dailyLoans.filter(loan => loan.return_date).length,
+          empréstimos: dailyLoansCount,
+          devoluções: dailyReturnsCount,
           ocupação: Math.min(100, occupancyRate),
         });
 

@@ -1,5 +1,4 @@
 import { useState, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import type {
@@ -13,130 +12,35 @@ import type {
   UserType,
   TeacherData
 } from '@/types/database';
-import { format } from 'date-fns'; // Importando format para formatar a data
-import { formatLocalDate, formatISOLocal } from '@/utils/dateUtils';
+import { handleSupabaseError } from '@/utils/networkErrors';
 import logger from '@/utils/logger';
-import { validateEmailDomain, EMAIL_DOMAINS } from '@/utils/emailValidation';
-import { isNetworkError, getSupabaseErrorMessage, handleSupabaseError, retryWithBackoff } from '@/utils/networkErrors';
 
-// Helper to trigger push notifications via Edge Function
-const triggerPushNotification = async (title: string, body: string, url: string = '/') => {
-  try {
-    const { error } = await supabase.functions.invoke('send-push-notification', {
-      body: {
-        title,
-        body,
-        url,
-        // No target_user_id means broadcast to all subscribers (admins/staff)
-      }
-    });
+// Import domain services
+import * as chromebookService from '@/services/chromebookService';
+import * as loanService from '@/services/loanService';
+import * as userService from '@/services/userService';
+import * as reservationService from '@/services/reservationService';
+import * as notificationService from '@/services/notificationService';
+import * as settingsService from '@/services/settingsService';
 
-    if (error) {
-      console.error('Error triggering push:', error);
-    }
-  } catch (err) {
-    console.error('Failed to invoke push function:', err);
-  }
-};
-
-// Types for new entities
-interface StudentData {
-  nome_completo: string;
-  ra: string;
-  email: string;
-  turma: string; // Adicionado turma para consistência
-}
-
-interface StaffData {
-  nome_completo: string;
-  email: string;
-}
-
-// NOVO TIPO: Reserva
-export interface ReservationData {
-  date: string; // ISO date string (YYYY-MM-DD)
-  time_slot: string;
-  professor_id?: string; // Opcional: será preenchido automaticamente pelo usuário logado
-  justification: string; // Motivo/Justificativa do agendamento
-  quantity_requested: number;
-  // Equipamentos auxiliares (opcionais)
-  needs_tv?: boolean;
-  needs_sound?: boolean;
-  needs_mic?: boolean;
-  mic_quantity?: number;
-  is_minecraft?: boolean;
-  classroom?: string; // NOVO: Sala/Turma onde será utilizado
-  space_id?: string | null; // ID estrutural do espaço se vinculado
-}
-
-export interface Reservation extends ReservationData {
-  id: string;
-  professor_id: string; // Obrigatório no resultado
-  created_by: string;
-  created_at: string;
-  // Detalhes do professor (para exibição)
-  prof_name: string;
-  prof_email: string;
-  prof_role?: string;
-  associated_loans?: { chromebook_id: string }[];
-}
-
-export interface Space {
-  id: string;
-  name: string;
-  color: string;
-  capacity: number | null;
-  created_at: string;
-}
-
-
-
-// REMOVIDO: Validações de domínio movidas para @/utils/emailValidation
-// Usar: validateEmailDomain(email, userType) do utilitário
-
-// Função auxiliar para mapear ChromebookData (camelCase) para o formato do DB (snake_case)
-const mapChromebookDataToDb = (data: Partial<ChromebookData>, userId: string | undefined) => {
-  const payload: any = {
-    chromebook_id: data.chromebookId,
-    model: data.model,
-    serial_number: data.serialNumber,
-    patrimony_number: data.patrimonyNumber,
-    manufacturer: data.manufacturer,
-    status: data.status,
-    condition: data.condition,
-    location: data.location,
-    classroom: data.classroom,
-    is_deprovisioned: data.is_deprovisioned ?? false,
-  };
-
-  // Adiciona created_by apenas se estiver criando
-  if (userId && !data.id) {
-    payload.created_by = userId;
-  }
-
-  // Remove chaves com valor undefined para evitar erros de Supabase
-  Object.keys(payload).forEach(key => payload[key] === undefined && delete payload[key]);
-
-  return payload;
-};
-
+// Re-export domain types for backward compatibility
+export type { ReservationData, Reservation, Space } from '@/services/reservationService';
+export type { StudentData, StaffData } from '@/services/userService';
+export type { LoanHistoryFilters } from '@/services/loanService';
 
 export const useDatabase = () => {
   const { user } = useAuth();
-  const [loading, setLoading] = useState(false);
+  const [activeRequests, setActiveRequests] = useState(0);
+
+  const startRequest = useCallback(() => setActiveRequests(prev => prev + 1), []);
+  const endRequest = useCallback(() => setActiveRequests(prev => Math.max(0, prev - 1)), []);
+
+  const loading = activeRequests > 0;
+
+  // --- CHROMEBOOK OPERATIONS ---
 
   const getNextChromebookId = useCallback(async (): Promise<string | null> => {
-    try {
-      const { data, error } = await supabase.rpc('generate_new_chromebook_id');
-      if (error) {
-        logger.error('Erro ao obter próximo ID de Chromebook via RPC:', error);
-        return null;
-      }
-      return data;
-    } catch (err) {
-      logger.error('Exceção ao chamar generate_new_chromebook_id:', err);
-      return null;
-    }
+    return await chromebookService.getNextChromebookId();
   }, []);
 
   const createChromebook = useCallback(async (data: ChromebookData): Promise<Chromebook | null> => {
@@ -145,28 +49,10 @@ export const useDatabase = () => {
       return null;
     }
 
-    setLoading(true);
+    startRequest();
     try {
-      const payload = mapChromebookDataToDb(data, user.id);
-
-      // Se o ID não foi fornecido, gera o próximo da sequência automaticamente (ex: CHR185)
-      if (!payload.chromebook_id) {
-        const { data: newId, error: genError } = await supabase.rpc('generate_new_chromebook_id');
-        if (genError || !newId) {
-          throw new Error('Falha ao gerar o próximo ID sequencial do Chromebook.');
-        }
-        payload.chromebook_id = newId;
-      }
-
-      const { data: result, error } = await supabase
-        .from('chromebooks')
-        .insert(payload)
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      return result as Chromebook;
+      const result = await chromebookService.createChromebook(data, user.id);
+      return result;
     } catch (error: any) {
       toast({
         title: "Erro ao cadastrar Chromebook",
@@ -175,61 +61,39 @@ export const useDatabase = () => {
       });
       return null;
     } finally {
-      setLoading(false);
+      endRequest();
     }
-  }, [user]);
+  }, [user, startRequest, endRequest]);
 
   const getChromebooks = useCallback(async (): Promise<Chromebook[]> => {
-    setLoading(true);
+    startRequest();
     try {
-      // Retry automático para erros de rede
-      const result = await retryWithBackoff(async () => {
-        const { data, error } = await supabase
-          .from('chromebooks')
-          .select('*')
-          .order('chromebook_id', { ascending: false });
-
-        if (error) throw error;
-        return data || [];
-      }, 3, 1000); // 3 tentativas, 1s de delay base
-
-      return result as Chromebook[];
+      return await chromebookService.getChromebooks();
     } catch (error: any) {
       const errorInfo = handleSupabaseError(error);
-
       toast({
         title: errorInfo.isNetwork ? "Erro de Conexão" : "Erro de Sincronização",
         description: errorInfo.message,
         variant: "destructive"
       });
-
       logger.error('Erro ao carregar chromebooks', error, { errorInfo });
       return [];
     } finally {
-      setLoading(false);
+      endRequest();
     }
-  }, []);
+  }, [startRequest, endRequest]);
 
-  // NOVO: Função para buscar Chromebooks por status
   const getChromebooksByStatus = useCallback(async (status: Chromebook['status']): Promise<Chromebook[]> => {
-    setLoading(true);
+    startRequest();
     try {
-      const { data, error } = await supabase
-        .from('chromebooks')
-        .select('*')
-        .eq('status', status)
-        .order('chromebook_id', { ascending: true });
-
-      if (error) throw error;
-      return (data || []) as Chromebook[];
+      return await chromebookService.getChromebooksByStatus(status);
     } catch (error: any) {
       toast({ title: "Erro de Sincronização", description: `Falha ao carregar Chromebooks com status ${status}.`, variant: "destructive" });
       return [];
     } finally {
-      setLoading(false);
+      endRequest();
     }
-  }, []);
-
+  }, [startRequest, endRequest]);
 
   const updateChromebook = useCallback(async (id: string, data: Partial<ChromebookData>): Promise<boolean> => {
     if (!user) {
@@ -237,31 +101,20 @@ export const useDatabase = () => {
       return false;
     }
 
-    setLoading(true);
+    startRequest();
     try {
-      // Usa a função de mapeamento, mas não passa o userId para evitar atualizar created_by
-      const updatePayload = mapChromebookDataToDb(data, undefined);
-
-      const { error } = await supabase
-        .from('chromebooks')
-        .update(updatePayload)
-        .eq('id', id);
-
-      if (error) throw error;
-
-      // REMOVIDO: toast({ title: "Sucesso", description: "Chromebook atualizado com sucesso" });
-      return true;
+      return await chromebookService.updateChromebook(id, data);
     } catch (error: any) {
       toast({
         title: "Erro ao atualizar Chromebook",
-        description: error.message.includes('duplicate key') ? "ID, Série ou Patrimônio já cadastrado." : error.message,
+        description: error.message?.includes('duplicate key') ? "ID, Série ou Patrimônio já cadastrado." : error.message,
         variant: "destructive"
       });
       return false;
     } finally {
-      setLoading(false);
+      endRequest();
     }
-  }, [user]);
+  }, [user, startRequest, endRequest]);
 
   const deleteChromebook = useCallback(async (id: string): Promise<boolean> => {
     if (!user) {
@@ -269,46 +122,33 @@ export const useDatabase = () => {
       return false;
     }
 
-    setLoading(true);
+    startRequest();
     try {
-      const { error } = await supabase
-        .from('chromebooks')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-
+      await chromebookService.deleteChromebook(id);
       toast({ title: "Sucesso", description: "Chromebook excluído com sucesso", variant: "success" });
       return true;
     } catch (error: any) {
       toast({ title: "Erro ao excluir Chromebook", description: error.message, variant: "destructive" });
       return false;
     } finally {
-      setLoading(false);
+      endRequest();
     }
-  }, [user]);
+  }, [user, startRequest, endRequest]);
 
   const syncChromebookStatus = useCallback(async (chromebookId: string, showToast = true): Promise<string | null> => {
     if (!user) {
       if (showToast) toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
       return null;
     }
-    setLoading(true);
+    startRequest();
     try {
-      // Retry automático para erros de rede
-      const data = await retryWithBackoff(async () => {
-        const { data, error } = await supabase.rpc('sync_chromebook_status', { cb_id: chromebookId });
-        if (error) throw error;
-        return data;
-      }, 2, 500); // 2 tentativas, 500ms de delay base
-
+      const data = await chromebookService.syncChromebookStatus(chromebookId);
       if (showToast) {
         toast({ title: "Sincronização Concluída", description: data, variant: "info" });
       }
       return data;
     } catch (error: any) {
       const errorInfo = handleSupabaseError(error);
-
       if (showToast) {
         toast({
           title: errorInfo.isNetwork ? "Erro de Conexão" : "Erro de Sincronização",
@@ -316,14 +156,16 @@ export const useDatabase = () => {
           variant: "destructive"
         });
       }
-
       logger.error('Erro ao sincronizar status do chromebook', error, { chromebookId, errorInfo });
       return null;
     } finally {
-      setLoading(false);
+      endRequest();
     }
-  }, [user]);
+  }, [user, startRequest, endRequest]);
 
+  const getTotalAvailableChromebooks = useCallback(async (): Promise<number> => {
+    return await chromebookService.getTotalAvailableChromebooks();
+  }, []);
 
   // --- LOAN OPERATIONS ---
 
@@ -333,306 +175,84 @@ export const useDatabase = () => {
       return null;
     }
 
-    setLoading(true);
+    startRequest();
     try {
-      // 1. Verifica status do chromebook
-      const { data: chromebook, error: chromebookError } = await supabase
-        .from('chromebooks')
-        .select('id, chromebook_id, status')
-        .eq('chromebook_id', data.chromebookId)
-        .eq('status', 'disponivel')
-        .single();
-
-      if (chromebookError || !chromebook) {
-        throw new Error('Chromebook não encontrado ou não está disponível');
-      }
-
-      // 2. Dupla validação contra empréstimo ativo concorrente
-      const { data: activeLoan } = await supabase
-        .from('loan_history')
-        .select('id, student_name')
-        .eq('chromebook_id', data.chromebookId)
-        .in('status', ['ativo', 'atrasado'])
-        .maybeSingle();
-
-      if (activeLoan) {
-        throw new Error(`O Chromebook ${data.chromebookId} acabou de ser emprestado para ${activeLoan.student_name}.`);
-      }
-
-      const { data: result, error } = await supabase
-        .from('loans')
-        .insert({
-          chromebook_id: chromebook.id,
-          student_name: data.studentName,
-          student_ra: data.ra,
-          student_email: data.email,
-          purpose: data.purpose,
-          user_type: data.userType,
-          loan_type: data.loanType,
-          expected_return_date: formatISOLocal(data.expectedReturnDate),
-          created_by: user.id,
-          reservation_id: data.reservationId
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      // Sincroniza status no banco
-      await syncChromebookStatus(data.chromebookId);
-
-      // Trigger Push Notification
-      triggerPushNotification(
-        "Novo Empréstimo",
-        `${data.studentName} retirou o Chromebook ${data.chromebookId}.`,
-        '/dashboard'
-      );
-
-      return result as unknown as Loan;
+      return await loanService.createLoan(data, user.id);
     } catch (error: any) {
       toast({ title: "Erro ao registrar empréstimo", description: error.message, variant: "destructive" });
       return null;
     } finally {
-      setLoading(false);
+      endRequest();
     }
-  }, [user, syncChromebookStatus]);
+  }, [user, startRequest, endRequest]);
 
-  const bulkCreateLoans = useCallback(async (loanDataList: LoanFormData[]): Promise<{ successCount: number, errorCount: number }> => {
+  const bulkCreateLoans = useCallback(async (loanDataList: LoanFormData[]): Promise<{ successCount: number; errorCount: number }> => {
     if (!user) {
       toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
       return { successCount: 0, errorCount: loanDataList.length };
     }
 
-    setLoading(true);
-    let successCount = 0;
-    let errorCount = 0;
-
+    startRequest();
     try {
-      const chromebookIds = loanDataList.map(d => d.chromebookId);
-      
-      // 1. Busca status dos chromebooks
-      const { data: chromebooks, error: cbError } = await supabase
-        .from('chromebooks')
-        .select('id, chromebook_id, status')
-        .in('chromebook_id', chromebookIds);
-
-      if (cbError) {
-        throw new Error("Falha ao buscar Chromebooks.");
-      }
-
-      // 2. Busca empréstimos ativos concorrentes para os mesmos IDs
-      const { data: activeLoans } = await supabase
-        .from('loan_history')
-        .select('chromebook_id, student_name')
-        .in('chromebook_id', chromebookIds)
-        .in('status', ['ativo', 'atrasado']);
-
-      const activeLoanMap = new Set((activeLoans || []).map(l => l.chromebook_id));
-      const chromebookMap = new Map(chromebooks.map(cb => [cb.chromebook_id, cb]));
-      const loansToInsert = [];
-      const successfullyLoanedIds: string[] = [];
-
-      for (const data of loanDataList) {
-        const chromebook = chromebookMap.get(data.chromebookId);
-        const hasActiveLoan = activeLoanMap.has(data.chromebookId);
-
-        if (!chromebook || chromebook.status !== 'disponivel' || hasActiveLoan) {
-          errorCount++;
-          toast({
-            title: "Item Indisponível",
-            description: `Chromebook ${data.chromebookId} já possui empréstimo ativo ou não está disponível.`,
-            variant: "destructive"
-          });
-          continue;
-        }
-
-        loansToInsert.push({
-          chromebook_id: chromebook.id,
-          student_name: data.studentName,
-          student_ra: data.ra,
-          student_email: data.email,
-          purpose: data.purpose,
-          user_type: data.userType,
-          loan_type: data.loanType,
-          expected_return_date: formatISOLocal(data.expectedReturnDate),
-          created_by: user.id,
-          reservation_id: data.reservationId
-        });
-        successfullyLoanedIds.push(data.chromebookId);
-      }
-
-      if (loansToInsert.length > 0) {
-        const { error: insertError } = await supabase
-          .from('loans')
-          .insert(loansToInsert);
-
-        if (insertError) {
-          logger.error('Erro de inserção em lote:', insertError);
-          throw new Error(`Falha ao inserir ${loansToInsert.length} empréstimos.`);
-        } else {
-          successCount = loansToInsert.length;
-          // Sincroniza status dos chromebooks inseridos silenciosamente (sem spam de toast)
-          Promise.all(successfullyLoanedIds.map(id => syncChromebookStatus(id, false))).catch(e => logger.warn('Erro ao sincronizar status pós-lote', e));
-        }
-      }
+      return await loanService.bulkCreateLoans(loanDataList, user.id);
     } catch (e: any) {
       toast({
         title: "Erro de Processamento",
         description: e.message,
         variant: "destructive"
       });
-      errorCount = loanDataList.length - successCount;
+      return { successCount: 0, errorCount: loanDataList.length };
     } finally {
-      setLoading(false);
+      endRequest();
     }
-
-    return { successCount, errorCount: loanDataList.length - successCount };
-  }, [user]);
-
+  }, [user, startRequest, endRequest]);
 
   const getActiveLoans = useCallback(async (): Promise<LoanHistoryItem[]> => {
-    setLoading(true);
+    startRequest();
     try {
-      const { data, error } = await supabase
-        .from('loan_history')
-        .select('*')
-        .in('status', ['ativo', 'atrasado'])
-        .order('loan_date', { ascending: false });
-
-      if (error) throw error;
-      return (data || []).map(item => ({
-        ...item,
-        status: item.status as 'ativo' | 'devolvido' | 'atrasado'
-      })) as unknown as LoanHistoryItem[];
+      return await loanService.getActiveLoans();
     } catch (error: any) {
       toast({ title: "Erro de Sincronização", description: "Falha ao carregar empréstimos ativos.", variant: "destructive" });
       return [];
     } finally {
-      setLoading(false);
+      endRequest();
     }
-  }, []);
+  }, [startRequest, endRequest]);
 
-  const getLoanHistory = useCallback(async (): Promise<LoanHistoryItem[]> => {
-    setLoading(true);
+  const getLoanHistory = useCallback(async (filters?: loanService.LoanHistoryFilters): Promise<LoanHistoryItem[]> => {
+    startRequest();
     try {
-      const { data, error } = await supabase
-        .from('loan_history')
-        .select('*')
-        .order('loan_date', { ascending: false });
-
-      if (error) throw error;
-      return (data || []).map(item => ({
-        ...item,
-        status: item.status as 'ativo' | 'devolvido' | 'atrasado'
-      })) as unknown as LoanHistoryItem[];
+      return await loanService.getLoanHistory(filters);
     } catch (error: any) {
       toast({ title: "Erro de Sincronização", description: "Falha ao carregar histórico de empréstimos.", variant: "destructive" });
       return [];
     } finally {
-      setLoading(false);
+      endRequest();
     }
-  }, []);
+  }, [startRequest, endRequest]);
 
-  /**
-   * Busca empréstimos ativos de um usuário específico (por RA ou Email)
-   */
-  const getActiveLoansByUser = useCallback(async (params: { ra?: string, email?: string }): Promise<LoanHistoryItem[]> => {
-    if (!params.ra && !params.email) return [];
-
-    setLoading(true);
+  const getActiveLoansByUser = useCallback(async (params: { ra?: string; email?: string }): Promise<LoanHistoryItem[]> => {
+    startRequest();
     try {
-      let query = supabase
-        .from('loan_history')
-        .select('*')
-        .in('status', ['ativo', 'atrasado']);
-
-      if (params.ra && params.email) {
-        query = query.or(`student_ra.eq.${params.ra},student_email.eq.${params.email}`);
-      } else if (params.ra) {
-        query = query.eq('student_ra', params.ra);
-      } else if (params.email) {
-        query = query.eq('student_email', params.email);
-      }
-
-      const { data, error } = await query.order('loan_date', { ascending: false });
-
-      if (error) throw error;
-      return (data || []).map(item => ({
-        ...item,
-        status: item.status as 'ativo' | 'devolvido' | 'atrasado'
-      })) as unknown as LoanHistoryItem[];
+      return await loanService.getActiveLoansByUser(params);
     } catch (error: any) {
       logger.error('Erro ao buscar empréstimos ativos do usuário', error, params);
       return [];
     } finally {
-      setLoading(false);
+      endRequest();
     }
-  }, []);
+  }, [startRequest, endRequest]);
 
-  /**
-   * Busca detalhes do empréstimo ativo/atrasado por ID do Chromebook
-   * Útil para exibir informações contextuais na devolução
-   */
   const getLoanDetailsByChromebookId = useCallback(async (chromebookId: string): Promise<LoanHistoryItem | null> => {
-    try {
-      const { data, error } = await supabase
-        .from('loan_history')
-        .select('*')
-        .eq('chromebook_id', chromebookId)
-        .in('status', ['ativo', 'atrasado'])
-        .single();
-
-      if (error) {
-        // Se não encontrar, retorna null silenciosamente (não é erro crítico)
-        if (error.code === 'PGRST116') return null;
-        throw error;
-      }
-
-      return data ? {
-        ...data,
-        status: data.status as 'ativo' | 'devolvido' | 'atrasado'
-      } as unknown as LoanHistoryItem : null;
-    } catch (error: any) {
-      logger.error('Erro ao buscar detalhes do empréstimo', error, { chromebookId });
-      return null;
-    }
+    return await loanService.getLoanDetailsByChromebookId(chromebookId);
   }, []);
-
 
   const createReturn = useCallback(async (loanId: string, data: ReturnFormData & { notes?: string }): Promise<Return | null> => {
     if (!user) {
       toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
       return null;
     }
-
-    try {
-      const { data: result, error } = await supabase
-        .from('returns')
-        .insert({
-          loan_id: loanId,
-          returned_by_name: data.name,
-          returned_by_ra: data.ra,
-          returned_by_email: data.email,
-          returned_by_type: data.userType,
-          notes: data.notes,
-          created_by: user.id
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      // Trigger Push Notification
-      triggerPushNotification(
-        "Devolução Registrada",
-        `${data.name} devolveu um equipamento.`,
-        '/dashboard'
-      );
-
-      return result as unknown as Return;
-    } catch (error: any) {
-      throw error;
-    }
+    return await loanService.createReturn(loanId, data, user.id);
   }, [user]);
 
   const forceReturnLoan = useCallback(async (loan: LoanHistoryItem): Promise<boolean> => {
@@ -641,510 +261,128 @@ export const useDatabase = () => {
       return false;
     }
 
-    if (!loan.id) {
-      toast({ title: "Erro de Dados", description: "ID do empréstimo não encontrado. Não é possível forçar a devolução.", variant: "destructive" });
-      return false;
-    }
-
-    setLoading(true);
+    startRequest();
     try {
-      const returnData: ReturnFormData & { notes?: string } = {
-        name: user.email?.split('@')[0] || 'Admin',
-        email: user.email || 'admin@system.com',
-        type: loan.loan_type,
-        userType: 'funcionario',
-        notes: `Devolução forçada pelo administrador para corrigir inconsistência. Empréstimo original para: ${loan.student_name} (${loan.student_email}).`
-      };
-
-      const { error: returnError } = await supabase
-        .from('returns')
-        .insert({
-          loan_id: loan.id,
-          returned_by_name: returnData.name,
-          returned_by_email: returnData.email,
-          returned_by_type: returnData.userType,
-          notes: returnData.notes,
-          created_by: user.id,
-          return_date: new Date().toISOString(),
+      const result = await loanService.forceReturnLoan(loan, user.id, user.email || undefined);
+      if (result) {
+        toast({
+          title: "Devolução Forçada",
+          description: `Empréstimo do Chromebook ${loan.chromebook_id} marcado como devolvido.`,
+          variant: "success"
         });
-
-      if (returnError) throw returnError;
-
-      const { data: chromebookData, error: cbError } = await supabase
-        .from('chromebooks')
-        .select('chromebook_id')
-        .eq('id', loan.chromebook_id)
-        .single();
-
-      if (cbError || !chromebookData) {
-        logger.warn(`Chromebook ID ${loan.chromebook_id} não encontrado para sincronização após devolução forçada.`);
-      } else {
-        await supabase.rpc('sync_chromebook_status', { cb_id: chromebookData.chromebook_id });
       }
-
-      toast({
-        title: "Devolução Forçada",
-        description: `Empréstimo do Chromebook ${loan.chromebook_id} marcado como devolvido.`,
-        variant: "success"
-      });
-      return true;
+      return result;
     } catch (error: any) {
       toast({ title: "Erro ao forçar devolução", description: error.message, variant: "destructive" });
       return false;
     } finally {
-      setLoading(false);
+      endRequest();
     }
-  }, [user]);
-
+  }, [user, startRequest, endRequest]);
 
   const returnChromebookById = useCallback(async (chromebookId: string, data: ReturnFormData): Promise<boolean> => {
-    setLoading(true);
+    if (!user) {
+      toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
+      return false;
+    }
+
+    startRequest();
     try {
-      // Busca por empréstimos ativos OU atrasados
-      const { data: activeLoan, error: loanError } = await supabase
-        .from('loan_history')
-        .select('id')
-        .eq('chromebook_id', chromebookId)
-        .in('status', ['ativo', 'atrasado'])
-        .single();
-
-      if (loanError || !activeLoan) {
-        throw new Error('Chromebook não encontrado ou não possui um empréstimo ativo/atrasado.');
-      }
-
-      const result = await createReturn(activeLoan.id as string, data);
-
+      const result = await loanService.returnChromebookById(chromebookId, data, user.id);
       if (result) {
-        // Sincroniza o status do Chromebook após a devolução
-        await syncChromebookStatus(chromebookId);
-
-        // TOAST DE SUCESSO ESPECÍFICO PARA DEVOLUÇÃO
         toast({
           title: "Devolução registrada",
           description: `Chromebook ${chromebookId} devolvido com sucesso.`,
           variant: "success"
         });
-        return true;
       }
-      return false;
+      return result;
     } catch (error: any) {
       toast({ title: "Erro ao registrar devolução", description: error.message, variant: "destructive" });
       return false;
     } finally {
-      setLoading(false);
+      endRequest();
     }
-  }, [createReturn, syncChromebookStatus]);
+  }, [user, startRequest, endRequest]);
 
-  const bulkReturnChromebooks = useCallback(async (chromebookIds: string[], data: ReturnFormData & { notes?: string }): Promise<{ successCount: number, errorCount: number }> => {
+  const bulkReturnChromebooks = useCallback(async (
+    chromebookIds: string[],
+    data: ReturnFormData & { notes?: string }
+  ): Promise<{ successCount: number; errorCount: number }> => {
     if (!user) {
       toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
       return { successCount: 0, errorCount: chromebookIds.length };
     }
 
-    setLoading(true);
-    let successCount = 0;
-    let errorCount = 0;
-
+    startRequest();
     try {
-      // 1. Busca por empréstimos ativos OU atrasados
-      const { data: activeLoans, error: loanError } = await supabase
-        .from('loan_history')
-        .select('id, chromebook_id')
-        .in('chromebook_id', chromebookIds)
-        .in('status', ['ativo', 'atrasado']);
-
-      if (loanError) {
-        throw new Error("Falha ao buscar empréstimos ativos.");
-      }
-
-      const loanMap = new Map(activeLoans.map(loan => [loan.chromebook_id, loan.id]));
-      const returnsToInsert = [];
-
-      for (const chromebookId of chromebookIds) {
-        const loanId = loanMap.get(chromebookId);
-
-        if (!loanId) {
-          errorCount++;
-          toast({
-            title: "Erro no Lote",
-            description: `Chromebook ${chromebookId} não possui um empréstimo ativo/atrasado registrado no sistema.`,
-            variant: "destructive"
-          });
-          continue;
-        }
-
-        returnsToInsert.push({
-          loan_id: loanId,
-          returned_by_name: data.name,
-          returned_by_ra: data.ra,
-          returned_by_email: data.email,
-          returned_by_type: data.userType,
-          notes: data.notes,
-          created_by: user.id
-        });
-      }
-
-      if (returnsToInsert.length > 0) {
-        const { error: insertError } = await supabase
-          .from('returns')
-          .insert(returnsToInsert);
-
-        if (insertError) {
-          logger.error('Erro de inserção de devolução em lote:', insertError);
-          throw new Error(`Falha ao inserir ${returnsToInsert.length} devoluções.`);
-        } else {
-          successCount = returnsToInsert.length;
-
-          // 2. Sincroniza o status de todos os Chromebooks devolvidos silenciosamente (sem spam de toast)
-          const successfullyReturnedIds = returnsToInsert.map(r => {
-            const loan = activeLoans.find(l => l.id === r.loan_id);
-            return loan?.chromebook_id;
-          }).filter((id): id is string => !!id);
-
-          await Promise.all(successfullyReturnedIds.map(id => syncChromebookStatus(id, false)));
-        }
-      }
+      return await loanService.bulkReturnChromebooks(chromebookIds, data, user.id);
     } catch (e: any) {
       toast({
         title: "Erro de Processamento",
         description: e.message,
         variant: "destructive"
       });
-      errorCount = chromebookIds.length - successCount;
+      return { successCount: 0, errorCount: chromebookIds.length };
     } finally {
-      setLoading(false);
+      endRequest();
     }
-
-    return { successCount, errorCount: chromebookIds.length - successCount };
-  }, [user, syncChromebookStatus]);
-
+  }, [user, startRequest, endRequest]);
 
   // --- USER OPERATIONS ---
 
-  // Student operations - ATUALIZADO PARA USAR RPC
-  const createStudent = useCallback(async (data: StudentData): Promise<any> => {
+  const createStudent = useCallback(async (data: userService.StudentData): Promise<any> => {
     if (!user) {
       toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
       return null;
     }
 
-    // Validação de domínio para aluno
-    const emailValidation = validateEmailDomain(data.email, 'aluno');
-    if (!emailValidation.valid) {
-      toast({ title: "Erro de Validação", description: emailValidation.message, variant: "destructive" });
-      return null;
-    }
-
-    setLoading(true);
+    startRequest();
     try {
-      // Chama a RPC ao invés de insert direto
-      const { data: result, error } = await supabase.rpc('create_student', {
-        p_nome_completo: data.nome_completo,
-        p_ra: data.ra,
-        p_email: data.email,
-        p_turma: data.turma
-      });
-
-      if (error) throw error;
-      // REMOVIDO: toast({ title: "Sucesso", description: "Aluno cadastrado com sucesso" });
-      return result;
+      return await userService.createStudent(data);
     } catch (error: any) {
-      logger.error('Erro ao criar aluno via RPC:', error);
-      // Verifica se o erro é de restrição de unicidade (email ou RA duplicado)
-      if (error.message.includes('RA ou E-mail informado já está em uso')) {
-        toast({ title: "Erro de Cadastro", description: "RA ou E-mail já cadastrado.", variant: "destructive" });
-      } else {
-        toast({ title: "Erro", description: error.message || "Falha ao cadastrar aluno", variant: "destructive" });
-      }
+      logger.error('Erro ao criar aluno:', error);
+      toast({ title: "Erro de Cadastro", description: error.message || "Falha ao cadastrar aluno", variant: "destructive" });
       return null;
     } finally {
-      setLoading(false);
+      endRequest();
     }
-  }, [user]);
+  }, [user, startRequest, endRequest]);
 
-  const updateStudent = useCallback(async (id: string, data: Partial<StudentData>): Promise<boolean> => {
+  const updateStudent = useCallback(async (id: string, data: Partial<userService.StudentData>): Promise<boolean> => {
     if (!user) {
       toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
       return false;
     }
-    // Validação de domínio para aluno, se o email estiver sendo atualizado
-    if (data.email) {
-      const emailValidation = validateEmailDomain(data.email, 'aluno');
-      if (!emailValidation.valid) {
-        toast({ title: "Erro de Validação", description: emailValidation.message, variant: "destructive" });
-        return false;
-      }
-    }
-    setLoading(true);
-    try {
-      const { error } = await supabase
-        .from('alunos')
-        .update(data)
-        .eq('id', id);
 
-      if (error) throw error;
-      // REMOVIDO: toast({ title: "Sucesso", description: "Aluno atualizado com sucesso" });
-      return true;
+    startRequest();
+    try {
+      return await userService.updateStudent(id, data);
     } catch (error: any) {
-      // Verifica se o erro é de restrição de unicidade (email ou RA duplicado)
-      if (error.code === '23505') {
-        toast({ title: "Erro de Atualização", description: "RA ou E-mail já cadastrado para outro aluno.", variant: "destructive" });
-      } else {
-        toast({ title: "Erro", description: error.message, variant: "destructive" });
-      }
+      toast({ title: "Erro de Atualização", description: error.message, variant: "destructive" });
       return false;
     } finally {
-      setLoading(false);
+      endRequest();
     }
-  }, [user]);
+  }, [user, startRequest, endRequest]);
 
-
-  // Teacher operations - ATUALIZADO PARA USAR RPC e VALIDAR DOMÍNIO
-  const createTeacher = useCallback(async (data: TeacherData): Promise<any> => {
-    if (!user) {
-      toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
-      return null;
-    }
-
-    // Validação de domínio para professor
-    const emailValidation = validateEmailDomain(data.email, 'professor');
-    if (!emailValidation.valid) {
-      toast({ title: "Erro de Validação", description: emailValidation.message, variant: "destructive" });
-      return null;
-    }
-
-    setLoading(true);
-    try {
-      // Chama a RPC ao invés de insert direto
-      const { data: result, error } = await supabase.rpc('create_teacher', {
-        p_nome_completo: data.nome_completo,
-        p_email: data.email,
-        p_materia: (data as any).materia || null
-      });
-
-      if (error) throw error;
-      // REMOVIDO: toast({ title: "Sucesso", description: "Professor cadastrado com sucesso" });
-      return result;
-    } catch (error: any) {
-      logger.error('Erro ao criar professor via RPC:', error);
-      // Verifica se o erro é de restrição de unicidade (email duplicado)
-      if (error.message.includes('O e-mail informado já está em uso')) {
-        toast({ title: "Erro de Cadastro", description: "E-mail já cadastrado para outro professor.", variant: "destructive" });
-      } else {
-        toast({ title: "Erro", description: error.message || "Falha ao cadastrar professor", variant: "destructive" });
-      }
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, [user]);
-
-  const updateTeacher = useCallback(async (id: string, data: Partial<TeacherData>): Promise<boolean> => {
-    if (!user) {
-      toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
-      return false;
-    }
-    // Validação de domínio para professor, se o email estiver sendo atualizado
-    if (data.email) {
-      const emailValidation = validateEmailDomain(data.email, 'professor');
-      if (!emailValidation.valid) {
-        toast({ title: "Erro de Validação", description: emailValidation.message, variant: "destructive" });
-        return false;
-      }
-    }
-    setLoading(true);
-    try {
-      const { error } = await supabase
-        .from('professores')
-        .update(data)
-        .eq('id', id);
-
-      if (error) throw error;
-      // REMOVIDO: toast({ title: "Sucesso", description: "Professor atualizado com sucesso" });
-      return true;
-    } catch (error: any) {
-      // Verifica se o erro é de restrição de unicidade (email duplicado)
-      if (error.code === '23505') {
-        toast({ title: "Erro de Atualização", description: "E-mail já cadastrado para outro professor.", variant: "destructive" });
-      } else {
-        toast({ title: "Erro", description: error.message, variant: "destructive" });
-      }
-      return false;
-    } finally {
-      setLoading(false);
-    }
-  }, [user]);
-
-
-  // Staff operations - ATUALIZADO PARA USAR RPC e VALIDAR DOMÍNIO
-  const createStaff = useCallback(async (data: StaffData): Promise<any> => {
-    if (!user) {
-      toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
-      return null;
-    }
-
-    // Validação de domínio para funcionário
-    if (!validateEmailDomain(data.email, 'funcionario')) {
-      toast({ title: "Erro de Validação", description: `Email de funcionário deve terminar com ${EMAIL_DOMAINS.FUNCIONARIO}`, variant: "destructive" });
-      return null;
-    }
-
-    setLoading(true);
-    try {
-      // Chama a RPC ao invés de insert direto
-      const { data: result, error } = await supabase.rpc('create_staff', {
-        p_nome_completo: data.nome_completo,
-        p_email: data.email
-      });
-
-      if (error) throw error;
-      // REMOVIDO: toast({ title: "Sucesso", description: "Funcionário cadastrado com sucesso" });
-      return result;
-    } catch (error: any) {
-      logger.error('Erro ao criar funcionário via RPC:', error);
-      // Verifica se o erro é de restrição de unicidade (email duplicado)
-      if (error.message.includes('O e-mail informado já está em uso')) {
-        toast({ title: "Erro de Cadastro", description: "E-mail já cadastrado para outro funcionário.", variant: "destructive" });
-      } else {
-        toast({ title: "Erro", description: error.message || "Falha ao cadastrar funcionário", variant: "destructive" });
-      }
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, [user]);
-
-  const updateStaff = useCallback(async (id: string, data: Partial<StaffData>): Promise<boolean> => {
-    if (!user) {
-      toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
-      return false;
-    }
-    // Validação de domínio para funcionário, se o email estiver sendo atualizado
-    if (data.email) {
-      const emailValidation = validateEmailDomain(data.email, 'funcionario');
-      if (!emailValidation.valid) {
-        toast({ title: "Erro de Validação", description: emailValidation.message, variant: "destructive" });
-        return false;
-      }
-    }
-    setLoading(true);
-    try {
-      const { error } = await supabase
-        .from('funcionarios')
-        .update(data)
-        .eq('id', id);
-
-      if (error) throw error;
-      // REMOVIDO: toast({ title: "Sucesso", description: "Funcionário atualizado com sucesso" });
-      return true;
-    } catch (error: any) {
-      // Verifica se o erro é de restrição de unicidade (email duplicado)
-      if (error.code === '23505') {
-        toast({ title: "Erro de Atualização", description: "E-mail já cadastrado para outro funcionário.", variant: "destructive" });
-      } else {
-        toast({ title: "Erro", description: error.message, variant: "destructive" });
-      }
-      return false;
-    } finally {
-      setLoading(false);
-    }
-  }, [user]);
-
-
-  const bulkInsertStudents = useCallback(async (students: StudentData[]): Promise<boolean> => {
+  const bulkInsertStudents = useCallback(async (students: userService.StudentData[]): Promise<boolean> => {
     if (!user) {
       toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
       return false;
     }
 
-    setLoading(true);
+    startRequest();
     try {
-      // Validação de domínio para todos os alunos no lote
-      for (const student of students) {
-        if (!validateEmailDomain(student.email, 'aluno')) {
-          throw new Error(`Email de aluno inválido: ${student.email}. Deve terminar com ${EMAIL_DOMAINS.ALUNO}`);
-        }
-      }
-
-      // Processamento em lotes para inserção (prevenção de timeouts em arquivos muito grandes)
-      const BATCH_SIZE = 200;
-      for (let i = 0; i < students.length; i += BATCH_SIZE) {
-        const batch = students.slice(i, i + BATCH_SIZE).map(s => ({
-          nome_completo: s.nome_completo,
-          ra: s.ra,
-          email: s.email.toLowerCase(),
-          turma: s.turma
-        }));
-
-        const { error } = await supabase
-          .from('alunos')
-          .insert(batch);
-
-        if (error) throw error;
-      }
-
-      return true;
+      return await userService.bulkInsertStudents(students);
     } catch (error: any) {
       logger.error('Erro ao importar alunos:', error);
-      // Verifica se o erro é de restrição de unicidade (email ou RA duplicado)
-      if (error.code === '23505') {
-        toast({ title: "Erro de Importação", description: "Pelo menos um RA ou E-mail já está cadastrado.", variant: "destructive" });
-      } else {
-        toast({ title: "Erro", description: error.message, variant: "destructive" });
-      }
+      toast({ title: "Erro de Importação", description: error.message, variant: "destructive" });
       return false;
     } finally {
-      setLoading(false);
+      endRequest();
     }
-  }, [user]);
-
-  // NOVO: Bulk Insert Teachers
-  const bulkInsertTeachers = useCallback(async (teachers: TeacherData[]): Promise<boolean> => {
-    if (!user) {
-      toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
-      return false;
-    }
-
-    setLoading(true);
-    try {
-      // Validação de domínio para todos os professores no lote
-      for (const teacher of teachers) {
-        if (!validateEmailDomain(teacher.email, 'professor')) {
-          throw new Error(`Email de professor inválido: ${teacher.email}. Deve terminar com ${EMAIL_DOMAINS.PROFESSOR}`);
-        }
-      }
-
-      // Mapeia e Processa em lotes para inserção
-      const BATCH_SIZE = 200;
-      for (let i = 0; i < teachers.length; i += BATCH_SIZE) {
-        const batch = teachers.slice(i, i + BATCH_SIZE).map(t => ({
-          nome_completo: t.nome_completo,
-          email: t.email.toLowerCase(),
-          materia: t.materia || null,
-        }));
-
-        const { error } = await supabase
-          .from('professores')
-          .insert(batch);
-
-        if (error) throw error;
-      }
-
-      return true;
-    } catch (error: any) {
-      logger.error('Erro ao importar professores:', error);
-      // Verifica se o erro é de restrição de unicidade (email duplicado)
-      if (error.code === '23505') {
-        toast({ title: "Erro de Importação", description: "Pelo menos um E-mail já está cadastrado.", variant: "destructive" });
-      } else {
-        toast({ title: "Erro", description: error.message, variant: "destructive" });
-      }
-      return false;
-    } finally {
-      setLoading(false);
-    }
-  }, [user]);
-
+  }, [user, startRequest, endRequest]);
 
   const deleteAllStudents = useCallback(async (): Promise<boolean> => {
     if (!user) {
@@ -1152,15 +390,9 @@ export const useDatabase = () => {
       return false;
     }
 
-    setLoading(true);
+    startRequest();
     try {
-      const { error } = await supabase
-        .from('alunos')
-        .delete()
-        .neq('id', '00000000-0000-0000-0000-000000000000');
-
-      if (error) throw error;
-
+      await userService.deleteAllStudents();
       toast({
         title: "Sucesso",
         description: "Todos os alunos foram excluídos com sucesso.",
@@ -1176,9 +408,97 @@ export const useDatabase = () => {
       });
       return false;
     } finally {
-      setLoading(false);
+      endRequest();
     }
-  }, [user]);
+  }, [user, startRequest, endRequest]);
+
+  const createTeacher = useCallback(async (data: TeacherData): Promise<any> => {
+    if (!user) {
+      toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
+      return null;
+    }
+
+    startRequest();
+    try {
+      return await userService.createTeacher(data);
+    } catch (error: any) {
+      logger.error('Erro ao criar professor:', error);
+      toast({ title: "Erro de Cadastro", description: error.message || "Falha ao cadastrar professor", variant: "destructive" });
+      return null;
+    } finally {
+      endRequest();
+    }
+  }, [user, startRequest, endRequest]);
+
+  const updateTeacher = useCallback(async (id: string, data: Partial<TeacherData>): Promise<boolean> => {
+    if (!user) {
+      toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
+      return false;
+    }
+
+    startRequest();
+    try {
+      return await userService.updateTeacher(id, data);
+    } catch (error: any) {
+      toast({ title: "Erro de Atualização", description: error.message, variant: "destructive" });
+      return false;
+    } finally {
+      endRequest();
+    }
+  }, [user, startRequest, endRequest]);
+
+  const bulkInsertTeachers = useCallback(async (teachers: TeacherData[]): Promise<boolean> => {
+    if (!user) {
+      toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
+      return false;
+    }
+
+    startRequest();
+    try {
+      return await userService.bulkInsertTeachers(teachers);
+    } catch (error: any) {
+      logger.error('Erro ao importar professores:', error);
+      toast({ title: "Erro de Importação", description: error.message, variant: "destructive" });
+      return false;
+    } finally {
+      endRequest();
+    }
+  }, [user, startRequest, endRequest]);
+
+  const createStaff = useCallback(async (data: userService.StaffData): Promise<any> => {
+    if (!user) {
+      toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
+      return null;
+    }
+
+    startRequest();
+    try {
+      return await userService.createStaff(data);
+    } catch (error: any) {
+      logger.error('Erro ao criar funcionário:', error);
+      toast({ title: "Erro de Cadastro", description: error.message || "Falha ao cadastrar funcionário", variant: "destructive" });
+      return null;
+    } finally {
+      endRequest();
+    }
+  }, [user, startRequest, endRequest]);
+
+  const updateStaff = useCallback(async (id: string, data: Partial<userService.StaffData>): Promise<boolean> => {
+    if (!user) {
+      toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
+      return false;
+    }
+
+    startRequest();
+    try {
+      return await userService.updateStaff(id, data);
+    } catch (error: any) {
+      toast({ title: "Erro de Atualização", description: error.message, variant: "destructive" });
+      return false;
+    } finally {
+      endRequest();
+    }
+  }, [user, startRequest, endRequest]);
 
   const deleteUserRecord = useCallback(async (id: string, userType: UserType): Promise<boolean> => {
     if (!user) {
@@ -1186,19 +506,9 @@ export const useDatabase = () => {
       return false;
     }
 
-    const tableName = userType === 'aluno' ? 'alunos' :
-      userType === 'professor' ? 'professores' :
-        'funcionarios';
-
-    setLoading(true);
+    startRequest();
     try {
-      const { error } = await supabase
-        .from(tableName)
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-
+      await userService.deleteUserRecord(id, userType);
       toast({ title: "Sucesso", description: `${userType.charAt(0).toUpperCase() + userType.slice(1)} excluído com sucesso.`, variant: "success" });
       return true;
     } catch (error: any) {
@@ -1210,71 +520,15 @@ export const useDatabase = () => {
       });
       return false;
     } finally {
-      setLoading(false);
+      endRequest();
     }
-  }, [user]);
+  }, [user, startRequest, endRequest]);
 
-  // --- SCHEDULING OPERATIONS (NOVAS FUNÇÕES) ---
+  // --- SCHEDULING OPERATIONS ---
 
-  const getTotalAvailableChromebooks = useCallback(async (): Promise<number> => {
+  const getReservationsForWeek = useCallback(async (startDate: string, endDate: string): Promise<reservationService.Reservation[]> => {
     try {
-      // CORREÇÃO: Contar apenas os que estão 'disponivel' ou 'fixo'
-      const { count, error } = await supabase
-        .from('chromebooks')
-        .select('id', { count: 'exact', head: true })
-        .in('status', ['disponivel', 'fixo']); // Apenas estes status são considerados disponíveis para agendamento/uso
-
-      if (error) throw error;
-      return count || 0;
-    } catch (error: any) {
-      logger.error('Erro ao buscar total de Chromebooks disponíveis:', error);
-      // Removendo o toast aqui para evitar spam, o componente chamador (SchedulingPage) já trata o erro.
-      return 0;
-    }
-  }, []);
-
-  const getReservationsForWeek = useCallback(async (startDate: string, endDate: string): Promise<Reservation[]> => {
-    try {
-      const { data, error } = await supabase
-        .from('reservations')
-        .select(`
-          *,
-          prof_data:profiles!professor_id (name, email, role),
-          loans (
-            chromebooks (chromebook_id)
-          )
-        `)
-        .gte('date', startDate)
-        .lte('date', endDate)
-        .order('date', { ascending: true })
-        .order('time_slot', { ascending: true });
-
-      if (error) throw error;
-
-      // Mapeia o resultado para o tipo Reservation
-      return (data || []).map(res => {
-        const profData = (res as any).prof_data;
-        const profName = profData?.name;
-        const profEmail = profData?.email;
-
-        // Extrai os empréstimos associados de forma segura
-        const loans = (res as any).loans || [];
-        const associatedLoans = loans.map((l: any) => {
-          // Lida com o caso de chromebooks ser um objeto ou um array (caso a relação não seja detectada como 1-1)
-          const cb = Array.isArray(l.chromebooks) ? l.chromebooks[0] : l.chromebooks;
-          return { chromebook_id: cb?.chromebook_id };
-        }).filter((l: any) => l.chromebook_id);
-
-        return {
-          ...res,
-          prof_name: profName && profName !== 'Usuário Desconhecido' ? profName : (profEmail || 'Usuário Desconhecido'),
-          prof_email: profEmail || '',
-          prof_role: profData?.role || '',
-          justification: (res as any).justification || '',
-          associated_loans: associatedLoans
-        };
-      }) as Reservation[];
-
+      return await reservationService.getReservationsForWeek(startDate, endDate);
     } catch (error: any) {
       logger.error('Erro ao buscar reservas:', error);
       toast({ title: "Erro de Sincronização", description: "Falha ao carregar agendamentos.", variant: "destructive" });
@@ -1282,125 +536,22 @@ export const useDatabase = () => {
     }
   }, []);
 
-  const createReservation = useCallback(async (data: ReservationData): Promise<Reservation | null> => {
+  const createReservation = useCallback(async (data: reservationService.ReservationData): Promise<reservationService.Reservation | null> => {
     if (!user) {
       toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
       return null;
     }
 
-    setLoading(true);
+    startRequest();
     try {
-      const { data: result, error } = await supabase
-        .from('reservations')
-        .insert({
-          date: data.date,
-          time_slot: data.time_slot,
-          professor_id: data.professor_id || user.id, // Usa o ID do usuário logado se não fornecido
-          justification: data.justification,
-          quantity_requested: data.quantity_requested,
-          needs_tv: data.needs_tv || false,
-          needs_sound: data.needs_sound || false,
-          needs_mic: data.needs_mic || false,
-          mic_quantity: data.mic_quantity || 0,
-          is_minecraft: data.is_minecraft || false,
-          classroom: data.classroom || '', // NOVO: Sala/Turma
-          space_id: data.space_id || null,
-          created_by: user.id,
-        })
-        .select(`
-          *,
-          prof_data:profiles!professor_id (name, email)
-        `)
-        .single();
-
-      if (error) throw error;
-
-      const profData = (result as any).prof_data;
-      const profName = profData?.name;
-      const profEmail = profData?.email;
-
-      const reservationResult = {
-        ...result,
-        prof_name: profName && profName !== 'Usuário Desconhecido' ? profName : (profEmail || 'Usuário Desconhecido'),
-        prof_email: profEmail || '',
-        justification: (result as any).justification || '',
-      } as Reservation;
-
-      // Garantir que temos dados mínimos para a Edge Function
-      let professorEmail = reservationResult.prof_email || user.email;
-      const professorName = reservationResult.prof_name || user.user_metadata?.full_name || user.email?.split('@')[0] || 'Professor';
-
-      // Se for o usuário de teste, redirecionar e-mail para o admin
-      if (professorEmail === 'teste@sj.pro.br' || professorEmail === 'teste@colegiosaojudas.com.br') {
-        professorEmail = 'arthur.alencar@colegiosaojudas.com.br';
-        logger.info('E-mail de teste redirecionado para o administrador');
-      }
-
-      if (professorEmail) {
-        const emailPayload = {
-          toEmail: professorEmail,
-          professorName: professorName,
-          justification: reservationResult.justification,
-          date: formatLocalDate(reservationResult.date),
-          time: reservationResult.time_slot,
-          quantity: reservationResult.quantity_requested,
-          needs_tv: reservationResult.needs_tv,
-          needs_sound: reservationResult.needs_sound,
-          needs_mic: reservationResult.needs_mic,
-          mic_quantity: reservationResult.mic_quantity,
-          is_minecraft: reservationResult.is_minecraft,
-        };
-
-        const { data: emailData, error: emailError } = await supabase.functions.invoke('send-reservation-email', {
-          body: emailPayload,
-          headers: {
-            // Passa o token do usuário logado para a Edge Function (se necessário para auth)
-            'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
-          }
-        });
-
-        if (emailError) {
-          logger.error('Erro ao disparar e-mail de confirmação:', emailError);
-          toast({ title: "Aviso", description: "Reserva criada, mas falha ao enviar e-mail de confirmação.", variant: "info" });
-        } else {
-          logger.debug('E-mail de confirmação disparado:', emailData);
-        }
-      }
-
-      // --- NOTIFICAÇÃO PARA OS RESPONSÁVEIS (Silencioso se falhar) ---
-      try {
-        const responsibleUserIds = [
-          'e01b402a-3f99-48e5-84f6-3b23aad4fba9', // Eduardo
-          '2c613746-af33-47b2-bc0a-cd965f8603de', // Davi
-          'e9253b42-f52e-445b-b3ea-1f0c93e4c3f9'  // Arthur
-        ];
-
-        const notifications = responsibleUserIds
-          .filter(id => id !== user.id)
-          .map(responsibleId => ({
-            user_id: responsibleId,
-            title: 'Nova Reserva de Chromebooks',
-            message: `${reservationResult.prof_name} agendou ${reservationResult.quantity_requested} Chromebooks para o dia ${formatLocalDate(reservationResult.date)} às ${reservationResult.time_slot}.`,
-            type: 'reservation',
-            metadata: {
-              reservation_id: reservationResult.id,
-              prof_name: reservationResult.prof_name,
-              date: reservationResult.date,
-              time_slot: reservationResult.time_slot
-            }
-          }));
-
-        if (notifications.length > 0) {
-          await supabase.from('notifications' as any).insert(notifications);
-        }
-      } catch (notifyError) {
-        logger.warn('Falha silenciosa ao criar notificações:', { error: notifyError });
-      }
-
+      const res = await reservationService.createReservation(
+        data,
+        user.id,
+        user.email || undefined,
+        user.user_metadata?.full_name
+      );
       toast({ title: "Sucesso", description: "Reserva agendada com sucesso!", variant: "success" });
-
-      return reservationResult;
-
+      return res;
     } catch (error: any) {
       logger.error('Erro ao criar reserva:', error);
       toast({
@@ -1410,95 +561,24 @@ export const useDatabase = () => {
       });
       return null;
     } finally {
-      setLoading(false);
+      endRequest();
     }
-  }, [user]);
+  }, [user, startRequest, endRequest]);
 
-  const bulkCreateReservations = useCallback(async (dates: string[], baseData: Omit<ReservationData, 'date'>): Promise<{ success: boolean; count: number }> => {
+  const bulkCreateReservations = useCallback(async (
+    dates: string[],
+    baseData: Omit<reservationService.ReservationData, 'date'>
+  ): Promise<{ success: boolean; count: number }> => {
     if (!user) {
       toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
       return { success: false, count: 0 };
     }
 
-    setLoading(true);
+    startRequest();
     try {
-      // Checar se a sala já está ocupada em alguma das datas para o mesmo time_slot
-      if (baseData.classroom && baseData.classroom.trim()) {
-        const { data: existingReservations } = await supabase
-          .from('reservations')
-          .select('date, classroom')
-          .in('date', dates)
-          .eq('time_slot', baseData.time_slot);
-
-        if (existingReservations && existingReservations.length > 0) {
-          const conflictingDates = existingReservations
-            .filter(r => r.classroom?.trim().toLowerCase() === baseData.classroom.trim().toLowerCase())
-            .map(r => formatLocalDate(r.date));
-
-          if (conflictingDates.length > 0) {
-            toast({
-              title: "Conflito de Sala em Múltiplas Datas",
-              description: `A sala "${baseData.classroom}" já está ocupada em: ${conflictingDates.join(', ')}.`,
-              variant: "destructive"
-            });
-            return { success: false, count: 0 };
-          }
-        }
-      }
-
-      const inserts = dates.map(date => ({
-        date,
-        time_slot: baseData.time_slot,
-        professor_id: baseData.professor_id || user.id,
-        justification: baseData.justification,
-        quantity_requested: baseData.quantity_requested,
-        needs_tv: baseData.needs_tv || false,
-        needs_sound: baseData.needs_sound || false,
-        needs_mic: baseData.needs_mic || false,
-        mic_quantity: baseData.mic_quantity || 0,
-        is_minecraft: baseData.is_minecraft || false,
-        classroom: baseData.classroom || '',
-        space_id: baseData.space_id || null,
-        created_by: user.id,
-      }));
-
-      const { data: results, error } = await supabase
-        .from('reservations')
-        .insert(inserts)
-        .select();
-
-      if (error) throw error;
-
-      // Disparar e-mails para cada reserva (opcional, talvez um e-mail consolidado fosse melhor, mas vamos manter simples por enquanto)
-      // Para não sobrecarregar, vamos ignorar o envio de e-mail no bulk por agora ou fazer apenas para a primeira data
-
-      // --- NOTIFICAÇÃO PARA OS RESPONSÁVEIS EM LOTE ---
-      const responsibleUserIds = [
-        'e01b402a-3f99-48e5-84f6-3b23aad4fba9', // Eduardo
-        '2c613746-af33-47b2-bc0a-cd965f8603de', // Davi
-        'e9253b42-f52e-445b-b3ea-1f0c93e4c3f9'  // Arthur
-      ];
-
-      const batchNotifications = responsibleUserIds
-        .filter(id => id !== user.id)
-        .map(responsibleId => ({
-          user_id: responsibleId,
-          title: 'Novas Reservas (Lote)',
-          message: `${dates.length} novos agendamentos realizados por ${user.email?.split('@')[0]} para o horário ${baseData.time_slot}.`,
-          type: 'reservation_bulk',
-          metadata: {
-            count: dates.length,
-            time_slot: baseData.time_slot,
-            dates: dates
-          }
-        }));
-
-      if (batchNotifications.length > 0) {
-        await supabase.from('notifications' as any).insert(batchNotifications);
-      }
-
-      toast({ title: "Sucesso", description: `${results.length} agendamentos realizados com sucesso!`, variant: "success" });
-      return { success: true, count: results.length };
+      const res = await reservationService.bulkCreateReservations(dates, baseData, user.id, user.email || undefined);
+      toast({ title: "Sucesso", description: `${res.count} agendamentos realizados com sucesso!`, variant: "success" });
+      return res;
     } catch (error: any) {
       logger.error('Erro ao criar agendamentos em lote:', error);
       toast({
@@ -1508,19 +588,14 @@ export const useDatabase = () => {
       });
       return { success: false, count: 0 };
     } finally {
-      setLoading(false);
+      endRequest();
     }
-  }, [user]);
+  }, [user, startRequest, endRequest]);
 
-  const deleteReservation = useCallback(async (id: string) => {
-    setLoading(true);
+  const deleteReservation = useCallback(async (id: string): Promise<boolean> => {
+    startRequest();
     try {
-      const { error } = await supabase
-        .from('reservations')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
+      await reservationService.deleteReservation(id);
       toast({ title: "Sucesso", description: "Reserva cancelada com sucesso!", variant: "success" });
       return true;
     } catch (error: any) {
@@ -1532,137 +607,59 @@ export const useDatabase = () => {
       });
       return false;
     } finally {
-      setLoading(false);
+      endRequest();
     }
-  }, []);
+  }, [startRequest, endRequest]);
 
   // --- NOTIFICATION OPERATIONS ---
+
   const getNotifications = useCallback(async (): Promise<any[]> => {
     if (!user) return [];
-    try {
-      const { data, error } = await supabase
-        .from('notifications' as any)
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(20);
-
-      if (error) throw error;
-      return data || [];
-    } catch (error: any) {
-      logger.error('Erro ao buscar notificações:', error);
-      return [];
-    }
+    return await notificationService.getNotifications(user.id);
   }, [user]);
 
   const markNotificationAsRead = useCallback(async (id: string): Promise<boolean> => {
     if (!user) return false;
-    try {
-      const { error } = await supabase
-        .from('notifications' as any)
-        .update({ is_read: true })
-        .eq('id', id)
-        .eq('user_id', user.id);
-
-      if (error) throw error;
-      return true;
-    } catch (error: any) {
-      logger.error('Erro ao marcar notificação como lida:', error);
-      return false;
-    }
+    return await notificationService.markNotificationAsRead(id, user.id);
   }, [user]);
 
   const markAllNotificationsAsRead = useCallback(async (): Promise<boolean> => {
     if (!user) return false;
-    try {
-      const { error } = await supabase
-        .from('notifications' as any)
-        .update({ is_read: true })
-        .eq('user_id', user.id)
-        .eq('is_read', false);
-
-      if (error) throw error;
-      return true;
-    } catch (error: any) {
-      logger.error('Erro ao marcar todas as notificações como lidas:', error);
-      return false;
-    }
+    return await notificationService.markAllNotificationsAsRead(user.id);
   }, [user]);
 
   // --- SYSTEM SETTINGS OPERATIONS ---
-  const getSystemSetting = useCallback(async (key: string, defaultValue: any = null): Promise<any> => {
-    try {
-      const { data, error } = await supabase
-        .from('system_settings')
-        .select('value')
-        .eq('key', key)
-        .single();
 
-      if (error) {
-        if (error.code === 'PGRST116') return defaultValue; // Chave não encontrada
-        throw error;
-      }
-      return data.value;
-    } catch (error: any) {
-      logger.error(`Erro ao buscar configuração ${key}:`, error);
-      return defaultValue;
-    }
+  const getSystemSetting = useCallback(async (key: string, defaultValue: any = null): Promise<any> => {
+    return await settingsService.getSystemSetting(key, defaultValue);
   }, []);
 
   const updateSystemSetting = useCallback(async (key: string, value: any): Promise<boolean> => {
     if (!user) return false;
     try {
-      const { error } = await supabase
-        .from('system_settings')
-        .upsert({ 
-          key, 
-          value, 
-          updated_at: new Date().toISOString(),
-          updated_by: user.id 
-        });
-
-      if (error) throw error;
-      return true;
+      return await settingsService.updateSystemSetting(key, value, user.id);
     } catch (error: any) {
-      logger.error(`Erro ao atualizar configuração ${key}:`, error);
       toast({ title: "Erro", description: `Falha ao salvar configuração: ${error.message}`, variant: "destructive" });
       return false;
     }
   }, [user]);
 
-  const getSpaces = useCallback(async (): Promise<Space[]> => {
-    try {
-      const { data, error } = await supabase
-        .from('spaces')
-        .select('*')
-        .order('name', { ascending: true });
-      if (error) throw error;
-      return (data || []) as Space[];
-    } catch (error: any) {
-      logger.error('Erro ao buscar espaços:', error);
-      return [];
-    }
+  // --- SPACE OPERATIONS ---
+
+  const getSpaces = useCallback(async (): Promise<reservationService.Space[]> => {
+    return await reservationService.getSpaces();
   }, []);
 
-  const createSpace = useCallback(async (name: string, color: string = '#3B82F6', capacity?: number): Promise<Space | null> => {
+  const createSpace = useCallback(async (name: string, color: string = '#3B82F6', capacity?: number): Promise<reservationService.Space | null> => {
     if (!user) {
       toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
       return null;
     }
-    setLoading(true);
+    startRequest();
     try {
-      const { data, error } = await supabase
-        .from('spaces')
-        .insert({
-          name: name.trim(),
-          color,
-          capacity: capacity || null
-        })
-        .select()
-        .single();
-      if (error) throw error;
+      const sp = await reservationService.createSpace(name, color, capacity);
       toast({ title: "Sucesso", description: "Espaço/Turma cadastrado com sucesso!", variant: "success" });
-      return data as Space;
+      return sp;
     } catch (error: any) {
       logger.error('Erro ao criar espaço:', error);
       toast({
@@ -1672,22 +669,18 @@ export const useDatabase = () => {
       });
       return null;
     } finally {
-      setLoading(false);
+      endRequest();
     }
-  }, [user]);
+  }, [user, startRequest, endRequest]);
 
   const deleteSpace = useCallback(async (id: string): Promise<boolean> => {
     if (!user) {
       toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
       return false;
     }
-    setLoading(true);
+    startRequest();
     try {
-      const { error } = await supabase
-        .from('spaces')
-        .delete()
-        .eq('id', id);
-      if (error) throw error;
+      await reservationService.deleteSpace(id);
       toast({ title: "Sucesso", description: "Espaço/Turma removido com sucesso!", variant: "success" });
       return true;
     } catch (error: any) {
@@ -1699,9 +692,9 @@ export const useDatabase = () => {
       });
       return false;
     } finally {
-      setLoading(false);
+      endRequest();
     }
-  }, [user]);
+  }, [user, startRequest, endRequest]);
 
   return {
     loading,

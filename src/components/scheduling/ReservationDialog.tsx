@@ -16,7 +16,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useProfileRole } from '@/hooks/use-profile-role';
 import { Calendar as CalendarUI } from '@/components/ui/calendar';
 import { SuggestiveSearch } from '@/components/ui/SuggestiveSearch';
-import { responsibleEmails, isChromebookSpace as checkChromebookSpace } from '@/utils/scheduling';
+import { isChromebookSpace as checkChromebookSpace } from '@/utils/scheduling';
+import { useSchedulingResponsible } from '@/hooks/useSchedulingResponsible';
 import { ProfessorAutocomplete } from './ProfessorAutocomplete';
 
 interface ExtendedSpace extends Space {
@@ -82,7 +83,7 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
   const isManutencao = role === 'manutencao';
 
   const isSuperAdmin = role === 'super_admin';
-  const isResponsible = isAdmin || isSuperAdmin || (user?.email && responsibleEmails.includes(user.email));
+  const { isResponsible } = useSchedulingResponsible();
 
   const [selectedProfessorId, setSelectedProfessorId] = useState<string>('');
   const [isBookingForOther, setIsBookingForOther] = useState(false);

@@ -107,14 +107,10 @@ const addDays = (date: Date, days: number): Date => {
 };
 
 /**
- * Lista de e-mails de admins e responsáveis com acesso total aos fluxos de agendamentos.
+ * Lista legada mantida como fallback vazio. A autorização oficial do agendamento
+ * é gerenciada dinamicamente via RBAC e system_settings ('scheduling_responsible_emails').
  */
-export const responsibleEmails = [
-  'eduardo.cardoso@colegiosaojudas.com.br',
-  'davi.rossin@colegiosaojudas.com.br',
-  'arthur.alencar@colegiosaojudas.com.br',
-  'gabriela.mazuchi@colegiosaojudas.com.br'
-];
+export const responsibleEmails: string[] = [];
 
 /**
  * Detecta se o espaço/sala selecionado é elegível para Chromebooks e Minecraft
