@@ -20,6 +20,7 @@ import { PWAUpdater } from "./components/PWAUpdater";
 import { PWAInstallProvider } from "./contexts/PWAInstallContext";
 import { PWAInstallPrompt } from "./components/PWAInstallPrompt";
 import { PWAInstallGuideModal } from "./components/PWAInstallGuideModal";
+import { RealtimeSyncHandler } from "./components/RealtimeSyncHandler";
 
 // Code-splitting via React.lazy para carregamento sob demanda ultrarrápido
 const Index = React.lazy(() => import("./pages/Index"));
@@ -121,7 +122,8 @@ const App = () => {
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <PWAInstallProvider>
-            {/* REMOVIDO: DatabaseProvider - usar useDatabase hook diretamente nos componentes */}
+            {/* Sincronização em tempo real global com debounce via Supabase Realtime */}
+            <RealtimeSyncHandler />
             <PrintProvider>
               <BrowserRouter>
                 <AuthRedirectHandler />
