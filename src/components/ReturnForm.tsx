@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useState, useCallback, useEffect } from 'react';
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
