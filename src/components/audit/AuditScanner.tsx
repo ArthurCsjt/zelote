@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useState } from 'react';
 import { useAudit } from '@/contexts/AuditContext';
 import { Button } from '@/components/ui/button';

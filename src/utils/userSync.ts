@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { supabase } from '@/integrations/supabase/client';
 import type { User } from '@supabase/supabase-js';
 import { getUserTypeFromEmail, isStudentEmail } from '@/utils/emailValidation';

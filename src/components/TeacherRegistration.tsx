@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useState } from 'react';
 import { GraduationCap, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';

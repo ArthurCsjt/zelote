@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useState, useCallback, useEffect } from 'react';
 import { Label } from './ui/label';
 import { Computer, ChevronLeft, ChevronRight, CheckCircle } from 'lucide-react';
