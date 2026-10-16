@@ -157,9 +157,14 @@ export function DeviceCard({
 
                         {onRemove && (
                             <Button
+                                type="button"
                                 variant="ghost"
                                 size="sm"
-                                onClick={onRemove}
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    onRemove();
+                                }}
                                 className={cn(
                                     "h-8 w-8 p-0",
                                     "transition-all duration-300",

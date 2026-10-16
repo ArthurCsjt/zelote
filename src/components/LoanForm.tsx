@@ -183,6 +183,7 @@ export function LoanForm({ onBack, initialReservationData }: LoanFormProps) {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        e.stopPropagation();
 
         // 1. Validação de Usuário
         if (!selectedUser) {

@@ -162,14 +162,23 @@ export function QuickReturnDialog({
           <Button
             variant="outline"
             type="button"
-            onClick={() => onOpenChange(false)}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onOpenChange(false);
+            }}
             disabled={loading}
             className="h-10 min-w-[70px] border-2 border-black dark:border-white bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-black dark:text-white font-black uppercase text-xs shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,0.9)] active:translate-x-[1px] active:translate-y-[1px] transition-all flex-1"
           >
             NÃO
           </Button>
           <Button
-            onClick={onConfirm}
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onConfirm();
+            }}
             disabled={loading}
             className="neo-btn-green h-10 flex-[2] text-xs font-black tracking-tight shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-x-[1px] active:translate-y-[1px] min-w-0"
           >

@@ -88,7 +88,8 @@ export function DeviceListInput({
   React.useEffect(() => {
     const initialList = deviceIds
       .map(id => {
-        const chromebook = chromebooks.find(cb => cb.chromebook_id === id);
+        const existing = deviceList.find(d => d.chromebook_id === id);
+        const chromebook = chromebooks.find(cb => cb.chromebook_id === id) || existing;
         if (!chromebook) return null;
 
         const activeLoan = activeLoansCache.find(loan => loan.chromebook_id === id);
@@ -199,17 +200,18 @@ export function DeviceListInput({
       return;
     }
 
+    const itemToAdd = validation.chromebook;
+    if (!itemToAdd) return;
+    const targetId = itemToAdd.chromebook_id;
+
+    setDeviceIds(prev => prev.includes(targetId) ? prev : [targetId, ...prev]);
     setDeviceList(prev => {
-      if (!validation.chromebook) return prev;
-      // Previne qualquer adição duplicada mesmo que aconteça em chamadas concorrentes
-      if (prev.some(item => item.chromebook_id === validation.chromebook?.chromebook_id)) {
+      if (prev.some(item => item.chromebook_id === targetId)) {
         return prev;
       }
-      const newList = [validation.chromebook, ...prev]; // Invertido: novo item no topo
-      setDeviceIds(newList.map(item => item.chromebook_id));
-      setAddedDevicesPage(1); // Volta para a página 1 para ver o item recém-adicionado
-      return newList;
+      return [itemToAdd, ...prev]; // Invertido: novo item no topo
     });
+    setAddedDevicesPage(1); // Volta para a página 1 para ver o item recém-adicionado
 
     toast({
       title: "✓ Dispositivo adicionado",
@@ -250,21 +252,21 @@ export function DeviceListInput({
         }
 
         // 3. Adiciona imediatamente o Chromebook à lista de empréstimo atual
+        const targetId = chromebook.chromebook_id;
         const availableDevice: DeviceListItem = {
           ...chromebook,
           status: 'disponivel',
           loanStatus: 'inativo',
         };
 
+        setDeviceIds(prev => prev.includes(targetId) ? prev : [targetId, ...prev]);
         setDeviceList(prev => {
-          if (prev.some(item => item.chromebook_id === chromebook.chromebook_id)) {
+          if (prev.some(item => item.chromebook_id === targetId)) {
             return prev;
           }
-          const newList = [availableDevice, ...prev];
-          setDeviceIds(newList.map(item => item.chromebook_id));
-          setAddedDevicesPage(1);
-          return newList;
+          return [availableDevice, ...prev];
         });
+        setAddedDevicesPage(1);
 
         // 4. Recarrega o inventário de busca e invalida caches globais
         await fetchChromebooks();
@@ -325,11 +327,8 @@ export function DeviceListInput({
   const removeDevice = (deviceId: string) => {
     const removedItem = deviceList.find(item => item.chromebook_id === deviceId);
 
-    setDeviceList(prev => {
-      const newList = prev.filter(item => item.chromebook_id !== deviceId);
-      setDeviceIds(newList.map(item => item.chromebook_id));
-      return newList;
-    });
+    setDeviceIds(prev => prev.filter(id => id !== deviceId));
+    setDeviceList(prev => prev.filter(item => item.chromebook_id !== deviceId));
 
     if (removedItem) {
       toast({
