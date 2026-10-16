@@ -27,16 +27,8 @@ import { useProfileRole } from '@/hooks/use-profile-role';
 import type { Chromebook, ChromebookData } from "@/types/database";
 import { cn } from "@/lib/utils";
 
-// Mapeamento de Fabricantes e Modelos (Copiado de ManualChromebookForm.tsx)
-const MANUFACTURER_MODELS: Record<string, string[]> = {
-  Acer: ['N18Q5', 'N24P1'],
-  Samsung: ['XE500c13', 'XE310XBA', 'XE501C13', 'XE500C13'],
-  Lenovo: ['100e Chromebook Gen 3'],
-  HP: ['Chromebook 11 G8 EE', 'Chromebook 11 G9 EE'],
-  Dell: ['Chromebook 3100'],
-  Multilaser: ['Chromebook M11C'],
-};
-const AVAILABLE_MANUFACTURERS = Object.keys(MANUFACTURER_MODELS);
+import { BASE_MANUFACTURER_MODELS, AVAILABLE_MANUFACTURERS, getStandardModelsForManufacturer } from '@/constants/chromebookModels';
+
 
 // Interface para o estado interno do formulário de edição
 interface ChromebookDataExtended extends Chromebook {
@@ -229,7 +221,16 @@ export function ChromebookEditDialog({ open, onOpenChange, chromebook }: Chromeb
   // Desabilita a mudança de provisionamento se estiver emprestado
   const isProvisioningDisabled = isEmprestado;
 
-  const currentModels = editingChromebook.manufacturer ? MANUFACTURER_MODELS[editingChromebook.manufacturer] || [] : [];
+  const currentModels = editingChromebook.manufacturer
+    ? getStandardModelsForManufacturer(
+        editingChromebook.manufacturer,
+        editingChromebook.model ? [editingChromebook.model] : []
+      )
+    : [];
+
+  const availableManufacturers = editingChromebook.manufacturer && !AVAILABLE_MANUFACTURERS.includes(editingChromebook.manufacturer)
+    ? [...AVAILABLE_MANUFACTURERS, editingChromebook.manufacturer]
+    : AVAILABLE_MANUFACTURERS;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -310,7 +311,7 @@ export function ChromebookEditDialog({ open, onOpenChange, chromebook }: Chromeb
                       <SelectValue placeholder="SELECIONE O FABRICANTE" />
                     </SelectTrigger>
                     <SelectContent className="border-3 border-black dark:border-white rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                      {AVAILABLE_MANUFACTURERS.map(manufacturer => (
+                      {availableManufacturers.map(manufacturer => (
                         <SelectItem key={manufacturer} value={manufacturer} className="font-bold uppercase text-xs">
                           {manufacturer}
                         </SelectItem>

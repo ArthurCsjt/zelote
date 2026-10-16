@@ -28,19 +28,8 @@ interface FormData {
   provisioning_status: string;
 }
 
-// Mapeamento de Fabricantes e Modelos (base fixa)
-const BASE_MANUFACTURER_MODELS: Record<string, string[]> = {
-  Acer: ['N18Q5', 'N24P1', 'N15Q8', 'N18Q12'],
-  Samsung: ['XE500C13', 'XE310XBA', 'XE501C13'],
-  Lenovo: ['100e Chromebook Gen 3'],
-  HP: ['Chromebook 11 G8 EE', 'Chromebook 11 G9 EE'],
-  Dell: ['Chromebook 3100'],
-  Multilaser: ['Chromebook M11C'],
-  Positivo: ['Chromebook C464'],
-  Outro: [],
-};
+import { BASE_MANUFACTURER_MODELS, AVAILABLE_MANUFACTURERS } from '@/constants/chromebookModels';
 
-const AVAILABLE_MANUFACTURERS = Object.keys(BASE_MANUFACTURER_MODELS);
 
 export function ManualChromebookForm({ onRegistrationSuccess }: { onRegistrationSuccess: (newChromebook: any) => void }) {
   const { createChromebook, getNextChromebookId, loading } = useDatabase();

@@ -22,19 +22,53 @@ import { isNewLoan } from '@/utils/loanCalculations';
 
 type AppView = 'menu' | 'registration' | 'dashboard' | 'inventory' | 'loan' | 'audit' | 'return' | 'scheduling' | 'quick-register' | 'history';
 
+const viewRouteMap: Record<AppView, string> = {
+  menu: '/',
+  registration: '/cadastros',
+  dashboard: '/dashboard',
+  inventory: '/inventario',
+  loan: '/emprestimos',
+  return: '/devolucao',
+  audit: '/contagem',
+  history: '/historico',
+  scheduling: '/agendamento',
+  'quick-register': '/cadastros',
+};
+
+const getPathView = (pathname: string): AppView => {
+  switch (pathname) {
+    case '/cadastros': return 'registration';
+    case '/dashboard': return 'dashboard';
+    case '/inventario': return 'inventory';
+    case '/emprestimos': return 'loan';
+    case '/devolucao':
+    case '/devolucoes': return 'return';
+    case '/contagem':
+    case '/auditoria': return 'audit';
+    case '/historico': return 'history';
+    default: return 'menu';
+  }
+};
+
 const Index = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const { isAdmin, loading: roleLoading, role } = useProfileRole();
   const { loading: dbLoading, getLoanHistory } = useDatabase();
 
-  const [currentView, setCurrentView] = useState<AppView>('menu');
+  const pathView = getPathView(location.pathname);
+  const [currentView, setCurrentView] = useState<AppView>(pathView);
   const [loanTabDefault, setLoanTabDefault] = useState<'form' | 'active'>('form');
   const [pendingReturnIds, setPendingReturnIds] = useState<string[]>([]);
   const [showQRCodeModal, setShowQRCodeModal] = useState(false);
   const [selectedChromebookId, setSelectedChromebookId] = useState<string | null>(null);
-  const location = useLocation();
   const canSeeHistory = role === 'admin' || role === 'super_admin';
+
+  // Sincronizar quando a URL mudar (ex: botão Voltar/Avançar do navegador ou recarregar F5)
+  useEffect(() => {
+    setCurrentView(pathView);
+  }, [pathView]);
 
   const { data: history = [], isLoading: historyLoading } = useQuery({
     queryKey: ['loan-history'],
@@ -45,18 +79,33 @@ const Index = () => {
   // Capturar navegação vinda do agendamento ou menu de perfil
   useEffect(() => {
     if (location.state?.fromScheduling && location.state?.reservationData) {
+      if (location.pathname !== '/emprestimos') {
+        navigate('/emprestimos', { state: location.state, replace: true });
+      }
       setCurrentView('loan');
       setLoanTabDefault('form');
     } else if (location.state?.view) {
-      setCurrentView(location.state.view as AppView);
+      const targetView = location.state.view as AppView;
+      const targetRoute = viewRouteMap[targetView];
+      if (targetRoute && location.pathname !== targetRoute) {
+        navigate(targetRoute, { replace: true });
+      }
     }
-  }, [location.state]);
+  }, [location.state, location.pathname, navigate]);
 
   const handleNavigation = (view: AppView, tab?: 'form' | 'active', chromebookId?: string) => {
-    setCurrentView(view);
     if (tab) setLoanTabDefault(tab);
     if (chromebookId && view === 'return') {
       setPendingReturnIds(prev => prev.includes(chromebookId) ? prev : [...prev, chromebookId]);
+    }
+    if (view === 'scheduling') {
+      navigate('/agendamento');
+      return;
+    }
+    const targetRoute = viewRouteMap[view] || '/';
+    setCurrentView(view);
+    if (location.pathname !== targetRoute) {
+      navigate(targetRoute, { state: { tab, chromebookId } });
     }
   };
 
@@ -64,20 +113,19 @@ const Index = () => {
     setCurrentView('menu');
     setLoanTabDefault('form');
     setPendingReturnIds([]);
-    // Limpar o estado de navegação para evitar redirecionamento automático ao atualizar (F5)
-    navigate('/', { replace: true, state: {} });
+    navigate('/');
   };
 
   const handleGenerateQrCode = (chromebookId: string) => {
     setSelectedChromebookId(chromebookId);
     setShowQRCodeModal(true);
-    setCurrentView('inventory');
+    handleNavigation('inventory');
   };
 
   const handleRegistrationSuccess = (newChromebook: any) => {
     setSelectedChromebookId(newChromebook.chromebook_id);
     setShowQRCodeModal(true);
-    setCurrentView('inventory');
+    handleNavigation('inventory');
   };
 
   const handleReturnSuccess = () => {

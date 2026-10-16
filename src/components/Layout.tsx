@@ -332,7 +332,7 @@ const Layout: React.FC<LayoutProps> = ({
 
                     {(role === 'admin' || role === 'super_admin') && (
                       <DropdownMenuItem
-                        onClick={() => navigate('/', { state: { view: 'history' } })}
+                        onClick={() => navigate('/historico')}
                         className="cursor-pointer rounded-lg focus:bg-zinc-100 dark:focus:bg-zinc-800"
                       >
                         <History className="h-4 w-4 mr-2 text-primary" />

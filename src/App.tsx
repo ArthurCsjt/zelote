@@ -145,6 +145,60 @@ const App = () => {
                       </ProtectedRoute>
                     } />
 
+                    <Route path="/cadastros" element={
+                      <ProtectedRoute>
+                        <Index />
+                      </ProtectedRoute>
+                    } />
+
+                    <Route path="/dashboard" element={
+                      <ProtectedRoute>
+                        <Index />
+                      </ProtectedRoute>
+                    } />
+
+                    <Route path="/inventario" element={
+                      <ProtectedRoute>
+                        <Index />
+                      </ProtectedRoute>
+                    } />
+
+                    <Route path="/emprestimos" element={
+                      <ProtectedRoute>
+                        <Index />
+                      </ProtectedRoute>
+                    } />
+
+                    <Route path="/devolucao" element={
+                      <ProtectedRoute>
+                        <Index />
+                      </ProtectedRoute>
+                    } />
+
+                    <Route path="/devolucoes" element={
+                      <ProtectedRoute>
+                        <Index />
+                      </ProtectedRoute>
+                    } />
+
+                    <Route path="/contagem" element={
+                      <ProtectedRoute>
+                        <Index />
+                      </ProtectedRoute>
+                    } />
+
+                    <Route path="/auditoria" element={
+                      <ProtectedRoute>
+                        <Index />
+                      </ProtectedRoute>
+                    } />
+
+                    <Route path="/historico" element={
+                      <ProtectedRoute>
+                        <Index />
+                      </ProtectedRoute>
+                    } />
+
                     <Route path="/settings" element={
                       <ProtectedRoute>
                         <Settings />
