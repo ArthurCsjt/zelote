@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { ActiveLoans } from "@/components/ActiveLoans";
 import { LoanForm } from "@/components/LoanForm";
 import { useDatabase } from "@/hooks/useDatabase";
@@ -32,29 +32,35 @@ export const LoanHub = ({ onBack, defaultTab = 'form', onNavigateToReturnView, i
   }, [loadData]);
 
   // Função que ActiveLoans chamará
-  const handleNavigateToReturn = (chromebookId: string) => {
+  const handleNavigateToReturn = useCallback((chromebookId: string) => {
     onNavigateToReturnView(chromebookId);
-  };
+  }, [onNavigateToReturnView]);
 
-  const loanTabs = [
+  // Mantém a instância do LoanForm 100% estável para não perder itens bipados
+  const loanFormContent = useMemo(() => (
+    <div className="p-0">
+      <LoanForm
+        initialReservationData={initialReservationData}
+      />
+    </div>
+  ), [initialReservationData]);
+
+  const activeLoansContent = useMemo(() => (
+    <ActiveLoans onNavigateToReturn={handleNavigateToReturn} />
+  ), [handleNavigateToReturn]);
+
+  const loanTabs = useMemo(() => [
     {
       value: 'form',
       title: 'Novo Empréstimo',
-      content: (
-        <div className="p-0">
-          <LoanForm
-            initialReservationData={initialReservationData}
-          />
-        </div>
-      ),
+      content: loanFormContent,
     },
     {
       value: 'active',
       title: `Empréstimos Ativos (${activeLoans.length})`,
-      // Passa a função de navegação para o ActiveLoans
-      content: <ActiveLoans onNavigateToReturn={handleNavigateToReturn} />,
+      content: activeLoansContent,
     },
-  ];
+  ], [loanFormContent, activeLoansContent, activeLoans.length]);
 
   return (
     <div className="min-h-screen relative py-[10px]">

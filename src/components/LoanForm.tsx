@@ -105,7 +105,21 @@ export function LoanForm({ onBack, initialReservationData }: LoanFormProps) {
     }, [initialReservationData, users]);
     const [hasReturnDeadline, setHasReturnDeadline] = useState(false);
     const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
-    const [deviceIds, setDeviceIds] = useState<string[]>([]); // Lista de IDs de dispositivos
+    const [deviceIds, setDeviceIds] = useState<string[]>(() => {
+        try {
+            const saved = sessionStorage.getItem('zelote_loan_device_ids');
+            return saved ? JSON.parse(saved) : [];
+        } catch {
+            return [];
+        }
+    }); // Lista de IDs de dispositivos
+
+    // Salva continuamente a lista de IDs para evitar perda em re-renders ou eventos de background
+    useEffect(() => {
+        try {
+            sessionStorage.setItem('zelote_loan_device_ids', JSON.stringify(deviceIds));
+        } catch {}
+    }, [deviceIds]);
 
     // NOVO ESTADO: Confirmação manual da finalidade
     const [isPurposeConfirmed, setIsPurposeConfirmed] = useState(false);
@@ -173,6 +187,9 @@ export function LoanForm({ onBack, initialReservationData }: LoanFormProps) {
 
     const resetForm = () => {
         setDeviceIds([]);
+        try {
+            sessionStorage.removeItem('zelote_loan_device_ids');
+        } catch {}
         setFormData({
             studentName: "", ra: "", email: "", chromebookId: "", purpose: "", userType: 'aluno', loanType: 'lote', notes: ''
         });

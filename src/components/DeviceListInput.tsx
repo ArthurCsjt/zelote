@@ -181,6 +181,8 @@ export function DeviceListInput({
 
     if (validation.mustQuickReturn) {
       if (validation.activeLoan) {
+        // Fecha o leitor de QR Code para a câmera não colidir com o modal de confirmação
+        setIsQRReaderOpen(false);
         setQuickReturnTarget({
           chromebook: validation.chromebook,
           activeLoan: validation.activeLoan
@@ -268,20 +270,21 @@ export function DeviceListInput({
         });
         setAddedDevicesPage(1);
 
-        // 4. Recarrega o inventário de busca e invalida caches globais
+        // 4. Fecha imediatamente o modal para liberar o fluxo
+        setQuickReturnTarget(null);
+
+        // 5. Invalidação suave em background (refetchType: 'none' para não causar recarregamento nem desmontagem da tela)
         await fetchChromebooks();
-        queryClient.invalidateQueries({ queryKey: ['chromebooks'] });
-        queryClient.invalidateQueries({ queryKey: ['active-loans'] });
-        queryClient.invalidateQueries({ queryKey: ['loan-history'] });
-        queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
+        queryClient.invalidateQueries({ queryKey: ['chromebooks'], refetchType: 'none' });
+        queryClient.invalidateQueries({ queryKey: ['active-loans'], refetchType: 'none' });
+        queryClient.invalidateQueries({ queryKey: ['loan-history'], refetchType: 'none' });
+        queryClient.invalidateQueries({ queryKey: ['dashboard-stats'], refetchType: 'none' });
 
         toast({
           title: "Devolução Realizada com Sucesso",
           description: `O Chromebook ${chromebook.chromebook_id} foi devolvido e adicionado à lista do novo empréstimo.`,
           variant: "success",
         });
-
-        setQuickReturnTarget(null);
       }
     } catch (err: any) {
       toast({

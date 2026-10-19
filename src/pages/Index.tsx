@@ -212,7 +212,9 @@ const Index = () => {
     }
   };
 
-  const loading = dbLoading || roleLoading || (currentView === 'history' && historyLoading);
+  // Views com formulários e interação ativa nunca devem ser desmontadas por requisições de banco em background
+  const isFormView = currentView === 'loan' || currentView === 'return' || currentView === 'registration' || currentView === 'scheduling';
+  const loading = roleLoading || (!isFormView && dbLoading) || (currentView === 'history' && historyLoading);
 
   const menuBackgroundClass = currentView === 'menu'
     ? 'bg-background'
@@ -227,7 +229,7 @@ const Index = () => {
         onBack={handleBackToMenu}
         backgroundClass={menuBackgroundClass}
       >
-        {loading && currentView !== 'menu' ? <div className="flex justify-center items-center h-64"><LoadingSpinner /></div> : renderCurrentView()}
+        {loading && currentView !== 'menu' && !isFormView ? <div className="flex justify-center items-center h-64"><LoadingSpinner /></div> : renderCurrentView()}
       </Layout>
       <QRCodeModal open={showQRCodeModal} onOpenChange={(open) => setShowQRCodeModal(open)} chromebookId={selectedChromebookId as string} />
     </>
