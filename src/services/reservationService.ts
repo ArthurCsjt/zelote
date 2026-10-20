@@ -2,6 +2,23 @@ import { supabase } from '@/integrations/supabase/client';
 import { formatLocalDate } from '@/utils/dateUtils';
 import logger from '@/utils/logger';
 
+// Converts UI format "07h10" → DB format "07:10:00"
+const toDbTime = (slot: string): string => {
+  if (!slot) return slot;
+  // already in HH:MM or HH:MM:SS format
+  if (slot.includes(':')) return slot.length === 5 ? `${slot}:00` : slot;
+  // convert "07h10" → "07:10:00"
+  return slot.replace('h', ':') + ':00';
+};
+
+// Converts DB format "07:10:00" or "07:10" → UI format "07h10"
+const fromDbTime = (slot: string): string => {
+  if (!slot) return slot;
+  if (!slot.includes(':')) return slot; // already UI format
+  const [h, m] = slot.split(':');
+  return `${h}h${m}`;
+};
+
 export interface ReservationData {
   date: string; // ISO date string (YYYY-MM-DD)
   time_slot: string;
@@ -66,6 +83,7 @@ export const getReservationsForWeek = async (startDate: string, endDate: string)
 
     return {
       ...res,
+      time_slot: fromDbTime((res as any).time_slot || ''),
       prof_name: profName && profName !== 'Usuário Desconhecido' ? profName : (profEmail || 'Usuário Desconhecido'),
       prof_email: profEmail || '',
       prof_role: profData?.role || '',
@@ -85,7 +103,7 @@ export const createReservation = async (
     .from('reservations')
     .insert({
       date: data.date,
-      time_slot: data.time_slot,
+      time_slot: toDbTime(data.time_slot),
       professor_id: data.professor_id || userId,
       justification: data.justification,
       quantity_requested: data.quantity_requested,
@@ -196,7 +214,7 @@ export const bulkCreateReservations = async (
       .from('reservations')
       .select('date, classroom')
       .in('date', dates)
-      .eq('time_slot', baseData.time_slot);
+      .eq('time_slot', toDbTime(baseData.time_slot));
 
     if (existingReservations && existingReservations.length > 0) {
       const conflictingDates = existingReservations
@@ -211,7 +229,7 @@ export const bulkCreateReservations = async (
 
   const inserts = dates.map(date => ({
     date,
-    time_slot: baseData.time_slot,
+    time_slot: toDbTime(baseData.time_slot),
     professor_id: baseData.professor_id || userId,
     justification: baseData.justification,
     quantity_requested: baseData.quantity_requested,
