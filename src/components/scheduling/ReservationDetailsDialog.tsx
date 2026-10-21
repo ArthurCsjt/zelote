@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Dialog,
     DialogContent,
@@ -18,7 +18,8 @@ import {
     Volume2,
     Mic,
     Plus,
-    X as CloseIcon
+    X as CloseIcon,
+    AlertTriangle
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -56,6 +57,33 @@ export const ReservationDetailsDialog: React.FC<ReservationDetailsDialogProps> =
     const showCancel = isAdmin || isOwner;
     const showLoan = !(isManutencao || isMaintRes) && isResponsible && (!reservation.associated_loans || reservation.associated_loans.length < reservation.quantity_requested);
     const showClose = !isOwner && !isAdmin && !isResponsible;
+
+    // Proteção contra cancelamento acidental (Confirmação em 2 etapas com timer)
+    const [isConfirmingCancel, setIsConfirmingCancel] = useState(false);
+
+    useEffect(() => {
+        if (!open) {
+            setIsConfirmingCancel(false);
+        }
+    }, [open]);
+
+    useEffect(() => {
+        if (isConfirmingCancel) {
+            const timer = setTimeout(() => {
+                setIsConfirmingCancel(false);
+            }, 4500); // Retorna ao estado inicial após 4.5 segundos se não confirmar
+            return () => clearTimeout(timer);
+        }
+    }, [isConfirmingCancel]);
+
+    const handleCancelClick = () => {
+        if (isConfirmingCancel) {
+            setIsConfirmingCancel(false);
+            onCancel();
+        } else {
+            setIsConfirmingCancel(true);
+        }
+    };
 
 
     // Clean up profile names if the user's name in database is recorded as an email address (avoids duplicates)
@@ -274,12 +302,22 @@ export const ReservationDetailsDialog: React.FC<ReservationDetailsDialogProps> =
                             variant="destructive"
                             className={cn(
                                 "h-11 w-full text-xs sm:text-sm font-black uppercase border-4 border-black shadow-[3px_3px_0px_0px_#000] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all rounded-none gap-2",
+                                isConfirmingCancel && "bg-amber-500 hover:bg-amber-600 text-black border-black shadow-[2px_2px_0px_0px_#000] animate-pulse",
                                 !showLoan && "sm:col-span-2"
                             )}
-                            onClick={onCancel}
+                            onClick={handleCancelClick}
                         >
-                            <Trash2 className="h-4.5 w-4.5" />
-                            Cancelar Reserva
+                            {isConfirmingCancel ? (
+                                <>
+                                    <AlertTriangle className="h-4.5 w-4.5 stroke-[3]" />
+                                    <span>Confirmar Cancelamento?</span>
+                                </>
+                            ) : (
+                                <>
+                                    <Trash2 className="h-4.5 w-4.5" />
+                                    <span>Cancelar Reserva</span>
+                                </>
+                            )}
                         </Button>
                     )}
 

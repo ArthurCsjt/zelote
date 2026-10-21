@@ -1016,17 +1016,39 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                   "px-3 py-2 flex items-center justify-between transition-colors duration-300",
                   isMinecraft ? "bg-[#3c8527]" : "bg-[#1e3a8a]"
                 )}>
-                  <div className="flex items-center gap-2">
-                    <Monitor className={cn("h-4 w-5 text-white", quantity === 0 && "opacity-50")} />
-                    <span className="text-[13px] sm:text-[15px] font-black uppercase text-white tracking-wider">
-                      Quantidade de Chromebooks
+                  <div className="flex items-center gap-2 min-w-0">
+                    <Monitor className={cn("h-4 w-5 text-white shrink-0", quantity === 0 && "opacity-50")} />
+                    <span className="text-[12px] sm:text-[14px] font-black uppercase text-white tracking-wider truncate">
+                      Quantidade
                     </span>
                   </div>
-                  {quantity > 0 && (
-                    <div className="bg-white/20 border-2 border-white/50 px-3 py-1 text-white text-sm sm:text-base font-black leading-none">
+
+                  {/* Controles de precisão (- e +) */}
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => setQuantity(prev => Math.max(isMinecraft ? 1 : 0, prev - 1))}
+                      disabled={quantity <= (isMinecraft ? 1 : 0)}
+                      className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center bg-white text-black border-2 border-black font-black shadow-[2px_2px_0_0_#000] hover:bg-zinc-100 active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all disabled:opacity-40 disabled:pointer-events-none"
+                      title="Diminuir 1 Chromebook"
+                    >
+                      <Minus className="h-3.5 w-3.5 stroke-[3]" />
+                    </button>
+
+                    <div className="bg-white text-black border-2 border-black px-2.5 sm:px-3 py-0.5 sm:py-1 font-black text-xs sm:text-sm min-w-[42px] text-center shadow-[2px_2px_0_0_#000] tabular-nums">
                       {quantity}
                     </div>
-                  )}
+
+                    <button
+                      type="button"
+                      onClick={() => setQuantity(prev => Math.min(isMinecraft ? 40 : maxQuantity, prev + 1))}
+                      disabled={quantity >= (isMinecraft ? 40 : maxQuantity)}
+                      className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center bg-white text-black border-2 border-black font-black shadow-[2px_2px_0_0_#000] hover:bg-zinc-100 active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all disabled:opacity-40 disabled:pointer-events-none"
+                      title="Aumentar 1 Chromebook"
+                    >
+                      <Plus className="h-3.5 w-3.5 stroke-[3]" />
+                    </button>
+                  </div>
                 </div>
                 <div className="p-4 sm:p-5">
                   <Slider
