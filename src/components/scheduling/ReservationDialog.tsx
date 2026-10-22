@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Textarea } from '@/components/ui/textarea';
 import { Loader2, Calendar, Monitor, Info, Save, Tv, Volume2, Mic, User, ListFilter, CalendarDays, X as CloseIcon, ArrowRight, Plus, Minus, CheckCircle, Search, ChevronDown, Trash2, AlertTriangle, History } from 'lucide-react';
-import { format } from 'date-fns';
+import { format, isSaturday, isSunday, isSameDay, startOfDay, addDays, addWeeks, isBefore, endOfMonth } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useDatabase, ReservationData, Reservation, Space } from '@/hooks/useDatabase';
 import { toast } from '@/hooks/use-toast';
@@ -229,6 +229,75 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
   }, [isChromebookSpace]);
 
   const isExpired = date < new Date(new Date().setHours(0, 0, 0, 0));
+
+  // Validador inteligente de datas para recorrência
+  const isDateDisabledForRecurrence = (d: Date): boolean => {
+    // 1. Bloqueia fins de semana (Sábado e Domingo)
+    if (isSaturday(d) || isSunday(d)) return true;
+
+    // 2. Bloqueia dias anteriores a hoje
+    const today = startOfDay(new Date());
+    if (isBefore(d, today)) return true;
+
+    // 3. Se for hoje, bloqueia caso o horário da aula já tenha encerrado
+    if (isSameDay(d, new Date())) {
+      const [hourStr, minStr] = timeSlot.split('h');
+      const slotDateTime = new Date();
+      slotDateTime.setHours(parseInt(hourStr, 10), parseInt(minStr, 10), 0, 0);
+      if (new Date() >= slotDateTime) {
+        return true;
+      }
+    }
+
+    // 4. Bloqueia a própria data base da reserva (ela já é a data principal e tem destaque visual próprio)
+    if (format(d, 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd')) {
+      return true;
+    }
+
+    return false;
+  };
+
+  // Atalho: Repetir no mesmo dia da semana nas próximas semanas
+  const handleAddSameWeekday = () => {
+    const newDates: Date[] = [];
+    let cursor = addWeeks(date, 1);
+    const monthEnd = endOfMonth(date);
+
+    const totalWeeks = cursor > monthEnd ? 4 : 5;
+    for (let i = 0; i < totalWeeks; i++) {
+      if (!isDateDisabledForRecurrence(cursor)) {
+        newDates.push(new Date(cursor));
+      }
+      cursor = addWeeks(cursor, 1);
+    }
+
+    setExtraDates(prev => {
+      const existing = new Set(prev.map(d => format(d, 'yyyy-MM-dd')));
+      const filtered = newDates.filter(d => !existing.has(format(d, 'yyyy-MM-dd')));
+      return [...prev, ...filtered];
+    });
+  };
+
+  // Atalho: Próximos 3 dias letivos de aula (Seg a Sex)
+  const handleAddNextSchoolDays = () => {
+    const newDates: Date[] = [];
+    let cursor = addDays(date, 1);
+    let attempts = 0;
+
+    while (newDates.length < 3 && attempts < 14) {
+      if (!isDateDisabledForRecurrence(cursor)) {
+        newDates.push(new Date(cursor));
+      }
+      cursor = addDays(cursor, 1);
+      attempts++;
+    }
+
+    setExtraDates(prev => {
+      const existing = new Set(prev.map(d => format(d, 'yyyy-MM-dd')));
+      const filtered = newDates.filter(d => !existing.has(format(d, 'yyyy-MM-dd')));
+      return [...prev, ...filtered];
+    });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1161,15 +1230,47 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                   </div>
 
                   {isMultiMode && (
-                    <div className="mt-3 pt-3 border-t-2 border-blue-200 animate-in fade-in slide-in-from-top-1">
-                      <Label className="text-[10px] font-black uppercase tracking-wider text-[#1e3a8a] mb-2 block">
+                    <div className="mt-3 pt-3 border-t-2 border-blue-200 dark:border-blue-900/50 animate-in fade-in slide-in-from-top-1">
+                      {/* Atalhos de Recorrência Inteligentes */}
+                      <div className="flex flex-wrap items-center gap-1.5 mb-2.5">
+                        <span className="text-[10px] font-black uppercase text-zinc-500 dark:text-zinc-400 tracking-wider">
+                          Atalhos Rápidos:
+                        </span>
+                        <button
+                          type="button"
+                          onClick={handleAddSameWeekday}
+                          className="px-2 py-1 text-[10px] font-black uppercase border border-black dark:border-zinc-700 bg-white dark:bg-zinc-900 text-black dark:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 shadow-[1px_1px_0_0_#000] active:translate-x-[1px] active:translate-y-[1px] transition-all"
+                          title="Repetir neste mesmo dia da semana nas próximas semanas"
+                        >
+                          + Toda {format(date, 'EEEE', { locale: ptBR }).split('-')[0]}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleAddNextSchoolDays}
+                          className="px-2 py-1 text-[10px] font-black uppercase border border-black dark:border-zinc-700 bg-white dark:bg-zinc-900 text-black dark:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 shadow-[1px_1px_0_0_#000] active:translate-x-[1px] active:translate-y-[1px] transition-all"
+                          title="Adicionar os próximos 3 dias úteis de aula"
+                        >
+                          + Próximos 3 Dias de Aula
+                        </button>
+                        {extraDates.length > 0 && (
+                          <button
+                            type="button"
+                            onClick={() => setExtraDates([])}
+                            className="px-2 py-0.5 text-[10px] font-bold text-red-600 hover:text-red-700 underline uppercase ml-auto"
+                          >
+                            Limpar ({extraDates.length})
+                          </button>
+                        )}
+                      </div>
+
+                      <Label className="text-[10px] font-black uppercase tracking-wider text-[#1e3a8a] dark:text-blue-400 mb-1.5 block">
                         Dias selecionados para este horário:
                       </Label>
                       <div className="flex flex-wrap gap-1.5">
-                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-zinc-950 text-white text-[11px] font-black uppercase border border-black shadow-[2px_2px_0_0_#000]">
+                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#3B82F6] text-white text-[11px] font-black uppercase border border-black shadow-[2px_2px_0_0_#000]" title="Data base da reserva que você clicou">
                           <Calendar className="h-3 w-3" />
                           {format(date, 'dd/MM')}
-                          <span className="text-blue-300 text-[9px] font-bold">(atual)</span>
+                          <span className="text-yellow-200 text-[9px] font-bold">★ Principal</span>
                         </div>
                         {extraDates.map((d, i) => (
                           <div key={i} className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#1e40af] text-white text-[11px] font-black uppercase border border-black shadow-[2px_2px_0_0_#000] group">
@@ -1181,32 +1282,68 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                         <Button
                           type="button"
                           onClick={() => setShowCalendar(!showCalendar)}
-                          className="h-auto py-1 px-2.5 bg-white text-[#1e3a8a] border-2 border-dashed border-[#1e3a8a] text-[10px] font-black uppercase hover:bg-blue-50 rounded-none flex items-center gap-1 shadow-[1px_1px_0_0_rgba(30,58,138,0.1)]"
+                          className="h-auto py-1 px-2.5 bg-white dark:bg-zinc-900 text-[#1e3a8a] dark:text-blue-400 border-2 border-dashed border-[#1e3a8a] dark:border-blue-700 text-[10px] font-black uppercase hover:bg-blue-50 dark:hover:bg-blue-950/40 rounded-none flex items-center gap-1 shadow-[1px_1px_0_0_rgba(30,58,138,0.1)]"
                         >
                           <CalendarDays className="h-3.5 w-3.5" />
-                          Adicionar Dias
+                          {showCalendar ? "Fechar Calendário" : "Escolher no Calendário"}
                         </Button>
                       </div>
 
                       {showCalendar && (
-                        <div className="mt-2.5 border-2 border-black p-2 bg-white shadow-[3px_3px_0_0_#000]">
+                        <div className="mt-2.5 border-2 border-black dark:border-zinc-700 p-2.5 bg-white dark:bg-zinc-900 shadow-[3px_3px_0_0_#000] animate-in fade-in slide-in-from-top-1">
+                          {/* Legenda visual explicativa da agendinha */}
+                          <div className="flex flex-wrap items-center justify-between gap-2 pb-2 mb-2 border-b border-zinc-200 dark:border-zinc-800 text-[10px] font-bold">
+                            <div className="flex items-center gap-1.5">
+                              <span className="w-3 h-3 bg-[#3B82F6] border border-black inline-block shadow-[1px_1px_0_0_#000]" />
+                              <span className="text-zinc-800 dark:text-zinc-200 font-black">
+                                {format(date, 'dd/MM')} (Dia Principal)
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              <span className="w-3 h-3 bg-[#1e40af] border border-black inline-block shadow-[1px_1px_0_0_#000]" />
+                              <span className="text-zinc-700 dark:text-zinc-300">
+                                Datas Extras ({extraDates.length})
+                              </span>
+                            </div>
+                            <span className="text-[9px] text-zinc-400 font-normal">
+                              Fins de semana bloqueados
+                            </span>
+                          </div>
+
                           <CalendarUI
                             mode="multiple"
                             selected={extraDates}
                             onSelect={(dates) => setExtraDates(dates || [])}
-                            disabled={(d) => d < new Date(new Date().setHours(0, 0, 0, 0)) || format(d, 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd')}
-                            className="rounded-none w-full"
+                            disabled={isDateDisabledForRecurrence}
+                            modifiers={{
+                              baseDate: date,
+                            }}
+                            modifiersClassNames={{
+                              baseDate: "bg-[#3B82F6] text-white font-black border-2 border-black opacity-100 shadow-[2px_2px_0_0_#000]",
+                            }}
+                            className="rounded-none w-full p-0"
                             locale={ptBR}
                             classNames={{
-                              day_selected: "bg-[#1e3a8a] text-white hover:bg-[#1e40af] hover:text-white rounded-none border-2 border-black shadow-[2px_2px_0_0_#000]",
+                              months: "space-y-2 w-full",
+                              month: "space-y-2 w-full",
+                              caption: "flex justify-center pt-0.5 relative items-center mb-2",
+                              caption_label: "text-xs font-black uppercase tracking-wider text-zinc-950 dark:text-zinc-50",
+                              head_cell: "text-zinc-500 flex-1 font-black uppercase text-[10px] tracking-wider text-center",
+                              row: "flex w-full justify-between mt-1 px-0.5",
+                              cell: "h-8 sm:h-9 flex-1 text-center text-xs p-0 relative focus-within:relative focus-within:z-20",
+                              day: "h-7 w-7 sm:h-8 sm:w-8 mx-auto p-0 text-xs font-black rounded-none border border-transparent text-black dark:text-white aria-selected:opacity-100",
+                              day_selected: "bg-[#1e40af] text-white hover:bg-[#1e3a8a] focus:bg-[#1e40af] rounded-none border-2 border-black shadow-[2px_2px_0_0_#000]",
+                              day_today: "border-2 border-black dark:border-zinc-500 font-black text-black dark:text-white",
+                              day_disabled: "text-zinc-300 dark:text-zinc-700 opacity-40 cursor-not-allowed hover:bg-transparent",
                             }}
                           />
+
                           <Button
                             type="button"
                             onClick={() => setShowCalendar(false)}
-                            className="w-full mt-3 bg-[#1e3a8a] text-white h-10 text-xs font-black uppercase rounded-none border-2 border-black shadow-[3px_3px_0_0_#000]"
+                            className="w-full mt-2.5 bg-[#1e3a8a] hover:bg-[#1e40af] text-white h-9 text-xs font-black uppercase rounded-none border-2 border-black shadow-[2px_2px_0_0_#000] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all"
                           >
-                            Confirmar Dias Selecionados
+                            Confirmar Datas Selecionadas ({extraDates.length})
                           </Button>
                         </div>
                       )}
