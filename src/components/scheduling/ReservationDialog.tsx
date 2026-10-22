@@ -628,26 +628,27 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
               </div>
             )}
 
-            {/* 1º PASSO: DADOS DA RESERVA (SALA / TURMA) */}
-            <div className="border-2 border-[#1e3a8a] bg-[#1e3a8a]/5 dark:bg-[#1e3a8a]/10 overflow-hidden shadow-[4px_4px_0_0_rgba(30,58,138,0.15)]">
-              <div className="bg-[#1e3a8a] px-3 py-2 flex items-center justify-between">
+            {/* 1º PASSO: DADOS DA RESERVA (SALA / TURMA) - HERO INPUT */}
+            <div className="border-[3px] border-[#1e3a8a] bg-blue-50/40 dark:bg-blue-950/20 overflow-hidden shadow-[5px_5px_0_0_#1e3a8a] dark:shadow-[5px_5px_0_0_rgba(30,58,138,0.5)]">
+              <div className="bg-[#1e3a8a] px-3.5 py-2.5 flex items-center justify-between border-b-[2px] border-black">
                 <div className="flex items-center gap-2">
-                  <Info className="h-4 w-4 text-white" />
-                  <span className="text-[11px] sm:text-[13px] font-black uppercase text-white tracking-wider">
-                    {isManutencao ? "1. Espaço Físico Solicitado" : "1. Sala / Turma Solicitada"}
+                  <span className="text-yellow-300 text-sm font-black animate-pulse">⚡</span>
+                  <span className="text-xs sm:text-sm font-[1000] uppercase text-white tracking-wider">
+                    {isManutencao ? "1. Espaço Físico Solicitado" : "1. Qual é a sua Sala ou Turma?"}
                   </span>
                 </div>
-                <span className="text-white text-[9px] font-bold bg-white/20 border border-white/40 px-1.5 py-0.5 uppercase">
+                <span className="text-white text-[9px] font-[1000] bg-yellow-400 text-black border-2 border-black px-2 py-0.5 uppercase tracking-wider shadow-[1px_1px_0_0_#000]">
                   Obrigatório
                 </span>
               </div>
-              <div className="p-3 sm:p-4 space-y-3">
-                <div className="space-y-1.5 relative" ref={dropdownRef}>
-                  <Label className="text-[11px] sm:text-xs font-black uppercase text-[#1e3a8a] dark:text-blue-400 tracking-wider">
-                    Selecione ou Digite a Sala / Turma: <span className="text-red-500">*</span>
+              <div className="p-3.5 sm:p-4 space-y-3">
+                <div className="space-y-2 relative" ref={dropdownRef}>
+                  <Label className="text-xs sm:text-sm font-[1000] uppercase text-[#1e3a8a] dark:text-blue-400 tracking-wider flex items-center gap-1.5">
+                    <span>Selecione ou digite a turma:</span>
+                    <span className="text-red-500 text-base leading-none">*</span>
                   </Label>
 
-                  {/* Input com Busca Preditiva */}
+                  {/* Hero Input com Busca Preditiva */}
                   <div className="relative">
                     <SuggestiveSearch
                       value={classroom}
@@ -659,13 +660,14 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                       suggestions={searchSuggestions}
                       effect="typewriter"
                       showLeading={true}
-                      Leading={() => <Search className="h-3.5 w-3.5 text-zinc-400/80 dark:text-zinc-500/80" strokeWidth={2.5} />}
+                      autoFocus={true}
+                      Leading={() => <Search className="h-5 w-5 text-[#1e3a8a] dark:text-blue-400" strokeWidth={2.8} />}
                       className={cn(
-                        "w-full border-2 border-black dark:border-zinc-700 bg-white dark:bg-zinc-900 rounded-xl h-10 transition-all shadow-[2px_2px_0_0_#000] dark:shadow-[2px_2px_0_0_rgba(255,255,255,0.05)]",
-                        isSpaceDropdownOpen && "border-[#1e3a8a]",
-                        currentReservations.find(res => res.classroom?.toLowerCase() === classroom.trim().toLowerCase()) && "border-red-500 ring-2 ring-red-500/30"
+                        "w-full border-[3px] border-black dark:border-zinc-700 bg-white dark:bg-zinc-900 rounded-xl h-12 sm:h-13 transition-all shadow-[3px_3px_0_0_#000] dark:shadow-[3px_3px_0_0_rgba(255,255,255,0.08)]",
+                        isSpaceDropdownOpen && "border-[#1e3a8a] ring-4 ring-[#1e3a8a]/20 dark:ring-blue-500/20",
+                        currentReservations.find(res => res.classroom?.toLowerCase() === classroom.trim().toLowerCase()) && "border-red-500 ring-4 ring-red-500/30"
                       )}
-                      inputClassName="pl-9 pr-14 w-full h-full bg-transparent text-xs font-bold uppercase outline-none text-black dark:text-zinc-100 placeholder:normal-case placeholder:text-zinc-400"
+                      inputClassName="pl-11 pr-14 w-full h-full bg-transparent text-xs sm:text-sm font-[1000] uppercase outline-none text-black dark:text-zinc-100 placeholder:normal-case placeholder:font-bold placeholder:text-zinc-400"
                     />
                     <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5 z-10">
                       {classroom && (
@@ -675,9 +677,10 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                             setClassroom('');
                             setIsSpaceDropdownOpen(true);
                           }}
-                          className="text-zinc-400 hover:text-black dark:hover:text-white transition-colors"
+                          className="p-1 text-zinc-400 hover:text-black dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors"
+                          title="Limpar sala"
                         >
-                          <CloseIcon className="h-3.5 w-3.5" />
+                          <CloseIcon className="h-4 w-4 stroke-[3]" />
                         </button>
                       )}
                       <button
@@ -686,12 +689,50 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                           e.stopPropagation();
                           setIsSpaceDropdownOpen(!isSpaceDropdownOpen);
                         }}
-                        className="text-zinc-400 hover:text-black dark:hover:text-white transition-colors"
+                        className="p-1 text-[#1e3a8a] dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-950/50 rounded-full transition-colors"
+                        title="Ver lista de turmas"
                       >
-                        <ChevronDown className={cn("h-4 w-4 transition-transform duration-200", isSpaceDropdownOpen && "rotate-180")} />
+                        <ChevronDown className={cn("h-5 w-5 stroke-[2.5] transition-transform duration-200", isSpaceDropdownOpen && "rotate-180")} />
                       </button>
                     </div>
                   </div>
+
+                  {/* Chips de Acesso Rápido Expostos na Superfície */}
+                  {recentClassrooms.length > 0 && (
+                    <div className="pt-1 flex flex-wrap items-center gap-1.5 animate-in fade-in slide-in-from-top-1">
+                      <span className="text-[10px] font-black uppercase text-[#1e3a8a] dark:text-blue-300 tracking-wider flex items-center gap-1 mr-0.5">
+                        <History className="h-3.5 w-3.5" /> Suas Frequentes:
+                      </span>
+                      {recentClassrooms.slice(0, 4).map((recentName, idx) => {
+                        const isOccupied = currentReservations.some(res => res.classroom?.toLowerCase() === recentName.toLowerCase());
+                        const isSelected = classroom.trim().toLowerCase() === recentName.toLowerCase();
+                        return (
+                          <button
+                            key={idx}
+                            type="button"
+                            disabled={isOccupied}
+                            onClick={() => {
+                              if (isOccupied) return;
+                              setClassroom(recentName);
+                              saveRecentClassroom(recentName);
+                              setIsSpaceDropdownOpen(false);
+                            }}
+                            className={cn(
+                              "px-2.5 py-1 text-[10px] sm:text-[11px] font-black uppercase border-2 border-black rounded-lg transition-all flex items-center gap-1 shadow-[2px_2px_0_0_#000]",
+                              isOccupied
+                                ? "bg-zinc-100 dark:bg-zinc-800 text-zinc-400 line-through cursor-not-allowed opacity-60 shadow-none border-zinc-400"
+                                : isSelected
+                                ? "bg-[#1e3a8a] text-white shadow-none translate-x-[1px] translate-y-[1px]"
+                                : "bg-white hover:bg-yellow-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-black dark:text-white hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none active:translate-x-[2px] active:translate-y-[2px]"
+                            )}
+                          >
+                            <span>{recentName}</span>
+                            {isOccupied && <span className="text-[8px] text-red-500 font-black no-underline">(Ocupada)</span>}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
 
                   {/* ALERTA EM TEMPO REAL DE SALA OCUPADA */}
                   {(() => {

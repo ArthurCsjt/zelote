@@ -56,6 +56,8 @@ export interface SuggestiveSearchProps {
   pauseAfterTypeMs?: number;
   /** play suggestions forever or only once */
   animateMode?: "infinite" | "once";
+  /** Automatically focus the input on mount */
+  autoFocus?: boolean;
 }
 
 /* ---------------------------
@@ -440,6 +442,7 @@ export const SuggestiveSearch: React.FC<SuggestiveSearchProps> = ({
   deleteDurationMs = 300,
   pauseAfterTypeMs = 1500,
   animateMode = "infinite",
+  autoFocus = false,
 }) => {
   const isControlled = value !== undefined;
   const [localSearch, setLocalSearch] = useState<string>("");
@@ -596,6 +599,7 @@ export const SuggestiveSearch: React.FC<SuggestiveSearchProps> = ({
       <input
         ref={inputRef}
         type="text"
+        autoFocus={autoFocus}
         value={search}
         onFocus={() => {
           setIsFocused(true);
