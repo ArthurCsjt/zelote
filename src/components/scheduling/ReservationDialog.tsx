@@ -928,11 +928,11 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                         type="button"
                         onClick={() => setQuantity(15)}
                         className={cn(
-                          "px-2.5 py-1 text-[10px] font-black uppercase border-2 border-black shadow-[2px_2px_0_0_#000] transition-all",
+                          "px-3 py-1 min-w-[36px] text-center text-[10px] font-black uppercase border-2 border-black shadow-[2px_2px_0_0_#000] transition-all",
                           quantity === 15 ? "bg-black text-white" : "bg-white hover:bg-zinc-100 text-black active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
                         )}
                       >
-                        15 (Meia Turma)
+                        15
                       </button>
                     )}
                     {(isMinecraft ? 40 : maxQuantity) >= 30 && (
@@ -940,23 +940,13 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                         type="button"
                         onClick={() => setQuantity(30)}
                         className={cn(
-                          "px-2.5 py-1 text-[10px] font-black uppercase border-2 border-black shadow-[2px_2px_0_0_#000] transition-all",
+                          "px-3 py-1 min-w-[36px] text-center text-[10px] font-black uppercase border-2 border-black shadow-[2px_2px_0_0_#000] transition-all",
                           quantity === 30 ? "bg-black text-white" : "bg-white hover:bg-zinc-100 text-black active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
                         )}
                       >
-                        30 (Turma Cheia)
+                        30
                       </button>
                     )}
-                    <button
-                      type="button"
-                      onClick={() => setQuantity(isMinecraft ? 40 : maxQuantity)}
-                      className={cn(
-                        "px-2.5 py-1 text-[10px] font-black uppercase border-2 border-black shadow-[2px_2px_0_0_#000] transition-all",
-                        quantity === (isMinecraft ? 40 : maxQuantity) ? "bg-black text-white" : "bg-white hover:bg-zinc-100 text-black active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
-                      )}
-                    >
-                      Máx ({isMinecraft ? 40 : maxQuantity})
-                    </button>
                   </div>
 
                   {/* Descrição do pacote de reserva */}
