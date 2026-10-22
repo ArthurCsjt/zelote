@@ -20,6 +20,7 @@ import { SuggestiveSearch } from '@/components/ui/SuggestiveSearch';
 import { isChromebookSpace as checkChromebookSpace } from '@/utils/scheduling';
 import { useSchedulingResponsible } from '@/hooks/useSchedulingResponsible';
 import { ProfessorAutocomplete } from './ProfessorAutocomplete';
+import { soundEffects } from '@/utils/audioFeedback';
 
 interface ExtendedSpace extends Space {
   isVirtual?: boolean;
@@ -282,6 +283,11 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
       const result = await bulkCreateReservations(allDates, baseData);
       if (result.success) {
         saveRecentClassroom(classroom.trim());
+        soundEffects.triggerSuccessFeedback();
+        toast({
+          title: "Agendamentos Confirmados!",
+          description: `${classroom.trim()} • ${quantity === 0 ? 'Apenas Sala' : `${quantity} Chromebooks`}${isMinecraft ? ' (Minecraft)' : ''} (+${extraDates.length} datas extras)`,
+        });
         setOpen(false);
         onReservationSuccess();
       }
@@ -292,6 +298,11 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
       });
       if (result) {
         saveRecentClassroom(classroom.trim());
+        soundEffects.triggerSuccessFeedback();
+        toast({
+          title: "Agendamento Confirmado!",
+          description: `${classroom.trim()} • ${quantity === 0 ? 'Apenas Sala' : `${quantity} Chromebooks`}${isMinecraft ? ' (Minecraft)' : ''}`,
+        });
         setOpen(false);
         onReservationSuccess();
       }
@@ -951,19 +962,21 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
 
                   {/* Descrição do pacote de reserva */}
                   {quantity === 0 && !isMinecraft ? (
-                    <div className={cn(
-                      "mt-3 p-2.5 border-2 border-black flex items-center gap-2.5 animate-in fade-in slide-in-from-top-1 duration-200 transition-colors",
-                      isMinecraft ? "bg-[#3c8527]" : "bg-[#1e3a8a]"
-                    )}>
-                      <div className="bg-white p-1 rounded-sm shrink-0">
-                        <CheckCircle className={cn("h-4 w-4", isMinecraft ? "text-[#3c8527]" : "text-[#1e3a8a]")} />
+                    <div className="mt-3 p-3 border-2 border-amber-600 bg-amber-500/10 dark:bg-amber-950/30 text-amber-900 dark:text-amber-200 flex items-center gap-2.5 animate-in fade-in slide-in-from-top-1 duration-200 shadow-[2px_2px_0_0_rgba(217,119,6,0.3)]">
+                      <div className="bg-amber-500 text-white p-1 rounded-sm shrink-0 shadow-[1px_1px_0_0_#000]">
+                        <Info className="h-4 w-4" />
                       </div>
-                      <span className="text-[11px] font-black uppercase text-white tracking-widest leading-none">
-                        Apenas reserva do espaço físico (sem Chromebooks)
-                      </span>
+                      <div className="flex flex-col">
+                        <span className="text-[11px] sm:text-xs font-black uppercase tracking-tight">
+                          Você está reservando apenas a sala, sem Chromebooks.
+                        </span>
+                        <span className="text-[10px] font-bold opacity-80 normal-case">
+                          Para solicitar máquinas, use os botões de atalho acima ou arraste o seletor.
+                        </span>
+                      </div>
                     </div>
                   ) : (
-                    <div className="mt-3 p-2.5 bg-[#a855f7] border-2 border-black flex items-center gap-2.5 animate-in fade-in slide-in-from-top-1 duration-200">
+                    <div className="mt-3 p-2.5 bg-[#a855f7] border-2 border-black flex items-center gap-2.5 animate-in fade-in slide-in-from-top-1 duration-200 shadow-[2px_2px_0_0_#000]">
                       <div className="bg-white p-1 rounded-sm shrink-0">
                         <Monitor className="h-4 w-4 text-[#a855f7]" />
                       </div>
@@ -998,9 +1011,9 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
 
                   <div className="p-2.5 sm:p-3 flex items-center justify-between gap-3 bg-white/50 backdrop-blur-sm">
                     <div className="flex-1">
-                      <p className="text-[9px] sm:text-[10px] font-black text-black/70 uppercase leading-tight">
+                      <p className="text-[9px] sm:text-[10px] font-black text-black/70 dark:text-zinc-300 uppercase leading-tight">
                         HABILITE PARA UTILIZAR O MINECRAFT EDUCATION. <br />
-                        <span className="text-[#3c8527] font-[1000] tracking-tight">LIMITE DE 40 CHROMEBOOKS APLICADO.</span>
+                        <span className="text-[#3c8527] font-[1000] tracking-tight">EXCLUSIVO SALA GOOGLE (EXIGE PREPARO PRÉVIO) • LIMITE DE 40 CHROMEBOOKS.</span>
                       </p>
                     </div>
 
@@ -1219,29 +1232,29 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
             {/* BARRA DE RESUMO E VALIDAÇÃO PRÉ-CONFIRMAÇÃO */}
             <div className="pt-1">
               {!classroom.trim() ? (
-                <div className="p-2.5 bg-yellow-50 border-2 border-yellow-500 text-yellow-900 text-xs font-bold uppercase flex items-center gap-2 shadow-[2px_2px_0_0_rgba(234,179,8,0.2)]">
-                  <AlertTriangle className="h-4 w-4 text-yellow-600 shrink-0" />
+                <div className="p-2.5 bg-yellow-50 dark:bg-yellow-950/40 border-2 border-yellow-500 dark:border-yellow-600 text-yellow-900 dark:text-yellow-200 text-xs font-bold uppercase flex items-center gap-2 shadow-[2px_2px_0_0_rgba(234,179,8,0.2)]">
+                  <AlertTriangle className="h-4 w-4 text-yellow-600 dark:text-yellow-400 shrink-0" />
                   <span>Selecione ou digite a <strong>Sala / Turma</strong> acima para habilitar o agendamento.</span>
                 </div>
               ) : isBookingForOther && !selectedProfessorId ? (
-                <div className="p-2.5 bg-yellow-50 border-2 border-yellow-500 text-yellow-900 text-xs font-bold uppercase flex items-center gap-2">
-                  <AlertTriangle className="h-4 w-4 text-yellow-600 shrink-0" />
+                <div className="p-2.5 bg-yellow-50 dark:bg-yellow-950/40 border-2 border-yellow-500 dark:border-yellow-600 text-yellow-900 dark:text-yellow-200 text-xs font-bold uppercase flex items-center gap-2 shadow-[2px_2px_0_0_rgba(234,179,8,0.2)]">
+                  <AlertTriangle className="h-4 w-4 text-yellow-600 dark:text-yellow-400 shrink-0" />
                   <span>Selecione o <strong>Professor Solicitante</strong> para continuar.</span>
                 </div>
               ) : currentReservations.some(res => classroom.trim() && res.classroom?.toLowerCase() === classroom.trim().toLowerCase()) ? (
-                <div className="p-2.5 bg-red-50 border-2 border-red-500 text-red-900 text-xs font-bold uppercase flex items-center gap-2">
-                  <AlertTriangle className="h-4 w-4 text-red-600 shrink-0" />
+                <div className="p-2.5 bg-red-50 dark:bg-red-950/40 border-2 border-red-500 dark:border-red-600 text-red-900 dark:text-red-200 text-xs font-bold uppercase flex items-center gap-2 shadow-[2px_2px_0_0_rgba(239,68,68,0.2)]">
+                  <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400 shrink-0" />
                   <span>A sala <strong>"{classroom}"</strong> já está ocupada neste horário. Escolha outro espaço.</span>
                 </div>
               ) : (
-                <div className="p-2.5 bg-green-50 border-2 border-green-600 text-green-950 text-xs font-bold uppercase flex items-center justify-between gap-2 shadow-[2px_2px_0_0_rgba(22,163,74,0.15)]">
+                <div className="p-2.5 bg-green-50 dark:bg-green-950/40 border-2 border-green-600 dark:border-green-500 text-green-950 dark:text-green-200 text-xs font-bold uppercase flex items-center justify-between gap-2 shadow-[2px_2px_0_0_rgba(22,163,74,0.15)]">
                   <div className="flex items-center gap-2 truncate">
-                    <CheckCircle className="h-4 w-4 text-green-600 shrink-0" />
+                    <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400 shrink-0" />
                     <span className="truncate">
                       Pronto: <strong>{classroom}</strong> • {quantity === 0 ? 'Apenas Espaço Físico' : `${quantity} Chromebooks`}{isMinecraft ? ' (Minecraft)' : ''}{extraDates.length > 0 ? ` • +${extraDates.length} dias extras` : ''}
                     </span>
                   </div>
-                  <span className="text-[9px] bg-green-200 border border-green-600 px-1.5 py-0.5 rounded-none font-black shrink-0">
+                  <span className="text-[9px] bg-green-200 dark:bg-green-900/60 border border-green-600 dark:border-green-400 dark:text-green-100 px-1.5 py-0.5 rounded-none font-black shrink-0">
                     OK
                   </span>
                 </div>
