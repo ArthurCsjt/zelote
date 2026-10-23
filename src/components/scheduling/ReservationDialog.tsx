@@ -21,7 +21,7 @@ import { isChromebookSpace as checkChromebookSpace } from '@/utils/scheduling';
 import { useSchedulingResponsible } from '@/hooks/useSchedulingResponsible';
 import { ProfessorAutocomplete } from './ProfessorAutocomplete';
 import { soundEffects } from '@/utils/audioFeedback';
-import { INITIAL_DEFAULT_SPACES } from '@/services/reservationService';
+import { INITIAL_DEFAULT_SPACES, ACTIVE_CLASSROOM_MAP } from '@/services/reservationService';
 
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -171,12 +171,26 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Armazenamento dos últimos espaços acessados/usados pelo professor
+  // Armazenamento dos últimos espaços acessados/usados pelo professor com migração automática
   const RECENT_SPACES_KEY = 'zelote_recent_classrooms';
   const [recentClassrooms, setRecentClassrooms] = useState<string[]>(() => {
     try {
       const stored = localStorage.getItem(RECENT_SPACES_KEY);
-      return stored ? JSON.parse(stored) : [];
+      if (!stored) return [];
+      const parsed: string[] = JSON.parse(stored);
+      // Migração automática do histórico antigo (ex: "SALA 22" -> "SALA 22 - 9EFMA / 6EFTC")
+      const migrated = parsed.map(item => {
+        const match = item.trim().toUpperCase().match(/^SALA\s*0?(\d+)$/);
+        if (match) {
+          const key = `SALA ${parseInt(match[1], 10)}`;
+          return ACTIVE_CLASSROOM_MAP[key] || item;
+        }
+        return item;
+      });
+      try {
+        localStorage.setItem(RECENT_SPACES_KEY, JSON.stringify(migrated));
+      } catch {}
+      return migrated;
     } catch {
       return [];
     }
@@ -195,20 +209,61 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
     });
   };
 
-  // Merge static default classes with database spaces to show in dropdown
+  // Merge e ordenação prioritária das salas para seguir exatamente o cadastro das Configurações
   const combinedSpaces = useMemo<ExtendedSpace[]>(() => {
-    const virtualSpaces: ExtendedSpace[] = DEFAULT_TURMAS.map((name, index) => ({
-      id: `virtual-${index}`,
-      name,
-      color: '#3B82F6', // Neo-Brutalist standard blue
-      isVirtual: true
-    }));
-    
-    // Avoid duplicates if database already has a space with the same name
-    const dbSpaceNames = new Set(spaces.map(s => s.name.toLowerCase()));
-    const filteredVirtuals = virtualSpaces.filter(v => !dbSpaceNames.has(v.name.toLowerCase()));
-    
-    return [...spaces, ...filteredVirtuals];
+    // 1. Mapeia espaços do banco substituindo salas legadas pelo nome oficial com turmas
+    const mappedDbSpaces: ExtendedSpace[] = spaces.map(s => {
+      const match = s.name.trim().toUpperCase().match(/^SALA\s*0?(\d+)$/);
+      if (match) {
+        const key = `SALA ${parseInt(match[1], 10)}`;
+        if (ACTIVE_CLASSROOM_MAP[key]) {
+          return { ...s, name: ACTIVE_CLASSROOM_MAP[key] };
+        }
+      }
+      return s;
+    });
+
+    // 2. Adiciona as salas oficiais como virtuais caso não estejam no banco
+    const dbSpaceNames = new Set(mappedDbSpaces.map(s => s.name.toLowerCase()));
+    const virtualSpaces: ExtendedSpace[] = INITIAL_DEFAULT_SPACES
+      .filter(name => !dbSpaceNames.has(name.toLowerCase()))
+      .map((name, index) => ({
+        id: `virtual-${index}`,
+        name,
+        color: name.includes('GOOGLE') ? '#3C8527' : name.includes('MAKER') ? '#8B5CF6' : '#3B82F6',
+        isVirtual: true
+      }));
+
+    const all = [...mappedDbSpaces, ...virtualSpaces];
+
+    // 3. Ordenação inteligente:
+    // Categoria 1: Salas de Aula Oficiais ordenadas numericamente (SALA 3, 4, 5... 41)
+    // Categoria 2: Espaços Especiais (SALA GOOGLE, SALA MAKER, BIBLIOTECA, AUDITÓRIO, etc.)
+    // Categoria 3: Outros Espaços (BRINQUEDÃO, PARQUES...)
+    return all.sort((a, b) => {
+      const aName = a.name.trim().toUpperCase();
+      const bName = b.name.trim().toUpperCase();
+
+      const aIsRoom = aName.startsWith('SALA') && !aName.includes('GOOGLE') && !aName.includes('MAKER');
+      const bIsRoom = bName.startsWith('SALA') && !bName.includes('GOOGLE') && !bName.includes('MAKER');
+
+      if (aIsRoom && bIsRoom) {
+        const aNum = parseInt(aName.replace(/\D/g, ''), 10) || 0;
+        const bNum = parseInt(bName.replace(/\D/g, ''), 10) || 0;
+        return aNum - bNum;
+      }
+      if (aIsRoom && !bIsRoom) return -1;
+      if (!aIsRoom && bIsRoom) return 1;
+
+      const specialList = ['GOOGLE', 'MAKER', 'BIBLIOTECA', 'AUDITÓRIO', 'LABORATÓRIO', 'QUADRA'];
+      const aIsSpecial = specialList.some(k => aName.includes(k));
+      const bIsSpecial = specialList.some(k => bName.includes(k));
+
+      if (aIsSpecial && !bIsSpecial) return -1;
+      if (!aIsSpecial && bIsSpecial) return 1;
+
+      return aName.localeCompare(bName);
+    });
   }, [spaces]);
 
   // Dynamic suggestions for classroom booking
@@ -789,7 +844,12 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                                 : "bg-white hover:bg-yellow-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-black dark:text-white hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none active:translate-x-[2px] active:translate-y-[2px]"
                             )}
                           >
-                            <span>{recentName}</span>
+                            <span>{recentName.includes(' - ') ? recentName.split(' - ')[0] : recentName}</span>
+                            {recentName.includes(' - ') && (
+                              <span className="opacity-75 text-[9px] font-bold">
+                                ({recentName.split(' - ')[1].split('/')[0].trim()})
+                              </span>
+                            )}
                             {isOccupied && <span className="text-[8px] text-red-500 font-black no-underline">(Ocupada)</span>}
                           </button>
                         );
@@ -851,7 +911,12 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                                       : "bg-white hover:bg-yellow-200 text-black hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none"
                                   )}
                                 >
-                                  <span>{recentName}</span>
+                                  <span>{recentName.includes(' - ') ? recentName.split(' - ')[0] : recentName}</span>
+                                  {recentName.includes(' - ') && (
+                                    <span className="opacity-75 text-[9px] font-bold">
+                                      ({recentName.split(' - ')[1].split('/')[0].trim()})
+                                    </span>
+                                  )}
                                   {isOccupied && <span className="text-[8px] text-red-500 font-black no-underline">(Ocupada)</span>}
                                 </button>
                               );
@@ -861,170 +926,136 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                       )}
 
                       {/* Header da Lista de Salas */}
-                      <div className="px-3 pt-2 pb-1 bg-zinc-50/50 dark:bg-zinc-900/30 text-[9px] font-black uppercase text-zinc-400 dark:text-zinc-500 tracking-widest">
-                        {recentClassrooms.length > 0 && !classroom ? "Todos os Espaços / Turmas:" : "Selecione a Sala / Turma:"}
+                      <div className="px-3 pt-2 pb-1 bg-zinc-50/50 dark:bg-zinc-900/30 text-[9px] font-black uppercase text-zinc-400 dark:text-zinc-500 tracking-widest flex items-center justify-between">
+                        <span>{classroom ? "Resultados da Busca:" : "Salas & Espaços Oficiais:"}</span>
+                        <span className="text-[8px] bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 px-1.5 py-0.5 rounded-none font-bold">
+                          {combinedSpaces.length} disponíveis
+                        </span>
                       </div>
 
-                      {/* Spaces List */}
-                      <div className="max-h-[180px] overflow-y-auto divide-y divide-zinc-100 dark:divide-zinc-900 pb-2">
-                        {combinedSpaces.filter(s => s.name.toLowerCase().includes(classroom.toLowerCase())).length === 0 ? (
-                          <div className="p-3 text-center text-xs text-zinc-400 font-bold uppercase">
-                            Nenhum espaço encontrado
-                          </div>
-                        ) : (
-                          combinedSpaces
-                            .filter(s => s.name.toLowerCase().includes(classroom.toLowerCase()))
-                            .map((s) => {
-                              const isOccupied = currentReservations.some(res => res.classroom?.toLowerCase() === s.name.toLowerCase());
-                              return (
-                                <div
-                                  key={s.id}
-                                  onClick={(e) => {
-                                    if ((e.target as HTMLElement).closest('button')) return;
-                                    if (isOccupied) return;
-                                    setClassroom(s.name);
-                                    saveRecentClassroom(s.name);
-                                    setIsSpaceDropdownOpen(false);
-                                  }}
-                                  className={cn(
-                                    "w-full flex items-center justify-between px-3 py-2 text-left transition-colors cursor-pointer group",
-                                    isOccupied
-                                      ? "bg-zinc-50 dark:bg-zinc-900/50 cursor-not-allowed opacity-60"
-                                      : "hover:bg-zinc-50 dark:hover:bg-zinc-900",
-                                    classroom === s.name && "bg-blue-50 dark:bg-blue-950/20"
-                                  )}
-                                >
-                                  <div className="flex items-center gap-2 min-w-0">
-                                    <span
-                                      className="w-1.5 h-1.5 rounded-full shrink-0"
-                                      style={{ backgroundColor: s.color || '#3B82F6' }}
-                                    />
-                                    <div className="flex items-center gap-1.5 min-w-0 truncate">
-                                      <span className={cn(
-                                        "text-xs font-[1000] uppercase truncate",
-                                        classroom === s.name ? "text-[#1e3a8a] dark:text-blue-400" : "text-black dark:text-zinc-200"
-                                      )}>
-                                        {s.name.includes(' - ') ? s.name.split(' - ')[0] : s.name}
-                                      </span>
-                                      {s.name.includes(' - ') && (
-                                        <span className="text-[11px] font-bold text-zinc-500 dark:text-zinc-400 truncate">
-                                          • {s.name.split(' - ').slice(1).join(' - ')}
-                                        </span>
-                                      )}
-                                    </div>
-                                    {isOccupied && (
-                                      <span className="ml-2 bg-red-100 text-red-600 text-[8px] font-bold uppercase px-1.5 py-0.5 shrink-0 rounded-sm">
-                                        Ocupada
+                      {/* Spaces List Agrupada com Salas de Aula no Topo */}
+                      <div className="max-h-[240px] overflow-y-auto divide-y divide-zinc-100 dark:divide-zinc-900 pb-2">
+                        {(() => {
+                          const filtered = combinedSpaces.filter(s => s.name.toLowerCase().includes(classroom.toLowerCase()));
+                          if (filtered.length === 0) {
+                            return (
+                              <div className="p-4 text-center text-xs text-zinc-400 font-bold uppercase">
+                                Nenhum espaço encontrado
+                              </div>
+                            );
+                          }
+
+                          const renderItem = (s: ExtendedSpace) => {
+                            const isOccupied = currentReservations.some(res => res.classroom?.toLowerCase() === s.name.toLowerCase());
+                            return (
+                              <div
+                                key={s.id}
+                                onClick={() => {
+                                  if (isOccupied) return;
+                                  setClassroom(s.name);
+                                  saveRecentClassroom(s.name);
+                                  setIsSpaceDropdownOpen(false);
+                                }}
+                                className={cn(
+                                  "w-full flex items-center justify-between px-3 py-2 text-left transition-colors cursor-pointer group",
+                                  isOccupied
+                                    ? "bg-zinc-50 dark:bg-zinc-900/50 cursor-not-allowed opacity-60"
+                                    : "hover:bg-zinc-50 dark:hover:bg-zinc-900",
+                                  classroom === s.name && "bg-blue-50 dark:bg-blue-950/20"
+                                )}
+                              >
+                                <div className="flex items-center gap-2 min-w-0">
+                                  <span
+                                    className="w-2 h-2 rounded-full shrink-0"
+                                    style={{ backgroundColor: s.color || '#3B82F6' }}
+                                  />
+                                  <div className="flex items-center gap-1.5 min-w-0 truncate">
+                                    <span className={cn(
+                                      "text-xs font-[1000] uppercase truncate",
+                                      classroom === s.name ? "text-[#1e3a8a] dark:text-blue-400" : "text-black dark:text-zinc-200"
+                                    )}>
+                                      {s.name.includes(' - ') ? s.name.split(' - ')[0] : s.name}
+                                    </span>
+                                    {s.name.includes(' - ') && (
+                                      <span className="text-[11px] font-bold text-zinc-500 dark:text-zinc-400 truncate">
+                                        • {s.name.split(' - ').slice(1).join(' - ')}
                                       </span>
                                     )}
                                   </div>
-
-                                  {/* Actions (Delete Space) - Admins only */}
-                                  {isAdmin && !s.isVirtual && (
-                                    <div className="flex items-center gap-1.5 shrink-0 z-20">
-                                      {confirmDeleteId === s.id ? (
-                                        <div className="flex items-center gap-1.5 animate-in fade-in slide-in-from-right-1 duration-150">
-                                          <button
-                                            type="button"
-                                            onClick={async (e) => {
-                                              e.stopPropagation();
-                                              e.preventDefault();
-                                              const success = await deleteSpace(s.id);
-                                              if (success) {
-                                                const updated = await getSpaces();
-                                                setSpaces(updated);
-                                                if (classroom === s.name) {
-                                                  setClassroom('');
-                                                }
-                                              }
-                                              setConfirmDeleteId(null);
-                                            }}
-                                            className="px-2 py-0.5 text-[9px] font-black uppercase text-white bg-red-600 hover:bg-red-700 transition-colors border border-black shadow-[1px_1px_0_0_#000] rounded-none"
-                                          >
-                                            SIM
-                                          </button>
-                                          <button
-                                            type="button"
-                                            onClick={(e) => {
-                                              e.stopPropagation();
-                                              e.preventDefault();
-                                              setConfirmDeleteId(null);
-                                            }}
-                                            className="px-2 py-0.5 text-[9px] font-black uppercase text-black bg-zinc-200 hover:bg-zinc-300 transition-colors border border-black shadow-[1px_1px_0_0_#000] rounded-none"
-                                          >
-                                            NÃO
-                                          </button>
-                                        </div>
-                                      ) : (
-                                        <button
-                                          type="button"
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            e.preventDefault();
-                                            setConfirmDeleteId(s.id);
-                                            setTimeout(() => {
-                                              setConfirmDeleteId(current => current === s.id ? null : current);
-                                            }, 4000);
-                                          }}
-                                          className="p-1 text-zinc-400 hover:text-red-500 rounded-sm transition-colors opacity-100 sm:opacity-0 group-hover:opacity-100 focus:opacity-100"
-                                          title="Excluir espaço"
-                                        >
-                                          <Trash2 className="h-3.5 w-3.5" />
-                                        </button>
-                                      )}
-                                    </div>
+                                  {isOccupied && (
+                                    <span className="ml-2 bg-red-100 text-red-600 text-[8px] font-bold uppercase px-1.5 py-0.5 shrink-0 rounded-sm">
+                                      Ocupada
+                                    </span>
                                   )}
                                 </div>
-                              );
-                            })
-                        )}
+                              </div>
+                            );
+                          };
+
+                          // Quando o usuário pesquisa, mostra os resultados diretos
+                          if (classroom.trim()) {
+                            return filtered.map(renderItem);
+                          }
+
+                          // Sem pesquisa: mostra agrupado em categorias claras e com as salas de aula em primeiro
+                          const salasDeAula = filtered.filter(s => {
+                            const n = s.name.toUpperCase();
+                            return n.startsWith('SALA') && !n.includes('GOOGLE') && !n.includes('MAKER');
+                          });
+
+                          const especiais = filtered.filter(s => {
+                            const n = s.name.toUpperCase();
+                            return n.includes('GOOGLE') || n.includes('MAKER') || n.includes('BIBLIOTECA') || n.includes('AUDITÓRIO') || n.includes('LABORATÓRIO') || n.includes('QUADRA');
+                          });
+
+                          const outros = filtered.filter(s => !salasDeAula.includes(s) && !especiais.includes(s));
+
+                          return (
+                            <div className="divide-y divide-zinc-100 dark:divide-zinc-900">
+                              {salasDeAula.length > 0 && (
+                                <div>
+                                  <div className="px-3 py-1.5 bg-blue-50/70 dark:bg-blue-950/40 text-[9px] font-[1000] uppercase text-[#1e3a8a] dark:text-blue-300 tracking-wider flex items-center justify-between">
+                                    <span>🎓 Salas de Aula Oficiais</span>
+                                    <span>{salasDeAula.length} salas</span>
+                                  </div>
+                                  {salasDeAula.map(renderItem)}
+                                </div>
+                              )}
+
+                              {especiais.length > 0 && (
+                                <div>
+                                  <div className="px-3 py-1.5 bg-purple-50/70 dark:bg-purple-950/40 text-[9px] font-[1000] uppercase text-purple-800 dark:text-purple-300 tracking-wider flex items-center justify-between">
+                                    <span>⚡ Espaços Especiais &amp; Multiuso</span>
+                                    <span>{especiais.length}</span>
+                                  </div>
+                                  {especiais.map(renderItem)}
+                                </div>
+                              )}
+
+                              {outros.length > 0 && (
+                                <div>
+                                  <div className="px-3 py-1.5 bg-zinc-100 dark:bg-zinc-800 text-[9px] font-[1000] uppercase text-zinc-600 dark:text-zinc-400 tracking-wider flex items-center justify-between">
+                                    <span>🎈 Outros Espaços</span>
+                                    <span>{outros.length}</span>
+                                  </div>
+                                  {outros.map(renderItem)}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })()}
                       </div>
 
-                      {/* Add New Space panel (Admins only) */}
+                      {/* Rodapé Informativo: Salas sincronizadas com Configurações */}
                       {isAdmin && (
-                        <div className="p-2.5 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 flex flex-col gap-1.5">
-                          <span className="text-[9px] font-bold uppercase text-zinc-500 dark:text-zinc-400 tracking-wider">
-                            Adicionar Espaço/Turma
-                          </span>
-                          <div className="flex gap-1.5">
-                            <Input
-                              placeholder="Nome da sala ou turma..."
-                              value={newSpaceName}
-                              onChange={(e) => setNewSpaceName(e.target.value)}
-                              onKeyDown={async (e) => {
-                                if (e.key === 'Enter') {
-                                  e.preventDefault();
-                                  if (!newSpaceName.trim()) return;
-                                  const created = await createSpace(newSpaceName, '#3B82F6');
-                                  if (created) {
-                                    setNewSpaceName('');
-                                    const updated = await getSpaces();
-                                    setSpaces(updated);
-                                    setClassroom(created.name);
-                                    setIsSpaceDropdownOpen(false);
-                                  }
-                                }
-                              }}
-                              className="h-8 border border-zinc-300 dark:border-zinc-700 rounded-sm text-xs font-bold bg-white dark:bg-zinc-800 focus-visible:ring-0 focus-visible:border-zinc-400"
-                            />
-                            <Button
-                              type="button"
-                              onClick={async () => {
-                                if (!newSpaceName.trim()) return;
-                                const created = await createSpace(newSpaceName, '#3B82F6');
-                                if (created) {
-                                  setNewSpaceName('');
-                                  const updated = await getSpaces();
-                                  setSpaces(updated);
-                                  setClassroom(created.name);
-                                  setIsSpaceDropdownOpen(false);
-                                }
-                              }}
-                              className="h-8 bg-zinc-900 text-white hover:bg-zinc-800 rounded-sm px-3.5 py-0 text-xs font-bold transition-all shrink-0"
-                            >
-                              +
-                            </Button>
-                          </div>
+                        <div className="px-3 py-2 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/60 flex items-center justify-between text-[10px] text-zinc-500 font-bold uppercase">
+                          <span>Salas gerenciadas em Configurações</span>
+                          <a
+                            href="/settings"
+                            className="text-[#1e3a8a] dark:text-blue-400 font-black hover:underline"
+                          >
+                            ⚙ Abrir Salas &amp; Turmas
+                          </a>
                         </div>
                       )}
                     </div>
