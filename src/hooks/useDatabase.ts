@@ -674,6 +674,32 @@ export const useDatabase = () => {
     }
   }, [user, startRequest, endRequest]);
 
+  const updateSpace = useCallback(async (
+    id: string,
+    updates: Partial<{ name: string; color: string; capacity: number | null }>
+  ): Promise<reservationService.Space | null> => {
+    if (!user) {
+      toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
+      return null;
+    }
+    startRequest();
+    try {
+      const sp = await reservationService.updateSpace(id, updates);
+      toast({ title: "Sucesso", description: "Espaço/Turma atualizado com sucesso!", variant: "success" });
+      return sp;
+    } catch (error: any) {
+      logger.error('Erro ao atualizar espaço:', error);
+      toast({
+        title: "Erro ao atualizar",
+        description: error.message,
+        variant: "destructive"
+      });
+      return null;
+    } finally {
+      endRequest();
+    }
+  }, [user, startRequest, endRequest]);
+
   const deleteSpace = useCallback(async (id: string): Promise<boolean> => {
     if (!user) {
       toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
@@ -692,6 +718,29 @@ export const useDatabase = () => {
         variant: "destructive"
       });
       return false;
+    } finally {
+      endRequest();
+    }
+  }, [user, startRequest, endRequest]);
+
+  const seedDefaultSpaces = useCallback(async (): Promise<reservationService.Space[]> => {
+    if (!user) {
+      toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
+      return [];
+    }
+    startRequest();
+    try {
+      const sps = await reservationService.seedDefaultSpaces();
+      toast({ title: "Sucesso", description: "Salas e turmas sincronizadas no banco com sucesso!", variant: "success" });
+      return sps;
+    } catch (error: any) {
+      logger.error('Erro ao sincronizar salas:', error);
+      toast({
+        title: "Erro ao sincronizar",
+        description: error.message,
+        variant: "destructive"
+      });
+      return [];
     } finally {
       endRequest();
     }
@@ -741,6 +790,8 @@ export const useDatabase = () => {
     // ESPAÇOS
     getSpaces,
     createSpace,
+    updateSpace,
     deleteSpace,
+    seedDefaultSpaces,
   };
 };

@@ -21,6 +21,7 @@ import { isChromebookSpace as checkChromebookSpace } from '@/utils/scheduling';
 import { useSchedulingResponsible } from '@/hooks/useSchedulingResponsible';
 import { ProfessorAutocomplete } from './ProfessorAutocomplete';
 import { soundEffects } from '@/utils/audioFeedback';
+import { INITIAL_DEFAULT_SPACES } from '@/services/reservationService';
 
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -67,20 +68,7 @@ interface ExtendedSpace extends Space {
   isVirtual?: boolean;
 }
 
-const DEFAULT_TURMAS = [
-  "1CEXL - CURSO EXTRA LIVRE",
-  "1EFMA - 1º ANO MANHÃ A",
-  "1EFTB - 1º ANO TARDE B",
-  "1EFTC - 1º ANO TARDE C",
-  "2CEXL - CURSO EXTRA LIVRE",
-  "IF1TB - INFANTIL I - TARDE B",
-  "IF2TB - INFANTIL II - TARDE B",
-  "IF2TC - INFANTIL II - TARDE C",
-  "IF3TB - INFANTIL III - TARDE B",
-  "IF3TC - INFANTIL III - TARDE C",
-  "MATTB - MATERNAL TARDE B",
-  "MIMTB - MINIMATERNAL TARDE B"
-];
+const DEFAULT_TURMAS = INITIAL_DEFAULT_SPACES;
 
 interface ReservationDialogProps {
   children: ReactNode;
@@ -911,12 +899,19 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                                       className="w-1.5 h-1.5 rounded-full shrink-0"
                                       style={{ backgroundColor: s.color || '#3B82F6' }}
                                     />
-                                    <span className={cn(
-                                      "text-xs font-bold uppercase truncate",
-                                      classroom === s.name ? "text-[#1e3a8a] dark:text-blue-400" : "text-black dark:text-zinc-200"
-                                    )}>
-                                      {s.name}
-                                    </span>
+                                    <div className="flex items-center gap-1.5 min-w-0 truncate">
+                                      <span className={cn(
+                                        "text-xs font-[1000] uppercase truncate",
+                                        classroom === s.name ? "text-[#1e3a8a] dark:text-blue-400" : "text-black dark:text-zinc-200"
+                                      )}>
+                                        {s.name.includes(' - ') ? s.name.split(' - ')[0] : s.name}
+                                      </span>
+                                      {s.name.includes(' - ') && (
+                                        <span className="text-[11px] font-bold text-zinc-500 dark:text-zinc-400 truncate">
+                                          • {s.name.split(' - ').slice(1).join(' - ')}
+                                        </span>
+                                      )}
+                                    </div>
                                     {isOccupied && (
                                       <span className="ml-2 bg-red-100 text-red-600 text-[8px] font-bold uppercase px-1.5 py-0.5 shrink-0 rounded-sm">
                                         Ocupada

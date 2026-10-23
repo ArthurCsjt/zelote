@@ -317,6 +317,26 @@ export const createSpace = async (name: string, color: string = '#3B82F6', capac
   return data as Space;
 };
 
+export const updateSpace = async (
+  id: string,
+  updates: Partial<{ name: string; color: string; capacity: number | null }>
+): Promise<Space> => {
+  const payload: Record<string, any> = {};
+  if (updates.name !== undefined) payload.name = updates.name.trim();
+  if (updates.color !== undefined) payload.color = updates.color;
+  if (updates.capacity !== undefined) payload.capacity = updates.capacity;
+
+  const { data, error } = await supabase
+    .from('spaces')
+    .update(payload)
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data as Space;
+};
+
 export const deleteSpace = async (id: string): Promise<boolean> => {
   const { error } = await supabase
     .from('spaces')
@@ -326,3 +346,60 @@ export const deleteSpace = async (id: string): Promise<boolean> => {
   if (error) throw error;
   return true;
 };
+
+// Lista Oficial das 24 Salas de Aula Ativas + 6 Espaços Especiais
+export const INITIAL_DEFAULT_SPACES: string[] = [
+  "SALA 3 - 1EFMA / IF3TB",
+  "SALA 4 - IF3TC / INTEGRAL",
+  "SALA 5 - 1EFTB",
+  "SALA 6 - INTEGRAL",
+  "SALA 7 - MATTB",
+  "SALA 8 - IF1TB",
+  "SALA 9 - IF2TB",
+  "SALA 10 - 1EFTC",
+  "SALA 21 - 5EFMB / 5EFTC",
+  "SALA 22 - 9EFMA / 6EFTC",
+  "SALA 23 - 6EFMA",
+  "SALA 24 - 9EFMB / 4EFTB",
+  "SALA 29 - 1MDMA",
+  "SALA 30 - 1MDMB",
+  "SALA 31 - 3MDMA",
+  "SALA 32 - 3MDMB",
+  "SALA 33 - 2MDMC",
+  "SALA 34 - 2MDMB",
+  "SALA 35 - 2MDMA",
+  "SALA 37 - INTEGRAL",
+  "SALA 38 - 8EFMA",
+  "SALA 39 - 8EFMB",
+  "SALA 40 - 7EFMA",
+  "SALA 41 - 7EFMB",
+  "SALA GOOGLE",
+  "SALA MAKER",
+  "BIBLIOTECA",
+  "AUDITÓRIO",
+  "LABORATÓRIO DE CIÊNCIAS",
+  "QUADRA POLIESPORTIVA"
+];
+
+export const seedDefaultSpaces = async (): Promise<Space[]> => {
+  const existing = await getSpaces();
+  const existingNames = new Set(existing.map(s => s.name.trim().toLowerCase()));
+
+  const toInsert = INITIAL_DEFAULT_SPACES
+    .filter(name => !existingNames.has(name.trim().toLowerCase()))
+    .map(name => ({
+      name: name.trim(),
+      color: name.includes('GOOGLE') ? '#3C8527' : name.includes('MAKER') ? '#8B5CF6' : '#3B82F6',
+      capacity: null
+    }));
+
+  if (toInsert.length > 0) {
+    const { error } = await supabase
+      .from('spaces')
+      .insert(toInsert);
+    if (error) throw error;
+  }
+
+  return await getSpaces();
+};
+

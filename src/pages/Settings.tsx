@@ -43,8 +43,10 @@ import {
   Vibrate,
   Shield,
   Sparkles,
+  Building2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { SpacesManagement } from '@/components/settings/SpacesManagement';
 
 const Settings = () => {
   const { user, logout } = useAuth();
@@ -191,7 +193,7 @@ const Settings = () => {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-6">
           <TabsList className={cn(
             "grid w-full h-auto p-1.5 bg-zinc-100 dark:bg-zinc-800/80 border-3 border-black dark:border-white shadow-[4px_4px_0px_0px_#000] dark:shadow-[4px_4px_0px_0px_#fff] gap-1.5",
-            isAdmin ? "grid-cols-2 md:grid-cols-4" : "grid-cols-2"
+            isAdmin ? "grid-cols-2 sm:grid-cols-3 md:grid-cols-5" : "grid-cols-2"
           )}>
             <TabsTrigger
               value="account"
@@ -211,6 +213,14 @@ const Settings = () => {
 
             {isAdmin && (
               <>
+                <TabsTrigger
+                  value="spaces"
+                  className="font-black uppercase text-xs tracking-wider py-3 border-2 border-transparent data-[state=active]:border-black dark:data-[state=active]:border-white data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-900 data-[state=active]:text-foreground data-[state=active]:shadow-[2px_2px_0px_0px_#000] dark:data-[state=active]:shadow-[2px_2px_0px_0px_#fff] flex items-center justify-center gap-2"
+                >
+                  <Building2 className="h-4 w-4 text-blue-600" />
+                  <span>Salas & Turmas</span>
+                </TabsTrigger>
+
                 <TabsTrigger
                   value="users"
                   className="font-black uppercase text-xs tracking-wider py-3 border-2 border-transparent data-[state=active]:border-black dark:data-[state=active]:border-white data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-900 data-[state=active]:text-foreground data-[state=active]:shadow-[2px_2px_0px_0px_#000] dark:data-[state=active]:shadow-[2px_2px_0px_0px_#fff] flex items-center justify-center gap-2"
@@ -507,7 +517,16 @@ const Settings = () => {
           </TabsContent>
 
           {/* ========================================================================= */}
-          {/* ABA 3: GESTÃO DE ACESSO & EXCEÇÕES (ADMIN) */}
+          {/* ABA 3: GESTÃO DE SALAS & TURMAS (ADMIN) */}
+          {/* ========================================================================= */}
+          {isAdmin && (
+            <TabsContent value="spaces" className="space-y-6 animate-in fade-in duration-200">
+              <SpacesManagement />
+            </TabsContent>
+          )}
+
+          {/* ========================================================================= */}
+          {/* ABA 4: GESTÃO DE ACESSO & EXCEÇÕES (ADMIN) */}
           {/* ========================================================================= */}
           {isAdmin && (
             <TabsContent value="users" className="space-y-6 animate-in fade-in duration-200">
