@@ -1,6 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { formatLocalDate } from '@/utils/dateUtils';
 import logger from '@/utils/logger';
+import { triggerPushNotification } from './notificationService';
 
 // Converts UI format "07h10" → DB format "07:10:00"
 const toDbTime = (slot: string): string => {
@@ -169,7 +170,7 @@ export const createReservation = async (
     }
   }
 
-  // Notificação para os responsáveis
+  // Notificação para os responsáveis e confirmação para o próprio usuário
   try {
     const responsibleUserIds = [
       'e01b402a-3f99-48e5-84f6-3b23aad4fba9',
@@ -177,26 +178,52 @@ export const createReservation = async (
       'e9253b42-f52e-445b-b3ea-1f0c93e4c3f9'
     ];
 
-    const notifications = responsibleUserIds
-      .filter(id => id !== userId)
-      .map(responsibleId => ({
-        user_id: responsibleId,
-        title: 'Nova Reserva de Chromebooks',
-        message: `${reservationResult.prof_name} agendou ${reservationResult.quantity_requested} Chromebooks para o dia ${formatLocalDate(reservationResult.date)} às ${reservationResult.time_slot}.`,
-        type: 'reservation',
-        metadata: {
-          reservation_id: reservationResult.id,
-          prof_name: reservationResult.prof_name,
-          date: reservationResult.date,
-          time_slot: reservationResult.time_slot
-        }
-      }));
+    const notifyUserIds = new Set<string>(responsibleUserIds);
+    if (userId) notifyUserIds.add(userId);
+    if (reservationResult.professor_id) notifyUserIds.add(reservationResult.professor_id);
+
+    const quantityDesc = reservationResult.quantity_requested > 0
+      ? `${reservationResult.quantity_requested} Chromebooks`
+      : 'Apenas Sala';
+    const roomDesc = reservationResult.classroom ? `na ${reservationResult.classroom}` : '';
+
+    const notifications = Array.from(notifyUserIds).map(targetId => ({
+      user_id: targetId,
+      title: targetId === userId ? 'Agendamento Confirmado' : 'Nova Reserva de Chromebooks',
+      message: `${reservationResult.prof_name} agendou ${quantityDesc} ${roomDesc} para o dia ${formatLocalDate(reservationResult.date)} às ${reservationResult.time_slot}.`,
+      type: 'reservation',
+      metadata: {
+        reservation_id: reservationResult.id,
+        prof_name: reservationResult.prof_name,
+        date: reservationResult.date,
+        time_slot: reservationResult.time_slot,
+        classroom: reservationResult.classroom,
+        quantity: reservationResult.quantity_requested
+      }
+    }));
 
     if (notifications.length > 0) {
       await supabase.from('notifications' as any).insert(notifications);
     }
   } catch (notifyError) {
-    logger.warn('Falha silenciosa ao criar notificações:', notifyError);
+    logger.warn('Falha silenciosa ao criar notificações no banco:', notifyError);
+  }
+
+  // Notificação Push no dispositivo e para todos os inscritos
+  try {
+    const quantityDesc = reservationResult.quantity_requested > 0
+      ? `${reservationResult.quantity_requested} Chromebooks`
+      : 'Apenas Sala';
+    const roomDesc = reservationResult.classroom ? `na ${reservationResult.classroom}` : '';
+    const dateFormatted = formatLocalDate(reservationResult.date);
+
+    triggerPushNotification(
+      'Novo Agendamento Confirmado',
+      `${reservationResult.prof_name} agendou ${quantityDesc} ${roomDesc} para ${dateFormatted} às ${reservationResult.time_slot}.`,
+      '/scheduling'
+    );
+  } catch (pushError) {
+    logger.warn('Falha silenciosa ao disparar push notification:', pushError);
   }
 
   return reservationResult;
@@ -206,7 +233,8 @@ export const bulkCreateReservations = async (
   dates: string[],
   baseData: Omit<ReservationData, 'date'>,
   userId: string,
-  userEmail?: string
+  userEmail?: string,
+  userFullName?: string
 ): Promise<{ success: boolean; count: number }> => {
   // Checar se a sala já está ocupada
   if (baseData.classroom && baseData.classroom.trim()) {
@@ -250,7 +278,7 @@ export const bulkCreateReservations = async (
 
   if (error) throw error;
 
-  // Notificação para responsáveis
+  // Notificação para responsáveis e usuário criador
   try {
     const responsibleUserIds = [
       'e01b402a-3f99-48e5-84f6-3b23aad4fba9',
@@ -258,37 +286,87 @@ export const bulkCreateReservations = async (
       'e9253b42-f52e-445b-b3ea-1f0c93e4c3f9'
     ];
 
-    const batchNotifications = responsibleUserIds
-      .filter(id => id !== userId)
-      .map(responsibleId => ({
-        user_id: responsibleId,
-        title: 'Novas Reservas (Lote)',
-        message: `${dates.length} novos agendamentos realizados por ${userEmail?.split('@')[0]} para o horário ${baseData.time_slot}.`,
-        type: 'reservation_bulk',
-        metadata: {
-          count: dates.length,
-          time_slot: baseData.time_slot,
-          dates
-        }
-      }));
+    const notifyUserIds = new Set<string>(responsibleUserIds);
+    if (userId) notifyUserIds.add(userId);
+    if (baseData.professor_id) notifyUserIds.add(baseData.professor_id);
+
+    const quantityDesc = baseData.quantity_requested > 0
+      ? `${baseData.quantity_requested} Chromebooks`
+      : 'Apenas Sala';
+    const roomDesc = baseData.classroom ? `na ${baseData.classroom}` : '';
+    const profName = userFullName || userEmail?.split('@')[0] || 'Professor';
+
+    const batchNotifications = Array.from(notifyUserIds).map(targetId => ({
+      user_id: targetId,
+      title: targetId === userId ? 'Agendamentos Confirmados (Lote)' : 'Novas Reservas (Lote)',
+      message: `${dates.length} agendamentos realizados por ${profName} (${quantityDesc} ${roomDesc}) no horário ${baseData.time_slot}.`,
+      type: 'reservation_bulk',
+      metadata: {
+        count: dates.length,
+        time_slot: baseData.time_slot,
+        dates,
+        classroom: baseData.classroom,
+        quantity: baseData.quantity_requested
+      }
+    }));
 
     if (batchNotifications.length > 0) {
       await supabase.from('notifications' as any).insert(batchNotifications);
     }
   } catch (notifyErr) {
-    logger.warn('Falha silenciosa ao criar notificações em lote:', notifyErr);
+    logger.warn('Falha silenciosa ao criar notificações em lote no banco:', notifyErr);
+  }
+
+  // Notificação Push no dispositivo e para todos os inscritos (Lote)
+  try {
+    const quantityDesc = baseData.quantity_requested > 0
+      ? `${baseData.quantity_requested} Chromebooks`
+      : 'Apenas Sala';
+    const roomDesc = baseData.classroom ? `na ${baseData.classroom}` : '';
+    const profName = userFullName || userEmail?.split('@')[0] || 'Professor';
+
+    triggerPushNotification(
+      'Novos Agendamentos em Lote',
+      `${profName} agendou ${dates.length} datas (${quantityDesc} ${roomDesc}) no horário ${baseData.time_slot}.`,
+      '/scheduling'
+    );
+  } catch (pushErr) {
+    logger.warn('Falha silenciosa ao disparar notificação push em lote:', pushErr);
   }
 
   return { success: true, count: results.length };
 };
 
 export const deleteReservation = async (id: string): Promise<boolean> => {
+  // Busca detalhes para enviar notificação de cancelamento
+  let existingReservation: any = null;
+  try {
+    const { data } = await supabase
+      .from('reservations')
+      .select('date, time_slot, classroom, prof_name, quantity_requested')
+      .eq('id', id)
+      .maybeSingle();
+    existingReservation = data;
+  } catch {}
+
   const { error } = await supabase
     .from('reservations')
     .delete()
     .eq('id', id);
 
   if (error) throw error;
+
+  if (existingReservation) {
+    try {
+      const roomDesc = existingReservation.classroom ? `na ${existingReservation.classroom}` : '';
+      triggerPushNotification(
+        'Agendamento Cancelado',
+        `O agendamento de ${formatLocalDate(existingReservation.date)} (${existingReservation.time_slot}) ${roomDesc} foi cancelado.`,
+        '/scheduling'
+      );
+    } catch {}
+  }
+
   return true;
 };
 

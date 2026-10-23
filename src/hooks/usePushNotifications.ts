@@ -85,9 +85,11 @@ export function usePushNotifications() {
         checkSubscription();
     }, [checkSubscription]);
 
-    const subscribeToPush = async () => {
-        if (!('serviceWorker' in navigator)) {
-            toast({ title: "Incompatível", description: "Seu navegador não suporta notificações push.", variant: "destructive" });
+    const subscribeToPush = async (silent: boolean = false) => {
+        if (!('serviceWorker' in navigator) || !('Notification' in window)) {
+            if (!silent) {
+                toast({ title: "Incompatível", description: "Seu navegador não suporta notificações push.", variant: "destructive" });
+            }
             return;
         }
 
@@ -106,22 +108,26 @@ export function usePushNotifications() {
                 await saveSubscriptionToDb(sub);
             }
 
-            toast({
-                title: "Notificações Ativadas",
-                description: "Você receberá alertas mesmo com o app fechado.",
-                variant: "success"
-            });
+            if (!silent) {
+                toast({
+                    title: "Notificações Ativadas",
+                    description: "Você receberá alertas mesmo com o app fechado.",
+                    variant: "success"
+                });
+            }
 
         } catch (error: any) {
             console.error('Erro ao se inscrever:', error);
-            if (Notification.permission === 'denied') {
-                toast({
-                    title: "Permissão Negada",
-                    description: "Você bloqueou as notificações. Ative-as nas configurações do navegador.",
-                    variant: "destructive"
-                });
-            } else {
-                toast({ title: "Erro", description: "Falha ao ativar notificações.", variant: "destructive" });
+            if (!silent) {
+                if (typeof Notification !== 'undefined' && Notification.permission === 'denied') {
+                    toast({
+                        title: "Permissão Negada",
+                        description: "Você bloqueou as notificações. Ative-as nas configurações do navegador.",
+                        variant: "destructive"
+                    });
+                } else {
+                    toast({ title: "Erro", description: "Falha ao ativar notificações.", variant: "destructive" });
+                }
             }
         }
     };
@@ -154,6 +160,6 @@ export function usePushNotifications() {
         loading,
         subscribeToPush,
         unsubscribeFromPush,
-        permission: Notification.permission
+        permission: typeof Notification !== 'undefined' ? Notification.permission : 'denied'
     };
 }

@@ -577,7 +577,13 @@ export const useDatabase = () => {
 
     startRequest();
     try {
-      const res = await reservationService.bulkCreateReservations(dates, baseData, user.id, user.email || undefined);
+      const res = await reservationService.bulkCreateReservations(
+        dates,
+        baseData,
+        user.id,
+        user.email || undefined,
+        user.user_metadata?.full_name || user.user_metadata?.name || undefined
+      );
       toast({ title: "Sucesso", description: `${res.count} agendamentos realizados com sucesso!`, variant: "success" });
       return res;
     } catch (error: any) {

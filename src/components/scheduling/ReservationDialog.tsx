@@ -22,6 +22,7 @@ import { useSchedulingResponsible } from '@/hooks/useSchedulingResponsible';
 import { ProfessorAutocomplete } from './ProfessorAutocomplete';
 import { soundEffects } from '@/utils/audioFeedback';
 import { INITIAL_DEFAULT_SPACES, ACTIVE_CLASSROOM_MAP } from '@/services/reservationService';
+import { usePushNotifications } from '@/hooks/usePushNotifications';
 
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -109,6 +110,7 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
 
   const [open, setOpen] = useState(false);
   const { createReservation, bulkCreateReservations, loading: isSaving, getSpaces, createSpace, deleteSpace } = useDatabase();
+  const { subscribeToPush } = usePushNotifications();
   const { user } = useAuth();
   const { role, isAdmin } = useProfileRole();
   const isManutencao = role === 'manutencao';
@@ -445,6 +447,11 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
     const matchedSpace = spaces.find(s => s.name.toLowerCase() === classroom.trim().toLowerCase());
     const spaceId = matchedSpace ? matchedSpace.id : null;
     const targetProfessorId = (isBookingForOther && selectedProfessorId) ? selectedProfessorId : user?.id;
+
+    // Se o navegador ainda não definiu a permissão de notificação push, solicita no momento do clique
+    if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default') {
+      subscribeToPush(true).catch(() => {});
+    }
 
     const allDates = [date, ...extraDates].map(d => format(d, 'yyyy-MM-dd'));
     const baseData = {

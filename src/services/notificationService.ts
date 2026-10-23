@@ -1,8 +1,52 @@
 import { supabase } from '@/integrations/supabase/client';
 import logger from '@/utils/logger';
 
-// Helper to trigger push notifications via Edge Function
+// Helper to trigger push notifications via Edge Function and Native Web Notification
 export const triggerPushNotification = async (title: string, body: string, url: string = '/') => {
+  // 1. Notificação nativa imediata no dispositivo se o usuário tiver permitido
+  if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+    try {
+      if ('serviceWorker' in navigator) {
+        const swPromise = navigator.serviceWorker.ready.then(reg => {
+          if (reg && reg.showNotification) {
+            return reg.showNotification(title, {
+              body,
+              icon: '/icons/icon.svg',
+              badge: '/icons/icon.svg',
+              vibrate: [100, 50, 100],
+              data: { url },
+              tag: `zelote-${Date.now()}`
+            });
+          }
+        });
+
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('SW timeout')), 1200)
+        );
+
+        try {
+          await Promise.race([swPromise, timeoutPromise]);
+        } catch {
+          // Fallback para Notification API direta
+          new Notification(title, {
+            body,
+            icon: '/icons/icon.svg',
+            data: { url }
+          });
+        }
+      } else {
+        new Notification(title, {
+          body,
+          icon: '/icons/icon.svg',
+          data: { url }
+        });
+      }
+    } catch (localErr) {
+      logger.warn('Falha silenciosa ao emitir notificação nativa:', localErr);
+    }
+  }
+
+  // 2. Transmissão remota para todos os inscritos via Edge Function
   try {
     const { error } = await supabase.functions.invoke('send-push-notification', {
       body: {
@@ -14,10 +58,10 @@ export const triggerPushNotification = async (title: string, body: string, url: 
     });
 
     if (error) {
-      logger.error('Error triggering push:', error);
+      logger.warn('Aviso ao disparar push notification remota:', error);
     }
   } catch (err) {
-    logger.error('Failed to invoke push function:', err);
+    logger.warn('Falha silenciosa ao invocar função de push remoto:', err);
   }
 };
 
