@@ -187,6 +187,7 @@ export const SpacesManagement: React.FC = () => {
   }, [spaces, search]);
 
   // Estatísticas rápidas
+  // Estatísticas rápidas
   const stats = useMemo(() => {
     const total = spaces.length;
     const multiTurno = spaces.filter(s => s.name.includes('/')).length;
@@ -199,6 +200,14 @@ export const SpacesManagement: React.FC = () => {
       s.name.includes('QUADRA')
     ).length;
     return { total, multiTurno, especiais };
+  }, [spaces]);
+
+  // Identifica quantas salas ainda estão no padrão antigo sem turmas
+  const legacyRoomsCount = useMemo(() => {
+    return spaces.filter(s => {
+      const isRoom = s.name.toUpperCase().startsWith('SALA') && !s.name.toUpperCase().includes('GOOGLE') && !s.name.toUpperCase().includes('MAKER');
+      return isRoom && !s.name.includes('-');
+    }).length;
   }, [spaces]);
 
   return (
@@ -234,7 +243,7 @@ export const SpacesManagement: React.FC = () => {
                 disabled={isSeeding}
                 variant="outline"
                 className="neo-btn h-10 px-3.5 border-2 border-black dark:border-white font-black text-xs uppercase tracking-wider bg-yellow-100 hover:bg-yellow-200 dark:bg-yellow-950/40 text-yellow-900 dark:text-yellow-200 shadow-[2px_2px_0_0_#000]"
-                title="Insere todas as 24 salas ativas e 6 espaços multiuso se ainda não estiverem no banco"
+                title="Atualiza todas as 24 salas com suas respectivas turmas e insere espaços multiuso no banco de dados"
               >
                 {isSeeding ? <Loader2 className="w-4 h-4 animate-spin mr-1.5" /> : <RotateCcw className="w-4 h-4 mr-1.5" />}
                 Sincronizar Padrões
@@ -268,6 +277,32 @@ export const SpacesManagement: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* ALERTA DE ATUALIZAÇÃO NECESSÁRIA (TURMAS NÃO VINCULADAS) */}
+      {isAdmin && legacyRoomsCount > 0 && (
+        <div className="p-4 bg-yellow-100 dark:bg-yellow-950/60 border-2 border-black dark:border-white shadow-[4px_4px_0_0_#000] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 animate-in fade-in duration-200">
+          <div className="flex items-center gap-3">
+            <AlertTriangle className="w-6 h-6 text-yellow-800 dark:text-yellow-300 stroke-[2.5] shrink-0" />
+            <div>
+              <h4 className="text-xs sm:text-sm font-[1000] uppercase text-yellow-950 dark:text-yellow-100">
+                Atenção: Existem {legacyRoomsCount} salas cadastradas sem as turmas vinculadas
+              </h4>
+              <p className="text-[11px] font-bold text-yellow-900 dark:text-yellow-200 mt-0.5">
+                Suas salas no banco de dados estão apenas com o número (ex: "SALA 21"). Clique ao lado para aplicar as turmas ativas agora (ex: "SALA 21 - 5EFMB / 5EFTC").
+              </p>
+            </div>
+          </div>
+          <Button
+            type="button"
+            onClick={handleSeedDefaults}
+            disabled={isSeeding}
+            className="neo-btn bg-black hover:bg-zinc-800 text-yellow-300 font-[1000] uppercase text-xs h-10 px-4 shadow-[2px_2px_0_0_#FACC15] shrink-0 flex items-center gap-1.5"
+          >
+            {isSeeding ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+            Vincular Turmas Agora
+          </Button>
+        </div>
+      )}
 
       {/* BARRA DE PESQUISA */}
       <div className="relative">
@@ -351,9 +386,28 @@ export const SpacesManagement: React.FC = () => {
                     )}
                   </div>
 
-                  <h4 className="text-sm sm:text-base font-[1000] uppercase tracking-tight text-foreground leading-snug break-words">
-                    {sp.name}
-                  </h4>
+                  <div className="space-y-1">
+                    <h4 className="text-sm sm:text-base font-[1000] uppercase tracking-tight text-foreground leading-snug break-words">
+                      {sp.name.includes(' - ') ? (
+                        <>
+                          <span className="text-[#1e3a8a] dark:text-blue-400 font-[1000]">
+                            {sp.name.split(' - ')[0]}
+                          </span>
+                          <span className="text-zinc-600 dark:text-zinc-300 font-bold ml-1.5">
+                            • {sp.name.split(' - ').slice(1).join(' - ')}
+                          </span>
+                        </>
+                      ) : (
+                        sp.name
+                      )}
+                    </h4>
+
+                    {sp.name.toUpperCase().startsWith('SALA') && !sp.name.toUpperCase().includes('GOOGLE') && !sp.name.toUpperCase().includes('MAKER') && !sp.name.includes('-') && (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase text-amber-600 dark:text-amber-400">
+                        <AlertTriangle className="w-3 h-3" /> Sem turmas vinculadas
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 {/* AÇÕES DE ADMIN */}

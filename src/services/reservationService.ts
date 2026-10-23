@@ -381,25 +381,100 @@ export const INITIAL_DEFAULT_SPACES: string[] = [
   "QUADRA POLIESPORTIVA"
 ];
 
+// Mapeamento das 24 Salas de Aula Ativas com suas respectivas Turmas
+export const ACTIVE_CLASSROOM_MAP: Record<string, string> = {
+  "SALA 3": "SALA 3 - 1EFMA / IF3TB",
+  "SALA 4": "SALA 4 - IF3TC / INTEGRAL",
+  "SALA 5": "SALA 5 - 1EFTB",
+  "SALA 6": "SALA 6 - INTEGRAL",
+  "SALA 7": "SALA 7 - MATTB",
+  "SALA 8": "SALA 8 - IF1TB",
+  "SALA 9": "SALA 9 - IF2TB",
+  "SALA 10": "SALA 10 - 1EFTC",
+  "SALA 21": "SALA 21 - 5EFMB / 5EFTC",
+  "SALA 22": "SALA 22 - 9EFMA / 6EFTC",
+  "SALA 23": "SALA 23 - 6EFMA",
+  "SALA 24": "SALA 24 - 9EFMB / 4EFTB",
+  "SALA 29": "SALA 29 - 1MDMA",
+  "SALA 30": "SALA 30 - 1MDMB",
+  "SALA 31": "SALA 31 - 3MDMA",
+  "SALA 32": "SALA 32 - 3MDMB",
+  "SALA 33": "SALA 33 - 2MDMC",
+  "SALA 34": "SALA 34 - 2MDMB",
+  "SALA 35": "SALA 35 - 2MDMA",
+  "SALA 37": "SALA 37 - INTEGRAL",
+  "SALA 38": "SALA 38 - 8EFMA",
+  "SALA 39": "SALA 39 - 8EFMB",
+  "SALA 40": "SALA 40 - 7EFMA",
+  "SALA 41": "SALA 41 - 7EFMB",
+};
+
+// Sincronização Inteligente: Atualiza salas existentes no banco e insere as que faltam
 export const seedDefaultSpaces = async (): Promise<Space[]> => {
   const existing = await getSpaces();
-  const existingNames = new Set(existing.map(s => s.name.trim().toLowerCase()));
 
-  const toInsert = INITIAL_DEFAULT_SPACES
-    .filter(name => !existingNames.has(name.trim().toLowerCase()))
-    .map(name => ({
-      name: name.trim(),
-      color: name.includes('GOOGLE') ? '#3C8527' : name.includes('MAKER') ? '#8B5CF6' : '#3B82F6',
-      capacity: null
-    }));
+  // Helper para identificar a sala pelo número (ex: "SALA 3", "sala 03", "SALA 3 - 1EFMA")
+  const extractRoomKey = (name: string): string | null => {
+    const match = name.trim().toUpperCase().match(/^SALA\s*0?(\d+)/);
+    if (match) return `SALA ${parseInt(match[1], 10)}`;
+    return null;
+  };
 
-  if (toInsert.length > 0) {
-    const { error } = await supabase
-      .from('spaces')
-      .insert(toInsert);
-    if (error) throw error;
+  // Mapeia salas já existentes no banco
+  const existingByRoomKey = new Map<string, Space>();
+  for (const s of existing) {
+    const rKey = extractRoomKey(s.name);
+    if (rKey) {
+      existingByRoomKey.set(rKey, s);
+    }
+  }
+
+  // 1. Atualiza salas existentes no banco com as turmas ativas
+  for (const [key, fullName] of Object.entries(ACTIVE_CLASSROOM_MAP)) {
+    const found = existingByRoomKey.get(key);
+    if (found) {
+      if (found.name.trim().toLowerCase() !== fullName.toLowerCase()) {
+        await supabase
+          .from('spaces')
+          .update({ name: fullName })
+          .eq('id', found.id);
+      }
+    } else {
+      // 2. Se a sala não existir no banco, insere
+      await supabase
+        .from('spaces')
+        .insert({
+          name: fullName,
+          color: '#3B82F6',
+          capacity: null
+        });
+    }
+  }
+
+  // 3. Garante que os espaços especiais estejam cadastrados
+  const specialSpaces = [
+    { name: 'SALA GOOGLE', color: '#3C8527' },
+    { name: 'SALA MAKER', color: '#8B5CF6' },
+    { name: 'BIBLIOTECA', color: '#3B82F6' },
+    { name: 'AUDITÓRIO', color: '#F59E0B' },
+    { name: 'LABORATÓRIO DE CIÊNCIAS', color: '#14B8A6' },
+    { name: 'QUADRA POLIESPORTIVA', color: '#3B82F6' }
+  ];
+
+  for (const sp of specialSpaces) {
+    const found = existing.find(e => e.name.trim().toLowerCase() === sp.name.toLowerCase());
+    if (!found) {
+      await supabase
+        .from('spaces')
+        .insert({
+          name: sp.name,
+          color: sp.color,
+          capacity: null
+        });
+    }
   }
 
   return await getSpaces();
 };
+
 
