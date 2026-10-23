@@ -22,6 +22,47 @@ import { useSchedulingResponsible } from '@/hooks/useSchedulingResponsible';
 import { ProfessorAutocomplete } from './ProfessorAutocomplete';
 import { soundEffects } from '@/utils/audioFeedback';
 
+import { motion, AnimatePresence } from 'framer-motion';
+
+// Seta Indicativa Flutuante Neo-brutalista (Guia de Passos Inteligente)
+const GuidedArrow: React.FC<{ className?: string }> = ({ className }) => {
+  return (
+    <motion.div
+      layoutId="guided-floating-step-arrow"
+      initial={{ opacity: 0, scale: 0.8 }}
+      animate={{
+        opacity: 1,
+        scale: 1,
+        x: [0, 4, 0],
+      }}
+      exit={{ opacity: 0, scale: 0.8 }}
+      transition={{
+        layout: { type: "spring", stiffness: 350, damping: 28 },
+        x: { repeat: Infinity, duration: 1.1, ease: "easeInOut" },
+        opacity: { duration: 0.2 },
+      }}
+      className={cn("pointer-events-none select-none z-30 flex items-center shrink-0", className)}
+    >
+      <svg
+        width="28"
+        height="22"
+        viewBox="0 0 28 22"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className="drop-shadow-[2px_2px_0px_#000]"
+      >
+        <path
+          d="M2 7H14V2L26 11L14 20V15H2V7Z"
+          fill="#FACC15"
+          stroke="#000000"
+          strokeWidth="2.5"
+          strokeLinejoin="round"
+        />
+      </svg>
+    </motion.div>
+  );
+};
+
 interface ExtendedSpace extends Space {
   isVirtual?: boolean;
 }
@@ -101,6 +142,34 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
   const isChromebookSpace = useMemo(() => {
     return checkChromebookSpace(classroom);
   }, [classroom]);
+
+  const [hasInteractedQuantity, setHasInteractedQuantity] = useState(false);
+
+  // Determina o passo ativo para posicionar a seta flutuante indicativa
+  const activeStep = useMemo(() => {
+    const isClassroomSelected = Boolean(classroom.trim());
+    const isConflict = currentReservations.some(
+      res => isClassroomSelected && res.classroom?.toLowerCase() === classroom.trim().toLowerCase()
+    );
+
+    // Passo 1: Selecionar sala / turma (ou corrigir sala conflitante)
+    if (!isClassroomSelected || isConflict) {
+      return 1;
+    }
+
+    // Se for manutenção, não passa por chromebooks -> direto para Confirmar
+    if (isManutencao) {
+      return 3;
+    }
+
+    // Passo 2: Definir quantidade de chromebooks
+    if (!hasInteractedQuantity) {
+      return 2;
+    }
+
+    // Passo 3: Tudo pronto -> Confirmar Reserva
+    return 3;
+  }, [classroom, currentReservations, isManutencao, hasInteractedQuantity]);
 
   const [extraDates, setExtraDates] = useState<Date[]>([]);
   const [isMultiMode, setIsMultiMode] = useState(false);
@@ -190,6 +259,7 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
     if (open) {
       setJustification('');
       setQuantity(0);
+      setHasInteractedQuantity(false);
       setNeedsTv(false);
       setNeedsSound(false);
       setNeedsMic(false);
@@ -425,7 +495,7 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
           className="flex-1 min-h-0 overflow-y-auto"
           style={{ WebkitOverflowScrolling: 'touch' }}
         >
-          <div className="p-3 sm:p-5 space-y-4 sm:space-y-5">
+          <div className="px-4 py-3 sm:px-6 sm:py-5 space-y-4 sm:space-y-5">
 
             {/* STATUS GRID - Visível a todos (Professores e Coordenadores) */}
             <div className="grid grid-cols-2 gap-2.5 sm:gap-4 pt-1">
@@ -629,7 +699,7 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
             )}
 
             {/* 1º PASSO: DADOS DA RESERVA (SALA / TURMA) - HERO INPUT */}
-            <div className="border-[3px] border-[#1e3a8a] bg-blue-50/40 dark:bg-blue-950/20 overflow-hidden shadow-[5px_5px_0_0_#1e3a8a] dark:shadow-[5px_5px_0_0_rgba(30,58,138,0.5)]">
+            <div className="border-[3px] border-[#1e3a8a] bg-blue-50/40 dark:bg-blue-950/20 shadow-[5px_5px_0_0_#1e3a8a] dark:shadow-[5px_5px_0_0_rgba(30,58,138,0.5)]">
               <div className="bg-[#1e3a8a] px-3.5 py-2.5 flex items-center justify-between border-b-[2px] border-black">
                 <div className="flex items-center gap-2">
                   <span className="text-yellow-300 text-sm font-black animate-pulse">⚡</span>
@@ -650,6 +720,11 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
 
                   {/* Hero Input com Busca Preditiva */}
                   <div className="relative">
+                    {activeStep === 1 && (
+                      <div className="absolute -left-7 sm:-left-8 top-1/2 -translate-y-1/2 z-30">
+                        <GuidedArrow />
+                      </div>
+                    )}
                     <SuggestiveSearch
                       value={classroom}
                       onChange={(val) => {
@@ -986,7 +1061,10 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                   <div className="flex items-center gap-1.5 shrink-0">
                     <button
                       type="button"
-                      onClick={() => setQuantity(prev => Math.max(isMinecraft ? 1 : 0, prev - 1))}
+                      onClick={() => {
+                        setQuantity(prev => Math.max(isMinecraft ? 1 : 0, prev - 1));
+                        setHasInteractedQuantity(true);
+                      }}
                       disabled={quantity <= (isMinecraft ? 1 : 0)}
                       className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center bg-white text-black border-2 border-black font-black shadow-[2px_2px_0_0_#000] hover:bg-zinc-100 active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all disabled:opacity-40 disabled:pointer-events-none"
                       title="Diminuir 1 Chromebook"
@@ -1000,7 +1078,10 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
 
                     <button
                       type="button"
-                      onClick={() => setQuantity(prev => Math.min(isMinecraft ? 40 : maxQuantity, prev + 1))}
+                      onClick={() => {
+                        setQuantity(prev => Math.min(isMinecraft ? 40 : maxQuantity, prev + 1));
+                        setHasInteractedQuantity(true);
+                      }}
                       disabled={quantity >= (isMinecraft ? 40 : maxQuantity)}
                       className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center bg-white text-black border-2 border-black font-black shadow-[2px_2px_0_0_#000] hover:bg-zinc-100 active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all disabled:opacity-40 disabled:pointer-events-none"
                       title="Aumentar 1 Chromebook"
@@ -1013,7 +1094,10 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                 <div className="p-3 sm:p-4">
                   <Slider
                     value={[quantity]}
-                    onValueChange={(v) => setQuantity(v[0])}
+                    onValueChange={(v) => {
+                      setQuantity(v[0]);
+                      setHasInteractedQuantity(true);
+                    }}
                     min={isMinecraft ? 1 : 0}
                     max={isMinecraft ? 40 : maxQuantity}
                     step={1}
@@ -1028,14 +1112,22 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                   </div>
 
                   {/* Atalhos Rápidos de Quantidade (Quick Presets) */}
-                  <div className="flex flex-wrap items-center gap-1.5 mt-3 pt-2.5 border-t border-black/10 dark:border-white/10">
+                  <div className="relative flex flex-wrap items-center gap-1.5 mt-3 pt-2.5 border-t border-black/10 dark:border-white/10">
+                    {activeStep === 2 && (
+                      <div className="absolute -left-7 sm:-left-8 top-1/2 -translate-y-1/2 z-30">
+                        <GuidedArrow />
+                      </div>
+                    )}
                     <span className="text-[10px] font-black uppercase text-zinc-500 dark:text-zinc-400 tracking-wider mr-1">
                       Atalhos Rápidos:
                     </span>
                     {!isMinecraft && (
                       <button
                         type="button"
-                        onClick={() => setQuantity(0)}
+                        onClick={() => {
+                          setQuantity(0);
+                          setHasInteractedQuantity(true);
+                        }}
                         className={cn(
                           "px-2.5 py-1 text-[10px] font-black uppercase border-2 border-black shadow-[2px_2px_0_0_#000] transition-all",
                           quantity === 0 ? "bg-black text-white" : "bg-white hover:bg-zinc-100 text-black active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
@@ -1047,7 +1139,10 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                     {(isMinecraft ? 40 : maxQuantity) >= 15 && (
                       <button
                         type="button"
-                        onClick={() => setQuantity(15)}
+                        onClick={() => {
+                          setQuantity(15);
+                          setHasInteractedQuantity(true);
+                        }}
                         className={cn(
                           "px-3 py-1 min-w-[36px] text-center text-[10px] font-black uppercase border-2 border-black shadow-[2px_2px_0_0_#000] transition-all",
                           quantity === 15 ? "bg-black text-white" : "bg-white hover:bg-zinc-100 text-black active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
@@ -1059,7 +1154,10 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                     {(isMinecraft ? 40 : maxQuantity) >= 30 && (
                       <button
                         type="button"
-                        onClick={() => setQuantity(30)}
+                        onClick={() => {
+                          setQuantity(30);
+                          setHasInteractedQuantity(true);
+                        }}
                         className={cn(
                           "px-3 py-1 min-w-[36px] text-center text-[10px] font-black uppercase border-2 border-black shadow-[2px_2px_0_0_#000] transition-all",
                           quantity === 30 ? "bg-black text-white" : "bg-white hover:bg-zinc-100 text-black active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
@@ -1443,7 +1541,7 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
         </form>
 
         {/* FOOTER */}
-        <DialogFooter className="shrink-0 p-3 sm:p-5 bg-white dark:bg-zinc-950 border-t-[3px] sm:border-t-[4px] border-black dark:border-zinc-800 flex flex-col-reverse sm:flex-row gap-2 sm:gap-3 z-30 shadow-[0_-6px_14px_rgba(0,0,0,0.08)]">
+        <DialogFooter className="shrink-0 px-4 py-3 sm:p-5 bg-white dark:bg-zinc-950 border-t-[3px] sm:border-t-[4px] border-black dark:border-zinc-800 flex flex-col-reverse sm:flex-row gap-2 sm:gap-3 z-30 shadow-[0_-6px_14px_rgba(0,0,0,0.08)]">
           <Button
             type="button"
             variant="outline"
@@ -1452,14 +1550,21 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
           >
             Cancelar
           </Button>
-          <Button
-            type="submit"
-            disabled={isSaving || !classroom.trim() || quantity < 0 || (isBookingForOther && !selectedProfessorId) || currentReservations.some(res => classroom.trim() && res.classroom?.toLowerCase() === classroom.trim().toLowerCase())}
-            onClick={handleSubmit}
-            className="w-full sm:w-auto sm:flex-[2] h-11 sm:h-12 font-[1000] uppercase tracking-wider bg-[#3B82F6] hover:bg-[#2563EB] text-white border-[2px] sm:border-[3px] border-black rounded-none shadow-[3px_3px_0_0_#000] sm:shadow-[4px_4px_0_0_#000] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none text-xs sm:text-sm disabled:opacity-50 disabled:hover:translate-x-0 disabled:hover:translate-y-0 disabled:hover:shadow-[3px_3px_0_0_#000] sm:disabled:hover:shadow-[4px_4px_0_0_#000] transition-all flex items-center justify-center gap-2"
-          >
-            {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <><CheckCircle className="h-4 w-4 stroke-[3]" /> Confirmar Reserva</>}
-          </Button>
+          <div className="relative w-full sm:w-auto sm:flex-[2]">
+            {activeStep === 3 && (
+              <div className="absolute -left-7 sm:-left-8 top-1/2 -translate-y-1/2 z-30">
+                <GuidedArrow />
+              </div>
+            )}
+            <Button
+              type="submit"
+              disabled={isSaving || !classroom.trim() || quantity < 0 || (isBookingForOther && !selectedProfessorId) || currentReservations.some(res => classroom.trim() && res.classroom?.toLowerCase() === classroom.trim().toLowerCase())}
+              onClick={handleSubmit}
+              className="w-full h-11 sm:h-12 font-[1000] uppercase tracking-wider bg-[#3B82F6] hover:bg-[#2563EB] text-white border-[2px] sm:border-[3px] border-black rounded-none shadow-[3px_3px_0_0_#000] sm:shadow-[4px_4px_0_0_#000] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none text-xs sm:text-sm disabled:opacity-50 disabled:hover:translate-x-0 disabled:hover:translate-y-0 disabled:hover:shadow-[3px_3px_0_0_#000] sm:disabled:hover:shadow-[4px_4px_0_0_#000] transition-all flex items-center justify-center gap-2"
+            >
+              {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <><CheckCircle className="h-4 w-4 stroke-[3]" /> Confirmar Reserva</>}
+            </Button>
+          </div>
         </DialogFooter>
 
       </DialogContent>
