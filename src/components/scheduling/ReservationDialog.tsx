@@ -325,7 +325,7 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
 
   const openSheet = (k: 'room' | 'prof') => { lastFocusRef.current = document.activeElement as HTMLElement; setQuery(''); setSheet(k); };
   const closeSheet = () => { setSheet(null); setTimeout(() => lastFocusRef.current?.focus(), 50); };
-  const pickRoom = (name: string) => { setClassroom(name); closeSheet(); };
+  const pickRoom = (name: string) => { setClassroom(name); saveRecentClassroom(name); closeSheet(); };
 
   const commitQty = (v: number) => { setHasInteractedQuantity(true); setQuantity(Math.max(isMinecraft ? 1 : 0, Math.min(qtyLimit, v))); };
 
@@ -495,7 +495,7 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                             <div className="ag-chips" role="group" aria-label="Salas recentes">
                               {recentClassrooms.slice(0, 4).map(r => {
                                 const busy = !!busySlotFor(r);
-                                return <button key={r} type="button" className="ag-chip" aria-pressed={eqRoom(classroom, r)} onClick={() => setClassroom(r)}><span className={`ag-dot ${busy ? 'busy' : ''}`} aria-label={busy ? 'Ocupada' : 'Livre'} />{shortRoom(r)}</button>;
+                                return <button key={r} type="button" className="ag-chip" aria-pressed={eqRoom(classroom, r)} onClick={() => { setClassroom(r); saveRecentClassroom(r); }}><span className={`ag-dot ${busy ? 'busy' : ''}`} aria-label={busy ? 'Ocupada' : 'Livre'} />{shortRoom(r)}</button>;
                               })}
                             </div>
                           </div>
