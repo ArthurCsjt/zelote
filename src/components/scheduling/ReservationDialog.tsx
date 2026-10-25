@@ -1,75 +1,24 @@
 // @ts-nocheck
-import React, { useState, ReactNode, useEffect, useRef, useMemo } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Slider } from '@/components/ui/slider';
-import { Textarea } from '@/components/ui/textarea';
-import { Loader2, Calendar, Monitor, Info, Save, Tv, Volume2, Mic, User, ListFilter, CalendarDays, X as CloseIcon, ArrowRight, Plus, Minus, CheckCircle, Search, ChevronDown, Trash2, AlertTriangle, History } from 'lucide-react';
+import React, { useState, ReactNode, useEffect, useRef, useMemo, useLayoutEffect, useCallback } from 'react';
+import * as DialogPrimitive from '@radix-ui/react-dialog';
+import { motion, AnimatePresence, useDragControls, useReducedMotion } from 'framer-motion';
+import { Loader2, X as CloseIcon, Plus, Minus, Search, Check, Tv, Volume2, Mic, User, Users, MapPin, CalendarDays, ChevronLeft, ChevronRight, ArrowRight, AlertTriangle, ChevronDown } from 'lucide-react';
 import { format, isSaturday, isSunday, isSameDay, startOfDay, addDays, addWeeks, isBefore, endOfMonth } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { useDatabase, ReservationData, Reservation, Space } from '@/hooks/useDatabase';
+import { useQuery } from '@tanstack/react-query';
+import { useDatabase, Reservation, Space } from '@/hooks/useDatabase';
 import { toast } from '@/hooks/use-toast';
-import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfileRole } from '@/hooks/use-profile-role';
 import { Calendar as CalendarUI } from '@/components/ui/calendar';
-import { SuggestiveSearch } from '@/components/ui/SuggestiveSearch';
-import { isChromebookSpace as checkChromebookSpace } from '@/utils/scheduling';
+import { isChromebookSpace as checkChromebookSpace, timeSlots as ALL_SLOTS } from '@/utils/scheduling';
 import { useSchedulingResponsible } from '@/hooks/useSchedulingResponsible';
-import { ProfessorAutocomplete } from './ProfessorAutocomplete';
 import { soundEffects } from '@/utils/audioFeedback';
-import { INITIAL_DEFAULT_SPACES, ACTIVE_CLASSROOM_MAP } from '@/services/reservationService';
+import { INITIAL_DEFAULT_SPACES, ACTIVE_CLASSROOM_MAP, getReservationsForSlots } from '@/services/reservationService';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
+import './reservation-dialog.css';
 
-import { motion, AnimatePresence } from 'framer-motion';
-
-// Seta Indicativa Flutuante Neo-brutalista (Guia de Passos Inteligente)
-const GuidedArrow: React.FC<{ className?: string }> = ({ className }) => {
-  return (
-    <motion.div
-      layoutId="guided-floating-step-arrow"
-      initial={{ opacity: 0, scale: 0.8 }}
-      animate={{
-        opacity: 1,
-        scale: 1,
-        x: [0, 4, 0],
-      }}
-      exit={{ opacity: 0, scale: 0.8 }}
-      transition={{
-        layout: { type: "spring", stiffness: 350, damping: 28 },
-        x: { repeat: Infinity, duration: 1.1, ease: "easeInOut" },
-        opacity: { duration: 0.2 },
-      }}
-      className={cn("pointer-events-none select-none z-30 flex items-center shrink-0", className)}
-    >
-      <svg
-        width="28"
-        height="22"
-        viewBox="0 0 28 22"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        className="drop-shadow-[2px_2px_0px_#000]"
-      >
-        <path
-          d="M2 7H14V2L26 11L14 20V15H2V7Z"
-          fill="#FACC15"
-          stroke="#000000"
-          strokeWidth="2.5"
-          strokeLinejoin="round"
-        />
-      </svg>
-    </motion.div>
-  );
-};
-
-interface ExtendedSpace extends Space {
-  isVirtual?: boolean;
-}
-
-const DEFAULT_TURMAS = INITIAL_DEFAULT_SPACES;
+interface ExtendedSpace extends Space { isVirtual?: boolean; }
 
 interface ReservationDialogProps {
   children: ReactNode;
@@ -82,1525 +31,685 @@ interface ReservationDialogProps {
   professores?: { id: string; nome_completo: string }[];
 }
 
+const SEC_DELAYS = [0.12, 0.17, 0.22, 0.27, 0.32, 0.37, 0.42, 0.47];
+const norm = (s: string) => (s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+const eqRoom = (a?: string, b?: string) => (a || '').trim().toLowerCase() === (b || '').trim().toLowerCase();
+const joinPt = (arr: string[]) => arr.length <= 1 ? arr.join('') : `${arr.slice(0, -1).join(', ')} e ${arr[arr.length - 1]}`;
+const shortRoom = (n: string) => (n || '').split(' - ')[0];
+const roomGroup = (name: string) => {
+  const n = name.trim().toUpperCase();
+  if (n.startsWith('SALA') && !n.includes('GOOGLE') && !n.includes('MAKER')) return 0;
+  if (['GOOGLE', 'MAKER', 'BIBLIOTECA', 'AUDITÓRIO', 'LABORATÓRIO', 'QUADRA'].some(k => n.includes(k))) return 1;
+  return 2;
+};
+
+const Highlight: React.FC<{ text: string; q: string }> = ({ text, q }) => {
+  const nq = norm(q.trim());
+  if (!nq) return <>{text}</>;
+  const nt = Array.from(text).map(c => norm(c)).join('');
+  const i = nt.indexOf(nq);
+  if (i < 0) return <>{text}</>;
+  return <>{text.slice(0, i)}<mark>{text.slice(i, i + nq.length)}</mark>{text.slice(i + nq.length)}</>;
+};
+
+const Creeper = () => (
+  <svg width="32" height="32" viewBox="0 0 8 8" shapeRendering="crispEdges" aria-hidden="true" style={{ border: '2px solid #15110c', flexShrink: 0 }}>
+    <rect width="8" height="8" fill="#5bb83a" />
+    <rect x="1" y="2" width="2" height="2" fill="#000" /><rect x="5" y="2" width="2" height="2" fill="#000" />
+    <rect x="3" y="4" width="2" height="1" fill="#000" /><rect x="2" y="5" width="4" height="2" fill="#000" />
+    <rect x="2" y="7" width="1" height="1" fill="#000" /><rect x="5" y="7" width="1" height="1" fill="#000" />
+  </svg>
+);
+
+const Sheet: React.FC<{ onClose: () => void; label: string; children: ReactNode }> = ({ onClose, label, children }) => {
+  const controls = useDragControls();
+  return (
+    <>
+      <motion.div className="ag-sheet-back" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} />
+      <motion.div
+        className="ag-sheet" role="dialog" aria-label={label}
+        initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%', transition: { duration: 0.2 } }}
+        transition={{ duration: 0.35, ease: [0.2, 0.8, 0.2, 1] }}
+        drag="y" dragControls={controls} dragListener={false} dragConstraints={{ top: 0, bottom: 0 }} dragElastic={{ top: 0, bottom: 1 }}
+        onDragEnd={(_, info) => { if (info.offset.y > 110) onClose(); }}
+      >
+        <div className="ag-grip" onPointerDown={e => controls.start(e)} aria-hidden="true"><span /></div>
+        {children}
+      </motion.div>
+    </>
+  );
+};
+
+const Section = ({ n, title, done: ok, optional, innerRef, children: c, className = '' }: any) => {
+    return (
+      <section className={`ag-sec ag-rise ${className}`} style={{ animationDelay: `${SEC_DELAYS[Math.min(n - 1, 7)]}s` }} ref={innerRef}>
+        <div className="ag-sec-h">
+          <span className={`ag-num ${ok ? 'done' : ''}`} aria-hidden="true">{ok ? <Check size={16} strokeWidth={3} /> : n}</span>
+          <h3 className="ag-sec-t">{title}</h3>
+          {optional && <span className="ag-opt">Opcional</span>}
+        </div>
+        {c}
+      </section>
+    );
+  };
+
+
 export const ReservationDialog: React.FC<ReservationDialogProps> = ({
-  children,
-  date,
-  timeSlot,
-  totalAvailableChromebooks,
-  currentReservations,
-  onReservationSuccess,
-  maxQuantity,
-  professores = [],
+  children, date, timeSlot, totalAvailableChromebooks, currentReservations, onReservationSuccess, maxQuantity, professores = [],
 }) => {
+  const reduce = useReducedMotion();
   useEffect(() => {
-    // Add custom animation for room buttons
-    const style = document.createElement('style');
-    style.innerHTML = `
-      @keyframes alternate-texts {
-        0%, 35% { transform: translateY(0); }
-        45%, 85% { transform: translateY(-100%); }
-        95%, 100% { transform: translateY(0); }
-      }
-    `;
-    document.head.appendChild(style);
-    return () => {
-      document.head.removeChild(style);
-    };
+    if (document.getElementById('ag-fonts')) return;
+    const l = document.createElement('link');
+    l.id = 'ag-fonts'; l.rel = 'stylesheet';
+    l.href = 'https://fonts.googleapis.com/css2?family=Lexend:wght@400;600;800&family=Silkscreen&display=swap';
+    document.head.appendChild(l);
   }, []);
 
   const [open, setOpen] = useState(false);
-  const { createReservation, bulkCreateReservations, loading: isSaving, getSpaces, createSpace, deleteSpace } = useDatabase();
+  const { createReservation, bulkCreateReservations, loading: isSaving, getSpaces } = useDatabase();
   const { subscribeToPush } = usePushNotifications();
   const { user } = useAuth();
   const { role, isAdmin } = useProfileRole();
   const isManutencao = role === 'manutencao';
-
-  const isSuperAdmin = role === 'super_admin';
   const { isResponsible } = useSchedulingResponsible();
+  const canBookForOther = (isAdmin || isResponsible) && professores && professores.length > 0;
 
-  const [selectedProfessorId, setSelectedProfessorId] = useState<string>('');
+  const [selectedProfessorId, setSelectedProfessorId] = useState('');
   const [isBookingForOther, setIsBookingForOther] = useState(false);
-
-  const [justification, setJustification] = useState<string>('');
-  const [quantity, setQuantity] = useState<number>(0);
+  const [justification, setJustification] = useState('');
+  const [quantity, setQuantity] = useState(0);
+  const [qtyText, setQtyText] = useState('0');
   const [needsTv, setNeedsTv] = useState(false);
   const [needsSound, setNeedsSound] = useState(false);
   const [needsMic, setNeedsMic] = useState(false);
   const [micQuantity, setMicQuantity] = useState(1);
   const [isMinecraft, setIsMinecraft] = useState(false);
-  const [classroom, setClassroom] = useState<string>('');
-  const isChromebookSpace = useMemo(() => {
-    return checkChromebookSpace(classroom);
-  }, [classroom]);
-
+  const [classroom, setClassroom] = useState('');
   const [hasInteractedQuantity, setHasInteractedQuantity] = useState(false);
-
-  // Determina o passo ativo para posicionar a seta flutuante indicativa
-  const activeStep = useMemo(() => {
-    const isClassroomSelected = Boolean(classroom.trim());
-    const isConflict = currentReservations.some(
-      res => isClassroomSelected && res.classroom?.toLowerCase() === classroom.trim().toLowerCase()
-    );
-
-    // Passo 1: Selecionar sala / turma (ou corrigir sala conflitante)
-    if (!isClassroomSelected || isConflict) {
-      return 1;
-    }
-
-    // Se for manutenção, não passa por chromebooks -> direto para Confirmar
-    if (isManutencao) {
-      return 3;
-    }
-
-    // Passo 2: Definir quantidade de chromebooks
-    if (!hasInteractedQuantity) {
-      return 2;
-    }
-
-    // Passo 3: Tudo pronto -> Confirmar Reserva
-    return 3;
-  }, [classroom, currentReservations, isManutencao, hasInteractedQuantity]);
-
   const [extraDates, setExtraDates] = useState<Date[]>([]);
   const [isMultiMode, setIsMultiMode] = useState(false);
   const [showCalendar, setShowCalendar] = useState(false);
-
-  // States for Spaces management
+  const [lessons, setLessons] = useState(1);
   const [spaces, setSpaces] = useState<Space[]>([]);
-  const [spaceSearch, setSpaceSearch] = useState<string>('');
-  const [isSpaceDropdownOpen, setIsSpaceDropdownOpen] = useState(false);
-  const [newSpaceName, setNewSpaceName] = useState('');
-  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [sheet, setSheet] = useState<null | 'room' | 'prof'>(null);
+  const [query, setQuery] = useState('');
+  const [done, setDone] = useState<null | { rows: [string, string][] }>(null);
+  const [submitError, setSubmitError] = useState('');
+  const [scrolled, setScrolled] = useState(false);
+  const submittingRef = useRef(false);
+  const lastFocusRef = useRef<HTMLElement | null>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const refs = { prof: useRef<HTMLDivElement>(null), room: useRef<HTMLButtonElement>(null), roomAlert: useRef<HTMLDivElement>(null), qty: useRef<HTMLDivElement>(null), dates: useRef<HTMLDivElement>(null) };
 
-  // Armazenamento dos últimos espaços acessados/usados pelo professor com migração automática
+  const isChromebookSpace = useMemo(() => checkChromebookSpace(classroom), [classroom]);
+
+  // Salas recentes
   const RECENT_SPACES_KEY = 'zelote_recent_classrooms';
   const [recentClassrooms, setRecentClassrooms] = useState<string[]>(() => {
     try {
       const stored = localStorage.getItem(RECENT_SPACES_KEY);
       if (!stored) return [];
       const parsed: string[] = JSON.parse(stored);
-      // Migração automática do histórico antigo (ex: "SALA 22" -> "SALA 22 - 9EFMA / 6EFTC")
       const migrated = parsed.map(item => {
         const match = item.trim().toUpperCase().match(/^SALA\s*0?(\d+)$/);
-        if (match) {
-          const key = `SALA ${parseInt(match[1], 10)}`;
-          return ACTIVE_CLASSROOM_MAP[key] || item;
-        }
+        if (match) { const key = `SALA ${parseInt(match[1], 10)}`; return ACTIVE_CLASSROOM_MAP[key] || item; }
         return item;
       });
-      try {
-        localStorage.setItem(RECENT_SPACES_KEY, JSON.stringify(migrated));
-      } catch {}
+      try { localStorage.setItem(RECENT_SPACES_KEY, JSON.stringify(migrated)); } catch {}
       return migrated;
-    } catch {
-      return [];
-    }
+    } catch { return []; }
   });
-
   const saveRecentClassroom = (roomName: string) => {
     if (!roomName || !roomName.trim()) return;
     const clean = roomName.trim();
     setRecentClassrooms(prev => {
-      const filtered = prev.filter(r => r.toLowerCase() !== clean.toLowerCase());
-      const updated = [clean, ...filtered].slice(0, 5); // Mantém os 5 mais recentes
-      try {
-        localStorage.setItem(RECENT_SPACES_KEY, JSON.stringify(updated));
-      } catch {}
+      const updated = [clean, ...prev.filter(r => r.toLowerCase() !== clean.toLowerCase())].slice(0, 5);
+      try { localStorage.setItem(RECENT_SPACES_KEY, JSON.stringify(updated)); } catch {}
       return updated;
     });
   };
 
-  // Merge e ordenação prioritária das salas para seguir exatamente o cadastro das Configurações
   const combinedSpaces = useMemo<ExtendedSpace[]>(() => {
-    // 1. Mapeia espaços do banco substituindo salas legadas pelo nome oficial com turmas
-    const mappedDbSpaces: ExtendedSpace[] = spaces.map(s => {
+    const mapped: ExtendedSpace[] = spaces.map(s => {
       const match = s.name.trim().toUpperCase().match(/^SALA\s*0?(\d+)$/);
-      if (match) {
-        const key = `SALA ${parseInt(match[1], 10)}`;
-        if (ACTIVE_CLASSROOM_MAP[key]) {
-          return { ...s, name: ACTIVE_CLASSROOM_MAP[key] };
-        }
-      }
+      if (match) { const key = `SALA ${parseInt(match[1], 10)}`; if (ACTIVE_CLASSROOM_MAP[key]) return { ...s, name: ACTIVE_CLASSROOM_MAP[key] }; }
       return s;
     });
-
-    // 2. Adiciona as salas oficiais como virtuais caso não estejam no banco
-    const dbSpaceNames = new Set(mappedDbSpaces.map(s => s.name.toLowerCase()));
-    const virtualSpaces: ExtendedSpace[] = INITIAL_DEFAULT_SPACES
-      .filter(name => !dbSpaceNames.has(name.toLowerCase()))
-      .map((name, index) => ({
-        id: `virtual-${index}`,
-        name,
-        color: name.includes('GOOGLE') ? '#3C8527' : name.includes('MAKER') ? '#8B5CF6' : '#3B82F6',
-        isVirtual: true
-      }));
-
-    const all = [...mappedDbSpaces, ...virtualSpaces];
-
-    // 3. Ordenação inteligente:
-    // Categoria 1: Salas de Aula Oficiais ordenadas numericamente (SALA 3, 4, 5... 41)
-    // Categoria 2: Espaços Especiais (SALA GOOGLE, SALA MAKER, BIBLIOTECA, AUDITÓRIO, etc.)
-    // Categoria 3: Outros Espaços (BRINQUEDÃO, PARQUES...)
-    return all.sort((a, b) => {
-      const aName = a.name.trim().toUpperCase();
-      const bName = b.name.trim().toUpperCase();
-
-      const aIsRoom = aName.startsWith('SALA') && !aName.includes('GOOGLE') && !aName.includes('MAKER');
-      const bIsRoom = bName.startsWith('SALA') && !bName.includes('GOOGLE') && !bName.includes('MAKER');
-
-      if (aIsRoom && bIsRoom) {
-        const aNum = parseInt(aName.replace(/\D/g, ''), 10) || 0;
-        const bNum = parseInt(bName.replace(/\D/g, ''), 10) || 0;
-        return aNum - bNum;
-      }
-      if (aIsRoom && !bIsRoom) return -1;
-      if (!aIsRoom && bIsRoom) return 1;
-
-      const specialList = ['GOOGLE', 'MAKER', 'BIBLIOTECA', 'AUDITÓRIO', 'LABORATÓRIO', 'QUADRA'];
-      const aIsSpecial = specialList.some(k => aName.includes(k));
-      const bIsSpecial = specialList.some(k => bName.includes(k));
-
-      if (aIsSpecial && !bIsSpecial) return -1;
-      if (!aIsSpecial && bIsSpecial) return 1;
-
-      return aName.localeCompare(bName);
+    const names = new Set(mapped.map(s => s.name.toLowerCase()));
+    const virtual: ExtendedSpace[] = INITIAL_DEFAULT_SPACES.filter(n => !names.has(n.toLowerCase())).map((name, i) => ({
+      id: `virtual-${i}`, name, color: name.includes('GOOGLE') ? '#3C8527' : name.includes('MAKER') ? '#8B5CF6' : '#3B82F6', isVirtual: true,
+    }));
+    return [...mapped, ...virtual].sort((a, b) => {
+      const ga = roomGroup(a.name), gb = roomGroup(b.name);
+      if (ga !== gb) return ga - gb;
+      if (ga === 0) return (parseInt(a.name.replace(/\D/g, ''), 10) || 0) - (parseInt(b.name.replace(/\D/g, ''), 10) || 0);
+      return a.name.trim().toUpperCase().localeCompare(b.name.trim().toUpperCase());
     });
   }, [spaces]);
 
-  // Dynamic suggestions for classroom booking
-  const searchSuggestions = useMemo(() => {
-    if (combinedSpaces.length > 0) {
-      return [
-        "Selecione ou digite a sala/turma...",
-        ...combinedSpaces.map(s => `Ex: ${s.name}`),
-        "Digite uma turma personalizada..."
-      ];
+  // Aulas seguidas
+  const slotIdx = Math.max(0, ALL_SLOTS.indexOf(timeSlot));
+  const maxLessons = Math.max(1, Math.min(4, ALL_SLOTS.length - slotIdx));
+  const slots = useMemo(() => ALL_SLOTS.indexOf(timeSlot) < 0 ? [timeSlot] : ALL_SLOTS.slice(slotIdx, slotIdx + lessons), [timeSlot, slotIdx, lessons]);
+  const mainDateStr = format(date, 'yyyy-MM-dd');
+  const allDateStrs = useMemo(() => [mainDateStr, ...extraDates.map(d => format(d, 'yyyy-MM-dd'))], [mainDateStr, extraDates]);
+  const needsFetch = open && (slots.length > 1 || extraDates.length > 0);
+  const { data: fetched = [] } = useQuery({
+    queryKey: ['reservations', 'slots', allDateStrs, slots],
+    queryFn: () => getReservationsForSlots(allDateStrs, slots),
+    enabled: needsFetch,
+    staleTime: 30000,
+  });
+  const resFor = useCallback((d: string, s: string): Reservation[] => {
+    if (d === mainDateStr && s === timeSlot) return currentReservations;
+    return (fetched as any[]).filter(r => !r.deleted_at && r.date === d && r.time_slot === s);
+  }, [mainDateStr, timeSlot, currentReservations, fetched]);
+
+  const busySlotFor = useCallback((name: string, d = mainDateStr) => {
+    if (!name.trim()) return null;
+    return slots.find(s => resFor(d, s).some(r => eqRoom(r.classroom, name))) || null;
+  }, [slots, resFor, mainDateStr]);
+
+  const roomBusySlot = classroom ? busySlotFor(classroom) : null;
+  const dateConflicts = useMemo(() => !classroom ? [] : extraDates.map(d => ({ d, slot: busySlotFor(classroom, format(d, 'yyyy-MM-dd')) })).filter(x => x.slot), [extraDates, classroom, busySlotFor]);
+
+  const effectiveMax = useMemo(() => {
+    let m = maxQuantity;
+    for (const d of allDateStrs) for (const s of slots) {
+      if (d === mainDateStr && s === timeSlot) continue;
+      const used = resFor(d, s).reduce((a, r) => a + (r.quantity_requested || 0), 0);
+      m = Math.min(m, totalAvailableChromebooks - used);
     }
-    return [
-      "Selecione ou digite a sala/turma...",
-      "Ex: Sala Maker",
-      "Ex: Sala Google",
-      "Ex: Sala de Estudos",
-      "Digite uma turma personalizada..."
-    ];
-  }, [combinedSpaces]);
+    return Math.max(0, m);
+  }, [maxQuantity, allDateStrs, slots, resFor, mainDateStr, timeSlot, totalAvailableChromebooks]);
+  const qtyLimit = isMinecraft ? 40 : effectiveMax;
+  const totalReserved = currentReservations.reduce((s, r) => s + (r.quantity_requested || 0), 0);
 
-  // Click outside to close spaces dropdown
+  const targetProfessorId = (isBookingForOther && selectedProfessorId) ? selectedProfessorId : user?.id;
+  const profBusySlot = targetProfessorId ? slots.find(s => resFor(mainDateStr, s).some(r => r.professor_id === targetProfessorId)) : null;
+  const selectedProf = professores.find(p => p.id === selectedProfessorId);
+
+  const resetForm = () => {
+    setJustification(''); setQuantity(0); setQtyText('0'); setHasInteractedQuantity(false);
+    setNeedsTv(false); setNeedsSound(false); setNeedsMic(false); setMicQuantity(1); setIsMinecraft(false);
+    setClassroom(''); setExtraDates([]); setIsMultiMode(false); setShowCalendar(false); setLessons(1);
+    setSelectedProfessorId(user?.id || ''); setIsBookingForOther(false); setSheet(null); setQuery('');
+    setDone(null); setSubmitError(''); submittingRef.current = false;
+  };
+
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsSpaceDropdownOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
+    if (open) { resetForm(); getSpaces().then(data => setSpaces(data)); }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, getSpaces, user?.id]);
 
-  // Fetch spaces on dialog open
+  useEffect(() => { if (isMinecraft) { if (quantity === 0) setQuantity(1); if (quantity > 40) setQuantity(40); } }, [isMinecraft, quantity]);
+  useEffect(() => { if (!isMinecraft && quantity > effectiveMax) setQuantity(effectiveMax); }, [effectiveMax, isMinecraft, quantity]);
+  useEffect(() => { setQtyText(String(quantity)); }, [quantity]);
   useEffect(() => {
-    if (open) {
-      setJustification('');
-      setQuantity(0);
-      setHasInteractedQuantity(false);
-      setNeedsTv(false);
-      setNeedsSound(false);
-      setNeedsMic(false);
-      setMicQuantity(1);
-      setIsMinecraft(false);
-      setClassroom('');
-      setExtraDates([]);
-      setIsMultiMode(false);
-      setShowCalendar(false);
-      setSelectedProfessorId(user?.id || '');
-      setIsBookingForOther(false);
-
-      // Load spaces from db
-      getSpaces().then(data => {
-        setSpaces(data);
-      });
-    }
-  }, [open, getSpaces, maxQuantity, user?.id]);
-
-  // Regras de quantidade para Minecraft
-  useEffect(() => {
-    if (isMinecraft) {
-      if (quantity === 0) setQuantity(1);
-      if (quantity > 40) setQuantity(40);
-    }
-  }, [isMinecraft, quantity]);
-
-  // Reset extra resources when the room is not eligible for Chromebooks
-  useEffect(() => {
-    if (!isChromebookSpace) {
-      setNeedsTv(false);
-      setNeedsSound(false);
-      setNeedsMic(false);
-      setMicQuantity(1);
-      setIsMinecraft(false);
-    }
+    if (!isChromebookSpace) { setNeedsTv(false); setNeedsSound(false); setNeedsMic(false); setMicQuantity(1); setIsMinecraft(false); }
   }, [isChromebookSpace]);
 
   const isExpired = date < new Date(new Date().setHours(0, 0, 0, 0));
 
-  // Validador inteligente de datas para recorrência
   const isDateDisabledForRecurrence = (d: Date): boolean => {
-    // 1. Bloqueia fins de semana (Sábado e Domingo)
     if (isSaturday(d) || isSunday(d)) return true;
-
-    // 2. Bloqueia dias anteriores a hoje
-    const today = startOfDay(new Date());
-    if (isBefore(d, today)) return true;
-
-    // 3. Se for hoje, bloqueia caso o horário da aula já tenha encerrado
+    if (isBefore(d, startOfDay(new Date()))) return true;
     if (isSameDay(d, new Date())) {
-      const [hourStr, minStr] = timeSlot.split('h');
-      const slotDateTime = new Date();
-      slotDateTime.setHours(parseInt(hourStr, 10), parseInt(minStr, 10), 0, 0);
-      if (new Date() >= slotDateTime) {
-        return true;
-      }
+      const [h, m] = timeSlot.split('h');
+      const t = new Date(); t.setHours(parseInt(h, 10), parseInt(m, 10), 0, 0);
+      if (new Date() >= t) return true;
     }
-
-    // 4. Bloqueia a própria data base da reserva (ela já é a data principal e tem destaque visual próprio)
-    if (format(d, 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd')) {
-      return true;
-    }
-
+    if (format(d, 'yyyy-MM-dd') === mainDateStr) return true;
     return false;
   };
-
-  // Atalho: Repetir no mesmo dia da semana nas próximas semanas
+  const mergeDates = (newDates: Date[]) => setExtraDates(prev => {
+    const ex = new Set(prev.map(d => format(d, 'yyyy-MM-dd')));
+    return [...prev, ...newDates.filter(d => !ex.has(format(d, 'yyyy-MM-dd')))];
+  });
   const handleAddSameWeekday = () => {
-    const newDates: Date[] = [];
-    let cursor = addWeeks(date, 1);
-    const monthEnd = endOfMonth(date);
-
-    const totalWeeks = cursor > monthEnd ? 4 : 5;
-    for (let i = 0; i < totalWeeks; i++) {
-      if (!isDateDisabledForRecurrence(cursor)) {
-        newDates.push(new Date(cursor));
-      }
-      cursor = addWeeks(cursor, 1);
-    }
-
-    setExtraDates(prev => {
-      const existing = new Set(prev.map(d => format(d, 'yyyy-MM-dd')));
-      const filtered = newDates.filter(d => !existing.has(format(d, 'yyyy-MM-dd')));
-      return [...prev, ...filtered];
-    });
+    const out: Date[] = []; let c = addWeeks(date, 1);
+    const total = c > endOfMonth(date) ? 4 : 5;
+    for (let i = 0; i < total; i++) { if (!isDateDisabledForRecurrence(c)) out.push(new Date(c)); c = addWeeks(c, 1); }
+    mergeDates(out);
   };
-
-  // Atalho: Próximos 3 dias letivos de aula (Seg a Sex)
   const handleAddNextSchoolDays = () => {
-    const newDates: Date[] = [];
-    let cursor = addDays(date, 1);
-    let attempts = 0;
-
-    while (newDates.length < 3 && attempts < 14) {
-      if (!isDateDisabledForRecurrence(cursor)) {
-        newDates.push(new Date(cursor));
-      }
-      cursor = addDays(cursor, 1);
-      attempts++;
-    }
-
-    setExtraDates(prev => {
-      const existing = new Set(prev.map(d => format(d, 'yyyy-MM-dd')));
-      const filtered = newDates.filter(d => !existing.has(format(d, 'yyyy-MM-dd')));
-      return [...prev, ...filtered];
-    });
+    const out: Date[] = []; let c = addDays(date, 1); let n = 0;
+    while (out.length < 3 && n < 14) { if (!isDateDisabledForRecurrence(c)) out.push(new Date(c)); c = addDays(c, 1); n++; }
+    mergeDates(out);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const isRoomOccupied = currentReservations.some(res => res.classroom?.toLowerCase() === classroom.trim().toLowerCase());
-    if (isRoomOccupied) {
-      toast({
-        title: "Conflito de Sala",
-        description: `A sala "${classroom}" já está reservada para este horário.`,
-        variant: "destructive"
-      });
-      return;
-    }
+  // Motivo de bloqueio
+  const blockReason = (() => {
+    if (isBookingForOther && !selectedProfessorId) return 'Escolha o professor para continuar';
+    if (!classroom.trim()) return 'Escolha a sala para continuar';
+    if (roomBusySlot) return 'Sala ocupada neste horário';
+    if (!isManutencao && !hasInteractedQuantity) return 'Defina os Chromebooks para continuar';
+    if (dateConflicts.length) return `Resolva ${dateConflicts.length} conflito${dateConflicts.length > 1 ? 's' : ''}`;
+    return '';
+  })();
 
-    if (!classroom.trim() || quantity < 0 || quantity > maxQuantity) {
-      toast({
-        title: "Erro de Validação",
-        description: "Preencha a sala.",
-        variant: "destructive"
-      });
-      return;
-    }
+  const guideKey = (() => {
+    if (sheet || done) return null;
+    if (isBookingForOther && !selectedProfessorId) return 'prof';
+    if (!classroom.trim()) return 'room';
+    if (roomBusySlot) return 'roomAlert';
+    if (!isManutencao && !hasInteractedQuantity) return 'qty';
+    if (dateConflicts.length) return 'dates';
+    return null;
+  })();
+  const guideLabels = { prof: 'Escolha o professor', room: 'Escolha a sala', roomAlert: 'Troque a sala', qty: 'Defina os Chromebooks', dates: 'Resolva os conflitos' };
+  const [guide, setGuide] = useState<{ top: number; visible: boolean } | null>(null);
+  const calcGuide = useCallback(() => {
+    const sc = scrollRef.current; const el = guideKey ? refs[guideKey]?.current : null;
+    if (!sc || !el) { setGuide(g => g === null ? g : null); return; }
+    const sr = sc.getBoundingClientRect(); const er = el.getBoundingClientRect();
+    const top = er.top - sr.top + sc.scrollTop + Math.min(er.height, 64) / 2 - 14;
+    const visible = er.top + 20 >= sr.top && er.top + 20 <= sr.bottom;
+    setGuide(g => (g && Math.abs(g.top - top) < 1 && g.visible === visible) ? g : { top, visible });
+  }, [guideKey]);
+  useLayoutEffect(() => { calcGuide(); });
+  useEffect(() => {
+    if (!open) return;
+    const fn = () => calcGuide();
+    window.addEventListener('resize', fn);
+    return () => window.removeEventListener('resize', fn);
+  }, [open, calcGuide]);
+  const goToGuide = () => {
+    const el = guideKey ? refs[guideKey]?.current : null;
+    if (!el) return;
+    el.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' });
+    const f = el.matches('button,input') ? el : el.querySelector('button,input');
+    setTimeout(() => f?.focus({ preventScroll: true }), 300);
+  };
 
-    if (isBookingForOther && !selectedProfessorId) {
-      toast({
-        title: "Erro de Validação",
-        description: "Selecione o professor para quem deseja agendar.",
-        variant: "destructive"
-      });
-      return;
-    }
+  const openSheet = (k: 'room' | 'prof') => { lastFocusRef.current = document.activeElement as HTMLElement; setQuery(''); setSheet(k); };
+  const closeSheet = () => { setSheet(null); setTimeout(() => lastFocusRef.current?.focus(), 50); };
+  const pickRoom = (name: string) => { setClassroom(name); closeSheet(); };
 
+  const commitQty = (v: number) => { setHasInteractedQuantity(true); setQuantity(Math.max(isMinecraft ? 1 : 0, Math.min(qtyLimit, v))); };
+
+  const prettyDate = (() => { const s = format(date, 'EEE, dd MMM', { locale: ptBR }); return s.charAt(0).toUpperCase() + s.slice(1); })();
+  const lessonsDesc = slots.length > 1 ? `${slots.length} aulas` : '';
+  const qtyDesc = quantity === 0 ? 'Somente a sala' : `${quantity} Chromebooks`;
+  const totalDays = 1 + extraDates.length;
+  const summaryLine = [shortRoom(classroom), isBookingForOther && selectedProf ? selectedProf.nome_completo.split(' ')[0] : null,
+    !isManutencao && hasInteractedQuantity ? (quantity === 0 ? 'Só a sala' : `${quantity} Chromebooks`) : null,
+    lessonsDesc || null, totalDays > 1 ? `${totalDays} dias` : null].filter(Boolean).join(' · ');
+
+  const handleSubmit = async () => {
+    if (submittingRef.current || blockReason) return;
+    if (quantity < 0 || quantity > (isMinecraft ? 40 : Math.max(maxQuantity, 0))) {
+      setSubmitError('Quantidade de Chromebooks acima do disponível.'); return;
+    }
+    submittingRef.current = true; setSubmitError('');
     const matchedSpace = spaces.find(s => s.name.toLowerCase() === classroom.trim().toLowerCase());
-    const spaceId = matchedSpace ? matchedSpace.id : null;
-    const targetProfessorId = (isBookingForOther && selectedProfessorId) ? selectedProfessorId : user?.id;
-
-    // Se o navegador ainda não definiu a permissão de notificação push, solicita no momento do clique
     if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default') {
       subscribeToPush(true).catch(() => {});
     }
-
-    const allDates = [date, ...extraDates].map(d => format(d, 'yyyy-MM-dd'));
     const baseData = {
-      time_slot: timeSlot,
-      justification: justification.trim(),
-      quantity_requested: quantity,
-      needs_tv: needsTv,
-      needs_sound: needsSound,
-      needs_mic: needsMic,
-      mic_quantity: needsMic ? micQuantity : 0,
-      is_minecraft: isMinecraft,
-      classroom: classroom.trim(),
-      space_id: spaceId,
+      time_slot: timeSlot, justification: justification.trim(), quantity_requested: quantity,
+      needs_tv: needsTv, needs_sound: needsSound, needs_mic: needsMic, mic_quantity: needsMic ? micQuantity : 0,
+      is_minecraft: isMinecraft, classroom: classroom.trim(), space_id: matchedSpace ? matchedSpace.id : null,
       professor_id: targetProfessorId,
+      block_id: slots.length > 1 ? (crypto?.randomUUID ? crypto.randomUUID() : null) : null,
+      time_slots: slots,
     };
-
-    if (isMultiMode && extraDates.length > 0) {
-      const result = await bulkCreateReservations(allDates, baseData);
-      if (result.success) {
-        saveRecentClassroom(classroom.trim());
-        soundEffects.triggerSuccessFeedback();
-        toast({
-          title: "Agendamentos Confirmados!",
-          description: `${classroom.trim()} • ${quantity === 0 ? 'Apenas Sala' : `${quantity} Chromebooks`}${isMinecraft ? ' (Minecraft)' : ''} (+${extraDates.length} datas extras)`,
-        });
-        setOpen(false);
-        onReservationSuccess();
+    let ok = false;
+    try {
+      if (allDateStrs.length > 1 || slots.length > 1) {
+        const { time_slots, ...rest } = baseData;
+        const r = await bulkCreateReservations(allDateStrs, rest, slots);
+        ok = r.success;
+      } else {
+        const { time_slots, block_id, ...rest } = baseData;
+        const r = await createReservation({ ...rest, date: mainDateStr });
+        ok = !!r;
       }
-    } else {
-      const result = await createReservation({
-        ...baseData,
-        date: format(date, 'yyyy-MM-dd')
-      });
-      if (result) {
-        saveRecentClassroom(classroom.trim());
-        soundEffects.triggerSuccessFeedback();
-        toast({
-          title: "Agendamento Confirmado!",
-          description: `${classroom.trim()} • ${quantity === 0 ? 'Apenas Sala' : `${quantity} Chromebooks`}${isMinecraft ? ' (Minecraft)' : ''}`,
-        });
-        setOpen(false);
-        onReservationSuccess();
-      }
-    }
+    } catch { ok = false; }
+    submittingRef.current = false;
+    if (!ok) { setSubmitError('Não foi possível salvar a reserva. Tente novamente.'); return; }
+    saveRecentClassroom(classroom.trim());
+    soundEffects.triggerSuccessFeedback();
+    toast({
+      title: totalDays > 1 || slots.length > 1 ? 'Agendamentos Confirmados!' : 'Agendamento Confirmado!',
+      description: `${classroom.trim()} • ${quantity === 0 ? 'Apenas Sala' : `${quantity} Chromebooks`}${isMinecraft ? ' (Minecraft)' : ''}${extraDates.length ? ` (+${extraDates.length} datas extras)` : ''}`,
+    });
+    onReservationSuccess();
+    const res = [needsTv && 'TV', needsSound && 'Som', needsMic && `Mic (${micQuantity})`].filter(Boolean).join(', ');
+    const rows: [string, string][] = [['Sala', classroom.trim()]];
+    if (isBookingForOther && selectedProf) rows.push(['Professor', selectedProf.nome_completo]);
+    rows.push([slots.length > 1 ? 'Aulas' : 'Horário', joinPt(slots)]);
+    if (!isManutencao) rows.push(['Chromebooks', quantity === 0 ? 'Somente a sala' : String(quantity)]);
+    if (isMinecraft) rows.push(['Minecraft', 'Sim']);
+    if (res) rows.push(['Recursos', res]);
+    rows.push(['Datas', [date, ...extraDates].map(d => format(d, 'dd/MM')).join(', ')]);
+    setDone({ rows });
   };
 
-  const totalReserved = currentReservations.reduce((sum, res) => sum + res.quantity_requested, 0);
-  const available = totalAvailableChromebooks - totalReserved;
+  // Seções
+  let secN = 0;
+  const filteredRooms = combinedSpaces.filter(s => !query.trim() || norm(s.name).includes(norm(query.trim())));
+  const roomGroups = [['Salas de aula', 0], ['Espaços Especiais', 1], ['Outros', 2]].map(([t, g]) => ({ t, items: filteredRooms.filter(s => roomGroup(s.name) === g) })).filter(g => g.items.length);
+  const filteredProfs = [...professores].sort((a, b) => a.nome_completo.localeCompare(b.nome_completo)).filter(p => !query.trim() || norm(p.nome_completo).includes(norm(query.trim())));
+  const profGroups = Object.entries(filteredProfs.reduce((acc, p) => { const k = norm(p.nome_completo).charAt(0).toUpperCase() || '#'; (acc[k] = acc[k] || []).push(p); return acc; }, {} as Record<string, any[]>));
+  const firstResult = sheet === 'room' ? filteredRooms[0] : filteredProfs[0];
+
+  const inertProps = sheet ? { inert: '' } : {};
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <div
-        onClick={() => !isExpired && setOpen(true)}
-        className={cn("cursor-pointer h-full flex flex-col", isExpired && "opacity-50 cursor-not-allowed grayscale")}
-      >
+    <DialogPrimitive.Root open={open} onOpenChange={setOpen}>
+      <div onClick={() => !isExpired && setOpen(true)} className={`cursor-pointer h-full flex flex-col ${isExpired ? 'opacity-50 cursor-not-allowed grayscale' : ''}`}>
         {children}
       </div>
-
-      <DialogContent className="w-[calc(100vw-16px)] sm:w-full sm:max-w-[600px] max-h-[90dvh] flex flex-col p-0 border-[3px] sm:border-[4px] border-black dark:border-zinc-800 rounded-none shadow-[4px_4px_0px_0px_#000] sm:shadow-[10px_10px_0px_0px_#000] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.05)] sm:dark:shadow-[10px_10px_0px_0px_rgba(255,255,255,0.05)] outline-none bg-white dark:bg-zinc-950 text-black dark:text-zinc-100 selection:bg-yellow-300 selection:text-black">
-
-        {/* HEADER */}
-        <DialogHeader className="shrink-0 p-3 sm:p-5 border-b-[4px] sm:border-b-[5px] border-black bg-[#3b82f6] text-white relative z-10 space-y-0">
-          <div className="flex items-center gap-2.5 sm:gap-4 pr-12 sm:pr-14">
-            <div className="bg-white p-2 sm:p-2.5 border-[2px] sm:border-[3px] border-black shadow-[3px_3px_0_0_#000] sm:shadow-[4px_4px_0_0_#000] shrink-0">
-              <CalendarDays className="h-5 w-5 sm:h-6 sm:w-6 text-black stroke-[3]" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <DialogTitle className="text-xl sm:text-3xl font-[1000] uppercase tracking-tighter leading-none">AGENDAMENTO</DialogTitle>
-              <div className="mt-1 sm:mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1">
-                <span className="bg-black/25 px-1.5 py-0.5 border border-white/40 text-[9px] sm:text-[11px] font-black uppercase tracking-[0.08em]">
-                  {format(date, "EEE, dd 'de' MMM", { locale: ptBR })}
-                </span>
-                <span className="inline-flex items-center gap-1 text-[10px] sm:text-xs font-[1000] tracking-wider">
-                  <span className="w-1.5 h-1.5 bg-yellow-300 rounded-full animate-pulse" />
-                  {timeSlot}
-                </span>
-              </div>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={() => setOpen(false)}
-            className="absolute top-3 right-3 sm:top-4 sm:right-4 w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center bg-white border-[2px] sm:border-[3px] border-black shadow-[3px_3px_0px_0px_#000] sm:shadow-[4px_4px_0px_0px_#000] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all z-20 group"
-          >
-            <CloseIcon className="w-4 h-4 sm:w-6 sm:h-6 text-black stroke-[4] group-hover:rotate-90 transition-transform" />
-          </button>
-        </DialogHeader>
-
-        <form
-          onSubmit={handleSubmit}
-          className="flex-1 min-h-0 overflow-y-auto"
-          style={{ WebkitOverflowScrolling: 'touch' }}
-        >
-          <div className="px-4 py-3 sm:px-6 sm:py-5 space-y-4 sm:space-y-5">
-
-            {/* STATUS GRID - Visível a todos (Professores e Coordenadores) */}
-            <div className="grid grid-cols-2 gap-2.5 sm:gap-4 pt-1">
-              <div className="flex flex-col p-2.5 sm:p-3.5 border-[3px] border-black bg-[#00FF00]/10 dark:bg-green-950/20 shadow-[3px_3px_0px_0px_#000] sm:shadow-[4px_4px_0px_0px_#000] hover:translate-x-[-1px] hover:translate-y-[-1px] transition-all">
-                <div className="flex items-center gap-1.5 mb-1">
-                  <Monitor className="h-3.5 w-3.5 text-green-700 dark:text-[#4ADE80] stroke-[3]" />
-                  <span className="text-[9px] sm:text-[10px] font-[1000] uppercase text-black dark:text-white tracking-[0.12em]">Disponíveis</span>
-                </div>
-                <span className="text-2xl sm:text-4xl font-[1000] text-black dark:text-white leading-none tracking-tighter tabular-nums">{available}</span>
-              </div>
-
-              <div className="flex flex-col p-2.5 sm:p-3.5 border-[3px] border-black bg-[#8B5CF6]/10 dark:bg-purple-950/20 shadow-[3px_3px_0px_0px_#000] sm:shadow-[4px_4px_0px_0px_#000] hover:translate-x-[-1px] hover:translate-y-[-1px] transition-all">
-                <div className="flex items-center gap-1.5 mb-1">
-                  <User className="h-3.5 w-3.5 text-purple-700 dark:text-[#8B5CF6] stroke-[3]" />
-                  <span className="text-[9px] sm:text-[10px] font-[1000] uppercase text-black dark:text-white tracking-[0.12em]">Reservados</span>
-                </div>
-                <span className="text-2xl sm:text-4xl font-[1000] text-black dark:text-white leading-none tracking-tighter tabular-nums">{totalReserved}</span>
-              </div>
-            </div>
-
-            {/* RESERVAS EXISTENTES NESTE HORÁRIO */}
-            {currentReservations.length > 0 && (
-              <div className="pt-3 border-t-[3px] border-black space-y-3 animate-in fade-in slide-in-from-top-3 duration-300">
-                <div className="inline-block px-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <ListFilter className="h-4 w-4 text-black dark:text-white stroke-[3]" />
-                    <span className="text-[11px] sm:text-xs font-[1000] uppercase text-black dark:text-white tracking-widest">
-                      Reservas Existentes ({currentReservations.length})
-                    </span>
-                  </div>
-                  <div className="h-1 bg-black dark:bg-white w-full" />
-                </div>
-
-                <div className="space-y-3 pt-0.5">
-                  {currentReservations.map((res) => {
-                    const isMaint = res.prof_role === 'manutencao' || res.prof_email === 'paulo.geremias@colegiosaojudas.com.br' || res.prof_email === 'ivo@colegiosaojudas.com.br' || res.prof_email === 'manutencao.teste@colegiosaojudas.com.br';
-                    return (
-                      <div
-                        key={res.id}
-                        className={cn(
-                          "border-[3px] bg-white dark:bg-zinc-900 transition-all hover:translate-x-[-1px] hover:translate-y-[-1px] overflow-hidden",
-                          isMaint
-                            ? "border-[#52525B] shadow-[4px_4px_0px_0px_#52525B]"
-                            : "border-black dark:border-zinc-800 shadow-[4px_4px_0px_0px_#000]"
-                        )}
-                      >
-                        <div className="flex items-center justify-between bg-zinc-50 dark:bg-zinc-800/50 px-2.5 py-2 border-b-[2px] border-black dark:border-zinc-700">
-                          <div className="flex items-center gap-2.5 overflow-hidden">
-                            <div className="w-8 h-8 flex items-center justify-center bg-white border-[2px] border-black rounded-full shrink-0 shadow-[2px_2px_0_0_#000]">
-                              <User className="h-4 w-4 text-black stroke-[3]" />
-                            </div>
-                            <div className="flex flex-col truncate">
-                              <span className="text-[11px] sm:text-xs font-[1000] uppercase text-black dark:text-white truncate leading-tight">
-                                {res.prof_name || 'Professor'}
-                              </span>
-                              <span className="text-[10px] font-[900] text-zinc-500 dark:text-zinc-400 lowercase truncate tracking-tight">
-                                {res.prof_email}
-                              </span>
-                            </div>
-                          </div>
-                          {isMaint ? (
-                            <Badge className="bg-[#52525B] text-white border-[2px] border-black rounded-none h-7 text-[9px] font-[1000] uppercase px-2.5 shadow-[2px_2px_0px_0px_#000] shrink-0">
-                              ⚠️ MANUTENÇÃO
-                            </Badge>
-                          ) : !isManutencao ? (
-                            <Badge className="bg-[#8B5CF6] text-white border-[2px] border-black rounded-none h-7 text-[9px] font-[1000] uppercase px-2.5 shadow-[2px_2px_0px_0px_#000] shrink-0">
-                              {res.quantity_requested} Chromebooks
-                            </Badge>
-                          ) : (
-                            <Badge className="bg-zinc-500 text-white border-[2px] border-black rounded-none h-7 text-[9px] font-[1000] uppercase px-2.5 shadow-[2px_2px_0px_0px_#000] shrink-0">
-                              Espaço Reservado
-                            </Badge>
-                          )}
-                        </div>
-
-                        <div className="p-2.5 sm:p-3 flex flex-col gap-2">
-                          <div className="flex items-center gap-2">
-                            <div className="bg-[#3B82F6] px-2 py-0.5 border border-black shadow-[2px_2px_0_0_#000]">
-                              <span className="text-[9px] font-[1000] uppercase text-white tracking-widest">Sala / Turma</span>
-                            </div>
-                            <span className="text-xs sm:text-sm font-[1000] text-black dark:text-zinc-100 uppercase tracking-tight">
-                              {res.classroom || 'Não informada'}
-                            </span>
-                          </div>
-
-                          {res.justification && (
-                            <div className="flex items-start gap-2 pt-0.5">
-                              <div className="bg-[#FBBF24] px-2 py-0.5 border border-black shadow-[2px_2px_0_0_#000] shrink-0">
-                                <span className="text-[9px] font-[1000] uppercase text-black tracking-widest">Motivo</span>
-                              </div>
-                              <p className="text-[11px] font-black italic text-zinc-800 dark:text-zinc-200 leading-snug line-clamp-2">
-                                "{res.justification}"
-                              </p>
-                            </div>
-                          )}
-
-                          <div className="flex flex-wrap gap-2 pt-1">
-                            {res.needs_tv && (
-                              <div className="flex items-center gap-1.5 bg-zinc-100 dark:bg-zinc-800/50 px-2 py-0.5 border border-black/40 text-[10px] font-black uppercase">
-                                <Tv className="h-3 w-3 text-black" /> TV
-                              </div>
-                            )}
-                            {res.needs_sound && (
-                              <div className="flex items-center gap-1.5 bg-zinc-100 dark:bg-zinc-800/50 px-2 py-0.5 border border-black/40 text-[10px] font-black uppercase">
-                                <Volume2 className="h-3 w-3 text-black" /> Som
-                              </div>
-                            )}
-                            {res.needs_mic && (
-                              <div className="flex items-center gap-1.5 bg-zinc-100 dark:bg-zinc-800/50 px-2 py-0.5 border border-black/40 text-[10px] font-black uppercase">
-                                <Mic className="h-3 w-3 text-black" /> Mic ({res.mic_quantity})
-                              </div>
-                            )}
-                            {res.is_minecraft && (
-                              <div className="flex items-center gap-1.5 bg-green-100 dark:bg-green-900/30 px-2 py-0.5 border border-green-700 text-green-800 text-[10px] font-black uppercase">
-                                <Monitor className="h-3 w-3 text-green-700" /> Minecraft
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {/* DIVISOR NOVO AGENDAMENTO */}
-                <div className="relative flex items-center justify-center py-2">
-                  <div className="absolute inset-x-0 top-1/2 h-[2px] bg-black -translate-y-1/2" />
-                  <div className="relative bg-[#3B82F6] text-white px-3 py-1 border-[2px] border-black shadow-[2px_2px_0_0_#000] flex items-center gap-1.5">
-                    <Plus className="h-3.5 w-3.5 stroke-[3]" />
-                    <span className="text-[10px] sm:text-xs font-[1000] uppercase tracking-wider">
-                      Novo Agendamento Neste Horário
-                    </span>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* SELEÇÃO DE PROFESSOR (APENAS ADMIN/COORDENAÇÃO) */}
-            {(isAdmin || isResponsible) && professores && professores.length > 0 && (
-              <div className="border-2 border-[#1e3a8a] bg-blue-50/30 overflow-hidden shadow-[3px_3px_0_0_rgba(30,58,138,0.15)]">
-                <div className="bg-[#1e3a8a] px-3 py-1.5 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <User className="h-3.5 w-3.5 text-white" />
-                    <span className="text-[10px] sm:text-[11px] font-black uppercase text-white tracking-wider">
-                      Professor Solicitante
-                    </span>
-                  </div>
-                  <span className="bg-white/20 border border-white/50 px-1.5 py-0.5 text-white text-[8px] font-black uppercase">
-                    Coordenação / Admin
-                  </span>
-                </div>
-
-                <div className="p-3 space-y-2.5">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
-                    <p className="text-[11px] font-bold text-zinc-700 dark:text-zinc-300 leading-snug">
-                      Deseja agendar esta aula em nome de outro professor?
-                    </p>
-
-                    <div className="flex border-2 border-black dark:border-zinc-700 bg-white dark:bg-zinc-800 shadow-[2px_2px_0_0_#000] self-start sm:self-center overflow-hidden">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setIsBookingForOther(false);
-                          setSelectedProfessorId(user?.id || '');
-                        }}
-                        className={cn(
-                          "px-3.5 py-1.5 text-[10px] sm:text-[11px] font-black uppercase transition-all",
-                          !isBookingForOther ? "bg-zinc-800 text-white dark:bg-zinc-700" : "bg-white text-zinc-500 hover:text-black"
-                        )}
-                      >
-                        Para Mim
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setIsBookingForOther(true)}
-                        className={cn(
-                          "px-3 py-1.5 text-[10px] sm:text-[11px] font-black uppercase transition-all border-l-2 border-black",
-                          isBookingForOther ? "bg-[#1e3a8a] text-white" : "bg-white text-zinc-500 hover:text-black"
-                        )}
-                      >
-                        Outro Professor
-                      </button>
+      <AnimatePresence>
+        {open && (
+          <DialogPrimitive.Portal forceMount>
+            <DialogPrimitive.Overlay asChild forceMount>
+              <motion.div className="ag-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1, transition: { duration: reduce ? 0 : 0.28 } }} exit={{ opacity: 0, transition: { duration: reduce ? 0 : 0.2 } }} />
+            </DialogPrimitive.Overlay>
+            <DialogPrimitive.Content asChild forceMount aria-describedby={undefined}
+              onEscapeKeyDown={e => { if (sheet) { e.preventDefault(); closeSheet(); } }}>
+              <div className="ag-modal ag-wrap">
+                <motion.div className="ag-card"
+                  initial={reduce ? { opacity: 0 } : { opacity: 0, y: 40, scale: 0.94 }}
+                  animate={{ opacity: 1, y: 0, scale: 1, transition: { duration: reduce ? 0 : 0.55, ease: [0.34, 1.4, 0.64, 1] } }}
+                  exit={{ opacity: 0, y: reduce ? 0 : 20, scale: reduce ? 1 : 0.97, transition: { duration: reduce ? 0 : 0.2, ease: 'easeIn' } }}>
+                  <header className={`ag-head ag-rise ${scrolled ? 'is-scrolled' : ''}`} style={{ animationDuration: '.4s', animationDelay: '.05s' }} {...inertProps}>
+                    <div style={{ minWidth: 0 }}>
+                      <DialogPrimitive.Title className="ag-title">Agendamento</DialogPrimitive.Title>
+                      <span className="ag-pill">{prettyDate} · {timeSlot}{lessonsDesc ? ` · ${lessonsDesc}` : ''}</span>
                     </div>
-                  </div>
+                    <DialogPrimitive.Close className="ag-close" aria-label="Fechar"><CloseIcon size={20} strokeWidth={2.5} /></DialogPrimitive.Close>
+                  </header>
 
-                  {isBookingForOther && (
-                    <div className="pt-2 border-t border-blue-200 animate-in fade-in slide-in-from-top-1">
-                      <Label className="text-[10px] font-black uppercase tracking-wider text-[#1e3a8a] mb-1.5 block">
-                        Selecione o Professor: <span className="text-red-500">*</span>
-                      </Label>
-                      <ProfessorAutocomplete
-                        professores={professores}
-                        selectedProfessorId={selectedProfessorId}
-                        onSelect={(id) => setSelectedProfessorId(id)}
-                        disabled={isSaving}
-                      />
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* 1º PASSO: DADOS DA RESERVA (SALA / TURMA) - HERO INPUT */}
-            <div className="border-[3px] border-[#1e3a8a] bg-blue-50/40 dark:bg-blue-950/20 shadow-[5px_5px_0_0_#1e3a8a] dark:shadow-[5px_5px_0_0_rgba(30,58,138,0.5)]">
-              <div className="bg-[#1e3a8a] px-3.5 py-2.5 flex items-center justify-between border-b-[2px] border-black">
-                <div className="flex items-center gap-2">
-                  <span className="text-yellow-300 text-sm font-black animate-pulse">⚡</span>
-                  <span className="text-xs sm:text-sm font-[1000] uppercase text-white tracking-wider">
-                    {isManutencao ? "1. Espaço Físico Solicitado" : "1. Qual é a sua Sala ou Turma?"}
-                  </span>
-                </div>
-                <span className="text-white text-[9px] font-[1000] bg-yellow-400 text-black border-2 border-black px-2 py-0.5 uppercase tracking-wider shadow-[1px_1px_0_0_#000]">
-                  Obrigatório
-                </span>
-              </div>
-              <div className="p-3.5 sm:p-4 space-y-3">
-                <div className="space-y-2 relative" ref={dropdownRef}>
-                  <Label className="text-xs sm:text-sm font-[1000] uppercase text-[#1e3a8a] dark:text-blue-400 tracking-wider flex items-center gap-1.5">
-                    <span>Selecione ou digite a turma:</span>
-                    <span className="text-red-500 text-base leading-none">*</span>
-                  </Label>
-
-                  {/* Hero Input com Busca Preditiva */}
-                  <div className="relative">
-                    {activeStep === 1 && (
-                      <div className="absolute -left-7 sm:-left-8 top-1/2 -translate-y-1/2 z-30">
-                        <GuidedArrow />
-                      </div>
-                    )}
-                    <SuggestiveSearch
-                      value={classroom}
-                      onChange={(val) => {
-                        setClassroom(val);
-                        setIsSpaceDropdownOpen(true);
-                      }}
-                      onFocus={() => setIsSpaceDropdownOpen(true)}
-                      suggestions={searchSuggestions}
-                      effect="typewriter"
-                      showLeading={true}
-                      autoFocus={true}
-                      Leading={() => <Search className="h-5 w-5 text-[#1e3a8a] dark:text-blue-400" strokeWidth={2.8} />}
-                      className={cn(
-                        "w-full border-[3px] border-black dark:border-zinc-700 bg-white dark:bg-zinc-900 rounded-xl h-12 sm:h-13 transition-all shadow-[3px_3px_0_0_#000] dark:shadow-[3px_3px_0_0_rgba(255,255,255,0.08)]",
-                        isSpaceDropdownOpen && "border-[#1e3a8a] ring-4 ring-[#1e3a8a]/20 dark:ring-blue-500/20",
-                        currentReservations.find(res => res.classroom?.toLowerCase() === classroom.trim().toLowerCase()) && "border-red-500 ring-4 ring-red-500/30"
-                      )}
-                      inputClassName="pl-11 pr-14 w-full h-full bg-transparent text-xs sm:text-sm font-[1000] uppercase outline-none text-black dark:text-zinc-100 placeholder:normal-case placeholder:font-bold placeholder:text-zinc-400"
-                    />
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5 z-10">
-                      {classroom && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setClassroom('');
-                            setIsSpaceDropdownOpen(true);
-                          }}
-                          className="p-1 text-zinc-400 hover:text-black dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors"
-                          title="Limpar sala"
-                        >
-                          <CloseIcon className="h-4 w-4 stroke-[3]" />
-                        </button>
-                      )}
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setIsSpaceDropdownOpen(!isSpaceDropdownOpen);
-                        }}
-                        className="p-1 text-[#1e3a8a] dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-950/50 rounded-full transition-colors"
-                        title="Ver lista de turmas"
-                      >
-                        <ChevronDown className={cn("h-5 w-5 stroke-[2.5] transition-transform duration-200", isSpaceDropdownOpen && "rotate-180")} />
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Chips de Acesso Rápido Expostos na Superfície */}
-                  {recentClassrooms.length > 0 && (
-                    <div className="pt-1 flex flex-wrap items-center gap-1.5 animate-in fade-in slide-in-from-top-1">
-                      <span className="text-[10px] font-black uppercase text-[#1e3a8a] dark:text-blue-300 tracking-wider flex items-center gap-1 mr-0.5">
-                        <History className="h-3.5 w-3.5" /> Suas Frequentes:
-                      </span>
-                      {recentClassrooms.slice(0, 4).map((recentName, idx) => {
-                        const isOccupied = currentReservations.some(res => res.classroom?.toLowerCase() === recentName.toLowerCase());
-                        const isSelected = classroom.trim().toLowerCase() === recentName.toLowerCase();
-                        return (
-                          <button
-                            key={idx}
-                            type="button"
-                            disabled={isOccupied}
-                            onClick={() => {
-                              if (isOccupied) return;
-                              setClassroom(recentName);
-                              saveRecentClassroom(recentName);
-                              setIsSpaceDropdownOpen(false);
-                            }}
-                            className={cn(
-                              "px-2.5 py-1 text-[10px] sm:text-[11px] font-black uppercase border-2 border-black rounded-lg transition-all flex items-center gap-1 shadow-[2px_2px_0_0_#000]",
-                              isOccupied
-                                ? "bg-zinc-100 dark:bg-zinc-800 text-zinc-400 line-through cursor-not-allowed opacity-60 shadow-none border-zinc-400"
-                                : isSelected
-                                ? "bg-[#1e3a8a] text-white shadow-none translate-x-[1px] translate-y-[1px]"
-                                : "bg-white hover:bg-yellow-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-black dark:text-white hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none active:translate-x-[2px] active:translate-y-[2px]"
-                            )}
-                          >
-                            <span>{recentName.includes(' - ') ? recentName.split(' - ')[0] : recentName}</span>
-                            {recentName.includes(' - ') && (
-                              <span className="opacity-75 text-[9px] font-bold">
-                                ({recentName.split(' - ')[1].split('/')[0].trim()})
-                              </span>
-                            )}
-                            {isOccupied && <span className="text-[8px] text-red-500 font-black no-underline">(Ocupada)</span>}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  )}
-
-                  {/* ALERTA EM TEMPO REAL DE SALA OCUPADA */}
-                  {(() => {
-                    const conflictingReservation = currentReservations.find(
-                      res => classroom.trim() && res.classroom?.toLowerCase() === classroom.trim().toLowerCase()
-                    );
-
-                    if (!conflictingReservation) return null;
-
-                    return (
-                      <div className="mt-2 p-2.5 bg-red-100 dark:bg-red-950/50 border-2 border-red-600 dark:border-red-500 text-red-900 dark:text-red-200 text-xs font-black uppercase shadow-[3px_3px_0_0_rgba(220,38,38,0.3)] animate-in fade-in slide-in-from-top-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400 shrink-0" />
-                          <span>SALA OCUPADA NESTE HORÁRIO!</span>
-                        </div>
-                        <p className="text-[11px] font-bold text-red-800 dark:text-red-300 leading-tight">
-                          Reservada por <span className="underline font-black">{conflictingReservation.prof_name || conflictingReservation.prof_email}</span> ({conflictingReservation.quantity_requested} Chromebooks).
-                        </p>
-                      </div>
-                    );
-                  })()}
-
-                  {/* Dropdown Panel */}
-                  {isSpaceDropdownOpen && (
-                    <div className="relative z-10 w-full mt-1.5 border-2 border-black dark:border-zinc-700 bg-white dark:bg-zinc-950 shadow-[3px_3px_0_0_#000] dark:shadow-[3px_3px_0_0_rgba(255,255,255,0.05)] rounded-xl overflow-hidden animate-in fade-in slide-in-from-top-1 duration-100">
-                      {/* Seção: Últimos Acessados */}
-                      {recentClassrooms.length > 0 && !classroom && (
-                        <div className="p-2.5 bg-blue-50/70 dark:bg-blue-950/40 border-b-2 border-black/10 dark:border-zinc-800">
-                          <div className="flex items-center gap-1.5 mb-1.5 px-0.5">
-                            <History className="h-3.5 w-3.5 text-[#1e3a8a] dark:text-blue-400" />
-                            <span className="text-[10px] font-black uppercase text-[#1e3a8a] dark:text-blue-300 tracking-wider">
-                              Últimos Acessados:
-                            </span>
-                          </div>
-                          <div className="flex flex-wrap gap-1.5">
-                            {recentClassrooms.map((recentName, idx) => {
-                              const isOccupied = currentReservations.some(res => res.classroom?.toLowerCase() === recentName.toLowerCase());
-                              return (
-                                <button
-                                  key={idx}
-                                  type="button"
-                                  disabled={isOccupied}
-                                  onClick={() => {
-                                    if (isOccupied) return;
-                                    setClassroom(recentName);
-                                    saveRecentClassroom(recentName);
-                                    setIsSpaceDropdownOpen(false);
-                                  }}
-                                  className={cn(
-                                    "px-2.5 py-1 text-[10px] font-bold uppercase border-2 border-black shadow-[2px_2px_0_0_#000] rounded-none transition-all flex items-center gap-1",
-                                    isOccupied
-                                      ? "bg-zinc-100 text-zinc-400 line-through cursor-not-allowed opacity-60 shadow-none border-zinc-400"
-                                      : "bg-white hover:bg-yellow-200 text-black hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none"
-                                  )}
-                                >
-                                  <span>{recentName.includes(' - ') ? recentName.split(' - ')[0] : recentName}</span>
-                                  {recentName.includes(' - ') && (
-                                    <span className="opacity-75 text-[9px] font-bold">
-                                      ({recentName.split(' - ')[1].split('/')[0].trim()})
-                                    </span>
-                                  )}
-                                  {isOccupied && <span className="text-[8px] text-red-500 font-black no-underline">(Ocupada)</span>}
-                                </button>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Header da Lista de Salas */}
-                      <div className="px-3 pt-2 pb-1 bg-zinc-50/50 dark:bg-zinc-900/30 text-[9px] font-black uppercase text-zinc-400 dark:text-zinc-500 tracking-widest flex items-center justify-between">
-                        <span>{classroom ? "Resultados da Busca:" : "Salas & Espaços Oficiais:"}</span>
-                        <span className="text-[8px] bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 px-1.5 py-0.5 rounded-none font-bold">
-                          {combinedSpaces.length} disponíveis
-                        </span>
-                      </div>
-
-                      {/* Spaces List Agrupada com Salas de Aula no Topo */}
-                      <div className="max-h-[240px] overflow-y-auto divide-y divide-zinc-100 dark:divide-zinc-900 pb-2">
-                        {(() => {
-                          const filtered = combinedSpaces.filter(s => s.name.toLowerCase().includes(classroom.toLowerCase()));
-                          if (filtered.length === 0) {
-                            return (
-                              <div className="p-4 text-center text-xs text-zinc-400 font-bold uppercase">
-                                Nenhum espaço encontrado
-                              </div>
-                            );
-                          }
-
-                          const renderItem = (s: ExtendedSpace) => {
-                            const isOccupied = currentReservations.some(res => res.classroom?.toLowerCase() === s.name.toLowerCase());
-                            return (
-                              <div
-                                key={s.id}
-                                onClick={() => {
-                                  if (isOccupied) return;
-                                  setClassroom(s.name);
-                                  saveRecentClassroom(s.name);
-                                  setIsSpaceDropdownOpen(false);
-                                }}
-                                className={cn(
-                                  "w-full flex items-center justify-between px-3 py-2 text-left transition-colors cursor-pointer group",
-                                  isOccupied
-                                    ? "bg-zinc-50 dark:bg-zinc-900/50 cursor-not-allowed opacity-60"
-                                    : "hover:bg-zinc-50 dark:hover:bg-zinc-900",
-                                  classroom === s.name && "bg-blue-50 dark:bg-blue-950/20"
-                                )}
-                              >
-                                <div className="flex items-center gap-2 min-w-0">
-                                  <span
-                                    className="w-2 h-2 rounded-full shrink-0"
-                                    style={{ backgroundColor: s.color || '#3B82F6' }}
-                                  />
-                                  <div className="flex items-center gap-1.5 min-w-0 truncate">
-                                    <span className={cn(
-                                      "text-xs font-[1000] uppercase truncate",
-                                      classroom === s.name ? "text-[#1e3a8a] dark:text-blue-400" : "text-black dark:text-zinc-200"
-                                    )}>
-                                      {s.name.includes(' - ') ? s.name.split(' - ')[0] : s.name}
-                                    </span>
-                                    {s.name.includes(' - ') && (
-                                      <span className="text-[11px] font-bold text-zinc-500 dark:text-zinc-400 truncate">
-                                        • {s.name.split(' - ').slice(1).join(' - ')}
-                                      </span>
-                                    )}
-                                  </div>
-                                  {isOccupied && (
-                                    <span className="ml-2 bg-red-100 text-red-600 text-[8px] font-bold uppercase px-1.5 py-0.5 shrink-0 rounded-sm">
-                                      Ocupada
-                                    </span>
-                                  )}
-                                </div>
-                              </div>
-                            );
-                          };
-
-                          // Quando o usuário pesquisa, mostra os resultados diretos
-                          if (classroom.trim()) {
-                            return filtered.map(renderItem);
-                          }
-
-                          // Sem pesquisa: mostra agrupado em categorias claras e com as salas de aula em primeiro
-                          const salasDeAula = filtered.filter(s => {
-                            const n = s.name.toUpperCase();
-                            return n.startsWith('SALA') && !n.includes('GOOGLE') && !n.includes('MAKER');
-                          });
-
-                          const especiais = filtered.filter(s => {
-                            const n = s.name.toUpperCase();
-                            return n.includes('GOOGLE') || n.includes('MAKER') || n.includes('BIBLIOTECA') || n.includes('AUDITÓRIO') || n.includes('LABORATÓRIO') || n.includes('QUADRA');
-                          });
-
-                          const outros = filtered.filter(s => !salasDeAula.includes(s) && !especiais.includes(s));
-
-                          return (
-                            <div className="divide-y divide-zinc-100 dark:divide-zinc-900">
-                              {salasDeAula.length > 0 && (
-                                <div>
-                                  <div className="px-3 py-1.5 bg-blue-50/70 dark:bg-blue-950/40 text-[9px] font-[1000] uppercase text-[#1e3a8a] dark:text-blue-300 tracking-wider flex items-center justify-between">
-                                    <span>🎓 Salas de Aula Oficiais</span>
-                                    <span>{salasDeAula.length} salas</span>
-                                  </div>
-                                  {salasDeAula.map(renderItem)}
-                                </div>
-                              )}
-
-                              {especiais.length > 0 && (
-                                <div>
-                                  <div className="px-3 py-1.5 bg-purple-50/70 dark:bg-purple-950/40 text-[9px] font-[1000] uppercase text-purple-800 dark:text-purple-300 tracking-wider flex items-center justify-between">
-                                    <span>⚡ Espaços Especiais &amp; Multiuso</span>
-                                    <span>{especiais.length}</span>
-                                  </div>
-                                  {especiais.map(renderItem)}
-                                </div>
-                              )}
-
-                              {outros.length > 0 && (
-                                <div>
-                                  <div className="px-3 py-1.5 bg-zinc-100 dark:bg-zinc-800 text-[9px] font-[1000] uppercase text-zinc-600 dark:text-zinc-400 tracking-wider flex items-center justify-between">
-                                    <span>🎈 Outros Espaços</span>
-                                    <span>{outros.length}</span>
-                                  </div>
-                                  {outros.map(renderItem)}
-                                </div>
-                              )}
-                            </div>
-                          );
-                        })()}
-                      </div>
-
-                      {/* Rodapé Informativo: Salas sincronizadas com Configurações */}
-                      {isAdmin && (
-                        <div className="px-3 py-2 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/60 flex items-center justify-between text-[10px] text-zinc-500 font-bold uppercase">
-                          <span>Salas gerenciadas em Configurações</span>
-                          <a
-                            href="/settings"
-                            className="text-[#1e3a8a] dark:text-blue-400 font-black hover:underline"
-                          >
-                            ⚙ Abrir Salas &amp; Turmas
-                          </a>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* 2º PASSO: QUANTIDADE DE CHROMEBOOKS */}
-            {!isManutencao && (
-              <div className={cn(
-                "border-2 transition-all duration-300",
-                isMinecraft
-                  ? "border-[#3c8527] bg-green-50/30 dark:bg-green-950/10 shadow-[4px_4px_0_0_rgba(60,133,39,0.15)]"
-                  : "border-[#1e3a8a] bg-blue-50/30 dark:bg-blue-950/10 shadow-[4px_4px_0_0_rgba(30,58,138,0.15)]"
-              )}>
-                <div className={cn(
-                  "px-3 py-2 flex items-center justify-between transition-colors duration-300",
-                  isMinecraft ? "bg-[#3c8527]" : "bg-[#1e3a8a]"
-                )}>
-                  <div className="flex items-center gap-2 min-w-0">
-                    <Monitor className={cn("h-4 w-4 text-white shrink-0", quantity === 0 && "opacity-50")} />
-                    <span className="text-[12px] sm:text-[14px] font-black uppercase text-white tracking-wider truncate">
-                      2. Quantidade de Chromebooks
-                    </span>
-                  </div>
-
-                  {/* Controles de precisão (- e +) */}
-                  <div className="flex items-center gap-1.5 shrink-0">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setQuantity(prev => Math.max(isMinecraft ? 1 : 0, prev - 1));
-                        setHasInteractedQuantity(true);
-                      }}
-                      disabled={quantity <= (isMinecraft ? 1 : 0)}
-                      className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center bg-white text-black border-2 border-black font-black shadow-[2px_2px_0_0_#000] hover:bg-zinc-100 active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all disabled:opacity-40 disabled:pointer-events-none"
-                      title="Diminuir 1 Chromebook"
-                    >
-                      <Minus className="h-3.5 w-3.5 stroke-[3]" />
-                    </button>
-
-                    <div className="bg-white text-black border-2 border-black px-2.5 sm:px-3 py-0.5 sm:py-1 font-black text-xs sm:text-sm min-w-[42px] text-center shadow-[2px_2px_0_0_#000] tabular-nums">
-                      {quantity}
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setQuantity(prev => Math.min(isMinecraft ? 40 : maxQuantity, prev + 1));
-                        setHasInteractedQuantity(true);
-                      }}
-                      disabled={quantity >= (isMinecraft ? 40 : maxQuantity)}
-                      className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center bg-white text-black border-2 border-black font-black shadow-[2px_2px_0_0_#000] hover:bg-zinc-100 active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all disabled:opacity-40 disabled:pointer-events-none"
-                      title="Aumentar 1 Chromebook"
-                    >
-                      <Plus className="h-3.5 w-3.5 stroke-[3]" />
-                    </button>
-                  </div>
-                </div>
-
-                <div className="p-3 sm:p-4">
-                  <Slider
-                    value={[quantity]}
-                    onValueChange={(v) => {
-                      setQuantity(v[0]);
-                      setHasInteractedQuantity(true);
-                    }}
-                    min={isMinecraft ? 1 : 0}
-                    max={isMinecraft ? 40 : maxQuantity}
-                    step={1}
-                    className="py-2"
-                  />
-                  <div className={cn(
-                    "flex justify-between mt-1 text-[11px] sm:text-xs font-black uppercase transition-colors duration-300",
-                    isMinecraft ? "text-[#3c8527]" : "text-[#1e3a8a] dark:text-blue-400"
-                  )}>
-                    <span>Mín: {isMinecraft ? 1 : 0}</span>
-                    <span>Máx: {isMinecraft ? 40 : maxQuantity}</span>
-                  </div>
-
-                  {/* Atalhos Rápidos de Quantidade (Quick Presets) */}
-                  <div className="relative flex flex-wrap items-center gap-1.5 mt-3 pt-2.5 border-t border-black/10 dark:border-white/10">
-                    {activeStep === 2 && (
-                      <div className="absolute -left-7 sm:-left-8 top-1/2 -translate-y-1/2 z-30">
-                        <GuidedArrow />
-                      </div>
-                    )}
-                    <span className="text-[10px] font-black uppercase text-zinc-500 dark:text-zinc-400 tracking-wider mr-1">
-                      Atalhos Rápidos:
-                    </span>
-                    {!isMinecraft && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setQuantity(0);
-                          setHasInteractedQuantity(true);
-                        }}
-                        className={cn(
-                          "px-2.5 py-1 text-[10px] font-black uppercase border-2 border-black shadow-[2px_2px_0_0_#000] transition-all",
-                          quantity === 0 ? "bg-black text-white" : "bg-white hover:bg-zinc-100 text-black active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
-                        )}
-                      >
-                        0 (Só Sala)
-                      </button>
-                    )}
-                    {(isMinecraft ? 40 : maxQuantity) >= 15 && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setQuantity(15);
-                          setHasInteractedQuantity(true);
-                        }}
-                        className={cn(
-                          "px-3 py-1 min-w-[36px] text-center text-[10px] font-black uppercase border-2 border-black shadow-[2px_2px_0_0_#000] transition-all",
-                          quantity === 15 ? "bg-black text-white" : "bg-white hover:bg-zinc-100 text-black active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
-                        )}
-                      >
-                        15
-                      </button>
-                    )}
-                    {(isMinecraft ? 40 : maxQuantity) >= 30 && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setQuantity(30);
-                          setHasInteractedQuantity(true);
-                        }}
-                        className={cn(
-                          "px-3 py-1 min-w-[36px] text-center text-[10px] font-black uppercase border-2 border-black shadow-[2px_2px_0_0_#000] transition-all",
-                          quantity === 30 ? "bg-black text-white" : "bg-white hover:bg-zinc-100 text-black active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
-                        )}
-                      >
-                        30
-                      </button>
-                    )}
-                  </div>
-
-                  {/* Descrição do pacote de reserva */}
-                  {quantity === 0 && !isMinecraft ? (
-                    <div className="mt-3 p-3 border-2 border-amber-600 bg-amber-500/10 dark:bg-amber-950/30 text-amber-900 dark:text-amber-200 flex items-center gap-2.5 animate-in fade-in slide-in-from-top-1 duration-200 shadow-[2px_2px_0_0_rgba(217,119,6,0.3)]">
-                      <div className="bg-amber-500 text-white p-1 rounded-sm shrink-0 shadow-[1px_1px_0_0_#000]">
-                        <Info className="h-4 w-4" />
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="text-[11px] sm:text-xs font-black uppercase tracking-tight">
-                          Você está reservando apenas a sala, sem Chromebooks.
-                        </span>
-                        <span className="text-[10px] font-bold opacity-80 normal-case">
-                          Para solicitar máquinas, use os botões de atalho acima ou arraste o seletor.
-                        </span>
-                      </div>
+                  {done ? (
+                    <div className="ag-scroll" style={{ textAlign: 'center' }}>
+                      <svg className="ag-ok-ico" viewBox="0 0 84 84" fill="none" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <circle cx="42" cy="42" r="36" /><path d="M26 43l11 11 21-23" />
+                      </svg>
+                      <h3 className="ag-sec-t ag-rise" style={{ fontSize: 20 }}>Reserva confirmada!</h3>
+                      <p className="ag-muted ag-rise" style={{ margin: 0 }} aria-live="polite">Sua reserva já aparece na grade.</p>
+                      <ul className="ag-list ag-rise" style={{ textAlign: 'left', animationDelay: '.12s' }}>
+                        {done.rows.map(([k, v]) => <li key={k}><span>{k}</span><span>{v}</span></li>)}
+                      </ul>
                     </div>
                   ) : (
-                    <div className="mt-3 p-2.5 bg-[#a855f7] border-2 border-black flex items-center gap-2.5 animate-in fade-in slide-in-from-top-1 duration-200 shadow-[2px_2px_0_0_#000]">
-                      <div className="bg-white p-1 rounded-sm shrink-0">
-                        <Monitor className="h-4 w-4 text-[#a855f7]" />
-                      </div>
-                      <span className="text-[11px] font-black uppercase text-white tracking-widest leading-none">
-                        Espaço Físico + {quantity} Chromebooks
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
+                    <div className="ag-scroll" ref={scrollRef} onScroll={e => { setScrolled(e.currentTarget.scrollTop > 0); calcGuide(); }} {...inertProps}>
+                      {guide && guide.visible && <div className="ag-guide" style={{ top: guide.top }} aria-hidden="true"><ArrowRight size={16} strokeWidth={3} /></div>}
 
-            {/* 3º PASSO: MINECRAFT & RECURSOS EXTRAS */}
-            {!isManutencao && isChromebookSpace && (
-              <div className="space-y-3">
-                {/* OPÇÃO MINECRAFT */}
-                <div className="border-2 border-[#3c8527] bg-[#3c8527]/5 dark:bg-[#3c8527]/10 overflow-hidden shadow-[3px_3px_0_0_rgba(60,133,39,0.15)]">
-                  <div className="bg-[#3c8527] px-3 py-2 flex items-center justify-center border-b-2 border-black">
-                    <span
-                      className="uppercase select-none text-center leading-tight"
-                      style={{
-                        fontFamily: "'Press Start 2P', cursive",
-                        fontSize: '12px',
-                        letterSpacing: '1px',
-                        color: '#FFFFFF',
-                        textShadow: '2px 2px 0px #000000'
-                      }}
-                    >
-                      Aula com Minecraft
-                    </span>
-                  </div>
-
-                  <div className="p-2.5 sm:p-3 flex items-center justify-between gap-3 bg-white/50 backdrop-blur-sm">
-                    <div className="flex-1">
-                      <p className="text-[9px] sm:text-[10px] font-black text-black/70 dark:text-zinc-300 uppercase leading-tight">
-                        HABILITE PARA UTILIZAR O MINECRAFT EDUCATION. <br />
-                        <span className="text-[#3c8527] font-[1000] tracking-tight">EXCLUSIVO SALA GOOGLE (EXIGE PREPARO PRÉVIO) • LIMITE DE 40 CHROMEBOOKS.</span>
-                      </p>
-                    </div>
-
-                    <div className="flex border-[2px] border-black bg-black shadow-[2px_2px_0px_0px_rgba(0,0,0,0.15)] h-8">
-                      <button
-                        type="button"
-                        onClick={() => setIsMinecraft(false)}
-                        className={cn(
-                          "px-3.5 sm:px-5 h-full text-[10px] font-[1000] uppercase tracking-wider transition-all",
-                          !isMinecraft ? "bg-black text-white" : "bg-white text-black hover:bg-zinc-50"
-                        )}
-                      >
-                        NÃO
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setIsMinecraft(true)}
-                        className={cn(
-                          "px-3.5 sm:px-5 h-full text-[10px] font-[1000] uppercase tracking-wider transition-all border-l-[2px] border-black",
-                          isMinecraft ? "bg-[#3c8527] text-white" : "bg-white text-black hover:bg-zinc-50"
-                        )}
-                      >
-                        SIM
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                {/* RECURSOS EXTRAS (TV, SOM, MIC) */}
-                <div className="border-2 border-[#1e3a8a] bg-[#1e3a8a]/5 dark:bg-[#1e3a8a]/10 overflow-hidden shadow-[3px_3px_0_0_rgba(30,58,138,0.15)] animate-in fade-in zoom-in-95 duration-200">
-                  <div className="bg-[#1e3a8a] px-3 py-1.5 flex items-center gap-2">
-                    <Tv className="h-3.5 w-3.5 text-white" />
-                    <span className="text-[10px] sm:text-xs font-black uppercase text-white tracking-wider">
-                      Recursos Extras da Sala
-                    </span>
-                  </div>
-                  <div className="p-3">
-                    <div className="grid grid-cols-2 gap-2 sm:gap-2.5">
-                      {/* TV */}
-                      <div
-                        onClick={() => setNeedsTv(!needsTv)}
-                        className={cn(
-                          "flex items-center gap-2 p-2 border-2 border-black cursor-pointer transition-all",
-                          needsTv ? "bg-black text-white shadow-none translate-x-[1px] translate-y-[1px]" : "bg-white text-black hover:bg-zinc-50 shadow-[2px_2px_0_0_#000]"
-                        )}
-                      >
-                        <Tv className={cn("h-3.5 w-3.5", needsTv ? "text-white" : "text-black")} />
-                        <span className="text-[11px] font-black uppercase">TV</span>
-                      </div>
-
-                      {/* SOM */}
-                      <div
-                        onClick={() => setNeedsSound(!needsSound)}
-                        className={cn(
-                          "flex items-center gap-2 p-2 border-2 border-black cursor-pointer transition-all",
-                          needsSound ? "bg-black text-white shadow-none translate-x-[1px] translate-y-[1px]" : "bg-white text-black hover:bg-zinc-50 shadow-[2px_2px_0_0_#000]"
-                        )}
-                      >
-                        <Volume2 className={cn("h-3.5 w-3.5", needsSound ? "text-white" : "text-black")} />
-                        <span className="text-[11px] font-black uppercase">Som</span>
-                      </div>
-
-                      {/* MIC */}
-                      <div
-                        onClick={() => setNeedsMic(!needsMic)}
-                        className={cn(
-                          "flex items-center gap-2 p-2 border-2 border-black cursor-pointer transition-all col-span-2 sm:col-span-1 min-h-[44px]",
-                          needsMic ? "bg-black text-white shadow-none translate-x-[1px] translate-y-[1px]" : "bg-white text-black hover:bg-zinc-50 shadow-[2px_2px_0_0_#000]"
-                        )}
-                      >
-                        <Mic className={cn("h-3.5 w-3.5", needsMic ? "text-white" : "text-black")} />
-                        <span className="text-[11px] font-black uppercase">Mic</span>
-
-                        {needsMic && (
-                          <div className="flex items-center gap-1.5 ml-auto" onClick={(e) => e.stopPropagation()}>
-                            <button
-                              type="button"
-                              onClick={() => setMicQuantity(Math.max(1, micQuantity - 1))}
-                              className="w-6 h-6 flex items-center justify-center bg-zinc-800 text-white border border-white/40 hover:bg-zinc-700 active:scale-95"
-                            >
-                              <Minus className="h-3 w-3" />
+                      {canBookForOther && (
+                        <Section n={++secN} title="Reservar para" done={!isBookingForOther || !!selectedProfessorId} innerRef={refs.prof}>
+                          <div className="ag-chips" role="group" aria-label="Reservar para">
+                            <button type="button" className="ag-chip" aria-pressed={!isBookingForOther} onClick={() => { setIsBookingForOther(false); setSelectedProfessorId(user?.id || ''); }}><User size={16} />Para mim</button>
+                            <button type="button" className="ag-chip" aria-pressed={isBookingForOther} onClick={() => { setIsBookingForOther(true); setSelectedProfessorId(''); openSheet('prof'); }}><Users size={16} />Outro professor</button>
+                          </div>
+                          {isBookingForOther && (
+                            <button type="button" className={`ag-field ${selectedProf ? 'ok' : ''}`} style={{ marginTop: 10 }} onClick={() => openSheet('prof')}>
+                              <span className="ag-av">{selectedProf ? selectedProf.nome_completo.charAt(0).toUpperCase() : <Search size={16} />}</span>
+                              <span style={{ flex: 1, fontWeight: 700 }}>{selectedProf ? selectedProf.nome_completo : 'Buscar professor'}</span>
+                              <span className="ag-link" as="span">{selectedProf ? 'Trocar' : <ChevronDown size={18} />}</span>
                             </button>
-                            <span className="w-3 text-center text-xs font-black text-white">{micQuantity}</span>
-                            <button
-                              type="button"
-                              onClick={() => setMicQuantity(Math.min(2, micQuantity + 1))}
-                              disabled={micQuantity >= 2}
-                              className="w-6 h-6 flex items-center justify-center bg-zinc-800 text-white border border-white/40 hover:bg-zinc-700 active:scale-95 disabled:opacity-30"
-                            >
-                              <Plus className="h-3 w-3" />
-                            </button>
-                          </div>
-                        )}
-                      </div>
-
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* 4º PASSO: RECORRÊNCIA (MÚLTIPLAS DATAS) */}
-            {!isManutencao && (
-              <div className="border-2 border-[#1e3a8a] bg-blue-50/30 overflow-hidden shadow-[3px_3px_0_0_rgba(30,58,138,0.15)] relative">
-                <div className="bg-[#1e3a8a] px-3 py-1.5 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <CalendarDays className="h-3.5 w-3.5 text-white" />
-                    <span className="text-[10px] sm:text-xs font-black uppercase text-white tracking-wider">
-                      Repetir em Outros Dias? (Recorrência)
-                    </span>
-                  </div>
-                  <span className="bg-white/20 border border-white/50 px-1.5 py-0.5 text-white text-[8px] font-black uppercase">
-                    Opcional
-                  </span>
-                </div>
-
-                <div className="p-3">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
-                    <p className="text-[11px] font-bold text-zinc-700 dark:text-zinc-300 leading-snug max-w-full sm:max-w-[280px]">
-                      Deseja reservar este mesmo horário para outras datas da semana ou do mês?
-                    </p>
-
-                    <div className="flex border-2 border-black dark:border-zinc-700 bg-white dark:bg-zinc-800 shadow-[2px_2px_0_0_#000] self-start sm:self-center overflow-hidden">
-                      <button
-                        type="button"
-                        onClick={() => setIsMultiMode(false)}
-                        className={cn(
-                          "px-4 py-1.5 text-[11px] font-black uppercase transition-all",
-                          !isMultiMode ? "bg-zinc-800 text-white" : "bg-white text-zinc-500 hover:text-black"
-                        )}
-                      >
-                        Não
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setIsMultiMode(true)}
-                        className={cn(
-                          "px-4 py-1.5 text-[11px] font-black uppercase transition-all border-l-2 border-black",
-                          isMultiMode ? "bg-[#1e3a8a] text-white" : "bg-white text-zinc-500 hover:text-black"
-                        )}
-                      >
-                        Sim
-                      </button>
-                    </div>
-                  </div>
-
-                  {isMultiMode && (
-                    <div className="mt-3 pt-3 border-t-2 border-blue-200 dark:border-blue-900/50 animate-in fade-in slide-in-from-top-1">
-                      {/* Atalhos de Recorrência Inteligentes */}
-                      <div className="flex flex-wrap items-center gap-1.5 mb-2.5">
-                        <span className="text-[10px] font-black uppercase text-zinc-500 dark:text-zinc-400 tracking-wider">
-                          Atalhos Rápidos:
-                        </span>
-                        <button
-                          type="button"
-                          onClick={handleAddSameWeekday}
-                          className="px-2 py-1 text-[10px] font-black uppercase border border-black dark:border-zinc-700 bg-white dark:bg-zinc-900 text-black dark:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 shadow-[1px_1px_0_0_#000] active:translate-x-[1px] active:translate-y-[1px] transition-all"
-                          title="Repetir neste mesmo dia da semana nas próximas semanas"
-                        >
-                          + Toda {format(date, 'EEEE', { locale: ptBR }).split('-')[0]}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={handleAddNextSchoolDays}
-                          className="px-2 py-1 text-[10px] font-black uppercase border border-black dark:border-zinc-700 bg-white dark:bg-zinc-900 text-black dark:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 shadow-[1px_1px_0_0_#000] active:translate-x-[1px] active:translate-y-[1px] transition-all"
-                          title="Adicionar os próximos 3 dias úteis de aula"
-                        >
-                          + Próximos 3 Dias de Aula
-                        </button>
-                        {extraDates.length > 0 && (
-                          <button
-                            type="button"
-                            onClick={() => setExtraDates([])}
-                            className="px-2 py-0.5 text-[10px] font-bold text-red-600 hover:text-red-700 underline uppercase ml-auto"
-                          >
-                            Limpar ({extraDates.length})
-                          </button>
-                        )}
-                      </div>
-
-                      <Label className="text-[10px] font-black uppercase tracking-wider text-[#1e3a8a] dark:text-blue-400 mb-1.5 block">
-                        Dias selecionados para este horário:
-                      </Label>
-                      <div className="flex flex-wrap gap-1.5">
-                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#3B82F6] text-white text-[11px] font-black uppercase border border-black shadow-[2px_2px_0_0_#000]" title="Data base da reserva que você clicou">
-                          <Calendar className="h-3 w-3" />
-                          {format(date, 'dd/MM')}
-                          <span className="text-yellow-200 text-[9px] font-bold">★ Principal</span>
-                        </div>
-                        {extraDates.map((d, i) => (
-                          <div key={i} className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#1e40af] text-white text-[11px] font-black uppercase border border-black shadow-[2px_2px_0_0_#000] group">
-                            <Calendar className="h-3 w-3" />
-                            {format(d, 'dd/MM')}
-                            <CloseIcon className="h-3 w-3 cursor-pointer opacity-70 group-hover:opacity-100" onClick={() => setExtraDates(extraDates.filter((_, idx) => idx !== i))} />
-                          </div>
-                        ))}
-                        <Button
-                          type="button"
-                          onClick={() => setShowCalendar(!showCalendar)}
-                          className="h-auto py-1 px-2.5 bg-white dark:bg-zinc-900 text-[#1e3a8a] dark:text-blue-400 border-2 border-dashed border-[#1e3a8a] dark:border-blue-700 text-[10px] font-black uppercase hover:bg-blue-50 dark:hover:bg-blue-950/40 rounded-none flex items-center gap-1 shadow-[1px_1px_0_0_rgba(30,58,138,0.1)]"
-                        >
-                          <CalendarDays className="h-3.5 w-3.5" />
-                          {showCalendar ? "Fechar Calendário" : "Escolher no Calendário"}
-                        </Button>
-                      </div>
-
-                      {showCalendar && (
-                        <div className="mt-2.5 border-2 border-black dark:border-zinc-700 p-2.5 bg-white dark:bg-zinc-900 shadow-[3px_3px_0_0_#000] animate-in fade-in slide-in-from-top-1">
-                          {/* Legenda visual explicativa da agendinha */}
-                          <div className="flex flex-wrap items-center justify-between gap-2 pb-2 mb-2 border-b border-zinc-200 dark:border-zinc-800 text-[10px] font-bold">
-                            <div className="flex items-center gap-1.5">
-                              <span className="w-3 h-3 bg-[#3B82F6] border border-black inline-block shadow-[1px_1px_0_0_#000]" />
-                              <span className="text-zinc-800 dark:text-zinc-200 font-black">
-                                {format(date, 'dd/MM')} (Dia Principal)
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-1.5">
-                              <span className="w-3 h-3 bg-[#1e40af] border border-black inline-block shadow-[1px_1px_0_0_#000]" />
-                              <span className="text-zinc-700 dark:text-zinc-300">
-                                Datas Extras ({extraDates.length})
-                              </span>
-                            </div>
-                            <span className="text-[9px] text-zinc-400 font-normal">
-                              Fins de semana bloqueados
-                            </span>
-                          </div>
-
-                          <CalendarUI
-                            mode="multiple"
-                            selected={extraDates}
-                            onSelect={(dates) => setExtraDates(dates || [])}
-                            disabled={isDateDisabledForRecurrence}
-                            modifiers={{
-                              baseDate: date,
-                            }}
-                            modifiersClassNames={{
-                              baseDate: "bg-[#3B82F6] text-white font-black border-2 border-black opacity-100 shadow-[2px_2px_0_0_#000]",
-                            }}
-                            className="rounded-none w-full p-0"
-                            locale={ptBR}
-                            classNames={{
-                              months: "space-y-2 w-full",
-                              month: "space-y-2 w-full",
-                              caption: "flex justify-center pt-0.5 relative items-center mb-2",
-                              caption_label: "text-xs font-black uppercase tracking-wider text-zinc-950 dark:text-zinc-50",
-                              head_cell: "text-zinc-500 flex-1 font-black uppercase text-[10px] tracking-wider text-center",
-                              row: "flex w-full justify-between mt-1 px-0.5",
-                              cell: "h-8 sm:h-9 flex-1 text-center text-xs p-0 relative focus-within:relative focus-within:z-20",
-                              day: "h-7 w-7 sm:h-8 sm:w-8 mx-auto p-0 text-xs font-black rounded-none border border-transparent text-black dark:text-white aria-selected:opacity-100",
-                              day_selected: "bg-[#1e40af] text-white hover:bg-[#1e3a8a] focus:bg-[#1e40af] rounded-none border-2 border-black shadow-[2px_2px_0_0_#000]",
-                              day_today: "border-2 border-black dark:border-zinc-500 font-black text-black dark:text-white",
-                              day_disabled: "text-zinc-300 dark:text-zinc-700 opacity-40 cursor-not-allowed hover:bg-transparent",
-                            }}
-                          />
-
-                          <Button
-                            type="button"
-                            onClick={() => setShowCalendar(false)}
-                            className="w-full mt-2.5 bg-[#1e3a8a] hover:bg-[#1e40af] text-white h-9 text-xs font-black uppercase rounded-none border-2 border-black shadow-[2px_2px_0_0_#000] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all"
-                          >
-                            Confirmar Datas Selecionadas ({extraDates.length})
-                          </Button>
-                        </div>
+                          )}
+                          {profBusySlot && (isBookingForOther ? !!selectedProf : true) && (
+                            <div className="ag-alert warn" role="status"><AlertTriangle size={18} />{isBookingForOther && selectedProf ? selectedProf.nome_completo.split(' ')[0] : 'Você'} já tem aula às {profBusySlot}.</div>
+                          )}
+                        </Section>
                       )}
+
+                      {ALL_SLOTS.includes(timeSlot) && maxLessons > 1 && (
+                        <Section n={++secN} title="Aulas seguidas" done={true}>
+                          <div className="ag-chips" role="group" aria-label="Quantidade de aulas seguidas">
+                            {Array.from({ length: maxLessons }, (_, i) => i + 1).map(n => (
+                              <button key={n} type="button" className="ag-chip" aria-pressed={lessons === n} onClick={() => setLessons(n)}>{n} {n === 1 ? 'aula' : 'aulas'}</button>
+                            ))}
+                          </div>
+                          <p className="ag-muted" style={{ margin: '10px 0 0' }}>{slots.length > 1 ? `Aulas das ${joinPt(slots)}, seguidas.` : `Somente a aula das ${timeSlot}.`}</p>
+                          {!canBookForOther && profBusySlot && <div className="ag-alert warn" role="status"><AlertTriangle size={18} />Você já tem aula às {profBusySlot}.</div>}
+                        </Section>
+                      )}
+
+                      <Section n={++secN} title={isManutencao ? 'Espaço físico' : 'Sala ou turma'} done={!!classroom && !roomBusySlot}>
+                        <button type="button" ref={refs.room} className={`ag-field ${classroom ? (roomBusySlot ? 'bad' : 'ok') : ''}`} onClick={() => openSheet('room')}>
+                          <span className="ag-ico">{classroom && !roomBusySlot ? <Check size={20} strokeWidth={3} /> : <MapPin size={20} />}</span>
+                          <span style={{ flex: 1, minWidth: 0 }}>
+                            {classroom ? (<>
+                              <span style={{ display: 'block', fontWeight: 800 }}>{shortRoom(classroom)}</span>
+                              {classroom.includes(' - ') && <span className="ag-muted" style={{ display: 'block' }}>{classroom.split(' - ').slice(1).join(' - ')}</span>}
+                              <span style={{ display: 'block', fontSize: 12, fontWeight: 700, color: roomBusySlot ? 'var(--ag-err)' : 'var(--ag-ok)' }}>
+                                {roomBusySlot ? `Ocupada às ${roomBusySlot}` : slots.length > 1 ? `Livre nas ${slots.length} aulas` : `Livre às ${timeSlot}`}
+                              </span>
+                            </>) : (<>
+                              <span style={{ display: 'block', fontWeight: 800 }}>Buscar sala ou turma</span>
+                              <span className="ag-muted" style={{ display: 'block' }}>Digite o nome ou escolha na lista</span>
+                            </>)}
+                          </span>
+                          {classroom && <span className="ag-link">Trocar</span>}
+                        </button>
+                        {roomBusySlot && (
+                          <div className="ag-alert err" ref={refs.roomAlert} role="alert"><AlertTriangle size={18} />Sala ocupada às {roomBusySlot}.<button type="button" className="ag-btn-s" onClick={() => openSheet('room')}>Trocar sala</button></div>
+                        )}
+                        {recentClassrooms.length > 0 && (
+                          <div style={{ marginTop: 12 }}>
+                            <p className="ag-muted" style={{ margin: '0 0 8px', fontWeight: 700 }}>Recentes</p>
+                            <div className="ag-chips" role="group" aria-label="Salas recentes">
+                              {recentClassrooms.slice(0, 4).map(r => {
+                                const busy = !!busySlotFor(r);
+                                return <button key={r} type="button" className="ag-chip" aria-pressed={eqRoom(classroom, r)} onClick={() => setClassroom(r)}><span className={`ag-dot ${busy ? 'busy' : ''}`} aria-label={busy ? 'Ocupada' : 'Livre'} />{shortRoom(r)}</button>;
+                              })}
+                            </div>
+                          </div>
+                        )}
+                      </Section>
+
+                      {!isManutencao && (
+                        <Section n={++secN} title="Chromebooks" done={hasInteractedQuantity} innerRef={refs.qty}>
+                          <p className="ag-muted" style={{ margin: '0 0 10px' }}>
+                            <b style={{ color: 'var(--ag-text)' }}>{effectiveMax}</b> livres {slots.length > 1 ? `nas ${slots.length} aulas` : `às ${timeSlot}`} · {totalReserved} reservados
+                          </p>
+                          <div className="ag-step">
+                            <button type="button" aria-label="Diminuir" disabled={quantity <= (isMinecraft ? 1 : 0)} onClick={() => commitQty(quantity - 1)}><Minus size={22} strokeWidth={3} /></button>
+                            <input type="number" inputMode="numeric" aria-label="Quantidade de Chromebooks" value={qtyText} min={isMinecraft ? 1 : 0} max={qtyLimit}
+                              onChange={e => setQtyText(e.target.value)}
+                              onBlur={() => { const v = parseInt(qtyText, 10); commitQty(isNaN(v) ? quantity : v); setQtyText(String(Math.max(isMinecraft ? 1 : 0, Math.min(qtyLimit, isNaN(v) ? quantity : v)))); }}
+                              onKeyDown={e => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur(); }} />
+                            <button type="button" aria-label="Aumentar" disabled={quantity >= qtyLimit} onClick={() => commitQty(quantity + 1)}><Plus size={22} strokeWidth={3} /></button>
+                          </div>
+                          <div className="ag-chips" role="group" aria-label="Atalhos de quantidade" style={{ marginTop: 10 }}>
+                            {!isMinecraft && <button type="button" className="ag-chip" aria-pressed={hasInteractedQuantity && quantity === 0} onClick={() => commitQty(0)}>Só a sala</button>}
+                            {qtyLimit >= 15 && <button type="button" className="ag-chip" aria-pressed={hasInteractedQuantity && quantity === 15} onClick={() => commitQty(15)}>15</button>}
+                            {qtyLimit >= 30 && <button type="button" className="ag-chip" aria-pressed={hasInteractedQuantity && quantity === 30} onClick={() => commitQty(30)}>30</button>}
+                          </div>
+                          <div className={`ag-sum ${hasInteractedQuantity && quantity > 0 ? 'purple' : ''}`} aria-live="polite">
+                            {!hasInteractedQuantity ? 'Escolha a quantidade ou toque em “Só a sala”' : quantity > 0 ? `Sala + ${quantity} Chromebooks` : 'Somente a sala, sem Chromebooks'}
+                          </div>
+                        </Section>
+                      )}
+
+                      {!isManutencao && isChromebookSpace && (
+                        <section className="ag-mc ag-pop" style={{ animationDelay: `${SEC_DELAYS[Math.min(secN++, 7)]}s` }}>
+                          <div className="ag-mc-h"><Creeper /><h3>AULA COM MINECRAFT</h3></div>
+                          <div className="ag-mc-b">
+                            Habilite para utilizar o <b>Minecraft Education</b>. Exclusivo <b>Sala Google</b> (exige preparo prévio) · limite de <b>40 Chromebooks</b>.
+                            <div className="ag-mc-btns" role="group" aria-label="Aula com Minecraft">
+                              <button type="button" className="ag-mc-btn no" aria-pressed={!isMinecraft} onClick={() => setIsMinecraft(false)}>Não</button>
+                              <button type="button" className="ag-mc-btn yes" aria-pressed={isMinecraft} onClick={() => { setIsMinecraft(true); setHasInteractedQuantity(true); }}>Sim</button>
+                            </div>
+                          </div>
+                        </section>
+                      )}
+
+                      {!isManutencao && isChromebookSpace && (
+                        <Section n={++secN} title="Recursos extras da sala" optional done={needsTv || needsSound || needsMic}>
+                          <div className="ag-chips" role="group" aria-label="Recursos extras">
+                            <button type="button" className="ag-chip" aria-pressed={needsTv} onClick={() => setNeedsTv(!needsTv)}><Tv size={16} />TV</button>
+                            <button type="button" className="ag-chip" aria-pressed={needsSound} onClick={() => setNeedsSound(!needsSound)}><Volume2 size={16} />Som</button>
+                            <button type="button" className="ag-chip" aria-pressed={needsMic} onClick={() => setNeedsMic(!needsMic)}><Mic size={16} />Mic</button>
+                          </div>
+                          {needsMic && (
+                            <div className="ag-chips" role="group" aria-label="Quantidade de microfones" style={{ marginTop: 10, alignItems: 'center' }}>
+                              <span className="ag-muted" style={{ fontWeight: 700 }}>Microfones:</span>
+                              {[1, 2].map(n => <button key={n} type="button" className="ag-chip" aria-pressed={micQuantity === n} onClick={() => setMicQuantity(n)}>{n}</button>)}
+                            </div>
+                          )}
+                        </Section>
+                      )}
+
+                      {!isManutencao && (
+                        <Section n={++secN} title="Repetir em outros dias" optional done={extraDates.length > 0 && !dateConflicts.length} innerRef={refs.dates}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: -4 }}>
+                            <span className="ag-muted" style={{ flex: 1 }}>Repetir esta reserva em mais datas</span>
+                            <button type="button" role="switch" aria-checked={isMultiMode} aria-label="Repetir em outros dias" className="ag-switch"
+                              onClick={() => { const v = !isMultiMode; setIsMultiMode(v); if (!v) { setExtraDates([]); setShowCalendar(false); } }} />
+                          </div>
+                          {isMultiMode && (
+                            <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                              <div className="ag-chips">
+                                <button type="button" className="ag-chip" onClick={handleAddSameWeekday}>+ Toda {format(date, 'EEEE', { locale: ptBR })}</button>
+                                <button type="button" className="ag-chip" onClick={handleAddNextSchoolDays}>+ Próximos 3 dias de aula</button>
+                              </div>
+                              <div className="ag-chips" aria-live="polite">
+                                <span className="ag-chip" aria-pressed="true" style={{ cursor: 'default' }}>{format(date, 'dd/MM')}</span>
+                                {[...extraDates].sort((a, b) => a.getTime() - b.getTime()).map(d => {
+                                  const c = dateConflicts.find(x => isSameDay(x.d, d));
+                                  return (
+                                    <span key={d.toISOString()} className="ag-chip" style={c ? { borderColor: 'var(--ag-err)', color: 'var(--ag-err)', cursor: 'default' } : { cursor: 'default' }}>
+                                      {format(d, 'dd/MM')}{c ? ` · ocupada ${c.slot}` : ''}
+                                      <button type="button" aria-label={`Remover ${format(d, 'dd/MM')}`} onClick={() => setExtraDates(p => p.filter(x => !isSameDay(x, d)))} style={{ border: 0, background: 'none', color: 'inherit', cursor: 'pointer', minWidth: 28, minHeight: 28 }}>×</button>
+                                    </span>
+                                  );
+                                })}
+                              </div>
+                              {dateConflicts.length > 0 && (
+                                <div className="ag-alert err" role="alert"><AlertTriangle size={18} />{dateConflicts.length} data{dateConflicts.length > 1 ? 's' : ''} com a sala ocupada.
+                                  <button type="button" className="ag-link" style={{ marginLeft: 'auto', color: 'inherit' }} onClick={() => setExtraDates(p => p.filter(d => !dateConflicts.some(x => isSameDay(x.d, d))))}>Remover</button></div>
+                              )}
+                              {!showCalendar ? (
+                                <button type="button" className="ag-btn-s" onClick={() => setShowCalendar(true)} style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center' }}><CalendarDays size={16} />Escolher no calendário</button>
+                              ) : (
+                                <div className="ag-cal" style={{ background: 'var(--ag-ctrl)', borderRadius: 16, border: '2px solid var(--ag-border)', padding: 8 }}>
+                                  <CalendarUI
+                                    mode="multiple" locale={ptBR} defaultMonth={date}
+                                    selected={extraDates}
+                                    onSelect={(ds: Date[] | undefined) => setExtraDates((ds || []).filter(d => !isDateDisabledForRecurrence(d)))}
+                                    disabled={isDateDisabledForRecurrence}
+                                    modifiers={{ main: date, busy: dateConflicts.map(x => x.d), off: (d: Date) => isSaturday(d) || isSunday(d) || isBefore(d, startOfDay(new Date())) }}
+                                    modifiersClassNames={{ main: 'ag-d-main', busy: 'ag-d-busy', off: 'ag-d-off' }}
+                                    classNames={{ nav_button: 'ag-cal-btn inline-flex items-center justify-center', day: 'ag-d', head_cell: 'ag-muted w-9 font-semibold text-[0.8rem]' }}
+                                    components={{ IconLeft: () => <ChevronLeft size={18} />, IconRight: () => <ChevronRight size={18} /> }}
+                                  />
+                                  <div className="ag-chips" style={{ fontSize: 12, padding: '4px 6px', gap: 12 }}>
+                                    <span><span className="ag-dot" style={{ display: 'inline-block', background: 'var(--ag-blue)' }} /> Dia principal</span>
+                                    <span><span className="ag-dot" style={{ display: 'inline-block', background: 'var(--ag-sel-bg)' }} /> Extras</span>
+                                    <span><span className="ag-dot busy" style={{ display: 'inline-block' }} /> Ocupado</span>
+                                  </div>
+                                  <button type="button" className="ag-primary" style={{ width: '100%', marginTop: 8 }} onClick={() => setShowCalendar(false)}>Concluir · {totalDays} datas</button>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </Section>
+                      )}
+
+                      <Section n={++secN} title="Conteúdo da aula" optional done={!!justification.trim()}>
+                        <textarea className="ag-tx" maxLength={200} value={justification} onChange={e => setJustification(e.target.value)} placeholder="Ex.: Pesquisa sobre o sistema solar" aria-label="Conteúdo da aula" />
+                        <div className="ag-muted" style={{ textAlign: 'right', fontSize: 12 }}>{justification.length}/200</div>
+                      </Section>
                     </div>
                   )}
-                </div>
+
+                  <footer className="ag-foot ag-rise" style={{ animationDuration: '.4s', animationDelay: '.52s' }} {...inertProps}>
+                    {done ? (<>
+                      <button type="button" className="ag-primary" onClick={() => resetForm()}>Nova reserva</button>
+                      <DialogPrimitive.Close className="ag-secondary">Fechar</DialogPrimitive.Close>
+                    </>) : (<>
+                      {guideKey && guide && !guide.visible && (
+                        <button type="button" className="ag-guide-fab" style={{ bottom: 'calc(100% + 10px)' }} onClick={goToGuide}>↓ {guideLabels[guideKey]}</button>
+                      )}
+                      {summaryLine && <div className="ag-muted" style={{ textAlign: 'center', fontWeight: 600 }} aria-live="polite">{summaryLine}</div>}
+                      {submitError && <div className="ag-err-msg" role="alert">{submitError}</div>}
+                      <button type="button" className="ag-primary" disabled={!!blockReason || isSaving} onClick={handleSubmit}>
+                        {isSaving ? (<><Loader2 size={18} className="ag-spin" />Confirmando…</>) : blockReason || (totalDays > 1 ? `Confirmar reserva (${totalDays} dias)` : 'Confirmar reserva')}
+                      </button>
+                      <DialogPrimitive.Close className="ag-secondary">Cancelar</DialogPrimitive.Close>
+                    </>)}
+                  </footer>
+
+                  <AnimatePresence>
+                    {sheet && (
+                      <Sheet key={sheet} onClose={closeSheet} label={sheet === 'room' ? 'Escolher sala' : 'Escolher professor'}>
+                        <div className="ag-sh-top">
+                          <div className="ag-search">
+                            <Search size={18} style={{ color: 'var(--ag-text2)' }} />
+                            <input autoFocus enterKeyHint="go" value={query} onChange={e => setQuery(e.target.value)}
+                              placeholder={sheet === 'room' ? 'Buscar sala ou turma (ex.: Sala 37)' : 'Buscar professor'}
+                              aria-label={sheet === 'room' ? 'Buscar sala ou turma' : 'Buscar professor'}
+                              onKeyDown={e => {
+                                if (e.key === 'Enter') {
+                                  e.preventDefault();
+                                  if (sheet === 'room') pickRoom(firstResult ? firstResult.name : query.trim());
+                                  else if (firstResult) { setSelectedProfessorId(firstResult.id); closeSheet(); }
+                                }
+                              }} />
+                            {query && <button type="button" aria-label="Limpar busca" onClick={() => setQuery('')} style={{ border: 0, background: 'none', color: 'var(--ag-text2)', width: 36, height: 36, cursor: 'pointer' }}><CloseIcon size={16} /></button>}
+                          </div>
+                          {sheet === 'room' && recentClassrooms.length > 0 && !query && (
+                            <div className="ag-chips" role="group" aria-label="Salas recentes">
+                              {recentClassrooms.slice(0, 4).map(r => <button key={r} type="button" className="ag-chip" onClick={() => pickRoom(r)}><span className={`ag-dot ${busySlotFor(r) ? 'busy' : ''}`} />{shortRoom(r)}</button>)}
+                            </div>
+                          )}
+                          <div className="ag-muted" aria-live="polite" style={{ fontSize: 12 }}>
+                            {sheet === 'room' ? filteredRooms.length : filteredProfs.length} resultado{(sheet === 'room' ? filteredRooms.length : filteredProfs.length) === 1 ? '' : 's'}
+                          </div>
+                        </div>
+                        <div className="ag-sh-list">
+                          {sheet === 'room' ? (
+                            roomGroups.length ? roomGroups.map(g => (
+                              <div key={g.t} role="group" aria-label={g.t}>
+                                <div className="ag-grp"><span>{g.t}</span><span>{g.items.length}</span></div>
+                                {g.items.map(s => {
+                                  const busy = busySlotFor(s.name);
+                                  return (
+                                    <button key={s.id} type="button" className="ag-item" onClick={() => pickRoom(s.name)}>
+                                      <span className="ag-ico" style={{ width: 34, height: 34 }}><MapPin size={16} /></span>
+                                      <span style={{ minWidth: 0 }}><Highlight text={s.name} q={query} /></span>
+                                      <span className={`ag-tag ${busy ? 'busy' : ''}`}>{busy ? 'Ocupada' : 'Livre'}</span>
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            )) : (
+                              <div style={{ textAlign: 'center', padding: 24 }}>
+                                <p className="ag-muted">Nenhuma sala encontrada.</p>
+                                {query.trim() && <button type="button" className="ag-btn-s" onClick={() => pickRoom(query.trim())}>Usar “{query.trim()}”</button>}
+                              </div>
+                            )
+                          ) : (
+                            profGroups.length ? profGroups.map(([letter, list]) => (
+                              <div key={letter} role="group" aria-label={letter}>
+                                <div className="ag-grp"><span>{letter}</span><span>{list.length}</span></div>
+                                {list.map(p => (
+                                  <button key={p.id} type="button" className="ag-item" aria-pressed={selectedProfessorId === p.id} onClick={() => { setSelectedProfessorId(p.id); closeSheet(); }}>
+                                    <span className="ag-av">{p.nome_completo.charAt(0).toUpperCase()}</span>
+                                    <span><Highlight text={p.nome_completo} q={query} /></span>
+                                    {selectedProfessorId === p.id && <Check size={18} style={{ marginLeft: 'auto', color: 'var(--ag-ok)' }} />}
+                                  </button>
+                                ))}
+                              </div>
+                            )) : <p className="ag-muted" style={{ textAlign: 'center', padding: 24 }}>Nenhum professor encontrado.</p>
+                          )}
+                        </div>
+                      </Sheet>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
               </div>
-            )}
-
-            {/* 5º PASSO: JUSTIFICATIVA / MOTIVO (OPCIONAL) */}
-            <div className="space-y-1.5 pt-1">
-              <Label className="text-[11px] sm:text-xs font-black uppercase text-[#1e3a8a] dark:text-blue-400 tracking-wider">
-                Justificativa / Conteúdo da Aula (Opcional):
-              </Label>
-              <Textarea
-                value={justification}
-                onChange={(e) => setJustification(e.target.value)}
-                placeholder="Ex: Trabalho de História sobre a Revolução Industrial / Avaliação no Forms"
-                className="border-2 border-black dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded-none min-h-[60px] text-xs resize-none focus-visible:ring-0 focus-visible:border-[#1e3a8a]"
-              />
-            </div>
-
-            {/* BARRA DE RESUMO E VALIDAÇÃO PRÉ-CONFIRMAÇÃO */}
-            <div className="pt-1">
-              {!classroom.trim() ? (
-                <div className="p-2.5 bg-yellow-50 dark:bg-yellow-950/40 border-2 border-yellow-500 dark:border-yellow-600 text-yellow-900 dark:text-yellow-200 text-xs font-bold uppercase flex items-center gap-2 shadow-[2px_2px_0_0_rgba(234,179,8,0.2)]">
-                  <AlertTriangle className="h-4 w-4 text-yellow-600 dark:text-yellow-400 shrink-0" />
-                  <span>Selecione ou digite a <strong>Sala / Turma</strong> acima para habilitar o agendamento.</span>
-                </div>
-              ) : isBookingForOther && !selectedProfessorId ? (
-                <div className="p-2.5 bg-yellow-50 dark:bg-yellow-950/40 border-2 border-yellow-500 dark:border-yellow-600 text-yellow-900 dark:text-yellow-200 text-xs font-bold uppercase flex items-center gap-2 shadow-[2px_2px_0_0_rgba(234,179,8,0.2)]">
-                  <AlertTriangle className="h-4 w-4 text-yellow-600 dark:text-yellow-400 shrink-0" />
-                  <span>Selecione o <strong>Professor Solicitante</strong> para continuar.</span>
-                </div>
-              ) : currentReservations.some(res => classroom.trim() && res.classroom?.toLowerCase() === classroom.trim().toLowerCase()) ? (
-                <div className="p-2.5 bg-red-50 dark:bg-red-950/40 border-2 border-red-500 dark:border-red-600 text-red-900 dark:text-red-200 text-xs font-bold uppercase flex items-center gap-2 shadow-[2px_2px_0_0_rgba(239,68,68,0.2)]">
-                  <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400 shrink-0" />
-                  <span>A sala <strong>"{classroom}"</strong> já está ocupada neste horário. Escolha outro espaço.</span>
-                </div>
-              ) : (
-                <div className="p-2.5 bg-green-50 dark:bg-green-950/40 border-2 border-green-600 dark:border-green-500 text-green-950 dark:text-green-200 text-xs font-bold uppercase flex items-center justify-between gap-2 shadow-[2px_2px_0_0_rgba(22,163,74,0.15)]">
-                  <div className="flex items-center gap-2 truncate">
-                    <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400 shrink-0" />
-                    <span className="truncate">
-                      Pronto: <strong>{classroom}</strong> • {quantity === 0 ? 'Apenas Espaço Físico' : `${quantity} Chromebooks`}{isMinecraft ? ' (Minecraft)' : ''}{extraDates.length > 0 ? ` • +${extraDates.length} dias extras` : ''}
-                    </span>
-                  </div>
-                  <span className="text-[9px] bg-green-200 dark:bg-green-900/60 border border-green-600 dark:border-green-400 dark:text-green-100 px-1.5 py-0.5 rounded-none font-black shrink-0">
-                    OK
-                  </span>
-                </div>
-              )}
-            </div>
-
-          </div>
-        </form>
-
-        {/* FOOTER */}
-        <DialogFooter className="shrink-0 px-4 py-3 sm:p-5 bg-white dark:bg-zinc-950 border-t-[3px] sm:border-t-[4px] border-black dark:border-zinc-800 flex flex-col-reverse sm:flex-row gap-2 sm:gap-3 z-30 shadow-[0_-6px_14px_rgba(0,0,0,0.08)]">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => setOpen(false)}
-            className="w-full sm:w-auto sm:flex-1 h-11 sm:h-12 font-[1000] uppercase tracking-wider border-[2px] sm:border-[3px] border-black dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none text-black dark:text-zinc-100 rounded-none shadow-[3px_3px_0_0_#000] sm:shadow-[4px_4px_0_0_#000] dark:shadow-[3px_3px_0_0_rgba(255,255,255,0.05)] text-xs sm:text-sm transition-all"
-          >
-            Cancelar
-          </Button>
-          <div className="relative w-full sm:w-auto sm:flex-[2]">
-            {activeStep === 3 && (
-              <div className="absolute -left-7 sm:-left-8 top-1/2 -translate-y-1/2 z-30">
-                <GuidedArrow />
-              </div>
-            )}
-            <Button
-              type="submit"
-              disabled={isSaving || !classroom.trim() || quantity < 0 || (isBookingForOther && !selectedProfessorId) || currentReservations.some(res => classroom.trim() && res.classroom?.toLowerCase() === classroom.trim().toLowerCase())}
-              onClick={handleSubmit}
-              className="w-full h-11 sm:h-12 font-[1000] uppercase tracking-wider bg-[#3B82F6] hover:bg-[#2563EB] text-white border-[2px] sm:border-[3px] border-black rounded-none shadow-[3px_3px_0_0_#000] sm:shadow-[4px_4px_0_0_#000] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none text-xs sm:text-sm disabled:opacity-50 disabled:hover:translate-x-0 disabled:hover:translate-y-0 disabled:hover:shadow-[3px_3px_0_0_#000] sm:disabled:hover:shadow-[4px_4px_0_0_#000] transition-all flex items-center justify-center gap-2"
-            >
-              {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <><CheckCircle className="h-4 w-4 stroke-[3]" /> Confirmar Reserva</>}
-            </Button>
-          </div>
-        </DialogFooter>
-
-      </DialogContent>
-    </Dialog>
+            </DialogPrimitive.Content>
+          </DialogPrimitive.Portal>
+        )}
+      </AnimatePresence>
+    </DialogPrimitive.Root>
   );
 };
+
+export default ReservationDialog;

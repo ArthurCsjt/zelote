@@ -490,6 +490,7 @@ export type Database = {
       }
       reservations: {
         Row: {
+          block_id: string | null
           classroom: string | null
           created_at: string | null
           created_by: string | null
@@ -508,6 +509,7 @@ export type Database = {
           time_slot: string
         }
         Insert: {
+          block_id?: string | null
           classroom?: string | null
           created_at?: string | null
           created_by?: string | null
@@ -526,6 +528,7 @@ export type Database = {
           time_slot: string
         }
         Update: {
+          block_id?: string | null
           classroom?: string | null
           created_at?: string | null
           created_by?: string | null

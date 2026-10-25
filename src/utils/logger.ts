@@ -26,7 +26,7 @@ export const logger = {
      * @param message - Mensagem a ser logada
      * @param context - Contexto adicional (opcional)
      */
-    log: (message: string, context?: LogContext) => {
+    log: (message: string, context?: any) => {
         if (shouldLog) {
             if (context) {
                 console.log(`[INFO] ${message}`, context);
@@ -39,7 +39,7 @@ export const logger = {
     /**
      * Log de informação (alias para log)
      */
-    info: (message: string, context?: LogContext) => {
+    info: (message: string, context?: any) => {
         if (shouldLog) {
             if (context) {
                 console.info(`[INFO] ${message}`, context);
@@ -54,7 +54,7 @@ export const logger = {
      * @param message - Mensagem de aviso
      * @param context - Contexto adicional (opcional)
      */
-    warn: (message: string, context?: LogContext) => {
+    warn: (message: string, context?: any) => {
         if (shouldLog) {
             if (context) {
                 console.warn(`[WARN] ${message}`, context);
@@ -76,7 +76,7 @@ export const logger = {
      * @param error - Objeto de erro (opcional)
      * @param context - Contexto adicional (opcional)
      */
-    error: (message: string, error?: Error | unknown, context?: LogContext) => {
+    error: (message: string, error?: Error | unknown, context?: any) => {
         if (shouldLog) {
             if (error && context) {
                 console.error(`[ERROR] ${message}`, error, context);
@@ -103,7 +103,7 @@ export const logger = {
      * @param message - Mensagem de debug
      * @param context - Contexto adicional (opcional)
      */
-    debug: (message: string, context?: LogContext) => {
+    debug: (message: string, context?: any) => {
         if (shouldLog) {
             if (context) {
                 console.debug(`[DEBUG] ${message}`, context);

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { supabase } from '@/integrations/supabase/client';
 import type { Chromebook, ChromebookData } from '@/types/database';
 import logger from '@/utils/logger';
