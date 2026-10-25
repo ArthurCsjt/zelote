@@ -33,6 +33,8 @@ export interface ReservationData {
   is_minecraft?: boolean;
   classroom?: string;
   space_id?: string | null;
+  block_id?: string | null;
+  time_slots?: string[];
 }
 
 export interface Reservation extends ReservationData {
@@ -115,8 +117,9 @@ export const createReservation = async (
       is_minecraft: data.is_minecraft || false,
       classroom: data.classroom || '',
       space_id: data.space_id || null,
+      block_id: data.block_id || null,
       created_by: userId,
-    })
+    } as any)
     .select(`
       *,
       prof_data:profiles!professor_id (name, email)
@@ -234,15 +237,17 @@ export const bulkCreateReservations = async (
   baseData: Omit<ReservationData, 'date'>,
   userId: string,
   userEmail?: string,
-  userFullName?: string
+  userFullName?: string,
+  timeSlotsList?: string[]
 ): Promise<{ success: boolean; count: number }> => {
+  const slots = (timeSlotsList && timeSlotsList.length > 0) ? timeSlotsList : [baseData.time_slot];
   // Checar se a sala já está ocupada
   if (baseData.classroom && baseData.classroom.trim()) {
     const { data: existingReservations } = await supabase
       .from('reservations')
       .select('date, classroom')
       .in('date', dates)
-      .eq('time_slot', toDbTime(baseData.time_slot));
+      .in('time_slot', slots.map(toDbTime));
 
     if (existingReservations && existingReservations.length > 0) {
       const conflictingDates = existingReservations
@@ -255,9 +260,9 @@ export const bulkCreateReservations = async (
     }
   }
 
-  const inserts = dates.map(date => ({
+  const inserts = dates.flatMap(date => slots.map(slot => ({
     date,
-    time_slot: toDbTime(baseData.time_slot),
+    time_slot: toDbTime(slot),
     professor_id: baseData.professor_id || userId,
     justification: baseData.justification,
     quantity_requested: baseData.quantity_requested,
@@ -268,12 +273,13 @@ export const bulkCreateReservations = async (
     is_minecraft: baseData.is_minecraft || false,
     classroom: baseData.classroom || '',
     space_id: baseData.space_id || null,
+    block_id: baseData.block_id || null,
     created_by: userId,
-  }));
+  })));
 
   const { data: results, error } = await supabase
     .from('reservations')
-    .insert(inserts)
+    .insert(inserts as any)
     .select();
 
   if (error) throw error;
@@ -335,6 +341,22 @@ export const bulkCreateReservations = async (
   }
 
   return { success: true, count: results.length };
+};
+
+export const getReservationsForSlots = async (dates: string[], slots: string[]): Promise<Reservation[]> => {
+  if (!dates.length || !slots.length) return [];
+  const { data, error } = await supabase
+    .from('reservations')
+    .select('*, prof_data:profiles!professor_id (name, email, role)')
+    .in('date', dates)
+    .in('time_slot', slots.map(toDbTime));
+  if (error) throw error;
+  return (data || []).map((res: any) => ({
+    ...res,
+    time_slot: fromDbTime(res.time_slot || ''),
+    prof_name: res.prof_data?.name || res.prof_data?.email || 'Usuário Desconhecido',
+    prof_email: res.prof_data?.email || '',
+  })) as Reservation[];
 };
 
 export const deleteReservation = async (id: string): Promise<boolean> => {

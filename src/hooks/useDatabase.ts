@@ -568,7 +568,8 @@ export const useDatabase = () => {
 
   const bulkCreateReservations = useCallback(async (
     dates: string[],
-    baseData: Omit<reservationService.ReservationData, 'date'>
+    baseData: Omit<reservationService.ReservationData, 'date'>,
+    timeSlotsList?: string[]
   ): Promise<{ success: boolean; count: number }> => {
     if (!user) {
       toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
@@ -582,7 +583,8 @@ export const useDatabase = () => {
         baseData,
         user.id,
         user.email || undefined,
-        user.user_metadata?.full_name || user.user_metadata?.name || undefined
+        user.user_metadata?.full_name || user.user_metadata?.name || undefined,
+        timeSlotsList
       );
       toast({ title: "Sucesso", description: `${res.count} agendamentos realizados com sucesso!`, variant: "success" });
       return res;
