@@ -1,20 +1,20 @@
-import React, { useState, useMemo } from 'react';
-import { format, isPast, isSameDay, parseISO, differenceInMinutes, addMinutes } from 'date-fns';
+import React, { useEffect, useMemo, useState } from 'react';
+import { addDays, differenceInMinutes, endOfMonth, format, getDay, isSameDay, isSameMonth, isWeekend, parseISO, startOfDay, startOfMonth, subMonths } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Calendar } from '@/components/ui/calendar';
-import { Badge } from '@/components/ui/badge';
-import { Monitor, Clock, User, CalendarDays, ArrowRight, CheckCircle } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
+import { BarChart3, CalendarDays, Download, ArrowRight, Plus, Search, Clock } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfileRole } from '@/hooks/use-profile-role';
-import { useDatabase } from '@/hooks/useDatabase';
-import { ReservationDetailsDialog } from './ReservationDetailsDialog';
-import type { Reservation } from '@/hooks/useDatabase';
-
 import { useSchedulingResponsible } from '@/hooks/useSchedulingResponsible';
+import { useDatabase } from '@/hooks/useDatabase';
+import { getReservationsForWeek, type Reservation } from '@/services/reservationService';
+import { ReservationDetailsDialog } from './ReservationDetailsDialog';
+import { byDay, collected, heatLevel, interval, makeCsv, metrics, normalize, owned, peak, quantity, ranking, rate, status, statusLabels } from './history/historyData';
+import './scheduling-history.css';
 
+type HistoryStyle = React.CSSProperties & { [key: `--hx-${string}`]: string };
 interface SchedulingMonthViewProps {
   currentDate: Date;
   reservations: Reservation[];
@@ -22,517 +22,211 @@ interface SchedulingMonthViewProps {
   isLoading: boolean;
   onReservationSuccess?: () => void;
 }
+type Filter = 'all' | 'mine' | 'pending' | 'served' | 'minecraft';
+const filters: { value: Filter; label: string }[] = [
+  { value: 'all', label: 'Todas' }, { value: 'mine', label: 'Minhas' },
+  { value: 'pending', label: 'Pendentes' }, { value: 'served', label: 'Atendidas' }, { value: 'minecraft', label: 'Minecraft' },
+];
+const percent = (value: number) => `${Math.round(value)}%`;
+const number = (value: number) => value.toLocaleString('pt-BR');
+const maintenance = (res: Reservation) => res.prof_role === 'manutencao' || ['paulo.geremias@colegiosaojudas.com.br', 'ivo@colegiosaojudas.com.br', 'manutencao.teste@colegiosaojudas.com.br'].includes(res.prof_email);
 
-const ReservationTimer: React.FC<{ date: string; timeSlot: string }> = ({ date, timeSlot }) => {
-  const [now, setNow] = React.useState(new Date());
+function Variation({ current, previous, badIncrease = false }: { current: number; previous: number; badIncrease?: boolean }) {
+  if (previous === 0 && current !== 0) return null;
+  const change = previous ? (current - previous) / previous * 100 : 0;
+  const rounded = Math.round(change);
+  const tone = rounded === 0 ? '' : (change > 0) !== badIncrease ? 'good' : 'bad';
+  return <span className={`hx-variation ${tone}`}>{rounded > 0 ? '▲ +' : rounded < 0 ? '▼ ' : ''}{rounded}% vs mês ant.</span>;
+}
 
-  React.useEffect(() => {
-    const interval = setInterval(() => setNow(new Date()), 30000); // Update every 30s for better accuracy
-    return () => clearInterval(interval);
-  }, []);
+const ReservationList = React.memo(function ReservationList({ rows, allRows, filter, query, now, userId, isManutencao, isResponsible, onOpen, onStart }: {
+  rows: Reservation[]; allRows: Reservation[]; filter: Filter; query: string; now: Date; userId?: string;
+  isManutencao: boolean; isResponsible: boolean; onOpen: (res: Reservation) => void; onStart: (res: Reservation) => void;
+}) {
+  const filtered = useMemo(() => rows.filter(res => {
+    const state = status(res, now);
+    if (filter === 'mine' && !owned(res, userId)) return false;
+    if (filter === 'pending' && state !== 'pending' && state !== 'progress-status') return false;
+    if (filter === 'served' && state !== 'served') return false;
+    if (filter === 'minecraft' && !res.is_minecraft) return false;
+    return normalize(`${res.prof_name} ${res.classroom || ''} ${res.justification || ''}`).includes(normalize(query.trim()));
+  }), [rows, filter, userId, query, now]);
+  const groups = useMemo(() => {
+    const result = new Map<string, Reservation[]>();
+    filtered.forEach(res => result.set(res.time_slot, [...(result.get(res.time_slot) || []), res]));
+    return [...result].sort(([a], [b]) => a.localeCompare(b));
+  }, [filtered]);
+  let itemIndex = 0;
+  return <div className="hx-list" aria-live="polite" aria-relevant="additions text">
+    {filtered.length === 0 && <p className="hx-empty">Nada com esses filtros</p>}
+    {groups.map(([slot, group]) => <section key={slot} aria-label={`Reservas das ${slot}`}>
+      <div className="hx-slot"><time>{slot}</time>{!isManutencao && <span>{number(allRows.filter(res => res.time_slot === slot).reduce((sum, res) => sum + quantity(res), 0))} CBs</span>}</div>
+      {group.map(res => {
+        const state = status(res, now);
+        const requested = quantity(res);
+        const loans = collected(res);
+        const { start, end } = interval(res);
+        const displayName = (res.prof_name || 'Usuário').split('@')[0];
+        const isMaintenanceReservation = maintenance(res);
+        const fulfilled = (res.associated_loans?.length ?? 0) >= requested;
+        const startingIn = differenceInMinutes(start, now);
+        const showProgress = !isManutencao && !isMaintenanceReservation && requested > 0 && now >= start;
+        const delay = `${Math.min(itemIndex++, 7) * 35}ms`;
+        return <article key={res.id} className={`hx-reservation ${res.is_minecraft ? 'minecraft' : ''}`} style={{ '--hx-delay': delay } as HistoryStyle}>
+          <button type="button" className="hx-open" onClick={() => onOpen(res)} aria-label={`Ver reserva de ${displayName}, ${res.classroom || 'sem sala'}, ${slot}`}>
+            <div className="hx-res-top">
+              <span className="hx-avatar" aria-hidden="true">{displayName.charAt(0).toUpperCase()}</span>
+              <div className="hx-person"><strong>{displayName}</strong>{owned(res, userId) && <span className="hx-you">você</span>}
+                <div className="hx-pills">
+                  {res.classroom && <span className="hx-pill hx-room">{res.classroom}</span>}
+                  {res.is_minecraft && <span className="hx-pill hx-mc">MINECRAFT</span>}
+                  <span className={`hx-pill hx-${state}`}>{statusLabels[state]}</span>
+                  {isSameDay(parseISO(res.date), now) && startingIn > 0 && startingIn <= 60 && <span className="hx-pill hx-pending"><Clock size={11} />Inicia em {startingIn}m</span>}
+                  {isSameDay(parseISO(res.date), now) && state === 'progress-status' && <span className="hx-pill hx-progress-status"><Clock size={11} />{Math.max(1, differenceInMinutes(end, now))}m restantes</span>}
+                </div>
+              </div>
+              {isMaintenanceReservation ? <span className="hx-maintenance">MANUTENÇÃO</span> : !isManutencao && <div className="hx-quantity"><strong>{number(requested)}</strong><small>CBs</small></div>}
+            </div>
+            {res.justification && <p className="hx-quote">“{res.justification}”</p>}
+            {showProgress && <div><div className="hx-progress-label">{loans} de {requested} retirados</div><div className="hx-progress" role="progressbar" aria-label="Chromebooks retirados" aria-valuemin={0} aria-valuemax={requested} aria-valuenow={Math.min(requested, loans)}><div className="hx-progress-fill" style={{ '--hx-fill': `${Math.min(100, loans / requested * 100)}%` } as HistoryStyle} /></div></div>}
+          </button>
+          {!isManutencao && loans > 0 && <div className="hx-withdrawn"><span className="hx-caption">RETIRADOS · {loans}</span><div className="hx-ids">{res.associated_loans?.map((loan, i) => <span className="hx-id" key={`${loan.chromebook_id}-${i}`}>{loan.chromebook_id}</span>)}</div></div>}
+          {isResponsible && !fulfilled && <div className="hx-action-row"><Button className="hx-control hx-start" onClick={() => onStart(res)}><ArrowRight size={15} />Iniciar</Button></div>}
+        </article>;
+      })}
+    </section>)}
+  </div>;
+});
 
-  const { startTime, endTime, isToday } = React.useMemo(() => {
-    // Parse timeSlot like "08h00"
-    const [hours, minutes] = timeSlot.toLowerCase().split('h').map(Number);
+function Ranking({ title, entries }: { title: string; entries: [string, number][] }) {
+  const max = entries[0]?.[1] || 1;
+  return <section className="hx-card"><h3 className="hx-heading">{title}</h3>{entries.length === 0 ? <p className="hx-caption">Sem dados neste mês</p> : entries.map(([name, value]) => <div className="hx-rank" key={name}><div className="hx-rank-label"><span>{name}</span><strong>{value}</strong></div><div className="hx-rank-track"><div className="hx-rank-fill" style={{ '--hx-fill': `${value / max * 100}%` } as HistoryStyle} /></div></div>)}</section>;
+}
 
-    // date is "YYYY-MM-DD"
-    const start = new Date(date + 'T' +
-      String(hours).padStart(2, '0') + ':' +
-      String(minutes).padStart(2, '0') + ':00');
-
-    const end = addMinutes(start, 50); // Standard 50min duration
-
-    return {
-      startTime: start,
-      endTime: end,
-      isToday: isSameDay(new Date(), start)
-    };
-  }, [date, timeSlot]);
-
-  if (!isToday) return null;
-
-  const diffStart = differenceInMinutes(startTime, now);
-  const diffEnd = differenceInMinutes(endTime, now);
-
-  if (diffStart > 0 && diffStart <= 60) {
-    return (
-      <span className="flex items-center gap-1.5 px-2 py-0.5 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-[10px] sm:text-[11px] font-black text-blue-700 dark:text-blue-300 uppercase tracking-tight shadow-[2px_2px_0px_0px_rgba(59,130,246,0.1)]">
-        <Clock className="h-3 w-3 animate-pulse" />
-        Inicia em {diffStart}m
-      </span>
-    );
-  }
-
-  if (diffStart <= 0 && diffEnd > 0) {
-    const isEndingSoon = diffEnd <= 10;
-    return (
-      <span className={cn(
-        "flex items-center gap-1.5 px-2 py-0.5 border text-[10px] sm:text-[11px] font-black uppercase tracking-tight transition-all",
-        isEndingSoon
-          ? "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 animate-pulse shadow-[2px_2px_0px_0px_rgba(239,68,68,0.1)]"
-          : "bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800 text-orange-700 dark:text-orange-300 shadow-[2px_2px_0px_0px_rgba(249,115,22,0.1)]"
-      )}>
-        <div className={cn(
-          "w-1.5 h-1.5 rounded-full",
-          isEndingSoon ? "bg-red-600 animate-ping" : "bg-orange-500 animate-pulse"
-        )} />
-        {isEndingSoon ? `Falta ${diffEnd}m` : `Em curso: ${diffEnd}m rest.`}
-      </span>
-    );
-  }
-
-  return null;
-};
-
-export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
-  currentDate,
-  reservations,
-  totalAvailableChromebooks,
-  isLoading,
-  onReservationSuccess,
-}) => {
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({ currentDate, reservations, totalAvailableChromebooks, isLoading, onReservationSuccess }) => {
   const navigate = useNavigate();
-  const { user: currentUser } = useAuth();
+  const { user } = useAuth();
   const { role, isAdmin } = useProfileRole();
-  const isManutencao = role === 'manutencao';
+  const { isResponsible } = useSchedulingResponsible();
   const { deleteReservation } = useDatabase();
+  const coordination = isAdmin || isResponsible;
+  const isManutencao = role === 'manutencao';
+  const [tab, setTab] = useState<'calendar' | 'analytics'>('calendar');
+  const [selectedDate, setSelectedDate] = useState(startOfMonth(currentDate));
+  const [filter, setFilter] = useState<Filter | null>(null);
+  const [query, setQuery] = useState('');
+  const [now, setNow] = useState(new Date());
   const [selectedReservation, setSelectedReservation] = useState<Reservation | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const monthKey = format(currentDate, 'yyyy-MM');
+  const monthRows = useMemo(() => reservations.filter(res => res.date.startsWith(monthKey)), [reservations, monthKey]);
+  const monthDays = useMemo(() => byDay(monthRows), [monthRows]);
+  const scopedRows = useMemo(() => coordination ? monthRows : monthRows.filter(res => owned(res, user?.id)), [monthRows, coordination, user?.id]);
+  const stats = useMemo(() => metrics(scopedRows, totalAvailableChromebooks, now), [scopedRows, totalAvailableChromebooks, now]);
+  const previousMonth = subMonths(currentDate, 1);
+  const previousStart = format(startOfMonth(previousMonth), 'yyyy-MM-dd');
+  const previousEnd = format(endOfMonth(previousMonth), 'yyyy-MM-dd');
+  const previousQuery = useQuery({ queryKey: ['reservations', 'prev-month', previousStart, previousEnd], queryFn: () => getReservationsForWeek(previousStart, previousEnd), staleTime: 5 * 60 * 1000, enabled: Boolean(user?.id) });
+  const previousStats = useMemo(() => previousQuery.isSuccess && previousQuery.data ? metrics(coordination ? previousQuery.data : previousQuery.data.filter(res => owned(res, user?.id)), totalAvailableChromebooks, now) : null, [previousQuery.isSuccess, previousQuery.data, coordination, user?.id, totalAvailableChromebooks, now]);
 
-  const isSuperAdmin = role === 'super_admin';
-  const { isResponsible } = useSchedulingResponsible();
+  useEffect(() => {
+    if (!document.getElementById('ag-fonts')) {
+      const link = document.createElement('link');
+      link.id = 'ag-fonts'; link.rel = 'stylesheet';
+      link.href = 'https://fonts.googleapis.com/css2?family=Lexend:wght@400;600;800&family=Silkscreen&display=swap';
+      document.head.appendChild(link);
+    }
+    const timer = window.setInterval(() => setNow(new Date()), 30000);
+    return () => window.clearInterval(timer);
+  }, []);
+  // Wait for the new month's rows, without moving a date the user selected later.
+  const initializedMonth = React.useRef('');
+  useEffect(() => {
+    if (isLoading || initializedMonth.current === monthKey) return;
+    initializedMonth.current = monthKey;
+    const today = new Date();
+    const firstReserved = [...monthDays.keys()].sort()[0];
+    setSelectedDate(isSameMonth(today, currentDate) ? startOfDay(today) : firstReserved ? parseISO(firstReserved) : startOfMonth(currentDate));
+    setQuery('');
+  }, [monthKey, monthDays, currentDate, isLoading]);
 
-  const reservationsByDay = useMemo(() => {
-    const map = new Map<string, Reservation[]>();
-    reservations.forEach(res => {
-      const key = res.date;
-      if (!map.has(key)) {
-        map.set(key, []);
-      }
-      map.get(key)?.push(res);
+  const dateKey = format(selectedDate, 'yyyy-MM-dd');
+  const dayRows = useMemo(() => monthDays.get(dateKey) || [], [monthDays, dateKey]);
+  const dayPeak = useMemo(() => peak(dayRows), [dayRows]);
+  const dayPast = startOfDay(selectedDate) < startOfDay(now);
+  const today = isSameDay(selectedDate, now);
+  const activeFilter = filter ?? (coordination ? 'all' : 'mine');
+  const weekdays = useMemo(() => {
+    const days = byDay(scopedRows);
+    return [1, 2, 3, 4, 5].map(day => {
+      const samples = [...days].filter(([date]) => getDay(parseISO(date)) === day).map(([, rows]) => rate(peak(rows), totalAvailableChromebooks));
+      return samples.length ? samples.reduce((sum, value) => sum + value, 0) / samples.length : 0;
     });
-    return map;
-  }, [reservations]);
-
-  const renderDayDetails = () => {
-    if (!selectedDate) return null;
-
-    const dateKey = format(selectedDate, 'yyyy-MM-dd');
-    const dayReservations = reservationsByDay.get(dateKey) || [];
-
-    // Calcula o pico de uso simultâneo no maior horário do dia (evita soma errônea entre horários diferentes)
-    const slotUsageMap = new Map<string, number>();
-    dayReservations.forEach(res => {
-      const current = slotUsageMap.get(res.time_slot) || 0;
-      slotUsageMap.set(res.time_slot, current + (res.quantity_requested || 0));
-    });
-
-    const peakReserved = slotUsageMap.size > 0 ? Math.max(...Array.from(slotUsageMap.values())) : 0;
-    const available = Math.max(0, totalAvailableChromebooks - peakReserved);
-    const isDayPast = isPast(selectedDate);
-
-    return (
-      <div className="relative w-full border-4 border-black dark:border-white bg-white dark:bg-zinc-950 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.05)] sm:shadow-[12px_12px_0px_0px_rgba(0,0,0,0.05)] overflow-hidden h-full flex flex-col min-h-0 sm:min-h-[500px] rounded-2xl">
-        {/* Background Texture */}
-        <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.07] pointer-events-none neo-brutal-dots" />
-
-        {/* Header Display - matches the calendar card style */}
-        <div className="bg-black text-white px-5 py-4 flex justify-between items-center border-b-4 border-black relative z-10 gap-3">
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="w-1.5 h-9 bg-primary shrink-0" />
-            <div className="flex flex-col min-w-0">
-              <h3 className="text-base sm:text-lg font-black uppercase tracking-tighter leading-none truncate">
-                {format(selectedDate, "dd 'de' MMMM, yyyy", { locale: ptBR })}
-              </h3>
-              <p className="text-[9px] sm:text-[10px] font-bold text-zinc-400 uppercase tracking-[0.2em] mt-1.5 flex items-center gap-1.5">
-                <span className={cn("w-1.5 h-1.5 rounded-full", isDayPast ? "bg-zinc-500" : "bg-emerald-400 animate-pulse")} />
-                {isDayPast ? 'Dados Históricos' : 'Tempo Real'}
-              </p>
-            </div>
-          </div>
-
-          {!isDayPast && (
-            <Button
-              onClick={() => navigate('/agendamento')}
-              className="bg-white text-black hover:bg-zinc-100 rounded-none border-2 border-white font-black uppercase text-[10px] tracking-wider shadow-[3px_3px_0_0_hsl(var(--primary))] hover:shadow-[2px_2px_0_0_hsl(var(--primary))] hover:translate-x-[1px] hover:translate-y-[1px] transition-all py-1 h-8 px-3 shrink-0"
-            >
-              + Nova Reserva
-            </Button>
-          )}
-        </div>
-
-        <div className="relative z-10 p-3 sm:p-5 flex flex-col h-full space-y-3 sm:space-y-4">
-          {/* Stats Grid - Hardware Dashboard Widgets - Restricted to Admin/Responsible */}
-          {(isAdmin || isResponsible) && (
-            <div className="grid grid-cols-3 gap-2 sm:gap-3">
-              {/* Total Widget */}
-              <div className="relative overflow-hidden border-2 border-black dark:border-zinc-700 py-2 px-3 bg-zinc-50/80 dark:bg-zinc-900/50 shadow-[2px_2px_0_0_#000] dark:shadow-[2px_2px_0_0_rgba(255,255,255,0.05)] transition-all flex items-center justify-between gap-2">
-                <div className="min-w-0">
-                  <p className="text-[9px] font-black uppercase tracking-wider text-foreground leading-none">
-                    Total
-                  </p>
-                  <p className="text-[7px] font-bold text-muted-foreground uppercase tracking-tight mt-1 leading-none">Chromebooks</p>
-                </div>
-                <div className="flex items-baseline gap-0.5 shrink-0">
-                  <span className="text-xl sm:text-2xl font-[1000] text-foreground tracking-tighter leading-none">{totalAvailableChromebooks}</span>
-                  <span className="text-[8px] font-bold text-muted-foreground uppercase">un</span>
-                </div>
-              </div>
-
-              {/* Peak Usage Widget */}
-              <div className="relative overflow-hidden border-2 border-info bg-info/5 dark:bg-info/10 py-2 px-3 shadow-[2px_2px_0_0_hsl(var(--info)/0.4)] transition-all flex items-center justify-between gap-2">
-                <div className="min-w-0">
-                  <p className="text-[9px] font-black uppercase tracking-wider text-info leading-none">
-                    Pico de Uso
-                  </p>
-                  <p className="text-[7px] font-bold text-info/70 uppercase tracking-tight mt-1 leading-none">Maior Horário</p>
-                </div>
-                <div className="flex items-baseline gap-0.5 shrink-0">
-                  <span className="text-xl sm:text-2xl font-[1000] text-info tracking-tighter leading-none">{peakReserved}</span>
-                  <span className="text-[8px] font-bold text-info/70 uppercase">un</span>
-                </div>
-              </div>
-
-              {/* Available in Peak Widget */}
-              <div className={cn(
-                "relative overflow-hidden border-2 py-2 px-3 transition-all flex items-center justify-between gap-2",
-                available <= 0 && peakReserved > 0
-                  ? "border-error bg-error/5 dark:bg-error/10 shadow-[2px_2px_0_0_hsl(var(--error)/0.4)]"
-                  : "border-success bg-success/5 dark:bg-success/10 shadow-[2px_2px_0_0_hsl(var(--success)/0.4)]"
-              )}>
-                <div className="min-w-0">
-                  <p className={cn("text-[9px] font-black uppercase tracking-wider leading-none", available <= 0 && peakReserved > 0 ? "text-error" : "text-success")}>
-                    Disponível
-                  </p>
-                  <p className={cn("text-[7px] font-bold uppercase tracking-tight mt-1 leading-none", available <= 0 && peakReserved > 0 ? "text-error/70" : "text-success/70")}>Saldo Mín.</p>
-                </div>
-                <div className="flex items-baseline gap-0.5 shrink-0">
-                  <span className={cn(
-                    "text-xl sm:text-2xl font-[1000] tracking-tighter leading-none",
-                    available <= 0 && peakReserved > 0 ? "text-error" : "text-success"
-                  )}>{available}</span>
-                  <span className={cn("text-[8px] font-bold uppercase", available <= 0 && peakReserved > 0 ? "text-error/70" : "text-success/70")}>un</span>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Reservations List */}
-          <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar border-t-4 border-black/10 dark:border-white/10 pt-4">
-            {dayReservations.length > 0 ? (
-              <div className="space-y-3">
-                <div className="flex items-center justify-between mb-4 sticky top-0 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md z-20 py-1 border-b-2 border-black/5">
-                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground opacity-60">
-                    Registros de Sistema ({dayReservations.length})
-                  </p>
-                  <div className="flex gap-1">
-                    <div className="w-1.5 h-1.5 rounded-full bg-primary" />
-                    <div className="w-1.5 h-1.5 rounded-full bg-zinc-300 dark:bg-zinc-700" />
-                  </div>
-                </div>
-
-                {dayReservations.map((res) => {
-                  const isMinecraft = res.is_minecraft;
-                  const isAtendida = res.associated_loans && res.associated_loans.length >= res.quantity_requested;
-                  const isManutencaoRes = res.prof_role === 'manutencao' || res.prof_email === 'paulo.geremias@colegiosaojudas.com.br' || res.prof_email === 'ivo@colegiosaojudas.com.br' || res.prof_email === 'manutencao.teste@colegiosaojudas.com.br';
-                  const displayName = res.prof_name.includes('@') ? res.prof_name.split('@')[0] : res.prof_name;
-
-                  return (
-                    <div
-                      key={res.id}
-                      className={cn(
-                        "group relative border-[3px] transition-all cursor-pointer overflow-hidden rounded-xl",
-                        isManutencaoRes
-                          ? "border-zinc-500 dark:border-zinc-600 bg-zinc-50/50 dark:bg-zinc-900/50 shadow-[3px_3px_0_0_#52525b] hover:shadow-[4px_4px_0_0_#52525b]"
-                          : isMinecraft
-                            ? "border-[#3c8527] bg-[#3c8527]/5 dark:bg-[#3c8527]/10 shadow-[3px_3px_0_0_#3c8527] hover:shadow-[4px_4px_0_0_#3c8527]"
-                            : "border-black dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-[3px_3px_0_0_#000] dark:shadow-[3px_3px_0_0_rgba(255,255,255,0.05)] hover:shadow-[4px_4px_0_0_#000] dark:hover:shadow-[4px_4px_0_0_rgba(255,255,255,0.08)]",
-                        "hover:-translate-x-0.5 hover:-translate-y-0.5"
-                      )}
-                      onClick={() => {
-                        setSelectedReservation(res);
-                        setIsDetailsOpen(true);
-                      }}
-                    >
-                      <div className="p-3.5 pl-4 sm:pl-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex flex-col min-w-0">
-                            <span className="font-[1000] text-sm sm:text-base truncate uppercase tracking-tight text-black dark:text-white">{displayName}</span>
-                            <span className="text-[10px] sm:text-[11px] text-zinc-500 dark:text-zinc-400 truncate lowercase font-bold">
-                              {res.prof_email}
-                            </span>
-                            {isMinecraft && (
-                              <div className="mt-1">
-                                <span className="text-[8px] font-black bg-[#3c8527] text-white px-1.5 py-0.5 rounded-none">
-                                  MINECRAFT
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                          
-                          {/* Badges container */}
-                          <div className="flex flex-wrap items-center gap-2 mt-2.5">
-                            <span className="flex items-center gap-1 px-2 py-0.5 bg-zinc-100 dark:bg-zinc-800 border border-black/25 dark:border-white/10 text-[9px] sm:text-[10px] font-black uppercase text-zinc-700 dark:text-zinc-300">
-                              <Clock className="h-3 w-3" /> {res.time_slot}
-                            </span>
-                            {res.classroom && (
-                              <span className="px-2.5 py-0.5 bg-primary text-white dark:bg-blue-600 border border-black dark:border-zinc-700 text-[9px] sm:text-[10px] font-[1000] uppercase tracking-wider shadow-[1.5px_1.5px_0_0_#000] dark:shadow-[1.5px_1.5px_0_0_rgba(255,255,255,0.15)] rounded-md">
-                                {res.classroom}
-                              </span>
-                            )}
-                            <ReservationTimer date={res.date} timeSlot={res.time_slot} />
-                          </div>
-                        </div>
-
-                        <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-3 border-t sm:border-t-0 border-zinc-100 dark:border-zinc-800/80 pt-2 sm:pt-0 shrink-0">
-                          <div className="flex items-center gap-2">
-                            {isAtendida && (
-                              <div className="bg-emerald-500 text-white p-0.5 border border-black/10 flex items-center justify-center">
-                                <CheckCircle className="h-3 w-3" />
-                              </div>
-                            )}
-                            {!isManutencaoRes ? (
-                              <span className="text-2xl sm:text-3xl font-[1000] italic tracking-tighter leading-none whitespace-nowrap text-black dark:text-white drop-shadow-sm">
-                                {res.quantity_requested}<span className="text-[10px] sm:text-[11px] not-italic ml-0.5 opacity-80 uppercase font-black">CBs</span>
-                              </span>
-                            ) : (
-                              <span className="text-[10px] font-[1000] uppercase text-zinc-600 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 border-2 border-black dark:border-zinc-700 px-2 py-1 shadow-[2px_2px_0px_0px_#000]">
-                                MANUTENÇÃO
-                              </span>
-                            )}
-                          </div>
-
-                          {!isAtendida && isResponsible && (
-                            <div className="flex items-center">
-                              <Button
-                                size="sm"
-                                className="h-8 px-4 text-[10px] font-[1000] uppercase bg-primary text-white border-[2.5px] border-black shadow-[3px_3px_0_0_#000] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all duration-150 rounded-none shrink-0"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  navigate('/', {
-                                    state: {
-                                      fromScheduling: true,
-                                      reservationData: { ...res, date: dateKey, time_slot: res.time_slot }
-                                    }
-                                  });
-                                }}
-                              >
-                                <ArrowRight className="h-3.5 w-3.5 mr-1.5" />
-                                Iniciar
-                              </Button>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Speech callout justification preview */}
-                      {res.justification && (
-                        <div className="px-5 pb-3.5 pt-0.5">
-                          <div className="pl-3 border-l-[3px] border-primary/30 dark:border-primary/50 py-0.5">
-                            <p className="text-[11px] sm:text-xs text-zinc-600 dark:text-zinc-300 italic font-medium leading-relaxed">
-                              "{res.justification}"
-                            </p>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Withdrawn Chromebooks Section - Premium Neo Brutal Style */}
-                      {!isManutencao && res.associated_loans && res.associated_loans.length > 0 && (
-                        <div className="mx-0 sm:mx-5 mb-3 sm:mb-4 p-3 sm:p-4 bg-primary/5 dark:bg-primary/10 border-2 border-black/10 dark:border-white/10 relative overflow-hidden group/retirados">
-                          {/* Decorative pattern */}
-                          <div className="absolute inset-0 opacity-[0.03] pointer-events-none neo-brutal-dots bg-primary/20" />
-
-                          <div className="relative z-10 flex flex-col gap-2 sm:gap-3">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-2">
-                                <div className="p-1 sm:p-1.5 bg-primary text-white border-2 border-black flex items-center justify-center">
-                                  <Monitor className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
-                                </div>
-                                <span className="text-[9px] sm:text-[11px] font-black uppercase text-foreground tracking-tight sm:tracking-[0.15em] flex items-center gap-2">
-                                  RETIRADOS
-                                  <span className="text-primary text-sm sm:text-base font-black">
-                                    {res.associated_loans.length}
-                                  </span>
-                                </span>
-                              </div>
-                              <div className="h-[1px] sm:h-[2px] flex-1 mx-2 sm:mx-4 bg-black/5 dark:bg-white/5" />
-                            </div>
-
-                            <div className="flex flex-wrap gap-1.5 sm:gap-2.5">
-                              {res.associated_loans.map((loan, idx) => (
-                                <div
-                                  key={idx}
-                                  className="px-2 sm:px-3 py-1 sm:py-1.5 bg-white dark:bg-zinc-900 text-primary dark:text-blue-400 text-[8px] sm:text-[10px] font-black uppercase border-2 border-black dark:border-white/20"
-                                >
-                                  {loan.chromebook_id}
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="h-full flex flex-col items-center justify-center py-16 bg-zinc-50/50 dark:bg-white/[0.02] border-2 border-dashed border-black/5 dark:border-white/5">
-                <div className="relative">
-                  <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full animate-pulse" />
-                  <Monitor className="h-20 w-20 text-muted-foreground/20 relative z-10" />
-                </div>
-                <p className="text-xl font-black text-muted-foreground/30 uppercase mt-6 tracking-[0.3em]">
-                  Sistema Vazio
-                </p>
-                <p className="text-[10px] text-muted-foreground/40 font-bold uppercase tracking-widest mt-2">
-                  Nenhum registro encontrado para este ciclo
-                </p>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="mt-8 border-2 border-muted-foreground/20 rounded-none font-black text-[10px] uppercase tracking-widest hover:border-primary hover:text-primary transition-all px-8 h-10"
-                  onClick={() => navigate('/agendamento')}
-                >
-                  Ver Grade de Agendamentos
-                </Button>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Modals integration */}
-        {dayReservations.length > 0 && selectedReservation && (
-          <ReservationDetailsDialog
-            open={isDetailsOpen}
-            onOpenChange={setIsDetailsOpen}
-            reservation={selectedReservation}
-            date={selectedDate}
-            isAdmin={!!isAdmin}
-            isResponsible={!!isResponsible}
-            isOwner={selectedReservation.created_by === currentUser?.id}
-            onCancel={() => {
-              deleteReservation(selectedReservation.id).then((success: boolean) => {
-                if (success) {
-                  onReservationSuccess?.();
-                  setIsDetailsOpen(false);
-                  setSelectedReservation(null);
-                }
-              });
-            }}
-          />
-        )}
-      </div>
-    );
+  }, [scopedRows, totalAvailableChromebooks]);
+  const rooms = useMemo(() => ranking(scopedRows, res => res.classroom || 'Não informado'), [scopedRows]);
+  const professors = useMemo(() => ranking(scopedRows, res => res.prof_name), [scopedRows]);
+  const start = startOfMonth(currentDate);
+  const offset = getDay(start);
+  const calendarDays = Array.from({ length: endOfMonth(currentDate).getDate() }, (_, i) => addDays(start, i));
+  const kpis = [
+    { label: coordination ? 'Reservas' : 'Minhas reservas', value: number(stats.count), previous: previousStats?.count, current: stats.count },
+    ...(!isManutencao ? [{ label: 'Chromebooks-aula', value: number(stats.quantity), previous: previousStats?.quantity, current: stats.quantity }] : []),
+    ...(coordination && !isManutencao ? [
+      { label: 'Ocupação média', value: percent(stats.average) },
+      { label: 'Pico do mês', value: number(stats.max.value), note: stats.max.date ? `dia ${parseISO(stats.max.date).getDate()}` : 'Sem reservas' },
+    ] : []),
+    ...(!isManutencao ? [{ label: 'Atendimento', value: percent(stats.attendance) }, { label: 'Não retiradas', value: number(stats.missed) }] : []),
+    { label: 'Com Minecraft', value: number(stats.minecraft) },
+  ];
+  const openReservation = React.useCallback((res: Reservation) => { setSelectedReservation(res); setIsDetailsOpen(true); }, []);
+  const startReservation = React.useCallback((res: Reservation) => navigate('/', { state: { fromScheduling: true, reservationData: { ...res, date: res.date, time_slot: res.time_slot } } }), [navigate]);
+  const exportCsv = () => {
+    const blob = new Blob([makeCsv(scopedRows, now)], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url; anchor.download = `historico-agendamentos-${monthKey}.csv`;
+    document.body.appendChild(anchor); anchor.click(); anchor.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
 
-  return (
-    <div className="flex flex-col lg:flex-row gap-4 sm:gap-8 items-stretch lg:items-start">
-      {/* Calendar - Technical Blueprint Style */}
-      <div className="w-full lg:w-[450px] shrink-0 border-4 border-black dark:border-white bg-white dark:bg-zinc-950 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.05)] sm:shadow-[12px_12px_0px_0px_rgba(0,0,0,0.05)] overflow-hidden rounded-2xl">
-        {/* Header Display */}
-        <div className="bg-black text-white p-5 flex justify-between items-center border-b-4 border-black">
-          <div className="flex items-center gap-3">
-            <div className="w-1.5 h-5 bg-primary" />
-            <h3 className="text-xl font-black uppercase tracking-tighter">
-              Visão Mensal
-            </h3>
-          </div>
-          <div className="flex gap-1.5">
-            <div className="w-2.5 h-2.5 rounded-full bg-primary animate-pulse" />
-            <div className="w-2.5 h-2.5 rounded-full bg-zinc-700" />
-            <div className="w-2.5 h-2.5 rounded-full bg-zinc-700" />
-          </div>
-        </div>
-
-        <div className="p-6 relative">
-          {/* Subtle Grid dots */}
-          <div className="absolute inset-0 opacity-[0.05] pointer-events-none neo-brutal-dots font-black text-black" />
-
-          <Calendar
-            mode="single"
-            selected={selectedDate}
-            onSelect={setSelectedDate}
-            month={currentDate}
-            className="w-full p-0 flex justify-center"
-            locale={ptBR}
-            classNames={{
-              months: "flex flex-col sm:flex-row w-full",
-              month: "space-y-0 w-full",
-              caption: "hidden",
-              caption_label: "hidden",
-              nav: "hidden",
-              nav_button: "hidden",
-              nav_button_previous: "hidden",
-              nav_button_next: "hidden",
-              table: "w-full border-collapse",
-              head_row: "flex w-full border-b border-zinc-150 dark:border-zinc-800/80 pb-2.5",
-              head_cell: "text-zinc-400 dark:text-zinc-500 w-full font-[900] text-[10px] sm:text-[11px] uppercase tracking-[0.2em] text-center",
-              row: "flex w-full mt-1.5",
-              cell: "h-16 w-full text-center text-sm p-0 relative focus-within:relative focus-within:z-20 border border-zinc-100/70 dark:border-zinc-900/40 first:border-l-0 last:border-r-0",
-              day: cn(
-                "h-16 w-full p-0 font-bold transition-all rounded-none",
-                "flex flex-col items-center justify-between pb-2 pt-2.5 relative overflow-hidden group bg-transparent hover:bg-zinc-50 dark:hover:bg-zinc-900/30"
-              ),
-              day_selected: "!bg-primary !text-white !border-2 !border-black dark:!border-white font-[1000] shadow-[3px_3px_0_0_#000] dark:shadow-[3px_3px_0_0_rgba(255,255,255,0.15)] scale-[0.96] z-20 rounded-xl",
-              day_today: "bg-primary/5 dark:bg-primary/10 text-primary dark:text-blue-400 border-[3px] border-primary dark:border-blue-500 font-[1000] rounded-xl z-10 aria-selected:!bg-primary aria-selected:!text-white aria-selected:!border-2 aria-selected:!border-black dark:aria-selected:!border-white",
-              day_outside: "text-muted-foreground opacity-30 pointer-events-none bg-zinc-50/40 dark:bg-zinc-950/20",
-              day_disabled: "text-muted-foreground opacity-30",
-              day_hidden: "invisible",
-            }}
-            components={{
-              DayContent: ({ date, activeModifiers }) => {
-                const dKey = format(date, 'yyyy-MM-dd');
-                const dRes = reservationsByDay.get(dKey) || [];
-                const tRes = dRes.reduce((sum, res) => sum + res.quantity_requested, 0);
-                const rate = (tRes / totalAvailableChromebooks) * 100;
-
-                return (
-                  <div className="relative w-full h-full flex flex-col items-center justify-between pb-1">
-                    <span className={cn(
-                      "text-base transition-all font-[900]",
-                      activeModifiers.selected
-                        ? "text-white scale-110 drop-shadow-[0_1px_2px_rgba(0,0,0,0.2)]"
-                        : activeModifiers.today
-                          ? "text-primary dark:text-blue-400 font-[1000]"
-                          : "text-zinc-800 dark:text-zinc-200 group-hover:text-black dark:group-hover:text-white group-hover:scale-110"
-                    )}>
-                      {date.getDate()}
-                    </span>
-
-                    {/* Occupancy Indicators - Tech Bars */}
-                    {tRes > 0 && !isManutencao && (
-                      <div className="flex gap-1 mt-auto px-1 w-full justify-center">
-                        <div className={cn(
-                          "h-1.5 w-3.5 transition-all border border-black/10 dark:border-white/5",
-                          rate > 0 ? "bg-emerald-500 shadow-[1px_1px_0_0_rgba(0,0,0,0.15)]" : "bg-zinc-100 dark:bg-zinc-800"
-                        )} />
-                        {totalAvailableChromebooks > 30 && (
-                          <>
-                            <div className={cn(
-                              "h-1.5 w-3.5 transition-all border border-black/10 dark:border-white/5",
-                              rate > 50 ? "bg-amber-500 shadow-[1px_1px_0_0_rgba(0,0,0,0.15)]" : "bg-zinc-100 dark:bg-zinc-800"
-                            )} />
-                            <div className={cn(
-                              "h-1.5 w-3.5 transition-all border border-black/10 dark:border-white/5",
-                              rate >= 90 ? "bg-rose-500 shadow-[1px_1px_0_0_rgba(0,0,0,0.15)]" : "bg-zinc-100 dark:bg-zinc-800"
-                            )} />
-                          </>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                );
-              }
-            }}
-          />
-        </div>
-      </div>
-
-      {/* Day Details Dashboard */}
-      <div className="flex-1 min-w-0 w-full h-full">
-        {renderDayDetails()}
-      </div>
+  return <div className="hx-root">
+    <div className="hx-tabs" role="tablist" aria-label="Visões do histórico">
+      <Button id="hx-calendar-tab" className="hx-control hx-tab" role="tab" aria-selected={tab === 'calendar'} aria-controls="hx-calendar-panel" tabIndex={tab === 'calendar' ? 0 : -1} onClick={() => setTab('calendar')} onKeyDown={event => { if (event.key === 'ArrowRight' || event.key === 'ArrowLeft' || event.key === 'End') { event.preventDefault(); setTab('analytics'); document.getElementById('hx-analytics-tab')?.focus(); } }}><CalendarDays size={17} />Calendário</Button>
+      <Button id="hx-analytics-tab" className="hx-control hx-tab" role="tab" aria-selected={tab === 'analytics'} aria-controls="hx-analytics-panel" tabIndex={tab === 'analytics' ? 0 : -1} onClick={() => setTab('analytics')} onKeyDown={event => { if (event.key === 'ArrowRight' || event.key === 'ArrowLeft' || event.key === 'Home') { event.preventDefault(); setTab('calendar'); document.getElementById('hx-calendar-tab')?.focus(); } }}><BarChart3 size={17} />Análises</Button>
     </div>
-  );
+    {tab === 'calendar' ? <div id="hx-calendar-panel" role="tabpanel" aria-labelledby="hx-calendar-tab" aria-busy={isLoading}>
+      <div className="hx-kpis" aria-label="Indicadores do mês">{kpis.map(kpi => <div className="hx-kpi" key={kpi.label}><span className="hx-kpi-label">{kpi.label}</span><strong className="hx-kpi-value">{isLoading ? '—' : kpi.value}</strong>{'note' in kpi && <span className="hx-kpi-note">{kpi.note}</span>}{!isLoading && 'previous' in kpi && kpi.previous !== undefined && <Variation current={kpi.current} previous={kpi.previous} />}</div>)}</div>
+      <div className="hx-layout">
+        <section className="hx-card" aria-label="Calendário de ocupação"><h3 className="hx-heading">Ocupação por dia</h3>
+          <div className="hx-calendar">{['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SAB'].map(label => <span className="hx-weekday" key={label}>{label}</span>)}
+            {Array.from({ length: offset }, (_, i) => <span key={`blank-${i}`} aria-hidden="true" />)}
+            {calendarDays.map(day => {
+              const key = format(day, 'yyyy-MM-dd');
+              const rows = monthDays.get(key) || [];
+              const dayRate = rate(peak(rows), totalAvailableChromebooks);
+              const level = isManutencao ? 0 : heatLevel(dayRate);
+              return <Button key={key} className={`hx-day ${isWeekend(day) ? 'weekend' : ''} ${isSameDay(day, now) ? 'today' : ''}`} data-level={level} aria-pressed={isSameDay(day, selectedDate)} aria-label={`${format(day, "d 'de' MMMM", { locale: ptBR })}, ${rows.length} reservas${isManutencao ? '' : `, pico de ${percent(dayRate)}`}`} onClick={() => setSelectedDate(day)}><span>{day.getDate()}</span><span className="hx-heat-track">{level > 0 && <span className="hx-heat" data-level={level} style={{ '--hx-fill': `${Math.max(18, Math.min(100, dayRate))}%` } as HistoryStyle} />}</span></Button>;
+            })}
+          </div>
+          {!isManutencao && <><div className="hx-legend">{['até 29%', '30–74%', '75–99%', '100%'].map((label, i) => <span key={label}><i className="hx-swatch" data-level={i + 1} />{label}</span>)}</div><p className="hx-caption">Pico de uso do dia</p></>}
+        </section>
+        <section className="hx-card" aria-label="Reservas do dia">
+          <div className="hx-day-header"><div><h3 className="hx-heading">{(() => { const label = format(selectedDate, "EEEE, d 'de' MMMM", { locale: ptBR }); return label.charAt(0).toUpperCase() + label.slice(1); })()}</h3><span className={`hx-pill ${today ? 'hx-live' : ''}`}>{today && <span className="hx-live-dot" />}{today ? 'Tempo real' : dayPast ? 'Dados históricos' : 'Agendado'}</span></div>{!dayPast && <Button className="hx-control hx-new" onClick={() => navigate('/agendamento')}><Plus size={16} />Nova reserva</Button>}</div>
+          {coordination && !isManutencao && <div className="hx-stats"><div className="hx-stat"><span>Total</span><strong>{number(totalAvailableChromebooks)}</strong></div><div className="hx-stat"><span>Pico de uso</span><strong>{number(dayPeak)}</strong></div><div className="hx-stat"><span>Saldo mín.</span><strong className={totalAvailableChromebooks - dayPeak <= 0 && dayPeak > 0 ? 'hx-danger' : ''}>{number(Math.max(0, totalAvailableChromebooks - dayPeak))}</strong></div></div>}
+          <div className="hx-chips" role="group" aria-label="Filtrar reservas">{filters.map(item => <Button key={item.value} className="hx-control hx-chip" aria-pressed={activeFilter === item.value} onClick={() => setFilter(item.value)}>{item.label}</Button>)}</div>
+          <div className="hx-search"><Search size={16} /><input type="search" aria-label="Buscar professor, sala ou conteúdo" placeholder="Buscar professor, sala ou conteúdo" value={query} onChange={event => setQuery(event.target.value)} /></div>
+          {isLoading ? <p className="hx-empty" role="status">Carregando reservas…</p> : dayRows.length === 0 ? <div className="hx-empty" role="status">{isWeekend(selectedDate) ? 'Sem aulas aos fins de semana' : 'Nenhuma reserva neste dia'}{!dayPast && !isWeekend(selectedDate) && <div><Button className="hx-control hx-new" onClick={() => navigate('/agendamento')}><Plus size={16} />Nova reserva</Button></div>}</div> : <ReservationList rows={dayRows} allRows={dayRows} filter={activeFilter} query={query} now={now} userId={user?.id} isManutencao={isManutencao} isResponsible={isResponsible} onOpen={openReservation} onStart={startReservation} />}
+        </section>
+      </div>
+    </div> : <div id="hx-analytics-panel" role="tabpanel" aria-labelledby="hx-analytics-tab" aria-busy={isLoading}>
+      <div className="hx-analysis-header"><Button className="hx-control hx-export" disabled={isLoading} onClick={exportCsv}><Download size={16} />Exportar CSV</Button></div>
+      {isLoading ? <p className="hx-empty" role="status">Carregando análises…</p> : <div className="hx-analysis-grid">
+        {!isManutencao && <section className="hx-card"><h3 className="hx-heading">Ocupação média por dia da semana</h3><div className="hx-chart" role="img" aria-label={weekdays.map((value, i) => `${['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta'][i]}: ${percent(value)}`).join(', ')}>{weekdays.map((value, i) => <div className="hx-bar-column" key={i}><strong>{percent(value)}</strong><div className="hx-bar-track"><div className="hx-bar" style={{ '--hx-fill': `${Math.min(100, value)}%` } as HistoryStyle} /></div><span>{['SEG', 'TER', 'QUA', 'QUI', 'SEX'][i]}</span></div>)}</div></section>}
+        {!isManutencao && <section className="hx-card"><h3 className="hx-heading">Retirada dos Chromebooks</h3><div className="hx-donut-row"><div className={`hx-donut ${stats.past === 0 ? 'empty' : ''}`} role="img" aria-label={`${stats.served} atendidas, ${stats.partial} parciais, ${stats.missed} não retiradas`} style={{ '--hx-served-stop': `${stats.past ? stats.served / stats.past * 100 : 0}%`, '--hx-partial-stop': `${stats.past ? (stats.served + stats.partial) / stats.past * 100 : 0}%` } as HistoryStyle}><div className="hx-donut-center"><strong>{percent(stats.attendance)}</strong><span>de atendimento</span></div></div><div className="hx-donut-legend"><span><i className="hx-dot" />Atendidas <strong>{stats.served}</strong></span><span><i className="hx-dot partial" />Parciais <strong>{stats.partial}</strong></span><span><i className="hx-dot missed" />Não retiradas <strong>{stats.missed}</strong></span></div></div>{stats.past === 0 && <p className="hx-caption">Nenhuma reserva encerrada com Chromebooks</p>}</section>}
+        <Ranking title="Salas mais usadas" entries={rooms} />
+        {coordination && <Ranking title="Professores que mais reservam" entries={professors} />}
+      </div>}
+    </div>}
+    {selectedReservation && <ReservationDetailsDialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen} reservation={selectedReservation} date={parseISO(selectedReservation.date)} isAdmin={Boolean(isAdmin)} isResponsible={Boolean(isResponsible)} isOwner={selectedReservation.created_by === user?.id} onCancel={() => { deleteReservation(selectedReservation.id).then((success: boolean) => { if (success) { onReservationSuccess?.(); setIsDetailsOpen(false); setSelectedReservation(null); } }); }} />}
+  </div>;
 };
