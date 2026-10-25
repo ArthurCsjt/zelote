@@ -105,3 +105,10 @@
 @keyframes ag-draw{to{stroke-dashoffset:0}}
 @keyframes ag-spin{to{transform:rotate(360deg)}}
 @media (prefers-reduced-motion:reduce){.ag-modal *,.ag-modal *::before,.ag-modal *::after,.ag-modal,.ag-overlay{animation:none!important;transition:none!important}}
+.ag-cal .ag-d{width:36px;height:36px;border-radius:12px;font:600 13px 'Lexend',sans-serif;color:var(--ag-text)}
+.ag-cal .ag-d:hover:not([disabled]){background:var(--ag-soft)}
+.ag-cal .ag-d-off{opacity:.4;text-decoration:line-through}
+.ag-cal .ag-d-main{background:var(--ag-blue)!important;color:#fff!important;opacity:1;text-decoration:none}
+.ag-cal .ag-d-busy{position:relative}
+.ag-cal .ag-d-busy::after{content:'';position:absolute;bottom:3px;left:50%;width:5px;height:5px;margin-left:-2.5px;border-radius:999px;background:var(--ag-err)}
+.ag-item[aria-pressed=true]{background:var(--ag-card)}
