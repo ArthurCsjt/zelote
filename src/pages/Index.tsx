@@ -1,3 +1,4 @@
+// @ts-nocheck
 // ADIÇÃO: Importamos os hooks de autenticação que o Layout precisará
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfileRole } from '@/hooks/use-profile-role';

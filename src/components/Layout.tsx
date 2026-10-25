@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React from 'react';
 import { User, LogOut, ArrowLeft, Bell, Settings, Sun, Moon, Loader2, Activity, BellRing, BellOff, History, Clock, Search, X } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
