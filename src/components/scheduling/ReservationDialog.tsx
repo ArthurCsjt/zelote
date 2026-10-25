@@ -80,6 +80,20 @@ const Sheet: React.FC<{ onClose: () => void; label: string; children: ReactNode 
   );
 };
 
+const Section = ({ n, title, done: ok, optional, innerRef, children: c, className = '' }: any) => {
+    return (
+      <section className={`ag-sec ag-rise ${className}`} style={{ animationDelay: `${SEC_DELAYS[Math.min(n - 1, 7)]}s` }} ref={innerRef}>
+        <div className="ag-sec-h">
+          <span className={`ag-num ${ok ? 'done' : ''}`} aria-hidden="true">{ok ? <Check size={16} strokeWidth={3} /> : n}</span>
+          <h3 className="ag-sec-t">{title}</h3>
+          {optional && <span className="ag-opt">Opcional</span>}
+        </div>
+        {c}
+      </section>
+    );
+  };
+
+
 export const ReservationDialog: React.FC<ReservationDialogProps> = ({
   children, date, timeSlot, totalAvailableChromebooks, currentReservations, onReservationSuccess, maxQuantity, professores = [],
 }) => {
@@ -375,20 +389,6 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
 
   // Seções
   let secN = 0;
-  const Section = ({ title, done: ok, optional, innerRef, children: c, className = '' }: any) => {
-    const n = ++secN;
-    return (
-      <section className={`ag-sec ag-rise ${className}`} style={{ animationDelay: `${SEC_DELAYS[Math.min(n - 1, 7)]}s` }} ref={innerRef}>
-        <div className="ag-sec-h">
-          <span className={`ag-num ${ok ? 'done' : ''}`} aria-hidden="true">{ok ? <Check size={16} strokeWidth={3} /> : n}</span>
-          <h3 className="ag-sec-t">{title}</h3>
-          {optional && <span className="ag-opt">Opcional</span>}
-        </div>
-        {c}
-      </section>
-    );
-  };
-
   const filteredRooms = combinedSpaces.filter(s => !query.trim() || norm(s.name).includes(norm(query.trim())));
   const roomGroups = [['Salas de aula', 0], ['Espaços Especiais', 1], ['Outros', 2]].map(([t, g]) => ({ t, items: filteredRooms.filter(s => roomGroup(s.name) === g) })).filter(g => g.items.length);
   const filteredProfs = [...professores].sort((a, b) => a.nome_completo.localeCompare(b.nome_completo)).filter(p => !query.trim() || norm(p.nome_completo).includes(norm(query.trim())));
@@ -439,7 +439,7 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                       {guide && guide.visible && <div className="ag-guide" style={{ top: guide.top }} aria-hidden="true"><ArrowRight size={16} strokeWidth={3} /></div>}
 
                       {canBookForOther && (
-                        <Section title="Reservar para" done={!isBookingForOther || !!selectedProfessorId} innerRef={refs.prof}>
+                        <Section n={++secN} title="Reservar para" done={!isBookingForOther || !!selectedProfessorId} innerRef={refs.prof}>
                           <div className="ag-chips" role="group" aria-label="Reservar para">
                             <button type="button" className="ag-chip" aria-pressed={!isBookingForOther} onClick={() => { setIsBookingForOther(false); setSelectedProfessorId(user?.id || ''); }}><User size={16} />Para mim</button>
                             <button type="button" className="ag-chip" aria-pressed={isBookingForOther} onClick={() => { setIsBookingForOther(true); setSelectedProfessorId(''); openSheet('prof'); }}><Users size={16} />Outro professor</button>
@@ -458,7 +458,7 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                       )}
 
                       {ALL_SLOTS.includes(timeSlot) && maxLessons > 1 && (
-                        <Section title="Aulas seguidas" done={true}>
+                        <Section n={++secN} title="Aulas seguidas" done={true}>
                           <div className="ag-chips" role="group" aria-label="Quantidade de aulas seguidas">
                             {Array.from({ length: maxLessons }, (_, i) => i + 1).map(n => (
                               <button key={n} type="button" className="ag-chip" aria-pressed={lessons === n} onClick={() => setLessons(n)}>{n} {n === 1 ? 'aula' : 'aulas'}</button>
@@ -469,7 +469,7 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                         </Section>
                       )}
 
-                      <Section title={isManutencao ? 'Espaço físico' : 'Sala ou turma'} done={!!classroom && !roomBusySlot}>
+                      <Section n={++secN} title={isManutencao ? 'Espaço físico' : 'Sala ou turma'} done={!!classroom && !roomBusySlot}>
                         <button type="button" ref={refs.room} className={`ag-field ${classroom ? (roomBusySlot ? 'bad' : 'ok') : ''}`} onClick={() => openSheet('room')}>
                           <span className="ag-ico">{classroom && !roomBusySlot ? <Check size={20} strokeWidth={3} /> : <MapPin size={20} />}</span>
                           <span style={{ flex: 1, minWidth: 0 }}>
@@ -503,7 +503,7 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                       </Section>
 
                       {!isManutencao && (
-                        <Section title="Chromebooks" done={hasInteractedQuantity} innerRef={refs.qty}>
+                        <Section n={++secN} title="Chromebooks" done={hasInteractedQuantity} innerRef={refs.qty}>
                           <p className="ag-muted" style={{ margin: '0 0 10px' }}>
                             <b style={{ color: 'var(--ag-text)' }}>{effectiveMax}</b> livres {slots.length > 1 ? `nas ${slots.length} aulas` : `às ${timeSlot}`} · {totalReserved} reservados
                           </p>
@@ -540,7 +540,7 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                       )}
 
                       {!isManutencao && isChromebookSpace && (
-                        <Section title="Recursos extras da sala" optional done={needsTv || needsSound || needsMic}>
+                        <Section n={++secN} title="Recursos extras da sala" optional done={needsTv || needsSound || needsMic}>
                           <div className="ag-chips" role="group" aria-label="Recursos extras">
                             <button type="button" className="ag-chip" aria-pressed={needsTv} onClick={() => setNeedsTv(!needsTv)}><Tv size={16} />TV</button>
                             <button type="button" className="ag-chip" aria-pressed={needsSound} onClick={() => setNeedsSound(!needsSound)}><Volume2 size={16} />Som</button>
@@ -556,7 +556,7 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                       )}
 
                       {!isManutencao && (
-                        <Section title="Repetir em outros dias" optional done={extraDates.length > 0 && !dateConflicts.length} innerRef={refs.dates}>
+                        <Section n={++secN} title="Repetir em outros dias" optional done={extraDates.length > 0 && !dateConflicts.length} innerRef={refs.dates}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: -4 }}>
                             <span className="ag-muted" style={{ flex: 1 }}>Repetir esta reserva em mais datas</span>
                             <button type="button" role="switch" aria-checked={isMultiMode} aria-label="Repetir em outros dias" className="ag-switch"
@@ -611,7 +611,7 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                         </Section>
                       )}
 
-                      <Section title="Conteúdo da aula" optional done={!!justification.trim()}>
+                      <Section n={++secN} title="Conteúdo da aula" optional done={!!justification.trim()}>
                         <textarea className="ag-tx" maxLength={200} value={justification} onChange={e => setJustification(e.target.value)} placeholder="Ex.: Pesquisa sobre o sistema solar" aria-label="Conteúdo da aula" />
                         <div className="ag-muted" style={{ textAlign: 'right', fontSize: 12 }}>{justification.length}/200</div>
                       </Section>
