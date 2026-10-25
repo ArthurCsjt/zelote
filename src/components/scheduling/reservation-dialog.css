@@ -112,3 +112,4 @@
 .ag-cal .ag-d-busy{position:relative}
 .ag-cal .ag-d-busy::after{content:'';position:absolute;bottom:3px;left:50%;width:5px;height:5px;margin-left:-2.5px;border-radius:999px;background:var(--ag-err)}
 .ag-item[aria-pressed=true]{background:var(--ag-card)}
+.ag-scroll>*{flex-shrink:0}
