@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useRef } from 'react';
 import { cn } from '@/lib/utils';
-import { Plus, Monitor, User, CheckCircle, AlertTriangle, Clock, Trash2, ArrowRight, Laptop, Info } from 'lucide-react';
+import { Plus, Monitor, User, CheckCircle, AlertTriangle, Clock, Trash2, ArrowRight, Laptop, Info, Box } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import type { Reservation } from '@/hooks/useDatabase';
@@ -118,15 +118,31 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
   }
 
   // Se tivermos reservas (Full ou Partial)
+  const visible = allReservationsForSlot.slice(0, 3);
+  const hidden = allReservationsForSlot.slice(3);
+  const pct = totalAvailableChromebooks > 0 ? Math.min(100, (jaReservados / totalAvailableChromebooks) * 100) : 100;
+  const barColor = isFull ? "bg-error" : pct >= 75 ? "bg-orange-500" : pct >= 30 ? "bg-orange-400" : "bg-warning";
+
   const content = (
     <div className={cn(
-      "h-full min-h-[4rem] p-1.5 border-3 transition-all flex flex-col gap-1.5 rounded-xl",
-      isFull
-        ? "border-error bg-error/10 cursor-not-allowed"
-        : "border-warning bg-warning/10 cursor-pointer hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] hover:-translate-x-0.5 hover:-translate-y-0.5",
+      "h-full min-h-[4rem] p-1.5 border-2 bg-card flex flex-col gap-1 shadow-[3px_3px_0_0_hsl(var(--foreground))]",
+      isFull ? "border-error" : "border-foreground",
       pastSlotClasses
     )}>
-      {allReservationsForSlot.map((res) => {
+      <div className="flex items-center gap-1.5 pb-1 border-b-2 border-foreground/20">
+        <span className="text-[9px] font-black tabular-nums text-foreground leading-none">
+          {jaReservados}/{totalAvailableChromebooks}
+        </span>
+        <div className="flex-1 h-1.5 border border-foreground bg-muted overflow-hidden">
+          <div className={cn("h-full", barColor)} style={{ width: `${pct}%` }} />
+        </div>
+        {isFull ? (
+          <span className="text-[8px] font-black uppercase leading-none px-1 py-0.5 border-2 border-foreground bg-error text-error-foreground">Lotado</span>
+        ) : (
+          <span className="hidden sm:inline text-[8px] font-black uppercase leading-none text-muted-foreground">Restam {restantes}</span>
+        )}
+      </div>
+      {visible.map((res) => {
         const isManutencao = role === 'manutencao';
         const isManutencaoRes = res.prof_role === 'manutencao' || res.prof_email === 'paulo.geremias@colegiosaojudas.com.br' || res.prof_email === 'ivo@colegiosaojudas.com.br' || res.prof_email === 'manutencao.teste@colegiosaojudas.com.br';
         const isThisMine = res.created_by === currentUser?.id;
@@ -138,37 +154,38 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
               <TooltipTrigger asChild>
                 <div
                   className={cn(
-                    "w-full flex-1 flex items-center justify-center text-[8px] sm:text-[10px] leading-tight font-black uppercase truncate px-1 sm:px-1.5 py-1.5 sm:py-2 border-[1px] border-black text-center transition-all rounded-lg",
-                    !isPast && "hover:-translate-y-[2px] cursor-pointer",
-                    isPast && "cursor-default",
-                    // Alta resolução no texto
-                    "text-white [text-shadow:_-1px_-1px_0_rgba(0,0,0,0.5),_1px_-1px_0_rgba(0,0,0,0.5),_-1px_1px_0_rgba(0,0,0,0.5),_1px_1px_0_rgba(0,0,0,0.5)]",
-                    isManutencaoRes
-                      ? "bg-[#52525B] shadow-[2px_2px_0_0_#000] sm:shadow-[3px_3px_0_0_#000] hover:bg-[#3F3F46]"
-                      : res.is_minecraft
-                        ? "bg-gradient-to-br from-[#2d5a27] to-[#1e3c1a] shadow-[2px_2px_0_0_#000] sm:shadow-[3px_3px_0_0_#000]"
-                        : "bg-gradient-to-br from-blue-600 to-indigo-600 shadow-[2px_2px_0_0_#000] sm:shadow-[3px_3px_0_0_#000]",
+                    "relative w-full min-h-[28px] flex items-center gap-1 pl-2.5 pr-1 py-1 border-2 bg-card text-foreground transition-all overflow-hidden",
+                    isThisMine
+                      ? "border-foreground shadow-[2px_2px_0_0_hsl(var(--foreground))]"
+                      : "border-foreground/70",
+                    !isPast && (isThisMine || isAdmin || isResponsible) && "cursor-pointer motion-safe:hover:-translate-y-px",
+                    (isPast || !(isThisMine || isAdmin || isResponsible)) && "cursor-default",
                   )}
                   onClick={(e) => {
                     e.stopPropagation();
-                    if (isPast) return; // Bloqueia clique no passado
+                    if (isPast) return;
                     if (isThisMine || isAdmin || isResponsible) {
                       setIsDetailsOpen(res.id);
                     }
                   }}
                 >
-                  {isManutencaoRes || res.quantity_requested === 0 ? (
-                    <span className="truncate">{roomName}</span>
-                  ) : (
-                    <span className="truncate">
-                      {/* Mobile version */}
-                      <span className="sm:hidden block">
-                        {res.classroom ? `${roomName} · ${res.quantity_requested}x` : `${res.quantity_requested}x`}
-                      </span>
-                      {/* Desktop version */}
-                      <span className="hidden sm:block">
-                        {res.classroom ? `${roomName} + ${res.quantity_requested} Chromebooks` : `${res.quantity_requested} Chromebooks`}
-                      </span>
+                  <span
+                    aria-hidden
+                    className={cn(
+                      "absolute left-0 top-0 bottom-0 w-1",
+                      isManutencaoRes ? "bg-muted-foreground" : res.is_minecraft ? "bg-success" : "bg-primary"
+                    )}
+                  />
+                  {res.is_minecraft && !isManutencaoRes && (
+                    <Box className="h-3 w-3 shrink-0 text-success" strokeWidth={3} />
+                  )}
+                  <span className="flex-1 min-w-0 truncate text-left text-[9px] sm:text-[10px] leading-tight font-black uppercase">
+                    {roomName}
+                  </span>
+                  {!isManutencaoRes && res.quantity_requested > 0 && (
+                    <span className="shrink-0 flex items-center gap-0.5 px-1 py-0.5 border-2 border-foreground bg-warning text-foreground text-[9px] font-black leading-none">
+                      <Laptop className="h-2.5 w-2.5" strokeWidth={3} />
+                      {res.quantity_requested}
                     </span>
                   )}
                 </div>
@@ -239,7 +256,25 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
         );
       })}
 
-      {/* Botão explícito para Novo Agendamento se houver espaço e não for passado */}
+      {hidden.length > 0 && (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="text-[9px] font-black uppercase text-muted-foreground px-1 cursor-help">
+                +{hidden.length} {hidden.length === 1 ? 'reserva' : 'reservas'}
+              </div>
+            </TooltipTrigger>
+            <TooltipContent side="top" className="p-2 border-2 border-foreground rounded-none shadow-[3px_3px_0_0_hsl(var(--foreground))] bg-card z-[100]">
+              <div className="flex flex-col gap-1 text-[10px] font-black uppercase text-foreground">
+                {hidden.map(r => (
+                  <span key={r.id}>{r.classroom || 'Espaço'}{r.quantity_requested > 0 ? ` · ${r.quantity_requested}` : ''}</span>
+                ))}
+              </div>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      )}
+
       {isPartial && restantes > 0 && !isPast && (
         <ReservationDialog
           date={date}
@@ -250,9 +285,9 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
           maxQuantity={restantes}
           professores={professores}
         >
-          <div className="mt-auto flex items-center justify-center gap-1.5 py-1 border-2 border-zinc-400 dark:border-zinc-500 bg-white dark:bg-zinc-950 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors text-zinc-600 dark:text-zinc-400 rounded-lg cursor-pointer">
-            <Plus className="h-3 w-3" />
-            <span className="text-[9px] font-bold uppercase tracking-tight">Adicionar</span>
+          <div className="mt-1 min-h-[28px] flex items-center justify-center gap-1 border-2 border-dashed border-foreground bg-card text-foreground cursor-pointer transition-all hover:bg-warning hover:border-solid hover:shadow-[2px_2px_0_0_hsl(var(--foreground))] motion-safe:hover:-translate-y-px">
+            <Plus className="h-3 w-3" strokeWidth={3} />
+            <span className="text-[9px] font-black uppercase tracking-wide">Adicionar</span>
           </div>
         </ReservationDialog>
       )}
