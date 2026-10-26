@@ -38,8 +38,9 @@
 .hx-root .hx-day-header .hx-heading{margin:0 0 8px}
 .hx-root .hx-pill{display:inline-flex;align-items:center;gap:5px;max-width:100%;border-radius:999px;padding:5px 9px;font-size:10px;line-height:1.4;font-weight:600;overflow-wrap:anywhere;color:var(--hx-muted);background:var(--hx-soft)}
 .hx-root .hx-live{color:var(--hx-ok);background:color-mix(in srgb,var(--hx-ok) 14%,transparent)}
-.hx-root .hx-live-dot{width:6px;height:6px;border-radius:50%;background:var(--hx-ok);animation:hx-pulse 2s infinite}
-.hx-root .hx-new{background:linear-gradient(135deg,var(--hx-cta-start),var(--hx-cta-end));color:var(--hx-cta-text);border:0;padding:0 14px;gap:7px}
+.hx-root .hx-new{background:linear-gradient(135deg,var(--hx-cta-start),var(--hx-cta-end));color:var(--hx-cta-text);border:0;padding:0 14px;gap:7px;cursor:pointer;transition:transform .15s ease,filter .15s ease,box-shadow .15s ease}
+.hx-root .hx-new:hover{filter:brightness(1.05);transform:translateY(-1px);box-shadow:0 4px 12px rgba(255,194,26,.35)}
+.hx-root .hx-new:active{transform:translateY(0)}
 .hx-root .hx-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;border-top:1px solid var(--hx-border);border-bottom:1px solid var(--hx-border);padding:15px 0;margin-bottom:18px}
 .hx-root .hx-stat{min-width:0}
 .hx-root .hx-stat span{display:block;font-size:11px;color:var(--hx-muted)}

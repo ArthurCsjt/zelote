@@ -21,6 +21,7 @@ interface SchedulingMonthViewProps {
   totalAvailableChromebooks: number;
   isLoading: boolean;
   onReservationSuccess?: () => void;
+  onNewReservation?: (date: Date) => void;
 }
 type Filter = 'all' | 'mine' | 'pending' | 'served' | 'minecraft';
 const filters: { value: Filter; label: string }[] = [
@@ -103,8 +104,15 @@ function Ranking({ title, entries }: { title: string; entries: [string, number][
   return <section className="hx-card"><h3 className="hx-heading">{title}</h3>{entries.length === 0 ? <p className="hx-caption">Sem dados neste mês</p> : entries.map(([name, value]) => <div className="hx-rank" key={name}><div className="hx-rank-label"><span>{name}</span><strong>{value}</strong></div><div className="hx-rank-track"><div className="hx-rank-fill" style={{ '--hx-fill': `${value / max * 100}%` } as HistoryStyle} /></div></div>)}</section>;
 }
 
-export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({ currentDate, reservations, totalAvailableChromebooks, isLoading, onReservationSuccess }) => {
+export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({ currentDate, reservations, totalAvailableChromebooks, isLoading, onReservationSuccess, onNewReservation }) => {
   const navigate = useNavigate();
+  const handleNewReservation = () => {
+    if (onNewReservation) {
+      onNewReservation(selectedDate);
+    } else {
+      navigate('/agendamento');
+    }
+  };
   const { user } = useAuth();
   const { role, isAdmin } = useProfileRole();
   const { isResponsible } = useSchedulingResponsible();
@@ -211,11 +219,11 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({ curren
           {!isManutencao && <><div className="hx-legend">{['até 29%', '30–74%', '75–99%', '100%'].map((label, i) => <span key={label}><i className="hx-swatch" data-level={i + 1} />{label}</span>)}</div><p className="hx-caption">Pico de uso do dia</p></>}
         </section>
         <section className="hx-card" aria-label="Reservas do dia">
-          <div className="hx-day-header"><div><h3 className="hx-heading">{(() => { const label = format(selectedDate, "EEEE, d 'de' MMMM", { locale: ptBR }); return label.charAt(0).toUpperCase() + label.slice(1); })()}</h3><span className={`hx-pill ${today ? 'hx-live' : ''}`}>{today && <span className="hx-live-dot" />}{today ? 'Tempo real' : dayPast ? 'Dados históricos' : 'Agendado'}</span></div>{!dayPast && <Button className="hx-control hx-new" onClick={() => navigate('/agendamento')}><Plus size={16} />Nova reserva</Button>}</div>
+          <div className="hx-day-header"><div><h3 className="hx-heading">{(() => { const label = format(selectedDate, "EEEE, d 'de' MMMM", { locale: ptBR }); return label.charAt(0).toUpperCase() + label.slice(1); })()}</h3><span className={`hx-pill ${today ? 'hx-live' : ''}`}>{today && <span className="hx-live-dot" />}{today ? 'Tempo real' : dayPast ? 'Dados históricos' : 'Agendado'}</span></div>{!dayPast && !isWeekend(selectedDate) && <Button className="hx-control hx-new" onClick={handleNewReservation}><Plus size={16} />Nova reserva</Button>}</div>
           {coordination && !isManutencao && <div className="hx-stats"><div className="hx-stat"><span>Total</span><strong>{number(totalAvailableChromebooks)}</strong></div><div className="hx-stat"><span>Pico de uso</span><strong>{number(dayPeak)}</strong></div><div className="hx-stat"><span>Saldo mín.</span><strong className={totalAvailableChromebooks - dayPeak <= 0 && dayPeak > 0 ? 'hx-danger' : ''}>{number(Math.max(0, totalAvailableChromebooks - dayPeak))}</strong></div></div>}
           <div className="hx-chips" role="group" aria-label="Filtrar reservas">{filters.map(item => <Button key={item.value} className="hx-control hx-chip" aria-pressed={activeFilter === item.value} onClick={() => setFilter(item.value)}>{item.label}</Button>)}</div>
           <div className="hx-search"><Search size={16} /><input type="search" aria-label="Buscar professor, sala ou conteúdo" placeholder="Buscar professor, sala ou conteúdo" value={query} onChange={event => setQuery(event.target.value)} /></div>
-          {isLoading ? <p className="hx-empty" role="status">Carregando reservas…</p> : dayRows.length === 0 ? <div className="hx-empty" role="status">{isWeekend(selectedDate) ? 'Sem aulas aos fins de semana' : 'Nenhuma reserva neste dia'}{!dayPast && !isWeekend(selectedDate) && <div><Button className="hx-control hx-new" onClick={() => navigate('/agendamento')}><Plus size={16} />Nova reserva</Button></div>}</div> : <ReservationList rows={dayRows} allRows={dayRows} filter={activeFilter} query={query} now={now} userId={user?.id} isManutencao={isManutencao} isResponsible={isResponsible} onOpen={openReservation} onStart={startReservation} />}
+          {isLoading ? <p className="hx-empty" role="status">Carregando reservas…</p> : dayRows.length === 0 ? <div className="hx-empty" role="status">{isWeekend(selectedDate) ? 'Sem aulas aos fins de semana' : 'Nenhuma reserva neste dia'}</div> : <ReservationList rows={dayRows} allRows={dayRows} filter={activeFilter} query={query} now={now} userId={user?.id} isManutencao={isManutencao} isResponsible={isResponsible} onOpen={openReservation} onStart={startReservation} />}
         </section>
       </div>
     </div> : <div id="hx-analytics-panel" role="tabpanel" aria-labelledby="hx-analytics-tab" aria-busy={isLoading}>
@@ -227,6 +235,6 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({ curren
         {coordination && <Ranking title="Professores que mais reservam" entries={professors} />}
       </div>}
     </div>}
-    {selectedReservation && <ReservationDetailsDialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen} reservation={selectedReservation} date={parseISO(selectedReservation.date)} isAdmin={Boolean(isAdmin)} isResponsible={Boolean(isResponsible)} isOwner={selectedReservation.created_by === user?.id} onCancel={() => { deleteReservation(selectedReservation.id).then((success: boolean) => { if (success) { onReservationSuccess?.(); setIsDetailsOpen(false); setSelectedReservation(null); } }); }} />}
+    {selectedReservation && <ReservationDetailsDialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen} reservation={selectedReservation} date={parseISO(selectedReservation.date)} isAdmin={Boolean(isAdmin)} isResponsible={Boolean(isResponsible)} isOwner={owned(selectedReservation, user?.id)} onCancel={() => { deleteReservation(selectedReservation.id).then((success: boolean) => { if (success) { onReservationSuccess?.(); setIsDetailsOpen(false); setSelectedReservation(null); } }); }} />}
   </div>;
 };

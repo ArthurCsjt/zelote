@@ -29,6 +29,9 @@ interface ReservationDialogProps {
   onReservationSuccess: () => void;
   maxQuantity: number;
   professores?: { id: string; nome_completo: string }[];
+  // Props opcionais para controle externo (evita unmount durante tela de confirmação)
+  externalOpen?: boolean;
+  onExternalOpenChange?: (open: boolean) => void;
 }
 
 const SEC_DELAYS = [0.12, 0.17, 0.22, 0.27, 0.32, 0.37, 0.42, 0.47];
@@ -96,6 +99,7 @@ const Section = ({ n, title, done: ok, optional, innerRef, children: c, classNam
 
 export const ReservationDialog: React.FC<ReservationDialogProps> = ({
   children, date, timeSlot, totalAvailableChromebooks, currentReservations, onReservationSuccess, maxQuantity, professores = [],
+  externalOpen, onExternalOpenChange,
 }) => {
   const reduce = useReducedMotion();
   useEffect(() => {
@@ -107,6 +111,11 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
   }, []);
 
   const [open, setOpen] = useState(false);
+  // Notifica o pai quando o estado open muda (para manter o slot montado)
+  useEffect(() => {
+    onExternalOpenChange?.(open);
+  }, [open, onExternalOpenChange]);
+
   const { createReservation, bulkCreateReservations, loading: isSaving, getSpaces } = useDatabase();
   const { subscribeToPush } = usePushNotifications();
   const { user } = useAuth();
@@ -353,6 +362,26 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
     !isManutencao && hasInteractedQuantity ? (quantity === 0 ? 'Só a sala' : `${quantity} Chromebooks`) : null,
     lessonsDesc || null, totalDays > 1 ? `${totalDays} dias` : null].filter(Boolean).join(' · ');
 
+  const doneRef = useRef(done);
+  doneRef.current = done;
+
+  const handleOpenChange = (nextOpen: boolean) => {
+    setOpen(nextOpen);
+    if (!nextOpen) {
+      if (doneRef.current) {
+        onReservationSuccess();
+        setDone(null);
+      }
+    }
+  };
+
+  const handleNewReservationClick = () => {
+    if (done) {
+      onReservationSuccess();
+    }
+    resetForm();
+  };
+
   const handleSubmit = async () => {
     if (submittingRef.current || blockReason) return;
     if (quantity < 0 || quantity > (isMinecraft ? 40 : Math.max(maxQuantity, 0))) {
@@ -391,7 +420,6 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
       title: totalDays > 1 || slots.length > 1 ? 'Agendamentos Confirmados!' : 'Agendamento Confirmado!',
       description: `${classroom.trim()} • ${quantity === 0 ? 'Apenas Sala' : `${quantity} Chromebooks`}${isMinecraft ? ' (Minecraft)' : ''}${extraDates.length ? ` (+${extraDates.length} datas extras)` : ''}`,
     });
-    onReservationSuccess();
     const res = [needsTv && 'TV', needsSound && 'Som', needsMic && `Mic (${micQuantity})`].filter(Boolean).join(', ');
     const rows: [string, string][] = [['Sala', classroom.trim()]];
     if (isBookingForOther && selectedProf) rows.push(['Professor', selectedProf.nome_completo]);
@@ -414,7 +442,7 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
   const inertProps = sheet ? { inert: '' } : {};
 
   return (
-    <DialogPrimitive.Root open={open} onOpenChange={setOpen}>
+    <DialogPrimitive.Root open={open} onOpenChange={handleOpenChange}>
       <div onClick={() => !isExpired && setOpen(true)} className={`cursor-pointer h-full flex flex-col ${isExpired ? 'opacity-50 cursor-not-allowed grayscale' : ''}`}>
         {children}
       </div>
@@ -635,7 +663,7 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
 
                   <footer className="ag-foot ag-rise" style={{ animationDuration: '.4s', animationDelay: '.52s' }} {...inertProps}>
                     {done ? (<>
-                      <button type="button" className="ag-primary" onClick={() => resetForm()}>Nova reserva</button>
+                      <button type="button" className="ag-primary" onClick={handleNewReservationClick}>Nova reserva</button>
                       <DialogPrimitive.Close className="ag-secondary">Fechar</DialogPrimitive.Close>
                     </>) : (<>
                       {guideKey && guide && !guide.visible && (

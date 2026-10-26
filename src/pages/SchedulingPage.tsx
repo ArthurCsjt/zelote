@@ -158,6 +158,15 @@ const SchedulingPage = () => {
     });
   };
 
+  const handleNewReservationFromMonth = (targetDate: Date) => {
+    setCurrentDate(targetDate);
+    setViewMode('weekly');
+    toast({
+      title: "Selecione o horário",
+      description: `Grade da semana de ${format(targetDate, "dd/MM", { locale: ptBR })}. Escolha o horário para agendar.`,
+    });
+  };
+
   // Sincronização em tempo real via Supabase Realtime
   useEffect(() => {
     const channel = supabase
@@ -362,6 +371,7 @@ const SchedulingPage = () => {
           totalAvailableChromebooks={operationalLimit}
           isLoading={isLoading}
           onReservationSuccess={handleReservationSuccess}
+          onNewReservation={handleNewReservationFromMonth}
         />}
       </motion.div>
 

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import { Plus, Monitor, User, CheckCircle, AlertTriangle, Clock, Trash2, ArrowRight, Laptop, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -36,6 +36,11 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
   const { deleteReservation } = useDatabase();
   const navigate = useNavigate();
   const [isDetailsOpen, setIsDetailsOpen] = useState<string | false>(false);
+  // Mantém o ReservationDialog montado mesmo após a reserva ser criada,
+  // para que a tela de confirmação (done) não seja desmontada pelo Realtime.
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const dialogOpenRef = useRef(dialogOpen);
+  dialogOpenRef.current = dialogOpen;
 
   const isSuperAdmin = role === 'super_admin';
   const { isResponsible } = useSchedulingResponsible();
@@ -62,30 +67,34 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
 
   const pastSlotClasses = isPast ? "opacity-40" : "";
 
-  if (isAvailable) {
-    if (isPast) {
-      return (
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div className={cn(
-                "h-full min-h-[4rem] border-[3px] border-dashed border-zinc-400 dark:border-zinc-600 bg-zinc-300 dark:bg-zinc-700 rounded-xl",
-                "flex items-center justify-center gap-1.5",
-                "opacity-80 cursor-not-allowed"
-              )}>
-                <Clock className="h-3.5 w-3.5 text-zinc-700 dark:text-zinc-300" />
-                <span className="text-[9px] font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-widest">Encerrado</span>
-              </div>
-            </TooltipTrigger>
-            <TooltipContent className="border-3 border-foreground/20 rounded-none">
-              <p className="text-xs font-medium">Horário já expirou</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      );
-    }
+  // Slot expirado sem reservas: mostra "Encerrado"
+  if (isAvailable && isPast) {
+    return (
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className={cn(
+              "h-full min-h-[4rem] border-[3px] border-dashed border-zinc-400 dark:border-zinc-600 bg-zinc-300 dark:bg-zinc-700 rounded-xl",
+              "flex items-center justify-center gap-1.5",
+              "opacity-80 cursor-not-allowed"
+            )}>
+              <Clock className="h-3.5 w-3.5 text-zinc-700 dark:text-zinc-300" />
+              <span className="text-[9px] font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-widest">Encerrado</span>
+            </div>
+          </TooltipTrigger>
+          <TooltipContent className="border-3 border-foreground/20 rounded-none">
+            <p className="text-xs font-medium">Horário já expirou</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    );
+  }
 
-    // AVAILABLE (EMPTY) - Neo Brutal Style
+  // Slot disponível (vazio, não expirado): ReservationDialog sempre montado
+  // para que a tela de confirmação não seja desmontada quando o Realtime
+  // atualizar os dados e isAvailable virar false.
+  if (isAvailable || dialogOpen) {
+
     return (
       <ReservationDialog
         date={date}
@@ -95,6 +104,8 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
         onReservationSuccess={onReservationSuccess}
         maxQuantity={totalAvailableChromebooks}
         professores={professores}
+        externalOpen={dialogOpen}
+        onExternalOpenChange={setDialogOpen}
       >
         <div className={cn(
           "h-full min-h-[4rem] border-[3px] border-dashed border-zinc-400 dark:border-zinc-700 bg-white dark:bg-zinc-950 rounded-xl",
@@ -260,7 +271,7 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
           }}
           reservation={allReservationsForSlot.find(r => r.id === isDetailsOpen)!}
           date={date}
-          isOwner={allReservationsForSlot.find(r => r.id === isDetailsOpen)?.created_by === currentUser?.id}
+          isOwner={allReservationsForSlot.find(r => r.id === isDetailsOpen)?.created_by === currentUser?.id || allReservationsForSlot.find(r => r.id === isDetailsOpen)?.professor_id === currentUser?.id}
           isAdmin={!!isAdmin}
           isResponsible={!!isResponsible}
           onCancel={() => {
