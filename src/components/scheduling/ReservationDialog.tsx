@@ -140,7 +140,18 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
   const submittingRef = useRef(false);
   const lastFocusRef = useRef<HTMLElement | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const refs = { prof: useRef<HTMLDivElement>(null), room: useRef<HTMLButtonElement>(null), roomAlert: useRef<HTMLDivElement>(null), qty: useRef<HTMLDivElement>(null), dates: useRef<HTMLDivElement>(null) };
+  const profRef = useRef<HTMLDivElement>(null);
+  const roomRef = useRef<HTMLButtonElement>(null);
+  const roomAlertRef = useRef<HTMLDivElement>(null);
+  const qtyRef = useRef<HTMLDivElement>(null);
+  const datesRef = useRef<HTMLDivElement>(null);
+  const refs = useMemo(() => ({
+    prof: profRef,
+    room: roomRef,
+    roomAlert: roomAlertRef,
+    qty: qtyRef,
+    dates: datesRef,
+  }), []);
 
   const isChromebookSpace = useMemo(() => checkChromebookSpace(classroom), [classroom]);
 
@@ -164,6 +175,9 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
     if (!roomName || !roomName.trim()) return;
     const clean = roomName.trim();
     setRecentClassrooms(prev => {
+      if (prev.length > 0 && prev[0].toLowerCase() === clean.toLowerCase()) {
+        return prev;
+      }
       const updated = [clean, ...prev.filter(r => r.toLowerCase() !== clean.toLowerCase())].slice(0, 5);
       try { localStorage.setItem(RECENT_SPACES_KEY, JSON.stringify(updated)); } catch {}
       return updated;
@@ -304,11 +318,13 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
     const sc = scrollRef.current; const el = guideKey ? refs[guideKey]?.current : null;
     if (!sc || !el) { setGuide(g => g === null ? g : null); return; }
     const sr = sc.getBoundingClientRect(); const er = el.getBoundingClientRect();
-    const top = er.top - sr.top + sc.scrollTop + Math.min(er.height, 64) / 2 - 14;
+    const top = Math.round(er.top - sr.top + sc.scrollTop + Math.min(er.height, 64) / 2 - 14);
     const visible = er.top + 20 >= sr.top && er.top + 20 <= sr.bottom;
-    setGuide(g => (g && Math.abs(g.top - top) < 1 && g.visible === visible) ? g : { top, visible });
-  }, [guideKey]);
-  useLayoutEffect(() => { calcGuide(); });
+    setGuide(g => (g && Math.abs(g.top - top) < 2 && g.visible === visible) ? g : { top, visible });
+  }, [guideKey, refs]);
+  useLayoutEffect(() => {
+    calcGuide();
+  }, [guideKey, classroom, roomBusySlot, open, isMinecraft, isMultiMode, showCalendar, extraDates.length, sheet, done, calcGuide]);
   useEffect(() => {
     if (!open) return;
     const fn = () => calcGuide();
@@ -436,8 +452,6 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                     </div>
                   ) : (
                     <div className="ag-scroll" ref={scrollRef} onScroll={e => { setScrolled(e.currentTarget.scrollTop > 0); calcGuide(); }} {...inertProps}>
-                      {guide && guide.visible && <div className="ag-guide" style={{ top: guide.top }} aria-hidden="true"><ArrowRight size={16} strokeWidth={3} /></div>}
-
                       {canBookForOther && (
                         <Section n={++secN} title="Reservar para" done={!isBookingForOther || !!selectedProfessorId} innerRef={refs.prof}>
                           <div className="ag-chips" role="group" aria-label="Reservar para">
@@ -615,6 +629,7 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                         <textarea className="ag-tx" maxLength={200} value={justification} onChange={e => setJustification(e.target.value)} placeholder="Ex.: Pesquisa sobre o sistema solar" aria-label="Conteúdo da aula" />
                         <div className="ag-muted" style={{ textAlign: 'right', fontSize: 12 }}>{justification.length}/200</div>
                       </Section>
+                      {guide && guide.visible && <div className="ag-guide" style={{ top: guide.top }} aria-hidden="true"><ArrowRight size={16} strokeWidth={3} /></div>}
                     </div>
                   )}
 
