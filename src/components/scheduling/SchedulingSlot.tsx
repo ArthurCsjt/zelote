@@ -10,7 +10,6 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { useProfileRole } from '@/hooks/use-profile-role';
 import { useDatabase } from '@/hooks/useDatabase';
 import { ReservationDetailsDialog } from './ReservationDetailsDialog';
-
 import { useSchedulingResponsible } from '@/hooks/useSchedulingResponsible';
 
 interface SchedulingSlotProps {
@@ -90,11 +89,8 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
     );
   }
 
-  // Slot disponível (vazio, não expirado): ReservationDialog sempre montado
-  // para que a tela de confirmação não seja desmontada quando o Realtime
-  // atualizar os dados e isAvailable virar false.
+  // Slot disponível (vazio, não expirado)
   if (isAvailable || dialogOpen) {
-
     return (
       <ReservationDialog
         date={date}
