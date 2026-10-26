@@ -118,6 +118,8 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
   }
 
   // Se tivermos reservas (Full ou Partial)
+  const usagePercent = totalAvailableChromebooks > 0 ? Math.min(100, Math.max(0, (jaReservados / totalAvailableChromebooks) * 100)) : 0;
+
   const content = (
     <div className={cn(
       "h-full min-h-[4rem] p-1.5 border-3 transition-all flex flex-col gap-1.5 rounded-xl",
@@ -126,6 +128,35 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
         : "border-warning bg-warning/10 cursor-pointer hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] hover:-translate-x-0.5 hover:-translate-y-0.5",
       pastSlotClasses
     )}>
+      {/* Mini indicador de capacidade: Ocupação / Barra / Restantes */}
+      <div className="flex flex-col w-full pb-1 border-b border-black/15 dark:border-white/15">
+        <div className="flex items-center justify-between gap-1.5 w-full">
+          <span className="text-[9px] sm:text-[10px] font-black text-black dark:text-white tabular-nums tracking-tight shrink-0">
+            {jaReservados}/{totalAvailableChromebooks}
+          </span>
+
+          <div className="flex-1 h-[6px] sm:h-[7px] border border-black dark:border-white/80 bg-white dark:bg-zinc-900 rounded-[2px] overflow-hidden p-[0.5px]">
+            <div
+              className={cn(
+                "h-full transition-all duration-300 rounded-[1px]",
+                restantes <= 0 ? "bg-red-500" :
+                usagePercent >= 75 ? "bg-orange-600" :
+                usagePercent >= 30 ? "bg-amber-500" :
+                "bg-amber-400"
+              )}
+              style={{ width: `${usagePercent}%` }}
+            />
+          </div>
+
+          <span className={cn(
+            "text-[8px] sm:text-[9px] font-black uppercase tracking-tight shrink-0",
+            restantes <= 0 ? "text-red-600 dark:text-red-400" : "text-zinc-600 dark:text-zinc-400"
+          )}>
+            {restantes <= 0 ? 'Esgotado' : `Restam ${restantes}`}
+          </span>
+        </div>
+      </div>
+
       {allReservationsForSlot.map((res) => {
         const isManutencao = role === 'manutencao';
         const isManutencaoRes = res.prof_role === 'manutencao' || res.prof_email === 'paulo.geremias@colegiosaojudas.com.br' || res.prof_email === 'ivo@colegiosaojudas.com.br' || res.prof_email === 'manutencao.teste@colegiosaojudas.com.br';
@@ -138,7 +169,7 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
               <TooltipTrigger asChild>
                 <div
                   className={cn(
-                    "w-full flex-1 flex items-center justify-center text-[8px] sm:text-[10px] leading-tight font-black uppercase truncate px-1 sm:px-1.5 py-1.5 sm:py-2 border-[1px] border-black text-center transition-all rounded-lg",
+                    "w-full flex-1 flex items-center justify-between text-[9px] sm:text-[11px] leading-tight font-black uppercase px-1.5 sm:px-2 py-1.5 sm:py-2 border-[1px] border-black transition-all rounded-lg min-w-0",
                     !isPast && "hover:-translate-y-[2px] cursor-pointer",
                     isPast && "cursor-default",
                     // Alta resolução no texto
@@ -157,18 +188,11 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
                     }
                   }}
                 >
-                  {isManutencaoRes || res.quantity_requested === 0 ? (
-                    <span className="truncate">{roomName}</span>
-                  ) : (
-                    <span className="truncate">
-                      {/* Mobile version */}
-                      <span className="sm:hidden block">
-                        {res.classroom ? `${roomName} · ${res.quantity_requested}x` : `${res.quantity_requested}x`}
-                      </span>
-                      {/* Desktop version */}
-                      <span className="hidden sm:block">
-                        {res.classroom ? `${roomName} + ${res.quantity_requested} Chromebooks` : `${res.quantity_requested} Chromebooks`}
-                      </span>
+                  <span className="truncate flex-1 text-left min-w-0 text-[10px] sm:text-[12px]">{roomName}</span>
+                  {!isManutencaoRes && res.quantity_requested > 0 && (
+                    <span className="inline-flex items-center gap-1 shrink-0 ml-1.5 bg-black/25 px-1 py-0.5 rounded text-[8.5px] sm:text-[10.5px] leading-none" title={`${res.quantity_requested} Chromebooks`}>
+                      <Laptop className="h-2.5 w-2.5 sm:h-3 sm:w-3 stroke-[2.5]" />
+                      <span>{res.quantity_requested}</span>
                     </span>
                   )}
                 </div>
