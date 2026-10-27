@@ -136,6 +136,15 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({ curren
   const previousEnd = format(endOfMonth(previousMonth), 'yyyy-MM-dd');
   const previousQuery = useQuery({ queryKey: ['reservations', 'prev-month', previousStart, previousEnd], queryFn: () => getReservationsForWeek(previousStart, previousEnd), staleTime: 5 * 60 * 1000, enabled: Boolean(user?.id) });
   const previousStats = useMemo(() => previousQuery.isSuccess && previousQuery.data ? metrics(coordination ? previousQuery.data : previousQuery.data.filter(res => owned(res, user?.id)), totalAvailableChromebooks, now) : null, [previousQuery.isSuccess, previousQuery.data, coordination, user?.id, totalAvailableChromebooks, now]);
+  const comparison = useMemo(() => {
+    if (!previousStats || !previousQuery.data) return null;
+    const sameMonthNow = isSameMonth(now, currentDate);
+    const limit = sameMonthNow ? now.getDate() : 31;
+    const currentRows = sameMonthNow ? scopedRows.filter(res => parseISO(res.date).getDate() <= limit) : scopedRows;
+    const previousAll = coordination ? previousQuery.data : previousQuery.data.filter(res => owned(res, user?.id));
+    const previousRows = previousAll.filter(res => parseISO(res.date).getDate() <= limit);
+    return { current: metrics(currentRows, totalAvailableChromebooks, now), previous: metrics(previousRows, totalAvailableChromebooks, now) };
+  }, [previousStats, previousQuery.data, scopedRows, coordination, user?.id, totalAvailableChromebooks, now, currentDate]);
 
   useEffect(() => {
     if (!document.getElementById('ag-fonts')) {
@@ -149,13 +158,21 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({ curren
   }, []);
   // Wait for the new month's rows, without moving a date the user selected later.
   const initializedMonth = React.useRef('');
+  const pickedDate = React.useRef(false);
+  const autoPicked = React.useRef('');
   useEffect(() => {
     if (isLoading || initializedMonth.current === monthKey) return;
     initializedMonth.current = monthKey;
+    pickedDate.current = false;
     const today = new Date();
     const firstReserved = [...monthDays.keys()].sort()[0];
     setSelectedDate(isSameMonth(today, currentDate) ? startOfDay(today) : firstReserved ? parseISO(firstReserved) : startOfMonth(currentDate));
     setQuery('');
+  }, [monthKey, monthDays, currentDate, isLoading]);
+  useEffect(() => {
+    if (isLoading || pickedDate.current || autoPicked.current === monthKey || isSameMonth(new Date(), currentDate) || monthDays.size === 0) return;
+    autoPicked.current = monthKey;
+    setSelectedDate(parseISO([...monthDays.keys()].sort()[0]));
   }, [monthKey, monthDays, currentDate, isLoading]);
 
   const dateKey = format(selectedDate, 'yyyy-MM-dd');
@@ -172,13 +189,13 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({ curren
     });
   }, [scopedRows, totalAvailableChromebooks]);
   const rooms = useMemo(() => ranking(scopedRows, res => res.classroom || 'Não informado'), [scopedRows]);
-  const professors = useMemo(() => ranking(scopedRows, res => res.prof_name), [scopedRows]);
+  const professors = useMemo(() => ranking(scopedRows, res => (res.prof_name || 'Usuário').split('@')[0]), [scopedRows]);
   const start = startOfMonth(currentDate);
   const offset = getDay(start);
   const calendarDays = Array.from({ length: endOfMonth(currentDate).getDate() }, (_, i) => addDays(start, i));
   const kpis = [
-    { label: coordination ? 'Reservas' : 'Minhas reservas', value: number(stats.count), previous: previousStats?.count, current: stats.count },
-    ...(!isManutencao ? [{ label: 'Chromebooks-aula', value: number(stats.quantity), previous: previousStats?.quantity, current: stats.quantity }] : []),
+    { label: coordination ? 'Reservas' : 'Minhas reservas', value: number(stats.count), previous: comparison?.previous.count, current: comparison?.current.count ?? stats.count },
+    ...(!isManutencao ? [{ label: 'Chromebooks-aula', value: number(stats.quantity), previous: comparison?.previous.quantity, current: comparison?.current.quantity ?? stats.quantity }] : []),
     ...(coordination && !isManutencao ? [
       { label: 'Ocupação média', value: percent(stats.average) },
       { label: 'Pico do mês', value: number(stats.max.value), note: stats.max.date ? `dia ${parseISO(stats.max.date).getDate()}` : 'Sem reservas' },
@@ -213,7 +230,7 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({ curren
               const rows = monthDays.get(key) || [];
               const dayRate = rate(peak(rows), totalAvailableChromebooks);
               const level = isManutencao ? 0 : heatLevel(dayRate);
-              return <Button key={key} className={`hx-day ${isWeekend(day) ? 'weekend' : ''} ${isSameDay(day, now) ? 'today' : ''}`} data-level={level} aria-pressed={isSameDay(day, selectedDate)} aria-label={`${format(day, "d 'de' MMMM", { locale: ptBR })}, ${rows.length} reservas${isManutencao ? '' : `, pico de ${percent(dayRate)}`}`} onClick={() => setSelectedDate(day)}><span>{day.getDate()}</span><span className="hx-heat-track">{level > 0 && <span className="hx-heat" data-level={level} style={{ '--hx-fill': `${Math.max(18, Math.min(100, dayRate))}%` } as HistoryStyle} />}</span></Button>;
+              return <Button key={key} className={`hx-day ${isWeekend(day) ? 'weekend' : ''} ${isSameDay(day, now) ? 'today' : ''}`} data-level={level} aria-pressed={isSameDay(day, selectedDate)} aria-label={`${format(day, "d 'de' MMMM", { locale: ptBR })}, ${rows.length} reservas${isManutencao ? '' : `, pico de ${percent(dayRate)}`}`} onClick={() => { pickedDate.current = true; setSelectedDate(day); }}><span>{day.getDate()}</span><span className="hx-heat-track">{level > 0 && <span className="hx-heat" data-level={level} style={{ '--hx-fill': `${Math.max(18, Math.min(100, dayRate))}%` } as HistoryStyle} />}</span></Button>;
             })}
           </div>
           {!isManutencao && <><div className="hx-legend">{['até 29%', '30–74%', '75–99%', '100%'].map((label, i) => <span key={label}><i className="hx-swatch" data-level={i + 1} />{label}</span>)}</div><p className="hx-caption">Pico de uso do dia</p></>}
