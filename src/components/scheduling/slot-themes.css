@@ -2,7 +2,9 @@
 @property --ag-a{syntax:'<color>';inherits:false;initial-value:#1d3b8b}
 @property --ag-b{syntax:'<color>';inherits:false;initial-value:#2f6fe0}
 @property --ag-c{syntax:'<color>';inherits:false;initial-value:#f5c518}
-.slot-theme{position:relative;overflow:hidden;isolation:isolate}
+.slot-theme{position:relative;overflow:hidden;isolation:isolate;min-height:2.75rem}
+@media (min-width:640px){.slot-theme{min-height:3rem}}
+.slot-theme--still{min-height:2.5rem}
 .slot-theme::before,.slot-theme::after{content:"";position:absolute;pointer-events:none;z-index:-1}
 
 /* ---- Minecraft: grama sobre terra; uma casinha é construída de baixo para cima ---- */
