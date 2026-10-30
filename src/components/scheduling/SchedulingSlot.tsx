@@ -11,6 +11,8 @@ import { useProfileRole } from '@/hooks/use-profile-role';
 import { useDatabase } from '@/hooks/useDatabase';
 import { ReservationDetailsDialog } from './ReservationDetailsDialog';
 import { useSchedulingResponsible } from '@/hooks/useSchedulingResponsible';
+import { getSlotTheme } from './slotTheme';
+import './slot-themes.css';
 
 interface SchedulingSlotProps {
   date: Date;
@@ -158,6 +160,7 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
         const isManutencaoRes = res.prof_role === 'manutencao' || res.prof_email === 'paulo.geremias@colegiosaojudas.com.br' || res.prof_email === 'ivo@colegiosaojudas.com.br' || res.prof_email === 'manutencao.teste@colegiosaojudas.com.br';
         const isThisMine = res.created_by === currentUser?.id;
         const roomName = res.classroom ? res.classroom.toUpperCase() : "ESPAÇO";
+        const theme = isManutencaoRes ? null : getSlotTheme(res);
 
         return (
           <TooltipProvider key={res.id}>
@@ -172,8 +175,8 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
                     "text-white [text-shadow:_-1px_-1px_0_rgba(0,0,0,0.5),_1px_-1px_0_rgba(0,0,0,0.5),_-1px_1px_0_rgba(0,0,0,0.5),_1px_1px_0_rgba(0,0,0,0.5)]",
                     isManutencaoRes
                       ? "bg-[#52525B] shadow-[2px_2px_0_0_#000] sm:shadow-[3px_3px_0_0_#000] hover:bg-[#3F3F46]"
-                      : res.is_minecraft
-                        ? "bg-gradient-to-br from-[#2d5a27] to-[#1e3c1a] shadow-[2px_2px_0_0_#000] sm:shadow-[3px_3px_0_0_#000]"
+                      : theme
+                        ? `slot-theme slot-theme--${theme} shadow-[2px_2px_0_0_#000] sm:shadow-[3px_3px_0_0_#000]`
                         : "bg-gradient-to-br from-blue-600 to-indigo-600 shadow-[2px_2px_0_0_#000] sm:shadow-[3px_3px_0_0_#000]",
                   )}
                   onClick={(e) => {
