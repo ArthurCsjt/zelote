@@ -95,7 +95,7 @@ export const LoginSchedulingShowcase: React.FC = () => {
           .maybeSingle();
 
         if (data && data.value) {
-          const parsed = typeof data.value === 'number' ? data.value : parseInt(data.value);
+          const parsed = typeof data.value === 'number' ? data.value : typeof data.value === 'string' ? parseInt(data.value) : NaN;
           if (!isNaN(parsed) && parsed > 0) return parsed;
         }
       } catch {}
