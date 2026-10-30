@@ -927,6 +927,17 @@ export type Database = {
           student_name: string
         }[]
       }
+      get_public_schedule_showcase: {
+        Args: { end_date: string; start_date: string }
+        Returns: {
+          classroom: string
+          date: string
+          id: string
+          is_minecraft: boolean
+          quantity_requested: number
+          time_slot: string
+        }[]
+      }
       get_recent_loan_activities: {
         Args: never
         Returns: {
