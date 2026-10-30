@@ -176,7 +176,7 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
                     isManutencaoRes
                       ? "bg-[#52525B] shadow-[2px_2px_0_0_#000] sm:shadow-[3px_3px_0_0_#000] hover:bg-[#3F3F46]"
                       : theme
-                        ? `slot-theme slot-theme--${theme} shadow-[2px_2px_0_0_#000] sm:shadow-[3px_3px_0_0_#000]`
+                        ? `slot-theme slot-theme--${theme}${isPast ? ' slot-theme--still' : ''} shadow-[2px_2px_0_0_#000] sm:shadow-[3px_3px_0_0_#000]`
                         : "bg-gradient-to-br from-blue-600 to-indigo-600 shadow-[2px_2px_0_0_#000] sm:shadow-[3px_3px_0_0_#000]",
                   )}
                   onClick={(e) => {
