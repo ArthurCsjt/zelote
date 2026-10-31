@@ -1,36 +1,36 @@
-/* Temas animados das reservas (pílulas da grade). Somente transform/opacity/clip-path em pseudo-elementos pequenos. */
-@property --ag-a{syntax:'<color>';inherits:false;initial-value:#1d3b8b}
-@property --ag-b{syntax:'<color>';inherits:false;initial-value:#2f6fe0}
-@property --ag-c{syntax:'<color>';inherits:false;initial-value:#f5c518}
+/* Temas animados das reservas (pílulas da grade semanal). Somente CSS: transform, opacity, clip-path e poucos passos discretos. */
+@property --ag-p{syntax:'<percentage>';inherits:false;initial-value:0%}
 .slot-theme{position:relative;overflow:hidden;isolation:isolate;min-height:2.75rem}
 @media (min-width:640px){.slot-theme{min-height:3rem}}
-.slot-theme--still{min-height:2.5rem}
 .slot-theme::before,.slot-theme::after{content:"";position:absolute;pointer-events:none;z-index:-1}
 
-/* ---- Minecraft: grama sobre terra; uma casinha é construída de baixo para cima ---- */
-.slot-theme--minecraft{background-color:#6b4a2b}
-.slot-theme--minecraft::before{inset:0;background:linear-gradient(180deg,#79c744 0 22%,#4b9a2b 22% 36%,transparent 36%),repeating-conic-gradient(rgba(0,0,0,.14) 0 25%,transparent 0 50%) 0 0/8px 8px}
-.slot-theme--minecraft::after{right:46px;bottom:2px;width:36px;height:28px;opacity:.7;background:linear-gradient(#9fd8ff,#9fd8ff) 24px 17px/5px 5px no-repeat,linear-gradient(#3f2a14,#3f2a14) 15px 19px/6px 9px no-repeat,linear-gradient(#b8884a,#b8884a) 6px 14px/24px 14px no-repeat,linear-gradient(#9b2f22,#9b2f22) 2px 8px/32px 6px no-repeat,linear-gradient(#b8412f,#b8412f) 8px 3px/20px 5px no-repeat,linear-gradient(#7a8085,#7a8085) 26px 0/4px 6px no-repeat;animation:ag-build 8s infinite}
-@keyframes ag-build{0%{clip-path:inset(100% 0 0 0);opacity:.7;animation-timing-function:steps(7,end)}50%{clip-path:inset(0);opacity:.7}88%{clip-path:inset(0);opacity:.7}96%{clip-path:inset(0);opacity:0}100%{clip-path:inset(100% 0 0 0);opacity:0}}
+/* ---- Minecraft: dia no campo; nuvens passam e uma casinha é construída de baixo para cima ---- */
+.slot-theme--minecraft{background:linear-gradient(180deg,#3b82d6 0,#6db3f2 62%,#79c744 62% 70%,#4b9a2b 70% 76%,transparent 76%),repeating-conic-gradient(rgba(0,0,0,.14) 0 25%,transparent 0 50%) 0 0/8px 8px,#6b4a2b}
+.slot-theme--minecraft::before{left:0;right:0;top:2px;height:15px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 10' shape-rendering='crispEdges'%3E%3Cg fill='%23fff' fill-opacity='.92'%3E%3Crect x='6' y='5' width='12' height='3'/%3E%3Crect x='9' y='3' width='6' height='2'/%3E%3Crect x='34' y='2' width='14' height='3'/%3E%3Crect x='37' y='0' width='7' height='2'/%3E%3Crect x='52' y='6' width='8' height='2'/%3E%3C/g%3E%3C/svg%3E") 0 0/96px 15px repeat-x;image-rendering:pixelated;animation:ag-clouds 30s linear infinite}
+@keyframes ag-clouds{to{background-position:-96px 0}}
+.slot-theme--minecraft::after{right:56px;bottom:38%;height:60%;aspect-ratio:16/13;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 13' shape-rendering='crispEdges'%3E%3Crect x='11' y='0' width='2' height='3' fill='%237a8085'/%3E%3Crect x='4' y='1' width='8' height='2' fill='%23b8412f'/%3E%3Crect x='2' y='3' width='12' height='2' fill='%239b2f22'/%3E%3Crect x='1' y='5' width='14' height='1' fill='%23b8412f'/%3E%3Crect x='2' y='6' width='12' height='7' fill='%23b8884a'/%3E%3Crect x='2' y='8' width='12' height='1' fill='%239c6f38'/%3E%3Crect x='2' y='11' width='12' height='1' fill='%239c6f38'/%3E%3Crect x='7' y='9' width='2' height='4' fill='%233f2a14'/%3E%3Crect x='3' y='7' width='3' height='2' fill='%239fd8ff'/%3E%3Crect x='10' y='7' width='3' height='2' fill='%239fd8ff'/%3E%3C/svg%3E") center/100% 100% no-repeat;image-rendering:pixelated;animation:ag-house 9s infinite}
+@keyframes ag-house{0%{clip-path:inset(100% 0 0 0);opacity:1;animation-timing-function:steps(13,end)}55%{clip-path:inset(0);opacity:1}90%{clip-path:inset(0);opacity:1}97%{clip-path:inset(0);opacity:0}100%{clip-path:inset(100% 0 0 0);opacity:0}}
 
-/* ---- Maker: filamento laranja; o bico (::before) imprime um boneco (::after) camada a camada ---- */
-.slot-theme--maker{background:linear-gradient(#14b8a6,#14b8a6) left bottom/100% 3px no-repeat,repeating-linear-gradient(0deg,rgba(255,255,255,.16) 0 2px,transparent 2px 5px),linear-gradient(135deg,#ff8a1f,#d9480f 60%,#9a3412)}
-.slot-theme--maker::after{right:48px;bottom:3px;width:26px;height:26px;opacity:.9;background:linear-gradient(#0f766e,#0f766e) 9px 4px/3px 3px no-repeat,linear-gradient(#0f766e,#0f766e) 15px 4px/3px 3px no-repeat,linear-gradient(#fbbf24,#fbbf24) 12px 0/2px 2px no-repeat,linear-gradient(#ccfbf1,#ccfbf1) 6px 1px/14px 9px no-repeat,linear-gradient(#14b8a6,#14b8a6) 0 11px/4px 6px no-repeat,linear-gradient(#14b8a6,#14b8a6) 22px 11px/4px 6px no-repeat,linear-gradient(#5eead4,#5eead4) 4px 10px/18px 9px no-repeat,linear-gradient(#14b8a6,#14b8a6) 6px 19px/5px 7px no-repeat,linear-gradient(#14b8a6,#14b8a6) 15px 19px/5px 7px no-repeat;animation:ag-print 7s infinite}
-.slot-theme--maker::before{right:54px;bottom:3px;width:14px;height:7px;background:linear-gradient(#fbbf24,#fbbf24) 5px 5px/4px 2px no-repeat,linear-gradient(#27272a,#27272a) 0 0/14px 5px no-repeat;animation:ag-nozzle-y 7s infinite,ag-nozzle-x .5s ease-in-out infinite alternate}
-@keyframes ag-print{0%{clip-path:inset(100% 0 0 0);opacity:.9;animation-timing-function:steps(8,end)}50%{clip-path:inset(0);opacity:.9}88%{clip-path:inset(0);opacity:.9}96%{clip-path:inset(0);opacity:0}100%{clip-path:inset(100% 0 0 0);opacity:0}}
-@keyframes ag-nozzle-y{0%{translate:0 0;opacity:1;animation-timing-function:steps(8,end)}50%{translate:0 -24px;opacity:1}58%{translate:0 -24px;opacity:0}99%{translate:0 0;opacity:0}100%{translate:0 0;opacity:1}}
-@keyframes ag-nozzle-x{from{transform:translateX(-6px)}to{transform:translateX(6px)}}
+/* ---- Maker: impressora 3D. Pórtico no topo, mesa laranja, barra de progresso, cabeçote (::before) imprime um vaso (::after) ---- */
+@keyframes ag-progress{0%{--ag-p:0%}55%,100%{--ag-p:100%}}
+.slot-theme--maker{--ag-p:0%;background:linear-gradient(90deg,#14b8a6 var(--ag-p),transparent 0) left bottom/100% 3px no-repeat,linear-gradient(#6b7280,#6b7280) left 14%/100% 3px no-repeat,linear-gradient(180deg,transparent 78%,#ff8a1f 78%,#c2410c 100%),repeating-linear-gradient(90deg,rgba(255,255,255,.06) 0 1px,transparent 1px 8px),linear-gradient(180deg,#323847,#1b1e26);animation:ag-progress 8s linear infinite}
+.slot-theme--maker::after{right:54px;bottom:22%;height:62%;aspect-ratio:2/3;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 30'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' x2='1'%3E%3Cstop offset='0' stop-color='%23ff9a3c'/%3E%3Cstop offset='.45' stop-color='%23ffe0b0'/%3E%3Cstop offset='1' stop-color='%23d9480f'/%3E%3C/linearGradient%3E%3Cpattern id='p' width='20' height='2' patternUnits='userSpaceOnUse'%3E%3Crect width='20' height='.8' fill='%23000' fill-opacity='.25'/%3E%3C/pattern%3E%3CclipPath id='c'%3E%3Cpath d='M7 0h6v4c0 2 4 4 4 10 0 6-3 9-3 12v4H6v-4c0-3-3-6-3-12 0-6 4-8 4-10z'/%3E%3C/clipPath%3E%3C/defs%3E%3Cg clip-path='url(%23c)'%3E%3Crect width='20' height='30' fill='url(%23g)'/%3E%3Crect width='20' height='30' fill='url(%23p)'/%3E%3C/g%3E%3C/svg%3E") center/100% 100% no-repeat;animation:ag-print 8s infinite}
+@keyframes ag-print{0%{clip-path:inset(100% 0 0 0);opacity:1;animation-timing-function:steps(14,end)}55%{clip-path:inset(0);opacity:1}90%{clip-path:inset(0);opacity:1}97%{clip-path:inset(0);opacity:0}100%{clip-path:inset(100% 0 0 0);opacity:0}}
+.slot-theme--maker::before{right:57px;bottom:22%;width:14px;height:9px;background:linear-gradient(#fbbf24,#fbbf24) 5px 6px/4px 3px no-repeat,linear-gradient(#3f3f46,#3f3f46) 0 0/14px 6px no-repeat;animation:ag-head-y 8s infinite,ag-head-x .6s ease-in-out infinite alternate}
+@keyframes ag-head-y{0%{bottom:22%;opacity:1;animation-timing-function:steps(14,end)}55%{bottom:84%;opacity:1}62%{bottom:84%;opacity:0}99%{bottom:22%;opacity:0}100%{bottom:22%;opacity:1}}
+@keyframes ag-head-x{from{transform:translateX(-7px)}to{transform:translateX(7px)}}
 
-/* ---- Artes: paletas de Van Gogh se alternando (Noite Estrelada, Girassóis, Campo de trigo) + redemoinho ---- */
-.slot-theme--arts{background-color:#2f6fe0}
-.slot-theme--arts::before{inset:0;background:radial-gradient(circle at 14% 28%,#fde68a 0 2.5px,transparent 3px),radial-gradient(circle at 80% 24%,#fef3c7 0 2px,transparent 2.5px),linear-gradient(115deg,var(--ag-a),var(--ag-b) 60%,var(--ag-c));animation:ag-vangogh 18s ease-in-out infinite}
-.slot-theme--arts::after{left:50%;top:50%;width:260px;height:260px;margin:-130px 0 0 -130px;border-radius:50%;opacity:.55;mix-blend-mode:soft-light;background:conic-gradient(from 0deg,rgba(255,255,255,0),rgba(255,255,255,.9) 12%,rgba(255,255,255,0) 28%,rgba(0,0,0,.55) 52%,rgba(255,255,255,0) 68%,rgba(255,236,150,.9) 84%,rgba(255,255,255,0));animation:ag-swirl 16s linear infinite}
-@keyframes ag-swirl{to{transform:rotate(360deg)}}
-@keyframes ag-vangogh{0%,100%{--ag-a:#1d3b8b;--ag-b:#2f6fe0;--ag-c:#f5c518}33%{--ag-a:#b45309;--ag-b:#f59e0b;--ag-c:#fde047}66%{--ag-a:#1f6f5c;--ag-b:#d9a441;--ag-c:#4aa3c7}}
+/* ---- Artes: A Noite Estrelada (Van Gogh, domínio público) subindo como um letreiro ---- */
+.slot-theme--arts{background:#1d3b8b}
+.slot-theme--arts::before{left:0;top:0;width:100%;aspect-ratio:631/1000;background:url("https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg/330px-Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg") 0 0/100% 50% repeat-y;will-change:transform;animation:ag-marquee 24s linear infinite}
+@keyframes ag-marquee{to{transform:translateY(-50%)}}
+.slot-theme--arts::after{inset:0;background:linear-gradient(90deg,rgba(8,14,48,.62),rgba(8,14,48,.18) 55%,rgba(8,14,48,.55)),linear-gradient(180deg,rgba(8,14,48,.35),transparent 30%,transparent 70%,rgba(8,14,48,.35))}
 
 /* ---- Reservas passadas: estado final parado (sem animação) ---- */
-.slot-theme--still::before,.slot-theme--still::after{animation:none}
-.slot-theme--still.slot-theme--maker::before{opacity:0}
+.slot-theme--still,.slot-theme--still::before,.slot-theme--still::after{animation:none}
+.slot-theme--still{min-height:2.5rem}
+.slot-theme--maker.slot-theme--still{--ag-p:100%}
+.slot-theme--maker.slot-theme--still::before{opacity:0}
 
 /* ---- Reduzir movimento: tudo parado ---- */
-@media (prefers-reduced-motion:reduce){.slot-theme::before,.slot-theme::after{animation:none!important}.slot-theme--maker::before{opacity:0}}
+@media (prefers-reduced-motion:reduce){.slot-theme,.slot-theme::before,.slot-theme::after{animation:none!important}.slot-theme--maker{--ag-p:100%}.slot-theme--maker::before{opacity:0}}
