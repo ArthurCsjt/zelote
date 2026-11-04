@@ -37,6 +37,12 @@ export interface ReservationData {
   time_slots?: string[];
 }
 
+export interface AssociatedLoan {
+  chromebook_id: string;
+  returned: boolean;
+  return_date?: string | null;
+}
+
 export interface Reservation extends ReservationData {
   id: string;
   professor_id: string;
@@ -45,7 +51,7 @@ export interface Reservation extends ReservationData {
   prof_name: string;
   prof_email: string;
   prof_role?: string;
-  associated_loans?: { chromebook_id: string }[];
+  associated_loans?: AssociatedLoan[];
 }
 
 export interface Space {
@@ -63,7 +69,9 @@ export const getReservationsForWeek = async (startDate: string, endDate: string)
       *,
       prof_data:profiles!professor_id (name, email, role),
       loans (
-        chromebooks (chromebook_id)
+        id,
+        chromebooks (chromebook_id),
+        returns (id, return_date)
       )
     `)
     .gte('date', startDate)
@@ -81,7 +89,14 @@ export const getReservationsForWeek = async (startDate: string, endDate: string)
     const loans = (res as any).loans || [];
     const associatedLoans = loans.map((l: any) => {
       const cb = Array.isArray(l.chromebooks) ? l.chromebooks[0] : l.chromebooks;
-      return { chromebook_id: cb?.chromebook_id };
+      const rawReturns = l.returns;
+      const ret = Array.isArray(rawReturns) ? rawReturns[0] : rawReturns;
+      const isReturned = Boolean(ret && ret.id);
+      return {
+        chromebook_id: cb?.chromebook_id,
+        returned: isReturned,
+        return_date: ret?.return_date || null
+      };
     }).filter((l: any) => l.chromebook_id);
 
     return {

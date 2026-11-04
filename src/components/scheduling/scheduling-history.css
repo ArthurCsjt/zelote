@@ -81,7 +81,9 @@
 .hx-root .hx-progress-label{font-size:11px;color:var(--hx-muted);margin-top:12px}
 .hx-root .hx-withdrawn{border-top:1px solid var(--hx-border);margin-top:12px;padding-top:10px}
 .hx-root .hx-ids{display:flex;gap:5px;overflow-x:auto;margin-top:6px;max-width:100%;padding-bottom:4px}
-.hx-root .hx-id{flex-shrink:0;font-size:11px;background:var(--hx-soft);color:var(--hx-blue);border:1px solid var(--hx-border);border-radius:7px;padding:4px 7px}
+.hx-root .hx-id{flex-shrink:0;font-size:11px;background:var(--hx-soft);color:var(--hx-blue);border:1px solid var(--hx-border);border-radius:7px;padding:4px 7px;display:inline-flex;align-items:center;gap:3px;font-weight:700}
+.hx-root .hx-id--returned{background:rgba(16,185,129,0.12);color:#059669;border-color:rgba(16,185,129,0.4)}
+.hx-root .hx-id--pending{background:rgba(239,68,68,0.15);color:#dc2626;border-color:rgba(239,68,68,0.5);font-weight:800}
 .hx-root .hx-action-row{display:flex;justify-content:flex-end;margin-top:12px}
 .hx-root .hx-start,.hx-root .hx-export{background:var(--hx-blue);color:var(--hx-card);border:0;gap:7px;padding:0 15px;font-size:12px}
 .hx-root .hx-empty{padding:32px 12px;text-align:center;color:var(--hx-muted);font-size:13px}

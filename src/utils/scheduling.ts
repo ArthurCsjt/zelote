@@ -128,3 +128,21 @@ export const isChromebookSpace = (classroom: string): boolean => {
     normalized.includes('professores e funcionarios')
   );
 };
+
+/**
+ * Formata o ID do Chromebook para o padrão visual 'CHR001', 'CHR002', etc.
+ * Normaliza variações como 'CB01', 'CB1', '1', 'CHR1', 'CHR001'.
+ */
+export const formatChromebookTag = (id: string | null | undefined): string => {
+  if (!id) return '';
+  const trimmed = id.trim();
+  const match = trimmed.match(/^(?:CB|CHR|chromebook)?[-_#\s]*(\d+)$/i);
+  if (match) {
+    const num = parseInt(match[1], 10);
+    return `CHR${num.toString().padStart(3, '0')}`;
+  }
+  if (/^CHR/i.test(trimmed)) {
+    return trimmed.toUpperCase();
+  }
+  return trimmed;
+};

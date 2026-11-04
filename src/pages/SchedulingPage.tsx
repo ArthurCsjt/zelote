@@ -183,6 +183,30 @@ const SchedulingPage = () => {
           queryClient.invalidateQueries({ queryKey: ['totalAvailableChromebooks'] });
         }
       )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'loans',
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['reservations'] });
+          queryClient.invalidateQueries({ queryKey: ['totalAvailableChromebooks'] });
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'returns',
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['reservations'] });
+          queryClient.invalidateQueries({ queryKey: ['totalAvailableChromebooks'] });
+        }
+      )
       .subscribe();
 
     return () => {

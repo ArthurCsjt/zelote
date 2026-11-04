@@ -12,6 +12,7 @@ import { useDatabase } from '@/hooks/useDatabase';
 import { getReservationsForWeek, type Reservation } from '@/services/reservationService';
 import { ReservationDetailsDialog } from './ReservationDetailsDialog';
 import { byDay, collected, heatLevel, interval, makeCsv, metrics, normalize, owned, peak, quantity, ranking, rate, status, statusLabels } from './history/historyData';
+import { formatChromebookTag } from '@/utils/scheduling';
 import './scheduling-history.css';
 
 type HistoryStyle = React.CSSProperties & { [key: `--hx-${string}`]: string };
@@ -73,6 +74,8 @@ const ReservationList = React.memo(function ReservationList({ rows, allRows, fil
         const startingIn = differenceInMinutes(start, now);
         const showProgress = !isManutencao && !isMaintenanceReservation && requested > 0 && now >= start;
         const delay = `${Math.min(itemIndex++, 7) * 35}ms`;
+        const returnedLoans = res.associated_loans?.filter(l => l.returned).length || 0;
+        const pendingLoans = loans - returnedLoans;
         return <article key={res.id} className={`hx-reservation ${res.is_minecraft ? 'minecraft' : ''}`} style={{ '--hx-delay': delay } as HistoryStyle}>
           <button type="button" className="hx-open" onClick={() => onOpen(res)} aria-label={`Ver reserva de ${displayName}, ${res.classroom || 'sem sala'}, ${slot}`}>
             <div className="hx-res-top">
@@ -91,7 +94,7 @@ const ReservationList = React.memo(function ReservationList({ rows, allRows, fil
             {res.justification && <p className="hx-quote">“{res.justification}”</p>}
             {showProgress && <div><div className="hx-progress-label">{loans} de {requested} retirados</div><div className="hx-progress" role="progressbar" aria-label="Chromebooks retirados" aria-valuemin={0} aria-valuemax={requested} aria-valuenow={Math.min(requested, loans)}><div className="hx-progress-fill" style={{ '--hx-fill': `${Math.min(100, loans / requested * 100)}%` } as HistoryStyle} /></div></div>}
           </button>
-          {!isManutencao && loans > 0 && <div className="hx-withdrawn"><span className="hx-caption">RETIRADOS · {loans}</span><div className="hx-ids">{res.associated_loans?.map((loan, i) => <span className="hx-id" key={`${loan.chromebook_id}-${i}`}>{loan.chromebook_id}</span>)}</div></div>}
+          {!isManutencao && loans > 0 && <div className="hx-withdrawn"><span className="hx-caption">RETIRADOS · {loans}{returnedLoans === loans ? <span style={{ color: '#059669', fontWeight: 800, marginLeft: 6 }}>✓ Todos devolvidos</span> : <span style={{ color: '#d97706', fontWeight: 800, marginLeft: 6 }}>· {returnedLoans} devolvido{returnedLoans === 1 ? '' : 's'} · {pendingLoans} pendente{pendingLoans === 1 ? '' : 's'}</span>}</span><div className="hx-ids">{res.associated_loans?.map((loan, i) => { const tag = formatChromebookTag(loan.chromebook_id); return <span className={`hx-id ${loan.returned ? 'hx-id--returned' : 'hx-id--pending'}`} key={`${loan.chromebook_id}-${i}`} title={loan.returned ? `${tag} - Devolvido` : `${tag} - Pendente de devolução`}>{loan.returned ? `✓ ${tag}` : `⚠️ ${tag}`}</span>; })}</div></div>}
           {isResponsible && !fulfilled && <div className="hx-action-row"><Button className="hx-control hx-start" onClick={() => onStart(res)}><ArrowRight size={15} />Iniciar</Button></div>}
         </article>;
       })}

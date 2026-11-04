@@ -61,7 +61,25 @@ export function csvCell(value: unknown) {
   return `"${text.replace(/"/g, '""')}"`;
 }
 export function makeCsv(reservations: Reservation[], now: Date) {
-  const header = ['data', 'horário', 'professor', 'e-mail', 'sala', 'chromebooks', 'retirados', 'status', 'minecraft', 'justificativa'];
-  const rows = reservations.map(res => [res.date, res.time_slot, res.prof_name, res.prof_email, res.classroom || '', quantity(res), collected(res), statusLabels[status(res, now)], res.is_minecraft ? 'Sim' : 'Não', res.justification]);
+  const header = ['data', 'horário', 'professor', 'e-mail', 'sala', 'chromebooks', 'retirados', 'devolvidos', 'pendentes', 'status', 'minecraft', 'justificativa'];
+  const rows = reservations.map(res => {
+    const loans = collected(res);
+    const returned = res.associated_loans?.filter(l => l.returned).length || 0;
+    const pending = loans - returned;
+    return [
+      res.date,
+      res.time_slot,
+      res.prof_name,
+      res.prof_email,
+      res.classroom || '',
+      quantity(res),
+      loans,
+      returned,
+      pending,
+      statusLabels[status(res, now)],
+      res.is_minecraft ? 'Sim' : 'Não',
+      res.justification
+    ];
+  });
   return '\uFEFF' + [header, ...rows].map(row => row.map(csvCell).join(';')).join('\r\n');
 }

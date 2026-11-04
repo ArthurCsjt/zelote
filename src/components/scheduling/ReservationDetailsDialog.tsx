@@ -27,6 +27,7 @@ import type { Reservation } from '@/hooks/useDatabase';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { useProfileRole } from '@/hooks/use-profile-role';
+import { formatChromebookTag } from '@/utils/scheduling';
 
 interface ReservationDetailsDialogProps {
     open: boolean;
@@ -278,20 +279,50 @@ export const ReservationDetailsDialog: React.FC<ReservationDetailsDialogProps> =
                             )}
 
                             {/* Loans Status */}
-                            {!isManutencao && reservation.associated_loans && reservation.associated_loans.length > 0 && (
-                                <div className="border-4 border-black dark:border-white bg-blue-50 dark:bg-blue-900/10 p-3 shadow-[3px_3px_0px_0px_rgba(0,0,0,0.05)]">
-                                    <p className="text-[9px] font-black uppercase text-blue-600 dark:text-blue-400 mb-1.5 flex items-center gap-1">
-                                        <Monitor className="h-3.5 w-3.5" /> Retirados ({reservation.associated_loans.length})
-                                    </p>
-                                    <div className="flex flex-wrap gap-1">
-                                        {reservation.associated_loans.map((loan, idx) => (
-                                            <span key={idx} className="bg-blue-600 text-white border border-black font-black text-[9px] px-1.5 py-0.5 shadow-[1px_1px_0_0_#000]">
-                                                {loan.chromebook_id}
-                                            </span>
-                                        ))}
+                            {!isManutencao && reservation.associated_loans && reservation.associated_loans.length > 0 && (() => {
+                                const totalWithdrawn = reservation.associated_loans.length;
+                                const returnedCount = reservation.associated_loans.filter(l => l.returned).length;
+                                const pendingCount = totalWithdrawn - returnedCount;
+                                const allReturned = pendingCount === 0;
+
+                                return (
+                                    <div className="border-4 border-black dark:border-white bg-blue-50 dark:bg-blue-900/10 p-3 shadow-[3px_3px_0px_0px_rgba(0,0,0,0.05)]">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <p className="text-[9px] font-black uppercase text-blue-600 dark:text-blue-400 flex items-center gap-1">
+                                                <Monitor className="h-3.5 w-3.5" /> Retirados ({totalWithdrawn})
+                                            </p>
+                                            {allReturned ? (
+                                                <span className="text-[9px] font-black uppercase bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border-2 border-emerald-600 px-2 py-0.5 shadow-[1px_1px_0_0_#000]">
+                                                    ✓ Todos Devolvidos ({returnedCount}/{totalWithdrawn})
+                                                </span>
+                                            ) : (
+                                                <span className="text-[9px] font-black uppercase bg-amber-200 text-amber-950 dark:bg-amber-900/60 dark:text-amber-200 border-2 border-black px-2 py-0.5 shadow-[2px_2px_0_0_#000] animate-pulse">
+                                                    ⚠️ {pendingCount} Pendente{pendingCount > 1 ? 's' : ''} ({returnedCount}/{totalWithdrawn} devolvidos)
+                                                </span>
+                                            )}
+                                        </div>
+                                        <div className="flex flex-wrap gap-1.5">
+                                            {reservation.associated_loans.map((loan, idx) => {
+                                                const tag = formatChromebookTag(loan.chromebook_id);
+                                                return (
+                                                    <span
+                                                        key={idx}
+                                                        className={cn(
+                                                            "border font-black text-[9px] px-2 py-0.5 inline-flex items-center gap-1",
+                                                            loan.returned
+                                                                ? "bg-emerald-600 text-white border-black shadow-[1px_1px_0_0_#000]"
+                                                                : "bg-amber-400 text-black border-2 border-black shadow-[2px_2px_0_0_#000]"
+                                                        )}
+                                                        title={loan.returned ? `${tag} - Devolvido` : `${tag} - Pendente de devolução`}
+                                                    >
+                                                        {loan.returned ? `✓ ${tag}` : `⚠️ ${tag}`}
+                                                    </span>
+                                                );
+                                            })}
+                                        </div>
                                     </div>
-                                </div>
-                            )}
+                                );
+                            })()}
                         </div>
                     )}
                 </div>
