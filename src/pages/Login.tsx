@@ -70,13 +70,16 @@ const Login = () => {
 
   const [email, setEmail] = useState("");
   const [emailTouched, setEmailTouched] = useState(false);
+  const [isEmailFocused, setIsEmailFocused] = useState(false);
   const [showUnconfirmedAlert, setShowUnconfirmedAlert] = useState(false);
 
   const [password, setPassword] = useState("");
+  const [fullName, setFullName] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [capsLockActive, setCapsLockActive] = useState(false);
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
 
@@ -177,10 +180,15 @@ const Login = () => {
       return;
     }
 
-    if (firstName.trim().length === 0) {
-      toast({ title: "Campo obrigatório", description: "Por favor, informe seu nome.", variant: "destructive" });
+    const trimmedName = fullName.trim();
+    if (trimmedName.length === 0) {
+      toast({ title: "Campo obrigatório", description: "Por favor, informe seu nome completo.", variant: "destructive" });
       return;
     }
+
+    const nameParts = trimmedName.split(/\s+/);
+    const parsedFirstName = nameParts[0] || "";
+    const parsedLastName = nameParts.slice(1).join(" ") || "";
 
     const passwordStatus = validatePassword(password);
     if (!passwordStatus.isValid) {
@@ -198,7 +206,7 @@ const Login = () => {
     }
 
     setIsLoading(true);
-    const result = await register(email, password, firstName, lastName);
+    const result = await register(email, password, parsedFirstName, parsedLastName);
     if (result.success) {
       toast({
         title: "Cadastro realizado!",
@@ -265,9 +273,11 @@ const Login = () => {
   const changeMode = useCallback((mode: AuthMode) => {
     setPassword('');
     setConfirmPassword('');
+    setFullName('');
     setFirstName('');
     setLastName('');
     setShowPassword(false);
+    setShowConfirmPassword(false);
     setEmailTouched(false);
     setShowUnconfirmedAlert(false);
     setCapsLockActive(false);
@@ -279,7 +289,7 @@ const Login = () => {
       case 'forgot_password':
         return { title: 'Recuperar', subtitle: 'Senha', description: 'Digite seu e-mail institucional', Icon: RotateCcw };
       case 'register':
-        return { title: 'Criar', subtitle: 'Conta', description: 'Use seu email institucional', Icon: UserPlus };
+        return { title: 'Criar', subtitle: 'Conta', description: 'Preencha seus dados para começar', Icon: UserPlus };
       default:
         return { title: 'Zelote', subtitle: 'Sistema', description: 'Entre com suas credenciais', Icon: Computer };
     }
@@ -313,14 +323,18 @@ const Login = () => {
           autoComplete="username"
           value={email}
           onChange={e => setEmail(e.target.value)}
-          onBlur={() => setEmailTouched(true)}
+          onFocus={() => setIsEmailFocused(true)}
+          onBlur={() => {
+            setIsEmailFocused(false);
+            setEmailTouched(true);
+          }}
           className={cn("neo-brutal-input pr-9", emailError && "border-error")}
           disabled={isLoading}
           required
         />
 
-        {/* Animação suave transitando entre os placeholders institucionais */}
-        {!email && (
+        {/* Animação suave transitando entre os placeholders institucionais (oculta ao focar ou digitar) */}
+        {!email && !isEmailFocused && (
           <div className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground/50 overflow-hidden h-5 flex items-center text-xs sm:text-sm select-none font-medium max-w-[calc(100%-48px)]">
             <AnimatePresence mode="wait">
               <motion.span
@@ -356,23 +370,27 @@ const Login = () => {
         </p>
       )}
 
-      {/* Chips de atalho para autocompletar domínio institucional */}
-      <div className="flex flex-wrap items-center gap-1.5 pt-1">
-        <span className="text-[10px] font-black uppercase text-muted-foreground/70">Completar:</span>
-        <button
-          type="button"
-          onClick={() => handleAppendDomain('@colegiosaojudas.com.br')}
-          className="text-[10px] font-bold px-2 py-0.5 bg-muted/50 hover:bg-primary hover:text-primary-foreground border border-black/20 dark:border-white/20 transition-all rounded-none"
-        >
-          @colegiosaojudas.com.br
-        </button>
-        <button
-          type="button"
-          onClick={() => handleAppendDomain('@sj.pro.br')}
-          className="text-[10px] font-bold px-2 py-0.5 bg-muted/50 hover:bg-primary hover:text-primary-foreground border border-black/20 dark:border-white/20 transition-all rounded-none"
-        >
-          @sj.pro.br
-        </button>
+      {/* Atalhos para autocompletar domínio institucional em 2 colunas organizadas */}
+      <div className="pt-1 space-y-1">
+        <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground/70">Completar domínio:</span>
+        <div className="grid grid-cols-2 gap-1.5">
+          <button
+            type="button"
+            onClick={() => handleAppendDomain('@colegiosaojudas.com.br')}
+            className="text-[10px] sm:text-xs font-bold py-1 px-2 bg-muted/50 hover:bg-primary hover:text-primary-foreground border border-black/20 dark:border-white/20 transition-all rounded-none text-center truncate"
+            title="Adicionar @colegiosaojudas.com.br"
+          >
+            + @colegiosaojudas
+          </button>
+          <button
+            type="button"
+            onClick={() => handleAppendDomain('@sj.pro.br')}
+            className="text-[10px] sm:text-xs font-bold py-1 px-2 bg-muted/50 hover:bg-primary hover:text-primary-foreground border border-black/20 dark:border-white/20 transition-all rounded-none text-center truncate"
+            title="Adicionar @sj.pro.br"
+          >
+            + @sj.pro.br
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -427,6 +445,7 @@ const Login = () => {
                 {currentMode === 'login' && (
                   <motion.form
                     key="login-form"
+                    noValidate
                     initial={{ opacity: 0, y: 6 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -6 }}
@@ -516,7 +535,7 @@ const Login = () => {
                     </Button>
 
                     {/* Divisor "ou" */}
-                    <div className="relative flex items-center gap-3 pt-1">
+                    <div className="relative flex items-center gap-3 py-1.5">
                       <div className="flex-1 h-px bg-border" />
                       <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">ou</span>
                       <div className="flex-1 h-px bg-border" />
@@ -547,46 +566,33 @@ const Login = () => {
                 {currentMode === 'register' && (
                   <motion.form
                     key="register-form"
+                    noValidate
                     initial={{ opacity: 0, y: 6 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -6 }}
                     transition={{ duration: 0.18, ease: "easeInOut" }}
                     onSubmit={handleRegisterSubmit}
-                    className="space-y-3.5"
+                    className="space-y-2.5"
                   >
                     {renderEmailField("register-email")}
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div className="space-y-1.5">
-                        <Label htmlFor="first-name" className="neo-brutal-label">Nome</Label>
-                        <Input
-                          id="first-name"
-                          type="text"
-                          autoComplete="given-name"
-                          placeholder="Ex: José"
-                          value={firstName}
-                          onChange={e => setFirstName(e.target.value)}
-                          className="neo-brutal-input"
-                          disabled={isLoading}
-                          required
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label htmlFor="last-name" className="neo-brutal-label">Sobrenome</Label>
-                        <Input
-                          id="last-name"
-                          type="text"
-                          autoComplete="family-name"
-                          placeholder="Ex: Silva"
-                          value={lastName}
-                          onChange={e => setLastName(e.target.value)}
-                          className="neo-brutal-input"
-                          disabled={isLoading}
-                        />
-                      </div>
+                    <div className="space-y-1">
+                      <Label htmlFor="full-name" className="neo-brutal-label">Nome Completo</Label>
+                      <Input
+                        id="full-name"
+                        type="text"
+                        autoComplete="name"
+                        autoCapitalize="words"
+                        placeholder="Ex: José da Silva"
+                        value={fullName}
+                        onChange={e => setFullName(e.target.value)}
+                        className="neo-brutal-input"
+                        disabled={isLoading}
+                        required
+                      />
                     </div>
 
-                    <div className="space-y-2">
+                    <div className="space-y-1.5">
                       <Label htmlFor="register-password" title="A senha deve ter 8+ caracteres, maiúsculas, minúsculas, números e símbolos." className="neo-brutal-label">Senha</Label>
                       <div className="relative">
                         <Input
@@ -620,9 +626,9 @@ const Login = () => {
 
                       {/* Barra de Força da Senha */}
                       {password.length > 0 && (
-                        <div className="space-y-1 pt-1">
+                        <div className="space-y-1 pt-0.5">
                           <div className="flex justify-between items-center text-[10px] font-black uppercase">
-                            <span className="text-muted-foreground">Força da Senha:</span>
+                            <span className="text-muted-foreground">Força:</span>
                             <span className={cn(
                               strengthCount <= 2 ? "text-red-500" :
                               strengthCount <= 4 ? "text-amber-500" :
@@ -645,9 +651,9 @@ const Login = () => {
                         </div>
                       )}
 
-                      {/* Password Strength Checklist Completo */}
+                      {/* Password Strength Checklist Compacto */}
                       {password.length > 0 && (
-                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 p-2.5 bg-muted/30 border-2 border-black dark:border-white/10 text-[10px] font-bold">
+                        <div className="grid grid-cols-2 gap-1 p-2 bg-muted/30 border border-black/20 dark:border-white/10 text-[10px] font-bold">
                           {[
                             { label: "8+ Caracteres", met: passwordStatus.hasMinLength },
                             { label: "Letra Maiúscula", met: passwordStatus.hasUpperCase },
@@ -655,34 +661,43 @@ const Login = () => {
                             { label: "Número", met: passwordStatus.hasNumber },
                             { label: "Símbolo (!@#)", met: passwordStatus.hasSpecialChar },
                           ].map((req, i) => (
-                            <div key={i} className={cn("flex items-center gap-1.5", req.met ? "text-success" : "text-muted-foreground opacity-60")}>
-                              {req.met ? <Check className="h-3.5 w-3.5 stroke-[3]" /> : <X className="h-3.5 w-3.5" />}
-                              <span>{req.label}</span>
+                            <div key={i} className={cn("flex items-center gap-1", req.met ? "text-success" : "text-muted-foreground/60")}>
+                              {req.met ? <Check className="h-3 w-3 stroke-[3] shrink-0" /> : <X className="h-3 w-3 shrink-0" />}
+                              <span className="truncate">{req.label}</span>
                             </div>
                           ))}
                         </div>
                       )}
                     </div>
 
-                    <div className="space-y-1.5">
+                    <div className="space-y-1">
                       <Label htmlFor="register-confirm" className="neo-brutal-label">Confirmar Senha</Label>
-                      <Input
-                        id="register-confirm"
-                        type={showPassword ? "text" : "password"}
-                        autoComplete="new-password"
-                        placeholder="Confirme sua senha"
-                        value={confirmPassword}
-                        onChange={e => setConfirmPassword(e.target.value)}
-                        onKeyDown={checkCapsLock}
-                        onKeyUp={checkCapsLock}
-                        className={cn(
-                          "neo-brutal-input",
-                          passwordsMatch && "border-success",
-                          passwordsMismatch && "border-error"
-                        )}
-                        disabled={isLoading}
-                        required
-                      />
+                      <div className="relative">
+                        <Input
+                          id="register-confirm"
+                          type={showConfirmPassword ? "text" : "password"}
+                          autoComplete="new-password"
+                          placeholder="Confirme sua senha"
+                          value={confirmPassword}
+                          onChange={e => setConfirmPassword(e.target.value)}
+                          onKeyDown={checkCapsLock}
+                          onKeyUp={checkCapsLock}
+                          className={cn(
+                            "neo-brutal-input pr-12",
+                            passwordsMatch && "border-success",
+                            passwordsMismatch && "border-error"
+                          )}
+                          disabled={isLoading}
+                          required
+                        />
+                        <button
+                          type="button"
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                          onClick={() => setShowConfirmPassword(prev => !prev)}
+                        >
+                          {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                        </button>
+                      </div>
                       {confirmPassword.length > 0 && (
                         <p className={cn(
                           "text-xs flex items-center gap-1 font-bold pt-0.5",
@@ -718,21 +733,24 @@ const Login = () => {
                       )}
                     </Button>
 
-                    <button
-                      type="button"
-                      className="w-full flex items-center justify-center gap-2 text-muted-foreground hover:text-foreground font-bold transition-colors py-2 text-sm"
-                      onClick={() => changeMode('login')}
-                      disabled={isLoading}
-                    >
-                      <ArrowLeft className="h-4 w-4" />
-                      Voltar ao login
-                    </button>
+                    <div className="text-center pt-1">
+                      <span className="text-muted-foreground text-sm">Já tem uma conta? </span>
+                      <button
+                        type="button"
+                        className="font-bold text-primary hover:underline underline-offset-4 text-sm"
+                        onClick={() => changeMode('login')}
+                        disabled={isLoading}
+                      >
+                        Entrar
+                      </button>
+                    </div>
                   </motion.form>
                 )}
 
                 {currentMode === 'forgot_password' && (
                   <motion.form
                     key="recovery-form"
+                    noValidate
                     initial={{ opacity: 0, y: 6 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -6 }}

@@ -122,6 +122,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return { success: false, error: "A senha não atende aos requisitos mínimos de segurança (8+ caracteres, maiúsculas, números e símbolos)." };
     }
 
+    const fullName = `${firstName} ${lastName}`.trim();
+
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -129,6 +131,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         data: {
           first_name: firstName,
           last_name: lastName,
+          full_name: fullName,
+          name: fullName,
         }
       }
     });
