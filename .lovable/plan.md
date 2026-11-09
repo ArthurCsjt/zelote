@@ -47,3 +47,45 @@ Análise da tela de login (entrar, cadastro, recuperar senha e painel de agendam
 - Validação "on blur" com estado `touched`; `aria-invalid`, `aria-describedby`, `role="alert"`.
 - Redirecionar para `location.state.from` após o login.
 - `motion-reduce:animate-none` nas formas flutuantes.
+
+---
+
+# Levantamento — Menu Agendamento (onde evoluir ou implementar)
+
+O que já existe: grade semanal e mensal, mapa de calor, limite de Chromebooks ajustável, atualização ao vivo, novo modal com aulas seguidas e repetição, detalhes da reserva com cancelamento protegido e IDs retirados/devolvidos, e histórico.
+
+## A. Novas funções (maior impacto)
+1. **Editar reserva** — hoje só dá para cancelar e criar de novo. Permitir trocar a quantidade, a sala ou os recursos, conferindo a disponibilidade.
+2. **Lista de espera** — quando o horário lota, o professor entra na fila e recebe um aviso se alguém cancelar.
+3. **"Minhas reservas"** — filtro ou aba com as reservas do professor logado (próximas e passadas), com cancelamento rápido.
+4. **Filtros na grade** — por professor, sala, Minecraft e recursos (TV/som/microfone).
+5. **Aviso de não retirada** — reserva cujo horário passou sem empréstimo vira "não retirada", e o histórico conta essas faltas por professor.
+6. **Lembrete antes da aula** — aviso no celular 15 min antes do horário reservado.
+7. **Retirada direto da reserva** — botão "Registrar retirada" que já abre o empréstimo com professor, sala e quantidade preenchidos (hoje existe só em parte).
+8. **Bloqueio de datas** — o administrador marca feriados, provas e manutenção e a grade fica fechada nesses dias.
+9. **Exportar ou imprimir a semana** em PDF, para deixar no carrinho de Chromebooks.
+
+## B. Melhorias no que já existe
+10. **Celular**: modo "um dia por vez" com deslizar para os lados, em vez de espremer a semana inteira.
+11. **Botão "Hoje"** e atalhos de teclado (setas para trocar de semana, N para nova reserva).
+12. **Mostrar a ocupação no próprio horário** ("80/111") com cor forte quando estiver quase lotado.
+13. **Detalhes da reserva**: mostrar quem criou e quando, e as reservas ligadas (aulas seguidas ou repetidas) com "cancelar todas".
+14. **Visão mensal**: clicar no dia abre a semana daquele dia; marcar feriados.
+15. **Mensagens vazias** mais claras ("Nenhuma reserva nesta semana — clique em um horário para reservar").
+
+## C. Qualidade e segurança
+16. **Conferir a lotação no banco também** (hoje a conferência é feita na tela; duas pessoas reservando ao mesmo tempo podem passar do limite).
+17. **Revisar os 43 alertas de segurança** do banco já registrados.
+18. Voltar a ligar a checagem de erros nos arquivos do agendamento.
+
+## Ordem sugerida
+1. Itens 16, 1, 3, 13 (base sólida).
+2. Itens 4, 10, 12, 5.
+3. Itens 2, 6, 8, 9 e o restante.
+
+## Detalhes técnicos (Agendamento)
+- 16: função/trigger no Postgres que soma `quantity_requested` por `date + time_slot` e bloqueia acima de `chromebook_operational_limit`.
+- 2: nova tabela `reservation_waitlist` com RLS; aviso via a infraestrutura de push existente.
+- 5/6: status derivado (`time_slot` passado sem `associated_loans`); lembrete por job agendado.
+- 8: tabela `blocked_dates` só para administradores.
+- 18: remover `// @ts-nocheck` de `ReservationDialog.tsx` e dos arquivos relacionados.
