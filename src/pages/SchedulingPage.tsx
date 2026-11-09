@@ -460,71 +460,65 @@ const SchedulingPage = () => {
         )}
       </motion.div>
 
-      {/* Legend - Neo Brutal Style (Apenas Visão Semanal) */}
+      {/* Legenda Discreta e Polida (Apenas Visão Semanal) */}
       {viewMode === 'weekly' && (
-        <div className="py-2 bg-transparent">
-          <div className="flex flex-wrap items-center justify-center gap-3">
-            <div className="flex items-center gap-2 mr-2">
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500">
-                Legenda:
-              </span>
-            </div>
+        <div className="pt-2 pb-6 flex justify-center">
+          <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 px-4 py-2 rounded-2xl bg-card/70 dark:bg-card/50 backdrop-blur-md border border-border/70 shadow-sm text-xs text-muted-foreground">
+            <span className="font-semibold text-foreground/70 text-[11px] uppercase tracking-wider">
+              Legenda:
+            </span>
 
             {/* Minha Reserva */}
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-blue-50/40 dark:bg-blue-950/10 border-2 border-black dark:border-zinc-800 rounded-none shadow-[2px_2px_0_0_#000] dark:shadow-[2px_2px_0_0_rgba(255,255,255,0.05)] transition-all">
-              <div className="h-2 w-2 rounded-full bg-[#3B82F6] shadow-[0_0_8px_rgba(59,130,246,0.6)] shrink-0 animate-pulse" />
-              <span className="text-[10px] font-black uppercase tracking-wider text-blue-700 dark:text-blue-400">
-                Minha Reserva
-              </span>
+            <div className="flex items-center gap-1.5" title="Horário agendado por você">
+              <span className="h-2.5 w-2.5 rounded-full bg-blue-500 ring-2 ring-blue-500/20 shrink-0" />
+              <span className="font-medium text-foreground/90">Minha Reserva</span>
             </div>
 
             {/* Disponível */}
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-zinc-50/40 dark:bg-zinc-900/40 border-2 border-dashed border-zinc-300 dark:border-zinc-850 rounded-none shadow-[2px_2px_0_0_rgba(0,0,0,0.02)] transition-all">
-              <div className="h-2 w-2 rounded-full border border-dashed border-zinc-400 dark:border-zinc-600 bg-transparent shrink-0" />
-              <span className="text-[10px] font-black uppercase tracking-wider text-zinc-600 dark:text-zinc-400">
-                Disponível
-              </span>
+            <div className="flex items-center gap-1.5" title="Totalmente livre para agendamento">
+              <span className="h-2.5 w-2.5 rounded-full border border-dashed border-muted-foreground/60 bg-transparent shrink-0" />
+              <span className="font-medium text-foreground/90">Disponível</span>
             </div>
 
             {/* Parcial */}
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-amber-50/40 dark:bg-amber-950/10 border-2 border-black dark:border-zinc-800 rounded-none shadow-[2px_2px_0_0_#000] dark:shadow-[2px_2px_0_0_rgba(255,255,255,0.05)] transition-all">
-              <div className="h-2 w-2 rounded-full bg-[#EAB308] shadow-[0_0_8px_rgba(245,158,11,0.6)] shrink-0" />
-              <span className="text-[10px] font-black uppercase tracking-wider text-amber-700 dark:text-amber-400">
-                Parcial
-              </span>
+            <div className="flex items-center gap-1.5" title="Parte dos Chromebooks já foi reservada">
+              <span className="h-2.5 w-2.5 rounded-full bg-amber-400 ring-2 ring-amber-400/20 shrink-0" />
+              <span className="font-medium text-foreground/90">Parcial</span>
             </div>
 
             {/* Esgotado */}
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-rose-50/40 dark:bg-rose-950/10 border-2 border-black dark:border-zinc-800 rounded-none shadow-[2px_2px_0_0_#000] dark:shadow-[2px_2px_0_0_rgba(255,255,255,0.05)] transition-all">
-              <div className="h-2 w-2 rounded-full bg-[#EF4444] shadow-[0_0_8px_rgba(244,63,94,0.6)] shrink-0" />
-              <span className="text-[10px] font-black uppercase tracking-wider text-rose-700 dark:text-rose-405">
-                Esgotado
-              </span>
+            <div className="flex items-center gap-1.5" title="Todos os Chromebooks do horário estão ocupados">
+              <span className="h-2.5 w-2.5 rounded-full bg-rose-500 ring-2 ring-rose-500/20 shrink-0" />
+              <span className="font-medium text-foreground/90">Esgotado</span>
             </div>
 
             {/* Minecraft */}
-            <div className="flex items-center gap-2.5 px-3 py-1.5 bg-emerald-50/40 dark:bg-emerald-950/10 border-2 border-black dark:border-zinc-800 rounded-none shadow-[2px_2px_0_0_#000] dark:shadow-[2px_2px_0_0_rgba(255,255,255,0.05)] transition-all">
-              <div className="h-2 w-2 rounded-full bg-[#10B981] shadow-[0_0_8px_rgba(16,185,129,0.6)] shrink-0 animate-pulse" />
-              <span className="text-[10px] font-black uppercase tracking-wider text-emerald-700 dark:text-emerald-400 font-minecraft">
-                Aula com Minecraft
-              </span>
+            <div className="flex items-center gap-1.5" title="Aula com uso da licença Minecraft">
+              <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-emerald-500/20 shrink-0" />
+              <span className="font-medium text-foreground/90">Minecraft</span>
             </div>
 
-            {/* Mini Legenda do Mapa de Calor (Discreta e Inline - Apenas Visão Semanal) */}
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-zinc-50/20 dark:bg-zinc-900/10 border-2 border-black dark:border-zinc-800 rounded-none shadow-[2px_2px_0_0_#000] dark:shadow-[2px_2px_0_0_rgba(255,255,255,0.02)] transition-all">
-              <span className="text-[10px] font-black uppercase tracking-wider text-zinc-500">
-                Mapa de Calor:
-              </span>
-              <div className="flex gap-[1px] h-3.5 w-16 border border-black/30 dark:border-white/20 p-[1px] bg-white dark:bg-zinc-900 shrink-0">
-                <div className="flex-1 bg-zinc-200/60 dark:bg-zinc-700/30 hover:scale-110 transition-transform cursor-help" title="Totalmente Livre (0% de uso)" />
-                <div className="flex-1 bg-amber-300 dark:bg-amber-400 hover:scale-110 transition-transform cursor-help" title="Pouco Uso (1% a 29% reservado)" />
-                <div className="flex-1 bg-orange-400 hover:scale-110 transition-transform cursor-help" title="Uso Parcial (30% a 74% reservado)" />
-                <div className="flex-1 bg-orange-600 dark:bg-orange-500 hover:scale-110 transition-transform cursor-help" title="Alta Ocupação (75% a 99% reservado)" />
-                <div className="flex-1 bg-red-600 dark:bg-red-500 hover:scale-110 transition-transform cursor-help" title="Totalmente Esgotado (100% de ocupação)" />
+            {/* Não Retirada */}
+            <div className="flex items-center gap-1.5" title="Reserva cujo horário expirou sem retirada dos equipamentos">
+              <span className="h-2.5 w-2.5 rounded-full bg-amber-500 ring-2 ring-amber-500/30 shrink-0 flex items-center justify-center text-[8px] text-black font-black">!</span>
+              <span className="font-medium text-amber-600 dark:text-amber-400">Não Retirada</span>
+            </div>
+
+            {/* Divisor */}
+            <div className="hidden sm:block w-px h-3.5 bg-border shrink-0" />
+
+            {/* Mapa de Calor Discreto */}
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] text-muted-foreground">Ocupação:</span>
+              <div 
+                className="flex items-center gap-0.5 h-2 w-14 rounded-full overflow-hidden bg-muted p-0.5" 
+                title="Mapa de calor: verde (livre) ➔ amarelo/laranja (parcial) ➔ vermelho (esgotado)"
+              >
+                <div className="h-full flex-1 rounded-full bg-emerald-400" />
+                <div className="h-full flex-1 rounded-full bg-amber-400" />
+                <div className="h-full flex-1 rounded-full bg-orange-500" />
+                <div className="h-full flex-1 rounded-full bg-red-500" />
               </div>
-              <span className="text-[9px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-tight hidden sm:inline">
-                (Passe o cursor sobre os blocos do dia)
-              </span>
             </div>
           </div>
         </div>
