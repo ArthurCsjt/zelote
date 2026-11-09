@@ -5,7 +5,7 @@ import '@/styles/scheduling-glass-nav.css';
 import Layout from '@/components/Layout';
 import { Button } from '@/components/ui/button';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { ChevronLeft, ChevronRight, Calendar, Loader2, Monitor, AlertTriangle, CalendarDays, History, CalendarRange, Plus } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar, Loader2, Monitor, AlertTriangle, CalendarDays, CalendarRange, Plus } from 'lucide-react';
 import { useDatabase } from '@/hooks/useDatabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -288,13 +288,14 @@ const SchedulingPage = () => {
         <button
           onClick={() => handleViewModeChange('monthly')}
           className={cn(
-            'px-3 py-1 rounded-md text-xs font-bold uppercase tracking-wide transition-all duration-200',
+            'px-3 py-1 rounded-md text-xs font-bold uppercase tracking-wide transition-all duration-200 flex items-center gap-1.5',
             viewMode === 'monthly'
               ? 'bg-white text-primary shadow-sm'
               : 'text-white/80 hover:text-white hover:bg-white/10'
           )}
         >
-          Histórico
+          <CalendarRange className="w-3.5 h-3.5" />
+          Visão Geral
         </button>
       </div>
     </div>
