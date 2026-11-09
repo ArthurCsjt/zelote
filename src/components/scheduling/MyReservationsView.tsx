@@ -1,5 +1,14 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { format, parseISO, isToday, isTomorrow, differenceInDays } from 'date-fns';
+import { 
+  format, 
+  parseISO, 
+  isToday, 
+  isTomorrow, 
+  differenceInDays, 
+  isSameDay, 
+  isSameWeek, 
+  isSameMonth 
+} from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useQuery } from '@tanstack/react-query';
 import type { User as AuthUser } from '@supabase/supabase-js';
@@ -9,13 +18,10 @@ import {
   MapPin, 
   Trash2, 
   AlertTriangle, 
-  CheckCircle2, 
   Plus, 
   Search, 
   Loader2, 
-  ArrowRight,
-  Sparkles,
-  CalendarDays
+  ArrowRight
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -35,6 +41,8 @@ interface MyReservationsViewProps {
   onGoToCalendar: () => void;
 }
 
+type PeriodFilter = 'today' | 'week' | 'month' | 'all' | 'past';
+
 export const MyReservationsView: React.FC<MyReservationsViewProps> = ({
   currentUser,
   onReservationSuccess,
@@ -43,7 +51,7 @@ export const MyReservationsView: React.FC<MyReservationsViewProps> = ({
   const { isAdmin } = useProfileRole();
   const { isResponsible } = useSchedulingResponsible();
 
-  const [activeTab, setActiveTab] = useState<'upcoming' | 'past'>('upcoming');
+  const [activeFilter, setActiveFilter] = useState<PeriodFilter>('week');
   const [searchQuery, setSearchQuery] = useState('');
   const [cancelingId, setCancelingId] = useState<string | null>(null);
   const [confirmCancelId, setConfirmCancelId] = useState<string | null>(null);
@@ -62,48 +70,73 @@ export const MyReservationsView: React.FC<MyReservationsViewProps> = ({
     enabled: !!currentUser?.id,
   });
 
-  const { upcoming, past, missedCount, servedCount, totalChromebooks } = useMemo(() => {
-    const up: Reservation[] = [];
-    const pa: Reservation[] = [];
-    let missed = 0;
-    let served = 0;
-    let totalCbs = 0;
+  // Contagens por período para exibir diretamente nos chips
+  const counts = useMemo(() => {
+    let today = 0;
+    let week = 0;
+    let month = 0;
+    let all = 0;
+    let past = 0;
 
     userReservations.forEach(res => {
+      const dt = parseISO(res.date);
       const { end } = interval(res);
-      const req = quantity(res);
-      totalCbs += req;
-      const resState = status(res, now);
+      const isPast = end < now;
 
-      if (end >= now) {
-        up.push(res);
-      } else {
-        pa.push(res);
-        if (resState === 'missed') missed++;
-        if (resState === 'served') served++;
+      if (isSameDay(dt, now)) today++;
+      if (isSameWeek(dt, now, { weekStartsOn: 1 })) week++;
+      if (isSameMonth(dt, now)) month++;
+      if (!isPast) all++;
+      if (isPast) past++;
+    });
+
+    return { today, week, month, all, past };
+  }, [userReservations, now]);
+
+  // Se a semana atual estiver vazia mas houver reservas futuras, ajusta inteligentemente o filtro inicial
+  useEffect(() => {
+    if (!isLoading && userReservations.length > 0) {
+      if (counts.week === 0 && counts.all > 0 && activeFilter === 'week') {
+        setActiveFilter('all');
+      }
+    }
+  }, [isLoading, userReservations.length, counts.week, counts.all]);
+
+  // Lista filtrada pelo período ativo + busca por texto
+  const displayedList = useMemo(() => {
+    let list = userReservations.filter(res => {
+      const dt = parseISO(res.date);
+      const { end } = interval(res);
+      const isPast = end < now;
+
+      switch (activeFilter) {
+        case 'today':
+          return isSameDay(dt, now);
+        case 'week':
+          return isSameWeek(dt, now, { weekStartsOn: 1 });
+        case 'month':
+          return isSameMonth(dt, now);
+        case 'past':
+          return isPast;
+        case 'all':
+        default:
+          return !isPast;
       }
     });
 
-    up.sort((a, b) => `${a.date} ${a.time_slot}`.localeCompare(`${b.date} ${b.time_slot}`));
-    pa.sort((a, b) => `${b.date} ${b.time_slot}`.localeCompare(`${a.date} ${a.time_slot}`));
+    // Ordenação: futuras em ordem crescente (mais próximas primeiro); passadas em ordem decrescente (mais recentes primeiro)
+    if (activeFilter === 'past') {
+      list.sort((a, b) => `${b.date} ${b.time_slot}`.localeCompare(`${a.date} ${a.time_slot}`));
+    } else {
+      list.sort((a, b) => `${a.date} ${a.time_slot}`.localeCompare(`${b.date} ${b.time_slot}`));
+    }
 
-    return { 
-      upcoming: up, 
-      past: pa, 
-      missedCount: missed, 
-      servedCount: served,
-      totalChromebooks: totalCbs 
-    };
-  }, [userReservations, now]);
-
-  const displayedList = useMemo(() => {
-    const list = activeTab === 'upcoming' ? upcoming : past;
     if (!searchQuery.trim()) return list;
     const q = normalize(searchQuery.trim());
     return list.filter(res => 
       normalize(`${res.classroom || ''} ${res.justification || ''} ${res.date} ${res.time_slot}`).includes(q)
     );
-  }, [activeTab, upcoming, past, searchQuery]);
+  }, [userReservations, activeFilter, searchQuery, now]);
 
   const handleCancelReservation = async (reservation: Reservation) => {
     setCancelingId(reservation.id);
@@ -164,6 +197,22 @@ export const MyReservationsView: React.FC<MyReservationsViewProps> = ({
     return null;
   };
 
+  const getFilterEmptyDescription = () => {
+    switch (activeFilter) {
+      case 'today':
+        return "Você não tem nenhum agendamento para hoje.";
+      case 'week':
+        return "Nenhuma reserva encontrada para a semana atual.";
+      case 'month':
+        return "Nenhuma reserva encontrada para este mês.";
+      case 'past':
+        return "Nenhum histórico de agendamentos anteriores encontrado.";
+      case 'all':
+      default:
+        return "Você não tem reservas futuras agendadas.";
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="hx-root">
@@ -178,114 +227,101 @@ export const MyReservationsView: React.FC<MyReservationsViewProps> = ({
 
   return (
     <div className="hx-root space-y-6">
-      {/* ── Indicadores / KPIs Pessoais (Estilo Visão Geral) ── */}
-      <div className="hx-kpis" aria-label="Resumo das minhas reservas">
-        <div className="hx-kpi">
-          <span className="hx-kpi-label">Total Reservado</span>
-          <strong className="hx-kpi-value">{userReservations.length}</strong>
-          <span className="hx-kpi-note">{totalChromebooks} Chromebooks no total</span>
-        </div>
-        <div className="hx-kpi">
-          <span className="hx-kpi-label">Próximas Aulas</span>
-          <strong className="hx-kpi-value text-[var(--hx-blue)]">{upcoming.length}</strong>
-          <span className="hx-kpi-note">{upcoming.length === 1 ? '1 agendamento futuro' : `${upcoming.length} agendamentos futuros`}</span>
-        </div>
-        <div className="hx-kpi">
-          <span className="hx-kpi-label">Atendidas</span>
-          <strong className="hx-kpi-value text-[var(--hx-ok)]">{servedCount}</strong>
-          <span className="hx-kpi-note">Equipamentos retirados</span>
-        </div>
-        <div className="hx-kpi">
-          <span className="hx-kpi-label">Não Retiradas</span>
-          <strong className={cn("hx-kpi-value", missedCount > 0 ? "text-[var(--hx-error)]" : "text-[var(--hx-muted)]")}>
-            {missedCount}
-          </strong>
-          <span className="hx-kpi-note">
-            {missedCount > 0 ? "Horário expirou sem retirada" : "Nenhuma pendência"}
-          </span>
-        </div>
-      </div>
-
-      {/* ── Barra de Navegação & Ações ── */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
-        {/* Tabs Modernas */}
-        <div className="hx-tabs my-0" role="tablist">
-          <Button
-            className="hx-control hx-tab"
-            role="tab"
-            aria-selected={activeTab === 'upcoming'}
-            onClick={() => { setActiveTab('upcoming'); setConfirmCancelId(null); }}
-          >
-            <Clock size={16} />
-            <span>Próximas Reservas</span>
-            <span className={cn(
-              "ml-1.5 px-2 py-0.5 rounded-full text-xs font-bold",
-              activeTab === 'upcoming' 
-                ? "bg-[var(--hx-soft)] text-[var(--hx-blue)]" 
-                : "bg-black/5 dark:bg-white/10 text-[var(--hx-muted)]"
-            )}>
-              {upcoming.length}
-            </span>
-          </Button>
-
-          <Button
-            className="hx-control hx-tab"
-            role="tab"
-            aria-selected={activeTab === 'past'}
-            onClick={() => { setActiveTab('past'); setConfirmCancelId(null); }}
-          >
-            <CalendarDays size={16} />
-            <span>Passadas</span>
-            <span className={cn(
-              "ml-1.5 px-2 py-0.5 rounded-full text-xs font-bold",
-              activeTab === 'past' 
-                ? "bg-[var(--hx-soft)] text-[var(--hx-blue)]" 
-                : "bg-black/5 dark:bg-white/10 text-[var(--hx-muted)]"
-            )}>
-              {past.length}
-            </span>
-          </Button>
-        </div>
-
-        {/* Busca e Botão Nova Reserva */}
-        <div className="flex items-center gap-3">
-          <div className="hx-search flex-1 sm:w-72 my-0">
-            <Search size={16} />
-            <input
-              type="search"
-              aria-label="Buscar por sala, data ou observação"
-              placeholder="Buscar sala, data ou motivo..."
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-            />
+      {/* ── Painel de Controle e Filtros (Estilo Visão Geral) ── */}
+      <section className="hx-card">
+        {/* Linha Superior: Título + Botão Nova Reserva */}
+        <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
+          <div>
+            <h2 className="hx-heading mb-1 text-lg">Minhas Reservas</h2>
+            <p className="hx-caption mt-0">
+              Gerencie seus agendamentos e acompanhe a retirada de equipamentos
+            </p>
           </div>
 
           <Button
             onClick={onGoToCalendar}
             className="hx-control hx-new shrink-0"
-            title="Abrir grade semanal para reservar"
+            title="Abrir grade semanal para agendar"
           >
             <Plus size={16} />
             <span>Nova Reserva</span>
           </Button>
         </div>
-      </div>
+
+        {/* Linha de Chips de Filtro (Hoje, Semanal, Mensal, Todas, Passadas) */}
+        <div className="hx-chips mb-4" role="group" aria-label="Filtrar por período">
+          <Button
+            className="hx-control hx-chip"
+            aria-pressed={activeFilter === 'today'}
+            onClick={() => { setActiveFilter('today'); setConfirmCancelId(null); }}
+          >
+            <span>Hoje</span>
+            <span className="ml-1.5 opacity-80 font-bold text-[11px]">({counts.today})</span>
+          </Button>
+
+          <Button
+            className="hx-control hx-chip"
+            aria-pressed={activeFilter === 'week'}
+            onClick={() => { setActiveFilter('week'); setConfirmCancelId(null); }}
+          >
+            <span>Semanal</span>
+            <span className="ml-1.5 opacity-80 font-bold text-[11px]">({counts.week})</span>
+          </Button>
+
+          <Button
+            className="hx-control hx-chip"
+            aria-pressed={activeFilter === 'month'}
+            onClick={() => { setActiveFilter('month'); setConfirmCancelId(null); }}
+          >
+            <span>Mensal</span>
+            <span className="ml-1.5 opacity-80 font-bold text-[11px]">({counts.month})</span>
+          </Button>
+
+          <Button
+            className="hx-control hx-chip"
+            aria-pressed={activeFilter === 'all'}
+            onClick={() => { setActiveFilter('all'); setConfirmCancelId(null); }}
+          >
+            <span>Todas</span>
+            <span className="ml-1.5 opacity-80 font-bold text-[11px]">({counts.all})</span>
+          </Button>
+
+          <Button
+            className="hx-control hx-chip"
+            aria-pressed={activeFilter === 'past'}
+            onClick={() => { setActiveFilter('past'); setConfirmCancelId(null); }}
+          >
+            <span>Passadas</span>
+            <span className="ml-1.5 opacity-80 font-bold text-[11px]">({counts.past})</span>
+          </Button>
+        </div>
+
+        {/* Campo de Busca */}
+        <div className="hx-search my-0">
+          <Search size={16} />
+          <input
+            type="search"
+            aria-label="Buscar por sala, data ou observação"
+            placeholder="Buscar por sala, data ou observação..."
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+          />
+        </div>
+      </section>
 
       {/* ── Lista de Reservas (Cards Modernos) ── */}
       {displayedList.length === 0 ? (
         <section className="hx-card text-center py-12 px-6">
           <Calendar className="h-12 w-12 mx-auto text-[var(--hx-muted)] opacity-50 mb-3" />
           <h3 className="hx-heading mb-1">
-            {activeTab === 'upcoming' 
-              ? (searchQuery ? "Nenhuma reserva futura corresponde à busca" : "Você não tem reservas futuras agendadas")
-              : (searchQuery ? "Nenhuma reserva passada encontrada" : "Nenhum histórico anterior registrado")}
+            {searchQuery ? "Nenhuma reserva corresponde à busca" : getFilterEmptyDescription()}
           </h3>
           <p className="hx-caption max-w-md mx-auto">
-            {activeTab === 'upcoming' 
-              ? "Para marcar uma aula com Chromebooks ou reservar uma sala de informática, abra a grade de horários."
-              : "As aulas realizadas anteriormente aparecem aqui com o status de retirada e devolução dos equipamentos."}
+            {activeFilter === 'past'
+              ? "As aulas já concluídas aparecem aqui com o registro de devolução."
+              : "Abra a grade semanal para agendar uma sala ou reservar Chromebooks para suas turmas."}
           </p>
-          {activeTab === 'upcoming' && (
+          {activeFilter !== 'past' && (
             <Button
               onClick={onGoToCalendar}
               className="hx-control hx-new mt-6 inline-flex"
@@ -310,6 +346,7 @@ export const MyReservationsView: React.FC<MyReservationsViewProps> = ({
               const resState = status(res, now);
               const isMissed = resState === 'missed';
               const { start, end } = interval(res);
+              const isFutureOrActive = end >= now;
               const isCancelingThis = cancelingId === res.id;
               const isConfirmingThis = confirmCancelId === res.id;
 
@@ -355,7 +392,7 @@ export const MyReservationsView: React.FC<MyReservationsViewProps> = ({
 
                         {/* Pills de Status */}
                         <div className="hx-pills mt-2">
-                          {activeTab === 'upcoming' && getDayBadge(res.date)}
+                          {isFutureOrActive && getDayBadge(res.date)}
                           {res.is_minecraft && <span className="hx-pill hx-mc">MINECRAFT</span>}
                           <span className={`hx-pill hx-${resState}`}>
                             {statusLabels[resState]}
@@ -363,7 +400,7 @@ export const MyReservationsView: React.FC<MyReservationsViewProps> = ({
                         </div>
                       </div>
 
-                      {/* Quantidade de Chromebooks */}
+                      {/* Quantidade de Chromebooks (singular para 0 e 1) */}
                       <div className="hx-quantity text-right shrink-0 !max-w-none">
                         <strong>{requested}</strong>
                         <small className="whitespace-nowrap">{requested <= 1 ? 'Chromebook' : 'Chromebooks'}</small>
@@ -431,8 +468,8 @@ export const MyReservationsView: React.FC<MyReservationsViewProps> = ({
                       Ver Detalhes
                     </Button>
 
-                    {/* Cancelamento Rápido (Apenas nas Próximas) */}
-                    {activeTab === 'upcoming' && (
+                    {/* Cancelamento Rápido (Apenas para Reservas Futuras / Em andamento) */}
+                    {isFutureOrActive && (
                       isConfirmingThis ? (
                         <div className="flex items-center gap-1.5 animate-in fade-in">
                           <Button
