@@ -155,13 +155,13 @@ const Layout: React.FC<LayoutProps> = ({
           <div className="absolute bottom-0 w-full h-2 bg-gradient-to-r from-primary via-warning to-success" />
         </div>
 
-        <div className="relative max-w-7xl mx-auto pl-3 pr-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center gap-4">
+        <div className="relative max-w-7xl mx-auto pl-2 sm:pl-3 pr-3 sm:pr-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-14 sm:h-16">
+            <div className="flex items-center gap-2 sm:gap-4 shrink-0">
               {showBackButton && (
                 <button
                   onClick={handleBackClick}
-                  className="p-2 rounded-none border-2 border-transparent hover:border-white hover:bg-white/10 transition-all duration-200 touch-manipulation text-primary-foreground shadow-none hover:shadow-[2px_2px_0px_0px_rgba(255,255,255,0.5)] active:shadow-none translate-x-0 hover:translate-x-[-1px] hover:translate-y-[-1px]"
+                  className="p-1.5 sm:p-2 rounded-none border-2 border-transparent hover:border-white hover:bg-white/10 transition-all duration-200 touch-manipulation text-primary-foreground shadow-none hover:shadow-[2px_2px_0px_0px_rgba(255,255,255,0.5)] active:shadow-none translate-x-0 hover:translate-x-[-1px] hover:translate-y-[-1px]"
                 >
                   <ArrowLeft className="w-5 h-5" />
                 </button>
@@ -171,21 +171,20 @@ const Layout: React.FC<LayoutProps> = ({
                   <img
                     src="/logo-header.svg"
                     alt="Zelote"
-                    className="h-8 sm:h-10 w-auto object-contain neo-brutal-logo"
+                    className="h-7 sm:h-10 w-auto object-contain neo-brutal-logo"
                   />
-
                 </div>
               </div>
             </div>
 
-            {/* Optional page-level controls injected into the topbar */}
+            {/* Optional page-level controls injected into the topbar (Desktop only) */}
             {headerRight && (
-              <div className="flex-1 flex items-center justify-center px-4">
+              <div className="hidden md:flex flex-1 items-center justify-center px-4 min-w-0">
                 {headerRight}
               </div>
             )}
 
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-1 sm:space-x-2 shrink-0">
 
               {/* Botão de Linha do Tempo (Discreto no Canto Direito - Estilo Pilula de Perfil) */}
               {canSeeHistory && (
@@ -355,11 +354,22 @@ const Layout: React.FC<LayoutProps> = ({
               )}
             </div>
           </div>
+
+          {/* Mobile Secondary Row for Page Controls (when headerRight is provided) */}
+          {headerRight && (
+            <div className="md:hidden pb-2.5 pt-0.5 px-1 flex items-center justify-center w-full overflow-x-auto no-scrollbar">
+              {headerRight}
+            </div>
+          )}
         </div>
       </header>
 
       {/* Main Content */}
-      <main className={`relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 no-bounce pt-24 md:pt-28 ${isStandalone ? 'ios-bottom-safe' : ''}`}>
+      <main className={cn(
+        "relative max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8 no-bounce",
+        headerRight ? "pt-28 md:pt-28" : "pt-20 sm:pt-24",
+        isStandalone ? 'ios-bottom-safe' : ''
+      )}>
         {/* Background Gradient Spot */}
         <div className="fixed top-20 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-primary/5 rounded-full blur-[100px] -z-10 pointer-events-none no-print" />
 
