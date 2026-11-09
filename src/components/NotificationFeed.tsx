@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { useDatabase } from '@/hooks/useDatabase';
+import { useAuth } from '@/contexts/AuthContext';
 import { ScrollArea } from './ui/scroll-area';
 import { 
   Bell, 
@@ -9,15 +10,14 @@ import {
   CheckCheck, 
   Clock, 
   Laptop, 
-  Calendar, 
   AlertTriangle, 
   CheckCircle2, 
-  Info, 
   Loader2, 
-  ChevronRight,
-  Sparkles
+  Sparkles,
+  MapPin,
+  Calendar
 } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow, isToday, format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { Button } from './ui/button';
@@ -45,26 +45,70 @@ interface NotificationFeedProps {
   onClose?: () => void;
 }
 
-// Limpa mensagens legadas com segundos extras ou plural incorreto
-function cleanNotificationMessage(msg: string): string {
+// Limpa mensagens legadas e humaniza quando foi o próprio usuário que agendou
+function cleanNotificationMessage(msg: string, currentUserName?: string): string {
   if (!msg) return '';
-  return msg
+  let cleaned = msg
     .replace(/(\d{2}:\d{2}):00(?=\b|\.)/g, '$1')
     .replace(/\b1 Chromebooks\b/g, '1 Chromebook');
+
+  if (currentUserName) {
+    const firstName = currentUserName.split(' ')[0].trim();
+    // Ex: "Arthur Raul agendou..." ou "Arthur agendou..." -> "Você agendou..."
+    const pattern = new RegExp(`^(${currentUserName}|${firstName})\\s+agendou`, 'i');
+    cleaned = cleaned.replace(pattern, 'Você agendou');
+  }
+
+  return cleaned;
+}
+
+// Extrai informações estruturadas (sala, chromebooks) da notificação
+function extractDetails(notification: NotificationItem) {
+  const meta = notification.metadata || {};
+  let classroom = meta.classroom;
+  let quantity = meta.quantity;
+
+  const msg = notification.message || '';
+
+  if (!classroom) {
+    const roomMatch = msg.match(/na\s+([^,.]+?)\s+para/i);
+    if (roomMatch) classroom = roomMatch[1].trim();
+  }
+
+  if (quantity === undefined) {
+    if (msg.includes('Apenas Sala')) {
+      quantity = 0;
+    } else {
+      const cbMatch = msg.match(/(\d+)\s+Chromebook/i);
+      if (cbMatch) quantity = parseInt(cbMatch[1], 10);
+    }
+  }
+
+  return { classroom, quantity };
 }
 
 export function NotificationFeed({ onClose }: NotificationFeedProps) {
+  const { user } = useAuth();
   const { getNotifications, markNotificationAsRead, markAllNotificationsAsRead } = useDatabase();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
   const [filter, setFilter] = useState<'all' | 'unread'>('all');
 
-  const { data: notifications = [], isLoading } = useQuery<NotificationItem[]>({
+  const currentUserName = useMemo(() => {
+    return user?.user_metadata?.full_name || user?.user_metadata?.name || '';
+  }, [user]);
+
+  const { data: allNotifications = [], isLoading } = useQuery<NotificationItem[]>({
     queryKey: ['notifications'],
     queryFn: getNotifications,
-    refetchInterval: 60000,
+    refetchInterval: 30000,
   });
+
+  // Filtra ESTRITAMENTE as notificações do dia atual
+  const todayNotifications = useMemo(() => {
+    return allNotifications.filter(n => isToday(new Date(n.created_at)));
+  }, [allNotifications]);
 
   const markReadMutation = useMutation({
     mutationFn: markNotificationAsRead,
@@ -81,15 +125,15 @@ export function NotificationFeed({ onClose }: NotificationFeedProps) {
   });
 
   const unreadCount = useMemo(() => {
-    return notifications.filter(n => !n.is_read).length;
-  }, [notifications]);
+    return todayNotifications.filter(n => !n.is_read).length;
+  }, [todayNotifications]);
 
   const displayedNotifications = useMemo(() => {
     if (filter === 'unread') {
-      return notifications.filter(n => !n.is_read);
+      return todayNotifications.filter(n => !n.is_read);
     }
-    return notifications;
-  }, [notifications, filter]);
+    return todayNotifications;
+  }, [todayNotifications, filter]);
 
   const handleNotificationClick = (notification: NotificationItem) => {
     if (!notification.is_read) {
@@ -136,33 +180,44 @@ export function NotificationFeed({ onClose }: NotificationFeedProps) {
     };
   };
 
+  const todayFormatted = useMemo(() => {
+    const str = format(new Date(), "EEEE, d 'de' MMMM", { locale: ptBR });
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  }, []);
+
   if (isLoading) {
     return (
       <div className="p-8 flex flex-col justify-center items-center h-48 text-muted-foreground">
         <Loader2 className="h-6 w-6 animate-spin text-primary mb-2" />
-        <span className="text-xs font-medium">Carregando notificações...</span>
+        <span className="text-xs font-medium">Carregando notificações de hoje...</span>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col w-full max-h-[540px] bg-card text-card-foreground select-none">
-      {/* ── Header Moderno ── */}
-      <div className="p-4 border-b border-border/80 bg-muted/30 sticky top-0 z-10 space-y-3">
+    <div className="flex flex-col w-full max-h-[520px] bg-card text-card-foreground select-none relative">
+      {/* ── Header Elegante ── */}
+      <div className="p-4 border-b border-border/70 bg-muted/20 sticky top-0 z-10 space-y-3">
         <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2 min-w-0">
-            <div className="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="h-9 w-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 shadow-sm">
               <Bell className="h-4 w-4" />
             </div>
-            <div className="flex items-center gap-2">
-              <h3 className="font-semibold text-sm text-foreground tracking-tight">
-                Notificações
-              </h3>
-              {unreadCount > 0 && (
-                <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-primary text-primary-foreground leading-none">
-                  {unreadCount} nova{unreadCount === 1 ? '' : 's'}
-                </span>
-              )}
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="font-semibold text-sm text-foreground tracking-tight">
+                  Notificações
+                </h3>
+                {unreadCount > 0 && (
+                  <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-primary text-primary-foreground leading-none">
+                    {unreadCount} nova{unreadCount === 1 ? '' : 's'}
+                  </span>
+                )}
+              </div>
+              <p className="text-[11px] text-muted-foreground font-medium flex items-center gap-1 mt-0.5">
+                <Calendar size={11} className="text-primary/70 shrink-0" />
+                <span>{todayFormatted}</span>
+              </p>
             </div>
           </div>
 
@@ -181,8 +236,8 @@ export function NotificationFeed({ onClose }: NotificationFeedProps) {
           )}
         </div>
 
-        {/* ── Filtros Rápidos (Todas / Não lidas) ── */}
-        <div className="flex items-center gap-1.5 p-1 bg-muted/60 rounded-xl text-xs font-medium w-fit">
+        {/* ── Filtros Rápidos (Hoje / Não lidas) ── */}
+        <div className="flex items-center gap-1.5 p-1 bg-muted/50 rounded-xl text-xs font-medium w-fit border border-border/40">
           <button
             type="button"
             onClick={() => setFilter('all')}
@@ -193,7 +248,7 @@ export function NotificationFeed({ onClose }: NotificationFeedProps) {
                 : "text-muted-foreground hover:text-foreground"
             )}
           >
-            Todas ({notifications.length})
+            Hoje ({todayNotifications.length})
           </button>
           <button
             type="button"
@@ -214,28 +269,29 @@ export function NotificationFeed({ onClose }: NotificationFeedProps) {
         </div>
       </div>
 
-      {/* ── Lista de Notificações ── */}
-      <ScrollArea className="flex-1 w-full max-h-[420px] overflow-y-auto">
+      {/* ── Lista de Notificações com Scroll Suave ── */}
+      <ScrollArea className="flex-1 w-full max-h-[380px] overflow-y-auto">
         {displayedNotifications.length === 0 ? (
           <div className="py-12 px-6 text-center text-muted-foreground flex flex-col items-center justify-center">
-            <div className="h-12 w-12 rounded-full bg-muted/50 flex items-center justify-center mb-3 text-muted-foreground/60">
+            <div className="h-12 w-12 rounded-full bg-primary/10 text-primary flex items-center justify-center mb-3">
               <Sparkles className="h-6 w-6" />
             </div>
             <p className="font-semibold text-sm text-foreground">
-              {filter === 'unread' ? "Tudo em dia!" : "Nenhuma notificação"}
+              {filter === 'unread' ? "Tudo em dia!" : "Nenhuma notificação hoje"}
             </p>
-            <p className="text-xs text-muted-foreground mt-1 max-w-[240px]">
+            <p className="text-xs text-muted-foreground mt-1 max-w-[260px]">
               {filter === 'unread' 
-                ? "Você já visualizou todas as suas notificações pendentes." 
-                : "Você não possui nenhuma notificação recente."}
+                ? "Você já visualizou todas as notificações recebidas hoje." 
+                : "Novos agendamentos e avisos do dia aparecerão aqui em tempo real."}
             </p>
           </div>
         ) : (
-          <div className="divide-y divide-border/50">
+          <div className="divide-y divide-border/40 pb-2">
             <AnimatePresence initial={false}>
               {displayedNotifications.map((notification) => {
-                const { icon: TypeIcon, bg, label } = getNotificationIcon(notification);
+                const { icon: TypeIcon, bg } = getNotificationIcon(notification);
                 const isUnread = !notification.is_read;
+                const { classroom, quantity } = extractDetails(notification);
 
                 return (
                   <motion.div
@@ -258,9 +314,9 @@ export function NotificationFeed({ onClose }: NotificationFeedProps) {
                       <span className="absolute left-1.5 top-5 h-2 w-2 rounded-full bg-blue-500 shadow-sm" />
                     )}
 
-                    {/* Ícone Contextual */}
+                    {/* Ícone Contextual Arredondado */}
                     <div className={cn(
-                      "h-9 w-9 rounded-xl flex items-center justify-center shrink-0 mt-0.5",
+                      "h-9 w-9 rounded-xl flex items-center justify-center shrink-0 mt-0.5 shadow-sm",
                       bg
                     )}>
                       <TypeIcon className="h-4 w-4" />
@@ -284,14 +340,27 @@ export function NotificationFeed({ onClose }: NotificationFeedProps) {
                         </span>
                       </div>
 
-                      <p className="text-xs text-muted-foreground leading-relaxed line-clamp-3">
-                        {cleanNotificationMessage(notification.message)}
+                      <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">
+                        {cleanNotificationMessage(notification.message, currentUserName)}
                       </p>
 
-                      <div className="flex items-center justify-between mt-2 pt-1">
-                        <span className="inline-flex items-center gap-1 text-[10px] font-medium text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-full">
-                          {label}
-                        </span>
+                      {/* Tags / Pills de Contexto Rápido */}
+                      <div className="flex items-center justify-between mt-2.5 pt-0.5">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          {classroom && (
+                            <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-blue-700 dark:text-blue-300 bg-blue-500/10 px-2 py-0.5 rounded-md">
+                              <MapPin size={10} className="shrink-0" />
+                              <span className="truncate max-w-[120px]">{classroom}</span>
+                            </span>
+                          )}
+
+                          {quantity !== undefined && (
+                            <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-zinc-700 dark:text-zinc-300 bg-zinc-500/10 px-2 py-0.5 rounded-md">
+                              <Laptop size={10} className="shrink-0" />
+                              <span>{quantity === 0 ? 'Apenas Sala' : quantity === 1 ? '1 Chromebook' : `${quantity} Chromebooks`}</span>
+                            </span>
+                          )}
+                        </div>
 
                         {isUnread && (
                           <Button
@@ -317,6 +386,9 @@ export function NotificationFeed({ onClose }: NotificationFeedProps) {
           </div>
         )}
       </ScrollArea>
+
+      {/* Gradiente sutil inferior para indicar continuidade de rolagem */}
+      <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-4 bg-gradient-to-t from-card to-transparent z-10 rounded-b-2xl" />
     </div>
   );
 }

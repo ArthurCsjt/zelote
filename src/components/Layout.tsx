@@ -1,5 +1,6 @@
 // @ts-nocheck
 import React from 'react';
+import { isToday } from 'date-fns';
 import { User, LogOut, ArrowLeft, Bell, Settings, Sun, Moon, Loader2, Activity, BellRing, BellOff, History, Clock, Search, X } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/hooks/use-theme';
@@ -93,7 +94,7 @@ const Layout: React.FC<LayoutProps> = ({
     refetchInterval: 30000,
   });
 
-  const unreadCount = notifications?.filter(n => !n.is_read).length || 0;
+  const unreadCount = notifications?.filter(n => !n.is_read && isToday(new Date(n.created_at))).length || 0;
 
   React.useEffect(() => {
     const checkStandalone = () => {
