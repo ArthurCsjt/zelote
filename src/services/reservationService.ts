@@ -251,14 +251,17 @@ export const createReservation = async (
     if (reservationResult.professor_id) notifyUserIds.add(reservationResult.professor_id);
 
     const quantityDesc = reservationResult.quantity_requested > 0
-      ? `${reservationResult.quantity_requested} Chromebooks`
+      ? (reservationResult.quantity_requested === 1 ? '1 Chromebook' : `${reservationResult.quantity_requested} Chromebooks`)
       : 'Apenas Sala';
     const roomDesc = reservationResult.classroom ? `na ${reservationResult.classroom}` : '';
+    const cleanTime = (reservationResult.time_slot || '').replace(/:00$/, '');
 
     const notifications = Array.from(notifyUserIds).map(targetId => ({
       user_id: targetId,
       title: targetId === userId ? 'Agendamento Confirmado' : 'Nova Reserva de Chromebooks',
-      message: `${reservationResult.prof_name} agendou ${quantityDesc} ${roomDesc} para o dia ${formatLocalDate(reservationResult.date)} às ${reservationResult.time_slot}.`,
+      message: targetId === userId
+        ? `Você agendou ${quantityDesc} ${roomDesc} para o dia ${formatLocalDate(reservationResult.date)} às ${cleanTime}.`
+        : `${reservationResult.prof_name} agendou ${quantityDesc} ${roomDesc} para o dia ${formatLocalDate(reservationResult.date)} às ${cleanTime}.`,
       type: 'reservation',
       metadata: {
         reservation_id: reservationResult.id,
@@ -362,15 +365,18 @@ export const bulkCreateReservations = async (
     if (baseData.professor_id) notifyUserIds.add(baseData.professor_id);
 
     const quantityDesc = baseData.quantity_requested > 0
-      ? `${baseData.quantity_requested} Chromebooks`
+      ? (baseData.quantity_requested === 1 ? '1 Chromebook' : `${baseData.quantity_requested} Chromebooks`)
       : 'Apenas Sala';
     const roomDesc = baseData.classroom ? `na ${baseData.classroom}` : '';
     const profName = userFullName || userEmail?.split('@')[0] || 'Professor';
+    const cleanTime = (baseData.time_slot || '').replace(/:00$/, '');
 
     const batchNotifications = Array.from(notifyUserIds).map(targetId => ({
       user_id: targetId,
       title: targetId === userId ? 'Agendamentos Confirmados (Lote)' : 'Novas Reservas (Lote)',
-      message: `${dates.length} agendamentos realizados por ${profName} (${quantityDesc} ${roomDesc}) no horário ${baseData.time_slot}.`,
+      message: targetId === userId
+        ? `${dates.length} agendamentos foram criados com sucesso (${quantityDesc} ${roomDesc}) no horário ${cleanTime}.`
+        : `${dates.length} agendamentos realizados por ${profName} (${quantityDesc} ${roomDesc}) no horário ${cleanTime}.`,
       type: 'reservation_bulk',
       metadata: {
         count: dates.length,

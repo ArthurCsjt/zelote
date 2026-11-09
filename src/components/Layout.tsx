@@ -48,6 +48,7 @@ const Layout: React.FC<LayoutProps> = ({
   const { toast } = useToast();
   const [isStandalone, setIsStandalone] = React.useState(false);
   const [timelineOpen, setTimelineOpen] = React.useState(false);
+  const [notificationOpen, setNotificationOpen] = React.useState(false);
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
 
   const touchStartXRef = React.useRef<number | null>(null);
@@ -259,7 +260,7 @@ const Layout: React.FC<LayoutProps> = ({
 
               {/* Botão de Notificações Internas (App) */}
               {!user?.email?.endsWith('@sj.pro.br') && (
-                <Popover>
+                <Popover open={notificationOpen} onOpenChange={setNotificationOpen}>
                   <PopoverTrigger asChild>
                     <Button variant="ghost" size="icon" className="relative h-9 w-9 rounded-full hover:bg-white/10 text-white hover:text-white transition-colors">
                       <Bell className="h-5 w-5" />
@@ -271,10 +272,10 @@ const Layout: React.FC<LayoutProps> = ({
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent
-                    className="p-0 w-80 sm:w-96 bg-card/95 backdrop-blur-xl border-border shadow-xl rounded-xl overflow-hidden"
+                    className="p-0 w-80 sm:w-[400px] bg-card/95 backdrop-blur-xl border border-border/80 shadow-2xl rounded-2xl overflow-hidden"
                     align="end"
                   >
-                    <NotificationFeed />
+                    <NotificationFeed onClose={() => setNotificationOpen(false)} />
                   </PopoverContent>
                 </Popover>
               )}
