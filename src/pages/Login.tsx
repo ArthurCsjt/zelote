@@ -1,11 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
 import { validatePassword } from "@/utils/passwordValidation";
-import { Computer, ArrowLeft, UserPlus, Eye, EyeOff, AlertCircle, LogIn, RotateCcw, Loader2, Check, X, Send } from "lucide-react";
+import { Computer, ArrowLeft, UserPlus, Eye, EyeOff, AlertCircle, LogIn, RotateCcw, Loader2, Check, X, Send, ArrowUp } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import { GoogleLoginButton } from "@/components/auth/GoogleLoginButton";
@@ -13,6 +14,11 @@ import { LoginSchedulingShowcase } from "@/components/auth/LoginSchedulingShowca
 import { supabase } from "@/integrations/supabase/client";
 
 type AuthMode = 'login' | 'register' | 'forgot_password';
+
+const EMAIL_PLACEHOLDERS = [
+  "seu.email@colegiosaojudas.com.br",
+  "seu.email@sj.pro.br"
+];
 
 /**
  * Traduz erros técnicos do Supabase / Auth para mensagens claras e amigáveis ao usuário final.
@@ -71,6 +77,16 @@ const Login = () => {
   const [lastName, setLastName] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [capsLockActive, setCapsLockActive] = useState(false);
+  const [placeholderIndex, setPlaceholderIndex] = useState(0);
+
+  // Alterna o placeholder animado entre os domínios aceitos
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setPlaceholderIndex(prev => (prev + 1) % EMAIL_PLACEHOLDERS.length);
+    }, 2800);
+    return () => clearInterval(timer);
+  }, []);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -85,11 +101,28 @@ const Login = () => {
     }
   }, []);
 
+  // Monitora Caps Lock
+  const checkCapsLock = (e: React.KeyboardEvent) => {
+    if (e.getModifierState) {
+      setCapsLockActive(e.getModifierState("CapsLock"));
+    }
+  };
+
   const isEmailValid = email.length > 0 && verifyEmail(email);
-  // Mensagem curta e acionável, exibida apenas quando o usuário sai do campo ou tenta submeter
   const emailError = emailTouched && email.length > 0 && !isEmailValid
     ? "Use seu e-mail @colegiosaojudas.com.br ou @sj.pro.br"
     : null;
+
+  // Atalho para adicionar domínio institucional com 1 clique
+  const handleAppendDomain = (domain: string) => {
+    const username = email.includes('@') ? email.split('@')[0] : email.trim();
+    if (username) {
+      setEmail(`${username}${domain}`);
+    } else {
+      setEmail(domain);
+    }
+    setEmailTouched(true);
+  };
 
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -230,7 +263,6 @@ const Login = () => {
   };
 
   const changeMode = useCallback((mode: AuthMode) => {
-    // Mantém o e-mail digitado ao trocar de modo para evitar retrabalho
     setPassword('');
     setConfirmPassword('');
     setFirstName('');
@@ -238,6 +270,7 @@ const Login = () => {
     setShowPassword(false);
     setEmailTouched(false);
     setShowUnconfirmedAlert(false);
+    setCapsLockActive(false);
     setCurrentMode(mode);
   }, []);
 
@@ -256,6 +289,93 @@ const Login = () => {
   const passwordStatus = validatePassword(password);
   const passwordsMatch = confirmPassword.length > 0 && confirmPassword === password;
   const passwordsMismatch = confirmPassword.length > 0 && confirmPassword !== password;
+
+  const strengthCount = [
+    passwordStatus.hasMinLength,
+    passwordStatus.hasUpperCase,
+    passwordStatus.hasLowerCase,
+    passwordStatus.hasNumber,
+    passwordStatus.hasSpecialChar,
+  ].filter(Boolean).length;
+
+  // Componente reutilizável para o campo de email institucional
+  const renderEmailField = (id: string) => (
+    <div className="space-y-1.5">
+      <Label htmlFor={id} className="neo-brutal-label">Email Institucional</Label>
+      <div className="relative">
+        <Input
+          id={id}
+          type="email"
+          inputMode="email"
+          autoCapitalize="none"
+          autoCorrect="off"
+          spellCheck={false}
+          autoComplete="username"
+          value={email}
+          onChange={e => setEmail(e.target.value)}
+          onBlur={() => setEmailTouched(true)}
+          className={cn("neo-brutal-input pr-9", emailError && "border-error")}
+          disabled={isLoading}
+          required
+        />
+
+        {/* Animação suave transitando entre os placeholders institucionais */}
+        {!email && (
+          <div className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground/50 overflow-hidden h-5 flex items-center text-xs sm:text-sm select-none font-medium max-w-[calc(100%-48px)]">
+            <AnimatePresence mode="wait">
+              <motion.span
+                key={placeholderIndex}
+                initial={{ y: 9, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: -9, opacity: 0 }}
+                transition={{ duration: 0.28, ease: "easeInOut" }}
+                className="truncate"
+              >
+                {EMAIL_PLACEHOLDERS[placeholderIndex]}
+              </motion.span>
+            </AnimatePresence>
+          </div>
+        )}
+        {email.length > 0 && !isLoading && (
+          <button
+            type="button"
+            onClick={() => { setEmail(''); setEmailTouched(false); }}
+            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-1"
+            title="Limpar campo"
+            aria-label="Limpar campo de e-mail"
+          >
+            <X className="h-3.5 w-3.5" />
+          </button>
+        )}
+      </div>
+
+      {emailError && (
+        <p className="text-xs text-error flex items-center gap-1 font-medium pt-0.5">
+          <AlertCircle className="h-3 w-3 shrink-0" />
+          <span>{emailError}</span>
+        </p>
+      )}
+
+      {/* Chips de atalho para autocompletar domínio institucional */}
+      <div className="flex flex-wrap items-center gap-1.5 pt-1">
+        <span className="text-[10px] font-black uppercase text-muted-foreground/70">Completar:</span>
+        <button
+          type="button"
+          onClick={() => handleAppendDomain('@colegiosaojudas.com.br')}
+          className="text-[10px] font-bold px-2 py-0.5 bg-muted/50 hover:bg-primary hover:text-primary-foreground border border-black/20 dark:border-white/20 transition-all rounded-none"
+        >
+          @colegiosaojudas.com.br
+        </button>
+        <button
+          type="button"
+          onClick={() => handleAppendDomain('@sj.pro.br')}
+          className="text-[10px] font-bold px-2 py-0.5 bg-muted/50 hover:bg-primary hover:text-primary-foreground border border-black/20 dark:border-white/20 transition-all rounded-none"
+        >
+          @sj.pro.br
+        </button>
+      </div>
+    </div>
+  );
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 sm:p-6 lg:p-8 relative overflow-y-auto bg-background">
@@ -297,339 +417,355 @@ const Login = () => {
               </div>
             </div>
 
-            {/* Form Section */}
+            {/* Form Section com Transição Suave */}
             <div className="p-4 pt-4">
               <p className="text-muted-foreground font-medium mb-3 text-center text-sm">
                 {config.description}
               </p>
 
-              {currentMode === 'login' && (
-                <form onSubmit={handleLoginSubmit} className="space-y-3">
-                  {showUnconfirmedAlert && (
-                    <div className="p-3 bg-amber-50 dark:bg-amber-950/40 border-2 border-black dark:border-white/20 text-xs font-bold space-y-2 rounded-none">
-                      <p className="text-amber-800 dark:text-amber-300 flex items-center gap-1.5">
-                        <AlertCircle className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
-                        Confirmação pendente. Verifique seu e-mail institucional.
-                      </p>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="w-full text-xs font-black uppercase border-2 border-black dark:border-white shadow-[2px_2px_0px_0px_#000] bg-white dark:bg-zinc-800 flex items-center justify-center gap-1.5"
-                        onClick={handleResendConfirmation}
-                        disabled={isLoading}
-                      >
-                        <Send className="h-3.5 w-3.5" />
-                        Reenviar e-mail de confirmação
-                      </Button>
-                    </div>
-                  )}
-
-                  <div className="space-y-2">
-                    <Label htmlFor="login-email" className="neo-brutal-label">Email Institucional</Label>
-                    <Input
-                      id="login-email"
-                      type="email"
-                      autoComplete="username"
-                      autoFocus
-                      placeholder="seu.email@colegiosaojudas.com.br ou @sj.pro.br"
-                      value={email}
-                      onChange={e => setEmail(e.target.value)}
-                      onBlur={() => setEmailTouched(true)}
-                      className={cn("neo-brutal-input", emailError && "border-error")}
-                      disabled={isLoading}
-                      required
-                    />
-                    {emailError && (
-                      <p className="text-xs text-error flex items-center gap-1 font-medium">
-                        <AlertCircle className="h-3 w-3 shrink-0" />
-                        <span>{emailError}</span>
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <Label htmlFor="login-password" className="neo-brutal-label">Senha</Label>
-                      <button
-                        type="button"
-                        className="text-xs font-bold text-primary hover:underline underline-offset-4"
-                        onClick={() => changeMode('forgot_password')}
-                        disabled={isLoading}
-                      >
-                        Esqueceu?
-                      </button>
-                    </div>
-                    <div className="relative">
-                      <Input
-                        id="login-password"
-                        type={showPassword ? "text" : "password"}
-                        autoComplete="current-password"
-                        placeholder="Digite sua senha"
-                        value={password}
-                        onChange={e => setPassword(e.target.value)}
-                        className="neo-brutal-input pr-12"
-                        disabled={isLoading}
-                        required
-                      />
-                      <button
-                        type="button"
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                        onClick={() => setShowPassword(prev => !prev)}
-                      >
-                        {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                      </button>
-                    </div>
-                  </div>
-
-                  <Button
-                    type="submit"
-                    className="neo-brutal-button w-full"
-                    disabled={isLoading}
+              <AnimatePresence mode="wait">
+                {currentMode === 'login' && (
+                  <motion.form
+                    key="login-form"
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -6 }}
+                    transition={{ duration: 0.18, ease: "easeInOut" }}
+                    onSubmit={handleLoginSubmit}
+                    className="space-y-3"
                   >
-                    {isLoading ? (
-                      <Loader2 className="h-5 w-5 animate-spin" />
-                    ) : (
-                      <>
-                        <LogIn className="h-5 w-5 mr-2" strokeWidth={2.5} />
-                        Entrar
-                      </>
-                    )}
-                  </Button>
-
-                  {/* Divisor "ou" */}
-                  <div className="relative flex items-center gap-3">
-                    <div className="flex-1 h-px bg-border" />
-                    <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">ou</span>
-                    <div className="flex-1 h-px bg-border" />
-                  </div>
-
-                  {/* Botão Entrar com Google */}
-                  <GoogleLoginButton isLoading={isLoading} />
-
-                  <div className="text-center pt-1">
-                    <span className="text-muted-foreground">Não tem conta? </span>
-                    <button
-                      type="button"
-                      className="font-bold text-primary hover:underline underline-offset-4"
-                      onClick={() => changeMode('register')}
-                      disabled={isLoading}
-                    >
-                      Cadastre-se
-                    </button>
-                  </div>
-                </form>
-              )}
-
-              {currentMode === 'register' && (
-                <form onSubmit={handleRegisterSubmit} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="register-email" className="neo-brutal-label">Email Institucional</Label>
-                    <Input
-                      id="register-email"
-                      type="email"
-                      autoComplete="username"
-                      autoFocus
-                      placeholder="seu.email@colegiosaojudas.com.br ou @sj.pro.br"
-                      value={email}
-                      onChange={e => setEmail(e.target.value)}
-                      onBlur={() => setEmailTouched(true)}
-                      className={cn("neo-brutal-input", emailError && "border-error")}
-                      disabled={isLoading}
-                      required
-                    />
-                    {emailError && (
-                      <p className="text-xs text-error flex items-center gap-1 font-medium">
-                        <AlertCircle className="h-3 w-3 shrink-0" />
-                        <span>{emailError}</span>
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="first-name" className="neo-brutal-label">Nome</Label>
-                      <Input
-                        id="first-name"
-                        type="text"
-                        autoComplete="given-name"
-                        placeholder="Ex: José"
-                        value={firstName}
-                        onChange={e => setFirstName(e.target.value)}
-                        className="neo-brutal-input"
-                        disabled={isLoading}
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="last-name" className="neo-brutal-label">Sobrenome</Label>
-                      <Input
-                        id="last-name"
-                        type="text"
-                        autoComplete="family-name"
-                        placeholder="Ex: Silva"
-                        value={lastName}
-                        onChange={e => setLastName(e.target.value)}
-                        className="neo-brutal-input"
-                        disabled={isLoading}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-3">
-                    <Label htmlFor="register-password" title="A senha deve ter 8+ caracteres, maiúsculas, minúsculas, números e símbolos." className="neo-brutal-label">Senha</Label>
-                    <div className="relative">
-                      <Input
-                        id="register-password"
-                        type={showPassword ? "text" : "password"}
-                        autoComplete="new-password"
-                        placeholder="Sua senha segura"
-                        value={password}
-                        onChange={e => setPassword(e.target.value)}
-                        className="neo-brutal-input pr-12"
-                        disabled={isLoading}
-                        required
-                      />
-                      <button
-                        type="button"
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                        onClick={() => setShowPassword(prev => !prev)}
-                      >
-                        {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                      </button>
-                    </div>
-
-                    {/* Password Strength Checklist Completo */}
-                    {password.length > 0 && (
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 p-3 bg-muted/30 border-2 border-black dark:border-white/10 text-[10px] font-bold">
-                        {[
-                          { label: "8+ Caracteres", met: passwordStatus.hasMinLength },
-                          { label: "Letra Maiúscula", met: passwordStatus.hasUpperCase },
-                          { label: "Letra Minúscula", met: passwordStatus.hasLowerCase },
-                          { label: "Número", met: passwordStatus.hasNumber },
-                          { label: "Símbolo (!@#)", met: passwordStatus.hasSpecialChar },
-                        ].map((req, i) => (
-                          <div key={i} className={cn("flex items-center gap-1.5", req.met ? "text-success" : "text-muted-foreground opacity-60")}>
-                            {req.met ? <Check className="h-3.5 w-3.5 stroke-[3]" /> : <X className="h-3.5 w-3.5" />}
-                            <span>{req.label}</span>
-                          </div>
-                        ))}
+                    {showUnconfirmedAlert && (
+                      <div className="p-3 bg-amber-50 dark:bg-amber-950/40 border-2 border-black dark:border-white/20 text-xs font-bold space-y-2 rounded-none">
+                        <p className="text-amber-800 dark:text-amber-300 flex items-center gap-1.5">
+                          <AlertCircle className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
+                          Confirmação pendente. Verifique seu e-mail institucional.
+                        </p>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="w-full text-xs font-black uppercase border-2 border-black dark:border-white shadow-[2px_2px_0px_0px_#000] bg-white dark:bg-zinc-800 flex items-center justify-center gap-1.5"
+                          onClick={handleResendConfirmation}
+                          disabled={isLoading}
+                        >
+                          <Send className="h-3.5 w-3.5" />
+                          Reenviar e-mail de confirmação
+                        </Button>
                       </div>
                     )}
-                  </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="register-confirm" className="neo-brutal-label">Confirmar Senha</Label>
-                    <Input
-                      id="register-confirm"
-                      type={showPassword ? "text" : "password"}
-                      autoComplete="new-password"
-                      placeholder="Confirme sua senha"
-                      value={confirmPassword}
-                      onChange={e => setConfirmPassword(e.target.value)}
-                      className={cn(
-                        "neo-brutal-input",
-                        passwordsMatch && "border-success",
-                        passwordsMismatch && "border-error"
+                    {renderEmailField("login-email")}
+
+                    <div className="space-y-1.5">
+                      <div className="flex justify-between items-center">
+                        <Label htmlFor="login-password" className="neo-brutal-label">Senha</Label>
+                        <button
+                          type="button"
+                          className="text-xs font-bold text-primary hover:underline underline-offset-4"
+                          onClick={() => changeMode('forgot_password')}
+                          disabled={isLoading}
+                        >
+                          Esqueceu?
+                        </button>
+                      </div>
+                      <div className="relative">
+                        <Input
+                          id="login-password"
+                          type={showPassword ? "text" : "password"}
+                          autoComplete="current-password"
+                          placeholder="Digite sua senha"
+                          value={password}
+                          onChange={e => setPassword(e.target.value)}
+                          onKeyDown={checkCapsLock}
+                          onKeyUp={checkCapsLock}
+                          className="neo-brutal-input pr-12"
+                          disabled={isLoading}
+                          required
+                        />
+                        <button
+                          type="button"
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                          onClick={() => setShowPassword(prev => !prev)}
+                        >
+                          {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                        </button>
+                      </div>
+
+                      {/* Alerta de Caps Lock Ativado */}
+                      {capsLockActive && (
+                        <p className="text-[10px] font-black uppercase text-amber-600 dark:text-amber-400 flex items-center gap-1 pt-0.5 animate-pulse">
+                          <ArrowUp className="h-3 w-3 stroke-[3]" />
+                          Caps Lock ativado
+                        </p>
                       )}
+                    </div>
+
+                    <Button
+                      type="submit"
+                      className="neo-brutal-button w-full"
                       disabled={isLoading}
-                      required
-                    />
-                    {confirmPassword.length > 0 && (
-                      <p className={cn(
-                        "text-xs flex items-center gap-1 font-bold",
-                        passwordsMatch ? "text-success" : "text-error"
-                      )}>
-                        {passwordsMatch ? (
-                          <>
-                            <Check className="h-3.5 w-3.5 stroke-[3]" />
-                            As senhas coincidem
-                          </>
-                        ) : (
-                          <>
-                            <AlertCircle className="h-3.5 w-3.5" />
-                            As senhas não coincidem
-                          </>
+                    >
+                      {isLoading ? (
+                        <Loader2 className="h-5 w-5 animate-spin" />
+                      ) : (
+                        <>
+                          <LogIn className="h-5 w-5 mr-2" strokeWidth={2.5} />
+                          Entrar
+                        </>
+                      )}
+                    </Button>
+
+                    {/* Divisor "ou" */}
+                    <div className="relative flex items-center gap-3 pt-1">
+                      <div className="flex-1 h-px bg-border" />
+                      <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">ou</span>
+                      <div className="flex-1 h-px bg-border" />
+                    </div>
+
+                    {/* Botão Entrar com Google + Aviso de conta do colégio */}
+                    <div className="space-y-1.5">
+                      <GoogleLoginButton isLoading={isLoading} />
+                      <p className="text-[10px] text-muted-foreground/80 text-center font-medium leading-tight">
+                        Utilize exclusivamente sua conta Google do colégio (<span className="font-bold">@colegiosaojudas.com.br</span> ou <span className="font-bold">@sj.pro.br</span>).
+                      </p>
+                    </div>
+
+                    <div className="text-center pt-2">
+                      <span className="text-muted-foreground text-sm">Não tem conta? </span>
+                      <button
+                        type="button"
+                        className="font-bold text-primary hover:underline underline-offset-4 text-sm"
+                        onClick={() => changeMode('register')}
+                        disabled={isLoading}
+                      >
+                        Cadastre-se
+                      </button>
+                    </div>
+                  </motion.form>
+                )}
+
+                {currentMode === 'register' && (
+                  <motion.form
+                    key="register-form"
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -6 }}
+                    transition={{ duration: 0.18, ease: "easeInOut" }}
+                    onSubmit={handleRegisterSubmit}
+                    className="space-y-3.5"
+                  >
+                    {renderEmailField("register-email")}
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="space-y-1.5">
+                        <Label htmlFor="first-name" className="neo-brutal-label">Nome</Label>
+                        <Input
+                          id="first-name"
+                          type="text"
+                          autoComplete="given-name"
+                          placeholder="Ex: José"
+                          value={firstName}
+                          onChange={e => setFirstName(e.target.value)}
+                          className="neo-brutal-input"
+                          disabled={isLoading}
+                          required
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label htmlFor="last-name" className="neo-brutal-label">Sobrenome</Label>
+                        <Input
+                          id="last-name"
+                          type="text"
+                          autoComplete="family-name"
+                          placeholder="Ex: Silva"
+                          value={lastName}
+                          onChange={e => setLastName(e.target.value)}
+                          className="neo-brutal-input"
+                          disabled={isLoading}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="register-password" title="A senha deve ter 8+ caracteres, maiúsculas, minúsculas, números e símbolos." className="neo-brutal-label">Senha</Label>
+                      <div className="relative">
+                        <Input
+                          id="register-password"
+                          type={showPassword ? "text" : "password"}
+                          autoComplete="new-password"
+                          placeholder="Sua senha segura"
+                          value={password}
+                          onChange={e => setPassword(e.target.value)}
+                          onKeyDown={checkCapsLock}
+                          onKeyUp={checkCapsLock}
+                          className="neo-brutal-input pr-12"
+                          disabled={isLoading}
+                          required
+                        />
+                        <button
+                          type="button"
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                          onClick={() => setShowPassword(prev => !prev)}
+                        >
+                          {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                        </button>
+                      </div>
+
+                      {capsLockActive && (
+                        <p className="text-[10px] font-black uppercase text-amber-600 dark:text-amber-400 flex items-center gap-1 animate-pulse">
+                          <ArrowUp className="h-3 w-3 stroke-[3]" />
+                          Caps Lock ativado
+                        </p>
+                      )}
+
+                      {/* Barra de Força da Senha */}
+                      {password.length > 0 && (
+                        <div className="space-y-1 pt-1">
+                          <div className="flex justify-between items-center text-[10px] font-black uppercase">
+                            <span className="text-muted-foreground">Força da Senha:</span>
+                            <span className={cn(
+                              strengthCount <= 2 ? "text-red-500" :
+                              strengthCount <= 4 ? "text-amber-500" :
+                              "text-emerald-500"
+                            )}>
+                              {strengthCount <= 2 ? "Fraca" : strengthCount <= 4 ? "Média" : "Forte"}
+                            </span>
+                          </div>
+                          <div className="h-1.5 w-full bg-muted border border-black/20 dark:border-white/10 overflow-hidden">
+                            <div
+                              className={cn(
+                                "h-full transition-all duration-300",
+                                strengthCount <= 2 ? "bg-red-500" :
+                                strengthCount <= 4 ? "bg-amber-500" :
+                                "bg-emerald-500"
+                              )}
+                              style={{ width: `${(strengthCount / 5) * 100}%` }}
+                            />
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Password Strength Checklist Completo */}
+                      {password.length > 0 && (
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 p-2.5 bg-muted/30 border-2 border-black dark:border-white/10 text-[10px] font-bold">
+                          {[
+                            { label: "8+ Caracteres", met: passwordStatus.hasMinLength },
+                            { label: "Letra Maiúscula", met: passwordStatus.hasUpperCase },
+                            { label: "Letra Minúscula", met: passwordStatus.hasLowerCase },
+                            { label: "Número", met: passwordStatus.hasNumber },
+                            { label: "Símbolo (!@#)", met: passwordStatus.hasSpecialChar },
+                          ].map((req, i) => (
+                            <div key={i} className={cn("flex items-center gap-1.5", req.met ? "text-success" : "text-muted-foreground opacity-60")}>
+                              {req.met ? <Check className="h-3.5 w-3.5 stroke-[3]" /> : <X className="h-3.5 w-3.5" />}
+                              <span>{req.label}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <Label htmlFor="register-confirm" className="neo-brutal-label">Confirmar Senha</Label>
+                      <Input
+                        id="register-confirm"
+                        type={showPassword ? "text" : "password"}
+                        autoComplete="new-password"
+                        placeholder="Confirme sua senha"
+                        value={confirmPassword}
+                        onChange={e => setConfirmPassword(e.target.value)}
+                        onKeyDown={checkCapsLock}
+                        onKeyUp={checkCapsLock}
+                        className={cn(
+                          "neo-brutal-input",
+                          passwordsMatch && "border-success",
+                          passwordsMismatch && "border-error"
                         )}
-                      </p>
-                    )}
-                  </div>
+                        disabled={isLoading}
+                        required
+                      />
+                      {confirmPassword.length > 0 && (
+                        <p className={cn(
+                          "text-xs flex items-center gap-1 font-bold pt-0.5",
+                          passwordsMatch ? "text-success" : "text-error"
+                        )}>
+                          {passwordsMatch ? (
+                            <>
+                              <Check className="h-3.5 w-3.5 stroke-[3]" />
+                              As senhas coincidem
+                            </>
+                          ) : (
+                            <>
+                              <AlertCircle className="h-3.5 w-3.5" />
+                              As senhas não coincidem
+                            </>
+                          )}
+                        </p>
+                      )}
+                    </div>
 
-                  <Button
-                    type="submit"
-                    className="neo-brutal-button w-full"
-                    disabled={isLoading}
-                  >
-                    {isLoading ? (
-                      <Loader2 className="h-5 w-5 animate-spin" />
-                    ) : (
-                      <>
-                        <UserPlus className="h-5 w-5 mr-2" strokeWidth={2.5} />
-                        Cadastrar
-                      </>
-                    )}
-                  </Button>
-
-                  <button
-                    type="button"
-                    className="w-full flex items-center justify-center gap-2 text-muted-foreground hover:text-foreground font-bold transition-colors py-2"
-                    onClick={() => changeMode('login')}
-                    disabled={isLoading}
-                  >
-                    <ArrowLeft className="h-4 w-4" />
-                    Voltar ao login
-                  </button>
-                </form>
-              )}
-
-              {currentMode === 'forgot_password' && (
-                <form onSubmit={handleRecoverySubmit} className="space-y-5">
-                  <div className="space-y-2">
-                    <Label htmlFor="recovery-email" className="neo-brutal-label">Email Institucional</Label>
-                    <Input
-                      id="recovery-email"
-                      type="email"
-                      autoComplete="username"
-                      autoFocus
-                      placeholder="seu.email@colegiosaojudas.com.br ou @sj.pro.br"
-                      value={email}
-                      onChange={e => setEmail(e.target.value)}
-                      onBlur={() => setEmailTouched(true)}
-                      className={cn("neo-brutal-input", emailError && "border-error")}
+                    <Button
+                      type="submit"
+                      className="neo-brutal-button w-full"
                       disabled={isLoading}
-                      required
-                    />
-                    {emailError && (
-                      <p className="text-xs text-error flex items-center gap-1 font-medium">
-                        <AlertCircle className="h-3 w-3 shrink-0" />
-                        <span>{emailError}</span>
-                      </p>
-                    )}
-                  </div>
+                    >
+                      {isLoading ? (
+                        <Loader2 className="h-5 w-5 animate-spin" />
+                      ) : (
+                        <>
+                          <UserPlus className="h-5 w-5 mr-2" strokeWidth={2.5} />
+                          Cadastrar
+                        </>
+                      )}
+                    </Button>
 
-                  <Button
-                    type="submit"
-                    className="neo-brutal-button w-full"
-                    disabled={isLoading}
-                  >
-                    {isLoading ? (
-                      <Loader2 className="h-5 w-5 animate-spin" />
-                    ) : (
-                      "Enviar Link"
-                    )}
-                  </Button>
+                    <button
+                      type="button"
+                      className="w-full flex items-center justify-center gap-2 text-muted-foreground hover:text-foreground font-bold transition-colors py-2 text-sm"
+                      onClick={() => changeMode('login')}
+                      disabled={isLoading}
+                    >
+                      <ArrowLeft className="h-4 w-4" />
+                      Voltar ao login
+                    </button>
+                  </motion.form>
+                )}
 
-                  <button
-                    type="button"
-                    className="w-full flex items-center justify-center gap-2 text-muted-foreground hover:text-foreground font-bold transition-colors py-2"
-                    onClick={() => changeMode('login')}
-                    disabled={isLoading}
+                {currentMode === 'forgot_password' && (
+                  <motion.form
+                    key="recovery-form"
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -6 }}
+                    transition={{ duration: 0.18, ease: "easeInOut" }}
+                    onSubmit={handleRecoverySubmit}
+                    className="space-y-4"
                   >
-                    <ArrowLeft className="h-4 w-4" />
-                    Voltar ao login
-                  </button>
-                </form>
-              )}
+                    {renderEmailField("recovery-email")}
+
+                    <Button
+                      type="submit"
+                      className="neo-brutal-button w-full"
+                      disabled={isLoading}
+                    >
+                      {isLoading ? (
+                        <Loader2 className="h-5 w-5 animate-spin" />
+                      ) : (
+                        "Enviar Link de Recuperação"
+                      )}
+                    </Button>
+
+                    <button
+                      type="button"
+                      className="w-full flex items-center justify-center gap-2 text-muted-foreground hover:text-foreground font-bold transition-colors py-2 text-sm"
+                      onClick={() => changeMode('login')}
+                      disabled={isLoading}
+                    >
+                      <ArrowLeft className="h-4 w-4" />
+                      Voltar ao login
+                    </button>
+                  </motion.form>
+                )}
+              </AnimatePresence>
             </div>
 
             {/* Footer Accent */}
