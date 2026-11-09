@@ -14,6 +14,8 @@ import { ptBR } from 'date-fns/locale';
 import { getStartOfWeek, formatWeekRange, changeWeek, getWeekDays, changeMonth, getInitialSchedulingDate } from '@/utils/scheduling';
 import { SchedulingCalendar } from '@/components/scheduling/SchedulingCalendar';
 import { SchedulingMonthView } from '@/components/scheduling/SchedulingMonthView';
+import { MyReservationsView } from '@/components/scheduling/MyReservationsView';
+import { getUserReservations } from '@/services/reservationService';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
@@ -40,7 +42,7 @@ const SchedulingPage = () => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [currentDate, setCurrentDate] = useState(getInitialSchedulingDate());
-  const [viewMode, setViewMode] = useState<'weekly' | 'monthly'>('weekly');
+  const [viewMode, setViewMode] = useState<'weekly' | 'monthly' | 'my_reservations'>('weekly');
   const [isMonthsExpanded, setIsMonthsExpanded] = useState(false);
   const [isCommandCenterExpanded, setIsCommandCenterExpanded] = useState(true);
   const {
@@ -86,7 +88,25 @@ const SchedulingPage = () => {
   } = useQuery({
     queryKey: ['reservations', startDate, endDate],
     queryFn: () => getReservationsForWeek(startDate, endDate),
-    enabled: !!user
+    enabled: !!user && viewMode !== 'my_reservations'
+  });
+  const {
+    data: userUpcomingCount = 0,
+    refetch: refetchUserCount
+  } = useQuery({
+    queryKey: ['userReservationsCount', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return 0;
+      const list = await getUserReservations(user.id);
+      const now = new Date();
+      return list.filter(res => {
+        const [h, m] = (res.time_slot || '00h00').split('h');
+        const dt = new Date(`${res.date}T${(h || '0').padStart(2, '0')}:${(m || '0').padStart(2, '0')}:00`);
+        const end = new Date(dt.getTime() + 50 * 60 * 1000);
+        return end >= now;
+      }).length;
+    },
+    enabled: !!user?.id,
   });
   const {
     data: professores = [],
@@ -103,11 +123,11 @@ const SchedulingPage = () => {
       setCurrentDate(prev => changeMonth(prev, direction));
     }
   };
-  const handleViewModeChange = (v: 'weekly' | 'monthly') => {
+  const handleViewModeChange = (v: 'weekly' | 'monthly' | 'my_reservations') => {
     setViewMode(v);
     if (v === 'weekly') {
       setCurrentDate(getStartOfWeek(new Date()));
-    } else {
+    } else if (v === 'monthly') {
       setCurrentDate(startOfMonth(new Date()));
     }
   };
@@ -153,8 +173,15 @@ const SchedulingPage = () => {
 
   const handleReservationSuccess = () => {
     refetch();
+    refetchUserCount();
     queryClient.invalidateQueries({
       queryKey: ['totalAvailableChromebooks']
+    });
+    queryClient.invalidateQueries({
+      queryKey: ['userReservations']
+    });
+    queryClient.invalidateQueries({
+      queryKey: ['userReservationsCount']
     });
   };
 
@@ -238,6 +265,27 @@ const SchedulingPage = () => {
           Semanal
         </button>
         <button
+          onClick={() => handleViewModeChange('my_reservations')}
+          className={cn(
+            'px-3 py-1 rounded-md text-xs font-bold uppercase tracking-wide transition-all duration-200 flex items-center gap-1.5',
+            viewMode === 'my_reservations'
+              ? 'bg-white text-primary shadow-sm'
+              : 'text-white/80 hover:text-white hover:bg-white/10'
+          )}
+        >
+          <span>Minhas Reservas</span>
+          {userUpcomingCount > 0 && (
+            <span className={cn(
+              "px-1.5 py-0.2 rounded-full text-[10px] font-[1000] leading-tight",
+              viewMode === 'my_reservations'
+                ? "bg-primary text-white"
+                : "bg-white/25 text-white"
+            )}>
+              {userUpcomingCount}
+            </span>
+          )}
+        </button>
+        <button
           onClick={() => handleViewModeChange('monthly')}
           className={cn(
             'px-3 py-1 rounded-md text-xs font-bold uppercase tracking-wide transition-all duration-200',
@@ -255,111 +303,113 @@ const SchedulingPage = () => {
   return <Layout title="Agendamento" showBackButton onBack={() => navigate('/')} headerRight={topBarControls}>
 
     <div className="space-y-4 sm:space-y-6 max-w-7xl mx-auto relative z-10">
-      {/* ── Glass Nav Row ── Week Selector + Year/Month Selector ── */}
-      <motion.div
-        initial={{ opacity: 0, y: -12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.7, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
-        className="glass-nav"
-      >
-        {/* ── Week / Period Navigator ── */}
-        <div className="glass-nav__surface glass-nav__period">
-          <button
-            onClick={() => handleDateChange('prev')}
-            disabled={isLoading}
-            className="glass-nav__arrow glass-nav__arrow--left"
-            aria-label="Período anterior"
-          >
-            <ChevronLeft size={16} strokeWidth={2.5} />
-          </button>
-
-          <div className="glass-nav__period-label">
-            {displayRange}
-          </div>
-
-          <button
-            onClick={() => handleDateChange('next')}
-            disabled={isLoading}
-            className="glass-nav__arrow glass-nav__arrow--right"
-            aria-label="Próximo período"
-          >
-            <ChevronRight size={16} strokeWidth={2.5} />
-          </button>
-        </div>
-
-        {/* ── Year + Month Selector ── */}
-        <div className="glass-nav__surface">
-          {/* Year control */}
-          <div className="glass-nav__year-control">
+      {/* ── Glass Nav Row ── Week Selector + Year/Month Selector (Visível apenas em Semanal e Histórico) ── */}
+      {viewMode !== 'my_reservations' && (
+        <motion.div
+          initial={{ opacity: 0, y: -12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
+          className="glass-nav"
+        >
+          {/* ── Week / Period Navigator ── */}
+          <div className="glass-nav__surface glass-nav__period">
             <button
-              onClick={() => setCurrentDate(new Date(currentDate.getFullYear() - 1, currentDate.getMonth(), 1))}
-              className="glass-nav__year-btn"
-              aria-label="Ano anterior"
+              onClick={() => handleDateChange('prev')}
+              disabled={isLoading}
+              className="glass-nav__arrow glass-nav__arrow--left"
+              aria-label="Período anterior"
             >
-              <ChevronLeft size={14} strokeWidth={2.5} />
+              <ChevronLeft size={16} strokeWidth={2.5} />
             </button>
-            <span className="glass-nav__year-value">{currentDate.getFullYear()}</span>
+
+            <div className="glass-nav__period-label">
+              {displayRange}
+            </div>
+
             <button
-              onClick={() => setCurrentDate(new Date(currentDate.getFullYear() + 1, currentDate.getMonth(), 1))}
-              className="glass-nav__year-btn"
-              aria-label="Próximo ano"
+              onClick={() => handleDateChange('next')}
+              disabled={isLoading}
+              className="glass-nav__arrow glass-nav__arrow--right"
+              aria-label="Próximo período"
             >
-              <ChevronRight size={14} strokeWidth={2.5} />
+              <ChevronRight size={16} strokeWidth={2.5} />
             </button>
           </div>
 
-          {/* Month pills */}
-          <div className="glass-nav__months">
-            <AnimatePresence mode="popLayout">
-              {Array.from({ length: 12 }, (_, i) => {
-                const date = new Date(currentDate.getFullYear(), i, 1);
-                const isCurrentMonth = i === currentDate.getMonth();
-                const isTodayMonth = i === new Date().getMonth() && currentDate.getFullYear() === new Date().getFullYear();
-                const todayIdx = new Date().getMonth();
-                const isVisibleByDefault = (i >= todayIdx && i <= todayIdx + 3) || (todayIdx > 8 && i < (todayIdx + 4) % 12);
-                const shouldShow = isMonthsExpanded || isVisibleByDefault || isCurrentMonth;
-                if (!shouldShow) return null;
+          {/* ── Year + Month Selector ── */}
+          <div className="glass-nav__surface">
+            {/* Year control */}
+            <div className="glass-nav__year-control">
+              <button
+                onClick={() => setCurrentDate(new Date(currentDate.getFullYear() - 1, currentDate.getMonth(), 1))}
+                className="glass-nav__year-btn"
+                aria-label="Ano anterior"
+              >
+                <ChevronLeft size={14} strokeWidth={2.5} />
+              </button>
+              <span className="glass-nav__year-value">{currentDate.getFullYear()}</span>
+              <button
+                onClick={() => setCurrentDate(new Date(currentDate.getFullYear() + 1, currentDate.getMonth(), 1))}
+                className="glass-nav__year-btn"
+                aria-label="Próximo ano"
+              >
+                <ChevronRight size={14} strokeWidth={2.5} />
+              </button>
+            </div>
 
-                return (
-                  <motion.button
-                    key={i}
-                    layout
-                    initial={{ opacity: 0, x: -8 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, scale: 0.85 }}
-                    onClick={() => {
-                      let targetDate = new Date(currentDate.getFullYear(), i, 1);
-                      if (isSaturday(targetDate)) targetDate = addDays(targetDate, 2);
-                      else if (isSunday(targetDate)) targetDate = addDays(targetDate, 1);
-                      setCurrentDate(targetDate);
-                    }}
-                    className={cn(
-                      'glass-nav__month-pill',
-                      isCurrentMonth && 'glass-nav__month-pill--active'
-                    )}
-                  >
-                    {format(date, 'MMM', { locale: ptBR }).replace('.', '')}
-                    {isTodayMonth && !isCurrentMonth && (
-                      <span className="glass-nav__today-dot" aria-hidden />
-                    )}
-                  </motion.button>
-                );
-              })}
-            </AnimatePresence>
+            {/* Month pills */}
+            <div className="glass-nav__months">
+              <AnimatePresence mode="popLayout">
+                {Array.from({ length: 12 }, (_, i) => {
+                  const date = new Date(currentDate.getFullYear(), i, 1);
+                  const isCurrentMonth = i === currentDate.getMonth();
+                  const isTodayMonth = i === new Date().getMonth() && currentDate.getFullYear() === new Date().getFullYear();
+                  const todayIdx = new Date().getMonth();
+                  const isVisibleByDefault = (i >= todayIdx && i <= todayIdx + 3) || (todayIdx > 8 && i < (todayIdx + 4) % 12);
+                  const shouldShow = isMonthsExpanded || isVisibleByDefault || isCurrentMonth;
+                  if (!shouldShow) return null;
 
-            <button
-              onClick={() => setIsMonthsExpanded(!isMonthsExpanded)}
-              className="glass-nav__expand-btn"
-              title={isMonthsExpanded ? 'Ver menos' : 'Ver todos os meses'}
-              aria-label="Alternar meses"
-            >
-              <motion.div animate={{ rotate: isMonthsExpanded ? 45 : 0 }} transition={{ type: 'spring', stiffness: 200 }}>
-                <Plus size={14} strokeWidth={2.5} />
-              </motion.div>
-            </button>
+                  return (
+                    <motion.button
+                      key={i}
+                      layout
+                      initial={{ opacity: 0, x: -8 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, scale: 0.85 }}
+                      onClick={() => {
+                        let targetDate = new Date(currentDate.getFullYear(), i, 1);
+                        if (isSaturday(targetDate)) targetDate = addDays(targetDate, 2);
+                        else if (isSunday(targetDate)) targetDate = addDays(targetDate, 1);
+                        setCurrentDate(targetDate);
+                      }}
+                      className={cn(
+                        'glass-nav__month-pill',
+                        isCurrentMonth && 'glass-nav__month-pill--active'
+                      )}
+                    >
+                      {format(date, 'MMM', { locale: ptBR }).replace('.', '')}
+                      {isTodayMonth && !isCurrentMonth && (
+                        <span className="glass-nav__today-dot" aria-hidden />
+                      )}
+                    </motion.button>
+                  );
+                })}
+              </AnimatePresence>
+
+              <button
+                onClick={() => setIsMonthsExpanded(!isMonthsExpanded)}
+                className="glass-nav__expand-btn"
+                title={isMonthsExpanded ? 'Ver menos' : 'Ver todos os meses'}
+                aria-label="Alternar meses"
+              >
+                <motion.div animate={{ rotate: isMonthsExpanded ? 45 : 0 }} transition={{ type: 'spring', stiffness: 200 }}>
+                  <Plus size={14} strokeWidth={2.5} />
+                </motion.div>
+              </button>
+            </div>
           </div>
-        </div>
-      </motion.div>
+        </motion.div>
+      )}
 
       {/* Weekend Warning */}
       {viewMode === 'weekly' && getWeekDays(currentDate).length === 0 && <div className="mt-4 p-3 border-3 border-warning/50 bg-warning/10 flex items-center gap-2">
@@ -376,27 +426,37 @@ const SchedulingPage = () => {
         transition={{ duration: 1.4, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
         className="w-full overflow-visible"
       >
-        {viewMode === 'weekly' ? <SchedulingCalendar
-          currentDate={currentDate}
-          reservations={reservations}
-          totalAvailableChromebooks={operationalLimit}
-          physicalTotal={totalAvailableChromebooks}
-          currentUser={user}
-          isLoading={isLoading}
-          onReservationSuccess={handleReservationSuccess}
-          onUpdateLimit={handleUpdateLimit}
-          professores={professores.map(p => ({
-            id: p.id,
-            nome_completo: p.nome_completo
-          }))}
-        /> : <SchedulingMonthView
-          currentDate={currentDate}
-          reservations={reservations}
-          totalAvailableChromebooks={operationalLimit}
-          isLoading={isLoading}
-          onReservationSuccess={handleReservationSuccess}
-          onNewReservation={handleNewReservationFromMonth}
-        />}
+        {viewMode === 'weekly' ? (
+          <SchedulingCalendar
+            currentDate={currentDate}
+            reservations={reservations}
+            totalAvailableChromebooks={operationalLimit}
+            physicalTotal={totalAvailableChromebooks}
+            currentUser={user}
+            isLoading={isLoading}
+            onReservationSuccess={handleReservationSuccess}
+            onUpdateLimit={handleUpdateLimit}
+            professores={professores.map(p => ({
+              id: p.id,
+              nome_completo: p.nome_completo
+            }))}
+          />
+        ) : viewMode === 'monthly' ? (
+          <SchedulingMonthView
+            currentDate={currentDate}
+            reservations={reservations}
+            totalAvailableChromebooks={operationalLimit}
+            isLoading={isLoading}
+            onReservationSuccess={handleReservationSuccess}
+            onNewReservation={handleNewReservationFromMonth}
+          />
+        ) : (
+          <MyReservationsView
+            currentUser={user}
+            onReservationSuccess={handleReservationSuccess}
+            onGoToCalendar={() => handleViewModeChange('weekly')}
+          />
+        )}
       </motion.div>
 
       {/* Legend - Neo Brutal Style */}

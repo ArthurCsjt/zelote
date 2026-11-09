@@ -55,9 +55,18 @@ export const ReservationDetailsDialog: React.FC<ReservationDetailsDialogProps> =
     const isManutencao = role === 'manutencao';
     const isMaintRes = reservation.prof_role === 'manutencao' || reservation.prof_email === 'paulo.geremias@colegiosaojudas.com.br' || reservation.prof_email === 'ivo@colegiosaojudas.com.br' || reservation.prof_email === 'manutencao.teste@colegiosaojudas.com.br';
 
-    const showCancel = isAdmin || isOwner;
-    const showLoan = !(isManutencao || isMaintRes) && isResponsible && (!reservation.associated_loans || reservation.associated_loans.length < reservation.quantity_requested);
-    const showClose = !isOwner && !isAdmin && !isResponsible;
+    const [hourStr, minuteStr] = (reservation.time_slot || '00h00').split('h');
+    const slotStart = new Date(date);
+    slotStart.setHours(parseInt(hourStr || '0'), parseInt(minuteStr || '0'), 0, 0);
+    const slotEnd = new Date(slotStart.getTime() + 50 * 60 * 1000);
+    const now = new Date();
+    const isPast = now >= slotEnd;
+    const loansCount = reservation.associated_loans?.length || 0;
+    const isMissed = isPast && !isMaintRes && reservation.quantity_requested > 0 && loansCount === 0;
+
+    const showCancel = (isAdmin || isOwner) && !isPast;
+    const showLoan = !(isManutencao || isMaintRes) && isResponsible && (!reservation.associated_loans || reservation.associated_loans.length < reservation.quantity_requested) && !isPast;
+    const showClose = !showCancel && !showLoan;
 
     // Proteção contra cancelamento acidental (Confirmação em 2 etapas com timer)
     const [isConfirmingCancel, setIsConfirmingCancel] = useState(false);
@@ -150,6 +159,21 @@ export const ReservationDetailsDialog: React.FC<ReservationDetailsDialogProps> =
                 </DialogHeader>
 
                 <div className="p-4 space-y-4 bg-white dark:bg-zinc-950">
+                    {/* Alerta de Não Retirada (Horário passou sem empréstimo) */}
+                    {isMissed && (
+                        <div className="border-3 border-black bg-amber-400 text-black p-3 shadow-[3px_3px_0px_0px_#000] flex items-center gap-3 animate-in fade-in">
+                            <div className="p-1.5 bg-black text-amber-400 shrink-0 border-2 border-black">
+                                <AlertTriangle className="h-5 w-5 stroke-[2.5]" />
+                            </div>
+                            <div className="flex flex-col min-w-0">
+                                <span className="text-xs font-black uppercase tracking-wider">Aviso de Não Retirada</span>
+                                <span className="text-[11px] font-bold leading-tight text-black/80">
+                                    O horário desta reserva expirou sem a retirada dos Chromebooks requisitados.
+                                </span>
+                            </div>
+                        </div>
+                    )}
+
                     {/* User & Quantity Card */}
                     <div className="border-4 border-black dark:border-white bg-white dark:bg-zinc-900 p-3.5 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] relative overflow-hidden">
                         <div className={cn(

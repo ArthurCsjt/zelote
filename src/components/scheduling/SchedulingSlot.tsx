@@ -158,6 +158,7 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
         const isManutencaoRes = res.prof_role === 'manutencao' || res.prof_email === 'paulo.geremias@colegiosaojudas.com.br' || res.prof_email === 'ivo@colegiosaojudas.com.br' || res.prof_email === 'manutencao.teste@colegiosaojudas.com.br';
         const isThisMine = res.created_by === currentUser?.id;
         const roomName = res.classroom ? res.classroom.toUpperCase() : "ESPAÇO";
+        const isMissed = isPast && !isManutencaoRes && (res.quantity_requested || 0) > 0 && (!res.associated_loans || res.associated_loans.length === 0);
 
         return (
           <TooltipProvider key={res.id}>
@@ -166,26 +167,31 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
                 <div
                   className={cn(
                     "w-full flex-1 flex items-center justify-between text-[9px] sm:text-[11px] leading-tight font-black uppercase px-1.5 sm:px-2 py-1.5 sm:py-2 border-[1px] border-black transition-all rounded-lg min-w-0",
-                    !isPast && "hover:-translate-y-[2px] cursor-pointer",
-                    isPast && "cursor-default",
+                    "hover:-translate-y-[2px] cursor-pointer",
                     // Alta resolução no texto
                     "text-white [text-shadow:_-1px_-1px_0_rgba(0,0,0,0.5),_1px_-1px_0_rgba(0,0,0,0.5),_-1px_1px_0_rgba(0,0,0,0.5),_1px_1px_0_rgba(0,0,0,0.5)]",
-                    isManutencaoRes
-                      ? "bg-[#52525B] shadow-[2px_2px_0_0_#000] sm:shadow-[3px_3px_0_0_#000] hover:bg-[#3F3F46]"
-                      : res.is_minecraft
-                        ? "bg-gradient-to-br from-[#2d5a27] to-[#1e3c1a] shadow-[2px_2px_0_0_#000] sm:shadow-[3px_3px_0_0_#000]"
-                        : "bg-gradient-to-br from-blue-600 to-indigo-600 shadow-[2px_2px_0_0_#000] sm:shadow-[3px_3px_0_0_#000]",
+                    isMissed
+                      ? "bg-gradient-to-br from-amber-700 to-zinc-800 border-amber-500 shadow-[2px_2px_0_0_#000]"
+                      : isManutencaoRes
+                        ? "bg-[#52525B] shadow-[2px_2px_0_0_#000] sm:shadow-[3px_3px_0_0_#000] hover:bg-[#3F3F46]"
+                        : res.is_minecraft
+                          ? "bg-gradient-to-br from-[#2d5a27] to-[#1e3c1a] shadow-[2px_2px_0_0_#000] sm:shadow-[3px_3px_0_0_#000]"
+                          : "bg-gradient-to-br from-blue-600 to-indigo-600 shadow-[2px_2px_0_0_#000] sm:shadow-[3px_3px_0_0_#000]",
                   )}
                   onClick={(e) => {
                     e.stopPropagation();
-                    if (isPast) return; // Bloqueia clique no passado
                     if (isThisMine || isAdmin || isResponsible) {
                       setIsDetailsOpen(res.id);
                     }
                   }}
                 >
                   <span className="truncate flex-1 text-left min-w-0 text-[10px] sm:text-[12px]">{roomName}</span>
-                  {!isManutencaoRes && res.quantity_requested > 0 && (
+                  {isMissed ? (
+                    <span className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded text-[7.5px] sm:text-[8.5px] font-black bg-amber-400 text-black border border-black shadow-[1px_1px_0_0_#000] shrink-0 ml-1 leading-none tracking-tight" title="Reserva expirada sem retirada">
+                      <AlertTriangle className="h-2.5 w-2.5 stroke-[3]" />
+                      <span>NÃO RETIRADA</span>
+                    </span>
+                  ) : !isManutencaoRes && res.quantity_requested > 0 && (
                     <span className="inline-flex items-center gap-1 shrink-0 ml-1.5 bg-black/25 px-1 py-0.5 rounded text-[8.5px] sm:text-[10.5px] leading-none" title={`${res.quantity_requested} Chromebooks`}>
                       <Laptop className="h-2.5 w-2.5 sm:h-3 sm:w-3 stroke-[2.5]" />
                       <span>{res.quantity_requested}</span>
@@ -199,6 +205,13 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
                 className="max-w-[200px] p-2.5 border-2 border-black dark:border-zinc-700 rounded-none shadow-[3px_3px_0_0_#000] dark:shadow-[3px_3px_0_0_rgba(255,255,255,0.1)] bg-white dark:bg-zinc-900 z-[100]"
               >
                 <div className="flex flex-col gap-2">
+                  {isMissed && (
+                    <div className="bg-amber-100 dark:bg-amber-950/60 border border-amber-600 text-amber-900 dark:text-amber-300 p-1.5 text-[9px] font-bold flex items-center gap-1.5">
+                      <AlertTriangle className="h-3.5 w-3.5 text-amber-600 shrink-0" />
+                      <span>Horário expirou sem retirada de equipamentos.</span>
+                    </div>
+                  )}
+
                   <div className="flex items-center gap-2">
                     <div className="flex flex-col min-w-0">
                       <span className="text-[12px] font-black uppercase truncate leading-tight text-black dark:text-white">

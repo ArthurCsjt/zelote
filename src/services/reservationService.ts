@@ -111,6 +111,56 @@ export const getReservationsForWeek = async (startDate: string, endDate: string)
   }) as Reservation[];
 };
 
+export const getUserReservations = async (userId: string): Promise<Reservation[]> => {
+  if (!userId) return [];
+
+  const { data, error } = await supabase
+    .from('reservations')
+    .select(`
+      *,
+      prof_data:profiles!professor_id (name, email, role),
+      loans (
+        id,
+        chromebooks (chromebook_id),
+        returns (id, return_date)
+      )
+    `)
+    .or(`created_by.eq.${userId},professor_id.eq.${userId}`)
+    .order('date', { ascending: false })
+    .order('time_slot', { ascending: false });
+
+  if (error) throw error;
+
+  return (data || []).map(res => {
+    const profData = (res as any).prof_data;
+    const profName = profData?.name;
+    const profEmail = profData?.email;
+
+    const loans = (res as any).loans || [];
+    const associatedLoans = loans.map((l: any) => {
+      const cb = Array.isArray(l.chromebooks) ? l.chromebooks[0] : l.chromebooks;
+      const rawReturns = l.returns;
+      const ret = Array.isArray(rawReturns) ? rawReturns[0] : rawReturns;
+      const isReturned = Boolean(ret && ret.id);
+      return {
+        chromebook_id: cb?.chromebook_id,
+        returned: isReturned,
+        return_date: ret?.return_date || null
+      };
+    }).filter((l: any) => l.chromebook_id);
+
+    return {
+      ...res,
+      time_slot: fromDbTime((res as any).time_slot || ''),
+      prof_name: profName && profName !== 'Usuário Desconhecido' ? profName : (profEmail || 'Usuário Desconhecido'),
+      prof_email: profEmail || '',
+      prof_role: profData?.role || '',
+      justification: (res as any).justification || '',
+      associated_loans: associatedLoans
+    };
+  }) as Reservation[];
+};
+
 export const createReservation = async (
   data: ReservationData,
   userId: string,
