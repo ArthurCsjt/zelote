@@ -89,7 +89,7 @@ const ReservationList = React.memo(function ReservationList({ rows, allRows, fil
                   {isSameDay(parseISO(res.date), now) && state === 'progress-status' && <span className="hx-pill hx-progress-status"><Clock size={11} />{Math.max(1, differenceInMinutes(end, now))}m restantes</span>}
                 </div>
               </div>
-              {isMaintenanceReservation ? <span className="hx-maintenance">MANUTENÇÃO</span> : !isManutencao && <div className="hx-quantity text-right shrink-0 !max-w-none"><strong>{number(requested)}</strong><small className="whitespace-nowrap">{requested === 1 ? 'Chromebook' : 'Chromebooks'}</small></div>}
+              {isMaintenanceReservation ? <span className="hx-maintenance">MANUTENÇÃO</span> : !isManutencao && <div className="hx-quantity text-right shrink-0 !max-w-none"><strong>{number(requested)}</strong><small className="whitespace-nowrap">{requested <= 1 ? 'Chromebook' : 'Chromebooks'}</small></div>}
             </div>
             {res.justification && <p className="hx-quote">“{res.justification}”</p>}
             {showProgress && <div><div className="hx-progress-label">{loans} de {requested} retirados</div><div className="hx-progress" role="progressbar" aria-label="Chromebooks retirados" aria-valuemin={0} aria-valuemax={requested} aria-valuenow={Math.min(requested, loans)}><div className="hx-progress-fill" style={{ '--hx-fill': `${Math.min(100, loans / requested * 100)}%` } as HistoryStyle} /></div></div>}

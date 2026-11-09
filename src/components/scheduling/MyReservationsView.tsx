@@ -366,7 +366,7 @@ export const MyReservationsView: React.FC<MyReservationsViewProps> = ({
                       {/* Quantidade de Chromebooks */}
                       <div className="hx-quantity text-right shrink-0 !max-w-none">
                         <strong>{requested}</strong>
-                        <small className="whitespace-nowrap">{requested === 1 ? 'Chromebook' : 'Chromebooks'}</small>
+                        <small className="whitespace-nowrap">{requested <= 1 ? 'Chromebook' : 'Chromebooks'}</small>
                       </div>
                     </div>
 
