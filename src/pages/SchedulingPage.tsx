@@ -460,57 +460,57 @@ const SchedulingPage = () => {
         )}
       </motion.div>
 
-      {/* Legend - Neo Brutal Style */}
-      <div className="py-2 bg-transparent">
-        <div className="flex flex-wrap items-center justify-center gap-3">
-          <div className="flex items-center gap-2 mr-2">
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500">
-              Legenda:
-            </span>
-          </div>
+      {/* Legend - Neo Brutal Style (Apenas Visão Semanal) */}
+      {viewMode === 'weekly' && (
+        <div className="py-2 bg-transparent">
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <div className="flex items-center gap-2 mr-2">
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500">
+                Legenda:
+              </span>
+            </div>
 
-          {/* Minha Reserva */}
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-blue-50/40 dark:bg-blue-950/10 border-2 border-black dark:border-zinc-800 rounded-none shadow-[2px_2px_0_0_#000] dark:shadow-[2px_2px_0_0_rgba(255,255,255,0.05)] transition-all">
-            <div className="h-2 w-2 rounded-full bg-[#3B82F6] shadow-[0_0_8px_rgba(59,130,246,0.6)] shrink-0 animate-pulse" />
-            <span className="text-[10px] font-black uppercase tracking-wider text-blue-700 dark:text-blue-400">
-              Minha Reserva
-            </span>
-          </div>
+            {/* Minha Reserva */}
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-blue-50/40 dark:bg-blue-950/10 border-2 border-black dark:border-zinc-800 rounded-none shadow-[2px_2px_0_0_#000] dark:shadow-[2px_2px_0_0_rgba(255,255,255,0.05)] transition-all">
+              <div className="h-2 w-2 rounded-full bg-[#3B82F6] shadow-[0_0_8px_rgba(59,130,246,0.6)] shrink-0 animate-pulse" />
+              <span className="text-[10px] font-black uppercase tracking-wider text-blue-700 dark:text-blue-400">
+                Minha Reserva
+              </span>
+            </div>
 
-          {/* Disponível */}
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-zinc-50/40 dark:bg-zinc-900/40 border-2 border-dashed border-zinc-300 dark:border-zinc-850 rounded-none shadow-[2px_2px_0_0_rgba(0,0,0,0.02)] transition-all">
-            <div className="h-2 w-2 rounded-full border border-dashed border-zinc-400 dark:border-zinc-600 bg-transparent shrink-0" />
-            <span className="text-[10px] font-black uppercase tracking-wider text-zinc-600 dark:text-zinc-400">
-              Disponível
-            </span>
-          </div>
+            {/* Disponível */}
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-zinc-50/40 dark:bg-zinc-900/40 border-2 border-dashed border-zinc-300 dark:border-zinc-850 rounded-none shadow-[2px_2px_0_0_rgba(0,0,0,0.02)] transition-all">
+              <div className="h-2 w-2 rounded-full border border-dashed border-zinc-400 dark:border-zinc-600 bg-transparent shrink-0" />
+              <span className="text-[10px] font-black uppercase tracking-wider text-zinc-600 dark:text-zinc-400">
+                Disponível
+              </span>
+            </div>
 
-          {/* Parcial */}
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-amber-50/40 dark:bg-amber-950/10 border-2 border-black dark:border-zinc-800 rounded-none shadow-[2px_2px_0_0_#000] dark:shadow-[2px_2px_0_0_rgba(255,255,255,0.05)] transition-all">
-            <div className="h-2 w-2 rounded-full bg-[#EAB308] shadow-[0_0_8px_rgba(245,158,11,0.6)] shrink-0" />
-            <span className="text-[10px] font-black uppercase tracking-wider text-amber-700 dark:text-amber-400">
-              Parcial
-            </span>
-          </div>
+            {/* Parcial */}
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-amber-50/40 dark:bg-amber-950/10 border-2 border-black dark:border-zinc-800 rounded-none shadow-[2px_2px_0_0_#000] dark:shadow-[2px_2px_0_0_rgba(255,255,255,0.05)] transition-all">
+              <div className="h-2 w-2 rounded-full bg-[#EAB308] shadow-[0_0_8px_rgba(245,158,11,0.6)] shrink-0" />
+              <span className="text-[10px] font-black uppercase tracking-wider text-amber-700 dark:text-amber-400">
+                Parcial
+              </span>
+            </div>
 
-          {/* Esgotado */}
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-rose-50/40 dark:bg-rose-950/10 border-2 border-black dark:border-zinc-800 rounded-none shadow-[2px_2px_0_0_#000] dark:shadow-[2px_2px_0_0_rgba(255,255,255,0.05)] transition-all">
-            <div className="h-2 w-2 rounded-full bg-[#EF4444] shadow-[0_0_8px_rgba(244,63,94,0.6)] shrink-0" />
-            <span className="text-[10px] font-black uppercase tracking-wider text-rose-700 dark:text-rose-405">
-              Esgotado
-            </span>
-          </div>
+            {/* Esgotado */}
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-rose-50/40 dark:bg-rose-950/10 border-2 border-black dark:border-zinc-800 rounded-none shadow-[2px_2px_0_0_#000] dark:shadow-[2px_2px_0_0_rgba(255,255,255,0.05)] transition-all">
+              <div className="h-2 w-2 rounded-full bg-[#EF4444] shadow-[0_0_8px_rgba(244,63,94,0.6)] shrink-0" />
+              <span className="text-[10px] font-black uppercase tracking-wider text-rose-700 dark:text-rose-405">
+                Esgotado
+              </span>
+            </div>
 
-          {/* Minecraft */}
-          <div className="flex items-center gap-2.5 px-3 py-1.5 bg-emerald-50/40 dark:bg-emerald-950/10 border-2 border-black dark:border-zinc-800 rounded-none shadow-[2px_2px_0_0_#000] dark:shadow-[2px_2px_0_0_rgba(255,255,255,0.05)] transition-all">
-            <div className="h-2 w-2 rounded-full bg-[#10B981] shadow-[0_0_8px_rgba(16,185,129,0.6)] shrink-0 animate-pulse" />
-            <span className="text-[10px] font-black uppercase tracking-wider text-emerald-700 dark:text-emerald-400 font-minecraft">
-              Aula com Minecraft
-            </span>
-          </div>
+            {/* Minecraft */}
+            <div className="flex items-center gap-2.5 px-3 py-1.5 bg-emerald-50/40 dark:bg-emerald-950/10 border-2 border-black dark:border-zinc-800 rounded-none shadow-[2px_2px_0_0_#000] dark:shadow-[2px_2px_0_0_rgba(255,255,255,0.05)] transition-all">
+              <div className="h-2 w-2 rounded-full bg-[#10B981] shadow-[0_0_8px_rgba(16,185,129,0.6)] shrink-0 animate-pulse" />
+              <span className="text-[10px] font-black uppercase tracking-wider text-emerald-700 dark:text-emerald-400 font-minecraft">
+                Aula com Minecraft
+              </span>
+            </div>
 
-          {/* Mini Legenda do Mapa de Calor (Discreta e Inline - Apenas Visão Semanal) */}
-          {viewMode === 'weekly' && (
+            {/* Mini Legenda do Mapa de Calor (Discreta e Inline - Apenas Visão Semanal) */}
             <div className="flex items-center gap-2 px-3 py-1.5 bg-zinc-50/20 dark:bg-zinc-900/10 border-2 border-black dark:border-zinc-800 rounded-none shadow-[2px_2px_0_0_#000] dark:shadow-[2px_2px_0_0_rgba(255,255,255,0.02)] transition-all">
               <span className="text-[10px] font-black uppercase tracking-wider text-zinc-500">
                 Mapa de Calor:
@@ -526,9 +526,9 @@ const SchedulingPage = () => {
                 (Passe o cursor sobre os blocos do dia)
               </span>
             </div>
-          )}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   </Layout>;
 };
