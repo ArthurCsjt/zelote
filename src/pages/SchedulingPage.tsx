@@ -15,6 +15,7 @@ import { getStartOfWeek, formatWeekRange, changeWeek, getWeekDays, changeMonth, 
 import { SchedulingCalendar } from '@/components/scheduling/SchedulingCalendar';
 import { SchedulingMonthView } from '@/components/scheduling/SchedulingMonthView';
 import { MyReservationsView } from '@/components/scheduling/MyReservationsView';
+import { LiquidGlassNav } from '@/components/scheduling/LiquidGlassNav';
 import { getUserReservations } from '@/services/reservationService';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
@@ -243,67 +244,9 @@ const SchedulingPage = () => {
 
   const isLoading = isLoadingTotal || isLoadingReservations || isLoadingProfessores;
 
-  // ── Controls injected into the TopBar ──────────────────────────────
-  const topBarControls = (
-    <div className="flex items-center justify-center gap-2 max-w-full">
-      {/* Page title */}
-      <span className="hidden lg:block text-white/90 font-semibold text-sm tracking-tight">
-        Agendamento
-      </span>
-      <div className="w-px h-4 bg-white/25 hidden lg:block" aria-hidden />
-      {/* View toggle */}
-      <div className="flex items-center justify-center gap-0.5 p-0.5 rounded-lg bg-white/15 backdrop-blur-sm border border-white/20 w-full sm:w-auto">
-        <button
-          onClick={() => handleViewModeChange('weekly')}
-          className={cn(
-            'flex-1 sm:flex-initial px-2.5 sm:px-3 py-1 rounded-md text-[11px] sm:text-xs font-bold uppercase tracking-wide transition-all duration-200 whitespace-nowrap text-center',
-            viewMode === 'weekly'
-              ? 'bg-white text-primary shadow-sm'
-              : 'text-white/80 hover:text-white hover:bg-white/10'
-          )}
-        >
-          Semanal
-        </button>
-        <button
-          onClick={() => handleViewModeChange('my_reservations')}
-          className={cn(
-            'flex-1 sm:flex-initial px-2.5 sm:px-3 py-1 rounded-md text-[11px] sm:text-xs font-bold uppercase tracking-wide transition-all duration-200 flex items-center justify-center gap-1 sm:gap-1.5 whitespace-nowrap text-center',
-            viewMode === 'my_reservations'
-              ? 'bg-white text-primary shadow-sm'
-              : 'text-white/80 hover:text-white hover:bg-white/10'
-          )}
-        >
-          <span>Minhas Reservas</span>
-          {userUpcomingCount > 0 && (
-            <span className={cn(
-              "px-1.5 py-0.2 rounded-full text-[10px] font-[1000] leading-tight shrink-0",
-              viewMode === 'my_reservations'
-                ? "bg-primary text-white"
-                : "bg-white/25 text-white"
-            )}>
-              {userUpcomingCount}
-            </span>
-          )}
-        </button>
-        <button
-          onClick={() => handleViewModeChange('monthly')}
-          className={cn(
-            'flex-1 sm:flex-initial px-2.5 sm:px-3 py-1 rounded-md text-[11px] sm:text-xs font-bold uppercase tracking-wide transition-all duration-200 flex items-center justify-center gap-1 whitespace-nowrap text-center',
-            viewMode === 'monthly'
-              ? 'bg-white text-primary shadow-sm'
-              : 'text-white/80 hover:text-white hover:bg-white/10'
-          )}
-        >
-          <CalendarRange className="w-3.5 h-3.5 shrink-0" />
-          <span>Visão Geral</span>
-        </button>
-      </div>
-    </div>
-  );
-
-  return <Layout title="Agendamento" showBackButton onBack={() => navigate('/')} headerRight={topBarControls}>
-
-    <div className="space-y-4 sm:space-y-6 max-w-7xl mx-auto relative z-10">
+  return (
+    <Layout title="Agendamento" showBackButton onBack={() => navigate('/')}>
+      <div className="space-y-4 sm:space-y-6 max-w-7xl mx-auto relative z-10 pb-28 sm:pb-32">
       {/* ── Glass Nav Row ── Week Selector + Year/Month Selector (Visível apenas em Semanal e Histórico) ── */}
       {viewMode !== 'my_reservations' && (
         <motion.div
@@ -524,7 +467,16 @@ const SchedulingPage = () => {
         </div>
       )}
     </div>
-  </Layout>;
+
+      {/* Barra de Navegação Inferior Liquid Glass */}
+      <LiquidGlassNav
+        activeTab={viewMode}
+        onTabChange={handleViewModeChange}
+        badgeCount={userUpcomingCount}
+        variant="glass"
+      />
+    </Layout>
+  );
 };
 export default SchedulingPage;
 
