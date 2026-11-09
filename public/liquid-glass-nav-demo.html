@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Zelote — Liquid Glass Nav Demo</title>
+  <style>
+    :root {
+      --brand: #2563eb;
+      --brand-active: #0a5cff;
+      --ink-base: #0f172a;
+      --ink-soft: rgba(15, 23, 42, 0.60);
+      --page-bg: #2563eb;
+      --card-bg: #ffffff;
+      
+      /* Liquid Glass Tokens */
+      --glass-bg: linear-gradient(160deg, rgba(255, 255, 255, 0.35) 0%, rgba(255, 255, 255, 0.12) 45%, rgba(255, 255, 255, 0.06) 100%);
+      --glass-border: rgba(255, 255, 255, 0.65);
+      --glass-shadow: 0 16px 36px rgba(10, 24, 60, 0.28), 0 2px 6px rgba(0, 0, 0, 0.08);
+      
+      /* Sliding Pill Tokens */
+      --pill-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.70) 0%, rgba(255, 255, 255, 0.35) 100%);
+      --pill-press: linear-gradient(180deg, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0.50) 100%);
+      --pill-shadow: 0 4px 14px rgba(0, 0, 0, 0.14), inset 0 1.5px 1px rgba(255, 255, 255, 0.95), inset 0 -1.5px 2px rgba(255, 255, 255, 0.35);
+
+      /* Badge */
+      --badge-bg: #ff3b30;
+      --badge-text: #ffffff;
+    }
+
+    /* Dark Mode */
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --brand-active: #60a5fa;
+        --ink-base: #f8fafc;
+        --ink-soft: rgba(248, 250, 252, 0.65);
+        --page-bg: #09132b;
+        --card-bg: #111827;
+        
+        --glass-bg: linear-gradient(160deg, rgba(255, 255, 255, 0.18) 0%, rgba(18, 28, 54, 0.40) 45%, rgba(255, 255, 255, 0.04) 100%);
+        --glass-border: rgba(255, 255, 255, 0.25);
+        --glass-shadow: 0 20px 45px rgba(0, 0, 0, 0.55);
+
+        --pill-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0.12) 100%);
+        --pill-press: linear-gradient(180deg, rgba(255, 255, 255, 0.40) 0%, rgba(255, 255, 255, 0.20) 100%);
+        --pill-shadow: 0 4px 16px rgba(0, 0, 0, 0.35), inset 0 1.5px 1px rgba(255, 255, 255, 0.45);
+      }
+    }
+
+    :root[data-theme="dark"] {
+      --brand-active: #60a5fa;
+      --ink-base: #f8fafc;
+      --ink-soft: rgba(248, 250, 252, 0.65);
+      --page-bg: #09132b;
+      --card-bg: #111827;
+      --glass-bg: linear-gradient(160deg, rgba(255, 255, 255, 0.18) 0%, rgba(18, 28, 54, 0.40) 45%, rgba(255, 255, 255, 0.04) 100%);
+      --glass-border: rgba(255, 255, 255, 0.25);
+      --glass-shadow: 0 20px 45px rgba(0, 0, 0, 0.55);
+      --pill-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0.12) 100%);
+      --pill-press: linear-gradient(180deg, rgba(255, 255, 255, 0.40) 0%, rgba(255, 255, 255, 0.20) 100%);
+      --pill-shadow: 0 4px 16px rgba(0, 0, 0, 0.35), inset 0 1.5px 1px rgba(255, 255, 255, 0.45);
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      margin: 0;
+      background: var(--page-bg);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Lexend", "Segoe UI", Roboto, sans-serif;
+      color: var(--ink-base);
+      min-height: 100vh;
+      overflow-x: hidden;
+      padding-bottom: calc(110px + env(safe-area-inset-bottom, 0px));
+      transition: background-color 0.3s ease;
+    }
+
+    /* ── Demo Page Content ── */
+    .demo-container {
+      max-width: 520px;
+      margin: 0 auto;
+      padding: 20px 16px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .demo-header {
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 20px;
+      padding: 16px;
+      color: #ffffff;
+      text-align: center;
+    }
+
+    .demo-header h1 {
+      margin: 0 0 6px;
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    .demo-header p {
+      margin: 0;
+      font-size: 12px;
+      opacity: 0.9;
+      line-height: 1.45;
+    }
+
+    .toggles-panel {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      margin-top: 12px;
+    }
+
+    .demo-btn {
+      background: rgba(255, 255, 255, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      color: #fff;
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .demo-btn:hover {
+      background: rgba(255, 255, 255, 0.4);
+    }
+    .demo-btn.active {
+      background: #ffffff;
+      color: var(--brand);
+    }
+
+    /* Colorful Mock Schedule Slots */
+    .schedule-slot {
+      height: 86px;
+      border-radius: 20px;
+      background: #ffffff;
+      padding: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      border: 2px solid rgba(0, 0, 0, 0.06);
+    }
+    .schedule-slot.slot-google {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: #fff;
+    }
+    .schedule-slot.slot-arts {
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+      color: #fff;
+    }
+    .schedule-slot.slot-minecraft {
+      background: linear-gradient(135deg, #2d5a27 0%, #1e3d1a 100%);
+      color: #fff;
+    }
+    .schedule-slot.slot-math {
+      background: linear-gradient(135deg, #ec4899 0%, #be185d 100%);
+      color: #fff;
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       LIQUID GLASS BAR (.nav)
+       ══════════════════════════════════════════════════════════════ */
+    .nav {
+      position: fixed;
+      left: 16px;
+      right: 16px;
+      bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+      max-width: 400px;
+      margin: 0 auto;
+      height: 70px;
+      padding: 5px;
+      border-radius: 999px;
+      display: flex;
+      touch-action: pan-y;
+      user-select: none;
+      -webkit-user-select: none;
+      z-index: 999;
+      transition: height 0.4s cubic-bezier(0.3, 1.2, 0.5, 1), transform 0.4s cubic-bezier(0.3, 1.2, 0.5, 1);
+    }
+
+    /* ── Variação 1: Vidro Puro (.glass) ── */
+    .nav.glass {
+      background: var(--glass-bg);
+      backdrop-filter: blur(14px) saturate(200%) brightness(1.05);
+      -webkit-backdrop-filter: blur(14px) saturate(200%) brightness(1.05);
+      box-shadow: 
+        var(--glass-shadow),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.35),
+        inset 0 2px 2px rgba(255, 255, 255, 0.65),
+        inset 0 -2px 3px rgba(255, 255, 255, 0.20),
+        inset 0 0 22px rgba(255, 255, 255, 0.10);
+    }
+
+    /* Borda com reflexo de luz atravessando o vidro (Prisma iOS 26) */
+    .nav.glass::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      pointer-events: none;
+      padding: 1px;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0) 30%, rgba(255, 255, 255, 0) 70%, rgba(255, 255, 255, 0.70) 100%);
+      -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+    }
+
+    /* ── Variação 2: Vidro Neo-Brutalista (.glass-brutal) ── */
+    .nav.glass-brutal {
+      background: var(--glass-bg);
+      backdrop-filter: blur(14px) saturate(200%) brightness(1.05);
+      -webkit-backdrop-filter: blur(14px) saturate(200%) brightness(1.05);
+      border: 2.5px solid #000000;
+      box-shadow: 
+        4px 4px 0 0 #000000,
+        inset 0 2px 2px rgba(255, 255, 255, 0.65),
+        inset 0 -2px 3px rgba(255, 255, 255, 0.20);
+    }
+    :root[data-theme="dark"] .nav.glass-brutal,
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) .nav.glass-brutal {
+        border-color: #ffffff;
+        box-shadow: 4px 4px 0 0 rgba(255, 255, 255, 0.25);
+      }
+    }
+
+    /* Estado Encolhido ao Rolar (.mini) */
+    .nav.mini {
+      height: 56px;
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       PÍLULA DE VIDRO DESLIZANTE (.pill)
+       ══════════════════════════════════════════════════════════════ */
+    .pill {
+      position: absolute;
+      top: 5px;
+      bottom: 5px;
+      left: 5px;
+      width: calc((100% - 10px) / 3);
+      border-radius: 999px;
+      pointer-events: none;
+      background: var(--pill-bg);
+      box-shadow: var(--pill-shadow);
+      transition: transform 0.5s cubic-bezier(0.3, 1.35, 0.5, 1), scale 0.3s cubic-bezier(0.3, 1.5, 0.5, 1), background 0.3s;
+    }
+
+    .pill.drag {
+      /* Remove transição para acompanhar o dedo em tempo real */
+      transition: scale 0.3s cubic-bezier(0.3, 1.5, 0.5, 1) !important;
+    }
+
+    .pill.press {
+      transform-origin: center;
+      scale: 1.08 1.05;
+      background: var(--pill-press);
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       BOTÕES / ITENS DE ABA (.item)
+       ══════════════════════════════════════════════════════════════ */
+    .item {
+      flex: 1;
+      position: relative;
+      z-index: 1;
+      background: none;
+      border: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      color: var(--ink-soft);
+      font-family: inherit;
+      font-weight: 600;
+      font-size: 11px;
+      letter-spacing: 0.01em;
+      cursor: pointer;
+      outline: none;
+      transition: color 0.25s ease;
+    }
+
+    .item:focus-visible {
+      box-shadow: 0 0 0 2px var(--brand-active) inset;
+      border-radius: 999px;
+    }
+
+    .item svg {
+      width: 25px;
+      height: 25px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      transition: transform 0.35s cubic-bezier(0.3, 1.5, 0.5, 1), fill 0.25s, stroke-width 0.25s;
+    }
+
+    /* Aba Ativa */
+    .item.on {
+      color: var(--brand-active);
+    }
+
+    .item.on svg {
+      transform: scale(1.1);
+      fill: currentColor;
+      fill-opacity: 0.16;
+      stroke-width: 2;
+    }
+
+    /* Rótulo de texto */
+    .lbl {
+      display: block;
+      height: 12px;
+      line-height: 12px;
+      white-space: nowrap;
+      transition: height 0.3s, opacity 0.25s, margin 0.3s;
+    }
+
+    .mini .lbl {
+      height: 0;
+      opacity: 0;
+      margin-top: -3px;
+    }
+
+    /* Badge Numérico Vermelho */
+    .badge {
+      position: absolute;
+      top: 8px;
+      left: calc(50% + 7px);
+      min-width: 18px;
+      height: 18px;
+      padding: 0 5px;
+      border-radius: 9px;
+      background: var(--badge-bg);
+      color: var(--badge-text);
+      font-size: 11px;
+      font-weight: 700;
+      line-height: 18px;
+      text-align: center;
+      box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.85), 0 2px 6px rgba(255, 59, 48, 0.45);
+      transition: top 0.3s;
+    }
+
+    .mini .badge {
+      top: 5px;
+    }
+
+    /* Acessibilidade - Redução de Movimento */
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Conteúdo de Demonstração para Testar o Vidro e Scroll -->
+  <div class="demo-container">
+    <div class="demo-header">
+      <h1>Zelote — Liquid Glass Nav</h1>
+      <p>Role a tela para ver a barra encolher suavemente.<br>Arraste a pílula com o dedo ou clique nas abas.</p>
+      
+      <div class="toggles-panel">
+        <button class="demo-btn active" id="btn-glass" onclick="setStyle('glass')">Vidro Puro (.glass)</button>
+        <button class="demo-btn" id="btn-brutal" onclick="setStyle('glass-brutal')">Vidro Brutalista (.glass-brutal)</button>
+        <button class="demo-btn" id="btn-theme" onclick="toggleTheme()">☀️ / 🌙</button>
+      </div>
+    </div>
+
+    <!-- Simulação da Grade de Agendamentos -->
+    <div class="schedule-slot slot-google">
+      <div><strong>07:10 · Sala Google</strong><br><small>20 Chromebooks · Arthur Raul</small></div>
+      <span style="font-size: 12px; font-weight: 800; background: rgba(0,0,0,0.25); padding: 4px 8px; border-radius: 8px;">EM CURSO</span>
+    </div>
+
+    <div class="schedule-slot">
+      <div><strong>08:00 · Sala 22</strong><br><small>Apenas Sala · Letícia Costa</small></div>
+      <span style="font-size: 12px; font-weight: 700; color: #10b981;">LIVRE</span>
+    </div>
+
+    <div class="schedule-slot slot-arts">
+      <div><strong>08:50 · Sala de Artes</strong><br><small>10 Chromebooks · Marcos Paulo</small></div>
+      <span style="font-size: 12px; font-weight: 800; background: rgba(0,0,0,0.25); padding: 4px 8px; border-radius: 8px;">AGENDADO</span>
+    </div>
+
+    <div class="schedule-slot">
+      <div><strong>10:00 · Sala 15</strong><br><small>Totalmente Disponível</small></div>
+      <span style="font-size: 12px; font-weight: 700; color: #10b981;">LIVRE</span>
+    </div>
+
+    <div class="schedule-slot slot-minecraft">
+      <div><strong>10:50 · Sala Google</strong><br><small>15 Chromebooks · Aula Minecraft</small></div>
+      <span style="font-size: 12px; font-weight: 800; background: rgba(0,0,0,0.25); padding: 4px 8px; border-radius: 8px;">MINECRAFT</span>
+    </div>
+
+    <div class="schedule-slot slot-math">
+      <div><strong>11:40 · Sala 42</strong><br><small>25 Chromebooks · Matemática</small></div>
+      <span style="font-size: 12px; font-weight: 800; background: rgba(0,0,0,0.25); padding: 4px 8px; border-radius: 8px;">CONFIRMADO</span>
+    </div>
+
+    <div class="schedule-slot">
+      <div><strong>12:30 · Sala 12</strong><br><small>Disponível para reservas</small></div>
+      <span style="font-size: 12px; font-weight: 700; color: #10b981;">LIVRE</span>
+    </div>
+
+    <div class="schedule-slot slot-arts">
+      <div><strong>13:10 · Sala Google</strong><br><small>30 Chromebooks · Robótica</small></div>
+      <span style="font-size: 12px; font-weight: 800; background: rgba(0,0,0,0.25); padding: 4px 8px; border-radius: 8px;">ENCERRADO</span>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       BARRA INFERIOR LIQUID GLASS (HTML PURO)
+       ══════════════════════════════════════════════════════════════ -->
+  <nav class="nav glass" aria-label="Navegação principal" id="nav">
+    <!-- Pílula de vidro que desliza -->
+    <span class="pill" id="pill"></span>
+
+    <!-- Aba 1: Semanal -->
+    <button class="item on" aria-current="page" data-tab="weekly">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <rect x="3.5" y="5" width="17" height="15" rx="3" />
+        <path d="M3.5 10h17M8 3v4M16 3v4" />
+      </svg>
+      <span class="lbl">Semanal</span>
+    </button>
+
+    <!-- Aba 2: Minhas Reservas (Com Badge Numérico) -->
+    <button class="item" data-tab="my_reservations">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M6 4h12a1 1 0 0 1 1 1v15l-7-4-7 4V5a1 1 0 0 1 1-1z" />
+      </svg>
+      <span class="lbl">Reservas</span>
+      <!-- Badge de Reservas Ativas -->
+      <span class="badge" id="badge-count" aria-label="1 reserva ativa">1</span>
+    </button>
+
+    <!-- Aba 3: Visão Geral -->
+    <button class="item" data-tab="monthly">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <rect x="4" y="4" width="7" height="7" rx="2" />
+        <rect x="13" y="4" width="7" height="7" rx="2" />
+        <rect x="4" y="13" width="7" height="7" rx="2" />
+        <rect x="13" y="13" width="7" height="7" rx="2" />
+      </svg>
+      <span class="lbl">Visão Geral</span>
+    </button>
+  </nav>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       MECÂNICA JAVASCRIPT (TOUCH, DRAG, HAPTIC, SCROLL SHRINK)
+       ══════════════════════════════════════════════════════════════ -->
+  <script>
+    const nav = document.getElementById('nav');
+    const pill = document.getElementById('pill');
+    const items = [...nav.querySelectorAll('.item')];
+
+    let currentIndex = 0;
+    let isDragging = false;
+    let hasMoved = false;
+    let startX = 0;
+    let baseOffset = 0;
+    let currentX = 0;
+
+    // Largura calculada da aba
+    const getTabWidth = () => (nav.clientWidth - 10) / items.length;
+    const clamp = (val, min, max) => Math.max(min, Math.min(max, val));
+
+    // Atualiza estados aria e classes ativas
+    function markActive(index) {
+      items.forEach((item, k) => {
+        const isActive = (k === index);
+        item.classList.toggle('on', isActive);
+        if (isActive) {
+          item.setAttribute('aria-current', 'page');
+        } else {
+          item.removeAttribute('aria-current');
+        }
+      });
+    }
+
+    // Move a pílula com feedback tátil suave
+    function navigateTo(index, triggerHaptic = true) {
+      if (triggerHaptic && index !== currentIndex) {
+        if ('vibrate' in navigator) {
+          try { navigator.vibrate(8); } catch (_) {}
+        }
+      }
+      currentIndex = index;
+      markActive(index);
+      pill.style.transform = `translateX(${index * getTabWidth()}px)`;
+    }
+
+    // ── 1. Interação por Toque e Arraste (Pointer Events com setPointerCapture) ──
+    nav.addEventListener('pointerdown', (e) => {
+      // Ignora cliques que não sejam o botão primário (botão esquerdo / toque)
+      if (e.button !== 0) return;
+      isDragging = true;
+      hasMoved = false;
+      startX = e.clientX;
+      baseOffset = currentIndex * getTabWidth();
+      currentX = baseOffset;
+
+      pill.classList.add('press', 'drag');
+
+      try {
+        nav.setPointerCapture(e.pointerId);
+      } catch (_) {}
+    });
+
+    nav.addEventListener('pointermove', (e) => {
+      if (!isDragging) return;
+      const deltaX = e.clientX - startX;
+
+      // Limiar de 4px para distinguir toque intencional de arraste
+      if (Math.abs(deltaX) > 4) {
+        hasMoved = true;
+      }
+      if (!hasMoved) return;
+
+      const maxLimit = (items.length - 1) * getTabWidth();
+      currentX = clamp(baseOffset + deltaX, 0, maxLimit);
+      
+      pill.style.transform = `translateX(${currentX}px)`;
+      markActive(Math.round(currentX / getTabWidth()));
+    });
+
+    function handlePointerEnd(e) {
+      if (!isDragging) return;
+      isDragging = false;
+      pill.classList.remove('press', 'drag');
+
+      let targetIndex;
+      if (hasMoved) {
+        targetIndex = Math.round(currentX / getTabWidth());
+      } else {
+        const rect = nav.getBoundingClientRect();
+        const tapX = e.clientX - rect.left - 5;
+        targetIndex = clamp(Math.floor(tapX / getTabWidth()), 0, items.length - 1);
+      }
+
+      navigateTo(targetIndex, true);
+    }
+
+    nav.addEventListener('pointerup', handlePointerEnd);
+    nav.addEventListener('pointercancel', () => {
+      isDragging = false;
+      pill.classList.remove('press', 'drag');
+      navigateTo(currentIndex, false);
+    });
+
+    // Acessibilidade via Teclado (Enter / Espaço)
+    items.forEach((btn, index) => {
+      btn.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          navigateTo(index, true);
+        }
+      });
+    });
+
+    // ── 2. Encolher ao Rolar (.mini) ──
+    let lastScrollY = window.scrollY;
+    window.addEventListener('scroll', () => {
+      const currentScrollY = window.scrollY;
+      
+      // Rolar para baixo > 8px e além de 60px de scroll: encolhe a barra
+      if (currentScrollY > lastScrollY + 8 && currentScrollY > 60) {
+        nav.classList.add('mini');
+      } 
+      // Rolar para cima > 8px ou voltar ao topo: expande a barra
+      else if (currentScrollY < lastScrollY - 8 || currentScrollY < 30) {
+        nav.classList.remove('mini');
+      }
+
+      lastScrollY = currentScrollY;
+    }, { passive: true });
+
+    // ── 3. Responsividade no Resize ──
+    window.addEventListener('resize', () => {
+      navigateTo(currentIndex, false);
+    });
+
+    // ── 4. Controles da Demonstração (Alternar Tema e Estilos) ──
+    function setStyle(styleClass) {
+      nav.classList.remove('glass', 'glass-brutal');
+      nav.classList.add(styleClass);
+      document.getElementById('btn-glass').classList.toggle('active', styleClass === 'glass');
+      document.getElementById('btn-brutal').classList.toggle('active', styleClass === 'glass-brutal');
+    }
+
+    function toggleTheme() {
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      document.documentElement.setAttribute('data-theme', isDark ? 'light' : 'dark');
+    }
+
+    // Inicialização na primeira aba
+    navigateTo(0, false);
+  </script>
+</body>
+</html>
