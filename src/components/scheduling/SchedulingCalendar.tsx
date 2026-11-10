@@ -53,6 +53,21 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
   const lastAutoScrolledWeek = useRef<string>('');
   const hasUserScrolled = useRef<boolean>(false);
 
+  const weekDays = useMemo(() => getWeekDays(currentDate), [currentDate]);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Responsive sizes
+  const timeColumnWidth = isMobile ? 88 : 100;
+  const dayColumnMinWidth = isMobile ? 110 : 160;
+  const totalMinWidth = timeColumnWidth + (weekDays.length * dayColumnMinWidth);
+  const gridTemplateColumns = `${timeColumnWidth}px repeat(${weekDays.length}, 1fr)`;
+
   const [showHint, setShowHint] = useState<boolean>(() => {
     try {
       return !localStorage.getItem('zelote_grid_hint_seen');
@@ -102,15 +117,6 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
     }
   }, [isMobile, isLoading, weekDays, timeColumnWidth]);
 
-  const weekDays = getWeekDays(currentDate);
-
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
-
   const { reservationsMap, dailyTotals, dailySlotsData } = useMemo(() => {
     const map = new Map<string, Reservation[]>();
     const totals = new Map<string, number>();
@@ -140,12 +146,6 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
       dailySlotsData: slotsData
     };
   }, [reservations]);
-
-  // Responsive sizes
-  const timeColumnWidth = isMobile ? 88 : 100;
-  const dayColumnMinWidth = isMobile ? 110 : 160;
-  const totalMinWidth = timeColumnWidth + (weekDays.length * dayColumnMinWidth);
-  const gridTemplateColumns = `${timeColumnWidth}px repeat(${weekDays.length}, 1fr)`;
   const GridContainer = (isMobile ? 'div' : motion.div) as any;
 
   if (isLoading) {
