@@ -35,13 +35,12 @@ export const LiquidGlassNav: React.FC<LiquidGlassNavProps> = ({
   const activeIndexRef = useRef(activeIndex);
   activeIndexRef.current = activeIndex;
 
-  // Pointer drag state
+  // Pointer drag tracking
   const dragRef = useRef<{
     isDown: boolean;
     hasDragged: boolean;
     startX: number;
     startLeft: number;
-    currentX: number;
     itemWidth: number;
     maxLeft: number;
     pointerId: number | null;
@@ -50,13 +49,12 @@ export const LiquidGlassNav: React.FC<LiquidGlassNavProps> = ({
     hasDragged: false,
     startX: 0,
     startLeft: 0,
-    currentX: 0,
     itemWidth: 0,
     maxLeft: 0,
     pointerId: null,
   });
 
-  // Safe client mounting
+  // Client mounting
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -79,7 +77,7 @@ export const LiquidGlassNav: React.FC<LiquidGlassNavProps> = ({
     const padding = 5;
     const availableWidth = navWidth - padding * 2;
     const itemWidth = availableWidth / TABS.length;
-    const targetX = index * itemWidth;
+    const targetX = Math.max(0, index) * itemWidth;
 
     if (immediate) {
       pillRef.current.style.transition = 'none';
@@ -90,13 +88,14 @@ export const LiquidGlassNav: React.FC<LiquidGlassNavProps> = ({
     pillRef.current.style.transform = `translateX(${targetX}px)`;
   }, []);
 
-  // Sync pill with activeIndex on prop change or resize
+  // Sync pill with activeIndex on prop change
   useEffect(() => {
     if (mounted) {
       updatePillPosition(activeIndex);
     }
   }, [mounted, activeIndex, updatePillPosition]);
 
+  // Handle window resize
   useEffect(() => {
     if (!mounted) return;
     const handleResize = () => {
@@ -115,8 +114,7 @@ export const LiquidGlassNav: React.FC<LiquidGlassNavProps> = ({
       const currentScrollY = window.scrollY;
       const diff = currentScrollY - lastScrollY;
 
-      // Só encolhe se tiver rolado bastante para baixo (mais de 140px) e descendo rápido
-      if (currentScrollY > 140 && diff > 10) {
+      if (currentScrollY > 160 && diff > 12) {
         setIsMini(true);
       } else if (diff < -8 || currentScrollY < 60) {
         setIsMini(false);
@@ -129,7 +127,16 @@ export const LiquidGlassNav: React.FC<LiquidGlassNavProps> = ({
     return () => window.removeEventListener('scroll', handleScroll);
   }, [mounted]);
 
-  // Handle pointer down (tap or start drag)
+  // Handle tab selection
+  const handleSelectTab = useCallback(
+    (tabId: SchedulingTab) => {
+      triggerHaptic();
+      onTabChange(tabId);
+    },
+    [triggerHaptic, onTabChange]
+  );
+
+  // Pointer Down on Nav
   const handlePointerDown = (e: React.PointerEvent<HTMLElement>) => {
     if (!navRef.current) return;
     const navWidth = navRef.current.clientWidth;
@@ -141,33 +148,35 @@ export const LiquidGlassNav: React.FC<LiquidGlassNavProps> = ({
       hasDragged: false,
       startX: e.clientX,
       startLeft: activeIndexRef.current * itemWidth,
-      currentX: e.clientX,
       itemWidth,
       maxLeft: itemWidth * (TABS.length - 1),
       pointerId: e.pointerId,
     };
 
-    try {
-      e.currentTarget.setPointerCapture(e.pointerId);
-    } catch {
-      // Ignore
-    }
-
     setIsPressing(true);
   };
 
+  // Pointer Move (only initiates drag when moved more than 8px)
   const handlePointerMove = (e: React.PointerEvent<HTMLElement>) => {
     const d = dragRef.current;
     if (!d.isDown || !pillRef.current) return;
 
     const deltaX = e.clientX - d.startX;
-    if (Math.abs(deltaX) > 6) {
+    if (Math.abs(deltaX) > 8) {
       if (!d.hasDragged) {
         d.hasDragged = true;
         setIsDragging(true);
+        try {
+          if (d.pointerId !== null) {
+            e.currentTarget.setPointerCapture(d.pointerId);
+          }
+        } catch {
+          // Ignore
+        }
       }
+
       let targetLeft = d.startLeft + deltaX;
-      // Amortecimento elástico nas pontas
+      // Elastic rubber band at boundaries
       if (targetLeft < 0) {
         targetLeft = targetLeft * 0.25;
       } else if (targetLeft > d.maxLeft) {
@@ -177,42 +186,41 @@ export const LiquidGlassNav: React.FC<LiquidGlassNavProps> = ({
     }
   };
 
+  // Pointer Up / Cancel
   const handlePointerUp = (e: React.PointerEvent<HTMLElement>) => {
     const d = dragRef.current;
     if (!d.isDown) return;
 
+    const wasDragged = d.hasDragged;
+    const pointerId = d.pointerId;
+    const startX = d.startX;
+    const startLeft = d.startLeft;
+    const itemWidth = d.itemWidth;
+
     setIsPressing(false);
     setIsDragging(false);
     d.isDown = false;
+    d.hasDragged = false;
 
-    if (d.pointerId !== null) {
+    if (pointerId !== null) {
       try {
-        e.currentTarget.releasePointerCapture(d.pointerId);
+        e.currentTarget.releasePointerCapture(pointerId);
       } catch {
         // Ignore
       }
     }
 
-    if (d.hasDragged) {
-      const deltaX = e.clientX - d.startX;
-      const finalLeft = d.startLeft + deltaX;
-      let targetIndex = Math.round(finalLeft / d.itemWidth);
+    if (wasDragged) {
+      const deltaX = e.clientX - startX;
+      const finalLeft = startLeft + deltaX;
+      let targetIndex = Math.round(finalLeft / itemWidth);
       targetIndex = Math.max(0, Math.min(TABS.length - 1, targetIndex));
 
       if (targetIndex !== activeIndexRef.current) {
-        triggerHaptic();
-        onTabChange(TABS[targetIndex].id);
+        handleSelectTab(TABS[targetIndex].id);
       } else {
         updatePillPosition(activeIndexRef.current);
       }
-    }
-  };
-
-  const handleTabClick = (tabId: SchedulingTab) => {
-    if (dragRef.current.hasDragged) return;
-    if (tabId !== activeTab) {
-      triggerHaptic();
-      onTabChange(tabId);
     }
   };
 
@@ -243,7 +251,11 @@ export const LiquidGlassNav: React.FC<LiquidGlassNavProps> = ({
             key={tab.id}
             type="button"
             className={`item ${isActive ? 'on' : ''}`}
-            onClick={() => handleTabClick(tab.id)}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleSelectTab(tab.id);
+            }}
             aria-current={isActive ? 'page' : undefined}
           >
             <div className="icon-container">

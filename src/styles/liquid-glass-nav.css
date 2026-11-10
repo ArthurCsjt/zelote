@@ -161,6 +161,12 @@
   -webkit-tap-highlight-color: transparent;
   transition: color 0.2s ease, transform 0.2s ease;
   outline: none;
+  pointer-events: auto;
+}
+
+/* Evita que filhos interceptem cliques em detrimento do botão */
+.liquid-glass-nav .item * {
+  pointer-events: none;
 }
 
 .liquid-glass-nav .item:hover {
