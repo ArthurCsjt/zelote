@@ -30,10 +30,26 @@
   width: 100%;
 }
 
-/* Cabeçalho */
+/* ── Handle bar do bottom sheet ── */
+.zl-sheet-handle {
+  display: none;
+  width: 36px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--zl-border);
+  margin: 10px auto 2px;
+  flex-shrink: 0;
+}
+
+/* Só exibe dentro do bottom sheet */
+.zl-details-sheet .zl-sheet-handle {
+  display: block;
+}
+
+/* ── Cabeçalho ── */
 .zl-details-header {
   position: relative;
-  padding: 16px 20px;
+  padding: 14px 20px 16px;
   color: #ffffff;
   display: flex;
   align-items: center;
@@ -60,13 +76,17 @@
 .zl-details-pill {
   display: inline-flex;
   align-items: center;
-  margin-top: 4px;
+  margin-top: 5px;
   padding: 3px 10px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.22);
   font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 
 .zl-details-close {
@@ -92,7 +112,7 @@
   outline-offset: 2px;
 }
 
-/* Conteúdo Rolável */
+/* ── Conteúdo Rolável ── */
 .zl-details-body {
   flex: 1;
   overflow-y: auto;
@@ -103,7 +123,7 @@
   overscroll-behavior: contain;
 }
 
-/* Responsável */
+/* ── Responsável ── */
 .zl-details-owner {
   display: flex;
   align-items: center;
@@ -112,17 +132,18 @@
 }
 
 .zl-details-avatar {
-  width: 42px;
-  height: 42px;
+  width: 44px;
+  height: 44px;
   border-radius: 999px;
-  background: var(--zl-soft);
+  background: linear-gradient(135deg, var(--zl-soft) 0%, rgba(47, 107, 240, 0.12) 100%);
   color: var(--zl-blue);
   display: grid;
   place-items: center;
   font-weight: 800;
-  font-size: 16px;
+  font-size: 17px;
   flex-shrink: 0;
-  border: 1px solid var(--zl-border);
+  border: 1.5px solid var(--zl-border);
+  box-shadow: 0 1px 4px rgba(47, 107, 240, 0.12);
 }
 
 .zl-details-owner-info {
@@ -137,6 +158,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-wrap: wrap;
 }
 
 .zl-details-owner-name span.name {
@@ -157,14 +179,15 @@
 }
 
 .zl-details-owner-email {
-  font-size: 13px;
+  font-size: 12px;
   color: var(--zl-muted);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  margin-top: 1px;
 }
 
-/* Status Pills */
+/* ── Status Pills ── */
 .zl-details-status-row {
   display: flex;
   flex-wrap: wrap;
@@ -176,7 +199,7 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 4px 12px;
+  padding: 5px 12px;
   border-radius: 999px;
   font-size: 12px;
   font-weight: 700;
@@ -219,21 +242,36 @@
   border-color: rgba(60, 133, 39, 0.3);
 }
 
-/* Grade de 2 Infos */
+/* ── Grade de 2 Infos ── */
 .zl-details-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
+  gap: 10px;
 }
 
 .zl-details-card {
   background: var(--zl-soft);
   border: 1px solid var(--zl-border);
   border-radius: 18px;
-  padding: 14px;
+  padding: 14px 14px 12px;
   display: flex;
   flex-direction: column;
   justify-content: center;
+  gap: 3px;
+}
+
+/* ── Icon row dentro do card ── */
+.zl-details-card-icon-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.zl-details-card-icon {
+  color: var(--zl-blue);
+  opacity: 0.6;
+  flex-shrink: 0;
+  margin-top: 5px; /* alinha com baseline do val */
 }
 
 .zl-details-card-val {
@@ -244,13 +282,22 @@
 }
 
 .zl-details-card-lbl {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   color: var(--zl-muted);
-  margin-top: 4px;
+  margin-top: 2px;
 }
 
-/* Citação / Conteúdo da aula */
+/* ── Sala name: menor fonte + wrapping ── */
+.zl-sala-name {
+  font-size: 18px;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  white-space: normal;
+  line-height: 1.25;
+}
+
+/* ── Citação / Conteúdo da aula ── */
 .zl-details-quote-box {
   display: flex;
   flex-direction: column;
@@ -258,11 +305,11 @@
 }
 
 .zl-details-quote-lbl {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
   color: var(--zl-muted);
   text-transform: uppercase;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.04em;
 }
 
 .zl-details-quote {
@@ -278,7 +325,7 @@
   overflow-wrap: anywhere;
 }
 
-/* Chips de Recursos Extras */
+/* ── Chips de Recursos Extras ── */
 .zl-details-chips {
   display: flex;
   flex-wrap: wrap;
@@ -299,7 +346,7 @@
   gap: 6px;
 }
 
-/* Retirados e Devolvidos */
+/* ── Retirados e Devolvidos ── */
 .zl-details-loans {
   border-top: 1px solid var(--zl-border);
   padding-top: 14px;
@@ -315,12 +362,15 @@
   font-size: 12px;
   font-weight: 700;
   color: var(--zl-muted);
+  flex-wrap: wrap;
+  gap: 4px;
 }
 
 .zl-details-progress-bar {
   height: 6px;
   border-radius: 999px;
   background: var(--zl-soft);
+  border: 1px solid var(--zl-border);
   overflow: hidden;
 }
 
@@ -361,18 +411,19 @@
   border-color: rgba(201, 55, 31, 0.3);
 }
 
-/* Alerta de Não Retirada */
+/* ── Alerta de Não Retirada ── */
 .zl-details-alert-missed {
   border-radius: 16px;
   padding: 12px 14px;
   font-size: 13px;
   font-weight: 600;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 10px;
   background: rgba(245, 158, 11, 0.12);
   color: #b45309;
   border: 1px solid rgba(245, 158, 11, 0.3);
+  line-height: 1.5;
 }
 
 .dark .zl-details-alert-missed {
@@ -380,9 +431,11 @@
   border-color: rgba(246, 184, 95, 0.3);
 }
 
-/* Rodapé Fixo */
+/* ── Rodapé Fixo ── */
 .zl-details-footer {
   padding: 14px 20px;
+  /* iOS safe area */
+  padding-bottom: max(14px, calc(14px + env(safe-area-inset-bottom, 0px)));
   border-top: 1px solid var(--zl-border);
   background: var(--zl-card);
   display: flex;
@@ -392,10 +445,10 @@
 }
 
 .zl-btn-cta {
-  min-height: 44px;
+  min-height: 50px;
   width: 100%;
-  border-radius: 14px;
-  font-size: 14px;
+  border-radius: 16px;
+  font-size: 15px;
   font-weight: 700;
   display: inline-flex;
   align-items: center;
@@ -406,6 +459,7 @@
   border: none;
   cursor: pointer;
   transition: transform 0.15s, opacity 0.15s;
+  letter-spacing: 0.01em;
 }
 
 .zl-btn-cta:hover:not(:disabled) {
@@ -489,6 +543,39 @@
   cursor: pointer;
 }
 
+/* ── Mobile adjustments (<480px) ── */
+@media (max-width: 479px) {
+  .zl-details-body {
+    padding: 14px 16px;
+    gap: 14px;
+  }
+
+  .zl-details-header {
+    padding: 12px 16px 14px;
+  }
+
+  .zl-details-footer {
+    padding: 12px 16px;
+    padding-bottom: max(16px, calc(16px + env(safe-area-inset-bottom, 0px)));
+  }
+
+  .zl-details-grid {
+    gap: 8px;
+  }
+
+  .zl-details-card {
+    padding: 12px;
+  }
+
+  .zl-details-card-val {
+    font-size: 22px;
+  }
+
+  .zl-sala-name {
+    font-size: 15px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .zl-details,
   .zl-btn-cta,
@@ -498,4 +585,3 @@
     animation: none !important;
   }
 }
-

@@ -22,6 +22,8 @@ import {
   AlertTriangle,
   Loader2,
   Check,
+  Laptop,
+  MapPin,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -142,6 +144,8 @@ const DetailsContent: React.FC<DetailsContentProps> = ({
 
   return (
     <div className="flex flex-col h-full w-full overflow-hidden">
+      {/* Drag handle — only visible on mobile bottom sheet */}
+      <div className="zl-sheet-handle" aria-hidden />
       {/* ── Cabeçalho com Gradiente ── */}
       <div
         className={`zl-details-header ${
@@ -205,16 +209,22 @@ const DetailsContent: React.FC<DetailsContentProps> = ({
         >
           {!(isMaintRes || isManutencao) && (
             <div className="zl-details-card">
-              <span className="zl-details-card-val">
-                {reservation.quantity_requested}
-              </span>
+              <div className="zl-details-card-icon-row">
+                <Laptop size={16} className="zl-details-card-icon" aria-hidden />
+                <span className="zl-details-card-val">
+                  {reservation.quantity_requested}
+                </span>
+              </div>
               <span className="zl-details-card-lbl">Chromebooks requisitados</span>
             </div>
           )}
           <div className="zl-details-card">
-            <span className="zl-details-card-val text-xl truncate" title={reservation.classroom || 'Sala'}>
-              {reservation.classroom || 'Não informada'}
-            </span>
+            <div className="zl-details-card-icon-row">
+              <MapPin size={16} className="zl-details-card-icon" aria-hidden />
+              <span className="zl-details-card-val zl-sala-name" title={reservation.classroom || 'Sala'}>
+                {reservation.classroom || 'Não informada'}
+              </span>
+            </div>
             <span className="zl-details-card-lbl">Sala / Local</span>
           </div>
         </div>
