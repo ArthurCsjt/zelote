@@ -12,7 +12,6 @@ import {
   DrawerDescription,
 } from '@/components/ui/drawer';
 import {
-  Monitor,
   Trash2,
   ArrowRight,
   Tv,
@@ -24,6 +23,9 @@ import {
   Check,
   Laptop,
   MapPin,
+  Clock,
+  Layers,
+  Gamepad2,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -85,7 +87,7 @@ const DetailsContent: React.FC<DetailsContentProps> = ({
   const now = new Date();
   const isPast = now >= slotEnd;
   const loansCount = reservation.associated_loans?.length || 0;
-  const isMissed = isPast && !isMaintRes && reservation.quantity_requested > 0 && loansCount === 0;
+  const isMissed = isPast && !isMaintRes && (reservation.quantity_requested || 0) > 0 && loansCount === 0;
 
   const showCancel = (isAdmin || isOwner) && !isPast;
   const showLoan =
@@ -105,7 +107,7 @@ const DetailsContent: React.FC<DetailsContentProps> = ({
   const startM = (minuteStr || '00').padStart(2, '0');
   const endH = String(slotEnd.getHours()).padStart(2, '0');
   const endM = String(slotEnd.getMinutes()).padStart(2, '0');
-  const headerPillText = `${dayNameCap}, ${dayNum} ${monthShort} · ${startH}:${startM} – ${endH}:${endM}`;
+  const headerDateText = `${dayNameCap}, ${dayNum} ${monthShort} · ${startH}:${startM} – ${endH}:${endM}`;
 
   // Perfil limpo (sem duplicar email como nome)
   const getFormattedProfile = () => {
@@ -119,19 +121,17 @@ const DetailsContent: React.FC<DetailsContentProps> = ({
       return {
         name: cleanName || rawName,
         email: email.toLowerCase(),
-        showEmail: Boolean(email && cleanName.toLowerCase() !== email.toLowerCase()),
       };
     }
 
     return {
-      name: rawName,
+      name: rawName || 'Professor',
       email: email.toLowerCase(),
-      showEmail: Boolean(email && rawName.toLowerCase() !== email.toLowerCase()),
     };
   };
 
   const profile = getFormattedProfile();
-  const initial = (profile.name.charAt(0) || 'U').toUpperCase();
+  const initial = (profile.name.charAt(0) || 'P').toUpperCase();
 
   // Status unificado com historyData
   const currentStatus = status(reservation as unknown as ServiceReservation, now);
@@ -142,127 +142,164 @@ const DetailsContent: React.FC<DetailsContentProps> = ({
   const returnedLoans = reservation.associated_loans?.filter((l) => l.returned).length || 0;
   const pendingLoans = totalLoans - returnedLoans;
 
+  // Aulas seguidas / bloco
+  const isBlock = Boolean(reservation.time_slots && reservation.time_slots.length > 1);
+
+  // Recursos adicionais
+  const hasExtraResources = Boolean(
+    reservation.is_minecraft ||
+    reservation.need_tv ||
+    reservation.need_sound ||
+    Boolean(reservation.mic_count && reservation.mic_count > 0)
+  );
+
   return (
-    <div className="flex flex-col h-full w-full overflow-hidden">
-      {/* Drag handle — only visible on mobile bottom sheet */}
-      <div className="zl-sheet-handle" aria-hidden />
-      {/* ── Cabeçalho com Gradiente ── */}
+    <div className="zl-details-container flex flex-col h-full w-full overflow-hidden">
+      {/* ── 1. CABEÇALHO COM RESPIRO, STATUS E FECHAR ÚNICO ── */}
       <div
         className={`zl-details-header ${
           isMaintRes || isManutencao ? 'header-maintenance' : 'header-blue'
         }`}
       >
-        <div className="min-w-0 flex-1">
-          <h2 className="zl-details-title">
-            {isMaintRes ? 'Manutenção do Espaço' : 'Detalhes da Reserva'}
-          </h2>
-          <div className="zl-details-pill">{headerPillText}</div>
-        </div>
+        <div className="min-w-0 flex-1 flex flex-col gap-1.5">
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="zl-details-title">
+              {isMaintRes ? 'Manutenção do Espaço' : 'Detalhes da Reserva'}
+            </h2>
+            {/* Único botão de fechar */}
+            <button
+              type="button"
+              onClick={onClose}
+              className="zl-details-close"
+              aria-label="Fechar detalhes da reserva"
+              title="Fechar"
+            >
+              <CloseIcon size={18} strokeWidth={2.5} />
+            </button>
+          </div>
 
-        <button
-          type="button"
-          onClick={onClose}
-          className="zl-details-close"
-          aria-label="Fechar"
-        >
-          <CloseIcon size={20} />
-        </button>
+          {/* Linha de Data/Horário + Selo de Status com Hierarquia */}
+          <div className="zl-details-meta-row">
+            <div className="zl-details-meta-pill" title={`Horário: ${startH}:${startM} às ${endH}:${endM}`}>
+              <Clock size={13} className="shrink-0 opacity-90" aria-hidden />
+              <span>{headerDateText}</span>
+            </div>
+
+            {/* Selo de Status no Cabeçalho */}
+            <span className={`zl-status-pill ${currentStatus}`}>
+              <span className="h-2 w-2 rounded-full bg-current shrink-0 opacity-80" aria-hidden />
+              {statusLabel}
+            </span>
+          </div>
+        </div>
       </div>
 
-      {/* ── Corpo Rolável ── */}
+      {/* ── CORPO ROLÁVEL ── */}
       <div className="zl-details-body">
-        {/* Linha do Responsável */}
-        <div className="zl-details-owner">
-          <div className="zl-details-avatar">{initial}</div>
-          <div className="zl-details-owner-info">
-            <div className="zl-details-owner-name">
-              <span className="name" title={profile.name}>
-                {profile.name}
-              </span>
-              {isOwner && <span className="zl-details-tag-you">você</span>}
-            </div>
-            {profile.showEmail && (
-              <div className="zl-details-owner-email">{profile.email}</div>
-            )}
-          </div>
-        </div>
-
-        {/* Pills de Status */}
-        <div className="zl-details-status-row">
-          <span className={`zl-status-pill ${currentStatus}`}>
-            <span className="h-2 w-2 rounded-full bg-current shrink-0 opacity-80" />
-            {statusLabel}
-          </span>
-
-          {reservation.is_minecraft && (
-            <span className="zl-status-pill minecraft">
-              Minecraft Education
-            </span>
-          )}
-        </div>
-
-        {/* Grade de 2 Informações: Chromebooks e Sala */}
-        <div
-          className={`zl-details-grid ${
-            isMaintRes || isManutencao ? 'grid-cols-1' : ''
-          }`}
-        >
-          {!(isMaintRes || isManutencao) && (
-            <div className="zl-details-card">
-              <div className="zl-details-card-icon-row">
-                <Laptop size={16} className="zl-details-card-icon" aria-hidden />
-                <span className="zl-details-card-val">
-                  {reservation.quantity_requested}
+        {/* ── 2. BLOCO DO SOLICITANTE ESTRUTURADO ── */}
+        <div className="zl-details-section-card zl-requester-card">
+          <div className="zl-card-header-lbl">Solicitante</div>
+          <div className="flex items-center gap-3">
+            <div className="zl-details-avatar" aria-hidden>{initial}</div>
+            <div className="min-w-0 flex-1 flex flex-col justify-center">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="zl-requester-name truncate" title={profile.name}>
+                  {profile.name}
                 </span>
+                {isOwner && <span className="zl-details-tag-you">você</span>}
               </div>
-              <span className="zl-details-card-lbl">Chromebooks requisitados</span>
+              {profile.email && (
+                <span className="zl-requester-email truncate" title={profile.email}>
+                  {profile.email}
+                </span>
+              )}
             </div>
-          )}
-          <div className="zl-details-card">
-            <div className="zl-details-card-icon-row">
-              <MapPin size={16} className="zl-details-card-icon" aria-hidden />
-              <span className="zl-details-card-val zl-sala-name" title={reservation.classroom || 'Sala'}>
-                {reservation.classroom || 'Não informada'}
-              </span>
-            </div>
-            <span className="zl-details-card-lbl">Sala / Local</span>
           </div>
         </div>
 
-        {/* Justificativa / Conteúdo da aula */}
-        {reservation.justification && (
-          <div className="zl-details-quote-box">
-            <span className="zl-details-quote-lbl">
-              {isMaintRes ? 'Motivo do serviço' : 'Conteúdo da aula'}
+        {/* ── 3. GRADE DE INFORMAÇÕES PADRONIZADA (2x2) ── */}
+        <div className="zl-details-grid-2x2">
+          {/* Card: Chromebooks */}
+          <div className="zl-grid-card">
+            <span className="zl-grid-card-lbl">
+              <Laptop size={13} className="shrink-0 text-blue-500" aria-hidden />
+              <span>Chromebooks</span>
             </span>
-            <blockquote className="zl-details-quote">
-              "{reservation.justification}"
-            </blockquote>
+            <div className="zl-grid-card-val">
+              {isMaintRes || isManutencao ? 'N/A' : (reservation.quantity_requested || 0)}
+            </div>
+          </div>
+
+          {/* Card: Sala / Local */}
+          <div className="zl-grid-card">
+            <span className="zl-grid-card-lbl">
+              <MapPin size={13} className="shrink-0 text-blue-500" aria-hidden />
+              <span>Sala / Local</span>
+            </span>
+            <div className="zl-grid-card-val zl-grid-card-val-room" title={reservation.classroom || 'Sala'}>
+              {reservation.classroom || 'Não informada'}
+            </div>
+          </div>
+
+          {/* Card: Retirada Prevista */}
+          <div className="zl-grid-card">
+            <span className="zl-grid-card-lbl">
+              <Clock size={13} className="shrink-0 text-zinc-400" aria-hidden />
+              <span>Retirada</span>
+            </span>
+            <div className="zl-grid-card-val text-lg">
+              {startH}:{startM}
+            </div>
+          </div>
+
+          {/* Card: Devolução Prevista */}
+          <div className="zl-grid-card">
+            <span className="zl-grid-card-lbl">
+              <ArrowRight size={13} className="shrink-0 text-zinc-400" aria-hidden />
+              <span>Devolução</span>
+            </span>
+            <div className="zl-grid-card-val text-lg">
+              {endH}:{endM}
+            </div>
+          </div>
+        </div>
+
+        {/* Bloco de Aulas Seguidas (se houver) */}
+        {isBlock && (
+          <div className="zl-details-block-info">
+            <Layers size={14} className="shrink-0 text-blue-500" />
+            <span>
+              Reserva em bloco com {reservation.time_slots?.length} aulas ({reservation.time_slots?.join(', ')})
+            </span>
           </div>
         )}
 
-        {/* Recursos Extras */}
-        {(reservation.need_tv ||
-          reservation.need_sound ||
-          Boolean(reservation.mic_count && reservation.mic_count > 0)) && (
-          <div className="flex flex-col gap-1.5">
-            <span className="zl-details-quote-lbl">Recursos adicionais</span>
+        {/* ── 4. RECURSOS PEDAGÓGICOS E ADICIONAIS ── */}
+        {hasExtraResources && (
+          <div className="zl-details-section-card">
+            <div className="zl-card-header-lbl">Recursos adicionais</div>
             <div className="zl-details-chips">
+              {reservation.is_minecraft && (
+                <span className="zl-details-chip minecraft" title="Minecraft Education">
+                  <Gamepad2 size={14} className="shrink-0" />
+                  <span>Minecraft Education</span>
+                </span>
+              )}
               {reservation.need_tv && (
                 <span className="zl-details-chip">
-                  <Tv size={15} />
+                  <Tv size={14} className="shrink-0" />
                   <span>TV</span>
                 </span>
               )}
               {reservation.need_sound && (
                 <span className="zl-details-chip">
-                  <Volume2 size={15} />
+                  <Volume2 size={14} className="shrink-0" />
                   <span>Caixa de som</span>
                 </span>
               )}
               {Boolean(reservation.mic_count && reservation.mic_count > 0) && (
                 <span className="zl-details-chip">
-                  <Mic size={15} />
+                  <Mic size={14} className="shrink-0" />
                   <span>
                     {reservation.mic_count} Microfone
                     {(reservation.mic_count || 0) > 1 ? 's' : ''}
@@ -273,12 +310,12 @@ const DetailsContent: React.FC<DetailsContentProps> = ({
           </div>
         )}
 
-        {/* Retirados / Devolvidos */}
+        {/* ── 5. EQUIPAMENTOS RETIRADOS / DEVOLVIDOS ── */}
         {totalLoans > 0 && (
-          <div className="zl-details-loans">
+          <div className="zl-details-section-card zl-details-loans">
             <div className="zl-details-loans-header">
-              <span>Equipamentos retirados</span>
-              <span>
+              <span className="zl-card-header-lbl !mb-0">Equipamentos retirados</span>
+              <span className="text-xs font-semibold text-muted-foreground">
                 {returnedLoans} de {totalLoans} devolvidos
                 {pendingLoans > 0 && ` (${pendingLoans} pendente${pendingLoans === 1 ? '' : 's'})`}
               </span>
@@ -302,7 +339,7 @@ const DetailsContent: React.FC<DetailsContentProps> = ({
                     className={`zl-details-tag ${loan.returned ? 'returned' : 'pending'}`}
                     title={loan.returned ? `${tag} - Devolvido` : `${tag} - Pendente`}
                   >
-                    {loan.returned ? <Check size={13} /> : <AlertTriangle size={13} />}
+                    {loan.returned ? <Check size={12} /> : <AlertTriangle size={12} />}
                     <span>{tag}</span>
                   </span>
                 );
@@ -311,20 +348,30 @@ const DetailsContent: React.FC<DetailsContentProps> = ({
           </div>
         )}
 
-        {/* Alerta de Não Retirada */}
+        {/* ── 6. CONTEÚDO DA AULA / OBSERVAÇÕES ── */}
+        {reservation.justification && (
+          <div className="zl-details-section-card">
+            <div className="zl-card-header-lbl">
+              {isMaintRes ? 'Motivo do serviço' : 'Conteúdo da aula / Observações'}
+            </div>
+            <blockquote className="zl-details-quote">
+              "{reservation.justification}"
+            </blockquote>
+          </div>
+        )}
+
+        {/* ── 7. AVISO ENXUTO DE STATUS (NÃO RETIRADA) ── */}
         {isMissed && (
-          <div className="zl-details-alert-missed">
-            <AlertTriangle size={18} className="shrink-0" />
-            <span>
-              O horário desta reserva encerrou sem a retirada dos Chromebooks no balcão.
-            </span>
+          <div className="zl-details-alert-missed" role="alert">
+            <AlertTriangle size={16} className="shrink-0 text-red-600 dark:text-red-400" />
+            <span>Encerrada sem retirada dos Chromebooks no balcão.</span>
           </div>
         )}
       </div>
 
-      {/* ── Rodapé Fixo com Ações ── */}
+      {/* ── 8. RODAPÉ FIXO COM HIERARQUIA DE AÇÕES ── */}
       <div className="zl-details-footer">
-        {showLoan ? (
+        {showLoan && (
           <button
             type="button"
             disabled={isCanceling}
@@ -345,14 +392,6 @@ const DetailsContent: React.FC<DetailsContentProps> = ({
           >
             <ArrowRight size={17} />
             <span>Iniciar Empréstimo</span>
-          </button>
-        ) : (
-          <button
-            type="button"
-            className="zl-btn-cta"
-            onClick={onClose}
-          >
-            <span>Fechar</span>
           </button>
         )}
 
@@ -396,6 +435,15 @@ const DetailsContent: React.FC<DetailsContentProps> = ({
             </button>
           )
         )}
+
+        {/* Botão Fechar Secundário/Neutro */}
+        <button
+          type="button"
+          className="zl-btn-secondary"
+          onClick={onClose}
+        >
+          <span>Fechar</span>
+        </button>
       </div>
     </div>
   );
@@ -430,7 +478,7 @@ export const ReservationDetailsDialog: React.FC<ReservationDetailsDialogProps> =
           }
         }}
       >
-        <DrawerContent className="zl-details zl-details-sheet p-0 max-h-[92dvh] border-0 bg-transparent">
+        <DrawerContent className="zl-details zl-details-sheet p-0 max-h-[92dvh] border-0 bg-transparent [&>button.absolute]:hidden">
           <DrawerTitle className="sr-only">Detalhes da Reserva</DrawerTitle>
           <DrawerDescription className="sr-only">
             Informações detalhadas sobre o agendamento de sala e Chromebooks
@@ -459,7 +507,7 @@ export const ReservationDetailsDialog: React.FC<ReservationDetailsDialogProps> =
         }
       }}
     >
-      <DialogContent className="zl-details zl-details-dialog p-0 max-w-[520px] overflow-hidden border-0 bg-transparent">
+      <DialogContent className="zl-details zl-details-dialog p-0 max-w-[500px] overflow-hidden border-0 bg-transparent [&>button.absolute]:hidden">
         <DialogTitle className="sr-only">Detalhes da Reserva</DialogTitle>
         <DialogDescription className="sr-only">
           Informações detalhadas sobre o agendamento de sala e Chromebooks
