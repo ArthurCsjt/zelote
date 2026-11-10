@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import '@/styles/scheduling-glass-nav.css';
@@ -44,6 +44,8 @@ const SchedulingPage = () => {
   const navigate = useNavigate();
   const [currentDate, setCurrentDate] = useState(getInitialSchedulingDate());
   const [viewMode, setViewMode] = useState<'weekly' | 'monthly' | 'my_reservations'>('weekly');
+  const lastWeeklyDate = useRef<Date | null>(null);
+  const lastMonthlyDate = useRef<Date | null>(null);
   const [isMonthsExpanded, setIsMonthsExpanded] = useState(false);
   const [isCommandCenterExpanded, setIsCommandCenterExpanded] = useState(true);
   const {
@@ -125,12 +127,19 @@ const SchedulingPage = () => {
     }
   };
   const handleViewModeChange = (v: 'weekly' | 'monthly' | 'my_reservations') => {
+    // Salva a data atual da aba que esta sendo deixada
+    if (viewMode === 'weekly') {
+      lastWeeklyDate.current = currentDate;
+    } else if (viewMode === 'monthly') {
+      lastMonthlyDate.current = currentDate;
+    }
     setViewMode(v);
     if (v === 'weekly') {
-      setCurrentDate(getStartOfWeek(new Date()));
+      setCurrentDate(lastWeeklyDate.current ?? getStartOfWeek(new Date()));
     } else if (v === 'monthly') {
-      setCurrentDate(startOfMonth(new Date()));
+      setCurrentDate(lastMonthlyDate.current ?? startOfMonth(currentDate));
     }
+    // 'my_reservations': nao altera currentDate
   };
   const LIMIT_KEY = 'zelote_chromebook_operational_limit';
 

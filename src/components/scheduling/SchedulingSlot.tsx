@@ -11,6 +11,7 @@ import { useProfileRole } from '@/hooks/use-profile-role';
 import { useDatabase } from '@/hooks/useDatabase';
 import { ReservationDetailsDialog } from './ReservationDetailsDialog';
 import { useSchedulingResponsible } from '@/hooks/useSchedulingResponsible';
+import { useCancelReservation } from '@/hooks/useCancelReservation';
 
 interface SchedulingSlotProps {
   date: Date;
@@ -33,6 +34,7 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
 }) => {
   const { role, isAdmin } = useProfileRole();
   const { deleteReservation } = useDatabase();
+  const { cancel: cancelReservation, isCanceling } = useCancelReservation(deleteReservation);
   const navigate = useNavigate();
   const [isDetailsOpen, setIsDetailsOpen] = useState<string | false>(false);
   // Mantém o ReservationDialog montado mesmo após a reserva ser criada,
@@ -238,9 +240,9 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
                     <div className="flex gap-1.5 pt-1">
                       {(isThisMine || isSuperAdmin) && (
                         <button
-                          onClick={(e) => {
+                          onClick={async (e) => {
                             e.stopPropagation();
-                            deleteReservation(res.id).then((success: boolean) => success && onReservationSuccess());
+                            await cancelReservation(res.id, { onSuccess: onReservationSuccess });
                           }}
                           className="text-[10px] font-black text-red-500 uppercase hover:underline"
                         >
@@ -307,10 +309,11 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
           isOwner={allReservationsForSlot.find(r => r.id === isDetailsOpen)?.created_by === currentUser?.id || allReservationsForSlot.find(r => r.id === isDetailsOpen)?.professor_id === currentUser?.id}
           isAdmin={!!isAdmin}
           isResponsible={!!isResponsible}
-          onCancel={() => {
+          isCanceling={isCanceling}
+          onCancel={async () => {
             if (typeof isDetailsOpen === 'string') {
-              deleteReservation(isDetailsOpen).then((success: boolean) => {
-                if (success) {
+              await cancelReservation(isDetailsOpen, {
+                onSuccess: () => {
                   onReservationSuccess();
                   setIsDetailsOpen(false);
                 }

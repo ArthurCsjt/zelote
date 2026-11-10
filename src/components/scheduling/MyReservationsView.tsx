@@ -30,6 +30,7 @@ import { cn } from '@/lib/utils';
 import { getUserReservations, deleteReservation, type Reservation } from '@/services/reservationService';
 import { formatChromebookTag } from '@/utils/scheduling';
 import { ReservationDetailsDialog } from './ReservationDetailsDialog';
+import { useCancelReservation } from '@/hooks/useCancelReservation';
 import { useProfileRole } from '@/hooks/use-profile-role';
 import { useSchedulingResponsible } from '@/hooks/useSchedulingResponsible';
 import { status, statusLabels, interval, quantity, collected, normalize } from './history/historyData';
@@ -50,6 +51,7 @@ export const MyReservationsView: React.FC<MyReservationsViewProps> = ({
 }) => {
   const { isAdmin } = useProfileRole();
   const { isResponsible } = useSchedulingResponsible();
+  const { cancel: cancelReservation, isCanceling } = useCancelReservation(deleteReservation);
 
   const [activeFilter, setActiveFilter] = useState<PeriodFilter>('week');
   const [searchQuery, setSearchQuery] = useState('');
@@ -140,33 +142,15 @@ export const MyReservationsView: React.FC<MyReservationsViewProps> = ({
 
   const handleCancelReservation = async (reservation: Reservation) => {
     setCancelingId(reservation.id);
-    try {
-      const success = await deleteReservation(reservation.id);
-      if (success) {
-        toast({
-          title: "Reserva cancelada com sucesso",
-          description: `Horário ${reservation.time_slot} do dia ${format(parseISO(reservation.date), "dd/MM/yyyy")} foi liberado.`,
-          variant: "success"
-        });
+    await cancelReservation(reservation.id, {
+      description: `Horário ${reservation.time_slot} do dia ${format(parseISO(reservation.date), "dd/MM/yyyy")} foi liberado.`,
+      onSuccess: async () => {
         setConfirmCancelId(null);
         await refetch();
         onReservationSuccess();
-      } else {
-        toast({
-          title: "Erro ao cancelar reserva",
-          description: "Não foi possível cancelar no momento. Tente novamente.",
-          variant: "destructive"
-        });
-      }
-    } catch {
-      toast({
-        title: "Erro de conexão",
-        description: "Falha ao comunicar com o servidor.",
-        variant: "destructive"
-      });
-    } finally {
-      setCancelingId(null);
-    }
+      },
+    });
+    setCancelingId(null);
   };
 
   const getDayBadge = (dateStr: string) => {
@@ -524,15 +508,15 @@ export const MyReservationsView: React.FC<MyReservationsViewProps> = ({
           isAdmin={Boolean(isAdmin)}
           isResponsible={Boolean(isResponsible)}
           isOwner={true}
+          isCanceling={isCanceling}
           onCancel={() => {
-            deleteReservation(selectedReservation.id).then((success: boolean) => {
-              if (success) {
-                toast({ title: "Reserva cancelada com sucesso", variant: "success" });
+            cancelReservation(selectedReservation.id, {
+              onSuccess: async () => {
                 onReservationSuccess();
-                refetch();
+                await refetch();
                 setIsDetailsOpen(false);
                 setSelectedReservation(null);
-              }
+              },
             });
           }}
         />

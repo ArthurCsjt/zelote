@@ -4,7 +4,7 @@ import {
     DialogContent,
     DialogHeader,
     DialogTitle,
-    DialogFooter
+    DialogDescription
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -19,7 +19,8 @@ import {
     Mic,
     Plus,
     X as CloseIcon,
-    AlertTriangle
+    AlertTriangle,
+    Loader2
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -38,6 +39,7 @@ interface ReservationDetailsDialogProps {
     isResponsible: boolean;
     isOwner: boolean;
     isAdmin: boolean;
+    isCanceling?: boolean;
 }
 
 export const ReservationDetailsDialog: React.FC<ReservationDetailsDialogProps> = ({
@@ -49,6 +51,7 @@ export const ReservationDetailsDialog: React.FC<ReservationDetailsDialogProps> =
     isResponsible,
     isOwner,
     isAdmin,
+    isCanceling = false,
 }) => {
     const navigate = useNavigate();
     const { role } = useProfileRole();
@@ -87,6 +90,7 @@ export const ReservationDetailsDialog: React.FC<ReservationDetailsDialogProps> =
     }, [isConfirmingCancel]);
 
     const handleCancelClick = () => {
+        if (isCanceling) return;
         if (isConfirmingCancel) {
             setIsConfirmingCancel(false);
             onCancel();
@@ -94,7 +98,6 @@ export const ReservationDetailsDialog: React.FC<ReservationDetailsDialogProps> =
             setIsConfirmingCancel(true);
         }
     };
-
 
     // Clean up profile names if the user's name in database is recorded as an email address (avoids duplicates)
     const getFormattedProfile = () => {
@@ -127,7 +130,11 @@ export const ReservationDetailsDialog: React.FC<ReservationDetailsDialogProps> =
     const profile = getFormattedProfile();
 
     return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
+        <Dialog open={open} onOpenChange={(val) => {
+            if (!isCanceling) {
+                onOpenChange(val);
+            }
+        }}>
             <DialogContent className="w-[94vw] sm:w-full sm:max-w-[500px] border-4 border-black dark:border-white rounded-none shadow-[4px_4px_0px_0px_#000] sm:shadow-[8px_8px_0px_0px_#000] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.1)] sm:dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.1)] bg-background p-0 max-h-[95vh] overflow-y-auto outline-none">
 
                 <DialogHeader className={cn(
@@ -142,8 +149,11 @@ export const ReservationDetailsDialog: React.FC<ReservationDetailsDialogProps> =
                             <DialogTitle className="text-xl sm:text-2xl font-black uppercase tracking-tighter text-white drop-shadow-[2px_2px_0_#000] leading-none">
                                 {isMaintRes ? "Manutenção do Espaço" : "Detalhes da Reserva"}
                             </DialogTitle>
+                            <DialogDescription className="sr-only">
+                                Detalhes da reserva de {profile.name} em {format(date, "dd/MM/yyyy", { locale: ptBR })} às {reservation.time_slot}
+                            </DialogDescription>
                             <div className="mt-1 flex items-center">
-                                <span className="bg-black text-white px-2 py-0.5 text-[9px] font-black uppercase tracking-widest whitespace-nowrap">
+                                <span className="bg-black text-white px-2 py-0.5 text-[11px] font-black uppercase tracking-wider whitespace-nowrap">
                                     {format(date, "EEEE, dd 'de' MMMM", { locale: ptBR })} · {reservation.time_slot}
                                 </span>
                             </div>
@@ -151,8 +161,10 @@ export const ReservationDetailsDialog: React.FC<ReservationDetailsDialogProps> =
                     </div>
                     <button
                         type="button"
+                        aria-label="Fechar"
+                        disabled={isCanceling}
                         onClick={() => onOpenChange(false)}
-                        className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center bg-white border-2 border-black shadow-[2px_2px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all z-20"
+                        className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center bg-white border-2 border-black shadow-[2px_2px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all z-20 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         <CloseIcon className="w-5 h-5 text-black stroke-[3]" />
                     </button>
@@ -188,14 +200,14 @@ export const ReservationDetailsDialog: React.FC<ReservationDetailsDialogProps> =
                                     "w-11 h-11 sm:w-12 sm:h-12 rounded-none border-4 border-black flex items-center justify-center shrink-0 shadow-[2px_2px_0px_0px_#000]",
                                     isMaintRes ? "bg-zinc-100 dark:bg-zinc-800" : "bg-blue-100"
                                 )}>
-                                    <User className={cn("h-6 w-6 sm:h-7 w-7", isMaintRes ? "text-[#52525B]" : "text-blue-600")} />
+                                    <User className={cn("h-6 w-6 sm:h-7 sm:w-7", isMaintRes ? "text-[#52525B]" : "text-blue-600")} />
                                 </div>
                                 <div className="space-y-0.5 w-full">
                                     <p className="font-black text-sm sm:text-base uppercase leading-tight tracking-tight break-words text-zinc-900 dark:text-zinc-50 px-2" title={profile.name}>
                                         {profile.name}
                                     </p>
                                     {profile.showEmail && (
-                                        <p className="text-[9px] sm:text-[10px] font-bold text-muted-foreground break-all px-2" title={profile.email}>
+                                        <p className="text-[11px] sm:text-xs font-bold text-muted-foreground break-all px-2" title={profile.email}>
                                             {profile.email}
                                         </p>
                                     )}
@@ -210,14 +222,14 @@ export const ReservationDetailsDialog: React.FC<ReservationDetailsDialogProps> =
                                 {/* Chromebooks Card */}
                                 {!(isManutencao || isMaintRes) && (
                                     <div className="border-4 border-black dark:border-white bg-black dark:bg-zinc-950 p-3 shadow-[3px_3px_0px_0px_#3b82f6] flex flex-col justify-between min-h-[75px] relative overflow-hidden group hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[4px_4px_0px_0px_#3b82f6] transition-all duration-200">
-                                        <span className="text-[8px] sm:text-[9px] font-black uppercase text-blue-400 tracking-wider flex items-center gap-1">
+                                        <span className="text-[11px] font-black uppercase text-blue-400 tracking-wide flex items-center gap-1">
                                             💻 UNIDADES REQUISITADAS
                                         </span>
                                         <div className="mt-1 flex items-baseline gap-1.5 text-white">
                                             <span className="text-2xl sm:text-3xl font-[1000] leading-none tracking-tight">
                                                 {reservation.quantity_requested}
                                             </span>
-                                            <span className="text-[8px] sm:text-[9px] uppercase tracking-widest text-blue-400 font-black">
+                                            <span className="text-[11px] uppercase tracking-wide text-blue-400 font-black">
                                                 CHROMEBOOKS
                                             </span>
                                         </div>
@@ -229,7 +241,7 @@ export const ReservationDetailsDialog: React.FC<ReservationDetailsDialogProps> =
                                     "border-4 border-black dark:border-white bg-amber-400 p-3 shadow-[3px_3px_0px_0px_#000] dark:shadow-[3px_3px_0px_0px_rgba(255,255,255,0.15)] flex flex-col justify-between min-h-[75px] relative overflow-hidden group hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[4px_4px_0px_0px_#000] dark:hover:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.25)] transition-all duration-200",
                                     (isManutencao || isMaintRes) ? "col-span-1 sm:col-span-2" : ""
                                 )}>
-                                    <span className="text-[8px] sm:text-[9px] font-black uppercase text-black/60 tracking-wider flex items-center gap-1">
+                                    <span className="text-[11px] font-black uppercase text-black/60 tracking-wide flex items-center gap-1">
                                         LOCAL DE AULA
                                     </span>
                                     <div className="mt-1 flex items-center justify-between gap-2 text-black">
@@ -237,7 +249,7 @@ export const ReservationDetailsDialog: React.FC<ReservationDetailsDialogProps> =
                                             {reservation.classroom || "NÃO DEFINIDA"}
                                         </span>
                                         {reservation.is_minecraft && (
-                                            <span className="bg-[#3c8527] text-white border-2 border-black text-[8px] font-[1000] px-1.5 py-0.5 shadow-[1px_1px_0_0_#000] flex items-center gap-0.5 shrink-0 uppercase tracking-widest">
+                                            <span className="bg-[#3c8527] text-white border-2 border-black text-[11px] font-[1000] px-1.5 py-0.5 shadow-[1px_1px_0_0_#000] flex items-center gap-0.5 shrink-0 uppercase tracking-wide">
                                                 🎮 MC
                                             </span>
                                         )}
@@ -249,7 +261,7 @@ export const ReservationDetailsDialog: React.FC<ReservationDetailsDialogProps> =
                             {reservation.justification && (
                                 <div className="relative group mt-1">
                                     <div className={cn(
-                                        "absolute -top-3 left-4 text-white px-2.5 py-0.5 border-2 border-black text-[8px] font-[1000] uppercase tracking-[0.2em] z-10 shadow-[2px_2px_0px_0px_#000]",
+                                        "absolute -top-3 left-4 text-white px-2.5 py-0.5 border-2 border-black text-[11px] font-[1000] uppercase tracking-wider z-10 shadow-[2px_2px_0px_0px_#000]",
                                         isMaintRes ? "bg-[#52525B]" : "bg-blue-600"
                                     )}>
                                         {isMaintRes ? "Motivo do Serviço" : "Justificativa"}
@@ -279,7 +291,7 @@ export const ReservationDetailsDialog: React.FC<ReservationDetailsDialogProps> =
                             {/* Extra Resources */}
                             {(reservation.needs_tv || reservation.needs_sound || reservation.needs_mic) && (
                                 <div className="border-4 border-black dark:border-white bg-amber-50 dark:bg-amber-900/10 p-3 shadow-[3px_3px_0px_0px_rgba(0,0,0,0.05)]">
-                                    <p className="text-[9px] font-black uppercase text-amber-600 dark:text-amber-400 mb-1.5 flex items-center gap-1">
+                                    <p className="text-[11px] font-black uppercase text-amber-600 dark:text-amber-400 mb-1.5 flex items-center gap-1">
                                         <Plus className="h-3 w-3" /> Recursos Extras
                                     </p>
                                     <div className="space-y-1">
@@ -312,15 +324,15 @@ export const ReservationDetailsDialog: React.FC<ReservationDetailsDialogProps> =
                                 return (
                                     <div className="border-4 border-black dark:border-white bg-blue-50 dark:bg-blue-900/10 p-3 shadow-[3px_3px_0px_0px_rgba(0,0,0,0.05)]">
                                         <div className="flex items-center justify-between mb-2">
-                                            <p className="text-[9px] font-black uppercase text-blue-600 dark:text-blue-400 flex items-center gap-1">
+                                            <p className="text-[11px] font-black uppercase text-blue-600 dark:text-blue-400 flex items-center gap-1">
                                                 <Monitor className="h-3.5 w-3.5" /> Retirados ({totalWithdrawn})
                                             </p>
                                             {allReturned ? (
-                                                <span className="text-[9px] font-black uppercase bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border-2 border-emerald-600 px-2 py-0.5 shadow-[1px_1px_0_0_#000]">
+                                                <span className="text-[11px] font-black uppercase bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border-2 border-emerald-600 px-2 py-0.5 shadow-[1px_1px_0_0_#000]">
                                                     ✓ Todos Devolvidos ({returnedCount}/{totalWithdrawn})
                                                 </span>
                                             ) : (
-                                                <span className="text-[9px] font-black uppercase bg-amber-200 text-amber-950 dark:bg-amber-900/60 dark:text-amber-200 border-2 border-black px-2 py-0.5 shadow-[2px_2px_0_0_#000] animate-pulse">
+                                                <span className="text-[11px] font-black uppercase bg-amber-200 text-amber-950 dark:bg-amber-900/60 dark:text-amber-200 border-2 border-black px-2 py-0.5 shadow-[2px_2px_0_0_#000] animate-pulse">
                                                     ⚠️ {pendingCount} Pendente{pendingCount > 1 ? 's' : ''} ({returnedCount}/{totalWithdrawn} devolvidos)
                                                 </span>
                                             )}
@@ -332,7 +344,7 @@ export const ReservationDetailsDialog: React.FC<ReservationDetailsDialogProps> =
                                                     <span
                                                         key={idx}
                                                         className={cn(
-                                                            "border font-black text-[9px] px-2 py-0.5 inline-flex items-center gap-1",
+                                                            "border font-black text-[11px] px-2 py-0.5 inline-flex items-center gap-1",
                                                             loan.returned
                                                                 ? "bg-emerald-600 text-white border-black shadow-[1px_1px_0_0_#000]"
                                                                 : "bg-amber-400 text-black border-2 border-black shadow-[2px_2px_0_0_#000]"
@@ -355,21 +367,28 @@ export const ReservationDetailsDialog: React.FC<ReservationDetailsDialogProps> =
                     {showCancel && (
                         <Button
                             variant="destructive"
+                            disabled={isCanceling}
                             className={cn(
                                 "h-11 w-full text-xs sm:text-sm font-black uppercase border-4 border-black shadow-[3px_3px_0px_0px_#000] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all rounded-none gap-2",
                                 isConfirmingCancel && "bg-amber-500 hover:bg-amber-600 text-black border-black shadow-[2px_2px_0px_0px_#000] animate-pulse",
-                                !showLoan && "sm:col-span-2"
+                                !showLoan && "sm:col-span-2",
+                                isCanceling && "opacity-75 cursor-not-allowed"
                             )}
                             onClick={handleCancelClick}
                         >
-                            {isConfirmingCancel ? (
+                            {isCanceling ? (
                                 <>
-                                    <AlertTriangle className="h-4.5 w-4.5 stroke-[3]" />
+                                    <Loader2 className="h-[18px] w-[18px] animate-spin" />
+                                    <span>Cancelando...</span>
+                                </>
+                            ) : isConfirmingCancel ? (
+                                <>
+                                    <AlertTriangle className="h-[18px] w-[18px] stroke-[3]" />
                                     <span>Confirmar Cancelamento?</span>
                                 </>
                             ) : (
                                 <>
-                                    <Trash2 className="h-4.5 w-4.5" />
+                                    <Trash2 className="h-[18px] w-[18px]" />
                                     <span>Cancelar Reserva</span>
                                 </>
                             )}
@@ -378,9 +397,11 @@ export const ReservationDetailsDialog: React.FC<ReservationDetailsDialogProps> =
 
                     {showLoan && (
                         <Button
+                            disabled={isCanceling}
                             className={cn(
                                 "h-11 w-full text-xs sm:text-sm font-black uppercase bg-green-500 hover:bg-green-600 text-white border-4 border-black shadow-[3px_3px_0px_0px_#000] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all rounded-none gap-2",
-                                !showCancel && "sm:col-span-2"
+                                !showCancel && "sm:col-span-2",
+                                isCanceling && "opacity-50 cursor-not-allowed"
                             )}
                             onClick={() => {
                                 navigate('/', {
@@ -396,7 +417,7 @@ export const ReservationDetailsDialog: React.FC<ReservationDetailsDialogProps> =
                                 onOpenChange(false);
                             }}
                         >
-                            <ArrowRight className="h-4.5 w-4.5" />
+                            <ArrowRight className="h-[18px] w-[18px]" />
                             Iniciar Empréstimo
                         </Button>
                     )}
@@ -404,7 +425,8 @@ export const ReservationDetailsDialog: React.FC<ReservationDetailsDialogProps> =
                     {showClose && (
                         <Button
                             variant="outline"
-                            className="h-11 w-full sm:col-span-2 text-xs sm:text-sm font-black uppercase border-4 border-black shadow-[3px_3px_0px_0px_#000] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all rounded-none bg-white dark:bg-zinc-800 dark:text-zinc-100"
+                            disabled={isCanceling}
+                            className="h-11 w-full sm:col-span-2 text-xs sm:text-sm font-black uppercase border-4 border-black shadow-[3px_3px_0px_0px_#000] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all rounded-none bg-white dark:bg-zinc-800 dark:text-zinc-100 disabled:opacity-50"
                             onClick={() => onOpenChange(false)}
                         >
                             Fechar

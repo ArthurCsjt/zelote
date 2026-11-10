@@ -11,6 +11,7 @@ import { useSchedulingResponsible } from '@/hooks/useSchedulingResponsible';
 import { useDatabase } from '@/hooks/useDatabase';
 import { getReservationsForWeek, type Reservation } from '@/services/reservationService';
 import { ReservationDetailsDialog } from './ReservationDetailsDialog';
+import { useCancelReservation } from '@/hooks/useCancelReservation';
 import { byDay, collected, heatLevel, interval, makeCsv, metrics, normalize, owned, peak, quantity, ranking, rate, status, statusLabels } from './history/historyData';
 import { formatChromebookTag } from '@/utils/scheduling';
 import './scheduling-history.css';
@@ -120,6 +121,7 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({ curren
   const { role, isAdmin } = useProfileRole();
   const { isResponsible } = useSchedulingResponsible();
   const { deleteReservation } = useDatabase();
+  const { cancel: cancelReservation, isCanceling } = useCancelReservation(deleteReservation);
   const coordination = isAdmin || isResponsible;
   const isManutencao = role === 'manutencao';
   const [tab, setTab] = useState<'calendar' | 'analytics'>('calendar');
@@ -255,6 +257,26 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({ curren
         {coordination && <Ranking title="Professores que mais reservam" entries={professors} />}
       </div>}
     </div>}
-    {selectedReservation && <ReservationDetailsDialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen} reservation={selectedReservation} date={parseISO(selectedReservation.date)} isAdmin={Boolean(isAdmin)} isResponsible={Boolean(isResponsible)} isOwner={owned(selectedReservation, user?.id)} onCancel={() => { deleteReservation(selectedReservation.id).then((success: boolean) => { if (success) { onReservationSuccess?.(); setIsDetailsOpen(false); setSelectedReservation(null); } }); }} />}
+    {selectedReservation && (
+      <ReservationDetailsDialog
+        open={isDetailsOpen}
+        onOpenChange={setIsDetailsOpen}
+        reservation={selectedReservation}
+        date={parseISO(selectedReservation.date)}
+        isAdmin={Boolean(isAdmin)}
+        isResponsible={Boolean(isResponsible)}
+        isOwner={owned(selectedReservation, user?.id)}
+        isCanceling={isCanceling}
+        onCancel={() => {
+          cancelReservation(selectedReservation.id, {
+            onSuccess: () => {
+              onReservationSuccess?.();
+              setIsDetailsOpen(false);
+              setSelectedReservation(null);
+            },
+          });
+        }}
+      />
+    )}
   </div>;
 };
