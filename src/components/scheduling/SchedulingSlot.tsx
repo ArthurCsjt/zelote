@@ -187,11 +187,11 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
                     }
                   }}
                 >
-                  <span className="truncate flex-1 text-left min-w-0 text-[11px] sm:text-[12px]">{roomName}</span>
+                  <span className="truncate flex-1 text-left min-w-0 text-[11px] sm:text-[12px] break-words">{roomName}</span>
                   {isMissed ? (
                     <span className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded text-[10px] sm:text-[8.5px] font-black bg-amber-400 text-black border border-black shadow-[1px_1px_0_0_#000] shrink-0 ml-1 leading-none tracking-tight" title="Reserva expirada sem retirada">
                       <AlertTriangle className="h-2.5 w-2.5 stroke-[3]" />
-                      <span>NÃO RETIRADA</span>
+                      <span className="hidden sm:inline">NÃO RETIRADA</span>
                     </span>
                   ) : !isManutencaoRes && res.quantity_requested > 0 && (
                     <span className="inline-flex items-center gap-1 shrink-0 ml-1.5 bg-black/25 px-1 py-0.5 rounded text-[11px] sm:text-[10.5px] leading-none" title={`${res.quantity_requested} Chromebooks`}>

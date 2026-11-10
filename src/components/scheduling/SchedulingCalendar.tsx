@@ -370,7 +370,7 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
             {/* Bottom Half - Heatmap legend aligned with daily heatmaps */}
             <div className="px-1.5 sm:px-2 py-1.5 border-t-4 border-black dark:border-white bg-zinc-50 dark:bg-zinc-950 relative z-10 flex flex-col items-center justify-center gap-1 h-[40px] sm:h-[50px] select-none shrink-0 w-full overflow-hidden">
               <div className="flex items-center gap-1 leading-none justify-center">
-                <span className="text-[10px] sm:text-[11px] font-[1000] uppercase tracking-[0.10em] text-zinc-500 dark:text-zinc-400 leading-none whitespace-nowrap">
+                <span className="text-[8px] sm:text-[11px] font-[1000] uppercase tracking-[0.04em] sm:tracking-[0.10em] text-zinc-500 dark:text-zinc-400 leading-tight text-center">
                   Mapa de Calor
                 </span>
               </div>
@@ -435,16 +435,16 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
                         className="flex flex-col items-center justify-center text-center"
                       >
                         <span className={cn(
-                          "text-[11px] sm:text-[13px] font-black uppercase tracking-[0.25em] mb-1.5",
+                          "text-[8px] sm:text-[13px] font-black uppercase tracking-tight sm:tracking-[0.25em] mb-0.5 sm:mb-1.5",
                           isCurrentDay ? "text-white/90" : "text-primary"
                         )}>
                           {hoveredHeatmapInfo.slot}
                         </span>
-                        <div className="flex items-baseline gap-1.5">
-                          <span className="text-2xl sm:text-4xl font-black">
+                        <div className="flex flex-col items-center sm:flex-row sm:items-baseline sm:gap-1.5">
+                          <span className="text-2xl sm:text-4xl font-black leading-none">
                             {hoveredHeatmapInfo.usage}
                           </span>
-                          <span className="text-[12px] sm:text-[14px] font-black uppercase opacity-80">
+                          <span className="text-[7px] sm:text-[14px] font-black uppercase opacity-80 leading-none tracking-tight">
                             CHROMEBOOKS
                           </span>
                         </div>
@@ -511,6 +511,13 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
                           key={slot}
                           onMouseEnter={() => setHoveredHeatmapInfo({ date: dateKey, slot, usage })}
                           onMouseLeave={() => setHoveredHeatmapInfo(null)}
+                          onClick={() => {
+                            setHoveredHeatmapInfo(prev =>
+                              prev?.date === dateKey && prev?.slot === slot
+                                ? null
+                                : { date: dateKey, slot, usage }
+                            );
+                          }}
                           className={cn(
                             "flex-1 max-w-[16px] h-full relative cursor-crosshair",
                             color,
