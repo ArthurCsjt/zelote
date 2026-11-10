@@ -1,0 +1,54 @@
+/* ==========================================================================
+   Zelote Design Tokens (--zl-*)
+   Compartilhado entre agendamento, histórico, modais e componentes suaves
+   ========================================================================== */
+
+:root {
+  --zl-card: #ffffff;
+  --zl-soft: #eef3fd;
+  --zl-text: #0f172a;
+  --zl-muted: #5a6786;
+  --zl-border: #d8e0f3;
+  --zl-border-hover: #a3b3dd;
+  --zl-blue: #2f6bf0;
+  --zl-selected: #1e3a8a;
+  --zl-inverted: #ffffff;
+  --zl-ok: #0f8a46;
+  --zl-error: #c9371f;
+  --zl-warning: #b45309;
+  --zl-orange: #ea580c;
+  --zl-minecraft: #3c8527;
+  --zl-yellow: #f4c24d;
+  --zl-cta-start: #ffd54a;
+  --zl-cta-end: #ffc21a;
+  --zl-cta-text: #0b0b0b;
+  --zl-shadow: 0 1px 2px rgba(15, 23, 42, 0.06), 0 10px 30px -12px rgba(15, 23, 42, 0.18);
+  --zl-radius-card: 24px;
+  --zl-radius-control: 14px;
+}
+
+.dark,
+[data-theme="dark"] {
+  --zl-card: #121b38;
+  --zl-soft: #1b2750;
+  --zl-text: #eef2ff;
+  --zl-muted: #a9b6dc;
+  --zl-border: #2c3b6b;
+  --zl-border-hover: #4a5f96;
+  --zl-blue: #6c97ff;
+  --zl-selected: #a9c1ff;
+  --zl-inverted: #0b1330;
+  --zl-ok: #4be08d;
+  --zl-error: #ff8f7a;
+  --zl-warning: #f6b85f;
+  --zl-orange: #ea580c;
+  --zl-minecraft: #3c8527;
+  --zl-yellow: #f4c24d;
+  --zl-cta-start: #ffd54a;
+  --zl-cta-end: #ffc21a;
+  --zl-cta-text: #0b0b0b;
+  --zl-shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 10px 30px -12px rgba(0, 0, 0, 0.6);
+  --zl-radius-card: 24px;
+  --zl-radius-control: 14px;
+}
+

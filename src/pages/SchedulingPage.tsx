@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { toast } from '@/hooks/use-toast';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import '@/styles/scheduling-glass-nav.css';
 import Layout from '@/components/Layout';
 import { Button } from '@/components/ui/button';
@@ -42,6 +42,7 @@ const SchedulingPage = () => {
   } = useDatabase();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const shouldReduceMotion = useReducedMotion();
   const [currentDate, setCurrentDate] = useState(getInitialSchedulingDate());
   const [viewMode, setViewMode] = useState<'weekly' | 'monthly' | 'my_reservations'>('weekly');
   const lastWeeklyDate = useRef<Date | null>(null);
@@ -140,6 +141,11 @@ const SchedulingPage = () => {
       setCurrentDate(lastMonthlyDate.current ?? startOfMonth(currentDate));
     }
     // 'my_reservations': nao altera currentDate
+
+    if (typeof window !== 'undefined') {
+      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+    }
   };
   const LIMIT_KEY = 'zelote_chromebook_operational_limit';
 
@@ -374,42 +380,57 @@ const SchedulingPage = () => {
 
       {/* Calendar Grid - Neo Brutal - Slimmer */}
       <motion.div
-        initial={{ opacity: 0, y: 30 }}
+        initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1.4, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
         className="w-full overflow-visible"
       >
-        {viewMode === 'weekly' ? (
-          <SchedulingCalendar
-            currentDate={currentDate}
-            reservations={reservations}
-            totalAvailableChromebooks={operationalLimit}
-            physicalTotal={totalAvailableChromebooks}
-            currentUser={user}
-            isLoading={isLoading}
-            onReservationSuccess={handleReservationSuccess}
-            onUpdateLimit={handleUpdateLimit}
-            professores={professores.map(p => ({
-              id: p.id,
-              nome_completo: p.nome_completo
-            }))}
-          />
-        ) : viewMode === 'monthly' ? (
-          <SchedulingMonthView
-            currentDate={currentDate}
-            reservations={reservations}
-            totalAvailableChromebooks={operationalLimit}
-            isLoading={isLoading}
-            onReservationSuccess={handleReservationSuccess}
-            onNewReservation={handleNewReservationFromMonth}
-          />
-        ) : (
-          <MyReservationsView
-            currentUser={user}
-            onReservationSuccess={handleReservationSuccess}
-            onGoToCalendar={() => handleViewModeChange('weekly')}
-          />
-        )}
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={viewMode}
+            initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            transition={{
+              duration: 0.22,
+              exit: { duration: 0.12 },
+              ease: 'easeOut',
+            }}
+            className="w-full"
+          >
+            {viewMode === 'weekly' ? (
+              <SchedulingCalendar
+                currentDate={currentDate}
+                reservations={reservations}
+                totalAvailableChromebooks={operationalLimit}
+                physicalTotal={totalAvailableChromebooks}
+                currentUser={user}
+                isLoading={isLoading}
+                onReservationSuccess={handleReservationSuccess}
+                onUpdateLimit={handleUpdateLimit}
+                professores={professores.map(p => ({
+                  id: p.id,
+                  nome_completo: p.nome_completo
+                }))}
+              />
+            ) : viewMode === 'monthly' ? (
+              <SchedulingMonthView
+                currentDate={currentDate}
+                reservations={reservations}
+                totalAvailableChromebooks={operationalLimit}
+                isLoading={isLoading}
+                onReservationSuccess={handleReservationSuccess}
+                onNewReservation={handleNewReservationFromMonth}
+              />
+            ) : (
+              <MyReservationsView
+                currentUser={user}
+                onReservationSuccess={handleReservationSuccess}
+                onGoToCalendar={() => handleViewModeChange('weekly')}
+              />
+            )}
+          </motion.div>
+        </AnimatePresence>
       </motion.div>
 
       {/* Legenda Discreta e Polida (Apenas Visão Semanal) */}

@@ -13,6 +13,7 @@ interface EmptyStateProps {
     onClick: () => void;
   };
   className?: string;
+  variant?: 'neo' | 'soft';
 }
 
 const colorMap = {
@@ -55,7 +56,41 @@ export function EmptyState({
   color = 'gray',
   action,
   className,
+  variant = 'neo',
 }: EmptyStateProps) {
+  if (variant === 'soft') {
+    return (
+      <div
+        className={cn(
+          "relative flex flex-col items-center justify-center py-12 px-6",
+          "rounded-3xl border border-[var(--zl-border)] bg-[var(--zl-card)] shadow-sm",
+          className
+        )}
+      >
+        <div className="p-3.5 rounded-2xl bg-[var(--zl-soft)] text-[var(--zl-blue)] mb-3 flex items-center justify-center">
+          <Icon className="h-8 w-8" strokeWidth={2} />
+        </div>
+
+        <h3 className="text-base font-bold text-[var(--zl-text)] mb-1 text-center">
+          {title}
+        </h3>
+
+        <p className="text-sm text-[var(--zl-muted)] font-normal text-center max-w-sm">
+          {description}
+        </p>
+
+        {action && (
+          <Button
+            onClick={action.onClick}
+            className="mt-5 rounded-xl bg-[var(--zl-blue)] hover:bg-[var(--zl-blue)]/90 text-white font-medium text-xs h-10 px-4"
+          >
+            {action.label}
+          </Button>
+        )}
+      </div>
+    );
+  }
+
   const colors = colorMap[color];
 
   return (

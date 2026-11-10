@@ -25,6 +25,8 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { getUserReservations, deleteReservation, type Reservation } from '@/services/reservationService';
@@ -186,24 +188,66 @@ export const MyReservationsView: React.FC<MyReservationsViewProps> = ({
       case 'today':
         return "Você não tem nenhum agendamento para hoje.";
       case 'week':
-        return "Nenhuma reserva encontrada para a semana atual.";
+        return "Nenhuma reserva encontrada para esta semana.";
       case 'month':
         return "Nenhuma reserva encontrada para este mês.";
       case 'past':
         return "Nenhum histórico de agendamentos anteriores encontrado.";
       case 'all':
       default:
-        return "Você não tem reservas futuras agendadas.";
+        return "Você não tem próximas reservas agendadas.";
     }
   };
 
   if (isLoading) {
     return (
-      <div className="hx-root">
-        <div className="hx-card flex flex-col items-center justify-center min-h-[300px] text-center p-8">
-          <Loader2 className="h-8 w-8 animate-spin text-[var(--hx-blue)] mb-3" />
-          <p className="hx-heading mb-1">Carregando suas reservas...</p>
-          <p className="hx-caption">Buscando seus agendamentos no sistema</p>
+      <div className="hx-root space-y-6" aria-busy="true">
+        <span className="sr-only">Carregando</span>
+        {/* Painel de Controle em Skeleton */}
+        <section className="hx-card space-y-4">
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <div className="space-y-2">
+              <Skeleton className="h-6 w-44 rounded-lg bg-[var(--hx-soft)]" />
+              <Skeleton className="h-4 w-72 rounded-md bg-[var(--hx-soft)]" />
+            </div>
+            <Skeleton className="h-11 w-36 rounded-xl bg-[var(--hx-soft)]" />
+          </div>
+
+          <div className="flex gap-2 flex-wrap">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <Skeleton key={i} className="h-10 w-24 rounded-full bg-[var(--hx-soft)]" />
+            ))}
+          </div>
+
+          <Skeleton className="h-12 w-full rounded-2xl bg-[var(--hx-soft)]" />
+        </section>
+
+        {/* 3 Cartões em Skeleton */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="hx-card p-5 space-y-4">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3 flex-1">
+                  <Skeleton className="h-11 w-11 rounded-full bg-[var(--hx-soft)] shrink-0" />
+                  <div className="space-y-2 flex-1">
+                    <Skeleton className="h-4 w-28 rounded-md bg-[var(--hx-soft)]" />
+                    <Skeleton className="h-3 w-40 rounded-md bg-[var(--hx-soft)]" />
+                  </div>
+                </div>
+                <Skeleton className="h-12 w-16 rounded-xl bg-[var(--hx-soft)] shrink-0" />
+              </div>
+
+              <div className="space-y-2 pt-2">
+                <Skeleton className="h-3 w-full rounded-md bg-[var(--hx-soft)]" />
+                <Skeleton className="h-3 w-3/4 rounded-md bg-[var(--hx-soft)]" />
+              </div>
+
+              <div className="flex justify-between items-center pt-2">
+                <Skeleton className="h-9 w-28 rounded-xl bg-[var(--hx-soft)]" />
+                <Skeleton className="h-9 w-20 rounded-xl bg-[var(--hx-soft)]" />
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     );
@@ -248,7 +292,7 @@ export const MyReservationsView: React.FC<MyReservationsViewProps> = ({
             aria-pressed={activeFilter === 'week'}
             onClick={() => { setActiveFilter('week'); setConfirmCancelId(null); }}
           >
-            <span>Semanal</span>
+            <span>Esta semana</span>
             <span className="ml-1.5 opacity-80 font-bold text-[11px]">({counts.week})</span>
           </Button>
 
@@ -257,7 +301,7 @@ export const MyReservationsView: React.FC<MyReservationsViewProps> = ({
             aria-pressed={activeFilter === 'month'}
             onClick={() => { setActiveFilter('month'); setConfirmCancelId(null); }}
           >
-            <span>Mensal</span>
+            <span>Este mês</span>
             <span className="ml-1.5 opacity-80 font-bold text-[11px]">({counts.month})</span>
           </Button>
 
@@ -266,7 +310,7 @@ export const MyReservationsView: React.FC<MyReservationsViewProps> = ({
             aria-pressed={activeFilter === 'all'}
             onClick={() => { setActiveFilter('all'); setConfirmCancelId(null); }}
           >
-            <span>Todas</span>
+            <span>Próximas</span>
             <span className="ml-1.5 opacity-80 font-bold text-[11px]">({counts.all})</span>
           </Button>
 
@@ -295,26 +339,37 @@ export const MyReservationsView: React.FC<MyReservationsViewProps> = ({
 
       {/* ── Lista de Reservas (Cards Modernos) ── */}
       {displayedList.length === 0 ? (
-        <section className="hx-card text-center py-12 px-6">
-          <Calendar className="h-12 w-12 mx-auto text-[var(--hx-muted)] opacity-50 mb-3" />
-          <h3 className="hx-heading mb-1">
-            {searchQuery ? "Nenhuma reserva corresponde à busca" : getFilterEmptyDescription()}
-          </h3>
-          <p className="hx-caption max-w-md mx-auto">
-            {activeFilter === 'past'
-              ? "As aulas já concluídas aparecem aqui com o registro de devolução."
-              : "Abra a grade semanal para agendar uma sala ou reservar Chromebooks para suas turmas."}
-          </p>
-          {activeFilter !== 'past' && (
-            <Button
-              onClick={onGoToCalendar}
-              className="hx-control hx-new mt-6 inline-flex"
-            >
-              Ir para Grade de Horários
-              <ArrowRight size={16} className="ml-1.5" />
-            </Button>
-          )}
-        </section>
+        searchQuery.trim() ? (
+          <EmptyState
+            variant="soft"
+            icon={Search}
+            title="Nenhuma reserva corresponde à busca"
+            description={`Não encontramos agendamentos com o termo "${searchQuery}". Tente buscar por outra sala, data ou observação.`}
+            action={{
+              label: "Limpar busca",
+              onClick: () => setSearchQuery(''),
+            }}
+          />
+        ) : (
+          <EmptyState
+            variant="soft"
+            icon={Calendar}
+            title={getFilterEmptyDescription()}
+            description={
+              activeFilter === 'past'
+                ? "As aulas já concluídas aparecem aqui com o registro de devolução."
+                : "Abra a grade semanal para agendar uma sala ou reservar Chromebooks para suas turmas."
+            }
+            action={
+              activeFilter !== 'past'
+                ? {
+                    label: "Ir para Grade de Horários",
+                    onClick: onGoToCalendar,
+                  }
+                : undefined
+            }
+          />
+        )
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <AnimatePresence mode="popLayout">
