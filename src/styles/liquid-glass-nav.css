@@ -1,65 +1,82 @@
 /* ==========================================================================
-   Liquid Glass Floating Navigation (iOS 26 Style - Premium Polish)
+   Liquid Glass Navigation (iOS 26 Style)
    ========================================================================== */
 
-/* ── Light Mode Tokens ── */
+/* ── 1. VARIÁVEIS: MODO CLARO (PADRÃO) ── */
 :root {
-  --lg-ink-soft: #64748b;              /* Slate-500: alto contraste e elegância */
-  --lg-ink-hover: #1e293b;
-  --lg-active: #0a5cff;                /* Azul vibrante Apple/iOS */
-  --lg-active-glow: rgba(10, 92, 255, 0.16);
-  --lg-glass-bg: rgba(255, 255, 255, 0.82);
-  --lg-glass-border: rgba(255, 255, 255, 0.95);
-  --lg-glass-shadow: 0 16px 36px -4px rgba(15, 23, 42, 0.16), 0 4px 12px rgba(15, 23, 42, 0.08);
-  --lg-pill-bg: #ffffff;
-  --lg-pill-shadow: 0 3px 10px rgba(15, 23, 42, 0.12), 0 1px 3px rgba(15, 23, 42, 0.08), inset 0 1px 1px #ffffff;
-  --lg-pill-border: rgba(0, 0, 0, 0.04);
-  --lg-badge-ring: #ffffff;
+  /* Vidro com leve tingimento azulado no centro para contraste sobre fundo branco */
+  --nav-glass-bg: linear-gradient(160deg,
+    rgba(255, 255, 255, 0.40) 0%,
+    rgba(30, 60, 140, 0.08) 50%,
+    rgba(255, 255, 255, 0.35) 100%);
+  --nav-glass-fallback: rgba(245, 248, 255, 0.94);
+  --nav-glass-filter: blur(14px) saturate(180%) brightness(0.96);
+
+  /* Silhueta escura fina por fora + reflexo branco por dentro + sombra dupla */
+  --nav-glass-shadow:
+    0 12px 32px rgba(15, 23, 42, 0.20),
+    0 2px 6px rgba(15, 23, 42, 0.12),
+    0 0 0 1px rgba(15, 23, 42, 0.12),
+    inset 0 1.5px 1px rgba(255, 255, 255, 0.90),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.05);
+
+  /* Pílula ativa: mais clara e sólida que a barra ao redor */
+  --nav-pill-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(255, 255, 255, 0.78) 100%);
+  --nav-pill-shadow:
+    0 3px 10px rgba(15, 23, 42, 0.18),
+    inset 0 1.5px 1px rgba(255, 255, 255, 1),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.04);
+  --nav-pill-border: rgba(15, 23, 42, 0.06);
+
+  /* Cores de texto e ícones (mínimo 4.5:1 de contraste) */
+  --nav-ink-soft: rgba(15, 30, 70, 0.72);   /* Azul-marinho escuro para abas inativas */
+  --nav-ink-hover: #0f1e46;
+  --nav-active: #0a5cff;                    /* Azul vivo na aba ativa */
+  --nav-badge-ring: #ffffff;
 }
 
-/* ── Dark Mode Tokens ── */
-:root[data-theme="dark"],
-.dark {
-  --lg-ink-soft: rgba(226, 232, 240, 0.65);
-  --lg-ink-hover: #ffffff;
-  --lg-active: #60a5fa;
-  --lg-active-glow: rgba(96, 165, 250, 0.22);
-  --lg-glass-bg: rgba(18, 26, 44, 0.78);
-  --lg-glass-border: rgba(255, 255, 255, 0.14);
-  --lg-glass-shadow: 0 20px 48px rgba(0, 0, 0, 0.65), 0 6px 16px rgba(0, 0, 0, 0.4);
-  --lg-pill-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.10) 100%);
-  --lg-pill-shadow: 0 4px 16px rgba(0, 0, 0, 0.45), inset 0 1.5px 1px rgba(255, 255, 255, 0.4), inset 0 -1px 2px rgba(0, 0, 0, 0.3);
-  --lg-pill-border: rgba(255, 255, 255, 0.15);
-  --lg-badge-ring: #162035;
+/* ── 2. VARIÁVEIS: MODO ESCURO (.dark ou [data-theme="dark"]) ── */
+.dark,
+[data-theme="dark"],
+:root:not([data-theme="light"]):not(.light) {
+  --nav-glass-bg: linear-gradient(160deg,
+    rgba(30, 41, 59, 0.78) 0%,
+    rgba(18, 28, 54, 0.40) 45%,
+    rgba(15, 23, 42, 0.70) 100%);
+  --nav-glass-fallback: rgba(18, 28, 54, 0.92);
+  --nav-glass-filter: blur(12px) saturate(200%) brightness(1.05);
+
+  --nav-glass-shadow:
+    0 14px 34px rgba(0, 0, 0, 0.50),
+    0 2px 6px rgba(0, 0, 0, 0.20),
+    0 0 0 1px rgba(255, 255, 255, 0.15),
+    inset 0 2px 2px rgba(255, 255, 255, 0.45),
+    inset 0 -2px 3px rgba(255, 255, 255, 0.15);
+
+  --nav-pill-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0.12) 100%);
+  --nav-pill-shadow:
+    0 3px 12px rgba(0, 0, 0, 0.35),
+    inset 0 1.5px 1px rgba(255, 255, 255, 0.60),
+    inset 0 -1.5px 2px rgba(255, 255, 255, 0.20);
+  --nav-pill-border: rgba(255, 255, 255, 0.18);
+
+  --nav-ink-soft: rgba(240, 245, 255, 0.66);
+  --nav-ink-hover: #ffffff;
+  --nav-active: #8dbbff;
+  --nav-badge-ring: #162035;
 }
 
-/* Fallback media query para preferência de sistema caso a classe .dark não seja setada */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]):not(.light) {
-    --lg-ink-soft: rgba(226, 232, 240, 0.65);
-    --lg-ink-hover: #ffffff;
-    --lg-active: #60a5fa;
-    --lg-active-glow: rgba(96, 165, 250, 0.22);
-    --lg-glass-bg: rgba(18, 26, 44, 0.78);
-    --lg-glass-border: rgba(255, 255, 255, 0.14);
-    --lg-glass-shadow: 0 20px 48px rgba(0, 0, 0, 0.65), 0 6px 16px rgba(0, 0, 0, 0.4);
-    --lg-pill-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.10) 100%);
-    --lg-pill-shadow: 0 4px 16px rgba(0, 0, 0, 0.45), inset 0 1.5px 1px rgba(255, 255, 255, 0.4), inset 0 -1px 2px rgba(0, 0, 0, 0.3);
-    --lg-pill-border: rgba(255, 255, 255, 0.15);
-    --lg-badge-ring: #162035;
-  }
-}
-
-/* ── Container da Barra de Vidro (Flutuante Real) ── */
+/* ── 3. A BARRA DE VIDRO (.nav / .liquid-glass-nav) ── */
+.nav,
 .liquid-glass-nav {
   position: fixed !important;
   left: 0 !important;
   right: 0 !important;
   bottom: calc(16px + env(safe-area-inset-bottom, 0px)) !important;
+  max-width: 400px !important;
   width: calc(100% - 32px) !important;
-  max-width: 380px !important;
   margin: 0 auto !important;
-  height: 66px;
+  height: 70px;
   padding: 5px;
   border-radius: 999px;
   display: flex !important;
@@ -71,43 +88,50 @@
   -webkit-user-select: none;
   pointer-events: auto;
 
-  /* Efeito de Vidro Apple Liquid Glass */
-  background: var(--lg-glass-bg);
-  backdrop-filter: blur(20px) saturate(190%) contrast(95%);
-  -webkit-backdrop-filter: blur(20px) saturate(190%) contrast(95%);
-  border: 1px solid var(--lg-glass-border);
-  box-shadow:
-    var(--lg-glass-shadow),
-    inset 0 1px 1px rgba(255, 255, 255, 0.8),
-    inset 0 -1px 2px rgba(0, 0, 0, 0.05);
+  /* Superfície de vidro + filtro translúcido */
+  background: var(--nav-glass-bg);
+  backdrop-filter: var(--nav-glass-filter);
+  -webkit-backdrop-filter: var(--nav-glass-filter);
+  box-shadow: var(--nav-glass-shadow);
 
-  transition: height 0.35s cubic-bezier(0.3, 1.2, 0.5, 1), transform 0.35s cubic-bezier(0.3, 1.2, 0.5, 1);
+  transition: height 0.4s cubic-bezier(0.3, 1.2, 0.5, 1);
 }
 
-/* Reflexo de luz na borda (Spec Light Highlight) */
+/* Fallback para navegadores sem suporte a backdrop-filter */
+@supports not (backdrop-filter: blur(14px)) {
+  .nav,
+  .liquid-glass-nav {
+    background: var(--nav-glass-fallback);
+  }
+}
+
+/* Borda de reflexo de luz nos cantos */
+.nav::before,
 .liquid-glass-nav::before {
   content: "";
   position: absolute;
-  inset: -1px;
+  inset: 0;
   border-radius: inherit;
   pointer-events: none;
   padding: 1px;
   background: linear-gradient(135deg,
     rgba(255, 255, 255, 0.95) 0%,
-    rgba(255, 255, 255, 0) 35%,
-    rgba(255, 255, 255, 0) 65%,
-    rgba(255, 255, 255, 0.6) 100%);
+    rgba(255, 255, 255, 0) 30%,
+    rgba(255, 255, 255, 0) 70%,
+    rgba(255, 255, 255, 0.70) 100%);
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
 }
 
-/* Modo encolhido durante rolagem rápida */
+/* Modo encolhido ao rolar a página */
+.nav.mini,
 .liquid-glass-nav.mini {
-  height: 54px;
+  height: 56px;
 }
 
-/* ── Pílula Deslizante (Active Pill) ── */
+/* ── 4. A PÍLULA DESLIZANTE (.pill) ── */
+.pill,
 .liquid-glass-nav .pill {
   position: absolute;
   top: 5px;
@@ -118,154 +142,164 @@
   pointer-events: none;
   z-index: 1;
 
-  background: var(--lg-pill-bg);
-  border: 1px solid var(--lg-pill-border);
-  box-shadow: var(--lg-pill-shadow);
+  background: var(--nav-pill-bg);
+  border: 1px solid var(--nav-pill-border);
+  box-shadow: var(--nav-pill-shadow);
 
-  /* Transição elástica padrão Apple */
+  /* Movimento elástico Apple */
   transition:
-    transform 0.45s cubic-bezier(0.3, 1.35, 0.5, 1),
-    scale 0.25s cubic-bezier(0.3, 1.5, 0.5, 1),
-    background 0.25s;
+    transform 0.5s cubic-bezier(0.3, 1.35, 0.5, 1),
+    scale 0.3s cubic-bezier(0.3, 1.5, 0.5, 1),
+    background 0.3s;
 }
 
-/* Durante o arraste com o dedo/cursor */
+/* Durante arraste lateral com o ponteiro */
+.pill.drag,
 .liquid-glass-nav .pill.drag {
-  transition: scale 0.25s cubic-bezier(0.3, 1.5, 0.5, 1);
+  transition: scale 0.3s cubic-bezier(0.3, 1.5, 0.5, 1);
 }
 
-/* Feedback de clique/pressão */
+/* Feedback tátil ao pressionar */
+.pill.press,
 .liquid-glass-nav .pill.press {
-  scale: 1.06 1.05;
+  scale: 1.08 1.06;
 }
 
-/* ── Itens de Navegação ── */
+/* ── 5. OS BOTÕES (.item) ── */
+.item,
 .liquid-glass-nav .item {
   flex: 1;
   position: relative;
   z-index: 2;
-  background: transparent;
-  border: none;
-  padding: 4px 0;
+  background: none;
+  border: 0;
+  padding: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 3px;
-  color: var(--lg-ink-soft);
+  color: var(--nav-ink-soft);
   font-family: inherit;
   font-weight: 600;
   font-size: 11px;
-  letter-spacing: -0.01em;
+  letter-spacing: 0.01em;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  transition: color 0.2s ease, transform 0.2s ease;
+  transition: color 0.25s;
   outline: none;
   pointer-events: auto;
 }
 
-/* Evita que filhos interceptem cliques em detrimento do botão */
+.item *,
 .liquid-glass-nav .item * {
   pointer-events: none;
 }
 
-.liquid-glass-nav .item:hover {
-  color: var(--lg-ink-hover);
-}
-
+.item:focus-visible,
 .liquid-glass-nav .item:focus-visible {
-  box-shadow: 0 0 0 2px var(--lg-active) inset;
+  box-shadow: 0 0 0 2px var(--nav-active) inset;
   border-radius: 999px;
 }
 
-/* Container do Ícone */
+/* Container do ícone */
+.icon-container,
 .liquid-glass-nav .icon-container {
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 26px;
 }
 
-/* Ícones SVG */
+/* Ícone SVG */
+.item svg,
 .liquid-glass-nav .item svg {
-  width: 22px;
-  height: 22px;
+  width: 25px;
+  height: 25px;
   fill: none;
   stroke: currentColor;
   stroke-width: 1.85;
   stroke-linecap: round;
   stroke-linejoin: round;
-  transition: transform 0.35s cubic-bezier(0.3, 1.5, 0.5, 1), stroke-width 0.2s, fill-opacity 0.25s;
+  transition: transform 0.35s cubic-bezier(0.3, 1.5, 0.5, 1), fill 0.25s, stroke-width 0.25s;
 }
 
-/* Aba Ativa */
+/* ── 6. ABA ATIVA (.item.on) ── */
+.item.on,
 .liquid-glass-nav .item.on {
-  color: var(--lg-active);
+  color: var(--nav-active);
   font-weight: 700;
 }
 
+.item.on svg,
 .liquid-glass-nav .item.on svg {
-  transform: scale(1.08);
-  stroke-width: 2.1;
+  transform: scale(1.10);
   fill: currentColor;
   fill-opacity: 0.16;
+  stroke-width: 2.1;
 }
 
-/* Rótulo de Texto */
+/* Rótulo de texto */
+.lbl,
 .liquid-glass-nav .lbl {
   display: block;
-  font-size: 10.5px;
+  height: 12px;
   line-height: 12px;
   white-space: nowrap;
-  letter-spacing: -0.01em;
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition: height 0.3s, opacity 0.25s, margin 0.3s;
 }
 
+.mini .lbl,
 .liquid-glass-nav.mini .lbl {
-  opacity: 0;
-  transform: translateY(4px);
-  pointer-events: none;
   height: 0;
+  opacity: 0;
+  margin-top: -3px;
   overflow: hidden;
-  margin: 0;
 }
 
-/* ── Badge de Reservas ── */
+/* Badge de notificação / reservas */
+.badge,
 .liquid-glass-nav .badge {
   position: absolute;
   top: -3px;
-  right: -7px;
-  min-width: 17px;
-  height: 17px;
-  padding: 0 4.5px;
+  right: -8px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
   border-radius: 999px;
   background: #ff3b30;
   color: #ffffff;
-  font-size: 10px;
-  font-weight: 800;
-  line-height: 17px;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 18px;
   text-align: center;
-  box-shadow: 0 2px 6px rgba(255, 59, 48, 0.45), 0 0 0 2px var(--lg-badge-ring);
-  transition: transform 0.2s cubic-bezier(0.3, 1.5, 0.5, 1);
+  box-shadow: 0 0 0 2px var(--nav-badge-ring), 0 2px 6px rgba(255, 59, 48, 0.45);
+  transition: top 0.3s;
   pointer-events: none;
 }
 
-/* ── Variação Neo-Brutalista Opcional (.glass-brutal) ── */
+/* ── 7. VARIAÇÃO NEO-BRUTALISTA OPCIONAL (.glass-brutal) ── */
+.nav.glass-brutal,
 .liquid-glass-nav.glass-brutal {
   border: 2px solid #000000 !important;
-  box-shadow: 4px 4px 0 #000000, 0 16px 36px var(--lg-glass-shadow) !important;
+  box-shadow: 4px 4px 0 #000000, 0 12px 32px rgba(15, 23, 42, 0.18) !important;
 }
 
-.dark .liquid-glass-nav.glass-brutal {
-  border: 2px solid #ffffff !important;
+.dark .nav.glass-brutal,
+.dark .liquid-glass-nav.glass-brutal,
+[data-theme="dark"] .nav.glass-brutal,
+[data-theme="dark"] .liquid-glass-nav.glass-brutal {
+  border-color: #ffffff !important;
   box-shadow: 4px 4px 0 #ffffff, 0 20px 48px rgba(0, 0, 0, 0.65) !important;
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .nav,
   .liquid-glass-nav,
-  .liquid-glass-nav * {
+  .pill,
+  .item,
+  .item svg,
+  .lbl {
     transition-duration: 0.01ms !important;
   }
 }
