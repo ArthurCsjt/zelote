@@ -1,7 +1,7 @@
 /* ============================================================
    SCHEDULING — GLASS UI SYSTEM
    Glassmorfismo Sério / Tech — isolado do tema Neo-Brutalista
-   Escopo: .glass-header  .glass-nav  e seus filhos apenas
+   Escopo: .glass-header  .period-bar  e seus filhos apenas
    ============================================================ */
 
 /* ══════════════════════════════════════════════════════════
@@ -239,7 +239,7 @@
    ══════════════════════════════════════════════════════════ */
 
 /* ── Outer Container ─────────────────────────────────────── */
-.glass-nav {
+.period-bar {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
@@ -258,7 +258,7 @@
     0  1px  2px 0 rgba(0, 0, 0, 0.04);
 }
 
-.dark .glass-nav {
+.dark .period-bar {
   background: rgba(24, 24, 27, 0.60);
   border-color: rgba(255, 255, 255, 0.08);
   box-shadow:
@@ -267,13 +267,13 @@
 }
 
 @media (min-width: 1024px) {
-  .glass-nav {
+  .period-bar {
     flex-direction: row;
   }
 }
 
 /* ── Inner "pill" surfaces ────────────────────────────────── */
-.glass-nav__surface {
+.period-bar__surface {
   display: flex;
   align-items: center;
 
@@ -285,18 +285,18 @@
   box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.04);
 }
 
-.dark .glass-nav__surface {
+.dark .period-bar__surface {
   background: rgba(39, 39, 42, 0.50);
   border-color: rgba(63, 63, 70, 0.50);
   box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.15);
 }
 
-.glass-nav__period {
+.period-bar__period {
   flex: 1 1 0%;
 }
 
 /* ── Chevron / Arrow Buttons ──────────────────────────────── */
-.glass-nav__arrow {
+.period-bar__arrow {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -313,33 +313,33 @@
   transition: background 0.15s ease, color 0.15s ease;
 }
 
-.dark .glass-nav__arrow { color: #d4d4d8; }
+.dark .period-bar__arrow { color: #d4d4d8; }
 
-.glass-nav__arrow:hover:not(:disabled) {
+.period-bar__arrow:hover:not(:disabled) {
   background: rgba(99, 102, 241, 0.06);
   color: #3f3f46;
 }
 
-.dark .glass-nav__arrow:hover:not(:disabled) {
+.dark .period-bar__arrow:hover:not(:disabled) {
   background: rgba(99, 102, 241, 0.10);
   color: #f4f4f5;
 }
 
-.glass-nav__arrow:active:not(:disabled) { background: rgba(99, 102, 241, 0.12); }
+.period-bar__arrow:active:not(:disabled) { background: rgba(99, 102, 241, 0.12); }
 
-.glass-nav__arrow:disabled {
+.period-bar__arrow:disabled {
   opacity: 0.30;
   cursor: not-allowed;
 }
 
-.glass-nav__arrow--left  { border-right: 1px solid rgba(228, 228, 231, 0.70); }
-.glass-nav__arrow--right { border-left:  1px solid rgba(228, 228, 231, 0.70); }
+.period-bar__arrow--left  { border-right: 1px solid rgba(228, 228, 231, 0.70); }
+.period-bar__arrow--right { border-left:  1px solid rgba(228, 228, 231, 0.70); }
 
-.dark .glass-nav__arrow--left  { border-right-color: rgba(63, 63, 70, 0.50); }
-.dark .glass-nav__arrow--right { border-left-color:  rgba(63, 63, 70, 0.50); }
+.dark .period-bar__arrow--left  { border-right-color: rgba(63, 63, 70, 0.50); }
+.dark .period-bar__arrow--right { border-left-color:  rgba(63, 63, 70, 0.50); }
 
 /* ── Period Label ─────────────────────────────────────────── */
-.glass-nav__period-label {
+.period-bar__period-label {
   flex: 1 1 0%;
   display: flex;
   align-items: center;
@@ -356,14 +356,14 @@
   user-select: none;
 }
 
-.dark .glass-nav__period-label { color: #f4f4f5; }
+.dark .period-bar__period-label { color: #f4f4f5; }
 
 @media (min-width: 768px) {
-  .glass-nav__period-label { font-size: 0.875rem; }
+  .period-bar__period-label { font-size: 0.875rem; }
 }
 
 /* ── Year Control ─────────────────────────────────────────── */
-.glass-nav__year-control {
+.period-bar__year-control {
   display: flex;
   align-items: center;
   flex-shrink: 0;
@@ -371,9 +371,9 @@
   border-right: 1px solid rgba(228, 228, 231, 0.70);
 }
 
-.dark .glass-nav__year-control { border-right-color: rgba(63, 63, 70, 0.50); }
+.dark .period-bar__year-control { border-right-color: rgba(63, 63, 70, 0.50); }
 
-.glass-nav__year-value {
+.period-bar__year-value {
   margin: 0 0.5rem;
   font-size: 0.875rem;
   font-weight: 700;
@@ -384,9 +384,9 @@
   user-select: none;
 }
 
-.dark .glass-nav__year-value { color: #e4e4e7; }
+.dark .period-bar__year-value { color: #e4e4e7; }
 
-.glass-nav__year-btn {
+.period-bar__year-btn {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -402,18 +402,18 @@
   transition: background 0.15s ease, color 0.15s ease;
 }
 
-.glass-nav__year-btn:hover {
+.period-bar__year-btn:hover {
   background: rgba(244, 244, 245, 0.70);
   color: #18181b;
 }
 
-.dark .glass-nav__year-btn:hover {
+.dark .period-bar__year-btn:hover {
   background: rgba(63, 63, 70, 0.60);
   color: #f4f4f5;
 }
 
 /* ── Month Pills Scroller ─────────────────────────────────── */
-.glass-nav__months {
+.period-bar__months {
   display: flex;
   align-items: center;
   gap: 0.125rem;
@@ -422,10 +422,10 @@
   scrollbar-width: none;
 }
 
-.glass-nav__months::-webkit-scrollbar { display: none; }
+.period-bar__months::-webkit-scrollbar { display: none; }
 
 /* ── Individual Month Pill ────────────────────────────────── */
-.glass-nav__month-pill {
+.period-bar__month-pill {
   position: relative;
   flex-shrink: 0;
 
@@ -445,30 +445,30 @@
   transition: background 0.15s ease, color 0.15s ease;
 }
 
-.dark .glass-nav__month-pill { color: #a1a1aa; }
+.dark .period-bar__month-pill { color: #a1a1aa; }
 
-.glass-nav__month-pill:hover {
+.period-bar__month-pill:hover {
   background: rgba(244, 244, 245, 0.80);
   color: #18181b;
 }
 
-.dark .glass-nav__month-pill:hover {
+.dark .period-bar__month-pill:hover {
   background: rgba(63, 63, 70, 0.50);
   color: #f4f4f5;
 }
 
-.glass-nav__month-pill--active {
+.period-bar__month-pill--active {
   background: hsl(var(--primary));
   color: hsl(var(--primary-foreground));
   box-shadow: 0 2px 8px 0 hsl(var(--primary) / 0.35);
 }
 
-.glass-nav__month-pill--active:hover {
+.period-bar__month-pill--active:hover {
   background: hsl(var(--primary));
   color: hsl(var(--primary-foreground));
 }
 
-.glass-nav__today-dot {
+.period-bar__today-dot {
   position: absolute;
   top: 0.25rem;
   right: 0.25rem;
@@ -479,7 +479,7 @@
 }
 
 /* ── Expand "+" Button ────────────────────────────────────── */
-.glass-nav__expand-btn {
+.period-bar__expand-btn {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -497,18 +497,18 @@
   transition: background 0.15s ease, color 0.15s ease;
 }
 
-.glass-nav__expand-btn:hover {
+.period-bar__expand-btn:hover {
   background: rgba(244, 244, 245, 0.80);
   color: #3f3f46;
 }
 
-.dark .glass-nav__expand-btn:hover {
+.dark .period-bar__expand-btn:hover {
   background: rgba(63, 63, 70, 0.50);
   color: #e4e4e7;
 }
 
 /* ── Outer Container ─────────────────────────────────────── */
-.glass-nav {
+.period-bar {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
@@ -527,7 +527,7 @@
     0  1px  2px 0 rgba(0, 0, 0, 0.04);
 }
 
-.dark .glass-nav {
+.dark .period-bar {
   background: rgba(24, 24, 27, 0.60);   /* zinc-900 */
   border-color: rgba(255, 255, 255, 0.08);
   box-shadow:
@@ -536,13 +536,13 @@
 }
 
 @media (min-width: 1024px) {
-  .glass-nav {
+  .period-bar {
     flex-direction: row;
   }
 }
 
 /* ── Inner "pill" surfaces ────────────────────────────────── */
-.glass-nav__surface {
+.period-bar__surface {
   display: flex;
   align-items: center;
 
@@ -554,19 +554,19 @@
   box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.04);
 }
 
-.dark .glass-nav__surface {
+.dark .period-bar__surface {
   background: rgba(39, 39, 42, 0.50);            /* zinc-800/50 */
   border-color: rgba(63, 63, 70, 0.50);          /* zinc-700/50 */
   box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.15);
 }
 
 /* Period navigator grows to fill available width */
-.glass-nav__period {
+.period-bar__period {
   flex: 1 1 0%;
 }
 
 /* ── Chevron / Arrow Buttons ──────────────────────────────── */
-.glass-nav__arrow {
+.period-bar__arrow {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -583,42 +583,42 @@
   transition: background 0.15s ease, color 0.15s ease;
 }
 
-.dark .glass-nav__arrow {
+.dark .period-bar__arrow {
   color: #d4d4d8;        /* zinc-300 */
 }
 
-.glass-nav__arrow:hover:not(:disabled) {
+.period-bar__arrow:hover:not(:disabled) {
   background: rgba(99, 102, 241, 0.06);   /* primary/6 */
   color: #3f3f46;
 }
 
-.dark .glass-nav__arrow:hover:not(:disabled) {
+.dark .period-bar__arrow:hover:not(:disabled) {
   background: rgba(99, 102, 241, 0.10);
   color: #f4f4f5;
 }
 
-.glass-nav__arrow:active:not(:disabled) {
+.period-bar__arrow:active:not(:disabled) {
   background: rgba(99, 102, 241, 0.12);
 }
 
-.glass-nav__arrow:disabled {
+.period-bar__arrow:disabled {
   opacity: 0.30;
   cursor: not-allowed;
 }
 
 /* Dividers between arrow and label */
-.glass-nav__arrow--left {
+.period-bar__arrow--left {
   border-right: 1px solid rgba(228, 228, 231, 0.70);
 }
-.glass-nav__arrow--right {
+.period-bar__arrow--right {
   border-left:  1px solid rgba(228, 228, 231, 0.70);
 }
 
-.dark .glass-nav__arrow--left  { border-right-color: rgba(63, 63, 70, 0.50); }
-.dark .glass-nav__arrow--right { border-left-color:  rgba(63, 63, 70, 0.50); }
+.dark .period-bar__arrow--left  { border-right-color: rgba(63, 63, 70, 0.50); }
+.dark .period-bar__arrow--right { border-left-color:  rgba(63, 63, 70, 0.50); }
 
 /* ── Period Label ─────────────────────────────────────────── */
-.glass-nav__period-label {
+.period-bar__period-label {
   flex: 1 1 0%;
   display: flex;
   align-items: center;
@@ -636,18 +636,18 @@
   user-select: none;
 }
 
-.dark .glass-nav__period-label {
+.dark .period-bar__period-label {
   color: #f4f4f5;           /* zinc-100 */
 }
 
 @media (min-width: 768px) {
-  .glass-nav__period-label {
+  .period-bar__period-label {
     font-size: 0.875rem;    /* text-sm */
   }
 }
 
 /* ── Year Control ─────────────────────────────────────────── */
-.glass-nav__year-control {
+.period-bar__year-control {
   display: flex;
   align-items: center;
   flex-shrink: 0;
@@ -655,11 +655,11 @@
   border-right: 1px solid rgba(228, 228, 231, 0.70);
 }
 
-.dark .glass-nav__year-control {
+.dark .period-bar__year-control {
   border-right-color: rgba(63, 63, 70, 0.50);
 }
 
-.glass-nav__year-value {
+.period-bar__year-value {
   margin: 0 0.5rem;
   font-size: 0.875rem;
   font-weight: 700;
@@ -670,12 +670,12 @@
   user-select: none;
 }
 
-.dark .glass-nav__year-value {
+.dark .period-bar__year-value {
   color: #e4e4e7;           /* zinc-200 */
 }
 
 /* Small year arrow buttons */
-.glass-nav__year-btn {
+.period-bar__year-btn {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -691,18 +691,18 @@
   transition: background 0.15s ease, color 0.15s ease;
 }
 
-.glass-nav__year-btn:hover {
+.period-bar__year-btn:hover {
   background: rgba(244, 244, 245, 0.70);  /* zinc-100/70 */
   color: #18181b;
 }
 
-.dark .glass-nav__year-btn:hover {
+.dark .period-bar__year-btn:hover {
   background: rgba(63, 63, 70, 0.60);
   color: #f4f4f5;
 }
 
 /* ── Month Pills Scroller ─────────────────────────────────── */
-.glass-nav__months {
+.period-bar__months {
   display: flex;
   align-items: center;
   gap: 0.125rem;
@@ -711,12 +711,12 @@
   scrollbar-width: none;
 }
 
-.glass-nav__months::-webkit-scrollbar {
+.period-bar__months::-webkit-scrollbar {
   display: none;
 }
 
 /* ── Individual Month Pill ────────────────────────────────── */
-.glass-nav__month-pill {
+.period-bar__month-pill {
   position: relative;
   flex-shrink: 0;
 
@@ -736,34 +736,34 @@
   transition: background 0.15s ease, color 0.15s ease;
 }
 
-.dark .glass-nav__month-pill {
+.dark .period-bar__month-pill {
   color: #a1a1aa;           /* zinc-400 */
 }
 
-.glass-nav__month-pill:hover {
+.period-bar__month-pill:hover {
   background: rgba(244, 244, 245, 0.80);
   color: #18181b;
 }
 
-.dark .glass-nav__month-pill:hover {
+.dark .period-bar__month-pill:hover {
   background: rgba(63, 63, 70, 0.50);
   color: #f4f4f5;
 }
 
 /* Active state — filled pill */
-.glass-nav__month-pill--active {
+.period-bar__month-pill--active {
   background: hsl(var(--primary));
   color: hsl(var(--primary-foreground));
   box-shadow: 0 2px 8px 0 hsl(var(--primary) / 0.35);
 }
 
-.glass-nav__month-pill--active:hover {
+.period-bar__month-pill--active:hover {
   background: hsl(var(--primary));
   color: hsl(var(--primary-foreground));
 }
 
 /* "Today" dot on non-active current month */
-.glass-nav__today-dot {
+.period-bar__today-dot {
   position: absolute;
   top: 0.25rem;
   right: 0.25rem;
@@ -774,7 +774,7 @@
 }
 
 /* ── Expand "+" Button ────────────────────────────────────── */
-.glass-nav__expand-btn {
+.period-bar__expand-btn {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -792,12 +792,12 @@
   transition: background 0.15s ease, color 0.15s ease;
 }
 
-.glass-nav__expand-btn:hover {
+.period-bar__expand-btn:hover {
   background: rgba(244, 244, 245, 0.80);
   color: #3f3f46;
 }
 
-.dark .glass-nav__expand-btn:hover {
+.dark .period-bar__expand-btn:hover {
   background: rgba(63, 63, 70, 0.50);
   color: #e4e4e7;
 }
@@ -805,60 +805,60 @@
 /* ══════════════════════════════════════════════════════════
    CONTRAST BOOST — make nav row more readable, less washed out
    ══════════════════════════════════════════════════════════ */
-.glass-nav {
+.period-bar {
   background: rgba(255, 255, 255, 0.88) !important;
   border-color: rgba(212, 212, 216, 0.85) !important;
   box-shadow:
     0 10px 36px 0 rgba(0, 0, 0, 0.10),
     0 1px 2px 0 rgba(0, 0, 0, 0.06) !important;
 }
-.dark .glass-nav {
+.dark .period-bar {
   background: rgba(24, 24, 27, 0.82) !important;
   border-color: rgba(255, 255, 255, 0.10) !important;
 }
 
-.glass-nav__surface {
+.period-bar__surface {
   background: rgba(255, 255, 255, 0.85) !important;
   border-color: rgba(212, 212, 216, 0.90) !important;
   box-shadow:
     0 2px 8px 0 rgba(0, 0, 0, 0.06),
     inset 0 1px 0 rgba(255, 255, 255, 0.95) !important;
 }
-.dark .glass-nav__surface {
+.dark .period-bar__surface {
   background: rgba(39, 39, 42, 0.75) !important;
   border-color: rgba(82, 82, 91, 0.70) !important;
 }
 
-.glass-nav__period-label {
+.period-bar__period-label {
   font-size: 0.8125rem !important;
   font-weight: 700 !important;
   color: #18181b !important;
   letter-spacing: -0.02em !important;
 }
-.dark .glass-nav__period-label { color: #fafafa !important; }
+.dark .period-bar__period-label { color: #fafafa !important; }
 @media (min-width: 768px) {
-  .glass-nav__period-label { font-size: 0.9375rem !important; }
+  .period-bar__period-label { font-size: 0.9375rem !important; }
 }
 
-.glass-nav__year-value {
+.period-bar__year-value {
   font-size: 0.9375rem !important;
   font-weight: 800 !important;
   color: #18181b !important;
 }
-.dark .glass-nav__year-value { color: #fafafa !important; }
+.dark .period-bar__year-value { color: #fafafa !important; }
 
-.glass-nav__arrow { color: #27272a !important; }
-.dark .glass-nav__arrow { color: #e4e4e7 !important; }
+.period-bar__arrow { color: #27272a !important; }
+.dark .period-bar__arrow { color: #e4e4e7 !important; }
 
-.glass-nav__month-pill {
+.period-bar__month-pill {
   color: #3f3f46 !important;
   font-weight: 700 !important;
 }
-.dark .glass-nav__month-pill { color: #d4d4d8 !important; }
+.dark .period-bar__month-pill { color: #d4d4d8 !important; }
 
-.glass-nav__arrow--left,
-.glass-nav__year-control { border-right-color: rgba(212, 212, 216, 0.90) !important; }
-.glass-nav__arrow--right { border-left-color: rgba(212, 212, 216, 0.90) !important; }
-.dark .glass-nav__arrow--left,
-.dark .glass-nav__year-control { border-right-color: rgba(82, 82, 91, 0.60) !important; }
-.dark .glass-nav__arrow--right { border-left-color: rgba(82, 82, 91, 0.60) !important; }
+.period-bar__arrow--left,
+.period-bar__year-control { border-right-color: rgba(212, 212, 216, 0.90) !important; }
+.period-bar__arrow--right { border-left-color: rgba(212, 212, 216, 0.90) !important; }
+.dark .period-bar__arrow--left,
+.dark .period-bar__year-control { border-right-color: rgba(82, 82, 91, 0.60) !important; }
+.dark .period-bar__arrow--right { border-left-color: rgba(82, 82, 91, 0.60) !important; }

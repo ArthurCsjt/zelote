@@ -1,20 +1,20 @@
 /* ==========================================================================
-   Liquid Glass Navigation (iOS 26 Style)
+   Liquid Glass Navigation (iOS 26 Style) - BEM Prefix: .lg-nav
    ========================================================================== */
 
 /* ── 1. VARIÁVEIS: MODO CLARO (PADRÃO) ── */
 :root {
   /* Vidro tingido com leve tom azulado no centro para destacar contra a tabela branca */
-  --nav-glass-bg: linear-gradient(160deg,
+  --lg-nav-glass-bg: linear-gradient(160deg,
     rgba(255, 255, 255, 0.40) 0%,
     rgba(30, 60, 140, 0.08) 50%,
     rgba(255, 255, 255, 0.35) 100%);
-  --nav-glass-fallback: rgba(245, 248, 255, 0.94);
+  --lg-nav-glass-fallback: rgba(245, 248, 255, 0.94);
   /* Escurece levemente o que passa por trás (brightness .96) */
-  --nav-glass-filter: blur(14px) saturate(180%) brightness(0.96);
+  --lg-nav-glass-filter: blur(14px) saturate(180%) brightness(0.96);
 
   /* Silhueta escura fina por fora (0 0 0 1px) + reflexo branco por dentro + sombra dupla */
-  --nav-glass-shadow:
+  --lg-nav-glass-shadow:
     0 12px 32px rgba(15, 23, 42, 0.20),
     0 2px 6px rgba(15, 23, 42, 0.12),
     0 0 0 1px rgba(15, 23, 42, 0.12),
@@ -22,54 +22,83 @@
     inset 0 -1px 2px rgba(0, 0, 0, 0.05);
 
   /* Pílula ativa: quase sólida e mais clara que a barra ao redor */
-  --nav-pill-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(255, 255, 255, 0.78) 100%);
-  --nav-pill-shadow:
+  --lg-nav-pill-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(255, 255, 255, 0.78) 100%);
+  --lg-nav-pill-shadow:
     0 3px 10px rgba(15, 23, 42, 0.18),
     inset 0 1.5px 1px rgba(255, 255, 255, 1),
     inset 0 -1px 2px rgba(0, 0, 0, 0.04);
-  --nav-pill-border: rgba(15, 23, 42, 0.06);
+  --lg-nav-pill-border: rgba(15, 23, 42, 0.06);
 
   /* Texto e ícones: azul-marinho 72% para inativas e azul vivo na ativa (> 4.5:1) */
-  --nav-ink-soft: rgba(15, 30, 70, 0.72);
-  --nav-ink-hover: #0f1e46;
-  --nav-active: #0a5cff;
-  --nav-badge-ring: #ffffff;
+  --lg-nav-ink-soft: rgba(15, 30, 70, 0.72);
+  --lg-nav-ink-hover: #0f1e46;
+  --lg-nav-active: #0a5cff;
+  --lg-nav-badge-ring: #ffffff;
 }
 
 /* ── 2. VARIÁVEIS: MODO ESCURO (.dark ou [data-theme="dark"]) ── */
 .dark,
-[data-theme="dark"],
-:root:not([data-theme="light"]):not(.light) {
-  --nav-glass-bg: linear-gradient(160deg,
+[data-theme="dark"] {
+  --lg-nav-glass-bg: linear-gradient(160deg,
     rgba(30, 41, 59, 0.78) 0%,
     rgba(18, 28, 54, 0.40) 45%,
     rgba(15, 23, 42, 0.70) 100%);
-  --nav-glass-fallback: rgba(18, 28, 54, 0.92);
-  --nav-glass-filter: blur(12px) saturate(200%) brightness(1.05);
+  --lg-nav-glass-fallback: rgba(18, 28, 54, 0.92);
+  --lg-nav-glass-filter: blur(12px) saturate(200%) brightness(1.05);
 
-  --nav-glass-shadow:
+  --lg-nav-glass-shadow:
     0 14px 34px rgba(0, 0, 0, 0.50),
     0 2px 6px rgba(0, 0, 0, 0.20),
     0 0 0 1px rgba(255, 255, 255, 0.15),
     inset 0 2px 2px rgba(255, 255, 255, 0.45),
     inset 0 -2px 3px rgba(255, 255, 255, 0.15);
 
-  --nav-pill-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0.12) 100%);
-  --nav-pill-shadow:
+  --lg-nav-pill-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0.12) 100%);
+  --lg-nav-pill-shadow:
     0 3px 12px rgba(0, 0, 0, 0.35),
     inset 0 1.5px 1px rgba(255, 255, 255, 0.60),
     inset 0 -1.5px 2px rgba(255, 255, 255, 0.20);
-  --nav-pill-border: rgba(255, 255, 255, 0.18);
+  --lg-nav-pill-border: rgba(255, 255, 255, 0.18);
 
-  --nav-ink-soft: rgba(240, 245, 255, 0.66);
-  --nav-ink-hover: #ffffff;
-  --nav-active: #8dbbff;
-  --nav-badge-ring: #162035;
+  --lg-nav-ink-soft: rgba(240, 245, 255, 0.66);
+  --lg-nav-ink-hover: #ffffff;
+  --lg-nav-active: #8dbbff;
+  --lg-nav-badge-ring: #162035;
 }
 
-/* ── 3. A BARRA DE VIDRO (.nav) ── */
-.nav,
-.liquid-glass-nav {
+/* Respeitar preferência do sistema operacional no primeiro paint */
+@media (prefers-color-scheme: dark) {
+  :root:not(.light):not(.dark):not([data-theme]) {
+    --lg-nav-glass-bg: linear-gradient(160deg,
+      rgba(30, 41, 59, 0.78) 0%,
+      rgba(18, 28, 54, 0.40) 45%,
+      rgba(15, 23, 42, 0.70) 100%);
+    --lg-nav-glass-fallback: rgba(18, 28, 54, 0.92);
+    --lg-nav-glass-filter: blur(12px) saturate(200%) brightness(1.05);
+
+    --lg-nav-glass-shadow:
+      0 14px 34px rgba(0, 0, 0, 0.50),
+      0 2px 6px rgba(0, 0, 0, 0.20),
+      0 0 0 1px rgba(255, 255, 255, 0.15),
+      inset 0 2px 2px rgba(255, 255, 255, 0.45),
+      inset 0 -2px 3px rgba(255, 255, 255, 0.15);
+
+    --lg-nav-pill-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0.12) 100%);
+    --lg-nav-pill-shadow:
+      0 3px 12px rgba(0, 0, 0, 0.35),
+      inset 0 1.5px 1px rgba(255, 255, 255, 0.60),
+      inset 0 -1.5px 2px rgba(255, 255, 255, 0.20);
+    --lg-nav-pill-border: rgba(255, 255, 255, 0.18);
+
+    --lg-nav-ink-soft: rgba(240, 245, 255, 0.66);
+    --lg-nav-ink-hover: #ffffff;
+    --lg-nav-active: #8dbbff;
+    --lg-nav-badge-ring: #162035;
+  }
+}
+
+/* ── 3. A BARRA DE VIDRO (.lg-nav) ── */
+.lg-nav {
   position: fixed;
   left: 0;
   right: 0;
@@ -89,21 +118,18 @@
   -webkit-user-select: none;
   pointer-events: auto;
 
-  background: var(--nav-glass-bg);
-  backdrop-filter: var(--nav-glass-filter);
-  -webkit-backdrop-filter: var(--nav-glass-filter);
-  box-shadow: var(--nav-glass-shadow);
+  background: var(--lg-nav-glass-bg);
+  backdrop-filter: var(--lg-nav-glass-filter);
+  -webkit-backdrop-filter: var(--lg-nav-glass-filter);
+  box-shadow: var(--lg-nav-glass-shadow);
 
   transition: height 0.4s cubic-bezier(0.3, 1.2, 0.5, 1), opacity 0.25s ease, transform 0.25s ease;
 }
 
 /* Esconder barra enquanto houver modal ou diálogo aberto */
-body:has([role="dialog"]) .nav,
-body:has([role="dialog"]) .liquid-glass-nav,
-body[data-scroll-locked] .nav,
-body[data-scroll-locked] .liquid-glass-nav,
-body:has(.ag-overlay) .nav,
-body:has(.ag-overlay) .liquid-glass-nav {
+body:has([role="dialog"]) .lg-nav,
+body[data-scroll-locked] .lg-nav,
+body:has(.ag-overlay) .lg-nav {
   opacity: 0;
   pointer-events: none;
   transform: translateY(24px);
@@ -111,15 +137,13 @@ body:has(.ag-overlay) .liquid-glass-nav {
 
 /* Fallback se backdrop-filter não for suportado */
 @supports not (backdrop-filter: blur(14px)) {
-  .nav,
-  .liquid-glass-nav {
-    background: var(--nav-glass-fallback);
+  .lg-nav {
+    background: var(--lg-nav-glass-fallback);
   }
 }
 
 /* Borda de reflexo de luz */
-.nav::before,
-.liquid-glass-nav::before {
+.lg-nav::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -137,14 +161,12 @@ body:has(.ag-overlay) .liquid-glass-nav {
 }
 
 /* Modo encolhido ao rolar a página */
-.nav.mini,
-.liquid-glass-nav.mini {
+.lg-nav--mini {
   height: 56px;
 }
 
-/* ── 4. A PÍLULA DESLIZANTE (.pill) ── */
-.pill,
-.liquid-glass-nav .pill {
+/* ── 4. A PÍLULA DESLIZANTE (.lg-nav__pill) ── */
+.lg-nav__pill {
   position: absolute;
   top: 5px;
   bottom: 5px;
@@ -154,9 +176,9 @@ body:has(.ag-overlay) .liquid-glass-nav {
   pointer-events: none;
   z-index: 1;
 
-  background: var(--nav-pill-bg);
-  border: 1px solid var(--nav-pill-border);
-  box-shadow: var(--nav-pill-shadow);
+  background: var(--lg-nav-pill-bg);
+  border: 1px solid var(--lg-nav-pill-border);
+  box-shadow: var(--lg-nav-pill-shadow);
 
   transition:
     transform 0.5s cubic-bezier(0.3, 1.35, 0.5, 1),
@@ -164,19 +186,16 @@ body:has(.ag-overlay) .liquid-glass-nav {
     background 0.3s;
 }
 
-.pill.drag,
-.liquid-glass-nav .pill.drag {
+.lg-nav__pill--drag {
   transition: scale 0.3s cubic-bezier(0.3, 1.5, 0.5, 1);
 }
 
-.pill.press,
-.liquid-glass-nav .pill.press {
+.lg-nav__pill--press {
   scale: 1.08 1.06;
 }
 
-/* ── 5. OS BOTÕES (.item) ── */
-.item,
-.liquid-glass-nav .item {
+/* ── 5. OS BOTÕES (.lg-nav__item) ── */
+.lg-nav__item {
   flex: 1;
   position: relative;
   z-index: 2;
@@ -188,7 +207,7 @@ body:has(.ag-overlay) .liquid-glass-nav {
   align-items: center;
   justify-content: center;
   gap: 3px;
-  color: var(--nav-ink-soft);
+  color: var(--lg-nav-ink-soft);
   font-family: inherit;
   font-weight: 600;
   font-size: 11px;
@@ -200,19 +219,16 @@ body:has(.ag-overlay) .liquid-glass-nav {
   pointer-events: auto;
 }
 
-.item *,
-.liquid-glass-nav .item * {
+.lg-nav__item * {
   pointer-events: none;
 }
 
-.item:focus-visible,
-.liquid-glass-nav .item:focus-visible {
-  box-shadow: 0 0 0 2px var(--nav-active) inset;
+.lg-nav__item:focus-visible {
+  box-shadow: 0 0 0 2px var(--lg-nav-active) inset;
   border-radius: 999px;
 }
 
-.item svg,
-.liquid-glass-nav .item svg {
+.lg-nav__item svg {
   width: 25px;
   height: 25px;
   fill: none;
@@ -223,24 +239,28 @@ body:has(.ag-overlay) .liquid-glass-nav {
   transition: transform 0.35s cubic-bezier(0.3, 1.5, 0.5, 1), fill 0.25s, stroke-width 0.25s;
 }
 
-/* ── 6. ABA ATIVA (.item.on) ── */
-.item.on,
-.liquid-glass-nav .item.on {
-  color: var(--nav-active);
+/* ── 6. ABA ATIVA (.lg-nav__item--on) ── */
+.lg-nav__item--on {
+  color: var(--lg-nav-active);
   font-weight: 700;
 }
 
-.item.on svg,
-.liquid-glass-nav .item.on svg {
+.lg-nav__item--on svg {
   transform: scale(1.10);
   fill: currentColor;
   fill-opacity: 0.16;
   stroke-width: 2.1;
 }
 
-/* Rótulos e Badge */
-.lbl,
-.liquid-glass-nav .lbl {
+/* Contêiner de ícone e Rótulos */
+.lg-nav__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.lg-nav__label {
   display: block;
   height: 12px;
   line-height: 12px;
@@ -248,16 +268,14 @@ body:has(.ag-overlay) .liquid-glass-nav {
   transition: height 0.3s, opacity 0.25s, margin 0.3s;
 }
 
-.mini .lbl,
-.liquid-glass-nav.mini .lbl {
+.lg-nav--mini .lg-nav__label {
   height: 0;
   opacity: 0;
   margin-top: -3px;
   overflow: hidden;
 }
 
-.badge,
-.liquid-glass-nav .badge {
+.lg-nav__badge {
   position: absolute;
   top: -3px;
   right: -8px;
@@ -271,33 +289,29 @@ body:has(.ag-overlay) .liquid-glass-nav {
   font-weight: 700;
   line-height: 18px;
   text-align: center;
-  box-shadow: 0 0 0 2px var(--nav-badge-ring), 0 2px 6px rgba(255, 59, 48, 0.45);
+  box-shadow: 0 0 0 2px var(--lg-nav-badge-ring), 0 2px 6px rgba(255, 59, 48, 0.45);
   transition: top 0.3s;
   pointer-events: none;
 }
 
-/* ── 7. VARIAÇÃO NEO-BRUTALISTA OPCIONAL (.glass-brutal) ── */
-.nav.glass-brutal,
-.liquid-glass-nav.glass-brutal {
+/* ── 7. VARIAÇÃO NEO-BRUTALISTA OPCIONAL (.lg-nav--brutal) ── */
+.lg-nav--brutal {
   border: 2px solid #000000;
   box-shadow: 4px 4px 0 #000000, 0 12px 32px rgba(15, 23, 42, 0.18);
 }
 
-.dark .nav.glass-brutal,
-.dark .liquid-glass-nav.glass-brutal,
-[data-theme="dark"] .nav.glass-brutal,
-[data-theme="dark"] .liquid-glass-nav.glass-brutal {
+.dark .lg-nav--brutal,
+[data-theme="dark"] .lg-nav--brutal {
   border-color: #ffffff;
   box-shadow: 4px 4px 0 #ffffff, 0 20px 48px rgba(0, 0, 0, 0.65);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .nav,
-  .liquid-glass-nav,
-  .pill,
-  .item,
-  .item svg,
-  .lbl {
-    transition-duration: 0.01ms !important;
+  .lg-nav,
+  .lg-nav__pill,
+  .lg-nav__item,
+  .lg-nav__item svg,
+  .lg-nav__label {
+    transition-duration: 0.01ms;
   }
 }

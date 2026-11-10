@@ -14,7 +14,7 @@ import {
   subMonths,
 } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { BarChart3, CalendarDays, Download, ArrowRight, Plus, Search, Clock } from 'lucide-react';
+import { BarChart3, CalendarDays, Check, Download, ArrowRight, Plus, Search, Clock } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -272,11 +272,12 @@ const ReservationList = React.memo(function ReservationList({
                     <span className="hx-caption">
                       RETIRADOS · {loans}
                       {returnedLoans === loans ? (
-                        <span style={{ color: '#059669', fontWeight: 800, marginLeft: 6 }}>
-                          ✓ Todos devolvidos
+                        <span className="text-[var(--hx-ok)] font-bold inline-flex items-center gap-1" style={{ marginLeft: 6 }}>
+                          <Check size={12} />
+                          <span>Todos devolvidos</span>
                         </span>
                       ) : (
-                        <span style={{ color: '#d97706', fontWeight: 800, marginLeft: 6 }}>
+                        <span className="text-[var(--hx-warning)] font-bold" style={{ marginLeft: 6 }}>
                           · {returnedLoans} devolvido{returnedLoans === 1 ? '' : 's'} ·{' '}
                           {pendingLoans} pendente{pendingLoans === 1 ? '' : 's'}
                         </span>
@@ -297,7 +298,17 @@ const ReservationList = React.memo(function ReservationList({
                                 : `${tag} - Pendente de devolução`
                             }
                           >
-                            {loan.returned ? `✓ ${tag}` : `⚠️ ${tag}`}
+                            {loan.returned ? (
+                              <>
+                                <Check size={12} className="shrink-0" aria-label="Devolvido" />
+                                <span>{tag}</span>
+                              </>
+                            ) : (
+                              <>
+                                <AlertTriangle size={12} className="shrink-0" aria-label="Pendente de devolução" />
+                                <span>{tag}</span>
+                              </>
+                            )}
                           </span>
                         );
                       })}
@@ -446,14 +457,6 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
   }, [previousStats, previousQuery.data, scopedRows, coordination, user?.id, totalAvailableChromebooks, now, currentDate]);
 
   useEffect(() => {
-    if (!document.getElementById('ag-fonts')) {
-      const link = document.createElement('link');
-      link.id = 'ag-fonts';
-      link.rel = 'stylesheet';
-      link.href =
-        'https://fonts.googleapis.com/css2?family=Lexend:wght@400;600;800&family=Silkscreen&display=swap';
-      document.head.appendChild(link);
-    }
     const timer = window.setInterval(() => setNow(new Date()), 30000);
     return () => window.clearInterval(timer);
   }, []);

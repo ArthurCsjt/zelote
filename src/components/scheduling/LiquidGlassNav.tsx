@@ -105,7 +105,7 @@ export const LiquidGlassNav: React.FC<LiquidGlassNavProps> = ({
     return () => window.removeEventListener('resize', handleResize);
   }, [mounted, updatePillPosition]);
 
-  // Scroll handler for auto-shrink (.mini)
+  // Scroll handler for auto-shrink (.lg-nav--mini)
   useEffect(() => {
     if (!mounted) return;
     let lastScrollY = window.scrollY;
@@ -226,10 +226,12 @@ export const LiquidGlassNav: React.FC<LiquidGlassNavProps> = ({
 
   if (!mounted) return null;
 
+  const variantClass = variant === 'glass-brutal' ? 'lg-nav--brutal' : 'lg-nav--glass';
+
   const navContent = (
     <nav
       ref={navRef}
-      className={`liquid-glass-nav ${variant} ${isMini ? 'mini' : ''}`}
+      className={`lg-nav ${variantClass} ${isMini ? 'lg-nav--mini' : ''}`}
       aria-label="Navegação principal de agendamento"
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
@@ -239,7 +241,9 @@ export const LiquidGlassNav: React.FC<LiquidGlassNavProps> = ({
       {/* Pílula Deslizante Luminous Glass */}
       <span
         ref={pillRef}
-        className={`pill ${isDragging ? 'drag' : ''} ${isPressing ? 'press' : ''}`}
+        className={`lg-nav__pill ${isDragging ? 'lg-nav__pill--drag' : ''} ${
+          isPressing ? 'lg-nav__pill--press' : ''
+        }`}
         aria-hidden="true"
       />
 
@@ -250,7 +254,7 @@ export const LiquidGlassNav: React.FC<LiquidGlassNavProps> = ({
           <button
             key={tab.id}
             type="button"
-            className={`item ${isActive ? 'on' : ''}`}
+            className={`lg-nav__item ${isActive ? 'lg-nav__item--on' : ''}`}
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
@@ -258,7 +262,7 @@ export const LiquidGlassNav: React.FC<LiquidGlassNavProps> = ({
             }}
             aria-current={isActive ? 'page' : undefined}
           >
-            <div className="icon-container">
+            <div className="lg-nav__icon">
               {/* Semanal - Calendário */}
               {tab.icon === 'calendar' && (
                 <svg
@@ -276,21 +280,18 @@ export const LiquidGlassNav: React.FC<LiquidGlassNavProps> = ({
                 </svg>
               )}
 
-              {/* Reservas - Bookmark com Badge */}
+              {/* Reservas - Bookmark */}
               {tab.icon === 'bookmark' && (
-                <>
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
-                  </svg>
-
-                </>
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+                </svg>
               )}
 
               {/* Visão Geral - Grid 2x2 */}
@@ -312,7 +313,7 @@ export const LiquidGlassNav: React.FC<LiquidGlassNavProps> = ({
             </div>
 
             {/* Rótulo da Aba */}
-            <span className="lbl">{tab.label}</span>
+            <span className="lg-nav__label">{tab.label}</span>
           </button>
         );
       })}

@@ -14,6 +14,7 @@ import { useQuery } from '@tanstack/react-query';
 import type { User as AuthUser } from '@supabase/supabase-js';
 import { 
   Calendar, 
+  Check,
   Clock, 
   MapPin, 
   Trash2, 
@@ -284,7 +285,7 @@ export const MyReservationsView: React.FC<MyReservationsViewProps> = ({
             onClick={() => { setActiveFilter('today'); setConfirmCancelId(null); }}
           >
             <span>Hoje</span>
-            <span className="ml-1.5 opacity-80 font-bold text-[11px]">({counts.today})</span>
+            <span className="ml-1.5 opacity-80 font-bold text-xs">({counts.today})</span>
           </Button>
 
           <Button
@@ -293,7 +294,7 @@ export const MyReservationsView: React.FC<MyReservationsViewProps> = ({
             onClick={() => { setActiveFilter('week'); setConfirmCancelId(null); }}
           >
             <span>Esta semana</span>
-            <span className="ml-1.5 opacity-80 font-bold text-[11px]">({counts.week})</span>
+            <span className="ml-1.5 opacity-80 font-bold text-xs">({counts.week})</span>
           </Button>
 
           <Button
@@ -302,7 +303,7 @@ export const MyReservationsView: React.FC<MyReservationsViewProps> = ({
             onClick={() => { setActiveFilter('month'); setConfirmCancelId(null); }}
           >
             <span>Este mês</span>
-            <span className="ml-1.5 opacity-80 font-bold text-[11px]">({counts.month})</span>
+            <span className="ml-1.5 opacity-80 font-bold text-xs">({counts.month})</span>
           </Button>
 
           <Button
@@ -311,7 +312,7 @@ export const MyReservationsView: React.FC<MyReservationsViewProps> = ({
             onClick={() => { setActiveFilter('all'); setConfirmCancelId(null); }}
           >
             <span>Próximas</span>
-            <span className="ml-1.5 opacity-80 font-bold text-[11px]">({counts.all})</span>
+            <span className="ml-1.5 opacity-80 font-bold text-xs">({counts.all})</span>
           </Button>
 
           <Button
@@ -320,7 +321,7 @@ export const MyReservationsView: React.FC<MyReservationsViewProps> = ({
             onClick={() => { setActiveFilter('past'); setConfirmCancelId(null); }}
           >
             <span>Passadas</span>
-            <span className="ml-1.5 opacity-80 font-bold text-[11px]">({counts.past})</span>
+            <span className="ml-1.5 opacity-80 font-bold text-xs">({counts.past})</span>
           </Button>
         </div>
 
@@ -464,10 +465,10 @@ export const MyReservationsView: React.FC<MyReservationsViewProps> = ({
                     {/* Chips de Chromebooks Retirados / Devolvidos */}
                     {loansCount > 0 && (
                       <div className="hx-withdrawn mt-3 pt-2.5">
-                        <span className="hx-caption text-[11px] font-semibold text-[var(--hx-muted)] flex items-center justify-between">
+                        <span className="hx-caption text-xs font-semibold text-[var(--hx-muted)] flex items-center justify-between">
                           <span>Equipamentos retirados ({loansCount})</span>
                           {returnedLoans === loansCount ? (
-                            <span className="text-[var(--hx-ok)] font-bold">✓ Todos devolvidos</span>
+                            <span className="text-[var(--hx-ok)] font-bold inline-flex items-center gap-1"><Check size={12} /><span>Todos devolvidos</span></span>
                           ) : (
                             <span className="text-[var(--hx-warning)] font-bold">
                               · {returnedLoans} devolvido{returnedLoans === 1 ? '' : 's'} · {pendingLoans} pendente{pendingLoans === 1 ? '' : 's'}
@@ -483,7 +484,17 @@ export const MyReservationsView: React.FC<MyReservationsViewProps> = ({
                                 className={`hx-id ${loan.returned ? 'hx-id--returned' : 'hx-id--pending'}`}
                                 title={loan.returned ? `${tag} - Devolvido` : `${tag} - Pendente de devolução`}
                               >
-                                {loan.returned ? `✓ ${tag}` : `⚠️ ${tag}`}
+                                {loan.returned ? (
+                                  <>
+                                    <Check size={12} className="shrink-0" aria-label="Devolvido" />
+                                    <span>{tag}</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <AlertTriangle size={12} className="shrink-0" aria-label="Pendente de devolução" />
+                                    <span>{tag}</span>
+                                  </>
+                                )}
                               </span>
                             );
                           })}

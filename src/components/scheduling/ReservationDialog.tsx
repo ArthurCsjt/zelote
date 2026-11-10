@@ -102,13 +102,7 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
   externalOpen, onExternalOpenChange,
 }) => {
   const reduce = useReducedMotion();
-  useEffect(() => {
-    if (document.getElementById('ag-fonts')) return;
-    const l = document.createElement('link');
-    l.id = 'ag-fonts'; l.rel = 'stylesheet';
-    l.href = 'https://fonts.googleapis.com/css2?family=Lexend:wght@400;600;800&family=Silkscreen&display=swap';
-    document.head.appendChild(l);
-  }, []);
+
 
   const [open, setOpen] = useState(false);
   // Notifica o pai quando o estado open muda (para manter o slot montado)

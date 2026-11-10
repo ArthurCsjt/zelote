@@ -184,7 +184,7 @@ const SchedulingPage = () => {
     localStorage.setItem(LIMIT_KEY, newLimit.toString());
     // 3. Tenta salvar no banco em segundo plano
     updateSystemSetting('chromebook_operational_limit', newLimit).catch(() => {/* silencioso */ });
-    toast({ title: "✓ Limite atualizado", description: `Limite operacional definido para ${newLimit} Chromebooks.`, variant: "success" });
+    toast({ title: "Limite atualizado", description: `Limite operacional definido para ${newLimit} Chromebooks.`, variant: "success" });
   };
 
   const handleReservationSuccess = () => {
@@ -268,27 +268,27 @@ const SchedulingPage = () => {
           initial={{ opacity: 0, y: -12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
-          className="glass-nav"
+          className="period-bar"
         >
           {/* ── Week / Period Navigator ── */}
-          <div className="glass-nav__surface glass-nav__period">
+          <div className="period-bar__surface period-bar__period">
             <button
               onClick={() => handleDateChange('prev')}
               disabled={isLoading}
-              className="glass-nav__arrow glass-nav__arrow--left"
+              className="period-bar__arrow period-bar__arrow--left"
               aria-label="Período anterior"
             >
               <ChevronLeft size={16} strokeWidth={2.5} />
             </button>
 
-            <div className="glass-nav__period-label">
+            <div className="period-bar__period-label">
               {displayRange}
             </div>
 
             <button
               onClick={() => handleDateChange('next')}
               disabled={isLoading}
-              className="glass-nav__arrow glass-nav__arrow--right"
+              className="period-bar__arrow period-bar__arrow--right"
               aria-label="Próximo período"
             >
               <ChevronRight size={16} strokeWidth={2.5} />
@@ -296,20 +296,20 @@ const SchedulingPage = () => {
           </div>
 
           {/* ── Year + Month Selector ── */}
-          <div className="glass-nav__surface">
+          <div className="period-bar__surface">
             {/* Year control */}
-            <div className="glass-nav__year-control">
+            <div className="period-bar__year-control">
               <button
                 onClick={() => setCurrentDate(new Date(currentDate.getFullYear() - 1, currentDate.getMonth(), 1))}
-                className="glass-nav__year-btn"
+                className="period-bar__year-btn"
                 aria-label="Ano anterior"
               >
                 <ChevronLeft size={14} strokeWidth={2.5} />
               </button>
-              <span className="glass-nav__year-value">{currentDate.getFullYear()}</span>
+              <span className="period-bar__year-value">{currentDate.getFullYear()}</span>
               <button
                 onClick={() => setCurrentDate(new Date(currentDate.getFullYear() + 1, currentDate.getMonth(), 1))}
-                className="glass-nav__year-btn"
+                className="period-bar__year-btn"
                 aria-label="Próximo ano"
               >
                 <ChevronRight size={14} strokeWidth={2.5} />
@@ -317,7 +317,7 @@ const SchedulingPage = () => {
             </div>
 
             {/* Month pills */}
-            <div className="glass-nav__months">
+            <div className="period-bar__months">
               <AnimatePresence mode="popLayout">
                 {Array.from({ length: 12 }, (_, i) => {
                   const date = new Date(currentDate.getFullYear(), i, 1);
@@ -342,13 +342,13 @@ const SchedulingPage = () => {
                         setCurrentDate(targetDate);
                       }}
                       className={cn(
-                        'glass-nav__month-pill',
-                        isCurrentMonth && 'glass-nav__month-pill--active'
+                        'period-bar__month-pill',
+                        isCurrentMonth && 'period-bar__month-pill--active'
                       )}
                     >
                       {format(date, 'MMM', { locale: ptBR }).replace('.', '')}
                       {isTodayMonth && !isCurrentMonth && (
-                        <span className="glass-nav__today-dot" aria-hidden />
+                        <span className="period-bar__today-dot" aria-hidden />
                       )}
                     </motion.button>
                   );
@@ -357,7 +357,7 @@ const SchedulingPage = () => {
 
               <button
                 onClick={() => setIsMonthsExpanded(!isMonthsExpanded)}
-                className="glass-nav__expand-btn"
+                className="period-bar__expand-btn"
                 title={isMonthsExpanded ? 'Ver menos' : 'Ver todos os meses'}
                 aria-label="Alternar meses"
               >

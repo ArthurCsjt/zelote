@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useEffect, useState } from 'react';
+import React, { useMemo, useRef, useEffect, useState, useCallback } from 'react';
 import { format, isToday } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -50,6 +50,57 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
   const [isMobile, setIsMobile] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const constraintsRef = useRef<HTMLDivElement>(null);
+  const lastAutoScrolledWeek = useRef<string>('');
+  const hasUserScrolled = useRef<boolean>(false);
+
+  const [showHint, setShowHint] = useState<boolean>(() => {
+    try {
+      return !localStorage.getItem('zelote_grid_hint_seen');
+    } catch {
+      return true;
+    }
+  });
+
+  const dismissHint = useCallback(() => {
+    setShowHint(false);
+    try {
+      localStorage.setItem('zelote_grid_hint_seen', 'true');
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    if (!showHint || !isMobile) return;
+    const timer = setTimeout(dismissHint, 6000);
+    return () => clearTimeout(timer);
+  }, [showHint, isMobile, dismissHint]);
+
+  // Reset flag ao mudar de semana
+  useEffect(() => {
+    hasUserScrolled.current = false;
+  }, [currentDate]);
+
+  // Rolar até hoje na inicialização da semana
+  useEffect(() => {
+    if (!isMobile || isLoading || !constraintsRef.current) return;
+    const todayStr = format(new Date(), 'yyyy-MM-dd');
+    const weekKey = weekDays.map((d) => format(d, 'yyyy-MM-dd')).join('_');
+    const containsToday = weekDays.some((d) => format(d, 'yyyy-MM-dd') === todayStr);
+
+    if (!containsToday) {
+      lastAutoScrolledWeek.current = weekKey;
+      return;
+    }
+
+    if (lastAutoScrolledWeek.current === weekKey || hasUserScrolled.current) return;
+
+    const el = constraintsRef.current;
+    const todayHeader = el.querySelector<HTMLElement>(`[data-day="${todayStr}"]`);
+    if (todayHeader) {
+      const left = Math.max(0, todayHeader.offsetLeft - timeColumnWidth);
+      el.scrollTo({ left, behavior: 'auto' });
+      lastAutoScrolledWeek.current = weekKey;
+    }
+  }, [isMobile, isLoading, weekDays, timeColumnWidth]);
 
   const weekDays = getWeekDays(currentDate);
 
@@ -173,17 +224,34 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
   return (
     <div className="space-y-4 relative overflow-hidden">
       {/* Mobile Hint - Professional Indicator */}
-      {isMobile && (
-        <div className="flex items-center justify-center gap-2 mb-2 animate-pulse">
-          <GripVertical className="h-3 w-3 text-muted-foreground" />
-          <span className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">
-            Arraste lateralmente para navegar
-          </span>
-        </div>
-      )}
+      <AnimatePresence>
+        {isMobile && showHint && (
+          <motion.div
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{
+              duration: typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 0.3
+            }}
+            className="flex items-center justify-center gap-2 mb-2"
+          >
+            <GripVertical className="h-3 w-3 text-muted-foreground" />
+            <span className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">
+              Arraste lateralmente para navegar
+            </span>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <div
         ref={constraintsRef}
+        onScroll={() => {
+          hasUserScrolled.current = true;
+          if (showHint) dismissHint();
+        }}
+        style={{
+          scrollSnapType: isMobile ? 'x proximity' : undefined,
+          scrollPaddingLeft: isMobile ? `${timeColumnWidth}px` : undefined,
+        }}
         className="relative border-4 border-black dark:border-white shadow-[12px_12px_0px_0px_rgba(0,0,0,0.05)] bg-white dark:bg-zinc-950 overflow-x-auto md:overflow-hidden scrollbar-none cursor-grab active:cursor-grabbing"
       >
         <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.07] pointer-events-none neo-brutal-dots font-black text-black" />
@@ -268,7 +336,7 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
                             setIsEditingLimit(false);
                           }
                         }}
-                        className="bg-black dark:bg-white text-white dark:text-black text-[7px] px-1.5 py-0.5 font-black uppercase hover:opacity-85 transition-opacity"
+                        className="bg-black dark:bg-white text-white dark:text-black text-[10px] px-1.5 py-0.5 font-black uppercase hover:opacity-85 transition-opacity"
                       >
                         Salvar
                       </button>
@@ -277,7 +345,7 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
                           setIsEditingLimit(false);
                           setNewLimit(totalAvailableChromebooks.toString());
                         }}
-                        className="bg-white dark:bg-zinc-800 text-black dark:text-white border border-black dark:border-white text-[7px] px-1.5 py-0.5 font-black uppercase hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors"
+                        className="bg-white dark:bg-zinc-800 text-black dark:text-white border border-black dark:border-white text-[10px] px-1.5 py-0.5 font-black uppercase hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors"
                       >
                         X
                       </button>
@@ -289,7 +357,7 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
                       <span className="text-2xl sm:text-[28px] font-[1000] tabular-nums text-black dark:text-white tracking-tighter leading-none">
                         {totalAvailableChromebooks}
                       </span>
-                      <span className="text-[7px] sm:text-[8px] font-black uppercase text-zinc-500 dark:text-zinc-400 tracking-[0.22em] leading-none text-center">
+                      <span className="text-[10px] sm:text-[11px] font-black uppercase text-zinc-500 dark:text-zinc-400 tracking-[0.16em] leading-none text-center">
                         {isMobile ? 'Disp.' : 'Disponíveis'}
                       </span>
                     </div>
@@ -302,7 +370,7 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
             {/* Bottom Half - Heatmap legend aligned with daily heatmaps */}
             <div className="px-1.5 sm:px-2 py-1.5 border-t-4 border-black dark:border-white bg-zinc-50 dark:bg-zinc-950 relative z-10 flex flex-col items-center justify-center gap-1 h-[40px] sm:h-[50px] select-none shrink-0 w-full overflow-hidden">
               <div className="flex items-center gap-1 leading-none justify-center">
-                <span className="text-[6px] sm:text-[8px] font-[1000] uppercase tracking-[0.12em] text-zinc-500 dark:text-zinc-400 leading-none whitespace-nowrap">
+                <span className="text-[10px] sm:text-[11px] font-[1000] uppercase tracking-[0.10em] text-zinc-500 dark:text-zinc-400 leading-none whitespace-nowrap">
                   Mapa de Calor
                 </span>
               </div>
@@ -328,8 +396,10 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
             return (
               <div
                 key={index}
+                data-day={dateKey}
                 className={cn(
                   "h-32 sm:h-36 flex flex-col border-b-4 border-r-4 last:border-r-0 border-black dark:border-white transition-all relative group overflow-hidden",
+                  isMobile && "snap-start",
                   isCurrentDay
                     ? "bg-gradient-to-br from-primary via-primary to-primary/85 text-white"
                     : isHoveredColumn
@@ -389,7 +459,7 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
                         className="flex flex-col items-center justify-center gap-1"
                       >
                         <span className={cn(
-                          "text-[8px] sm:text-[10px] font-black uppercase tracking-[0.2em] sm:tracking-[0.28em] mb-0.5",
+                          "text-[10px] sm:text-[11px] font-black uppercase tracking-[0.18em] sm:tracking-[0.28em] mb-0.5",
                           isCurrentDay
                             ? "text-white/95 font-black"
                             : "text-zinc-500 dark:text-zinc-400"
@@ -408,7 +478,7 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
                           </span>
                         </div>
                         {isCurrentDay && (
-                          <span className="text-[7px] sm:text-[8px] font-black uppercase tracking-[0.3em] text-white/90 mt-0.5">
+                          <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-[0.2em] text-white/90 mt-0.5">
                             ● Hoje
                           </span>
                         )}
