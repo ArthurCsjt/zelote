@@ -180,21 +180,21 @@ const KpiStrip: React.FC<KpiStripProps> = React.memo(({ kpis, isLoading }) => {
       >
         {isLoading
           ? [1, 2, 3, 4, 5].map((i) => (
-              <div className="hx-kpi space-y-2" key={i}>
-                <Skeleton className="h-4 w-20 rounded bg-[var(--hx-soft)]" />
-                <Skeleton className="h-8 w-14 rounded-lg bg-[var(--hx-soft)]" />
-              </div>
-            ))
+            <div className="hx-kpi space-y-2" key={i}>
+              <Skeleton className="h-4 w-20 rounded bg-[var(--hx-soft)]" />
+              <Skeleton className="h-8 w-14 rounded-lg bg-[var(--hx-soft)]" />
+            </div>
+          ))
           : kpis.map((kpi) => (
-              <div className="hx-kpi" key={kpi.label}>
-                <span className="hx-kpi-label">{kpi.label}</span>
-                <strong className="hx-kpi-value">{kpi.value}</strong>
-                {'note' in kpi && kpi.note && <span className="hx-kpi-note">{kpi.note}</span>}
-                {'previous' in kpi && kpi.previous !== undefined && kpi.current !== undefined && (
-                  <Variation current={kpi.current} previous={kpi.previous} />
-                )}
-              </div>
-            ))}
+            <div className="hx-kpi" key={kpi.label}>
+              <span className="hx-kpi-label">{kpi.label}</span>
+              <strong className="hx-kpi-value">{kpi.value}</strong>
+              {'note' in kpi && kpi.note && <span className="hx-kpi-note">{kpi.note}</span>}
+              {'previous' in kpi && kpi.previous !== undefined && kpi.current !== undefined && (
+                <Variation current={kpi.current} previous={kpi.previous} />
+              )}
+            </div>
+          ))}
       </div>
 
       {/* Indicadores de página dos KPIs (Mobile) */}
@@ -305,9 +305,8 @@ const ReservationList = React.memo(function ReservationList({
                   type="button"
                   className="hx-open"
                   onClick={() => onOpen(res)}
-                  aria-label={`Ver reserva de ${displayName}, ${
-                    res.classroom || 'sem sala'
-                  }, ${slot}`}
+                  aria-label={`Ver reserva de ${displayName}, ${res.classroom || 'sem sala'
+                    }, ${slot}`}
                 >
                   <div className="hx-res-top">
                     <span className="hx-avatar" aria-hidden="true">
@@ -404,9 +403,8 @@ const ReservationList = React.memo(function ReservationList({
                         const tag = formatChromebookTag(loan.chromebook_id);
                         return (
                           <span
-                            className={`hx-id ${
-                              loan.returned ? 'hx-id--returned' : 'hx-id--pending'
-                            }`}
+                            className={`hx-id ${loan.returned ? 'hx-id--returned' : 'hx-id--pending'
+                              }`}
                             key={`${loan.chromebook_id}-${i}`}
                             title={
                               loan.returned
@@ -551,12 +549,12 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
     () =>
       previousQuery.isSuccess && previousQuery.data
         ? metrics(
-            coordination
-              ? previousQuery.data
-              : previousQuery.data.filter((res) => owned(res, user?.id)),
-            totalAvailableChromebooks,
-            now
-          )
+          coordination
+            ? previousQuery.data
+            : previousQuery.data.filter((res) => owned(res, user?.id)),
+          totalAvailableChromebooks,
+          now
+        )
         : null,
     [previousQuery.isSuccess, previousQuery.data, coordination, user?.id, totalAvailableChromebooks, now]
   );
@@ -596,8 +594,8 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
     const initialTarget = isSameMonth(today, currentDate)
       ? startOfDay(today)
       : firstReserved
-      ? parseISO(firstReserved)
-      : startOfMonth(currentDate);
+        ? parseISO(firstReserved)
+        : startOfMonth(currentDate);
 
     setSelectedDate(adjustIfWeekend(initialTarget, currentDate));
     setQuery('');
@@ -667,31 +665,31 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
     },
     ...(!isManutencao
       ? [
-          {
-            label: 'Chromebooks-aula',
-            value: number(stats.quantity),
-            previous: comparison?.previous.quantity,
-            current: comparison?.current.quantity ?? stats.quantity,
-          },
-        ]
+        {
+          label: 'Chromebooks-aula',
+          value: number(stats.quantity),
+          previous: comparison?.previous.quantity,
+          current: comparison?.current.quantity ?? stats.quantity,
+        },
+      ]
       : []),
     ...(coordination && !isManutencao
       ? [
-          { label: 'Ocupação média', value: percent(stats.average) },
-          {
-            label: 'Pico do mês',
-            value: number(stats.max.value),
-            note: stats.max.date
-              ? `dia ${parseISO(stats.max.date).getDate()}`
-              : 'Sem reservas',
-          },
-        ]
+        { label: 'Ocupação média', value: percent(stats.average) },
+        {
+          label: 'Pico do mês',
+          value: number(stats.max.value),
+          note: stats.max.date
+            ? `dia ${parseISO(stats.max.date).getDate()}`
+            : 'Sem reservas',
+        },
+      ]
       : []),
     ...(!isManutencao
       ? [
-          { label: 'Atendimento', value: percent(stats.attendance) },
-          { label: 'Não retiradas', value: number(stats.missed) },
-        ]
+        { label: 'Atendimento', value: percent(stats.attendance) },
+        { label: 'Não retiradas', value: number(stats.missed) },
+      ]
       : []),
     { label: 'Com Minecraft', value: number(stats.minecraft) },
   ], [coordination, stats, comparison, isManutencao]);
@@ -802,9 +800,6 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
           aria-labelledby="hx-calendar-tab"
           aria-busy={isLoading}
         >
-          {/* ── KPIs com Peek, Fade e Dots no Mobile (Memoizado) ── */}
-          <KpiStrip kpis={kpis} isLoading={isLoading} />
-
           <div className="hx-layout">
             {/* ── Calendário de Ocupação (Segunda a Sexta) ── */}
             <section className="hx-card" aria-label="Calendário de ocupação">
@@ -847,9 +842,8 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
                         aria-pressed={isSameDay(day, selectedDate)}
                         aria-label={`${format(day, "d 'de' MMMM", {
                           locale: ptBR,
-                        })}, ${rows.length} reservas${
-                          isManutencao ? '' : `, pico de ${percent(dayRate)}`
-                        }`}
+                        })}, ${rows.length} reservas${isManutencao ? '' : `, pico de ${percent(dayRate)}`
+                          }`}
                         onClick={() => {
                           pickedDate.current = true;
                           setSelectedDate(day);
@@ -911,7 +905,7 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
               className={cn(
                 'hx-card hx-day-section transition-shadow duration-300',
                 highlightDayHeader &&
-                  'ring-2 ring-[var(--hx-blue)] ring-offset-2 ring-offset-[var(--hx-card)]'
+                'ring-2 ring-[var(--hx-blue)] ring-offset-2 ring-offset-[var(--hx-card)]'
               )}
               aria-label="Reservas do dia"
             >
@@ -1023,11 +1017,7 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
                       ? 'O colégio não possui aulas regulares aos sábados e domingos.'
                       : 'Não há reservas de salas ou equipamentos para esta data.'
                   }
-                  action={
-                    !dayPast && !isWeekend(selectedDate)
-                      ? { label: 'Nova reserva', onClick: handleNewReservation }
-                      : undefined
-                  }
+
                 />
               ) : (
                 <ReservationList
@@ -1054,6 +1044,9 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
           aria-labelledby="hx-analytics-tab"
           aria-busy={isLoading}
         >
+          {/* ── KPIs com Peek, Fade e Dots no Mobile (Memoizado) ── */}
+          <KpiStrip kpis={kpis} isLoading={isLoading} />
+
           <div className="hx-analysis-header">
             <Button
               className="hx-control hx-export"
@@ -1128,14 +1121,12 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
                       aria-label={`${stats.served} atendidas, ${stats.partial} parciais, ${stats.missed} não retiradas`}
                       style={
                         {
-                          '--hx-served-stop': `${
-                            stats.past ? (stats.served / stats.past) * 100 : 0
-                          }%`,
-                          '--hx-partial-stop': `${
-                            stats.past
+                          '--hx-served-stop': `${stats.past ? (stats.served / stats.past) * 100 : 0
+                            }%`,
+                          '--hx-partial-stop': `${stats.past
                               ? ((stats.served + stats.partial) / stats.past) * 100
                               : 0
-                          }%`,
+                            }%`,
                         } as HistoryStyle
                       }
                     >
