@@ -45,7 +45,7 @@ interface MyReservationsViewProps {
   onGoToCalendar: () => void;
 }
 
-type PeriodFilter = 'today' | 'week' | 'month' | 'all' | 'past';
+type PeriodFilter = 'upcoming' | 'pending' | 'past';
 
 export const MyReservationsView: React.FC<MyReservationsViewProps> = ({
   currentUser,
@@ -56,7 +56,7 @@ export const MyReservationsView: React.FC<MyReservationsViewProps> = ({
   const { isResponsible } = useSchedulingResponsible();
   const { cancel: cancelReservation, isCanceling } = useCancelReservation(deleteReservation);
 
-  const [activeFilter, setActiveFilter] = useState<PeriodFilter>('week');
+  const [activeFilter, setActiveFilter] = useState<PeriodFilter>('upcoming');
   const [searchQuery, setSearchQuery] = useState('');
   const [visibleCount, setVisibleCount] = useState(20);
   const [cancelingId, setCancelingId] = useState<string | null>(null);
@@ -104,62 +104,56 @@ export const MyReservationsView: React.FC<MyReservationsViewProps> = ({
     enabled: !!currentUser?.id,
   });
 
-  // Contagens por período para exibir diretamente nos chips
+  // Contagens por período/status para exibir diretamente nos chips
   const counts = useMemo(() => {
-    let today = 0;
-    let week = 0;
-    let month = 0;
-    let all = 0;
+    let upcoming = 0;
+    let pending = 0;
     let past = 0;
 
     userReservations.forEach(res => {
-      const dt = parseISO(res.date);
       const { end } = interval(res);
       const isPast = end < now;
+      const hasPendingLoans = (res.associated_loans || []).some(l => !l.returned);
+      const isMissed = isPast && (res.quantity_requested || 0) > 0 && (!res.associated_loans || res.associated_loans.length === 0);
 
-      if (isSameDay(dt, now)) today++;
-      if (isSameWeek(dt, now, { weekStartsOn: 1 })) week++;
-      if (isSameMonth(dt, now)) month++;
-      if (!isPast) all++;
+      if (!isPast) upcoming++;
+      if (hasPendingLoans || isMissed) pending++;
       if (isPast) past++;
     });
 
-    return { today, week, month, all, past };
+    return { upcoming, pending, past };
   }, [userReservations, now]);
 
-  // Se a semana atual estiver vazia mas houver reservas futuras, ajusta inteligentemente o filtro inicial
+  // Se não houver próximas reservas mas houver histórico, mantém limpo
   useEffect(() => {
     if (!isLoading && userReservations.length > 0) {
-      if (counts.week === 0 && counts.all > 0 && activeFilter === 'week') {
-        setActiveFilter('all');
+      if (counts.upcoming === 0 && counts.pending > 0 && activeFilter === 'upcoming') {
+        setActiveFilter('pending');
       }
     }
-  }, [isLoading, userReservations.length, counts.week, counts.all]);
+  }, [isLoading, userReservations.length, counts.upcoming, counts.pending, activeFilter]);
 
   // Lista filtrada pelo período ativo + busca por texto
   const displayedList = useMemo(() => {
     const list = userReservations.filter(res => {
-      const dt = parseISO(res.date);
       const { end } = interval(res);
       const isPast = end < now;
+      const hasPendingLoans = (res.associated_loans || []).some(l => !l.returned);
+      const isMissed = isPast && (res.quantity_requested || 0) > 0 && (!res.associated_loans || res.associated_loans.length === 0);
 
       switch (activeFilter) {
-        case 'today':
-          return isSameDay(dt, now);
-        case 'week':
-          return isSameWeek(dt, now, { weekStartsOn: 1 });
-        case 'month':
-          return isSameMonth(dt, now);
+        case 'pending':
+          return hasPendingLoans || isMissed;
         case 'past':
           return isPast;
-        case 'all':
+        case 'upcoming':
         default:
           return !isPast;
       }
     });
 
-    // Ordenação: futuras em ordem crescente (mais próximas primeiro); passadas em ordem decrescente (mais recentes primeiro)
-    if (activeFilter === 'past') {
+    // Ordenação: futuras em ordem crescente (mais próximas primeiro); passadas e pendentes em ordem decrescente (mais recentes primeiro)
+    if (activeFilter === 'past' || activeFilter === 'pending') {
       list.sort((a, b) => `${b.date} ${b.time_slot}`.localeCompare(`${a.date} ${a.time_slot}`));
     } else {
       list.sort((a, b) => `${a.date} ${a.time_slot}`.localeCompare(`${b.date} ${b.time_slot}`));
@@ -220,15 +214,11 @@ export const MyReservationsView: React.FC<MyReservationsViewProps> = ({
 
   const getFilterEmptyDescription = () => {
     switch (activeFilter) {
-      case 'today':
-        return "Você não tem nenhum agendamento para hoje.";
-      case 'week':
-        return "Nenhuma reserva encontrada para esta semana.";
-      case 'month':
-        return "Nenhuma reserva encontrada para este mês.";
+      case 'pending':
+        return "Nenhuma pendência encontrada. Todas as suas reservas estão em dia!";
       case 'past':
         return "Nenhum histórico de agendamentos anteriores encontrado.";
-      case 'all':
+      case 'upcoming':
       default:
         return "Você não tem próximas reservas agendadas.";
     }
@@ -249,8 +239,8 @@ export const MyReservationsView: React.FC<MyReservationsViewProps> = ({
           </div>
 
           <div className="flex gap-2 flex-wrap">
-            {[1, 2, 3, 4, 5].map((i) => (
-              <Skeleton key={i} className="h-10 w-24 rounded-full bg-[var(--hx-soft)]" />
+            {[1, 2, 3].map((i) => (
+              <Skeleton key={i} className="h-10 w-28 rounded-full bg-[var(--hx-soft)]" />
             ))}
           </div>
 
@@ -311,42 +301,27 @@ export const MyReservationsView: React.FC<MyReservationsViewProps> = ({
           </Button>
         </div>
 
-        {/* Linha de Chips de Filtro (Hoje, Semanal, Mensal, Todas, Passadas) */}
-        <div className="hx-chips mb-4" role="group" aria-label="Filtrar por período">
+        {/* Linha de Chips de Filtro (Próximas, Pendentes, Histórico) */}
+        <div className="hx-chips mb-4" role="group" aria-label="Filtrar por status ou período">
           <Button
             className="hx-control hx-chip"
-            aria-pressed={activeFilter === 'today'}
-            onClick={() => { setActiveFilter('today'); setConfirmCancelId(null); }}
-          >
-            <span>Hoje</span>
-            <span className="ml-1.5 opacity-80 font-bold text-xs">({counts.today})</span>
-          </Button>
-
-          <Button
-            className="hx-control hx-chip"
-            aria-pressed={activeFilter === 'week'}
-            onClick={() => { setActiveFilter('week'); setConfirmCancelId(null); }}
-          >
-            <span>Esta semana</span>
-            <span className="ml-1.5 opacity-80 font-bold text-xs">({counts.week})</span>
-          </Button>
-
-          <Button
-            className="hx-control hx-chip"
-            aria-pressed={activeFilter === 'month'}
-            onClick={() => { setActiveFilter('month'); setConfirmCancelId(null); }}
-          >
-            <span>Este mês</span>
-            <span className="ml-1.5 opacity-80 font-bold text-xs">({counts.month})</span>
-          </Button>
-
-          <Button
-            className="hx-control hx-chip"
-            aria-pressed={activeFilter === 'all'}
-            onClick={() => { setActiveFilter('all'); setConfirmCancelId(null); }}
+            aria-pressed={activeFilter === 'upcoming'}
+            onClick={() => { setActiveFilter('upcoming'); setConfirmCancelId(null); }}
           >
             <span>Próximas</span>
-            <span className="ml-1.5 opacity-80 font-bold text-xs">({counts.all})</span>
+            <span className="ml-1.5 opacity-80 font-bold text-xs">({counts.upcoming})</span>
+          </Button>
+
+          <Button
+            className={cn(
+              "hx-control hx-chip",
+              counts.pending > 0 && activeFilter !== 'pending' && "border-amber-400 text-amber-700 dark:text-amber-300"
+            )}
+            aria-pressed={activeFilter === 'pending'}
+            onClick={() => { setActiveFilter('pending'); setConfirmCancelId(null); }}
+          >
+            <span>Pendentes</span>
+            <span className="ml-1.5 opacity-80 font-bold text-xs">({counts.pending})</span>
           </Button>
 
           <Button
@@ -354,7 +329,7 @@ export const MyReservationsView: React.FC<MyReservationsViewProps> = ({
             aria-pressed={activeFilter === 'past'}
             onClick={() => { setActiveFilter('past'); setConfirmCancelId(null); }}
           >
-            <span>Passadas</span>
+            <span>Histórico</span>
             <span className="ml-1.5 opacity-80 font-bold text-xs">({counts.past})</span>
           </Button>
         </div>
@@ -393,10 +368,12 @@ export const MyReservationsView: React.FC<MyReservationsViewProps> = ({
             description={
               activeFilter === 'past'
                 ? "As aulas já concluídas aparecem aqui com o registro de devolução."
+                : activeFilter === 'pending'
+                ? "Quando houver reservas com devoluções pendentes ou não retiradas, elas aparecerão aqui."
                 : "Abra a grade semanal para agendar uma sala ou reservar Chromebooks para suas turmas."
             }
             action={
-              activeFilter !== 'past'
+              activeFilter === 'upcoming'
                 ? {
                     label: "Ir para Grade de Horários",
                     onClick: onGoToCalendar,
