@@ -206,7 +206,7 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = React.memo(({
               <TooltipTrigger asChild>
                 <div
                   className={cn(
-                    "w-full flex-1 flex items-center justify-between min-h-[40px] sm:min-h-0 text-[11px] leading-tight font-black uppercase px-2 py-2 sm:py-1.5 border-[1px] border-black transition-all rounded-lg min-w-0",
+                    "w-full flex-1 flex items-center justify-between min-h-[40px] sm:min-h-[38px] text-[11px] sm:text-[12px] leading-tight font-black uppercase px-2.5 py-2 sm:py-2 border-2 border-black transition-all rounded-lg min-w-0",
                     "hover:-translate-y-[2px] cursor-pointer",
                     // Alta resolução no texto
                     "text-white [text-shadow:_-1px_-1px_0_rgba(0,0,0,0.5),_1px_-1px_0_rgba(0,0,0,0.5),_-1px_1px_0_rgba(0,0,0,0.5),_1px_1px_0_rgba(0,0,0,0.5)]",
@@ -232,8 +232,8 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = React.memo(({
                       <span className="hidden sm:inline">NÃO RETIRADA</span>
                     </span>
                   ) : !isManutencaoRes && res.quantity_requested > 0 && (
-                    <span className="inline-flex items-center gap-1 shrink-0 ml-1.5 bg-black/25 px-1 py-0.5 rounded text-[11px] sm:text-[10.5px] leading-none" title={`${res.quantity_requested} Chromebooks`}>
-                      <Laptop className="h-2.5 w-2.5 sm:h-3 sm:w-3 stroke-[2.5]" />
+                    <span className="inline-flex items-center gap-1 shrink-0 ml-1.5 bg-black/25 px-1.5 py-0.5 rounded text-[11px] sm:text-[11px] leading-none" title={`${res.quantity_requested} Chromebooks`}>
+                      <Laptop className="h-3 w-3 sm:h-3.5 sm:w-3.5 stroke-[2.5]" />
                       <span>{res.quantity_requested}</span>
                     </span>
                   )}
@@ -323,9 +323,9 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = React.memo(({
           maxQuantity={restantes}
           professores={professores}
         >
-          <div className="mt-auto flex items-center justify-center gap-1.5 min-h-[44px] sm:min-h-0 py-2 sm:py-1 border-2 border-zinc-400 dark:border-zinc-500 bg-white dark:bg-zinc-950 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors text-zinc-600 dark:text-zinc-400 rounded-lg cursor-pointer">
+          <div className="mt-auto flex items-center justify-center gap-1.5 min-h-[34px] sm:min-h-[30px] py-1 sm:py-1 border-2 border-zinc-400 dark:border-zinc-500 bg-white dark:bg-zinc-950 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors text-zinc-600 dark:text-zinc-400 rounded-lg cursor-pointer">
             <Plus className="h-3.5 w-3.5 sm:h-3 sm:w-3" />
-            <span className="text-[11px] sm:text-[9px] font-bold uppercase tracking-tight">Adicionar</span>
+            <span className="text-[11px] sm:text-[9.5px] font-bold uppercase tracking-tight">Adicionar</span>
           </div>
         </ReservationDialog>
       )}
