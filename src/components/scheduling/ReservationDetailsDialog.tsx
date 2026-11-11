@@ -74,6 +74,7 @@ const DetailsContent: React.FC<DetailsContentProps> = ({
 }) => {
   const navigate = useNavigate();
   const { role } = useProfileRole();
+  const isMobile = useIsMobile();
   const isManutencao = role === 'manutencao';
   const isMaintRes =
     reservation.prof_role === 'manutencao' ||
@@ -182,12 +183,15 @@ const DetailsContent: React.FC<DetailsContentProps> = ({
             {/* Único botão de fechar */}
             <button
               type="button"
+              autoFocus
               onClick={onClose}
+              disabled={isCanceling}
+              aria-disabled={isCanceling}
               className="zl-details-close"
               aria-label="Fechar detalhes da reserva"
               title="Fechar"
             >
-              <CloseIcon size={18} strokeWidth={2.5} />
+              <CloseIcon size={isMobile ? 20 : 18} strokeWidth={2.5} />
             </button>
           </div>
 
@@ -199,7 +203,10 @@ const DetailsContent: React.FC<DetailsContentProps> = ({
             </div>
 
             {/* Selo de Status no Cabeçalho */}
-            <span className={`zl-status-pill ${currentStatus}`}>
+            <span
+              className={`zl-status-pill ${currentStatus}`}
+              title={currentStatus === 'missed' ? 'O horário passou sem retirada dos Chromebooks.' : undefined}
+            >
               <span className="h-2 w-2 rounded-full bg-current shrink-0 opacity-80" aria-hidden />
               {statusLabel}
             </span>
@@ -254,22 +261,22 @@ const DetailsContent: React.FC<DetailsContentProps> = ({
             </div>
           </div>
 
-          {/* Card: Retirada Prevista */}
+          {/* Card: Início Previsto */}
           <div className="zl-grid-card">
             <span className="zl-grid-card-lbl">
               <Clock size={13} className="shrink-0 text-zinc-400" aria-hidden />
-              <span>Retirada</span>
+              <span>Início</span>
             </span>
             <div className="zl-grid-card-val text-lg">
               {startH}:{startM}
             </div>
           </div>
 
-          {/* Card: Devolução Prevista */}
+          {/* Card: Término Previsto */}
           <div className="zl-grid-card">
             <span className="zl-grid-card-lbl">
               <ArrowRight size={13} className="shrink-0 text-zinc-400" aria-hidden />
-              <span>Devolução</span>
+              <span>Término</span>
             </span>
             <div className="zl-grid-card-val text-lg">
               {endH}:{endM}
@@ -373,17 +380,9 @@ const DetailsContent: React.FC<DetailsContentProps> = ({
             </blockquote>
           </div>
         )}
-
-        {/* ── 7. AVISO ENXUTO DE STATUS (NÃO RETIRADA) ── */}
-        {isMissed && (
-          <div className="zl-details-alert-missed" role="alert">
-            <AlertTriangle size={16} className="shrink-0 text-red-600 dark:text-red-400" />
-            <span>Encerrada sem retirada dos Chromebooks no balcão.</span>
-          </div>
-        )}
       </div>
 
-      {/* ── 8. RODAPÉ FIXO COM HIERARQUIA DE AÇÕES ── */}
+      {/* ── 7. RODAPÉ FIXO COM HIERARQUIA DE AÇÕES ── */}
       <div className="zl-details-footer">
         {showLoan && (
           <button
@@ -410,54 +409,60 @@ const DetailsContent: React.FC<DetailsContentProps> = ({
         )}
 
         {showCancel && (
-          isConfirmingCancel ? (
-            <div className="zl-cancel-confirm-box">
-              <span className="zl-cancel-confirm-msg">Cancelar esta reserva?</span>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  className="zl-btn-confirm-cancel"
-                  disabled={isCanceling}
-                  onClick={onCancel}
-                >
-                  {isCanceling ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Trash2 className="h-4 w-4" />
-                  )}
-                  <span>Confirmar</span>
-                </button>
-                <button
-                  type="button"
-                  className="zl-btn-back"
-                  disabled={isCanceling}
-                  onClick={() => setIsConfirmingCancel(false)}
-                >
-                  Voltar
-                </button>
+          <div className="zl-cancel-action-wrapper">
+            {isConfirmingCancel ? (
+              <div className="zl-cancel-confirm-box">
+                <span className="zl-cancel-confirm-msg" aria-live="polite">Cancelar esta reserva?</span>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    className="zl-btn-confirm-cancel"
+                    disabled={isCanceling}
+                    onClick={onCancel}
+                  >
+                    {isCanceling ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Trash2 className="h-4 w-4" />
+                    )}
+                    <span>Confirmar</span>
+                  </button>
+                  <button
+                    type="button"
+                    className="zl-btn-back"
+                    disabled={isCanceling}
+                    onClick={() => setIsConfirmingCancel(false)}
+                  >
+                    Voltar
+                  </button>
+                </div>
               </div>
-            </div>
-          ) : (
-            <button
-              type="button"
-              className="zl-btn-cancel-link"
-              disabled={isCanceling}
-              onClick={() => setIsConfirmingCancel(true)}
-            >
-              <Trash2 size={15} />
-              <span>Cancelar reserva</span>
-            </button>
-          )
+            ) : (
+              <button
+                type="button"
+                className="zl-btn-cancel-link"
+                disabled={isCanceling}
+                onClick={() => setIsConfirmingCancel(true)}
+              >
+                <Trash2 size={15} />
+                <span>Cancelar reserva</span>
+              </button>
+            )}
+          </div>
         )}
 
-        {/* Botão Fechar Secundário/Neutro */}
-        <button
-          type="button"
-          className="zl-btn-secondary"
-          onClick={onClose}
-        >
-          <span>Fechar</span>
-        </button>
+        {/* Botão Fechar Secundário/Neutro (no mobile, oculto se houver outra ação) */}
+        {(!isMobile || (!showLoan && !showCancel)) && (
+          <button
+            type="button"
+            disabled={isCanceling}
+            aria-disabled={isCanceling}
+            className="zl-btn-secondary"
+            onClick={onClose}
+          >
+            <span>Fechar</span>
+          </button>
+        )}
       </div>
     </div>
   );
@@ -486,6 +491,7 @@ export const ReservationDetailsDialog: React.FC<ReservationDetailsDialogProps> =
     return (
       <Drawer
         open={open}
+        dismissible={!isCanceling}
         onOpenChange={(val) => {
           if (!isCanceling) {
             onOpenChange(val);
@@ -521,7 +527,7 @@ export const ReservationDetailsDialog: React.FC<ReservationDetailsDialogProps> =
         }
       }}
     >
-      <DialogContent className="zl-details zl-details-dialog p-0 max-w-[500px] overflow-hidden border-0 bg-transparent [&>button.absolute]:hidden">
+      <DialogContent className="zl-details zl-details-dialog p-0 max-w-[500px] overflow-hidden border-0 bg-transparent data-[state=open]:!slide-in-from-left-0 data-[state=open]:!slide-in-from-top-0 data-[state=closed]:!slide-out-to-left-0 data-[state=closed]:!slide-out-to-top-0 [&>button.absolute]:hidden">
         <DialogTitle className="sr-only">Detalhes da Reserva</DialogTitle>
         <DialogDescription className="sr-only">
           Informações detalhadas sobre o agendamento de sala e Chromebooks
