@@ -13,7 +13,7 @@ interface LiquidGlassNavProps {
 
 const TABS: { id: SchedulingTab; label: string; icon: 'calendar' | 'bookmark' | 'grid' }[] = [
   { id: 'weekly', label: 'Semanal', icon: 'calendar' },
-  { id: 'my_reservations', label: 'Reservas', icon: 'bookmark' },
+  { id: 'my_reservations', label: 'Minhas', icon: 'bookmark' },
   { id: 'monthly', label: 'Visão Geral', icon: 'grid' },
 ];
 
@@ -263,7 +263,7 @@ export const LiquidGlassNav: React.FC<LiquidGlassNavProps> = ({
             aria-current={isActive ? 'page' : undefined}
             aria-label={
               tab.id === 'my_reservations'
-                ? (badgeCount > 0 ? `Reservas, ${badgeCount} próximas` : 'Reservas')
+                ? (badgeCount > 0 ? `Minhas reservas, ${badgeCount} próximas` : 'Minhas reservas')
                 : undefined
             }
           >

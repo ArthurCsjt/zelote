@@ -57,11 +57,10 @@ interface SchedulingMonthViewProps {
   onNewReservation?: (date: Date) => void;
 }
 
-type Filter = 'all' | 'mine' | 'pending' | 'served' | 'minecraft';
+type Filter = 'all' | 'pending' | 'served' | 'minecraft';
 
 const filters: { value: Filter; label: string }[] = [
   { value: 'all', label: 'Todas' },
-  { value: 'mine', label: 'Minhas' },
   { value: 'pending', label: 'Pendentes' },
   { value: 'served', label: 'Atendidas' },
   { value: 'minecraft', label: 'Minecraft' },
@@ -241,7 +240,6 @@ const ReservationList = React.memo(function ReservationList({
   const filtered = useMemo(() => {
     return rows.filter((res) => {
       const state = status(res, now);
-      if (filter === 'mine' && !owned(res, userId)) return false;
       if (filter === 'pending' && state !== 'pending' && state !== 'progress-status') return false;
       if (filter === 'served' && state !== 'served') return false;
       if (filter === 'minecraft' && !res.is_minecraft) return false;
@@ -526,10 +524,7 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
     [reservations, monthKey]
   );
   const monthDays = useMemo(() => byDay(monthRows), [monthRows]);
-  const scopedRows = useMemo(
-    () => (coordination ? monthRows : monthRows.filter((res) => owned(res, user?.id))),
-    [monthRows, coordination, user?.id]
-  );
+  const scopedRows = monthRows;
   const stats = useMemo(
     () => metrics(scopedRows, totalAvailableChromebooks, now),
     [scopedRows, totalAvailableChromebooks, now]
@@ -622,7 +617,7 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
   const dayPeak = useMemo(() => peak(dayRows), [dayRows]);
   const dayPast = startOfDay(selectedDate) < startOfDay(now);
   const today = isSameDay(selectedDate, now);
-  const activeFilter = filter ?? (coordination ? 'all' : 'mine');
+  const activeFilter = filter ?? 'all';
 
   const weekdays = useMemo(() => {
     const days = byDay(scopedRows);
@@ -658,7 +653,7 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
 
   const kpis = useMemo<KpiItem[]>(() => [
     {
-      label: coordination ? 'Reservas' : 'Minhas reservas',
+      label: 'Reservas do mês',
       value: number(stats.count),
       previous: comparison?.previous.count,
       current: comparison?.current.count ?? stats.count,
