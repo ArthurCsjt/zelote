@@ -206,10 +206,8 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = React.memo(({
               <TooltipTrigger asChild>
                 <div
                   className={cn(
-                    "w-full flex-1 flex items-center justify-between min-h-[32px] sm:min-h-[30px] text-[10.5px] sm:text-[11.5px] leading-tight font-black uppercase px-2 py-1.5 sm:py-1 border-[1.5px] border-black transition-all rounded-lg min-w-0",
+                    "w-full flex-1 flex items-center justify-between min-h-[32px] sm:min-h-[30px] text-[10.5px] sm:text-[11.5px] leading-tight font-black uppercase px-2 py-1.5 sm:py-1 border-[1.5px] border-black transition-all rounded-lg min-w-0 text-white",
                     "hover:-translate-y-[2px] cursor-pointer",
-                    // Alta resolução no texto
-                    "text-white [text-shadow:_-1px_-1px_0_rgba(0,0,0,0.5),_1px_-1px_0_rgba(0,0,0,0.5),_-1px_1px_0_rgba(0,0,0,0.5),_1px_1px_0_rgba(0,0,0,0.5)]",
                     isMissed
                       ? "bg-gradient-to-br from-amber-700 to-zinc-800 border-amber-500 shadow-[2px_2px_0_0_#000]"
                       : isManutencaoRes
@@ -225,14 +223,14 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = React.memo(({
                     }
                   }}
                 >
-                  <span className="truncate flex-1 text-left min-w-0 text-[10.5px] sm:text-[11.5px] break-words">{roomName}</span>
+                  <span className="truncate flex-1 text-left min-w-0 text-[10.5px] sm:text-[11.5px] break-words [text-shadow:_-1px_-1px_0_rgba(0,0,0,0.4),_1px_-1px_0_rgba(0,0,0,0.4),_-1px_1px_0_rgba(0,0,0,0.4),_1px_1px_0_rgba(0,0,0,0.4)]">{roomName}</span>
                   {isMissed ? (
-                    <span className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded text-[9.5px] sm:text-[8.5px] font-black bg-amber-400 text-black border border-black shadow-[1px_1px_0_0_#000] shrink-0 ml-1 leading-none tracking-tight" title="Reserva expirada sem retirada">
-                      <AlertTriangle className="h-2.5 w-2.5 stroke-[3]" />
+                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9.5px] sm:text-[8.5px] font-black bg-amber-400 text-black border border-black shadow-[1px_1px_0_0_#000] shrink-0 ml-1 leading-none tracking-tight [text-shadow:none]" title="Reserva expirada sem retirada">
+                      <AlertTriangle className="h-2.5 w-2.5 stroke-[3] text-black shrink-0" />
                       <span className="hidden sm:inline">NÃO RETIRADA</span>
                     </span>
                   ) : !isManutencaoRes && res.quantity_requested > 0 && (
-                    <span className="inline-flex items-center gap-1 shrink-0 ml-1.5 bg-black/25 px-1.5 py-0.5 rounded text-[10.5px] sm:text-[10.5px] leading-none" title={`${res.quantity_requested} Chromebooks`}>
+                    <span className="inline-flex items-center gap-1 shrink-0 ml-1.5 bg-black/25 px-1.5 py-0.5 rounded text-[10.5px] sm:text-[10.5px] leading-none [text-shadow:none]" title={`${res.quantity_requested} Chromebooks`}>
                       <Laptop className="h-3 w-3 stroke-[2.5]" />
                       <span>{res.quantity_requested}</span>
                     </span>
