@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import '@/styles/scheduling-glass-nav.css';

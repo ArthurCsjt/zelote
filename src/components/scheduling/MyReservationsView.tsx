@@ -138,7 +138,7 @@ export const MyReservationsView: React.FC<MyReservationsViewProps> = ({
 
   // Lista filtrada pelo período ativo + busca por texto
   const displayedList = useMemo(() => {
-    let list = userReservations.filter(res => {
+    const list = userReservations.filter(res => {
       const dt = parseISO(res.date);
       const { end } = interval(res);
       const isPast = end < now;
