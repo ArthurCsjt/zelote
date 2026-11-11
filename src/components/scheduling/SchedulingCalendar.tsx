@@ -7,8 +7,204 @@ import { SchedulingSlot } from './SchedulingSlot';
 import type { Reservation } from '@/hooks/useDatabase';
 import type { User as AuthUser } from '@supabase/supabase-js';
 import { Loader2, CheckCircle, AlertTriangle, Monitor, Laptop, Clock, Info, GripVertical, ArrowRight, ArrowDown } from 'lucide-react';
-import { motion, useMotionValue, useSpring, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useProfileRole } from '@/hooks/use-profile-role';
+import { useIsMobile } from '@/hooks/use-mobile';
+
+const EMPTY_RESERVATIONS: Reservation[] = [];
+
+interface DayHeaderCellProps {
+  day: Date;
+  dateKey: string;
+  isCurrentDay: boolean;
+  daySlots: Map<string, number> | undefined;
+  totalAvailableChromebooks: number;
+  isMobile: boolean;
+}
+
+const DayHeaderCell: React.FC<DayHeaderCellProps> = React.memo(({
+  day,
+  dateKey,
+  isCurrentDay,
+  daySlots,
+  totalAvailableChromebooks,
+  isMobile,
+}) => {
+  const [activeHeatmapSlot, setActiveHeatmapSlot] = useState<{ slot: string; usage: number } | null>(null);
+  const leaveTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleBarsMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (leaveTimerRef.current) {
+      clearTimeout(leaveTimerRef.current);
+      leaveTimerRef.current = null;
+    }
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const width = rect.width;
+    if (width <= 0) return;
+    const index = Math.min(timeSlots.length - 1, Math.max(0, Math.floor((x / width) * timeSlots.length)));
+    const slot = timeSlots[index];
+    const usage = daySlots?.get(slot) || 0;
+    setActiveHeatmapSlot((prev) => (prev?.slot === slot ? prev : { slot, usage }));
+  };
+
+  const handleBarsMouseLeave = () => {
+    if (leaveTimerRef.current) clearTimeout(leaveTimerRef.current);
+    leaveTimerRef.current = setTimeout(() => {
+      setActiveHeatmapSlot(null);
+    }, 120);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (leaveTimerRef.current) clearTimeout(leaveTimerRef.current);
+    };
+  }, []);
+
+  return (
+    <div
+      data-col={dateKey}
+      data-day={dateKey}
+      className={cn(
+        "h-32 sm:h-36 flex flex-col border-b-4 border-r-4 last:border-r-0 border-black dark:border-white transition-all relative group overflow-hidden day-header",
+        isCurrentDay && "is-current-day",
+        isMobile && "snap-start",
+        isCurrentDay
+          ? "bg-gradient-to-br from-primary via-primary to-primary/85 text-white"
+          : "bg-white dark:bg-zinc-900"
+      )}
+    >
+      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+        <div
+          className="absolute inset-0 opacity-40"
+          style={{
+            backgroundImage: `
+              linear-gradient(to right, ${isCurrentDay ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'} 1px, transparent 1px),
+              linear-gradient(to bottom, ${isCurrentDay ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'} 1px, transparent 1px)
+            `,
+            backgroundSize: '20px 20px',
+          }}
+        />
+      </div>
+
+      <div
+        className={cn(
+          "flex-1 flex flex-col items-center justify-center p-2 sm:p-3 relative z-10 overflow-hidden",
+          isCurrentDay ? "text-white" : "text-foreground"
+        )}
+      >
+        <AnimatePresence>
+          {activeHeatmapSlot ? (
+            <motion.div
+              key="info"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.12 }}
+              className="flex flex-col items-center justify-center text-center absolute inset-0 p-2 sm:p-3"
+            >
+              <span
+                className={cn(
+                  "text-[8px] sm:text-[13px] font-black uppercase tracking-tight sm:tracking-[0.25em] mb-0.5 sm:mb-1.5",
+                  isCurrentDay ? "text-white/90" : "text-primary"
+                )}
+              >
+                {activeHeatmapSlot.slot}
+              </span>
+              <div className="flex flex-col items-center sm:flex-row sm:items-baseline sm:gap-1.5">
+                <span className="text-2xl sm:text-4xl font-black leading-none">
+                  {activeHeatmapSlot.usage}
+                </span>
+                <span className="text-[7px] sm:text-[14px] font-black uppercase opacity-80 leading-none tracking-tight">
+                  CHROMEBOOKS
+                </span>
+              </div>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="date"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.12 }}
+              className="flex flex-col items-center justify-center gap-1 absolute inset-0 p-2 sm:p-3"
+            >
+              <span
+                className={cn(
+                  "text-[10px] sm:text-[11px] font-black uppercase tracking-[0.18em] sm:tracking-[0.28em] mb-0.5",
+                  isCurrentDay ? "text-white/95 font-black" : "text-zinc-500 dark:text-zinc-400"
+                )}
+              >
+                {format(day, isMobile ? 'EEE' : 'EEEE', { locale: ptBR })}
+              </span>
+              <div className="flex items-baseline gap-0.5 leading-none">
+                <span className="text-2xl sm:text-4xl font-black tabular-nums tracking-tighter">
+                  {format(day, 'dd')}
+                </span>
+                <span
+                  className={cn(
+                    "text-sm sm:text-base font-black tabular-nums",
+                    isCurrentDay ? "text-white/70" : "text-zinc-400 dark:text-zinc-500"
+                  )}
+                >
+                  /{format(day, 'MM')}
+                </span>
+              </div>
+              {isCurrentDay && (
+                <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-[0.2em] text-white/90 mt-0.5">
+                  ● Hoje
+                </span>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* Neo-Brutalism Heatmap Card Footer */}
+      <div className="px-2 sm:px-3 flex flex-col border-t-4 border-black dark:border-white relative z-10 bg-white dark:bg-zinc-950 justify-center h-[40px] sm:h-[50px] shrink-0">
+        {/* Grid de Calor Robusto */}
+        <div
+          className="flex w-full h-[24px] sm:h-[30px] gap-[2px] relative z-20 justify-start"
+          onMouseMove={handleBarsMouseMove}
+          onMouseLeave={handleBarsMouseLeave}
+        >
+          {timeSlots.map((slot) => {
+            const usage = daySlots?.get(slot) || 0;
+            const rate = totalAvailableChromebooks > 0 ? (usage / totalAvailableChromebooks) * 100 : 0;
+
+            let color = "bg-zinc-200/60 dark:bg-zinc-700/30";
+            if (rate >= 100) color = "bg-red-600 dark:bg-red-500";
+            else if (rate >= 75) color = "bg-orange-600 dark:bg-orange-500";
+            else if (rate >= 30) color = "bg-orange-400 dark:bg-orange-400";
+            else if (rate > 0) color = "bg-amber-300 dark:bg-amber-400";
+
+            const isActiveSlot = activeHeatmapSlot?.slot === slot;
+
+            return (
+              <div
+                key={slot}
+                onClick={() => {
+                  setActiveHeatmapSlot((prev) =>
+                    prev?.slot === slot ? null : { slot, usage }
+                  );
+                }}
+                className={cn(
+                  "flex-1 max-w-[16px] h-full relative cursor-crosshair transition-opacity",
+                  color,
+                  isActiveSlot
+                    ? "ring-2 ring-black dark:ring-white z-30 opacity-100"
+                    : "opacity-80 hover:opacity-100"
+                )}
+              />
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+});
+
+DayHeaderCell.displayName = 'DayHeaderCell';
 
 interface SchedulingCalendarProps {
   currentDate: Date;
@@ -44,10 +240,13 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
     setNewLimit(totalAvailableChromebooks.toString());
   }, [totalAvailableChromebooks]);
 
-  const [hoveredDate, setHoveredDate] = React.useState<string | null>(null);
-  const [hoveredTime, setHoveredTime] = React.useState<string | null>(null);
-  const [hoveredHeatmapInfo, setHoveredHeatmapInfo] = React.useState<{ date: string; slot: string; usage: number } | null>(null);
-  const [isMobile, setIsMobile] = useState(false);
+  // Delegated hover handler imperativo para destacar linha e coluna no desktop sem re-renderizar
+  const gridContainerRef = useRef<HTMLDivElement>(null);
+  const activeHoverElementsRef = useRef<HTMLElement[]>([]);
+  const hoverRafRef = useRef<number | null>(null);
+  const lastHoveredKeyRef = useRef<string>('');
+
+  const isMobile = useIsMobile();
   const containerRef = useRef<HTMLDivElement>(null);
   const constraintsRef = useRef<HTMLDivElement>(null);
   const lastAutoScrolledWeek = useRef<string>('');
@@ -55,18 +254,61 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
 
   const weekDays = useMemo(() => getWeekDays(currentDate), [currentDate]);
 
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
-
   // Responsive sizes
   const timeColumnWidth = isMobile ? 88 : 100;
   const dayColumnMinWidth = isMobile ? 110 : 160;
   const totalMinWidth = timeColumnWidth + (weekDays.length * dayColumnMinWidth);
   const gridTemplateColumns = `${timeColumnWidth}px repeat(${weekDays.length}, 1fr)`;
+
+  const handleGridMouseOver = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if (isMobile) return;
+    const target = (e.target as HTMLElement).closest<HTMLElement>('[data-col], [data-row]');
+    if (!target) return;
+
+    const col = target.getAttribute('data-col');
+    const row = target.getAttribute('data-row');
+    const key = `${col || ''}_${row || ''}`;
+    if (key === lastHoveredKeyRef.current) return;
+    lastHoveredKeyRef.current = key;
+
+    if (hoverRafRef.current) cancelAnimationFrame(hoverRafRef.current);
+    hoverRafRef.current = requestAnimationFrame(() => {
+      const container = gridContainerRef.current;
+      if (!container) return;
+
+      activeHoverElementsRef.current.forEach((el) => el.classList.remove('is-hover-line'));
+      activeHoverElementsRef.current = [];
+
+      if (!col && !row) return;
+
+      const selectors: string[] = [];
+      if (col) selectors.push(`[data-col="${col}"]`);
+      if (row) selectors.push(`[data-row="${row}"]`);
+
+      const matches = container.querySelectorAll<HTMLElement>(selectors.join(', '));
+      matches.forEach((el) => {
+        el.classList.add('is-hover-line');
+        activeHoverElementsRef.current.push(el);
+      });
+    });
+  }, [isMobile]);
+
+  const handleGridMouseLeave = useCallback(() => {
+    if (isMobile) return;
+    lastHoveredKeyRef.current = '';
+    if (hoverRafRef.current) {
+      cancelAnimationFrame(hoverRafRef.current);
+      hoverRafRef.current = null;
+    }
+    activeHoverElementsRef.current.forEach((el) => el.classList.remove('is-hover-line'));
+    activeHoverElementsRef.current = [];
+  }, [isMobile]);
+
+  useEffect(() => {
+    return () => {
+      if (hoverRafRef.current) cancelAnimationFrame(hoverRafRef.current);
+    };
+  }, []);
 
   const [showHint, setShowHint] = useState<boolean>(() => {
     try {
@@ -146,7 +388,6 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
       dailySlotsData: slotsData
     };
   }, [reservations]);
-  const GridContainer = (isMobile ? 'div' : motion.div) as any;
 
   if (isLoading) {
     return (
@@ -256,16 +497,13 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
       >
         <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.07] pointer-events-none neo-brutal-dots font-black text-black" />
 
-        <GridContainer
-          {...(!isMobile ? {
-            drag: "x",
-            dragConstraints: constraintsRef,
-            dragElastic: 0.1,
-            onMouseLeave: () => {
-              setHoveredDate(null);
-              setHoveredTime(null);
-            }
-          } : {})}
+        <motion.div
+          ref={gridContainerRef}
+          drag={isMobile ? false : "x"}
+          dragConstraints={constraintsRef}
+          dragElastic={0.1}
+          onMouseOver={handleGridMouseOver}
+          onMouseLeave={handleGridMouseLeave}
           className="grid gap-0 relative z-10 select-none"
           style={{
             gridTemplateColumns,
@@ -389,168 +627,31 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
           {weekDays.map((day, index) => {
             const isCurrentDay = isToday(day);
             const dateKey = format(day, 'yyyy-MM-dd');
-            const totalReserved = dailyTotals.get(dateKey) || 0;
             const daySlots = dailySlotsData.get(dateKey);
-            const isHoveredColumn = hoveredDate === dateKey;
 
             return (
-              <div
+              <DayHeaderCell
                 key={index}
-                data-day={dateKey}
-                className={cn(
-                  "h-32 sm:h-36 flex flex-col border-b-4 border-r-4 last:border-r-0 border-black dark:border-white transition-all relative group overflow-hidden",
-                  isMobile && "snap-start",
-                  isCurrentDay
-                    ? "bg-gradient-to-br from-primary via-primary to-primary/85 text-white"
-                    : isHoveredColumn
-                      ? "bg-primary/10 dark:bg-primary/20"
-                      : "bg-white dark:bg-zinc-900"
-                )}
-              >
-                <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-                  <div className="absolute inset-0 opacity-40"
-                    style={{
-                      backgroundImage: `
-                           linear-gradient(to right, ${isCurrentDay ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'} 1px, transparent 1px),
-                           linear-gradient(to bottom, ${isCurrentDay ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'} 1px, transparent 1px)
-                         `,
-                      backgroundSize: '20px 20px'
-                    }}
-                  />
-                </div>
-
-
-                <div className={cn(
-                  "flex-1 flex flex-col items-center justify-center p-2 sm:p-3 relative z-10 overflow-hidden",
-                  isCurrentDay ? "text-white" : "text-foreground"
-                )}>
-                  <AnimatePresence mode="wait">
-                    {hoveredHeatmapInfo?.date === dateKey ? (
-                      <motion.div
-                        key="info"
-                        initial={{ y: 20, opacity: 0 }}
-                        animate={{ y: 0, opacity: 1 }}
-                        exit={{ y: -20, opacity: 0 }}
-                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                        className="flex flex-col items-center justify-center text-center"
-                      >
-                        <span className={cn(
-                          "text-[8px] sm:text-[13px] font-black uppercase tracking-tight sm:tracking-[0.25em] mb-0.5 sm:mb-1.5",
-                          isCurrentDay ? "text-white/90" : "text-primary"
-                        )}>
-                          {hoveredHeatmapInfo.slot}
-                        </span>
-                        <div className="flex flex-col items-center sm:flex-row sm:items-baseline sm:gap-1.5">
-                          <span className="text-2xl sm:text-4xl font-black leading-none">
-                            {hoveredHeatmapInfo.usage}
-                          </span>
-                          <span className="text-[7px] sm:text-[14px] font-black uppercase opacity-80 leading-none tracking-tight">
-                            CHROMEBOOKS
-                          </span>
-                        </div>
-                      </motion.div>
-                    ) : (
-                      <motion.div
-                        key="date"
-                        initial={{ y: 20, opacity: 0 }}
-                        animate={{ y: 0, opacity: 1 }}
-                        exit={{ y: -20, opacity: 0 }}
-                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                        className="flex flex-col items-center justify-center gap-1"
-                      >
-                        <span className={cn(
-                          "text-[10px] sm:text-[11px] font-black uppercase tracking-[0.18em] sm:tracking-[0.28em] mb-0.5",
-                          isCurrentDay
-                            ? "text-white/95 font-black"
-                            : "text-zinc-500 dark:text-zinc-400"
-                        )}>
-                          {format(day, isMobile ? 'EEE' : 'EEEE', { locale: ptBR })}
-                        </span>
-                        <div className="flex items-baseline gap-0.5 leading-none">
-                          <span className="text-2xl sm:text-4xl font-black tabular-nums tracking-tighter">
-                            {format(day, 'dd')}
-                          </span>
-                          <span className={cn(
-                            "text-sm sm:text-base font-black tabular-nums",
-                            isCurrentDay ? "text-white/70" : "text-zinc-400 dark:text-zinc-500"
-                          )}>
-                            /{format(day, 'MM')}
-                          </span>
-                        </div>
-                        {isCurrentDay && (
-                          <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-[0.2em] text-white/90 mt-0.5">
-                            ● Hoje
-                          </span>
-                        )}
-                      </motion.div>
-
-                    )}
-                  </AnimatePresence>
-                </div>
-
-                {/* Neo-Brutalism Heatmap Card Footer */}
-                <div className={cn(
-                  "px-2 sm:px-3 flex flex-col border-t-4 border-black dark:border-white relative z-10 bg-white dark:bg-zinc-950 justify-center h-[40px] sm:h-[50px] shrink-0"
-                )}>
-
-                  {/* Grid de Calor Robusto */}
-                  <div className="flex w-full h-[24px] sm:h-[30px] gap-[2px] relative z-20 justify-start">
-                    {timeSlots.map((slot) => {
-                      const usage = daySlots?.get(slot) || 0;
-                      const rate = totalAvailableChromebooks > 0 ? (usage / totalAvailableChromebooks) * 100 : 0;
-
-                      // Cores espelham os estados dos slots: cinza → laranja → vermelho
-                      let color = "bg-zinc-200/60 dark:bg-zinc-700/30"; // Vazio / Disponível
-                      if (rate >= 100) color = "bg-red-600 dark:bg-red-500";           // Esgotado
-                      else if (rate >= 75) color = "bg-orange-600 dark:bg-orange-500"; // Quase cheio
-                      else if (rate >= 30) color = "bg-orange-400 dark:bg-orange-400"; // Parcial
-                      else if (rate > 0) color = "bg-amber-300 dark:bg-amber-400";    // Pouco uso
-
-                      return (
-                        <div
-                          key={slot}
-                          onMouseEnter={() => setHoveredHeatmapInfo({ date: dateKey, slot, usage })}
-                          onMouseLeave={() => setHoveredHeatmapInfo(null)}
-                          onClick={() => {
-                            setHoveredHeatmapInfo(prev =>
-                              prev?.date === dateKey && prev?.slot === slot
-                                ? null
-                                : { date: dateKey, slot, usage }
-                            );
-                          }}
-                          className={cn(
-                            "flex-1 max-w-[16px] h-full relative cursor-crosshair",
-                            color,
-                            hoveredHeatmapInfo?.date === dateKey && hoveredHeatmapInfo?.slot === slot
-                              ? "ring-2 ring-black dark:ring-white z-30"
-                              : "opacity-80 hover:opacity-100"
-                          )}
-                        />
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
+                day={day}
+                dateKey={dateKey}
+                isCurrentDay={isCurrentDay}
+                daySlots={daySlots}
+                totalAvailableChromebooks={totalAvailableChromebooks}
+                isMobile={isMobile}
+              />
             );
           })}
 
           {timeSlots.map((timeSlot, timeIndex) => {
-            const isHoveredRow = hoveredTime === timeSlot;
-
             return (
               <React.Fragment key={timeIndex}>
                 <div 
-                  className={cn(
-                    "min-h-[4rem] sm:min-h-[5rem] h-full flex items-center justify-center border-b-2 border-r-4 border-black/10 dark:border-white/10 sticky left-0 z-20 shadow-[2px_0_0_0_#000_inset]",
-                    isHoveredRow ? "bg-zinc-100 dark:bg-zinc-800" : "bg-zinc-50 dark:bg-zinc-950"
-                  )}
+                  data-row={timeSlot}
+                  className="min-h-[4rem] sm:min-h-[5rem] h-full flex items-center justify-center border-b-2 border-r-4 border-black/10 dark:border-white/10 sticky left-0 z-20 shadow-[2px_0_0_0_#000_inset] bg-zinc-50 dark:bg-zinc-950 time-row"
                   style={{ left: -4 }}
                 >
                   <div className="flex flex-col items-center">
-                    <div className={cn(
-                      "bg-white dark:bg-zinc-950 px-3 py-1 border-2 border-black dark:border-white transition-none",
-                      isHoveredRow ? "bg-black text-white dark:bg-white dark:text-black" : "text-zinc-600 dark:text-zinc-400"
-                    )}>
+                    <div className="bg-white dark:bg-zinc-950 px-3 py-1 border-2 border-black dark:border-white transition-none time-label-box text-zinc-600 dark:text-zinc-400">
                       <span className="text-[11px] sm:text-[13px] font-bold tracking-tight uppercase">
                         {timeSlot.replace('h', ':')}
                       </span>
@@ -562,22 +663,14 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
                 {weekDays.map((day, dayIndex) => {
                   const dateKey = format(day, 'yyyy-MM-dd');
                   const slotKey = `${dateKey}_${timeSlot}`;
-                  const reservationsForSlot = reservationsMap.get(slotKey) || [];
-                  const isHoveredCol = hoveredDate === dateKey;
+                  const reservationsForSlot = reservationsMap.get(slotKey) || EMPTY_RESERVATIONS;
 
                   return (
                     <div
                       key={dayIndex}
-                      className={cn(
-                        "min-h-[4rem] sm:min-h-[5rem] h-full border-b border-r last:border-r-0 border-zinc-200 dark:border-zinc-800 translate-z-0",
-                        isHoveredRow || isHoveredCol ? "bg-zinc-100/50 dark:bg-zinc-800/30" : ""
-                      )}
-                      onMouseEnter={() => {
-                        if (!isMobile) {
-                          setHoveredDate(dateKey);
-                          setHoveredTime(timeSlot);
-                        }
-                      }}
+                      data-col={dateKey}
+                      data-row={timeSlot}
+                      className="min-h-[4rem] sm:min-h-[5rem] h-full border-b border-r last:border-r-0 border-zinc-200 dark:border-zinc-800 translate-z-0 grid-cell"
                     >
                       <SchedulingSlot
                         date={day}
@@ -594,7 +687,7 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
               </React.Fragment>
             );
           })}
-        </GridContainer>
+        </motion.div>
       </div>
     </div>
   );

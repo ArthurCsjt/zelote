@@ -113,13 +113,21 @@ const SchedulingPage = () => {
     enabled: !!user?.id,
   });
   const {
-    data: professores = [],
+    data: rawProfessores = [],
     isLoading: isLoadingProfessores
   } = useQuery({
     queryKey: ['professoresList'],
     queryFn: fetchProfessores,
     staleTime: Infinity
   });
+
+  const professores = useMemo(() => {
+    return (rawProfessores || []).map((p: { id: string; nome_completo: string }) => ({
+      id: p.id,
+      nome_completo: p.nome_completo,
+    }));
+  }, [rawProfessores]);
+
   const handleDateChange = (direction: 'next' | 'prev') => {
     if (viewMode === 'weekly') {
       setCurrentDate(prev => changeWeek(prev, direction));
@@ -140,12 +148,7 @@ const SchedulingPage = () => {
     } else if (v === 'monthly') {
       setCurrentDate(lastMonthlyDate.current ?? startOfMonth(currentDate));
     }
-    // 'my_reservations': nao altera currentDate
-
-    if (typeof window !== 'undefined') {
-      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
-    }
+    // 'my_reservations': nao altera currentDate (scroll sera executado no onExitComplete)
   };
   const LIMIT_KEY = 'zelote_chromebook_operational_limit';
 
@@ -187,7 +190,7 @@ const SchedulingPage = () => {
     toast({ title: "Limite atualizado", description: `Limite operacional definido para ${newLimit} Chromebooks.`, variant: "success" });
   };
 
-  const handleReservationSuccess = () => {
+  const handleReservationSuccess = useCallback(() => {
     refetch();
     refetchUserCount();
     queryClient.invalidateQueries({
@@ -199,7 +202,7 @@ const SchedulingPage = () => {
     queryClient.invalidateQueries({
       queryKey: ['userReservationsCount']
     });
-  };
+  }, [refetch, refetchUserCount, queryClient]);
 
   const handleNewReservationFromMonth = (targetDate: Date) => {
     setCurrentDate(targetDate);
@@ -210,8 +213,20 @@ const SchedulingPage = () => {
     });
   };
 
-  // Sincronização em tempo real via Supabase Realtime
+  // Sincronização em tempo real via Supabase Realtime (com debounce de ~300ms e cobertura de todas as abas)
   useEffect(() => {
+    let debounceTimer: NodeJS.Timeout | null = null;
+
+    const invalidateAll = () => {
+      if (debounceTimer) clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: ['reservations'] });
+        queryClient.invalidateQueries({ queryKey: ['totalAvailableChromebooks'] });
+        queryClient.invalidateQueries({ queryKey: ['userReservations'] });
+        queryClient.invalidateQueries({ queryKey: ['userReservationsCount'] });
+      }, 300);
+    };
+
     const channel = supabase
       .channel('schema-db-changes-reservations')
       .on(
@@ -221,10 +236,7 @@ const SchedulingPage = () => {
           schema: 'public',
           table: 'reservations',
         },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ['reservations'] });
-          queryClient.invalidateQueries({ queryKey: ['totalAvailableChromebooks'] });
-        }
+        invalidateAll
       )
       .on(
         'postgres_changes',
@@ -233,10 +245,7 @@ const SchedulingPage = () => {
           schema: 'public',
           table: 'loans',
         },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ['reservations'] });
-          queryClient.invalidateQueries({ queryKey: ['totalAvailableChromebooks'] });
-        }
+        invalidateAll
       )
       .on(
         'postgres_changes',
@@ -245,14 +254,12 @@ const SchedulingPage = () => {
           schema: 'public',
           table: 'returns',
         },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ['reservations'] });
-          queryClient.invalidateQueries({ queryKey: ['totalAvailableChromebooks'] });
-        }
+        invalidateAll
       )
       .subscribe();
 
     return () => {
+      if (debounceTimer) clearTimeout(debounceTimer);
       supabase.removeChannel(channel);
     };
   }, [queryClient]);
@@ -263,13 +270,16 @@ const SchedulingPage = () => {
     <Layout title="Agendamento" showBackButton onBack={() => navigate('/')}>
       <div className="space-y-4 sm:space-y-6 max-w-7xl mx-auto relative z-10 pb-28 sm:pb-32">
       {/* ── Glass Nav Row ── Week Selector + Year/Month Selector (Visível apenas em Semanal e Histórico) ── */}
-      {viewMode !== 'my_reservations' && (
-        <motion.div
-          initial={{ opacity: 0, y: -12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
-          className="period-bar"
-        >
+      <AnimatePresence initial={false}>
+        {viewMode !== 'my_reservations' && (
+          <motion.div
+            key="period-bar"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0, marginTop: 0, marginBottom: 0 }}
+            transition={{ duration: 0.2, ease: 'easeOut' }}
+            className="period-bar overflow-hidden"
+          >
           {/* ── Week / Period Navigator ── */}
           <div className="period-bar__surface period-bar__period">
             <button
@@ -369,6 +379,7 @@ const SchedulingPage = () => {
           </div>
         </motion.div>
       )}
+      </AnimatePresence>
 
       {/* Weekend Warning */}
       {viewMode === 'weekly' && getWeekDays(currentDate).length === 0 && <div className="mt-4 p-3 border-3 border-warning/50 bg-warning/10 flex items-center gap-2">
@@ -380,20 +391,27 @@ const SchedulingPage = () => {
 
       {/* Calendar Grid - Neo Brutal - Slimmer */}
       <motion.div
-        initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 30 }}
+        initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 12 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 1.4, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+        transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
         className="w-full overflow-visible"
       >
-        <AnimatePresence mode="wait" initial={false}>
+        <AnimatePresence
+          mode="wait"
+          initial={false}
+          onExitComplete={() => {
+            if (typeof window !== 'undefined') {
+              window.scrollTo({ top: 0, behavior: 'auto' });
+            }
+          }}
+        >
           <motion.div
             key={viewMode}
-            initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 8 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{
-              duration: 0.22,
-              exit: { duration: 0.12 },
+              duration: 0.15,
               ease: 'easeOut',
             }}
             className="w-full"
@@ -408,10 +426,7 @@ const SchedulingPage = () => {
                 isLoading={isLoading}
                 onReservationSuccess={handleReservationSuccess}
                 onUpdateLimit={handleUpdateLimit}
-                professores={professores.map(p => ({
-                  id: p.id,
-                  nome_completo: p.nome_completo
-                }))}
+                professores={professores}
               />
             ) : viewMode === 'monthly' ? (
               <SchedulingMonthView

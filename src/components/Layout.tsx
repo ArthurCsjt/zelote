@@ -370,8 +370,13 @@ const Layout: React.FC<LayoutProps> = ({
         headerRight ? "pt-28 md:pt-28" : "pt-20 sm:pt-24",
         isStandalone ? 'ios-bottom-safe' : ''
       )}>
-        {/* Background Gradient Spot */}
-        <div className="fixed top-20 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-primary/5 rounded-full blur-[100px] -z-10 pointer-events-none no-print" />
+        {/* Background Gradient Spot (otimizado sem blur filter pesado em tela cheia) */}
+        <div
+          className="fixed top-20 left-1/2 -translate-x-1/2 w-[800px] h-[400px] rounded-full -z-10 pointer-events-none no-print"
+          style={{
+            background: 'radial-gradient(ellipse at center, rgba(47, 107, 240, 0.08) 0%, rgba(47, 107, 240, 0) 70%)',
+          }}
+        />
 
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
           {children}

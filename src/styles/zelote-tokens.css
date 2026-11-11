@@ -52,3 +52,30 @@
   --zl-radius-control: 14px;
 }
 
+/* ── Delegated hover lines na grade semanal (desktop) ── */
+.is-hover-line.grid-cell {
+  background-color: rgba(244, 244, 245, 0.5) !important;
+}
+.dark .is-hover-line.grid-cell {
+  background-color: rgba(39, 39, 42, 0.3) !important;
+}
+.is-hover-line.day-header:not(.is-current-day) {
+  background-color: rgba(47, 107, 240, 0.1) !important;
+}
+.dark .is-hover-line.day-header:not(.is-current-day) {
+  background-color: rgba(47, 107, 240, 0.2) !important;
+}
+.is-hover-line.time-row {
+  background-color: rgb(244 244 245) !important;
+}
+.dark .is-hover-line.time-row {
+  background-color: rgb(39 39 42) !important;
+}
+.is-hover-line.time-row .time-label-box {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+.dark .is-hover-line.time-row .time-label-box {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+}

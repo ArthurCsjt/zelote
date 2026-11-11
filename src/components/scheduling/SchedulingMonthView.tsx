@@ -98,6 +98,123 @@ function Variation({
   );
 }
 
+interface KpiItem {
+  label: string;
+  value: string;
+  note?: string;
+  previous?: number;
+  current?: number;
+}
+
+interface KpiStripProps {
+  kpis: KpiItem[];
+  isLoading: boolean;
+}
+
+const KpiStrip: React.FC<KpiStripProps> = React.memo(({ kpis, isLoading }) => {
+  const kpisRef = useRef<HTMLDivElement>(null);
+  const rafRef = useRef<number | null>(null);
+  const [kpiScrollState, setKpiScrollState] = useState({
+    canScrollLeft: false,
+    canScrollRight: false,
+  });
+  const [activeKpiIndex, setActiveKpiIndex] = useState(0);
+
+  const handleKpiScroll = useCallback(() => {
+    if (!kpisRef.current) return;
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    rafRef.current = requestAnimationFrame(() => {
+      const el = kpisRef.current;
+      if (!el) return;
+      const canLeft = el.scrollLeft > 4;
+      const canRight = el.scrollLeft < el.scrollWidth - el.clientWidth - 4;
+      setKpiScrollState({ canScrollLeft: canLeft, canScrollRight: canRight });
+
+      const itemWidth = el.firstElementChild
+        ? (el.firstElementChild as HTMLElement).offsetWidth + 12
+        : 160;
+      const index = Math.round(el.scrollLeft / itemWidth);
+      setActiveKpiIndex(Math.min(kpis.length - 1, Math.max(0, index)));
+    });
+  }, [kpis.length]);
+
+  useEffect(() => {
+    handleKpiScroll();
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
+  }, [handleKpiScroll, isLoading]);
+
+  const kpiMaskStyle = useMemo(() => {
+    if (kpiScrollState.canScrollLeft && kpiScrollState.canScrollRight) {
+      return {
+        maskImage:
+          'linear-gradient(to right, transparent, black 24px, black calc(100% - 24px), transparent)',
+        WebkitMaskImage:
+          'linear-gradient(to right, transparent, black 24px, black calc(100% - 24px), transparent)',
+      };
+    }
+    if (kpiScrollState.canScrollRight) {
+      return {
+        maskImage: 'linear-gradient(to right, black calc(100% - 24px), transparent)',
+        WebkitMaskImage: 'linear-gradient(to right, black calc(100% - 24px), transparent)',
+      };
+    }
+    if (kpiScrollState.canScrollLeft) {
+      return {
+        maskImage: 'linear-gradient(to right, transparent, black 24px)',
+        WebkitMaskImage: 'linear-gradient(to right, transparent, black 24px)',
+      };
+    }
+    return undefined;
+  }, [kpiScrollState]);
+
+  return (
+    <>
+      <div
+        className="hx-kpis"
+        aria-label="Indicadores do mês"
+        ref={kpisRef}
+        onScroll={handleKpiScroll}
+        style={kpiMaskStyle}
+      >
+        {isLoading
+          ? [1, 2, 3, 4, 5].map((i) => (
+              <div className="hx-kpi space-y-2" key={i}>
+                <Skeleton className="h-4 w-20 rounded bg-[var(--hx-soft)]" />
+                <Skeleton className="h-8 w-14 rounded-lg bg-[var(--hx-soft)]" />
+              </div>
+            ))
+          : kpis.map((kpi) => (
+              <div className="hx-kpi" key={kpi.label}>
+                <span className="hx-kpi-label">{kpi.label}</span>
+                <strong className="hx-kpi-value">{kpi.value}</strong>
+                {'note' in kpi && kpi.note && <span className="hx-kpi-note">{kpi.note}</span>}
+                {'previous' in kpi && kpi.previous !== undefined && kpi.current !== undefined && (
+                  <Variation current={kpi.current} previous={kpi.previous} />
+                )}
+              </div>
+            ))}
+      </div>
+
+      {/* Indicadores de página dos KPIs (Mobile) */}
+      <div className="flex justify-center items-center gap-1.5 mt-0.5 mb-4 sm:hidden" aria-hidden="true">
+        {kpis.map((_, i) => (
+          <span
+            key={i}
+            className={cn(
+              'h-1.5 rounded-full transition-all duration-200',
+              i === activeKpiIndex ? 'w-4 bg-[var(--hx-blue)]' : 'w-1.5 bg-[var(--hx-border)]'
+            )}
+          />
+        ))}
+      </div>
+    </>
+  );
+});
+
+KpiStrip.displayName = 'KpiStrip';
+
 const ReservationList = React.memo(function ReservationList({
   rows,
   allRows,
@@ -380,6 +497,13 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
   const navigate = useNavigate();
   const daySectionRef = useRef<HTMLElement>(null);
   const [highlightDayHeader, setHighlightDayHeader] = useState(false);
+  const highlightTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (highlightTimerRef.current) clearTimeout(highlightTimerRef.current);
+    };
+  }, []);
 
   const { user } = useAuth();
   const { role, isAdmin } = useProfileRole();
@@ -534,7 +658,7 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
   // getDay: Dom 0, Seg 1, Ter 2, Qua 3, Qui 4, Sex 5, Sáb 6 -> Seg = 0, ..., Sex = 4
   const offset = firstWorkDay ? (getDay(firstWorkDay) + 6) % 7 : 0;
 
-  const kpis = [
+  const kpis = useMemo<KpiItem[]>(() => [
     {
       label: coordination ? 'Reservas' : 'Minhas reservas',
       value: number(stats.count),
@@ -570,60 +694,7 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
         ]
       : []),
     { label: 'Com Minecraft', value: number(stats.minecraft) },
-  ];
-
-  // ── KPIs Scroll & Fade Mask ──
-  const kpisRef = useRef<HTMLDivElement>(null);
-  const [kpiScrollState, setKpiScrollState] = useState({
-    canScrollLeft: false,
-    canScrollRight: false,
-  });
-  const [activeKpiIndex, setActiveKpiIndex] = useState(0);
-
-  const handleKpiScroll = () => {
-    if (!kpisRef.current) return;
-    requestAnimationFrame(() => {
-      const el = kpisRef.current;
-      if (!el) return;
-      const canLeft = el.scrollLeft > 4;
-      const canRight = el.scrollLeft < el.scrollWidth - el.clientWidth - 4;
-      setKpiScrollState({ canScrollLeft: canLeft, canScrollRight: canRight });
-
-      const itemWidth = el.firstElementChild
-        ? (el.firstElementChild as HTMLElement).offsetWidth + 12
-        : 160;
-      const index = Math.round(el.scrollLeft / itemWidth);
-      setActiveKpiIndex(Math.min(kpis.length - 1, Math.max(0, index)));
-    });
-  };
-
-  useEffect(() => {
-    handleKpiScroll();
-  }, [kpis.length, isLoading]);
-
-  const kpiMaskStyle = useMemo(() => {
-    if (kpiScrollState.canScrollLeft && kpiScrollState.canScrollRight) {
-      return {
-        maskImage:
-          'linear-gradient(to right, transparent, black 24px, black calc(100% - 24px), transparent)',
-        WebkitMaskImage:
-          'linear-gradient(to right, transparent, black 24px, black calc(100% - 24px), transparent)',
-      };
-    }
-    if (kpiScrollState.canScrollRight) {
-      return {
-        maskImage: 'linear-gradient(to right, black calc(100% - 24px), transparent)',
-        WebkitMaskImage: 'linear-gradient(to right, black calc(100% - 24px), transparent)',
-      };
-    }
-    if (kpiScrollState.canScrollLeft) {
-      return {
-        maskImage: 'linear-gradient(to right, transparent, black 24px)',
-        WebkitMaskImage: 'linear-gradient(to right, transparent, black 24px)',
-      };
-    }
-    return undefined;
-  }, [kpiScrollState]);
+  ], [coordination, stats, comparison, isManutencao]);
 
   const handleNewReservation = () => {
     if (onNewReservation) {
@@ -633,9 +704,26 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
     }
   };
 
+  const closeDetailsTimerRef = useRef<NodeJS.Timeout | null>(null);
+
   const openReservation = React.useCallback((res: Reservation) => {
+    if (closeDetailsTimerRef.current) clearTimeout(closeDetailsTimerRef.current);
     setSelectedReservation(res);
     setIsDetailsOpen(true);
+  }, []);
+
+  const closeReservation = React.useCallback(() => {
+    setIsDetailsOpen(false);
+    if (closeDetailsTimerRef.current) clearTimeout(closeDetailsTimerRef.current);
+    closeDetailsTimerRef.current = setTimeout(() => {
+      setSelectedReservation(null);
+    }, 350);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (closeDetailsTimerRef.current) clearTimeout(closeDetailsTimerRef.current);
+    };
   }, []);
 
   const startReservation = React.useCallback(
@@ -714,45 +802,8 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
           aria-labelledby="hx-calendar-tab"
           aria-busy={isLoading}
         >
-          {/* ── KPIs com Peek, Fade e Dots no Mobile ── */}
-          <div
-            className="hx-kpis"
-            aria-label="Indicadores do mês"
-            ref={kpisRef}
-            onScroll={handleKpiScroll}
-            style={kpiMaskStyle}
-          >
-            {isLoading
-              ? [1, 2, 3, 4, 5].map((i) => (
-                  <div className="hx-kpi space-y-2" key={i}>
-                    <Skeleton className="h-4 w-20 rounded bg-[var(--hx-soft)]" />
-                    <Skeleton className="h-8 w-14 rounded-lg bg-[var(--hx-soft)]" />
-                  </div>
-                ))
-              : kpis.map((kpi) => (
-                  <div className="hx-kpi" key={kpi.label}>
-                    <span className="hx-kpi-label">{kpi.label}</span>
-                    <strong className="hx-kpi-value">{kpi.value}</strong>
-                    {'note' in kpi && <span className="hx-kpi-note">{kpi.note}</span>}
-                    {'previous' in kpi && kpi.previous !== undefined && (
-                      <Variation current={kpi.current} previous={kpi.previous} />
-                    )}
-                  </div>
-                ))}
-          </div>
-
-          {/* Indicadores de página dos KPIs (Mobile) */}
-          <div className="flex justify-center items-center gap-1.5 mt-0.5 mb-4 sm:hidden" aria-hidden="true">
-            {kpis.map((_, i) => (
-              <span
-                key={i}
-                className={cn(
-                  'h-1.5 rounded-full transition-all duration-200',
-                  i === activeKpiIndex ? 'w-4 bg-[var(--hx-blue)]' : 'w-1.5 bg-[var(--hx-border)]'
-                )}
-              />
-            ))}
-          </div>
+          {/* ── KPIs com Peek, Fade e Dots no Mobile (Memoizado) ── */}
+          <KpiStrip kpis={kpis} isLoading={isLoading} />
 
           <div className="hx-layout">
             {/* ── Calendário de Ocupação (Segunda a Sexta) ── */}
@@ -811,7 +862,8 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
                               block: 'start',
                             });
                             setHighlightDayHeader(true);
-                            setTimeout(() => setHighlightDayHeader(false), 800);
+                            if (highlightTimerRef.current) clearTimeout(highlightTimerRef.current);
+                            highlightTimerRef.current = setTimeout(() => setHighlightDayHeader(false), 800);
                           }
                         }}
                       >
@@ -1125,7 +1177,9 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
       {selectedReservation && (
         <ReservationDetailsDialog
           open={isDetailsOpen}
-          onOpenChange={setIsDetailsOpen}
+          onOpenChange={(val) => {
+            if (!val) closeReservation();
+          }}
           reservation={selectedReservation}
           date={parseISO(selectedReservation.date)}
           isAdmin={Boolean(isAdmin)}
@@ -1136,8 +1190,7 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
             cancelReservation(selectedReservation.id, {
               onSuccess: () => {
                 onReservationSuccess?.();
-                setIsDetailsOpen(false);
-                setSelectedReservation(null);
+                closeReservation();
               },
             });
           }}

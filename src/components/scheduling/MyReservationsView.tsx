@@ -24,7 +24,7 @@ import {
   Loader2, 
   ArrowRight
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -58,11 +58,40 @@ export const MyReservationsView: React.FC<MyReservationsViewProps> = ({
 
   const [activeFilter, setActiveFilter] = useState<PeriodFilter>('week');
   const [searchQuery, setSearchQuery] = useState('');
+  const [visibleCount, setVisibleCount] = useState(20);
   const [cancelingId, setCancelingId] = useState<string | null>(null);
   const [confirmCancelId, setConfirmCancelId] = useState<string | null>(null);
   const [selectedReservation, setSelectedReservation] = useState<Reservation | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [now, setNow] = useState(new Date());
+
+  const shouldReduceMotion = useReducedMotion();
+  const closeTimerRef = React.useRef<NodeJS.Timeout | null>(null);
+
+  // Reset da paginação quando o filtro ou busca mudar
+  useEffect(() => {
+    setVisibleCount(20);
+  }, [activeFilter, searchQuery]);
+
+  const openDetails = (res: Reservation) => {
+    if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
+    setSelectedReservation(res);
+    setIsDetailsOpen(true);
+  };
+
+  const closeDetails = () => {
+    setIsDetailsOpen(false);
+    if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
+    closeTimerRef.current = setTimeout(() => {
+      setSelectedReservation(null);
+    }, 350);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(new Date()), 30000);
@@ -143,13 +172,18 @@ export const MyReservationsView: React.FC<MyReservationsViewProps> = ({
     );
   }, [userReservations, activeFilter, searchQuery, now]);
 
+  const paginatedList = useMemo(() => {
+    return displayedList.slice(0, visibleCount);
+  }, [displayedList, visibleCount]);
+
+  const remainingCount = Math.max(0, displayedList.length - visibleCount);
+
   const handleCancelReservation = async (reservation: Reservation) => {
     setCancelingId(reservation.id);
     await cancelReservation(reservation.id, {
       description: `Horário ${reservation.time_slot} do dia ${format(parseISO(reservation.date), "dd/MM/yyyy")} foi liberado.`,
-      onSuccess: async () => {
+      onSuccess: () => {
         setConfirmCancelId(null);
-        await refetch();
         onReservationSuccess();
       },
     });
@@ -373,10 +407,9 @@ export const MyReservationsView: React.FC<MyReservationsViewProps> = ({
         )
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <AnimatePresence mode="popLayout">
-            {displayedList.map((res, index) => {
+          <AnimatePresence initial={false}>
+            {paginatedList.map((res, index) => {
               const dt = parseISO(res.date);
-              const formattedDate = format(dt, "EEEE, dd 'de' MMMM", { locale: ptBR });
               const shortDate = format(dt, "dd/MM/yyyy");
               const requested = quantity(res);
               const loansCount = collected(res);
@@ -385,7 +418,7 @@ export const MyReservationsView: React.FC<MyReservationsViewProps> = ({
 
               const resState = status(res, now);
               const isMissed = resState === 'missed';
-              const { start, end } = interval(res);
+              const { end } = interval(res);
               const isFutureOrActive = end >= now;
               const isCancelingThis = cancelingId === res.id;
               const isConfirmingThis = confirmCancelId === res.id;
@@ -396,13 +429,13 @@ export const MyReservationsView: React.FC<MyReservationsViewProps> = ({
               return (
                 <motion.article
                   key={res.id}
-                  layout
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ duration: 0.25, delay: Math.min(index * 0.03, 0.3) }}
+                  whileHover={shouldReduceMotion ? undefined : { y: -2 }}
+                  transition={{ duration: 0.25, delay: Math.min(index * 0.02, 0.15) }}
                   className={cn(
-                    "hx-card p-5 flex flex-col justify-between transition-all duration-200 hover:-translate-y-0.5",
+                    "hx-card p-5 flex flex-col justify-between",
                     res.is_minecraft && "border-[var(--hx-minecraft)] bg-[color-mix(in_srgb,var(--hx-minecraft)_6%,var(--hx-card))]",
                     isMissed && "border-amber-500/40 bg-[color-mix(in_srgb,var(--hx-error)_4%,var(--hx-card))]"
                   )}
@@ -509,10 +542,7 @@ export const MyReservationsView: React.FC<MyReservationsViewProps> = ({
                       type="button"
                       variant="ghost"
                       size="sm"
-                      onClick={() => {
-                        setSelectedReservation(res);
-                        setIsDetailsOpen(true);
-                      }}
+                      onClick={() => openDetails(res)}
                       className="hx-control text-xs font-medium px-3.5 py-1.5 rounded-xl border border-[var(--hx-border)] bg-[var(--hx-soft)] text-[var(--hx-text)] hover:bg-[var(--hx-card)]"
                     >
                       Ver Detalhes
@@ -564,11 +594,27 @@ export const MyReservationsView: React.FC<MyReservationsViewProps> = ({
         </div>
       )}
 
+      {/* Botão Ver Mais (Paginação Leve) */}
+      {remainingCount > 0 && (
+        <div className="flex justify-center mt-6">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setVisibleCount((prev) => prev + 20)}
+            className="hx-control px-6 py-2 rounded-xl text-sm font-semibold border border-[var(--hx-border)] bg-[var(--hx-card)] hover:bg-[var(--hx-soft)]"
+          >
+            Ver mais ({remainingCount} restante{remainingCount === 1 ? '' : 's'})
+          </Button>
+        </div>
+      )}
+
       {/* ── Diálogo de Detalhes da Reserva ── */}
       {selectedReservation && (
         <ReservationDetailsDialog
           open={isDetailsOpen}
-          onOpenChange={setIsDetailsOpen}
+          onOpenChange={(val) => {
+            if (!val) closeDetails();
+          }}
           reservation={selectedReservation}
           date={parseISO(selectedReservation.date)}
           isAdmin={Boolean(isAdmin)}
@@ -577,11 +623,9 @@ export const MyReservationsView: React.FC<MyReservationsViewProps> = ({
           isCanceling={isCanceling}
           onCancel={() => {
             cancelReservation(selectedReservation.id, {
-              onSuccess: async () => {
+              onSuccess: () => {
                 onReservationSuccess();
-                await refetch();
-                setIsDetailsOpen(false);
-                setSelectedReservation(null);
+                closeDetails();
               },
             });
           }}

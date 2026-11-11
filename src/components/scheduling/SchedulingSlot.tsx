@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useRef, useEffect } from 'react';
+import React, { useMemo, useState, useRef, useEffect, useCallback } from 'react';
 import { cn } from '@/lib/utils';
 import { Plus, Monitor, User, CheckCircle, AlertTriangle, Clock, Trash2, ArrowRight, Laptop, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -23,7 +23,7 @@ interface SchedulingSlotProps {
   professores: { id: string; nome_completo: string }[];
 }
 
-export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
+export const SchedulingSlot: React.FC<SchedulingSlotProps> = React.memo(({
   date,
   timeSlot,
   totalAvailableChromebooks,
@@ -35,17 +35,45 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
   const { role, isAdmin } = useProfileRole();
   const { cancel: cancelReservation, isCanceling } = useCancelReservation(deleteReservation);
   const navigate = useNavigate();
-  const [isDetailsOpen, setIsDetailsOpen] = useState<string | false>(false);
 
-  const detailsReservation = typeof isDetailsOpen === 'string'
-    ? allReservationsForSlot.find((r) => r.id === isDetailsOpen)
+  // Estados separados para permitir animação de saída graciosa (350ms)
+  const [detailsId, setDetailsId] = useState<string | null>(null);
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const closeDetailsTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const openDetails = useCallback((id: string) => {
+    if (closeDetailsTimerRef.current) {
+      clearTimeout(closeDetailsTimerRef.current);
+      closeDetailsTimerRef.current = null;
+    }
+    setDetailsId(id);
+    setDetailsOpen(true);
+  }, []);
+
+  const closeDetails = useCallback(() => {
+    setDetailsOpen(false);
+    if (closeDetailsTimerRef.current) clearTimeout(closeDetailsTimerRef.current);
+    closeDetailsTimerRef.current = setTimeout(() => {
+      setDetailsId(null);
+    }, 350);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (closeDetailsTimerRef.current) clearTimeout(closeDetailsTimerRef.current);
+    };
+  }, []);
+
+  const detailsReservation = detailsId
+    ? allReservationsForSlot.find((r) => r.id === detailsId)
     : undefined;
 
   useEffect(() => {
-    if (typeof isDetailsOpen === 'string' && !detailsReservation) {
-      setIsDetailsOpen(false);
+    if (detailsId && !detailsReservation) {
+      setDetailsOpen(false);
+      setDetailsId(null);
     }
-  }, [isDetailsOpen, detailsReservation]);
+  }, [detailsId, detailsReservation]);
 
   // Mantém o ReservationDialog montado mesmo após a reserva ser criada,
   // para que a tela de confirmação (done) não seja desmontada pelo Realtime.
@@ -193,7 +221,7 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
                   onClick={(e) => {
                     e.stopPropagation();
                     if (isThisMine || isAdmin || isResponsible) {
-                      setIsDetailsOpen(res.id);
+                      openDetails(res.id);
                     }
                   }}
                 >
@@ -308,11 +336,11 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
     <>
       {content}
 
-      {detailsReservation && (
+      {detailsId && detailsReservation && (
         <ReservationDetailsDialog
-          open={Boolean(isDetailsOpen)}
+          open={detailsOpen}
           onOpenChange={(open) => {
-            if (!open) setIsDetailsOpen(false);
+            if (!open) closeDetails();
           }}
           reservation={detailsReservation}
           date={date}
@@ -324,11 +352,11 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
           isResponsible={Boolean(isResponsible)}
           isCanceling={isCanceling}
           onCancel={async () => {
-            if (typeof isDetailsOpen === 'string') {
-              await cancelReservation(isDetailsOpen, {
+            if (detailsId) {
+              await cancelReservation(detailsId, {
                 onSuccess: () => {
                   onReservationSuccess();
-                  setIsDetailsOpen(false);
+                  closeDetails();
                 }
               });
             }
@@ -337,4 +365,6 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
       )}
     </>
   );
-};
+});
+
+SchedulingSlot.displayName = 'SchedulingSlot';
