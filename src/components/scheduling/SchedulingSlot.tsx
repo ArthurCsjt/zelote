@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useRef } from 'react';
+import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { Plus, Monitor, User, CheckCircle, AlertTriangle, Clock, Trash2, ArrowRight, Laptop, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -8,7 +8,7 @@ import type { User as AuthUser } from '@supabase/supabase-js';
 import { ReservationDialog } from './ReservationDialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useProfileRole } from '@/hooks/use-profile-role';
-import { useDatabase } from '@/hooks/useDatabase';
+import { deleteReservation } from '@/services/reservationService';
 import { ReservationDetailsDialog } from './ReservationDetailsDialog';
 import { useSchedulingResponsible } from '@/hooks/useSchedulingResponsible';
 import { useCancelReservation } from '@/hooks/useCancelReservation';
@@ -33,10 +33,20 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
   professores,
 }) => {
   const { role, isAdmin } = useProfileRole();
-  const { deleteReservation } = useDatabase();
   const { cancel: cancelReservation, isCanceling } = useCancelReservation(deleteReservation);
   const navigate = useNavigate();
   const [isDetailsOpen, setIsDetailsOpen] = useState<string | false>(false);
+
+  const detailsReservation = typeof isDetailsOpen === 'string'
+    ? allReservationsForSlot.find((r) => r.id === isDetailsOpen)
+    : undefined;
+
+  useEffect(() => {
+    if (typeof isDetailsOpen === 'string' && !detailsReservation) {
+      setIsDetailsOpen(false);
+    }
+  }, [isDetailsOpen, detailsReservation]);
+
   // Mantém o ReservationDialog montado mesmo após a reserva ser criada,
   // para que a tela de confirmação (done) não seja desmontada pelo Realtime.
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -298,17 +308,20 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = ({
     <>
       {content}
 
-      {isDetailsOpen && typeof isDetailsOpen === 'string' && (
+      {detailsReservation && (
         <ReservationDetailsDialog
-          open={!!isDetailsOpen}
+          open={Boolean(isDetailsOpen)}
           onOpenChange={(open) => {
             if (!open) setIsDetailsOpen(false);
           }}
-          reservation={allReservationsForSlot.find(r => r.id === isDetailsOpen)!}
+          reservation={detailsReservation}
           date={date}
-          isOwner={allReservationsForSlot.find(r => r.id === isDetailsOpen)?.created_by === currentUser?.id || allReservationsForSlot.find(r => r.id === isDetailsOpen)?.professor_id === currentUser?.id}
-          isAdmin={!!isAdmin}
-          isResponsible={!!isResponsible}
+          isOwner={
+            detailsReservation.created_by === currentUser?.id ||
+            detailsReservation.professor_id === currentUser?.id
+          }
+          isAdmin={Boolean(isAdmin)}
+          isResponsible={Boolean(isResponsible)}
           isCanceling={isCanceling}
           onCancel={async () => {
             if (typeof isDetailsOpen === 'string') {

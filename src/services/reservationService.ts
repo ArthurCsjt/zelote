@@ -13,11 +13,22 @@ const toDbTime = (slot: string): string => {
 };
 
 // Converts DB format "07:10:00" or "07:10" → UI format "07h10"
-const fromDbTime = (slot: string): string => {
+export const fromDbTime = (slot: string): string => {
   if (!slot) return slot;
   if (!slot.includes(':')) return slot; // already UI format
   const [h, m] = slot.split(':');
   return `${h}h${m}`;
+};
+
+export const getBlockSlots = async (blockId: string): Promise<string[]> => {
+  const { data, error } = await supabase
+    .from('reservations')
+    .select('time_slot')
+    .eq('block_id', blockId)
+    .order('time_slot', { ascending: true });
+
+  if (error) throw error;
+  return (data || []).map((r) => fromDbTime(r.time_slot));
 };
 
 export interface ReservationData {
@@ -434,13 +445,20 @@ export const deleteReservation = async (id: string): Promise<boolean> => {
   // Busca detalhes para enviar notificação de cancelamento
   let existingReservation: any = null;
   try {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('reservations')
-      .select('date, time_slot, classroom, prof_name, quantity_requested')
+      .select('date, time_slot, classroom, quantity_requested')
       .eq('id', id)
       .maybeSingle();
-    existingReservation = data;
-  } catch {}
+
+    if (error) {
+      logger.warn('Erro ao buscar reserva para push de cancelamento:', error);
+    } else {
+      existingReservation = data;
+    }
+  } catch (err) {
+    logger.warn('Erro ao buscar reserva para push de cancelamento:', err);
+  }
 
   const { error } = await supabase
     .from('reservations')
@@ -452,9 +470,10 @@ export const deleteReservation = async (id: string): Promise<boolean> => {
   if (existingReservation) {
     try {
       const roomDesc = existingReservation.classroom ? `na ${existingReservation.classroom}` : '';
+      const formattedSlot = fromDbTime(existingReservation.time_slot);
       triggerPushNotification(
         'Agendamento Cancelado',
-        `O agendamento de ${formatLocalDate(existingReservation.date)} (${existingReservation.time_slot}) ${roomDesc} foi cancelado.`,
+        `O agendamento de ${formatLocalDate(existingReservation.date)} (${formattedSlot}) ${roomDesc} foi cancelado.`,
         '/scheduling'
       );
     } catch {}

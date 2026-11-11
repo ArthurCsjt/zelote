@@ -14,7 +14,7 @@ import {
   subMonths,
 } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { BarChart3, CalendarDays, Check, Download, ArrowRight, Plus, Search, Clock } from 'lucide-react';
+import { BarChart3, CalendarDays, Check, Download, ArrowRight, Plus, Search, Clock, AlertTriangle } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -23,8 +23,7 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfileRole } from '@/hooks/use-profile-role';
 import { useSchedulingResponsible } from '@/hooks/useSchedulingResponsible';
-import { useDatabase } from '@/hooks/useDatabase';
-import { getReservationsForWeek, type Reservation } from '@/services/reservationService';
+import { getReservationsForWeek, deleteReservation, type Reservation } from '@/services/reservationService';
 import { ReservationDetailsDialog } from './ReservationDetailsDialog';
 import { useCancelReservation } from '@/hooks/useCancelReservation';
 import {
@@ -385,7 +384,6 @@ export const SchedulingMonthView: React.FC<SchedulingMonthViewProps> = ({
   const { user } = useAuth();
   const { role, isAdmin } = useProfileRole();
   const { isResponsible } = useSchedulingResponsible();
-  const { deleteReservation } = useDatabase();
   const { cancel: cancelReservation, isCanceling } = useCancelReservation(deleteReservation);
   const coordination = isAdmin || isResponsible;
   const isManutencao = role === 'manutencao';

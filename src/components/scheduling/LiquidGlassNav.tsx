@@ -261,6 +261,11 @@ export const LiquidGlassNav: React.FC<LiquidGlassNavProps> = ({
               handleSelectTab(tab.id);
             }}
             aria-current={isActive ? 'page' : undefined}
+            aria-label={
+              tab.id === 'my_reservations'
+                ? (badgeCount > 0 ? `Reservas, ${badgeCount} próximas` : 'Reservas')
+                : undefined
+            }
           >
             <div className="lg-nav__icon">
               {/* Semanal - Calendário */}
@@ -309,6 +314,13 @@ export const LiquidGlassNav: React.FC<LiquidGlassNavProps> = ({
                   <rect x="14" y="14" width="7" height="7" rx="1.5" />
                   <rect x="3" y="14" width="7" height="7" rx="1.5" />
                 </svg>
+              )}
+
+              {/* Badge na aba de Reservas */}
+              {tab.id === 'my_reservations' && badgeCount > 0 && (
+                <span className="lg-nav__badge" aria-hidden="true">
+                  {badgeCount > 9 ? '9+' : badgeCount}
+                </span>
               )}
             </div>
 

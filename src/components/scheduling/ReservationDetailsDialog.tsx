@@ -29,8 +29,9 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { useQuery } from '@tanstack/react-query';
 import type { Reservation } from '@/hooks/useDatabase';
-import type { Reservation as ServiceReservation } from '@/services/reservationService';
+import { getBlockSlots, type Reservation as ServiceReservation } from '@/services/reservationService';
 import { useNavigate } from 'react-router-dom';
 import { useProfileRole } from '@/hooks/use-profile-role';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -80,10 +81,24 @@ const DetailsContent: React.FC<DetailsContentProps> = ({
     reservation.prof_email === 'ivo@colegiosaojudas.com.br' ||
     reservation.prof_email === 'manutencao.teste@colegiosaojudas.com.br';
 
+  const { data: blockSlots } = useQuery({
+    queryKey: ['reservation-block', reservation.block_id],
+    queryFn: () => getBlockSlots(reservation.block_id!),
+    enabled: Boolean(reservation.block_id),
+    staleTime: 60000,
+  });
+
+  const isBlock = Boolean(blockSlots && blockSlots.length >= 2);
+
   const [hourStr, minuteStr] = (reservation.time_slot || '00h00').split('h');
   const slotStart = new Date(date);
   slotStart.setHours(parseInt(hourStr || '0', 10), parseInt(minuteStr || '0', 10), 0, 0);
-  const slotEnd = new Date(slotStart.getTime() + 50 * 60 * 1000);
+
+  const lastSlot = isBlock && blockSlots ? blockSlots[blockSlots.length - 1] : reservation.time_slot;
+  const [lastHourStr, lastMinuteStr] = (lastSlot || '00h00').split('h');
+  const lastSlotStart = new Date(date);
+  lastSlotStart.setHours(parseInt(lastHourStr || '0', 10), parseInt(lastMinuteStr || '0', 10), 0, 0);
+  const slotEnd = new Date(lastSlotStart.getTime() + 50 * 60 * 1000);
   const now = new Date();
   const isPast = now >= slotEnd;
   const loansCount = reservation.associated_loans?.length || 0;
@@ -142,15 +157,13 @@ const DetailsContent: React.FC<DetailsContentProps> = ({
   const returnedLoans = reservation.associated_loans?.filter((l) => l.returned).length || 0;
   const pendingLoans = totalLoans - returnedLoans;
 
-  // Aulas seguidas / bloco
-  const isBlock = Boolean(reservation.time_slots && reservation.time_slots.length > 1);
-
   // Recursos adicionais
   const hasExtraResources = Boolean(
     reservation.is_minecraft ||
-    reservation.need_tv ||
-    reservation.need_sound ||
-    Boolean(reservation.mic_count && reservation.mic_count > 0)
+    reservation.needs_tv ||
+    reservation.needs_sound ||
+    reservation.needs_mic ||
+    Boolean(reservation.mic_quantity && reservation.mic_quantity > 0)
   );
 
   return (
@@ -265,11 +278,11 @@ const DetailsContent: React.FC<DetailsContentProps> = ({
         </div>
 
         {/* Bloco de Aulas Seguidas (se houver) */}
-        {isBlock && (
+        {isBlock && blockSlots && (
           <div className="zl-details-block-info">
             <Layers size={14} className="shrink-0 text-blue-500" />
             <span>
-              Reserva em bloco com {reservation.time_slots?.length} aulas ({reservation.time_slots?.join(', ')})
+              Reserva em bloco com {blockSlots.length} aulas ({blockSlots.join(', ')})
             </span>
           </div>
         )}
@@ -285,24 +298,25 @@ const DetailsContent: React.FC<DetailsContentProps> = ({
                   <span>Minecraft Education</span>
                 </span>
               )}
-              {reservation.need_tv && (
+              {reservation.needs_tv && (
                 <span className="zl-details-chip">
                   <Tv size={14} className="shrink-0" />
                   <span>TV</span>
                 </span>
               )}
-              {reservation.need_sound && (
+              {reservation.needs_sound && (
                 <span className="zl-details-chip">
                   <Volume2 size={14} className="shrink-0" />
                   <span>Caixa de som</span>
                 </span>
               )}
-              {Boolean(reservation.mic_count && reservation.mic_count > 0) && (
+              {(reservation.needs_mic || Boolean(reservation.mic_quantity && reservation.mic_quantity > 0)) && (
                 <span className="zl-details-chip">
                   <Mic size={14} className="shrink-0" />
                   <span>
-                    {reservation.mic_count} Microfone
-                    {(reservation.mic_count || 0) > 1 ? 's' : ''}
+                    {(reservation.mic_quantity && reservation.mic_quantity > 0)
+                      ? `${reservation.mic_quantity} Microfone${reservation.mic_quantity > 1 ? 's' : ''}`
+                      : 'Microfone'}
                   </span>
                 </span>
               )}
