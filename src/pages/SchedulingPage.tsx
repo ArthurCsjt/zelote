@@ -268,6 +268,8 @@ const SchedulingPage = () => {
 
   return (
     <Layout title="Agendamento" showBackButton onBack={() => navigate('/')}>
+      {/* Neo-Brutal Grid Background */}
+      <div className="fixed inset-0 neo-brutal-grid opacity-[0.03] dark:opacity-[0.05] pointer-events-none -z-10" />
       <div className="space-y-4 sm:space-y-6 max-w-7xl mx-auto relative z-10 pb-28 sm:pb-32">
       {/* ── Glass Nav Row ── Week Selector + Year/Month Selector (Visível apenas em Semanal e Histórico) ── */}
       <AnimatePresence initial={false}>
