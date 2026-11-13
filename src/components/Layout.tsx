@@ -30,6 +30,8 @@ interface LayoutProps {
   onBack?: () => void;
   backgroundClass?: string;
   headerRight?: React.ReactNode;
+  showBackgroundGrid?: boolean;
+  showFloatingShapes?: boolean;
 }
 
 const Layout: React.FC<LayoutProps> = ({
@@ -40,6 +42,8 @@ const Layout: React.FC<LayoutProps> = ({
   onBack,
   backgroundClass = 'bg-background',
   headerRight,
+  showBackgroundGrid = false,
+  showFloatingShapes = false,
 }) => {
   const { user, logout } = useAuth();
   const { theme, setTheme } = useTheme();
@@ -140,7 +144,25 @@ const Layout: React.FC<LayoutProps> = ({
   };
 
   return (
-    <div className={cn(`min-h-screen text-foreground ${isStandalone ? 'safe-area-top safe-area-bottom safe-area-left safe-area-right' : ''}`, backgroundClass)}>
+    <div className={cn(`min-h-screen text-foreground relative overflow-x-hidden ${isStandalone ? 'safe-area-top safe-area-bottom safe-area-left safe-area-right' : ''}`, backgroundClass)}>
+
+      {/* Neo-Brutal Grid Background cobrindo toda a viewport de ponta a ponta */}
+      {showBackgroundGrid && (
+        <div
+          className="fixed inset-0 neo-brutal-grid opacity-[0.04] dark:opacity-[0.06] pointer-events-none z-0"
+          style={{ backgroundSize: '80px 80px' }}
+        />
+      )}
+
+      {/* Floating Geometric Shapes nos cantos da tela inteira */}
+      {showFloatingShapes && (
+        <>
+          <div className="fixed top-20 left-4 w-14 h-14 bg-primary rotate-12 neo-brutal-shadow animate-float pointer-events-none z-0 opacity-70" />
+          <div className="fixed top-24 right-6 w-12 h-12 bg-warning rotate-45 neo-brutal-shadow animate-float-delayed pointer-events-none z-0 opacity-70" />
+          <div className="fixed bottom-24 right-8 w-10 h-10 bg-success rotate-6 neo-brutal-shadow animate-float pointer-events-none z-0 opacity-70" />
+          <div className="fixed bottom-20 left-6 w-12 h-12 bg-error -rotate-12 neo-brutal-shadow animate-float-delayed pointer-events-none z-0 opacity-70" />
+        </>
+      )}
 
       {/* Status Bar Overlay for iOS in standalone mode */}
       {isStandalone && <div className="status-bar-overlay" />}

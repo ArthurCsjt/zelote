@@ -267,24 +267,13 @@ const SchedulingPage = () => {
   const isLoading = isLoadingTotal || isLoadingReservations || isLoadingProfessores;
 
   return (
-    <Layout title="Agendamento" showBackButton onBack={() => navigate('/')} backgroundClass="bg-transparent">
-      {/* Fundo sólido da página (substitui o bg-background do Layout) */}
-      <div className="fixed inset-0 bg-background pointer-events-none -z-20" />
-      {/* Neo-Brutal Grid — cobre toda a viewport sobre o fundo, sem ser bloqueado pelo Layout */}
-      <div
-        className="fixed inset-0 neo-brutal-grid opacity-[0.04] dark:opacity-[0.06] pointer-events-none -z-10"
-        style={{ backgroundSize: '80px 80px' }}
-      />
-
-      {/* Floating Geometric Shapes — um em cada canto */}
-      {/* Azul — topo esquerdo (abaixo do header) */}
-      <div className="fixed top-20 left-4 w-14 h-14 bg-primary rotate-12 neo-brutal-shadow animate-float pointer-events-none z-0 opacity-70" />
-      {/* Amarelo — topo direito */}
-      <div className="fixed top-24 right-6 w-12 h-12 bg-warning rotate-45 neo-brutal-shadow animate-float-delayed pointer-events-none z-0 opacity-70" />
-      {/* Verde — baixo direito (acima da nav) */}
-      <div className="fixed bottom-24 right-8 w-10 h-10 bg-success rotate-6 neo-brutal-shadow animate-float pointer-events-none z-0 opacity-70" />
-      {/* Vermelho — baixo esquerdo */}
-      <div className="fixed bottom-20 left-6 w-12 h-12 bg-error -rotate-12 neo-brutal-shadow animate-float-delayed pointer-events-none z-0 opacity-70" />
+    <Layout
+      title="Agendamento"
+      showBackButton
+      onBack={() => navigate('/')}
+      showBackgroundGrid
+      showFloatingShapes
+    >
       <div className="space-y-4 sm:space-y-6 max-w-7xl mx-auto relative z-10 pb-28 sm:pb-32">
       {/* ── Glass Nav Row ── Week Selector + Year/Month Selector (Visível apenas em Semanal e Histórico) ── */}
       <AnimatePresence initial={false}>
