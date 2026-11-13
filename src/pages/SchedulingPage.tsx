@@ -267,10 +267,12 @@ const SchedulingPage = () => {
   const isLoading = isLoadingTotal || isLoadingReservations || isLoadingProfessores;
 
   return (
-    <Layout title="Agendamento" showBackButton onBack={() => navigate('/')}>
-      {/* Neo-Brutal Grid Background — espaçamento maior (80px) */}
+    <Layout title="Agendamento" showBackButton onBack={() => navigate('/')} backgroundClass="bg-transparent">
+      {/* Fundo sólido da página (substitui o bg-background do Layout) */}
+      <div className="fixed inset-0 bg-background pointer-events-none -z-20" />
+      {/* Neo-Brutal Grid — cobre toda a viewport sobre o fundo, sem ser bloqueado pelo Layout */}
       <div
-        className="fixed inset-0 neo-brutal-grid opacity-[0.03] dark:opacity-[0.05] pointer-events-none -z-10"
+        className="fixed inset-0 neo-brutal-grid opacity-[0.04] dark:opacity-[0.06] pointer-events-none -z-10"
         style={{ backgroundSize: '80px 80px' }}
       />
 
