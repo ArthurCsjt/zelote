@@ -40,10 +40,11 @@ export const LoanHub = ({ onBack, defaultTab = 'form', onNavigateToReturnView, i
   const loanFormContent = useMemo(() => (
     <div className="p-0">
       <LoanForm
+        onBack={onBack}
         initialReservationData={initialReservationData}
       />
     </div>
-  ), [initialReservationData]);
+  ), [initialReservationData, onBack]);
 
   const activeLoansContent = useMemo(() => (
     <ActiveLoans onNavigateToReturn={handleNavigateToReturn} />

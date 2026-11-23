@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { toast } from "@/hooks/use-toast";
@@ -66,41 +66,51 @@ export function LoanForm({ onBack, initialReservationData }: LoanFormProps) {
     const [selectedUser, setSelectedUser] = useState<UserSearchResult | null>(null);
 
     // --- PRE-FILL LOGIC FROM RESERVATION ---
+    const appliedReservationIdRef = useRef<string | null>(null);
+
     useEffect(() => {
-        if (initialReservationData && users.length > 0) {
-            const reservation = initialReservationData;
+        if (!initialReservationData) return;
+        const reservation = initialReservationData;
 
-            // Tenta encontrar o usuário pelo e-mail
-            const foundUser = users.find(u => u.email === reservation.prof_email);
+        // Se já aplicamos esta mesma reserva nesta instância do formulário e o usuário está selecionado, não sobrescreve
+        if (appliedReservationIdRef.current === reservation.id && selectedUser) return;
 
-            if (foundUser) {
-                setSelectedUser(foundUser);
-                setFormData(prev => ({
-                    ...prev,
-                    studentName: foundUser.name,
-                    ra: foundUser.ra || '',
-                    email: foundUser.email,
-                    userType: foundUser.type,
-                    purpose: reservation.justification,
-                    notes: `Reserva do dia ${formatLocalDate(reservation.date)} às ${reservation.time_slot}. Quantidade solicitada: ${reservation.quantity_requested} Chromebooks.`,
-                    reservationId: reservation.id,
-                }));
-                // Confirma automaticamente a finalidade se houver uma justificativa
-                if (reservation.justification) {
-                    setIsPurposeConfirmed(true);
-                }
-            } else {
-                // Caso não encontre no autocomplete (improvável para professores ativos), preenche o máximo possível
-                setFormData(prev => ({
-                    ...prev,
-                    studentName: reservation.prof_name || '',
-                    email: reservation.prof_email || '',
-                    purpose: reservation.justification || '',
-                    userType: 'professor',
-                    notes: `Reserva do dia ${formatLocalDate(reservation.date)} às ${reservation.time_slot}. Quantidade solicitada: ${reservation.quantity_requested} Chromebooks.`,
-                    reservationId: reservation.id,
-                }));
-            }
+        const targetEmail = (reservation.prof_email || '').trim().toLowerCase();
+        const targetName = (reservation.prof_name || '').trim().toLowerCase();
+
+        // 1. Tenta encontrar o usuário na lista global de busca (por e-mail insensível a maiúsculas/minúsculas ou por nome)
+        const foundUser = users.find(u => {
+            const uEmail = (u.email || '').trim().toLowerCase();
+            const uName = (u.name || '').trim().toLowerCase();
+            return (targetEmail && uEmail === targetEmail) || (targetName && uName === targetName);
+        });
+
+        // 2. Se não encontrar no inventário, cria o perfil sintético para NUNCA travar a validação
+        const activeUser: UserSearchResult = foundUser || {
+            id: reservation.professor_id || reservation.created_by || 'res-prof',
+            name: reservation.prof_name || reservation.prof_email?.split('@')[0] || 'Professor',
+            email: reservation.prof_email || '',
+            type: 'professor',
+            searchable: `${reservation.prof_name || ''} ${reservation.prof_email || ''} professor`.toLowerCase(),
+        };
+
+        setSelectedUser(activeUser);
+        appliedReservationIdRef.current = reservation.id || 'res-applied';
+
+        setFormData(prev => ({
+            ...prev,
+            studentName: activeUser.name,
+            ra: activeUser.ra || '',
+            email: activeUser.email,
+            userType: activeUser.type || 'professor',
+            purpose: reservation.justification || '',
+            notes: `Reserva do dia ${formatLocalDate(reservation.date)} às ${reservation.time_slot}. Quantidade solicitada: ${reservation.quantity_requested || 0} Chromebooks.`,
+            reservationId: reservation.id,
+        }));
+
+        // Confirma automaticamente a finalidade se houver uma justificativa
+        if (reservation.justification) {
+            setIsPurposeConfirmed(true);
         }
     }, [initialReservationData, users]);
     const [hasReturnDeadline, setHasReturnDeadline] = useState(false);
@@ -353,6 +363,21 @@ export function LoanForm({ onBack, initialReservationData }: LoanFormProps) {
 
 
             <form onSubmit={handleSubmit} className="space-y-6 relative z-10 w-full max-w-full overflow-hidden min-w-0">
+
+                {/* Banner de Reserva Vinculada (quando vindo do Agendamento) */}
+                {initialReservationData && (
+                    <div className="p-3 bg-blue-50 dark:bg-blue-950/40 border-2 md:border-3 border-black dark:border-white shadow-[3px_3px_0px_0px_rgba(59,130,246,0.6)] flex flex-wrap items-center justify-between gap-2 rounded-none">
+                        <div className="flex items-center gap-2 min-w-0">
+                            <span className="h-3 w-3 rounded-full bg-blue-500 animate-pulse shrink-0" />
+                            <p className="text-xs font-black uppercase text-blue-900 dark:text-blue-200 truncate">
+                                Vinculado à Reserva: {formData.studentName || initialReservationData.prof_name} ({initialReservationData.quantity_requested || 0} Chromebooks solicitados)
+                            </p>
+                        </div>
+                        <Badge variant="outline" className="border-2 border-black dark:border-white font-black uppercase text-[10px] bg-white dark:bg-zinc-900 shrink-0">
+                            {formatLocalDate(initialReservationData.date)} • {initialReservationData.time_slot}
+                        </Badge>
+                    </div>
+                )}
 
                 <div className="grid md:grid-cols-2 gap-6 w-full min-w-0">
 
