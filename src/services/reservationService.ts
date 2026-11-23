@@ -302,7 +302,7 @@ export const createReservation = async (
     triggerPushNotification(
       'Novo Agendamento Confirmado',
       `${reservationResult.prof_name} agendou ${quantityDesc} ${roomDesc} para ${dateFormatted} às ${reservationResult.time_slot}.`,
-      '/scheduling'
+      '/agendamento'
     );
   } catch (pushError) {
     logger.warn('Falha silenciosa ao disparar push notification:', pushError);
@@ -416,7 +416,7 @@ export const bulkCreateReservations = async (
     triggerPushNotification(
       'Novos Agendamentos em Lote',
       `${profName} agendou ${dates.length} datas (${quantityDesc} ${roomDesc}) no horário ${baseData.time_slot}.`,
-      '/scheduling'
+      '/agendamento'
     );
   } catch (pushErr) {
     logger.warn('Falha silenciosa ao disparar notificação push em lote:', pushErr);
@@ -474,7 +474,7 @@ export const deleteReservation = async (id: string): Promise<boolean> => {
       triggerPushNotification(
         'Agendamento Cancelado',
         `O agendamento de ${formatLocalDate(existingReservation.date)} (${formattedSlot}) ${roomDesc} foi cancelado.`,
-        '/scheduling'
+        '/agendamento'
       );
     } catch {}
   }

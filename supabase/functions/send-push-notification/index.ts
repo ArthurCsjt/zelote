@@ -17,11 +17,50 @@ serve(async (req) => {
   }
 
   try {
-    const { title, body, url = '/', target_user_id } = await req.json();
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: 'Faltando header de autorização' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 401,
+      });
+    }
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+
+    // Valida o usuário autenticado da requisição
+    const supabaseUser = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const { data: { user }, error: userError } = await supabaseUser.auth.getUser();
+    if (userError || !user) {
+      return new Response(JSON.stringify({ error: 'Não autorizado: Token inválido' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 401,
+      });
+    }
+
+    // Cliente administrativo para checar perfil e enviar push
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
+    const { data: profile } = await supabaseAdmin
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+
+    const allowedRoles = ['admin', 'super_admin', 'professor', 'manutencao'];
+    if (!profile || !allowedRoles.includes(profile.role)) {
+      return new Response(JSON.stringify({ error: 'Acesso negado: Perfil não autorizado a disparar push' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 403,
+      });
+    }
+
+    const { title, body, url = '/agendamento', target_user_id } = await req.json();
+
+    // Sanitiza a URL para garantir que seja relativa e não redirecione para links externos arbitrários
+    const safeUrl = (typeof url === 'string' && url.startsWith('/')) ? url : '/agendamento';
 
     let query = supabaseAdmin
       .from('push_subscriptions')
@@ -52,9 +91,9 @@ serve(async (req) => {
     webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
 
     const payload = JSON.stringify({
-      title,
-      body,
-      url,
+      title: title || 'Zelote Notificação',
+      body: body || '',
+      url: safeUrl,
       timestamp: Date.now()
     });
 

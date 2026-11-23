@@ -15,13 +15,13 @@ const OFFLINE_URL = '/offline.html';
 // Tipos de recursos que queremos cachear agressivamente (Cache First)
 const cacheFirstTypes = ['font', 'image'];
 
-// Ativação e limpeza de cache manual (se ainda necessário além do cleanupOutdatedCaches)
+// Ativação e limpeza de cache manual (preserva caches do Workbox precache)
 self.addEventListener('activate', (event) => {
     event.waitUntil(
         caches.keys().then((cacheNames) => {
             return Promise.all(
                 cacheNames.map((cacheName) => {
-                    if (cacheName !== CACHE_NAME) {
+                    if (cacheName !== CACHE_NAME && !cacheName.startsWith('workbox-')) {
                         return caches.delete(cacheName);
                     }
                     return null;
@@ -98,17 +98,19 @@ self.addEventListener('push', (event) => {
 
 self.addEventListener('notificationclick', (event) => {
     event.notification.close();
-    const urlToOpen = event.notification.data?.url || '/';
+    const rawUrl = event.notification.data?.url || '/';
+    // Sanitiza e normaliza para a URL absoluta do domínio da aplicação
+    const targetUrl = new URL(rawUrl.startsWith('/') ? rawUrl : '/', self.location.origin).href;
 
     event.waitUntil(
         self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
             for (const client of windowClients) {
-                if (client.url === urlToOpen && 'focus' in client) {
+                if (client.url === targetUrl && 'focus' in client) {
                     return client.focus();
                 }
             }
             if (self.clients.openWindow) {
-                return self.clients.openWindow(urlToOpen);
+                return self.clients.openWindow(targetUrl);
             }
         })
     );
