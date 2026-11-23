@@ -14,6 +14,7 @@ dist-ssr
 
 # Sensitive / development-only files — never commit these
 keys.txt
+keys.json
 gen-keys.js
 .env
 .env*.local

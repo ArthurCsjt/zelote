@@ -138,8 +138,16 @@ const Index = () => {
   };
 
   const renderCurrentView = () => {
-    if ((role === 'teacher' || role === 'professor' || role === 'manutencao') && currentView === 'menu') {
+    const isAdminOrSuper = role === 'admin' || role === 'super_admin';
+
+    // Usuários sem privilégio administrativo que chegam ao menu raiz são direcionados ao Agendamento
+    if (!isAdminOrSuper && currentView === 'menu') {
       return <Navigate to="/agendamento" replace />;
+    }
+
+    // Telas estritamente administrativas de gestão e auditoria
+    if (!isAdminOrSuper && (currentView === 'registration' || currentView === 'audit')) {
+      return <div className="p-8 text-center font-bold text-red-500 uppercase">Acesso Negado</div>;
     }
 
     switch (currentView) {
