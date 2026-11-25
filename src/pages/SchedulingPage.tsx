@@ -5,11 +5,9 @@ import '@/styles/scheduling-glass-nav.css';
 import Layout from '@/components/Layout';
 import { Button } from '@/components/ui/button';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { ChevronLeft, ChevronRight, Calendar, Loader2, Monitor, AlertTriangle, CalendarDays, CalendarRange, Plus, CalendarOff, ClipboardList, Printer } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar, Loader2, Monitor, AlertTriangle, CalendarDays, CalendarRange, Plus } from 'lucide-react';
 import { useDatabase } from '@/hooks/useDatabase';
 import { useAuth } from '@/contexts/AuthContext';
-import { useProfileRole } from '@/hooks/use-profile-role';
-import { useSchedulingResponsible } from '@/hooks/useSchedulingResponsible';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { format, startOfMonth, endOfMonth, isSaturday, isSunday, addDays, isSameWeek } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -18,8 +16,6 @@ import { SchedulingCalendar } from '@/components/scheduling/SchedulingCalendar';
 import { SchedulingMonthView } from '@/components/scheduling/SchedulingMonthView';
 import { MyReservationsView } from '@/components/scheduling/MyReservationsView';
 import { LiquidGlassNav } from '@/components/scheduling/LiquidGlassNav';
-import { TodayChecklistDialog } from '@/components/scheduling/TodayChecklistDialog';
-import { BlockedDatesDialog } from '@/components/scheduling/BlockedDatesDialog';
 import { getUserReservations } from '@/services/reservationService';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
@@ -45,18 +41,14 @@ const SchedulingPage = () => {
     updateSystemSetting,
     getBlockedDates,
   } = useDatabase();
-  const { isAdmin } = useProfileRole();
-  const { isResponsible } = useSchedulingResponsible();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const shouldReduceMotion = useReducedMotion();
   const [currentDate, setCurrentDate] = useState(getInitialSchedulingDate());
   const [viewMode, setViewMode] = useState<'weekly' | 'monthly' | 'my_reservations'>('weekly');
   const [calendarFilter, setCalendarFilter] = useState<'all' | 'sala_google' | 'mine'>('all');
-  const [todayChecklistOpen, setTodayChecklistOpen] = useState(false);
-  const [blockedDatesOpen, setBlockedDatesOpen] = useState(false);
 
-  const { data: blockedDates = [], refetch: refetchBlockedDates } = useQuery({
+  const { data: blockedDates = [] } = useQuery({
     queryKey: ['blocked-dates'],
     queryFn: getBlockedDates,
     staleTime: 60000,
@@ -414,68 +406,28 @@ const SchedulingPage = () => {
       )}
       </AnimatePresence>
 
-      {/* Barra rápida de Filtro Semanal (Dica 5) + Ferramentas Operacionais (Dicas 7, 8 e 10) */}
+      {/* Barra rápida de Filtro Semanal */}
       {viewMode === 'weekly' && (
-        <div className="no-print flex flex-wrap items-center justify-between gap-2 px-1">
-          <div className="flex items-center gap-1.5 flex-wrap" role="group" aria-label="Filtrar grade semanal">
-            {[
-              { id: 'all', label: 'Todos' },
-              { id: 'sala_google', label: 'Sala Google' },
-              { id: 'mine', label: 'Minhas' },
-            ].map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => setCalendarFilter(item.id as 'all' | 'sala_google' | 'mine')}
-                className={cn(
-                  'px-3 py-1.5 text-xs font-black uppercase border-2 transition-all rounded-full',
-                  calendarFilter === item.id
-                    ? 'bg-primary text-primary-foreground border-black dark:border-white shadow-[2px_2px_0px_0px_#000]'
-                    : 'bg-card text-muted-foreground border-border hover:border-foreground/40 hover:text-foreground'
-                )}
-              >
-                {item.label}
-              </button>
-            ))}
-          </div>
-
-          <div className="flex items-center gap-2 flex-wrap">
-            {(isAdmin || isResponsible) && (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => setTodayChecklistOpen(true)}
-                className="h-8 rounded-full border-2 border-black dark:border-white bg-card font-black uppercase text-[11px] shadow-[2px_2px_0px_0px_#000] hover:bg-muted"
-              >
-                <ClipboardList className="h-3.5 w-3.5 mr-1.5 text-primary" />
-                Agenda de Hoje
-              </Button>
-            )}
-            {isAdmin && (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => setBlockedDatesOpen(true)}
-                className="h-8 rounded-full border-2 border-black dark:border-white bg-card font-black uppercase text-[11px] shadow-[2px_2px_0px_0px_#000] hover:bg-muted"
-              >
-                <CalendarOff className="h-3.5 w-3.5 mr-1.5 text-rose-500" />
-                Feriados
-              </Button>
-            )}
-            <Button
+        <div className="flex items-center gap-1.5 flex-wrap px-1" role="group" aria-label="Filtrar grade semanal">
+          {[
+            { id: 'all', label: 'Todos' },
+            { id: 'sala_google', label: 'Sala Google' },
+            { id: 'mine', label: 'Minhas' },
+          ].map((item) => (
+            <button
+              key={item.id}
               type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => window.print()}
-              className="h-8 rounded-full border-2 border-black dark:border-white bg-card font-black uppercase text-[11px] shadow-[2px_2px_0px_0px_#000] hover:bg-muted"
-              title="Imprimir grade da semana"
+              onClick={() => setCalendarFilter(item.id as 'all' | 'sala_google' | 'mine')}
+              className={cn(
+                'px-3 py-1.5 text-xs font-black uppercase border-2 transition-all rounded-full',
+                calendarFilter === item.id
+                  ? 'bg-primary text-primary-foreground border-black dark:border-white shadow-[2px_2px_0px_0px_#000]'
+                  : 'bg-card text-muted-foreground border-border hover:border-foreground/40 hover:text-foreground'
+              )}
             >
-              <Printer className="h-3.5 w-3.5 mr-1.5" />
-              Imprimir
-            </Button>
-          </div>
+              {item.label}
+            </button>
+          ))}
         </div>
       )}
 
@@ -614,30 +566,11 @@ const SchedulingPage = () => {
     </div>
 
       {/* Barra de Navegação Inferior Liquid Glass */}
-      <div className="no-print">
-        <LiquidGlassNav
-          activeTab={viewMode}
-          onTabChange={handleViewModeChange}
-          badgeCount={userUpcomingCount}
-          variant="glass"
-        />
-      </div>
-
-      {/* Modais operacionais (Dicas 7 e 8) */}
-      <TodayChecklistDialog
-        open={todayChecklistOpen}
-        onOpenChange={setTodayChecklistOpen}
-        reservations={reservations}
-      />
-
-      <BlockedDatesDialog
-        open={blockedDatesOpen}
-        onOpenChange={setBlockedDatesOpen}
-        blockedDates={blockedDates}
-        onUpdated={() => {
-          refetchBlockedDates();
-          queryClient.invalidateQueries({ queryKey: ['reservations'] });
-        }}
+      <LiquidGlassNav
+        activeTab={viewMode}
+        onTabChange={handleViewModeChange}
+        badgeCount={userUpcomingCount}
+        variant="glass"
       />
     </Layout>
   );
