@@ -6,6 +6,7 @@ import logger from '@/utils/logger';
 import { isInstitutionalEmail, isStudentEmail } from '@/utils/emailValidation';
 import { validatePassword } from '@/utils/passwordValidation';
 import { syncUserToInventory } from '@/utils/userSync';
+import { FullScreenLoader } from '@/components/ui/FullScreenLoader';
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -177,14 +178,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Carregando Sessão...</p>
-        </div>
-      </div>
-    );
+    return <FullScreenLoader message="Verificando sessão..." />;
   }
 
   return (

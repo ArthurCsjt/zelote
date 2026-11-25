@@ -11,7 +11,7 @@ import { PrintProvider } from './contexts/PrintContext';
 import logger from "@/utils/logger";
 
 import { ErrorBoundary } from "./components/ErrorBoundary";
-import { LoadingSpinner } from "./components/ui/loading-spinner";
+import { FullScreenLoader } from "./components/ui/FullScreenLoader";
 import Layout from "./components/Layout";
 
 import { supabase } from "./integrations/supabase/client";
@@ -32,12 +32,9 @@ const SchedulingPage = React.lazy(() => import("./pages/SchedulingPage"));
 const UpdatePasswordPage = React.lazy(() => import("./pages/UpdatePassword"));
 const AuthCallback = React.lazy(() => import("./pages/AuthCallback"));
 
-// Fallback visual leve durante o carregamento de novas rotas
+// Fallback visual centralizado durante o carregamento de novas rotas
 const PageLoadingFallback = () => (
-  <div className="min-h-[60vh] flex flex-col items-center justify-center gap-3 p-8">
-    <LoadingSpinner size="lg" className="border-blue-600 border-t-transparent" />
-    <span className="text-xs font-black uppercase tracking-wider text-muted-foreground">Carregando página...</span>
-  </div>
+  <FullScreenLoader message="Carregando página..." />
 );
 
 // Cache Inteligente do TanStack Query: evita refetches excessivos em mobile
