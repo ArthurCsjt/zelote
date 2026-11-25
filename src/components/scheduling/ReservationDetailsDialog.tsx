@@ -114,10 +114,13 @@ const DetailsContent: React.FC<DetailsContentProps> = ({
   const loansCount = reservation.associated_loans?.length || 0;
   const isReleased = Boolean((reservation as any).released_at);
   const isMissed = isPast && !isMaintRes && (reservation.quantity_requested || 0) > 0 && loansCount === 0;
+  // Liberar Estoque só faz sentido até 7 dias após a reserva (evitar confusão com datas antigas)
+  const daysSinceSlot = (now.getTime() - slotEnd.getTime()) / (1000 * 60 * 60 * 24);
+  const isRecentMiss = daysSinceSlot <= 7;
 
   const showCancel = (isAdmin || isOwner) && !isPast;
   const showEdit = (isAdmin || isOwner) && !isPast && loansCount === 0 && !isReleased;
-  const showRelease = isAdmin && isMissed && !isReleased;
+  const showRelease = isAdmin && isMissed && !isReleased && isRecentMiss;
   const showDuplicate = !isMaintRes;
   const showLoan =
     !(isManutencao || isMaintRes) &&
