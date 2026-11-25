@@ -50,7 +50,7 @@ serve(async (req) => {
     // Verifica a 'role' do usuário no banco (usando o cliente ADMIN)
     const { data: profile, error: profileError } = await supabaseAdmin.from('profiles').select('role').eq('id', user.id).single();
     
-    if (profileError || profile?.role !== 'admin') {
+    if (profileError || !['admin', 'super_admin'].includes(profile?.role)) {
       return new Response(JSON.stringify({ error: "Acesso negado: Apenas administradores podem convidar usuários." }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 403, // Forbidden
@@ -59,7 +59,7 @@ serve(async (req) => {
     
     // 2. Validação do Payload
     const { email, role } = await req.json();
-    if (!email || !role || !['admin', 'user'].includes(role)) {
+    if (!email || !role || !['admin', 'user', 'professor', 'manutencao'].includes(role)) {
       return new Response(JSON.stringify({ error: 'Payload inválido: email e role são obrigatórios e válidos.' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 400,
@@ -68,31 +68,43 @@ serve(async (req) => {
     
     // 3. Convidar o novo usuário
     const { data: inviteRes, error: inviteErr } = await supabaseAdmin.auth.admin.inviteUserByEmail(email);
+    let targetUserId = inviteRes?.user?.id;
     
-    if (inviteErr || !inviteRes?.user) {
-      // Se o erro for 'User already exists', tratamos como sucesso para o upsert do perfil
-      if (inviteErr?.message.includes('User already exists')) {
-        // Tenta buscar o usuário existente para obter o ID
-        const { data: existingUser, error: fetchError } = await supabaseAdmin.auth.admin.getUserByEmail(email);
-        if (fetchError || !existingUser?.user) {
-             throw new Error(`Falha ao convidar ou encontrar usuário existente: ${inviteErr?.message || 'Erro desconhecido'}`);
+    if (inviteErr || !targetUserId) {
+      // Se o usuário já existe no Auth, busca o ID via profiles ou listUsers (getUserByEmail foi removido no v2)
+      if (inviteErr?.message?.toLowerCase().includes('already')) {
+        const { data: existingProfile } = await supabaseAdmin
+          .from('profiles')
+          .select('id')
+          .ilike('email', email)
+          .maybeSingle();
+
+        if (existingProfile?.id) {
+          targetUserId = existingProfile.id;
+        } else {
+          const { data: usersPage, error: listErr } = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 1000 });
+          if (listErr) throw new Error(`Falha ao buscar usuário existente: ${listErr.message}`);
+          const found = usersPage?.users?.find((u: any) => u.email?.toLowerCase() === email.toLowerCase());
+          if (!found) {
+            throw new Error(`Falha ao convidar ou encontrar usuário existente: ${inviteErr?.message || 'Erro desconhecido'}`);
+          }
+          targetUserId = found.id;
         }
-        inviteRes.user = existingUser.user;
         console.log(`Usuário ${email} já existe. Prosseguindo com atualização de perfil.`);
       } else {
         throw new Error(`Falha ao convidar o usuário: ${inviteErr?.message || 'Erro desconhecido'}`);
       }
     }
 
-    // 4. Cria/atualiza o perfil do NOVO usuário com a role correta
+    // 4. Cria/atualiza o perfil do usuário com a role correta
     const { error: upsertErr } = await supabaseAdmin
       .from('profiles')
-      .upsert({ id: inviteRes.user.id, email, role }, { onConflict: 'id' });
+      .upsert({ id: targetUserId, email, role }, { onConflict: 'id' });
 
     if (upsertErr) throw new Error(`Falha ao atualizar perfil: ${upsertErr.message}`);
     
     // 5. Retorna sucesso
-    return new Response(JSON.stringify({ ok: true, userId: inviteRes.user.id }), {
+    return new Response(JSON.stringify({ ok: true, userId: targetUserId }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     });
