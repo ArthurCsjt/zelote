@@ -29,6 +29,7 @@ import {
   Pencil,
   Copy,
   Unlock,
+  HelpCircle,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -85,6 +86,7 @@ const DetailsContent: React.FC<DetailsContentProps> = ({
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [duplicateDialogOpen, setDuplicateDialogOpen] = useState(false);
   const [isReleasing, setIsReleasing] = useState(false);
+  const [showReleaseExplainer, setShowReleaseExplainer] = useState(false);
   const isMaintRes =
     reservation.prof_role === 'manutencao' ||
     reservation.prof_email === 'paulo.geremias@colegiosaojudas.com.br' ||
@@ -463,16 +465,35 @@ const DetailsContent: React.FC<DetailsContentProps> = ({
         )}
 
         {showRelease && (
-          <button
-            type="button"
-            disabled={isReleasing}
-            className="zl-btn-cta"
-            style={{ background: '#d97706' }}
-            onClick={handleReleaseStock}
-          >
-            {isReleasing ? <Loader2 size={16} className="animate-spin" /> : <Unlock size={16} />}
-            <span>Liberar Estoque (No-Show)</span>
-          </button>
+          <div className="w-full flex flex-col gap-1.5">
+            <div className="flex items-center gap-2 w-full">
+              <button
+                type="button"
+                disabled={isReleasing}
+                className="zl-btn-cta flex-1"
+                style={{ background: '#d97706' }}
+                onClick={handleReleaseStock}
+              >
+                {isReleasing ? <Loader2 size={16} className="animate-spin" /> : <Unlock size={16} />}
+                <span>Liberar Estoque (No-Show)</span>
+              </button>
+              <button
+                type="button"
+                className="w-10 h-10 flex-shrink-0 flex items-center justify-center rounded-xl border border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100 transition-colors shadow-sm"
+                title="O que é liberar estoque?"
+                aria-label="O que é liberar estoque?"
+                onClick={() => setShowReleaseExplainer((v) => !v)}
+              >
+                <HelpCircle size={18} />
+              </button>
+            </div>
+            {showReleaseExplainer && (
+              <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900 leading-relaxed animate-in fade-in slide-in-from-top-1 duration-150">
+                <p className="font-semibold text-amber-950 mb-1">ℹ️ O que é Liberar Estoque?</p>
+                Quando o solicitante não busca os equipamentos no horário agendado (falta ou <em>No-Show</em>), esta opção desocupa a sala e devolve os Chromebooks para ficarem disponíveis a outros professores.
+              </div>
+            )}
+          </div>
         )}
 
         {(showEdit || showDuplicate) && (

@@ -110,10 +110,12 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
   const isEditing = !!editingReservation;
 
 
-  const [open, setOpen] = useState(false);
-  // Notifica o pai quando o estado open muda (para manter o slot montado)
-  useEffect(() => {
-    onExternalOpenChange?.(open);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = externalOpen !== undefined ? externalOpen : internalOpen;
+  const setOpen = useCallback((nextOpen: boolean | ((prev: boolean) => boolean)) => {
+    const resolved = typeof nextOpen === 'function' ? nextOpen(open) : nextOpen;
+    setInternalOpen(resolved);
+    onExternalOpenChange?.(resolved);
   }, [open, onExternalOpenChange]);
 
   const { createReservation, bulkCreateReservations, updateReservation, loading: isSaving, getSpaces } = useDatabase();
