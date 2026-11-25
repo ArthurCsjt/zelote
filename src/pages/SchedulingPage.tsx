@@ -5,17 +5,21 @@ import '@/styles/scheduling-glass-nav.css';
 import Layout from '@/components/Layout';
 import { Button } from '@/components/ui/button';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { ChevronLeft, ChevronRight, Calendar, Loader2, Monitor, AlertTriangle, CalendarDays, CalendarRange, Plus } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar, Loader2, Monitor, AlertTriangle, CalendarDays, CalendarRange, Plus, CalendarOff, ClipboardList, Printer } from 'lucide-react';
 import { useDatabase } from '@/hooks/useDatabase';
 import { useAuth } from '@/contexts/AuthContext';
+import { useProfileRole } from '@/hooks/use-profile-role';
+import { useSchedulingResponsible } from '@/hooks/useSchedulingResponsible';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { format, startOfMonth, endOfMonth, isSaturday, isSunday, addDays } from 'date-fns';
+import { format, startOfMonth, endOfMonth, isSaturday, isSunday, addDays, isSameWeek } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { getStartOfWeek, formatWeekRange, changeWeek, getWeekDays, changeMonth, getInitialSchedulingDate } from '@/utils/scheduling';
 import { SchedulingCalendar } from '@/components/scheduling/SchedulingCalendar';
 import { SchedulingMonthView } from '@/components/scheduling/SchedulingMonthView';
 import { MyReservationsView } from '@/components/scheduling/MyReservationsView';
 import { LiquidGlassNav } from '@/components/scheduling/LiquidGlassNav';
+import { TodayChecklistDialog } from '@/components/scheduling/TodayChecklistDialog';
+import { BlockedDatesDialog } from '@/components/scheduling/BlockedDatesDialog';
 import { getUserReservations } from '@/services/reservationService';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
@@ -38,13 +42,25 @@ const SchedulingPage = () => {
     getReservationsForWeek,
     getTotalAvailableChromebooks,
     getSystemSetting,
-    updateSystemSetting
+    updateSystemSetting,
+    getBlockedDates,
   } = useDatabase();
+  const { isAdmin } = useProfileRole();
+  const { isResponsible } = useSchedulingResponsible();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const shouldReduceMotion = useReducedMotion();
   const [currentDate, setCurrentDate] = useState(getInitialSchedulingDate());
   const [viewMode, setViewMode] = useState<'weekly' | 'monthly' | 'my_reservations'>('weekly');
+  const [calendarFilter, setCalendarFilter] = useState<'all' | 'sala_google' | 'mine'>('all');
+  const [todayChecklistOpen, setTodayChecklistOpen] = useState(false);
+  const [blockedDatesOpen, setBlockedDatesOpen] = useState(false);
+
+  const { data: blockedDates = [], refetch: refetchBlockedDates } = useQuery({
+    queryKey: ['blocked-dates'],
+    queryFn: getBlockedDates,
+    staleTime: 60000,
+  });
   const lastWeeklyDate = useRef<Date | null>(null);
   const lastMonthlyDate = useRef<Date | null>(null);
   const [isMonthsExpanded, setIsMonthsExpanded] = useState(false);
@@ -309,6 +325,17 @@ const SchedulingPage = () => {
             >
               <ChevronRight size={16} strokeWidth={2.5} />
             </button>
+
+            {!isSameWeek(currentDate, getInitialSchedulingDate(), { weekStartsOn: 1 }) && (
+              <button
+                type="button"
+                onClick={() => setCurrentDate(getInitialSchedulingDate())}
+                className="ml-1 px-2.5 py-1 text-[11px] font-black uppercase bg-primary text-primary-foreground rounded-full hover:opacity-90 transition-opacity shrink-0"
+                title="Voltar para a semana atual"
+              >
+                Hoje
+              </button>
+            )}
           </div>
 
           {/* ── Year + Month Selector ── */}
@@ -387,6 +414,71 @@ const SchedulingPage = () => {
       )}
       </AnimatePresence>
 
+      {/* Barra rápida de Filtro Semanal (Dica 5) + Ferramentas Operacionais (Dicas 7, 8 e 10) */}
+      {viewMode === 'weekly' && (
+        <div className="no-print flex flex-wrap items-center justify-between gap-2 px-1">
+          <div className="flex items-center gap-1.5 flex-wrap" role="group" aria-label="Filtrar grade semanal">
+            {[
+              { id: 'all', label: 'Todos' },
+              { id: 'sala_google', label: 'Sala Google' },
+              { id: 'mine', label: 'Minhas' },
+            ].map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => setCalendarFilter(item.id as 'all' | 'sala_google' | 'mine')}
+                className={cn(
+                  'px-3 py-1.5 text-xs font-black uppercase border-2 transition-all rounded-full',
+                  calendarFilter === item.id
+                    ? 'bg-primary text-primary-foreground border-black dark:border-white shadow-[2px_2px_0px_0px_#000]'
+                    : 'bg-card text-muted-foreground border-border hover:border-foreground/40 hover:text-foreground'
+                )}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex items-center gap-2 flex-wrap">
+            {(isAdmin || isResponsible) && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setTodayChecklistOpen(true)}
+                className="h-8 rounded-full border-2 border-black dark:border-white bg-card font-black uppercase text-[11px] shadow-[2px_2px_0px_0px_#000] hover:bg-muted"
+              >
+                <ClipboardList className="h-3.5 w-3.5 mr-1.5 text-primary" />
+                Agenda de Hoje
+              </Button>
+            )}
+            {isAdmin && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setBlockedDatesOpen(true)}
+                className="h-8 rounded-full border-2 border-black dark:border-white bg-card font-black uppercase text-[11px] shadow-[2px_2px_0px_0px_#000] hover:bg-muted"
+              >
+                <CalendarOff className="h-3.5 w-3.5 mr-1.5 text-rose-500" />
+                Feriados
+              </Button>
+            )}
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => window.print()}
+              className="h-8 rounded-full border-2 border-black dark:border-white bg-card font-black uppercase text-[11px] shadow-[2px_2px_0px_0px_#000] hover:bg-muted"
+              title="Imprimir grade da semana"
+            >
+              <Printer className="h-3.5 w-3.5 mr-1.5" />
+              Imprimir
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* Weekend Warning */}
       {viewMode === 'weekly' && getWeekDays(currentDate).length === 0 && <div className="mt-4 p-3 border-3 border-warning/50 bg-warning/10 flex items-center gap-2">
         <AlertTriangle className="h-5 w-5 text-warning" />
@@ -433,6 +525,8 @@ const SchedulingPage = () => {
                 onReservationSuccess={handleReservationSuccess}
                 onUpdateLimit={handleUpdateLimit}
                 professores={professores}
+                blockedDates={blockedDates}
+                calendarFilter={calendarFilter}
               />
             ) : viewMode === 'monthly' ? (
               <SchedulingMonthView
@@ -520,11 +614,30 @@ const SchedulingPage = () => {
     </div>
 
       {/* Barra de Navegação Inferior Liquid Glass */}
-      <LiquidGlassNav
-        activeTab={viewMode}
-        onTabChange={handleViewModeChange}
-        badgeCount={userUpcomingCount}
-        variant="glass"
+      <div className="no-print">
+        <LiquidGlassNav
+          activeTab={viewMode}
+          onTabChange={handleViewModeChange}
+          badgeCount={userUpcomingCount}
+          variant="glass"
+        />
+      </div>
+
+      {/* Modais operacionais (Dicas 7 e 8) */}
+      <TodayChecklistDialog
+        open={todayChecklistOpen}
+        onOpenChange={setTodayChecklistOpen}
+        reservations={reservations}
+      />
+
+      <BlockedDatesDialog
+        open={blockedDatesOpen}
+        onOpenChange={setBlockedDatesOpen}
+        blockedDates={blockedDates}
+        onUpdated={() => {
+          refetchBlockedDates();
+          queryClient.invalidateQueries({ queryKey: ['reservations'] });
+        }}
       />
     </Layout>
   );

@@ -62,7 +62,16 @@ export interface Reservation extends ReservationData {
   prof_name: string;
   prof_email: string;
   prof_role?: string;
+  released_at?: string | null;
   associated_loans?: AssociatedLoan[];
+}
+
+export interface BlockedDate {
+  id: string;
+  date: string;
+  reason: string;
+  created_by: string | null;
+  created_at: string;
 }
 
 export interface Space {
@@ -665,6 +674,97 @@ export const seedDefaultSpaces = async (): Promise<Space[]> => {
   }
 
   return await getSpaces();
+};
+
+/**
+ * Atualiza uma reserva existente (quantidade, sala, justificativa, extras).
+ */
+export const updateReservation = async (
+  id: string,
+  updates: Partial<ReservationData>
+): Promise<Reservation> => {
+  const payload: Record<string, unknown> = {};
+  if (updates.quantity_requested !== undefined) payload.quantity_requested = updates.quantity_requested;
+  if (updates.justification !== undefined) payload.justification = updates.justification;
+  if (updates.classroom !== undefined) payload.classroom = updates.classroom;
+  if (updates.space_id !== undefined) payload.space_id = updates.space_id;
+  if (updates.needs_tv !== undefined) payload.needs_tv = updates.needs_tv;
+  if (updates.needs_sound !== undefined) payload.needs_sound = updates.needs_sound;
+  if (updates.needs_mic !== undefined) payload.needs_mic = updates.needs_mic;
+  if (updates.mic_quantity !== undefined) payload.mic_quantity = updates.mic_quantity;
+  if (updates.is_minecraft !== undefined) payload.is_minecraft = updates.is_minecraft;
+
+  const { data, error } = await supabase
+    .from('reservations')
+    .update(payload)
+    .eq('id', id)
+    .select('*, prof_data:profiles!professor_id (name, email, role)')
+    .single();
+
+  if (error) throw error;
+  return {
+    ...data,
+    time_slot: fromDbTime((data as any).time_slot || ''),
+    prof_name: (data as any).prof_data?.name || (data as any).prof_data?.email || 'Usuário Desconhecido',
+    prof_email: (data as any).prof_data?.email || '',
+    prof_role: (data as any).prof_data?.role || '',
+  } as Reservation;
+};
+
+/**
+ * Libera o estoque (Chromebooks e sala) de uma reserva expirada sem retirada (No-Show).
+ */
+export const releaseNoShowReservation = async (id: string): Promise<boolean> => {
+  const { error } = await supabase
+    .from('reservations')
+    .update({ released_at: new Date().toISOString() } as any)
+    .eq('id', id);
+
+  if (error) throw error;
+  return true;
+};
+
+/**
+ * Busca todas as datas bloqueadas (feriados / dias sem aula).
+ */
+export const getBlockedDates = async (): Promise<BlockedDate[]> => {
+  const { data, error } = await (supabase as any)
+    .from('blocked_dates')
+    .select('*')
+    .order('date', { ascending: true });
+
+  if (error) {
+    logger.warn('Erro ao buscar datas bloqueadas (tabela pode não existir ainda):', error);
+    return [];
+  }
+  return (data || []) as BlockedDate[];
+};
+
+/**
+ * Cadastra uma nova data bloqueada (feriado / recesso).
+ */
+export const addBlockedDate = async (date: string, reason: string, userId: string): Promise<BlockedDate> => {
+  const { data, error } = await (supabase as any)
+    .from('blocked_dates')
+    .insert({ date, reason: reason.trim(), created_by: userId })
+    .select('*')
+    .single();
+
+  if (error) throw error;
+  return data as BlockedDate;
+};
+
+/**
+ * Remove uma data bloqueada.
+ */
+export const deleteBlockedDate = async (id: string): Promise<boolean> => {
+  const { error } = await (supabase as any)
+    .from('blocked_dates')
+    .delete()
+    .eq('id', id);
+
+  if (error) throw error;
+  return true;
 };
 
 

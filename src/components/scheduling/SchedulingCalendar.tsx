@@ -4,7 +4,7 @@ import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { timeSlots, getWeekDays } from '@/utils/scheduling';
 import { SchedulingSlot } from './SchedulingSlot';
-import type { Reservation } from '@/hooks/useDatabase';
+import type { Reservation, BlockedDate } from '@/hooks/useDatabase';
 import type { User as AuthUser } from '@supabase/supabase-js';
 import { Loader2, CheckCircle, AlertTriangle, Monitor, Laptop, Clock, Info, GripVertical, ArrowRight, ArrowDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -216,6 +216,8 @@ interface SchedulingCalendarProps {
   onUpdateLimit: (newLimit: number) => void;
   professores: { id: string; nome_completo: string }[];
   physicalTotal?: number;
+  blockedDates?: BlockedDate[];
+  calendarFilter?: 'all' | 'sala_google' | 'mine';
 }
 
 export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
@@ -228,6 +230,8 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
   onUpdateLimit,
   professores,
   physicalTotal = 0,
+  blockedDates = [],
+  calendarFilter = 'all',
 }) => {
   const { isAdmin } = useProfileRole();
   const canEditLimit = isAdmin;
@@ -370,6 +374,9 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
         map.set(key, []);
       }
       map.get(key)?.push(res);
+
+      // Reservas liberadas por No-Show não ocupam mais o mapa de calor
+      if (res.released_at) return;
 
       const currentTotal = totals.get(res.date) || 0;
       totals.set(res.date, currentTotal + (res.quantity_requested || 0));
@@ -664,6 +671,8 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
                   const dateKey = format(day, 'yyyy-MM-dd');
                   const slotKey = `${dateKey}_${timeSlot}`;
                   const reservationsForSlot = reservationsMap.get(slotKey) || EMPTY_RESERVATIONS;
+                  const blockedEntry = blockedDates.find(b => b.date === dateKey);
+                  const blockedDateStrings = blockedDates.map(b => b.date);
 
                   return (
                     <div
@@ -680,6 +689,9 @@ export const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
                         currentUser={currentUser}
                         onReservationSuccess={onReservationSuccess}
                         professores={professores}
+                        blockedReason={blockedEntry?.reason}
+                        blockedDates={blockedDateStrings}
+                        calendarFilter={calendarFilter}
                       />
                     </div>
                   );

@@ -25,7 +25,7 @@ import * as notificationService from '@/services/notificationService';
 import * as settingsService from '@/services/settingsService';
 
 // Re-export domain types for backward compatibility
-export type { ReservationData, Reservation, Space } from '@/services/reservationService';
+export type { ReservationData, Reservation, Space, BlockedDate } from '@/services/reservationService';
 export type { StudentData, StaffData } from '@/services/userService';
 export type { LoanHistoryFilters } from '@/services/loanService';
 
@@ -620,6 +620,69 @@ export const useDatabase = () => {
     }
   }, [startRequest, endRequest]);
 
+  const updateReservation = useCallback(async (id: string, updates: Partial<reservationService.ReservationData>): Promise<reservationService.Reservation | null> => {
+    startRequest();
+    try {
+      const updated = await reservationService.updateReservation(id, updates);
+      toast({ title: "Sucesso", description: "Reserva atualizada com sucesso!", variant: "success" });
+      return updated;
+    } catch (error: any) {
+      logger.error('Erro ao atualizar reserva:', error);
+      toast({ title: "Erro ao Atualizar", description: error.message, variant: "destructive" });
+      return null;
+    } finally {
+      endRequest();
+    }
+  }, [startRequest, endRequest]);
+
+  const releaseNoShowReservation = useCallback(async (id: string): Promise<boolean> => {
+    startRequest();
+    try {
+      await reservationService.releaseNoShowReservation(id);
+      toast({ title: "Estoque Liberado", description: "Chromebooks e sala liberados para outros professores.", variant: "success" });
+      return true;
+    } catch (error: any) {
+      logger.error('Erro ao liberar reserva:', error);
+      toast({ title: "Erro ao Liberar", description: error.message, variant: "destructive" });
+      return false;
+    } finally {
+      endRequest();
+    }
+  }, [startRequest, endRequest]);
+
+  const getBlockedDates = useCallback(async (): Promise<reservationService.BlockedDate[]> => {
+    return await reservationService.getBlockedDates();
+  }, []);
+
+  const addBlockedDate = useCallback(async (date: string, reason: string): Promise<reservationService.BlockedDate | null> => {
+    if (!user) return null;
+    startRequest();
+    try {
+      const created = await reservationService.addBlockedDate(date, reason, user.id);
+      toast({ title: "Dia Bloqueado", description: `Data bloqueada: ${reason}`, variant: "success" });
+      return created;
+    } catch (error: any) {
+      toast({ title: "Erro ao Bloquear Data", description: error.message, variant: "destructive" });
+      return null;
+    } finally {
+      endRequest();
+    }
+  }, [user, startRequest, endRequest]);
+
+  const deleteBlockedDate = useCallback(async (id: string): Promise<boolean> => {
+    startRequest();
+    try {
+      await reservationService.deleteBlockedDate(id);
+      toast({ title: "Desbloqueado", description: "Data liberada para agendamentos.", variant: "success" });
+      return true;
+    } catch (error: any) {
+      toast({ title: "Erro", description: error.message, variant: "destructive" });
+      return false;
+    } finally {
+      endRequest();
+    }
+  }, [startRequest, endRequest]);
+
   // --- NOTIFICATION OPERATIONS ---
 
   const getNotifications = useCallback(async (): Promise<any[]> => {
@@ -788,6 +851,11 @@ export const useDatabase = () => {
     createReservation,
     bulkCreateReservations,
     deleteReservation,
+    updateReservation,
+    releaseNoShowReservation,
+    getBlockedDates,
+    addBlockedDate,
+    deleteBlockedDate,
     // NOTIFICAÇÕES
     getNotifications,
     markNotificationAsRead,

@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useRef, useEffect, useCallback } from 'react';
 import { cn } from '@/lib/utils';
-import { Plus, Monitor, User, CheckCircle, AlertTriangle, Clock, Trash2, ArrowRight, Laptop, Info } from 'lucide-react';
+import { Plus, Monitor, User, CheckCircle, AlertTriangle, Clock, Trash2, ArrowRight, Laptop, Info, CalendarOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import type { Reservation } from '@/hooks/useDatabase';
@@ -21,6 +21,9 @@ interface SchedulingSlotProps {
   currentUser: AuthUser | null;
   onReservationSuccess: () => void;
   professores: { id: string; nome_completo: string }[];
+  blockedReason?: string;
+  blockedDates?: string[];
+  calendarFilter?: 'all' | 'sala_google' | 'mine';
 }
 
 export const SchedulingSlot: React.FC<SchedulingSlotProps> = React.memo(({
@@ -31,6 +34,9 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = React.memo(({
   currentUser,
   onReservationSuccess,
   professores,
+  blockedReason,
+  blockedDates = [],
+  calendarFilter = 'all',
 }) => {
   const { role, isAdmin } = useProfileRole();
   const { cancel: cancelReservation, isCanceling } = useCancelReservation(deleteReservation);
@@ -84,15 +90,26 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = React.memo(({
   const isSuperAdmin = role === 'super_admin';
   const { isResponsible } = useSchedulingResponsible();
 
-  const { jaReservados, restantes, myReservation, isAvailable, isPartial, isFull, isPast } = useMemo(() => {
-    const jaReservados = allReservationsForSlot.reduce((sum, res) => sum + res.quantity_requested, 0);
+  const { jaReservados, restantes, myReservation, isAvailable, isPartial, isFull, isPast, activeReservations, visibleReservations } = useMemo(() => {
+    const activeReservations = allReservationsForSlot.filter(res => !res.released_at);
+    const jaReservados = activeReservations.reduce((sum, res) => sum + res.quantity_requested, 0);
     const restantes = totalAvailableChromebooks - jaReservados;
-    const myReservation = allReservationsForSlot.find(res => res.created_by === currentUser?.id);
+    const myReservation = activeReservations.find(res => res.created_by === currentUser?.id);
 
-    const isAvailable = allReservationsForSlot.length === 0;
+    const visibleReservations = allReservationsForSlot.filter(res => {
+      if (calendarFilter === 'sala_google') {
+        return (res.classroom || '').toLowerCase().includes('sala google');
+      }
+      if (calendarFilter === 'mine') {
+        return res.created_by === currentUser?.id || res.professor_id === currentUser?.id;
+      }
+      return true;
+    });
+
+    const isAvailable = activeReservations.length === 0;
     const isPartial = !isAvailable && restantes > 0;
     const isFull = !isAvailable && restantes <= 0;
-    const hasMinecraft = allReservationsForSlot.some(res => res.is_minecraft);
+    const hasMinecraft = activeReservations.some(res => res.is_minecraft);
 
     const [hourStr, minuteStr] = timeSlot.split('h');
     const slotTime = new Date(date);
@@ -101,10 +118,34 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = React.memo(({
     const now = new Date();
     const isPast = slotTime < now;
 
-    return { jaReservados, restantes, myReservation, isAvailable, isPartial, isFull, isPast, hasMinecraft };
-  }, [allReservationsForSlot, totalAvailableChromebooks, currentUser, date, timeSlot]);
+    return { jaReservados, restantes, myReservation, isAvailable, isPartial, isFull, isPast, hasMinecraft, activeReservations, visibleReservations };
+  }, [allReservationsForSlot, totalAvailableChromebooks, currentUser, date, timeSlot, calendarFilter]);
 
   const pastSlotClasses = isPast ? "opacity-40" : "";
+
+  // Dia bloqueado (Feriado / Recesso) sem reservas ativas
+  if (blockedReason && isAvailable) {
+    return (
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className={cn(
+              "h-full min-h-[4rem] border-2 border-dashed border-rose-300 dark:border-rose-900 bg-rose-50/70 dark:bg-rose-950/20 rounded-xl",
+              "flex flex-col items-center justify-center gap-0.5 px-1 text-center cursor-not-allowed"
+            )}>
+              <CalendarOff className="h-3.5 w-3.5 text-rose-500 shrink-0" />
+              <span className="text-[9px] font-black text-rose-700 dark:text-rose-300 uppercase tracking-tight line-clamp-1">
+                {blockedReason}
+              </span>
+            </div>
+          </TooltipTrigger>
+          <TooltipContent className="border-3 border-foreground/20 rounded-none">
+            <p className="text-xs font-medium">Dia bloqueado: {blockedReason}</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    );
+  }
 
   // Slot expirado sem reservas: mostra "Encerrado"
   if (isAvailable && isPast) {
@@ -140,6 +181,7 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = React.memo(({
         onReservationSuccess={onReservationSuccess}
         maxQuantity={totalAvailableChromebooks}
         professores={professores}
+        blockedDates={blockedDates}
         externalOpen={dialogOpen}
         onExternalOpenChange={setDialogOpen}
       >
@@ -193,12 +235,12 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = React.memo(({
         </div>
       </div>
 
-      {allReservationsForSlot.map((res) => {
+      {visibleReservations.map((res) => {
         const isManutencao = role === 'manutencao';
         const isManutencaoRes = res.prof_role === 'manutencao' || res.prof_email === 'paulo.geremias@colegiosaojudas.com.br' || res.prof_email === 'ivo@colegiosaojudas.com.br' || res.prof_email === 'manutencao.teste@colegiosaojudas.com.br';
         const isThisMine = res.created_by === currentUser?.id;
         const roomName = res.classroom ? res.classroom.toUpperCase() : "ESPAÇO";
-        const isMissed = isPast && !isManutencaoRes && (res.quantity_requested || 0) > 0 && (!res.associated_loans || res.associated_loans.length === 0);
+        const isMissed = isPast && !isManutencaoRes && (res.quantity_requested || 0) > 0 && (!res.associated_loans || res.associated_loans.length === 0) && !res.released_at;
 
         return (
           <TooltipProvider key={res.id}>
@@ -310,8 +352,8 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = React.memo(({
         );
       })}
 
-      {/* Botão explícito para Novo Agendamento se houver espaço e não for passado */}
-      {isPartial && restantes > 0 && !isPast && (
+      {/* Botão explícito para Novo Agendamento se houver espaço, não for passado e não for feriado */}
+      {isPartial && restantes > 0 && !isPast && !blockedReason && (
         <ReservationDialog
           date={date}
           timeSlot={timeSlot}
@@ -320,6 +362,7 @@ export const SchedulingSlot: React.FC<SchedulingSlotProps> = React.memo(({
           onReservationSuccess={onReservationSuccess}
           maxQuantity={restantes}
           professores={professores}
+          blockedDates={blockedDates}
         >
           <div className="mt-auto flex items-center justify-center gap-1.5 min-h-[34px] sm:min-h-[30px] py-1 sm:py-1 border-2 border-zinc-400 dark:border-zinc-500 bg-white dark:bg-zinc-950 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors text-zinc-600 dark:text-zinc-400 rounded-lg cursor-pointer">
             <Plus className="h-3.5 w-3.5 sm:h-3 sm:w-3" />

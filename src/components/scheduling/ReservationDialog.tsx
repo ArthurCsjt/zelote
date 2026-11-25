@@ -32,6 +32,10 @@ interface ReservationDialogProps {
   // Props opcionais para controle externo (evita unmount durante tela de confirmação)
   externalOpen?: boolean;
   onExternalOpenChange?: (open: boolean) => void;
+  // Edição (Dica 1), Duplicação (Dica 3) e Feriados (Dica 7)
+  editingReservation?: Reservation | null;
+  duplicateFrom?: Reservation | null;
+  blockedDates?: string[];
 }
 
 const SEC_DELAYS = [0.12, 0.17, 0.22, 0.27, 0.32, 0.37, 0.42, 0.47];
@@ -100,8 +104,10 @@ const Section = ({ n, title, done: ok, optional, innerRef, children: c, classNam
 export const ReservationDialog: React.FC<ReservationDialogProps> = ({
   children, date, timeSlot, totalAvailableChromebooks, currentReservations, onReservationSuccess, maxQuantity, professores = [],
   externalOpen, onExternalOpenChange,
+  editingReservation = null, duplicateFrom = null, blockedDates = [],
 }) => {
   const reduce = useReducedMotion();
+  const isEditing = !!editingReservation;
 
 
   const [open, setOpen] = useState(false);
@@ -110,7 +116,7 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
     onExternalOpenChange?.(open);
   }, [open, onExternalOpenChange]);
 
-  const { createReservation, bulkCreateReservations, loading: isSaving, getSpaces } = useDatabase();
+  const { createReservation, bulkCreateReservations, updateReservation, loading: isSaving, getSpaces } = useDatabase();
   const { subscribeToPush } = usePushNotifications();
   const { user } = useAuth();
   const { role, isAdmin } = useProfileRole();
@@ -219,9 +225,11 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
     staleTime: 30000,
   });
   const resFor = useCallback((d: string, s: string): Reservation[] => {
-    if (d === mainDateStr && s === timeSlot) return currentReservations;
-    return (fetched as any[]).filter(r => !r.deleted_at && r.date === d && r.time_slot === s);
-  }, [mainDateStr, timeSlot, currentReservations, fetched]);
+    const list = (d === mainDateStr && s === timeSlot)
+      ? currentReservations
+      : (fetched as any[]).filter(r => !r.deleted_at && r.date === d && r.time_slot === s);
+    return list.filter(r => !r.released_at && (!editingReservation || r.id !== editingReservation.id));
+  }, [mainDateStr, timeSlot, currentReservations, fetched, editingReservation]);
 
   const busySlotFor = useCallback((name: string, d = mainDateStr) => {
     if (!name.trim()) return null;
@@ -232,22 +240,50 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
   const dateConflicts = useMemo(() => !classroom ? [] : extraDates.map(d => ({ d, slot: busySlotFor(classroom, format(d, 'yyyy-MM-dd')) })).filter(x => x.slot), [extraDates, classroom, busySlotFor]);
 
   const effectiveMax = useMemo(() => {
-    let m = maxQuantity;
+    let m = maxQuantity + (editingReservation ? (editingReservation.quantity_requested || 0) : 0);
     for (const d of allDateStrs) for (const s of slots) {
       if (d === mainDateStr && s === timeSlot) continue;
       const used = resFor(d, s).reduce((a, r) => a + (r.quantity_requested || 0), 0);
       m = Math.min(m, totalAvailableChromebooks - used);
     }
     return Math.max(0, m);
-  }, [maxQuantity, allDateStrs, slots, resFor, mainDateStr, timeSlot, totalAvailableChromebooks]);
+  }, [maxQuantity, editingReservation, allDateStrs, slots, resFor, mainDateStr, timeSlot, totalAvailableChromebooks]);
   const qtyLimit = isMinecraft ? 40 : effectiveMax;
-  const totalReserved = currentReservations.reduce((s, r) => s + (r.quantity_requested || 0), 0);
+  const totalReserved = currentReservations
+    .filter(r => !r.released_at && (!editingReservation || r.id !== editingReservation.id))
+    .reduce((s, r) => s + (r.quantity_requested || 0), 0);
 
   const targetProfessorId = (isBookingForOther && selectedProfessorId) ? selectedProfessorId : user?.id;
   const profBusySlot = targetProfessorId ? slots.find(s => resFor(mainDateStr, s).some(r => r.professor_id === targetProfessorId)) : null;
   const selectedProf = professores.find(p => p.id === selectedProfessorId);
 
   const resetForm = () => {
+    const source = editingReservation || duplicateFrom;
+    if (source) {
+      const qty = source.quantity_requested || 0;
+      setJustification(source.justification || '');
+      setQuantity(qty);
+      setQtyText(String(qty));
+      setHasInteractedQuantity(true);
+      setNeedsTv(!!source.needs_tv);
+      setNeedsSound(!!source.needs_sound);
+      setNeedsMic(!!source.needs_mic);
+      setMicQuantity(source.mic_quantity || 1);
+      setIsMinecraft(!!source.is_minecraft);
+      setClassroom(source.classroom || '');
+      setExtraDates([]);
+      setIsMultiMode(false);
+      setShowCalendar(false);
+      setLessons(1);
+      setSelectedProfessorId(source.professor_id || user?.id || '');
+      setIsBookingForOther(!!source.professor_id && source.professor_id !== user?.id);
+      setSheet(null);
+      setQuery('');
+      setDone(null);
+      setSubmitError('');
+      submittingRef.current = false;
+      return;
+    }
     setJustification(''); setQuantity(0); setQtyText('0'); setHasInteractedQuantity(false);
     setNeedsTv(false); setNeedsSound(false); setNeedsMic(false); setMicQuantity(1); setIsMinecraft(false);
     setClassroom(''); setExtraDates([]); setIsMultiMode(false); setShowCalendar(false); setLessons(1);
@@ -272,21 +308,23 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
   const isDateDisabledForRecurrence = (d: Date): boolean => {
     if (isSaturday(d) || isSunday(d)) return true;
     if (isBefore(d, startOfDay(new Date()))) return true;
+    const dStr = format(d, 'yyyy-MM-dd');
+    if (blockedDates.includes(dStr)) return true;
     if (isSameDay(d, new Date())) {
       const [h, m] = timeSlot.split('h');
       const t = new Date(); t.setHours(parseInt(h, 10), parseInt(m, 10), 0, 0);
       if (new Date() >= t) return true;
     }
-    if (format(d, 'yyyy-MM-dd') === mainDateStr) return true;
+    if (dStr === mainDateStr) return true;
     return false;
   };
   const mergeDates = (newDates: Date[]) => setExtraDates(prev => {
     const ex = new Set(prev.map(d => format(d, 'yyyy-MM-dd')));
     return [...prev, ...newDates.filter(d => !ex.has(format(d, 'yyyy-MM-dd')))];
   });
-  const handleAddSameWeekday = () => {
+  const handleAddSameWeekday = (weeksCount?: number) => {
     const out: Date[] = []; let c = addWeeks(date, 1);
-    const total = c > endOfMonth(date) ? 4 : 5;
+    const total = weeksCount ?? (c > endOfMonth(date) ? 4 : 5);
     for (let i = 0; i < total; i++) { if (!isDateDisabledForRecurrence(c)) out.push(new Date(c)); c = addWeeks(c, 1); }
     mergeDates(out);
   };
@@ -396,7 +434,20 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
     };
     let ok = false;
     try {
-      if (allDateStrs.length > 1 || slots.length > 1) {
+      if (editingReservation) {
+        const r = await updateReservation(editingReservation.id, {
+          justification: baseData.justification,
+          quantity_requested: baseData.quantity_requested,
+          needs_tv: baseData.needs_tv,
+          needs_sound: baseData.needs_sound,
+          needs_mic: baseData.needs_mic,
+          mic_quantity: baseData.mic_quantity,
+          is_minecraft: baseData.is_minecraft,
+          classroom: baseData.classroom,
+          space_id: baseData.space_id,
+        });
+        ok = !!r;
+      } else if (allDateStrs.length > 1 || slots.length > 1) {
         const { time_slots, ...rest } = baseData;
         const r = await bulkCreateReservations(allDateStrs, rest, slots);
         ok = r.success;
@@ -411,7 +462,9 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
     saveRecentClassroom(classroom.trim());
     soundEffects.triggerSuccessFeedback();
     toast({
-      title: totalDays > 1 || slots.length > 1 ? 'Agendamentos Confirmados!' : 'Agendamento Confirmado!',
+      title: editingReservation
+        ? 'Reserva Atualizada!'
+        : (totalDays > 1 || slots.length > 1 ? 'Agendamentos Confirmados!' : 'Agendamento Confirmado!'),
       description: `${classroom.trim()} • ${quantity === 0 ? 'Apenas Sala' : `${quantity} Chromebooks`}${isMinecraft ? ' (Minecraft)' : ''}${extraDates.length ? ` (+${extraDates.length} datas extras)` : ''}`,
     });
     const res = [needsTv && 'TV', needsSound && 'Som', needsMic && `Mic (${micQuantity})`].filter(Boolean).join(', ');
@@ -493,7 +546,7 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                         </Section>
                       )}
 
-                      {ALL_SLOTS.includes(timeSlot) && maxLessons > 1 && (
+                      {!isEditing && ALL_SLOTS.includes(timeSlot) && maxLessons > 1 && (
                         <Section n={++secN} title="Aulas seguidas" done={true}>
                           <div className="ag-chips" role="group" aria-label="Quantidade de aulas seguidas">
                             {Array.from({ length: maxLessons }, (_, i) => i + 1).map(n => (
@@ -571,6 +624,21 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                               <button type="button" className="ag-mc-btn no" aria-pressed={!isMinecraft} onClick={() => setIsMinecraft(false)}>Não</button>
                               <button type="button" className="ag-mc-btn yes" aria-pressed={isMinecraft} onClick={() => { setIsMinecraft(true); setHasInteractedQuantity(true); }}>Sim</button>
                             </div>
+                            {isMinecraft && (() => {
+                              const [h, m] = timeSlot.split('h');
+                              const slotDate = new Date(date);
+                              slotDate.setHours(parseInt(h, 10) || 0, parseInt(m, 10) || 0, 0, 0);
+                              const hoursAhead = (slotDate.getTime() - Date.now()) / (1000 * 60 * 60);
+                              if (hoursAhead < 12) {
+                                return (
+                                  <div className="ag-alert err" style={{ marginTop: 10, fontSize: 12 }} role="alert">
+                                    <AlertTriangle size={16} />
+                                    <span><b>Atenção (menos de 12h):</b> Aulas com Minecraft exigem preparo prévio dos aparelhos. Confirme com a TI a disponibilidade em cima da hora.</span>
+                                  </div>
+                                );
+                              }
+                              return null;
+                            })()}
                           </div>
                         </section>
                       )}
@@ -591,7 +659,7 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                         </Section>
                       )}
 
-                      {!isManutencao && (
+                      {!isManutencao && !isEditing && (
                         <Section n={++secN} title="Repetir em outros dias" optional done={extraDates.length > 0 && !dateConflicts.length} innerRef={refs.dates}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: -4 }}>
                             <span className="ag-muted" style={{ flex: 1 }}>Repetir esta reserva em mais datas</span>
@@ -601,8 +669,10 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                           {isMultiMode && (
                             <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 10 }}>
                               <div className="ag-chips">
-                                <button type="button" className="ag-chip" onClick={handleAddSameWeekday}>+ Toda {format(date, 'EEEE', { locale: ptBR })}</button>
-                                <button type="button" className="ag-chip" onClick={handleAddNextSchoolDays}>+ Próximos 3 dias de aula</button>
+                                <button type="button" className="ag-chip" onClick={() => handleAddSameWeekday(2)}>+2 sem ({format(date, 'EEE', { locale: ptBR })})</button>
+                                <button type="button" className="ag-chip" onClick={() => handleAddSameWeekday(4)}>+4 sem</button>
+                                <button type="button" className="ag-chip" onClick={() => handleAddSameWeekday(6)}>+6 sem</button>
+                                <button type="button" className="ag-chip" onClick={handleAddNextSchoolDays}>+3 dias seguidos</button>
                               </div>
                               <div className="ag-chips" aria-live="polite">
                                 <span className="ag-chip" aria-pressed="true" style={{ cursor: 'default' }}>{format(date, 'dd/MM')}</span>
@@ -666,7 +736,7 @@ export const ReservationDialog: React.FC<ReservationDialogProps> = ({
                       {summaryLine && <div className="ag-muted" style={{ textAlign: 'center', fontWeight: 600 }} aria-live="polite">{summaryLine}</div>}
                       {submitError && <div className="ag-err-msg" role="alert">{submitError}</div>}
                       <button type="button" className="ag-primary" disabled={!!blockReason || isSaving} onClick={handleSubmit}>
-                        {isSaving ? (<><Loader2 size={18} className="ag-spin" />Confirmando…</>) : blockReason || (totalDays > 1 ? `Confirmar reserva (${totalDays} dias)` : 'Confirmar reserva')}
+                        {isSaving ? (<><Loader2 size={18} className="ag-spin" />{isEditing ? 'Salvando…' : 'Confirmando…'}</>) : blockReason || (isEditing ? 'Salvar alterações' : (totalDays > 1 ? `Confirmar reserva (${totalDays} dias)` : 'Confirmar reserva'))}
                       </button>
                       <DialogPrimitive.Close className="ag-secondary">Cancelar</DialogPrimitive.Close>
                     </>)}

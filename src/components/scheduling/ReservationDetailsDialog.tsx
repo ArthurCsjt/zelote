@@ -26,12 +26,16 @@ import {
   Clock,
   Layers,
   Gamepad2,
+  Pencil,
+  Copy,
+  Unlock,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { useQuery } from '@tanstack/react-query';
-import type { Reservation } from '@/hooks/useDatabase';
-import { getBlockSlots, type Reservation as ServiceReservation } from '@/services/reservationService';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useDatabase, type Reservation } from '@/hooks/useDatabase';
+import { getBlockSlots, getReservationsForSlots, type Reservation as ServiceReservation } from '@/services/reservationService';
+import { ReservationDialog } from './ReservationDialog';
 import { useNavigate } from 'react-router-dom';
 import { useProfileRole } from '@/hooks/use-profile-role';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -73,9 +77,14 @@ const DetailsContent: React.FC<DetailsContentProps> = ({
   isCanceling,
 }) => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const { releaseNoShowReservation, getTotalAvailableChromebooks } = useDatabase();
   const { role } = useProfileRole();
   const isMobile = useIsMobile();
   const isManutencao = role === 'manutencao';
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [duplicateDialogOpen, setDuplicateDialogOpen] = useState(false);
+  const [isReleasing, setIsReleasing] = useState(false);
   const isMaintRes =
     reservation.prof_role === 'manutencao' ||
     reservation.prof_email === 'paulo.geremias@colegiosaojudas.com.br' ||
@@ -103,16 +112,58 @@ const DetailsContent: React.FC<DetailsContentProps> = ({
   const now = new Date();
   const isPast = now >= slotEnd;
   const loansCount = reservation.associated_loans?.length || 0;
+  const isReleased = Boolean((reservation as any).released_at);
   const isMissed = isPast && !isMaintRes && (reservation.quantity_requested || 0) > 0 && loansCount === 0;
 
   const showCancel = (isAdmin || isOwner) && !isPast;
+  const showEdit = (isAdmin || isOwner) && !isPast && loansCount === 0 && !isReleased;
+  const showRelease = isAdmin && isMissed && !isReleased;
+  const showDuplicate = !isMaintRes;
   const showLoan =
     !(isManutencao || isMaintRes) &&
     isResponsible &&
     (!reservation.associated_loans || reservation.associated_loans.length < reservation.quantity_requested) &&
-    !isPast;
+    !isPast &&
+    !isReleased;
 
   const [isConfirmingCancel, setIsConfirmingCancel] = useState(false);
+
+  const { data: totalAvailable = 111 } = useQuery({
+    queryKey: ['total-available-chromebooks'],
+    queryFn: getTotalAvailableChromebooks,
+    enabled: editDialogOpen || duplicateDialogOpen,
+    staleTime: 60000,
+  });
+
+  const dateStr = format(date, 'yyyy-MM-dd');
+  const { data: slotReservations = [] } = useQuery({
+    queryKey: ['reservations', 'slot-single', dateStr, reservation.time_slot],
+    queryFn: () => getReservationsForSlots([dateStr], [reservation.time_slot]),
+    enabled: editDialogOpen || duplicateDialogOpen,
+    staleTime: 15000,
+  });
+
+  const usedInSlot = slotReservations
+    .filter(r => !r.released_at)
+    .reduce((acc, r) => acc + (r.quantity_requested || 0), 0);
+  const maxQtyForSlot = Math.max(0, totalAvailable - usedInSlot);
+
+  const invalidateAllReservations = () => {
+    queryClient.invalidateQueries({ queryKey: ['reservations'] });
+    queryClient.invalidateQueries({ queryKey: ['userReservations'] });
+    queryClient.invalidateQueries({ queryKey: ['monthlyReservations'] });
+  };
+
+  const handleReleaseStock = async () => {
+    if (isReleasing) return;
+    setIsReleasing(true);
+    const ok = await releaseNoShowReservation(reservation.id);
+    setIsReleasing(false);
+    if (ok) {
+      invalidateAllReservations();
+      onClose();
+    }
+  };
 
   // Formatação de data e horário para o cabeçalho
   const dayName = format(date, 'EEE', { locale: ptBR }).replace('.', '');
@@ -408,6 +459,44 @@ const DetailsContent: React.FC<DetailsContentProps> = ({
           </button>
         )}
 
+        {showRelease && (
+          <button
+            type="button"
+            disabled={isReleasing}
+            className="zl-btn-cta"
+            style={{ background: '#d97706' }}
+            onClick={handleReleaseStock}
+          >
+            {isReleasing ? <Loader2 size={16} className="animate-spin" /> : <Unlock size={16} />}
+            <span>Liberar Estoque (No-Show)</span>
+          </button>
+        )}
+
+        {(showEdit || showDuplicate) && (
+          <div className="flex items-center gap-2 w-full">
+            {showEdit && (
+              <button
+                type="button"
+                className="zl-btn-secondary flex-1"
+                onClick={() => setEditDialogOpen(true)}
+              >
+                <Pencil size={15} />
+                <span>Editar</span>
+              </button>
+            )}
+            {showDuplicate && (
+              <button
+                type="button"
+                className="zl-btn-secondary flex-1"
+                onClick={() => setDuplicateDialogOpen(true)}
+              >
+                <Copy size={15} />
+                <span>Agendar novamente</span>
+              </button>
+            )}
+          </div>
+        )}
+
         {showCancel && (
           <div className="zl-cancel-action-wrapper">
             {isConfirmingCancel ? (
@@ -452,7 +541,7 @@ const DetailsContent: React.FC<DetailsContentProps> = ({
         )}
 
         {/* Botão Fechar Secundário/Neutro (no mobile, oculto se houver outra ação) */}
-        {(!isMobile || (!showLoan && !showCancel)) && (
+        {(!isMobile || (!showLoan && !showCancel && !showRelease)) && (
           <button
             type="button"
             disabled={isCanceling}
@@ -464,6 +553,43 @@ const DetailsContent: React.FC<DetailsContentProps> = ({
           </button>
         )}
       </div>
+
+      {/* Modais auxiliares de Edição (Dica 1) e Duplicação (Dica 3) */}
+      <ReservationDialog
+        date={date}
+        timeSlot={reservation.time_slot}
+        totalAvailableChromebooks={totalAvailable}
+        currentReservations={slotReservations}
+        maxQuantity={maxQtyForSlot}
+        editingReservation={reservation}
+        externalOpen={editDialogOpen}
+        onExternalOpenChange={setEditDialogOpen}
+        onReservationSuccess={() => {
+          invalidateAllReservations();
+          setEditDialogOpen(false);
+          onClose();
+        }}
+      >
+        <span className="hidden" />
+      </ReservationDialog>
+
+      <ReservationDialog
+        date={isPast ? new Date() : date}
+        timeSlot={reservation.time_slot}
+        totalAvailableChromebooks={totalAvailable}
+        currentReservations={slotReservations}
+        maxQuantity={maxQtyForSlot}
+        duplicateFrom={reservation}
+        externalOpen={duplicateDialogOpen}
+        onExternalOpenChange={setDuplicateDialogOpen}
+        onReservationSuccess={() => {
+          invalidateAllReservations();
+          setDuplicateDialogOpen(false);
+          onClose();
+        }}
+      >
+        <span className="hidden" />
+      </ReservationDialog>
     </div>
   );
 };
