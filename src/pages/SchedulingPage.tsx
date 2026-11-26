@@ -413,7 +413,7 @@ const SchedulingPage = () => {
             {[
               { id: 'all', label: 'Todos' },
               { id: 'sala_google', label: 'Sala Google' },
-              { id: 'mine', label: 'Minhas' },
+              { id: 'mine', label: 'Minha Grade' },
             ].map((item) => (
               <button
                 key={item.id}
