@@ -118,7 +118,7 @@ export function LiquidGlassTabBar({
     dragging: false,
     initialized: false,
     barWidth: 0,
-    barHeight: 64,
+    barHeight: 54,
     padding: 5,
     slotWidth: 0,
     reducedMotion: false,
@@ -472,7 +472,7 @@ export function LiquidGlassTabBar({
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerUp}
         onContextMenu={(e) => e.preventDefault()}
-        className="relative flex h-[64px] w-full cursor-grab touch-none items-center rounded-full px-[5px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] active:cursor-grabbing"
+        className="relative flex h-[54px] w-full cursor-grab touch-none items-center rounded-full px-[5px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] active:cursor-grabbing"
       >
         {/* Base de Vidro Translúcido da Tab Bar */}
         <div

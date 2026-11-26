@@ -14,7 +14,7 @@
   max-width: 400px;
   width: calc(100% - 32px);
   margin: 0 auto;
-  height: 70px;
+  height: 58px;
   padding: 5px;
   border-radius: 999px;
   display: flex;
@@ -165,7 +165,7 @@ body:has(.ag-overlay) .lg-nav-portal {
 
 /* Modo encolhido ao rolar a página */
 .lg-nav--mini {
-  height: 56px;
+  height: 46px;
 }
 
 /* ── 2. A PÍLULA DESLIZANTE (.lg-nav__pill) ── */
