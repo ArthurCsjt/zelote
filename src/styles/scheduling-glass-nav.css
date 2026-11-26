@@ -238,316 +238,51 @@
    GLASS NAV ROW — Week Selector + Year/Month Selector
    ══════════════════════════════════════════════════════════ */
 
-/* ── Outer Container ─────────────────────────────────────── */
-.period-bar {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  align-items: stretch;
+/* ============================================================
+   PERIOD NAVIGATION BAR — LIQUID GLASS iOS (Polido p/ Light & Dark)
+   ============================================================ */
 
-  background: rgba(255, 255, 255, 0.60);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-
-  border: 1px solid rgba(255, 255, 255, 0.80);
-  border-radius: 1rem;
-  padding: 0.75rem 1rem;
-
-  box-shadow:
-    0  8px 32px 0 rgba(0, 0, 0, 0.07),
-    0  1px  2px 0 rgba(0, 0, 0, 0.04);
-}
-
-.dark .period-bar {
-  background: rgba(24, 24, 27, 0.60);
-  border-color: rgba(255, 255, 255, 0.08);
-  box-shadow:
-    0  8px 32px 0 rgba(0, 0, 0, 0.40),
-    0  1px  2px 0 rgba(0, 0, 0, 0.20);
-}
-
-@media (min-width: 1024px) {
-  .period-bar {
-    flex-direction: row;
-  }
-}
-
-/* ── Inner "pill" surfaces ────────────────────────────────── */
-.period-bar__surface {
-  display: flex;
-  align-items: center;
-
-  background: rgba(255, 255, 255, 0.50);
-  border: 1px solid rgba(228, 228, 231, 0.70);
-  border-radius: 0.75rem;
-  overflow: hidden;
-
-  box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.04);
-}
-
-.dark .period-bar__surface {
-  background: rgba(39, 39, 42, 0.50);
-  border-color: rgba(63, 63, 70, 0.50);
-  box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.15);
-}
-
-.period-bar__period {
-  flex: 1 1 0%;
-}
-
-/* ── Chevron / Arrow Buttons ──────────────────────────────── */
-.period-bar__arrow {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-
-  padding: 0.75rem 1rem;
-
-  color: #52525b;
-  background: transparent;
-  border: none;
-  outline: none;
-  cursor: pointer;
-
-  transition: background 0.15s ease, color 0.15s ease;
-}
-
-.dark .period-bar__arrow { color: #d4d4d8; }
-
-.period-bar__arrow:hover:not(:disabled) {
-  background: rgba(99, 102, 241, 0.06);
-  color: #3f3f46;
-}
-
-.dark .period-bar__arrow:hover:not(:disabled) {
-  background: rgba(99, 102, 241, 0.10);
-  color: #f4f4f5;
-}
-
-.period-bar__arrow:active:not(:disabled) { background: rgba(99, 102, 241, 0.12); }
-
-.period-bar__arrow:disabled {
-  opacity: 0.30;
-  cursor: not-allowed;
-}
-
-.period-bar__arrow--left  { border-right: 1px solid rgba(228, 228, 231, 0.70); }
-.period-bar__arrow--right { border-left:  1px solid rgba(228, 228, 231, 0.70); }
-
-.dark .period-bar__arrow--left  { border-right-color: rgba(63, 63, 70, 0.50); }
-.dark .period-bar__arrow--right { border-left-color:  rgba(63, 63, 70, 0.50); }
-
-/* ── Period Label ─────────────────────────────────────────── */
-.period-bar__period-label {
-  flex: 1 1 0%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  padding: 0.625rem 1rem;
-  text-align: center;
-
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: -0.025em;
-  color: #27272a;
-  font-variant-numeric: tabular-nums;
-  user-select: none;
-}
-
-.dark .period-bar__period-label { color: #f4f4f5; }
-
-@media (min-width: 768px) {
-  .period-bar__period-label { font-size: 0.875rem; }
-}
-
-/* ── Year Control ─────────────────────────────────────────── */
-.period-bar__year-control {
-  display: flex;
-  align-items: center;
-  flex-shrink: 0;
-  padding: 0 0.75rem;
-  border-right: 1px solid rgba(228, 228, 231, 0.70);
-}
-
-.dark .period-bar__year-control { border-right-color: rgba(63, 63, 70, 0.50); }
-
-.period-bar__year-value {
-  margin: 0 0.5rem;
-  font-size: 0.875rem;
-  font-weight: 700;
-  color: #3f3f46;
-  font-variant-numeric: tabular-nums;
-  min-width: 3ch;
-  text-align: center;
-  user-select: none;
-}
-
-.dark .period-bar__year-value { color: #e4e4e7; }
-
-.period-bar__year-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  padding: 0.375rem;
-  border-radius: 0.5rem;
-  border: none;
-  outline: none;
-  background: transparent;
-  cursor: pointer;
-
-  color: #a1a1aa;
-  transition: background 0.15s ease, color 0.15s ease;
-}
-
-.period-bar__year-btn:hover {
-  background: rgba(244, 244, 245, 0.70);
-  color: #18181b;
-}
-
-.dark .period-bar__year-btn:hover {
-  background: rgba(63, 63, 70, 0.60);
-  color: #f4f4f5;
-}
-
-/* ── Month Pills Scroller ─────────────────────────────────── */
-.period-bar__months {
-  display: flex;
-  align-items: center;
-  gap: 0.125rem;
-  padding: 0 0.5rem;
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-
-.period-bar__months::-webkit-scrollbar { display: none; }
-
-/* ── Individual Month Pill ────────────────────────────────── */
-.period-bar__month-pill {
-  position: relative;
-  flex-shrink: 0;
-
-  padding: 0.375rem 0.75rem;
-  border-radius: 9999px;
-  border: none;
-  outline: none;
-  background: transparent;
-  cursor: pointer;
-
-  font-size: 0.6875rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: #71717a;
-
-  transition: background 0.15s ease, color 0.15s ease;
-}
-
-.dark .period-bar__month-pill { color: #a1a1aa; }
-
-.period-bar__month-pill:hover {
-  background: rgba(244, 244, 245, 0.80);
-  color: #18181b;
-}
-
-.dark .period-bar__month-pill:hover {
-  background: rgba(63, 63, 70, 0.50);
-  color: #f4f4f5;
-}
-
-.period-bar__month-pill--active {
-  background: hsl(var(--primary));
-  color: hsl(var(--primary-foreground));
-  box-shadow: 0 2px 8px 0 hsl(var(--primary) / 0.35);
-}
-
-.period-bar__month-pill--active:hover {
-  background: hsl(var(--primary));
-  color: hsl(var(--primary-foreground));
-}
-
-.period-bar__today-dot {
-  position: absolute;
-  top: 0.25rem;
-  right: 0.25rem;
-  width: 0.25rem;
-  height: 0.25rem;
-  border-radius: 9999px;
-  background: hsl(var(--primary));
-}
-
-/* ── Expand "+" Button ────────────────────────────────────── */
-.period-bar__expand-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-
-  padding: 0.5rem;
-  margin-left: 0.25rem;
-  border-radius: 0.5rem;
-  border: none;
-  outline: none;
-  background: transparent;
-  cursor: pointer;
-
-  color: #a1a1aa;
-  transition: background 0.15s ease, color 0.15s ease;
-}
-
-.period-bar__expand-btn:hover {
-  background: rgba(244, 244, 245, 0.80);
-  color: #3f3f46;
-}
-
-.dark .period-bar__expand-btn:hover {
-  background: rgba(63, 63, 70, 0.50);
-  color: #e4e4e7;
-}
-
-/* ── Outer Container (Liquid Glass iOS) ─────────────────────────── */
+/* ── Outer Container (Trilho de Vidro Translúcido) ─────────── */
 .period-bar {
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.5rem;
   align-items: stretch;
 
   border-radius: 9999px;
-  padding: 5px 8px;
+  padding: 5px;
 
+  /* Vidro frio levemente tingido para destacar contra o fundo branco da página */
   background: linear-gradient(160deg,
-    rgba(255, 255, 255, 0.45) 0%,
-    rgba(220, 230, 255, 0.25) 45%,
-    rgba(255, 255, 255, 0.40) 100%) !important;
-  backdrop-filter: blur(16px) saturate(190%) brightness(0.96);
-  -webkit-backdrop-filter: blur(16px) saturate(190%) brightness(0.96);
+    rgba(248, 250, 255, 0.72) 0%,
+    rgba(224, 234, 252, 0.52) 50%,
+    rgba(245, 248, 255, 0.68) 100%) !important;
+  backdrop-filter: blur(16px) saturate(185%) brightness(0.98);
+  -webkit-backdrop-filter: blur(16px) saturate(185%) brightness(0.98);
 
-  border: 1px solid rgba(255, 255, 255, 0.85) !important;
+  border: 1px solid rgba(15, 23, 42, 0.08) !important;
   box-shadow:
-    0 10px 25px rgba(15, 23, 42, 0.12),
-    0 2px 6px rgba(15, 23, 42, 0.08),
-    0 0 0 1px rgba(15, 23, 42, 0.08),
+    0 10px 28px rgba(15, 23, 42, 0.09),
+    0 2px 6px rgba(15, 23, 42, 0.05),
     inset 0 1.5px 1px rgba(255, 255, 255, 0.95),
-    inset 0 -1.5px 2px rgba(0, 0, 0, 0.05) !important;
+    inset 0 -1px 2px rgba(15, 23, 42, 0.04) !important;
 }
 
 .dark .period-bar {
   background: linear-gradient(160deg,
-    rgba(30, 41, 59, 0.85) 0%,
-    rgba(18, 28, 54, 0.50) 45%,
-    rgba(15, 23, 42, 0.80) 100%) !important;
+    rgba(30, 41, 59, 0.82) 0%,
+    rgba(18, 28, 54, 0.52) 50%,
+    rgba(15, 23, 42, 0.78) 100%) !important;
   border-color: rgba(255, 255, 255, 0.14) !important;
   box-shadow:
-    0 14px 36px rgba(0, 0, 0, 0.50),
+    0 14px 34px rgba(0, 0, 0, 0.48),
     0 2px 6px rgba(0, 0, 0, 0.25),
-    inset 0 2px 2px rgba(255, 255, 255, 0.40),
-    inset 0 -2px 3px rgba(255, 255, 255, 0.12) !important;
+    inset 0 1.5px 1px rgba(255, 255, 255, 0.35),
+    inset 0 -1.5px 2px rgba(255, 255, 255, 0.10) !important;
 }
 
-/* Reflexo de luz de borda fina no topo */
+/* Reflexo especular fino no contorno */
 .period-bar::before {
   content: "";
   position: absolute;
@@ -559,7 +294,7 @@
     rgba(255, 255, 255, 0.95) 0%,
     rgba(255, 255, 255, 0) 35%,
     rgba(255, 255, 255, 0) 65%,
-    rgba(255, 255, 255, 0.70) 100%);
+    rgba(255, 255, 255, 0.75) 100%);
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
@@ -570,31 +305,27 @@
   .period-bar {
     flex-direction: row;
     align-items: center;
+    gap: 6px;
   }
 }
 
-/* ── Inner "pill" surfaces ────────────────────────────────── */
+/* ── Inner "pill" surfaces (Camada sutil sem competir com botões) ── */
 .period-bar__surface {
   position: relative;
   display: flex;
   align-items: center;
 
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.90) 0%, rgba(245, 248, 255, 0.75) 100%) !important;
-  border: 1px solid rgba(15, 23, 42, 0.08) !important;
+  background: rgba(255, 255, 255, 0.38) !important;
+  border: 1px solid rgba(255, 255, 255, 0.65) !important;
   border-radius: 9999px !important;
-  padding: 4px 6px;
-  box-shadow:
-    0 2px 6px rgba(15, 23, 42, 0.08),
-    inset 0 1.5px 1px #ffffff,
-    inset 0 -1px 1px rgba(0, 0, 0, 0.03) !important;
+  padding: 3px;
+  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.04) !important;
 }
 
 .dark .period-bar__surface {
-  background: linear-gradient(180deg, rgba(30, 41, 59, 0.80) 0%, rgba(15, 23, 42, 0.70) 100%) !important;
-  border-color: rgba(255, 255, 255, 0.12) !important;
-  box-shadow:
-    0 2px 8px rgba(0, 0, 0, 0.35),
-    inset 0 1px 1px rgba(255, 255, 255, 0.20) !important;
+  background: rgba(15, 23, 42, 0.45) !important;
+  border-color: rgba(255, 255, 255, 0.10) !important;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.25) !important;
 }
 
 /* Period navigator grows to fill available width */
@@ -602,45 +333,55 @@
   flex: 1 1 0%;
 }
 
-/* ── Chevron / Arrow Buttons ──────────────────────────────── */
+/* ── Chevron / Arrow Buttons (Círculos elevados em vidro branco) ── */
 .period-bar__arrow {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
 
   width: 32px;
   height: 32px;
+  padding: 0;
   border-radius: 9999px;
 
-  color: #0f172a !important;
-  background: #ffffff !important;
-  border: 1px solid rgba(15, 23, 42, 0.10) !important;
+  color: #0f1e46 !important;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(244, 247, 255, 0.88) 100%) !important;
+  border: 1px solid rgba(15, 23, 42, 0.08) !important;
   outline: none;
   cursor: pointer;
 
-  box-shadow: 0 2px 5px rgba(15, 23, 42, 0.10), inset 0 1px 1px #ffffff;
-  transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+  box-shadow:
+    0 2px 6px rgba(15, 23, 42, 0.10),
+    inset 0 1px 1px #ffffff;
+  transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.period-bar__arrow svg {
+  width: 16px;
+  height: 16px;
+  display: block;
+  flex-shrink: 0;
 }
 
 .dark .period-bar__arrow {
   color: #f1f5f9 !important;
-  background: rgba(255, 255, 255, 0.15) !important;
-  border-color: rgba(255, 255, 255, 0.18) !important;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.08) 100%) !important;
+  border-color: rgba(255, 255, 255, 0.16) !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.25);
 }
 
 .period-bar__arrow:hover:not(:disabled) {
-  background: #ffffff !important;
   color: #0a5cff !important;
-  border-color: #0a5cff !important;
-  transform: scale(1.08);
-  box-shadow: 0 3px 8px rgba(10, 92, 255, 0.20);
+  transform: scale(1.06);
+  box-shadow:
+    0 4px 10px rgba(10, 92, 255, 0.18),
+    inset 0 1px 1px #ffffff;
 }
 
 .dark .period-bar__arrow:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.25) !important;
-  color: #60a5fa !important;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.26) 0%, rgba(255, 255, 255, 0.14) 100%) !important;
+  color: #8dbbff !important;
 }
 
 .period-bar__arrow:active:not(:disabled) {
@@ -648,11 +389,10 @@
 }
 
 .period-bar__arrow:disabled {
-  opacity: 0.30;
+  opacity: 0.35;
   cursor: not-allowed;
 }
 
-/* Sem divisórias feias nas setas */
 .period-bar__arrow--left {
   margin-right: 4px;
 }
@@ -667,14 +407,15 @@
   align-items: center;
   justify-content: center;
 
-  padding: 0.375rem 1rem;
+  padding: 0 0.75rem;
   text-align: center;
 
-  font-size: 0.875rem !important;
-  font-weight: 800 !important;
-  letter-spacing: -0.01em !important;
-  color: #0f172a !important;
+  font-size: 0.8125rem !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.015em !important;
+  color: #0f1e46 !important;
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 
   user-select: none;
 }
@@ -685,7 +426,7 @@
 
 @media (min-width: 768px) {
   .period-bar__period-label {
-    font-size: 0.9375rem !important;
+    font-size: 0.9rem !important;
   }
 }
 
@@ -694,20 +435,20 @@
   display: flex;
   align-items: center;
   flex-shrink: 0;
-  padding: 0 0.5rem;
-  gap: 3px;
-  border-right: 1px solid rgba(15, 23, 42, 0.12);
+  padding: 0 0.5rem 0 0.375rem;
+  gap: 2px;
+  border-right: 1px solid rgba(15, 30, 70, 0.10);
 }
 
 .dark .period-bar__year-control {
-  border-right-color: rgba(255, 255, 255, 0.16);
+  border-right-color: rgba(255, 255, 255, 0.14);
 }
 
 .period-bar__year-value {
-  margin: 0 0.4rem;
-  font-size: 0.875rem !important;
+  margin: 0 0.25rem;
+  font-size: 0.8125rem !important;
   font-weight: 800 !important;
-  color: #0f172a !important;
+  color: #0f1e46 !important;
   font-variant-numeric: tabular-nums;
   min-width: 3ch;
   text-align: center;
@@ -720,37 +461,37 @@
 
 /* Small year arrow buttons */
 .period-bar__year-btn {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
 
   width: 24px;
   height: 24px;
+  padding: 0;
   border-radius: 9999px;
   border: 1px solid transparent;
   outline: none;
   background: transparent;
   cursor: pointer;
 
-  color: #475569 !important;
-  transition: all 0.15s ease;
+  color: rgba(15, 30, 70, 0.65) !important;
+  transition: all 0.18s ease;
 }
 
 .period-bar__year-btn:hover {
-  background: #ffffff;
+  background: rgba(255, 255, 255, 0.85);
   color: #0a5cff !important;
-  border-color: rgba(15, 23, 42, 0.10);
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
-  transform: scale(1.1);
+  border-color: rgba(15, 23, 42, 0.08);
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.08);
 }
 
 .dark .period-bar__year-btn {
-  color: #cbd5e1 !important;
+  color: rgba(240, 245, 255, 0.65) !important;
 }
 
 .dark .period-bar__year-btn:hover {
-  background: rgba(255, 255, 255, 0.18);
-  color: #60a5fa !important;
+  background: rgba(255, 255, 255, 0.16);
+  color: #8dbbff !important;
 }
 
 .period-bar__year-btn:active {
@@ -762,7 +503,7 @@
   display: flex;
   align-items: center;
   gap: 2px;
-  padding: 0 0.375rem;
+  padding: 0 0.25rem;
   overflow-x: auto;
   scrollbar-width: none;
 }
@@ -776,18 +517,18 @@
   position: relative;
   flex-shrink: 0;
 
-  padding: 0.375rem 0.75rem;
+  padding: 6px 12px;
   border-radius: 9999px;
   border: none;
   outline: none;
   background: transparent;
   cursor: pointer;
 
-  font-size: 0.75rem;
-  font-weight: 800;
+  font-size: 0.72rem;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.03em;
-  color: #334155 !important;
+  color: rgba(15, 30, 70, 0.72) !important;
 
   transition: color 0.2s ease, transform 0.15s ease;
   user-select: none;
@@ -795,7 +536,7 @@
 }
 
 .dark .period-bar__month-pill {
-  color: #cbd5e1 !important;
+  color: rgba(240, 245, 255, 0.66) !important;
 }
 
 .period-bar__month-pill:hover {
@@ -816,20 +557,20 @@
 }
 
 .dark .period-bar__month-pill--active {
-  color: #60a5fa !important;
+  color: #8dbbff !important;
 }
 
-/* Highlight pill deslizante com Framer Motion */
+/* Highlight pill deslizante com Framer Motion (vidro branco elevado) */
 .period-bar__month-highlight {
   position: absolute;
   inset: 0;
   border-radius: 9999px;
-  background: linear-gradient(180deg, #ffffff 0%, rgba(245, 248, 255, 0.94) 100%);
-  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: linear-gradient(180deg, #ffffff 0%, rgba(245, 248, 255, 0.90) 100%);
+  border: 1px solid rgba(15, 23, 42, 0.06);
   box-shadow:
-    0 3px 10px rgba(15, 23, 42, 0.16),
-    0 1px 3px rgba(15, 23, 42, 0.08),
-    inset 0 1.5px 1.5px #ffffff,
+    0 3px 10px rgba(15, 23, 42, 0.14),
+    0 1px 2px rgba(15, 23, 42, 0.06),
+    inset 0 1.5px 1px #ffffff,
     inset 0 -1px 2px rgba(0, 0, 0, 0.04);
   z-index: 1;
 }
@@ -839,15 +580,15 @@
   border: 1px solid rgba(255, 255, 255, 0.18);
   box-shadow:
     0 3px 12px rgba(0, 0, 0, 0.40),
-    inset 0 1.5px 1px rgba(255, 255, 255, 0.60),
-    inset 0 -1.5px 2px rgba(255, 255, 255, 0.20);
+    inset 0 1.5px 1px rgba(255, 255, 255, 0.55),
+    inset 0 -1.5px 2px rgba(255, 255, 255, 0.18);
 }
 
 /* "Today" dot */
 .period-bar__today-dot {
   position: absolute;
   top: 4px;
-  right: 6px;
+  right: 5px;
   width: 5px;
   height: 5px;
   border-radius: 9999px;
@@ -857,47 +598,47 @@
 }
 
 .dark .period-bar__today-dot {
-  background: #60a5fa;
-  box-shadow: 0 0 6px rgba(96, 165, 250, 0.7);
+  background: #8dbbff;
+  box-shadow: 0 0 6px rgba(141, 187, 255, 0.7);
 }
 
 /* ── Expand "+" Button ────────────────────────────────────── */
 .period-bar__expand-btn {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
 
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
+  padding: 0;
   margin-left: 0.25rem;
   border-radius: 9999px;
-  border: 1px solid rgba(15, 23, 42, 0.10);
+  border: 1px solid rgba(15, 23, 42, 0.08);
   outline: none;
-  background: #ffffff;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(244, 247, 255, 0.82) 100%);
   cursor: pointer;
 
-  color: #475569 !important;
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+  color: #0f1e46 !important;
+  box-shadow: 0 2px 5px rgba(15, 23, 42, 0.08), inset 0 1px 1px #ffffff;
   transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .period-bar__expand-btn:hover {
-  background: #ffffff;
   color: #0a5cff !important;
-  border-color: #0a5cff;
-  transform: scale(1.1);
+  transform: scale(1.08);
+  box-shadow: 0 3px 8px rgba(10, 92, 255, 0.16), inset 0 1px 1px #ffffff;
 }
 
 .dark .period-bar__expand-btn {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.18);
-  color: #cbd5e1 !important;
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.16);
+  color: #f1f5f9 !important;
 }
 
 .dark .period-bar__expand-btn:hover {
   background: rgba(255, 255, 255, 0.22);
-  color: #60a5fa !important;
+  color: #8dbbff !important;
 }
 
 /* ══════════════════════════════════════════════════════════
