@@ -292,8 +292,9 @@ const SchedulingPage = () => {
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0, marginTop: 0, marginBottom: 0 }}
             transition={{ duration: 0.2, ease: 'easeOut' }}
-            className="period-bar overflow-hidden"
+            style={{ overflow: 'hidden' }}
           >
+          <div className="period-bar">
           {/* ── Week / Period Navigator ── */}
           <div className="period-bar__surface period-bar__period">
             <button
@@ -411,6 +412,7 @@ const SchedulingPage = () => {
                 </motion.div>
               </button>
             </div>
+          </div>
           </div>
         </motion.div>
       )}
