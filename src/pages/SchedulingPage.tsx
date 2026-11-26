@@ -283,7 +283,7 @@ const SchedulingPage = () => {
       showBackgroundGrid
       showFloatingShapes
     >
-      <div className="space-y-1.5 sm:space-y-2 max-w-7xl mx-auto relative z-10 pb-28 sm:pb-32">
+      <div className="-mt-3 sm:-mt-5 space-y-1.5 sm:space-y-2 max-w-7xl mx-auto relative z-10 pb-28 sm:pb-32">
       {/* ── Filtro SVG de Refração (Lensing) para Liquid Glass ── */}
       <svg aria-hidden="true" width="0" height="0" style={{ position: 'absolute', width: 0, height: 0, overflow: 'hidden', pointerEvents: 'none' }}>
         <defs>
@@ -295,140 +295,145 @@ const SchedulingPage = () => {
         </defs>
       </svg>
 
-      {/* ── Glass Nav Row ── Week Selector + Year/Month Selector (Visível apenas em Semanal e Histórico) ── */}
-      <AnimatePresence initial={false}>
-        {viewMode !== 'my_reservations' && (
-          <motion.div
-            key="period-bar"
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0, marginTop: 0, marginBottom: 0 }}
-            transition={{ duration: shouldReduceMotion ? 0 : 0.2, ease: 'easeOut' }}
-            className="period-bar-motion"
-          >
-          <div className="period-bar glass">
-          {/* ── Week / Period Navigator ── */}
-          <div className="period-bar__surface period-bar__period">
-            <button
-              onClick={() => handleDateChange('prev')}
-              disabled={isLoading}
-              className="period-bar__arrow period-bar__arrow--left"
-              aria-label="Período anterior"
-            >
-              <ChevronLeft size={16} strokeWidth={2.5} />
-            </button>
-
-            <div className="period-bar__period-label">
-              {displayRange}
-            </div>
-
-            <button
-              onClick={() => handleDateChange('next')}
-              disabled={isLoading}
-              className="period-bar__arrow period-bar__arrow--right"
-              aria-label="Próximo período"
-            >
-              <ChevronRight size={16} strokeWidth={2.5} />
-            </button>
-
-            {!isSameWeek(currentDate, getInitialSchedulingDate(), { weekStartsOn: 1 }) && (
-              <button
-                type="button"
-                onClick={() => setCurrentDate(getInitialSchedulingDate())}
-                className="period-bar__today-btn"
-                title="Voltar para a semana atual"
-              >
-                Hoje
-              </button>
-            )}
-          </div>
-
-          {/* ── Year + Month Selector ── */}
-          <div className="period-bar__surface">
-            {/* Year control */}
-            <div className="period-bar__year-control">
-              <button
-                onClick={() => setCurrentDate(new Date(currentDate.getFullYear() - 1, currentDate.getMonth(), 1))}
-                className="period-bar__year-btn"
-                aria-label="Ano anterior"
-              >
-                <ChevronLeft size={14} strokeWidth={2.5} />
-              </button>
-              <span className="period-bar__year-value">{currentDate.getFullYear()}</span>
-              <button
-                onClick={() => setCurrentDate(new Date(currentDate.getFullYear() + 1, currentDate.getMonth(), 1))}
-                className="period-bar__year-btn"
-                aria-label="Próximo ano"
-              >
-                <ChevronRight size={14} strokeWidth={2.5} />
-              </button>
-            </div>
-
-            {/* Month pills (Liquid Glass 21st.dev droplet) */}
-            <div className="period-bar__months">
+      {/* ── Glass Nav Row ── Filtro Semanal + Barra de Data na mesma linha (separados) ── */}
+      {(viewMode === 'weekly' || viewMode !== 'my_reservations') && (
+        <div className="flex flex-col lg:flex-row lg:items-center gap-2 relative z-10">
+          {/* Barra rápida de Filtro Semanal (Liquid Glass 21st.dev com gota óptica arrastável) */}
+          {viewMode === 'weekly' && (
+            <div className="flex items-center shrink-0" role="group" aria-label="Filtrar grade semanal">
               <LiquidGlassSegmented
-                variant="embedded"
-                height={34}
-                ariaLabel="Selecionar mês"
-                value={String(currentDate.getMonth())}
-                onChange={(id) => {
-                  const i = Number(id);
-                  let targetDate = new Date(currentDate.getFullYear(), i, 1);
-                  if (isSaturday(targetDate)) targetDate = addDays(targetDate, 2);
-                  else if (isSunday(targetDate)) targetDate = addDays(targetDate, 1);
-                  setCurrentDate(targetDate);
-                }}
-                options={Array.from({ length: 12 }, (_, i) => {
-                  const date = new Date(currentDate.getFullYear(), i, 1);
-                  const isCurrentMonth = i === currentDate.getMonth();
-                  const isTodayMonth = i === new Date().getMonth() && currentDate.getFullYear() === new Date().getFullYear();
-                  const todayIdx = new Date().getMonth();
-                  const isVisibleByDefault = (i >= todayIdx && i <= todayIdx + 3) || (todayIdx > 8 && i < (todayIdx + 4) % 12);
-                  const shouldShow = isMonthsExpanded || isVisibleByDefault || isCurrentMonth;
-                  if (!shouldShow) return null;
-
-                  const rawLabel = format(date, 'MMM', { locale: ptBR }).replace('.', '');
-                  const label = rawLabel.charAt(0).toUpperCase() + rawLabel.slice(1);
-                  return {
-                    id: String(i),
-                    label,
-                    dot: isTodayMonth && !isCurrentMonth,
-                  };
-                }).filter((item): item is { id: string; label: string; dot: boolean } => item !== null)}
+                variant="surface"
+                height={44}
+                ariaLabel="Filtrar grade semanal"
+                value={calendarFilter}
+                onChange={(id) => setCalendarFilter(id as 'all' | 'sala_google' | 'mine')}
+                options={[
+                  { id: 'all', label: 'Todos' },
+                  { id: 'sala_google', label: 'Sala Google' },
+                  { id: 'mine', label: 'Minha Grade' },
+                ]}
               />
-
-              <button
-                onClick={() => setIsMonthsExpanded(!isMonthsExpanded)}
-                className="period-bar__expand-btn"
-                title={isMonthsExpanded ? 'Ver menos' : 'Ver todos os meses'}
-                aria-label="Alternar meses"
-              >
-                <motion.div animate={{ rotate: isMonthsExpanded ? 45 : 0 }} transition={{ type: 'spring', stiffness: 200 }}>
-                  <Plus size={14} strokeWidth={2.5} />
-                </motion.div>
-              </button>
             </div>
-          </div>
-          </div>
-        </motion.div>
-      )}
-      </AnimatePresence>
+          )}
 
-      {/* Barra rápida de Filtro Semanal (Liquid Glass 21st.dev com gota óptica arrastável) */}
-      {viewMode === 'weekly' && (
-        <div className="flex items-center px-1 relative z-10" role="group" aria-label="Filtrar grade semanal">
-          <LiquidGlassSegmented
-            variant="surface"
-            height={42}
-            ariaLabel="Filtrar grade semanal"
-            value={calendarFilter}
-            onChange={(id) => setCalendarFilter(id as 'all' | 'sala_google' | 'mine')}
-            options={[
-              { id: 'all', label: 'Todos' },
-              { id: 'sala_google', label: 'Sala Google' },
-              { id: 'mine', label: 'Minha Grade' },
-            ]}
-          />
+          {/* Week Selector + Year/Month Selector (Visível apenas em Semanal e Histórico) */}
+          <AnimatePresence initial={false}>
+            {viewMode !== 'my_reservations' && (
+              <motion.div
+                key="period-bar"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0, marginTop: 0, marginBottom: 0 }}
+                transition={{ duration: shouldReduceMotion ? 0 : 0.2, ease: 'easeOut' }}
+                className="period-bar-motion flex-1 min-w-0"
+              >
+                <div className="period-bar glass">
+                  {/* ── Week / Period Navigator ── */}
+                  <div className="period-bar__surface period-bar__period">
+                    <button
+                      onClick={() => handleDateChange('prev')}
+                      disabled={isLoading}
+                      className="period-bar__arrow period-bar__arrow--left"
+                      aria-label="Período anterior"
+                    >
+                      <ChevronLeft size={16} strokeWidth={2.5} />
+                    </button>
+
+                    <div className="period-bar__period-label">
+                      {displayRange}
+                    </div>
+
+                    <button
+                      onClick={() => handleDateChange('next')}
+                      disabled={isLoading}
+                      className="period-bar__arrow period-bar__arrow--right"
+                      aria-label="Próximo período"
+                    >
+                      <ChevronRight size={16} strokeWidth={2.5} />
+                    </button>
+
+                    {!isSameWeek(currentDate, getInitialSchedulingDate(), { weekStartsOn: 1 }) && (
+                      <button
+                        type="button"
+                        onClick={() => setCurrentDate(getInitialSchedulingDate())}
+                        className="period-bar__today-btn"
+                        title="Voltar para a semana atual"
+                      >
+                        Hoje
+                      </button>
+                    )}
+                  </div>
+
+                  {/* ── Year + Month Selector ── */}
+                  <div className="period-bar__surface">
+                    {/* Year control */}
+                    <div className="period-bar__year-control">
+                      <button
+                        onClick={() => setCurrentDate(new Date(currentDate.getFullYear() - 1, currentDate.getMonth(), 1))}
+                        className="period-bar__year-btn"
+                        aria-label="Ano anterior"
+                      >
+                        <ChevronLeft size={14} strokeWidth={2.5} />
+                      </button>
+                      <span className="period-bar__year-value">{currentDate.getFullYear()}</span>
+                      <button
+                        onClick={() => setCurrentDate(new Date(currentDate.getFullYear() + 1, currentDate.getMonth(), 1))}
+                        className="period-bar__year-btn"
+                        aria-label="Próximo ano"
+                      >
+                        <ChevronRight size={14} strokeWidth={2.5} />
+                      </button>
+                    </div>
+
+                    {/* Month pills (Liquid Glass 21st.dev droplet) */}
+                    <div className="period-bar__months">
+                      <LiquidGlassSegmented
+                        variant="embedded"
+                        height={34}
+                        ariaLabel="Selecionar mês"
+                        value={String(currentDate.getMonth())}
+                        onChange={(id) => {
+                          const i = Number(id);
+                          let targetDate = new Date(currentDate.getFullYear(), i, 1);
+                          if (isSaturday(targetDate)) targetDate = addDays(targetDate, 2);
+                          else if (isSunday(targetDate)) targetDate = addDays(targetDate, 1);
+                          setCurrentDate(targetDate);
+                        }}
+                        options={Array.from({ length: 12 }, (_, i) => {
+                          const date = new Date(currentDate.getFullYear(), i, 1);
+                          const isCurrentMonth = i === currentDate.getMonth();
+                          const isTodayMonth = i === new Date().getMonth() && currentDate.getFullYear() === new Date().getFullYear();
+                          const todayIdx = new Date().getMonth();
+                          const isVisibleByDefault = (i >= todayIdx && i <= todayIdx + 3) || (todayIdx > 8 && i < (todayIdx + 4) % 12);
+                          const shouldShow = isMonthsExpanded || isVisibleByDefault || isCurrentMonth;
+                          if (!shouldShow) return null;
+
+                          const rawLabel = format(date, 'MMM', { locale: ptBR }).replace('.', '');
+                          const label = rawLabel.charAt(0).toUpperCase() + rawLabel.slice(1);
+                          return {
+                            id: String(i),
+                            label,
+                            dot: isTodayMonth && !isCurrentMonth,
+                          };
+                        }).filter((item): item is { id: string; label: string; dot: boolean } => item !== null)}
+                      />
+
+                      <button
+                        onClick={() => setIsMonthsExpanded(!isMonthsExpanded)}
+                        className="period-bar__expand-btn"
+                        title={isMonthsExpanded ? 'Ver menos' : 'Ver todos os meses'}
+                        aria-label="Alternar meses"
+                      >
+                        <motion.div animate={{ rotate: isMonthsExpanded ? 45 : 0 }} transition={{ type: 'spring', stiffness: 200 }}>
+                          <Plus size={14} strokeWidth={2.5} />
+                        </motion.div>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       )}
 
