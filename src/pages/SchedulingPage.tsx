@@ -364,12 +364,9 @@ const SchedulingPage = () => {
                   if (!shouldShow) return null;
 
                   return (
-                    <motion.button
+                    <button
                       key={i}
-                      layout
-                      initial={{ opacity: 0, x: -8 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, scale: 0.85 }}
+                      type="button"
                       onClick={() => {
                         let targetDate = new Date(currentDate.getFullYear(), i, 1);
                         if (isSaturday(targetDate)) targetDate = addDays(targetDate, 2);
@@ -381,11 +378,24 @@ const SchedulingPage = () => {
                         isCurrentMonth && 'period-bar__month-pill--active'
                       )}
                     >
-                      {format(date, 'MMM', { locale: ptBR }).replace('.', '')}
+                      {isCurrentMonth && (
+                        <motion.div
+                          layoutId="liquid-glass-month-pill"
+                          className="period-bar__month-highlight"
+                          transition={{
+                            type: 'spring',
+                            stiffness: 400,
+                            damping: 30,
+                          }}
+                        />
+                      )}
+                      <span className="relative z-10">
+                        {format(date, 'MMM', { locale: ptBR }).replace('.', '')}
+                      </span>
                       {isTodayMonth && !isCurrentMonth && (
                         <span className="period-bar__today-dot" aria-hidden />
                       )}
-                    </motion.button>
+                    </button>
                   );
                 })}
               </AnimatePresence>
