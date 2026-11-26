@@ -406,7 +406,7 @@ const SchedulingPage = () => {
       )}
       </AnimatePresence>
 
-      {/* Barra rápida de Filtro Semanal (Estilo Liquid Glass) */}
+      {/* Barra rápida de Filtro Semanal (Estilo Liquid Glass com pílula deslizante) */}
       {viewMode === 'weekly' && (
         <div className="flex items-center px-1" role="group" aria-label="Filtrar grade semanal">
           <div className="liquid-glass-filter-bar">
@@ -414,19 +414,33 @@ const SchedulingPage = () => {
               { id: 'all', label: 'Todos' },
               { id: 'sala_google', label: 'Sala Google' },
               { id: 'mine', label: 'Minha Grade' },
-            ].map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => setCalendarFilter(item.id as 'all' | 'sala_google' | 'mine')}
-                className={cn(
-                  'liquid-glass-filter-btn',
-                  calendarFilter === item.id && 'active'
-                )}
-              >
-                {item.label}
-              </button>
-            ))}
+            ].map((item) => {
+              const isActive = calendarFilter === item.id;
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => setCalendarFilter(item.id as 'all' | 'sala_google' | 'mine')}
+                  className={cn(
+                    'liquid-glass-filter-btn',
+                    isActive && 'active'
+                  )}
+                >
+                  {isActive && (
+                    <motion.div
+                      layoutId="liquid-glass-filter-pill"
+                      className="liquid-glass-pill-highlight"
+                      transition={{
+                        type: 'spring',
+                        stiffness: 400,
+                        damping: 30,
+                      }}
+                    />
+                  )}
+                  <span className="relative z-10">{item.label}</span>
+                </button>
+              );
+            })}
           </div>
         </div>
       )}

@@ -862,36 +862,41 @@
 .dark .period-bar__arrow--right { border-left-color: rgba(82, 82, 91, 0.60) !important; }
 
 /* ══════════════════════════════════════════════════════════
-   LIQUID GLASS FILTER PILLS (Segmented Control - Fiel ao iOS Glass)
+   LIQUID GLASS FILTER PILLS (Segmented Control com Pílula Deslizante)
    ══════════════════════════════════════════════════════════ */
 .liquid-glass-filter-bar {
   position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 0;
   padding: 4px;
   border-radius: 9999px;
-  background: var(--lg-nav-glass-bg, linear-gradient(160deg, rgba(255, 255, 255, 0.40) 0%, rgba(30, 60, 140, 0.08) 50%, rgba(255, 255, 255, 0.35) 100%));
-  backdrop-filter: blur(16px) saturate(190%) brightness(0.98);
-  -webkit-backdrop-filter: blur(16px) saturate(190%) brightness(0.98);
+  background: linear-gradient(160deg,
+    rgba(255, 255, 255, 0.65) 0%,
+    rgba(225, 235, 255, 0.35) 45%,
+    rgba(255, 255, 255, 0.55) 100%);
+  backdrop-filter: blur(16px) saturate(190%) brightness(0.96);
+  -webkit-backdrop-filter: blur(16px) saturate(190%) brightness(0.96);
   box-shadow:
-    0 8px 24px rgba(15, 23, 42, 0.12),
-    0 2px 6px rgba(15, 23, 42, 0.06),
+    0 10px 25px rgba(15, 23, 42, 0.12),
+    0 2px 6px rgba(15, 23, 42, 0.08),
     0 0 0 1px rgba(15, 23, 42, 0.08),
     inset 0 1.5px 1px rgba(255, 255, 255, 0.95),
-    inset 0 -1px 2px rgba(0, 0, 0, 0.04);
+    inset 0 -1.5px 2px rgba(0, 0, 0, 0.05);
 }
 
 .dark .liquid-glass-filter-bar {
-  background: var(--lg-nav-glass-bg, linear-gradient(160deg, rgba(30, 41, 59, 0.78) 0%, rgba(18, 28, 54, 0.40) 45%, rgba(15, 23, 42, 0.70) 100%));
+  background: linear-gradient(160deg,
+    rgba(30, 41, 59, 0.85) 0%,
+    rgba(18, 28, 54, 0.55) 45%,
+    rgba(15, 23, 42, 0.80) 100%);
   backdrop-filter: blur(14px) saturate(200%) brightness(1.05);
   -webkit-backdrop-filter: blur(14px) saturate(200%) brightness(1.05);
   box-shadow:
-    0 10px 28px rgba(0, 0, 0, 0.45),
-    0 2px 6px rgba(0, 0, 0, 0.20),
-    0 0 0 1px rgba(255, 255, 255, 0.12),
-    inset 0 2px 2px rgba(255, 255, 255, 0.40),
-    inset 0 -2px 3px rgba(255, 255, 255, 0.12);
+    0 12px 30px rgba(0, 0, 0, 0.50),
+    0 2px 6px rgba(0, 0, 0, 0.25),
+    0 0 0 1px rgba(255, 255, 255, 0.15),
+    inset 0 2px 2px rgba(255, 255, 255, 0.45),
+    inset 0 -2px 3px rgba(255, 255, 255, 0.15);
 }
 
 /* Reflexo de borda pura iOS */
@@ -910,6 +915,7 @@
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
+  z-index: 3;
 }
 
 .liquid-glass-filter-btn {
@@ -917,53 +923,67 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 6px 16px;
+  padding: 7px 18px;
   font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
+  font-weight: 800;
+  letter-spacing: 0.03em;
   text-transform: uppercase;
   border-radius: 9999px;
-  border: 1px solid transparent;
-  transition: all 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+  border: 0;
   user-select: none;
   cursor: pointer;
-  color: var(--lg-nav-ink-soft, rgba(15, 30, 70, 0.72));
+  color: #1e293b;
   background: transparent;
   outline: none;
   -webkit-tap-highlight-color: transparent;
+  transition: color 0.2s ease, transform 0.15s ease;
+  z-index: 2;
 }
 
 .dark .liquid-glass-filter-btn {
-  color: var(--lg-nav-ink-soft, rgba(240, 245, 255, 0.66));
+  color: #e2e8f0;
 }
 
-.liquid-glass-filter-btn:hover:not(.active) {
+.liquid-glass-filter-btn:hover {
   color: #0a5cff;
-  background: rgba(255, 255, 255, 0.25);
 }
 
-.dark .liquid-glass-filter-btn:hover:not(.active) {
+.dark .liquid-glass-filter-btn:hover {
   color: #ffffff;
-  background: rgba(255, 255, 255, 0.08);
+}
+
+.liquid-glass-filter-btn:active {
+  transform: scale(0.96);
 }
 
 .liquid-glass-filter-btn.active {
   color: #0a5cff;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(255, 255, 255, 0.80) 100%);
-  border: 1px solid rgba(15, 23, 42, 0.06);
-  box-shadow:
-    0 3px 10px rgba(15, 23, 42, 0.16),
-    0 1px 3px rgba(15, 23, 42, 0.08),
-    inset 0 1.5px 1px rgba(255, 255, 255, 1),
-    inset 0 -1px 2px rgba(0, 0, 0, 0.04);
 }
 
 .dark .liquid-glass-filter-btn.active {
-  color: #8dbbff;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.26) 0%, rgba(255, 255, 255, 0.12) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: #60a5fa;
+}
+
+/* Pílula Deslizante com Framer Motion */
+.liquid-glass-pill-highlight {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background: linear-gradient(180deg, #ffffff 0%, rgba(245, 248, 255, 0.92) 100%);
+  border: 1px solid rgba(15, 23, 42, 0.06);
   box-shadow:
-    0 3px 12px rgba(0, 0, 0, 0.40),
-    inset 0 1.5px 1px rgba(255, 255, 255, 0.55),
-    inset 0 -1.5px 2px rgba(255, 255, 255, 0.18);
+    0 4px 12px rgba(15, 23, 42, 0.16),
+    0 1px 3px rgba(15, 23, 42, 0.08),
+    inset 0 1.5px 1.5px #ffffff,
+    inset 0 -1px 2px rgba(0, 0, 0, 0.04);
+  z-index: 1;
+}
+
+.dark .liquid-glass-pill-highlight {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0.12) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow:
+    0 4px 14px rgba(0, 0, 0, 0.45),
+    inset 0 1.5px 1px rgba(255, 255, 255, 0.60),
+    inset 0 -1.5px 2px rgba(255, 255, 255, 0.20);
 }
