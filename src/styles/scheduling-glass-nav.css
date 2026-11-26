@@ -516,21 +516,22 @@
   align-items: stretch;
 
   border-radius: 9999px;
-  padding: 6px 10px;
+  padding: 5px 8px;
 
   background: linear-gradient(160deg,
-    rgba(255, 255, 255, 0.70) 0%,
-    rgba(225, 235, 255, 0.35) 45%,
-    rgba(255, 255, 255, 0.60) 100%) !important;
-  backdrop-filter: blur(16px) saturate(190%) brightness(0.98);
-  -webkit-backdrop-filter: blur(16px) saturate(190%) brightness(0.98);
+    rgba(255, 255, 255, 0.45) 0%,
+    rgba(220, 230, 255, 0.25) 45%,
+    rgba(255, 255, 255, 0.40) 100%) !important;
+  backdrop-filter: blur(16px) saturate(190%) brightness(0.96);
+  -webkit-backdrop-filter: blur(16px) saturate(190%) brightness(0.96);
 
   border: 1px solid rgba(255, 255, 255, 0.85) !important;
   box-shadow:
-    0 10px 30px rgba(15, 23, 42, 0.10),
-    0 2px 6px rgba(15, 23, 42, 0.05),
-    inset 0 1.5px 1.5px rgba(255, 255, 255, 0.95),
-    inset 0 -1px 2px rgba(0, 0, 0, 0.04) !important;
+    0 10px 25px rgba(15, 23, 42, 0.12),
+    0 2px 6px rgba(15, 23, 42, 0.08),
+    0 0 0 1px rgba(15, 23, 42, 0.08),
+    inset 0 1.5px 1px rgba(255, 255, 255, 0.95),
+    inset 0 -1.5px 2px rgba(0, 0, 0, 0.05) !important;
 }
 
 .dark .period-bar {
@@ -578,17 +579,18 @@
   display: flex;
   align-items: center;
 
-  background: rgba(255, 255, 255, 0.50) !important;
-  border: 1px solid rgba(255, 255, 255, 0.75) !important;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.90) 0%, rgba(245, 248, 255, 0.75) 100%) !important;
+  border: 1px solid rgba(15, 23, 42, 0.08) !important;
   border-radius: 9999px !important;
-  padding: 3px 4px;
+  padding: 4px 6px;
   box-shadow:
-    0 2px 8px rgba(15, 23, 42, 0.05),
-    inset 0 1px 1px rgba(255, 255, 255, 0.90) !important;
+    0 2px 6px rgba(15, 23, 42, 0.08),
+    inset 0 1.5px 1px #ffffff,
+    inset 0 -1px 1px rgba(0, 0, 0, 0.03) !important;
 }
 
 .dark .period-bar__surface {
-  background: rgba(15, 23, 42, 0.55) !important;
+  background: linear-gradient(180deg, rgba(30, 41, 59, 0.80) 0%, rgba(15, 23, 42, 0.70) 100%) !important;
   border-color: rgba(255, 255, 255, 0.12) !important;
   box-shadow:
     0 2px 8px rgba(0, 0, 0, 0.35),
@@ -611,31 +613,33 @@
   height: 32px;
   border-radius: 9999px;
 
-  color: #1e293b !important;
-  background: rgba(255, 255, 255, 0.60);
-  border: 1px solid rgba(255, 255, 255, 0.80);
+  color: #0f172a !important;
+  background: #ffffff !important;
+  border: 1px solid rgba(15, 23, 42, 0.10) !important;
   outline: none;
   cursor: pointer;
 
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+  box-shadow: 0 2px 5px rgba(15, 23, 42, 0.10), inset 0 1px 1px #ffffff;
   transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .dark .period-bar__arrow {
   color: #f1f5f9 !important;
-  background: rgba(255, 255, 255, 0.10);
-  border-color: rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.15) !important;
+  border-color: rgba(255, 255, 255, 0.18) !important;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
 }
 
 .period-bar__arrow:hover:not(:disabled) {
-  background: #ffffff;
+  background: #ffffff !important;
   color: #0a5cff !important;
-  transform: scale(1.05);
-  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.12);
+  border-color: #0a5cff !important;
+  transform: scale(1.08);
+  box-shadow: 0 3px 8px rgba(10, 92, 255, 0.20);
 }
 
 .dark .period-bar__arrow:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.20);
+  background: rgba(255, 255, 255, 0.25) !important;
   color: #60a5fa !important;
 }
 
@@ -650,10 +654,10 @@
 
 /* Sem divisórias feias nas setas */
 .period-bar__arrow--left {
-  border-right: 1px solid rgba(255, 255, 255, 0.80);
+  margin-right: 4px;
 }
 .period-bar__arrow--right {
-  border-left: 1px solid rgba(255, 255, 255, 0.80);
+  margin-left: 4px;
 }
 
 /* ── Period Label ─────────────────────────────────────────── */
@@ -666,7 +670,7 @@
   padding: 0.375rem 1rem;
   text-align: center;
 
-  font-size: 0.8125rem !important;
+  font-size: 0.875rem !important;
   font-weight: 800 !important;
   letter-spacing: -0.01em !important;
   color: #0f172a !important;
@@ -691,12 +695,12 @@
   align-items: center;
   flex-shrink: 0;
   padding: 0 0.5rem;
-  gap: 2px;
-  border-right: 1px solid rgba(15, 23, 42, 0.08);
+  gap: 3px;
+  border-right: 1px solid rgba(15, 23, 42, 0.12);
 }
 
 .dark .period-bar__year-control {
-  border-right-color: rgba(255, 255, 255, 0.12);
+  border-right-color: rgba(255, 255, 255, 0.16);
 }
 
 .period-bar__year-value {
@@ -723,24 +727,30 @@
   width: 24px;
   height: 24px;
   border-radius: 9999px;
-  border: none;
+  border: 1px solid transparent;
   outline: none;
   background: transparent;
   cursor: pointer;
 
-  color: #64748b;
+  color: #475569 !important;
   transition: all 0.15s ease;
 }
 
 .period-bar__year-btn:hover {
-  background: rgba(255, 255, 255, 0.70);
-  color: #0a5cff;
+  background: #ffffff;
+  color: #0a5cff !important;
+  border-color: rgba(15, 23, 42, 0.10);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
   transform: scale(1.1);
 }
 
+.dark .period-bar__year-btn {
+  color: #cbd5e1 !important;
+}
+
 .dark .period-bar__year-btn:hover {
-  background: rgba(255, 255, 255, 0.15);
-  color: #60a5fa;
+  background: rgba(255, 255, 255, 0.18);
+  color: #60a5fa !important;
 }
 
 .period-bar__year-btn:active {
@@ -774,10 +784,10 @@
   cursor: pointer;
 
   font-size: 0.75rem;
-  font-weight: 700;
+  font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.03em;
-  color: #475569;
+  color: #334155 !important;
 
   transition: color 0.2s ease, transform 0.15s ease;
   user-select: none;
@@ -785,15 +795,15 @@
 }
 
 .dark .period-bar__month-pill {
-  color: #94a3b8;
+  color: #cbd5e1 !important;
 }
 
 .period-bar__month-pill:hover {
-  color: #0a5cff;
+  color: #0a5cff !important;
 }
 
 .dark .period-bar__month-pill:hover {
-  color: #ffffff;
+  color: #ffffff !important;
 }
 
 .period-bar__month-pill:active {
@@ -815,11 +825,11 @@
   inset: 0;
   border-radius: 9999px;
   background: linear-gradient(180deg, #ffffff 0%, rgba(245, 248, 255, 0.94) 100%);
-  border: 1px solid rgba(15, 23, 42, 0.06);
+  border: 1px solid rgba(15, 23, 42, 0.08);
   box-shadow:
-    0 3px 10px rgba(15, 23, 42, 0.14),
-    0 1px 2px rgba(15, 23, 42, 0.06),
-    inset 0 1.5px 1px #ffffff,
+    0 3px 10px rgba(15, 23, 42, 0.16),
+    0 1px 3px rgba(15, 23, 42, 0.08),
+    inset 0 1.5px 1.5px #ffffff,
     inset 0 -1px 2px rgba(0, 0, 0, 0.04);
   z-index: 1;
 }
@@ -830,7 +840,7 @@
   box-shadow:
     0 3px 12px rgba(0, 0, 0, 0.40),
     inset 0 1.5px 1px rgba(255, 255, 255, 0.60),
-    inset 0 -1.5px 2px rgba(255, 255, 255, 0.18);
+    inset 0 -1.5px 2px rgba(255, 255, 255, 0.20);
 }
 
 /* "Today" dot */
@@ -862,31 +872,32 @@
   height: 26px;
   margin-left: 0.25rem;
   border-radius: 9999px;
-  border: 1px solid rgba(255, 255, 255, 0.70);
+  border: 1px solid rgba(15, 23, 42, 0.10);
   outline: none;
-  background: rgba(255, 255, 255, 0.40);
+  background: #ffffff;
   cursor: pointer;
 
-  color: #64748b;
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+  color: #475569 !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
   transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .period-bar__expand-btn:hover {
   background: #ffffff;
-  color: #0a5cff;
+  color: #0a5cff !important;
+  border-color: #0a5cff;
   transform: scale(1.1);
 }
 
 .dark .period-bar__expand-btn {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.14);
-  color: #94a3b8;
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.18);
+  color: #cbd5e1 !important;
 }
 
 .dark .period-bar__expand-btn:hover {
-  background: rgba(255, 255, 255, 0.20);
-  color: #60a5fa;
+  background: rgba(255, 255, 255, 0.22);
+  color: #60a5fa !important;
 }
 
 /* ══════════════════════════════════════════════════════════
