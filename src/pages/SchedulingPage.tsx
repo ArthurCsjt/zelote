@@ -283,6 +283,8 @@ const SchedulingPage = () => {
       showFloatingShapes
     >
       <div className="space-y-4 sm:space-y-6 max-w-7xl mx-auto relative z-10 pb-28 sm:pb-32">
+      {/* ── Background glass refraction blobs (subtis, atrás dos controles) ── */}
+      <div className="scheduling-glass-backdrop" aria-hidden="true" />
       {/* ── Glass Nav Row ── Week Selector + Year/Month Selector (Visível apenas em Semanal e Histórico) ── */}
       <AnimatePresence initial={false}>
         {viewMode !== 'my_reservations' && (
