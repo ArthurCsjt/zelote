@@ -239,32 +239,6 @@
    ══════════════════════════════════════════════════════════ */
 
 /* ============================================================
-   BACKGROUND GLASS REFRACTION BLOBS
-   Gradientes subtis atrás dos controles para o blur ter algo
-   para refratar em modo claro e escuro.
-   ============================================================ */
-.scheduling-glass-backdrop {
-  position: absolute;
-  top: -24px;
-  left: -24px;
-  right: -24px;
-  height: 220px;
-  pointer-events: none;
-  z-index: 0;
-  background:
-    radial-gradient(ellipse 55% 60% at 15% 40%, rgba(99, 102, 241, 0.09) 0%, transparent 68%),
-    radial-gradient(ellipse 45% 50% at 85% 25%, rgba(59, 130, 246, 0.08) 0%, transparent 68%),
-    radial-gradient(ellipse 35% 40% at 55% 70%, rgba(139, 92, 246, 0.05) 0%, transparent 70%);
-}
-
-.dark .scheduling-glass-backdrop {
-  background:
-    radial-gradient(ellipse 55% 60% at 15% 40%, rgba(99, 102, 241, 0.22) 0%, transparent 68%),
-    radial-gradient(ellipse 45% 50% at 85% 25%, rgba(59, 130, 246, 0.18) 0%, transparent 68%),
-    radial-gradient(ellipse 35% 40% at 55% 70%, rgba(139, 92, 246, 0.12) 0%, transparent 70%);
-}
-
-/* ============================================================
    PERIOD NAVIGATION BAR — LIQUID GLASS iOS
    Tokens sincronizados com liquid-glass-nav.css (barra inferior)
    ============================================================ */
