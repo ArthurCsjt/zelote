@@ -485,15 +485,15 @@ export function LiquidGlassSegmented({
       ? isDark
         ? {
             background:
-              "linear-gradient(180deg, rgba(48, 50, 58, 0.90) 0%, rgba(36, 38, 46, 0.88) 55%, rgba(42, 44, 52, 0.92) 100%)",
-            backdropFilter: "blur(28px) saturate(160%) brightness(1.06)",
-            WebkitBackdropFilter: "blur(28px) saturate(160%) brightness(1.06)",
+              "linear-gradient(180deg, rgba(18, 18, 22, 0.90) 0%, rgba(10, 10, 13, 0.88) 55%, rgba(16, 16, 20, 0.92) 100%)",
+            backdropFilter: "blur(28px) saturate(150%) brightness(0.96)",
+            WebkitBackdropFilter: "blur(28px) saturate(150%) brightness(0.96)",
             boxShadow: [
-              "0 14px 36px -10px rgba(0, 0, 0, 0.65)",
-              "0 2px 8px rgba(0, 0, 0, 0.35)",
-              "inset 0 1.5px 1.5px rgba(255, 255, 255, 0.16)",
-              "inset 0 -1.5px 2px rgba(255, 255, 255, 0.05)",
-              "0 0 0 1px rgba(255, 255, 255, 0.10)",
+              "0 14px 36px -10px rgba(0, 0, 0, 0.72)",
+              "0 2px 8px rgba(0, 0, 0, 0.40)",
+              "inset 0 1.5px 1.5px rgba(255, 255, 255, 0.14)",
+              "inset 0 -1.5px 2px rgba(255, 255, 255, 0.04)",
+              "0 0 0 1px rgba(255, 255, 255, 0.09)",
             ].join(", "),
           }
         : {
