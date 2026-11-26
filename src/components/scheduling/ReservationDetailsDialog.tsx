@@ -27,7 +27,6 @@ import {
   Layers,
   Gamepad2,
   Pencil,
-  Copy,
   Unlock,
   HelpCircle,
 } from 'lucide-react';
@@ -84,7 +83,6 @@ const DetailsContent: React.FC<DetailsContentProps> = ({
   const isMobile = useIsMobile();
   const isManutencao = role === 'manutencao';
   const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [duplicateDialogOpen, setDuplicateDialogOpen] = useState(false);
   const [isReleasing, setIsReleasing] = useState(false);
   const [showReleaseExplainer, setShowReleaseExplainer] = useState(false);
   const isMaintRes =
@@ -123,7 +121,6 @@ const DetailsContent: React.FC<DetailsContentProps> = ({
   const showCancel = (isAdmin || isOwner) && !isPast;
   const showEdit = (isAdmin || isOwner) && !isPast && loansCount === 0 && !isReleased;
   const showRelease = isAdmin && isMissed && !isReleased && isRecentMiss;
-  const showDuplicate = !isMaintRes;
   const showLoan =
     !(isManutencao || isMaintRes) &&
     isResponsible &&
@@ -136,7 +133,7 @@ const DetailsContent: React.FC<DetailsContentProps> = ({
   const { data: totalAvailable = 111 } = useQuery({
     queryKey: ['total-available-chromebooks'],
     queryFn: getTotalAvailableChromebooks,
-    enabled: editDialogOpen || duplicateDialogOpen,
+    enabled: editDialogOpen,
     staleTime: 60000,
   });
 
@@ -144,7 +141,7 @@ const DetailsContent: React.FC<DetailsContentProps> = ({
   const { data: slotReservations = [] } = useQuery({
     queryKey: ['reservations', 'slot-single', dateStr, reservation.time_slot],
     queryFn: () => getReservationsForSlots([dateStr], [reservation.time_slot]),
-    enabled: editDialogOpen || duplicateDialogOpen,
+    enabled: editDialogOpen,
     staleTime: 15000,
   });
 
@@ -496,29 +493,15 @@ const DetailsContent: React.FC<DetailsContentProps> = ({
           </div>
         )}
 
-        {(showEdit || showDuplicate) && (
-          <div className="flex items-center gap-2 w-full">
-            {showEdit && (
-              <button
-                type="button"
-                className="zl-btn-secondary flex-1"
-                onClick={() => setEditDialogOpen(true)}
-              >
-                <Pencil size={15} />
-                <span>Editar</span>
-              </button>
-            )}
-            {showDuplicate && (
-              <button
-                type="button"
-                className="zl-btn-secondary flex-1"
-                onClick={() => setDuplicateDialogOpen(true)}
-              >
-                <Copy size={15} />
-                <span>Agendar novamente</span>
-              </button>
-            )}
-          </div>
+        {showEdit && (
+          <button
+            type="button"
+            className="zl-btn-secondary w-full"
+            onClick={() => setEditDialogOpen(true)}
+          >
+            <Pencil size={15} />
+            <span>Editar</span>
+          </button>
         )}
 
         {showCancel && (
@@ -578,7 +561,7 @@ const DetailsContent: React.FC<DetailsContentProps> = ({
         )}
       </div>
 
-      {/* Modais auxiliares de Edição (Dica 1) e Duplicação (Dica 3) */}
+      {/* Modal auxiliar de Edição */}
       <ReservationDialog
         date={date}
         timeSlot={reservation.time_slot}
@@ -591,24 +574,6 @@ const DetailsContent: React.FC<DetailsContentProps> = ({
         onReservationSuccess={() => {
           invalidateAllReservations();
           setEditDialogOpen(false);
-          onClose();
-        }}
-      >
-        <span className="hidden" />
-      </ReservationDialog>
-
-      <ReservationDialog
-        date={isPast ? new Date() : date}
-        timeSlot={reservation.time_slot}
-        totalAvailableChromebooks={totalAvailable}
-        currentReservations={slotReservations}
-        maxQuantity={maxQtyForSlot}
-        duplicateFrom={reservation}
-        externalOpen={duplicateDialogOpen}
-        onExternalOpenChange={setDuplicateDialogOpen}
-        onReservationSuccess={() => {
-          invalidateAllReservations();
-          setDuplicateDialogOpen(false);
           onClose();
         }}
       >
