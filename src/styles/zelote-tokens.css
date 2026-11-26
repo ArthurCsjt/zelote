@@ -29,15 +29,15 @@
 
 .dark,
 [data-theme="dark"] {
-  --zl-card: #121b38;
-  --zl-soft: #1b2750;
-  --zl-text: #eef2ff;
-  --zl-muted: #a9b6dc;
-  --zl-border: #2c3b6b;
-  --zl-border-hover: #4a5f96;
+  --zl-card: #111113;
+  --zl-soft: #1c1c1f;
+  --zl-text: #f0f0f2;
+  --zl-muted: #9b9baa;
+  --zl-border: #2a2a2f;
+  --zl-border-hover: #3f3f46;
   --zl-blue: #6c97ff;
   --zl-selected: #a9c1ff;
-  --zl-inverted: #0b1330;
+  --zl-inverted: #0b0b0d;
   --zl-ok: #4be08d;
   --zl-error: #ff8f7a;
   --zl-warning: #f6b85f;
