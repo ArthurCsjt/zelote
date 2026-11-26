@@ -1,103 +1,11 @@
+@import './glass-tokens.css';
+
 /* ==========================================================================
    Liquid Glass Navigation (iOS 26 Style) - BEM Prefix: .lg-nav
+   Reutiliza os tokens compartilhados de glass-tokens.css (.glass / .glass-active)
    ========================================================================== */
 
-/* ── 1. VARIÁVEIS: MODO CLARO (PADRÃO) ── */
-:root {
-  /* Vidro tingido com leve tom azulado no centro para destacar contra a tabela branca */
-  --lg-nav-glass-bg: linear-gradient(160deg,
-    rgba(255, 255, 255, 0.40) 0%,
-    rgba(30, 60, 140, 0.08) 50%,
-    rgba(255, 255, 255, 0.35) 100%);
-  --lg-nav-glass-fallback: rgba(245, 248, 255, 0.94);
-  /* Escurece levemente o que passa por trás (brightness .96) */
-  --lg-nav-glass-filter: blur(14px) saturate(180%) brightness(0.96);
-
-  /* Silhueta escura fina por fora (0 0 0 1px) + reflexo branco por dentro + sombra dupla */
-  --lg-nav-glass-shadow:
-    0 12px 32px rgba(15, 23, 42, 0.20),
-    0 2px 6px rgba(15, 23, 42, 0.12),
-    0 0 0 1px rgba(15, 23, 42, 0.12),
-    inset 0 1.5px 1px rgba(255, 255, 255, 0.90),
-    inset 0 -1px 2px rgba(0, 0, 0, 0.05);
-
-  /* Pílula ativa: quase sólida e mais clara que a barra ao redor */
-  --lg-nav-pill-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(255, 255, 255, 0.78) 100%);
-  --lg-nav-pill-shadow:
-    0 3px 10px rgba(15, 23, 42, 0.18),
-    inset 0 1.5px 1px rgba(255, 255, 255, 1),
-    inset 0 -1px 2px rgba(0, 0, 0, 0.04);
-  --lg-nav-pill-border: rgba(15, 23, 42, 0.06);
-
-  /* Texto e ícones: azul-marinho 72% para inativas e azul vivo na ativa (> 4.5:1) */
-  --lg-nav-ink-soft: rgba(15, 30, 70, 0.72);
-  --lg-nav-ink-hover: #0f1e46;
-  --lg-nav-active: #0a5cff;
-  --lg-nav-badge-ring: #ffffff;
-}
-
-/* ── 2. VARIÁVEIS: MODO ESCURO (.dark ou [data-theme="dark"]) ── */
-.dark,
-[data-theme="dark"] {
-  --lg-nav-glass-bg: linear-gradient(160deg,
-    rgba(30, 41, 59, 0.78) 0%,
-    rgba(18, 28, 54, 0.40) 45%,
-    rgba(15, 23, 42, 0.70) 100%);
-  --lg-nav-glass-fallback: rgba(18, 28, 54, 0.92);
-  --lg-nav-glass-filter: blur(12px) saturate(200%) brightness(1.05);
-
-  --lg-nav-glass-shadow:
-    0 14px 34px rgba(0, 0, 0, 0.50),
-    0 2px 6px rgba(0, 0, 0, 0.20),
-    0 0 0 1px rgba(255, 255, 255, 0.15),
-    inset 0 2px 2px rgba(255, 255, 255, 0.45),
-    inset 0 -2px 3px rgba(255, 255, 255, 0.15);
-
-  --lg-nav-pill-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0.12) 100%);
-  --lg-nav-pill-shadow:
-    0 3px 12px rgba(0, 0, 0, 0.35),
-    inset 0 1.5px 1px rgba(255, 255, 255, 0.60),
-    inset 0 -1.5px 2px rgba(255, 255, 255, 0.20);
-  --lg-nav-pill-border: rgba(255, 255, 255, 0.18);
-
-  --lg-nav-ink-soft: rgba(240, 245, 255, 0.66);
-  --lg-nav-ink-hover: #ffffff;
-  --lg-nav-active: #8dbbff;
-  --lg-nav-badge-ring: #162035;
-}
-
-/* Respeitar preferência do sistema operacional no primeiro paint */
-@media (prefers-color-scheme: dark) {
-  :root:not(.light):not(.dark):not([data-theme]) {
-    --lg-nav-glass-bg: linear-gradient(160deg,
-      rgba(30, 41, 59, 0.78) 0%,
-      rgba(18, 28, 54, 0.40) 45%,
-      rgba(15, 23, 42, 0.70) 100%);
-    --lg-nav-glass-fallback: rgba(18, 28, 54, 0.92);
-    --lg-nav-glass-filter: blur(12px) saturate(200%) brightness(1.05);
-
-    --lg-nav-glass-shadow:
-      0 14px 34px rgba(0, 0, 0, 0.50),
-      0 2px 6px rgba(0, 0, 0, 0.20),
-      0 0 0 1px rgba(255, 255, 255, 0.15),
-      inset 0 2px 2px rgba(255, 255, 255, 0.45),
-      inset 0 -2px 3px rgba(255, 255, 255, 0.15);
-
-    --lg-nav-pill-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0.12) 100%);
-    --lg-nav-pill-shadow:
-      0 3px 12px rgba(0, 0, 0, 0.35),
-      inset 0 1.5px 1px rgba(255, 255, 255, 0.60),
-      inset 0 -1.5px 2px rgba(255, 255, 255, 0.20);
-    --lg-nav-pill-border: rgba(255, 255, 255, 0.18);
-
-    --lg-nav-ink-soft: rgba(240, 245, 255, 0.66);
-    --lg-nav-ink-hover: #ffffff;
-    --lg-nav-active: #8dbbff;
-    --lg-nav-badge-ring: #162035;
-  }
-}
-
-/* ── 3. A BARRA DE VIDRO (.lg-nav) ── */
+/* ── 1. A BARRA DE VIDRO (.lg-nav) ── */
 .lg-nav {
   position: fixed;
   left: 0;
@@ -118,27 +26,133 @@
   -webkit-user-select: none;
   pointer-events: auto;
 
-  background: var(--lg-nav-glass-bg);
-  backdrop-filter: var(--lg-nav-glass-filter);
-  -webkit-backdrop-filter: var(--lg-nav-glass-filter);
-  box-shadow: var(--lg-nav-glass-shadow);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-filter);
+  -webkit-backdrop-filter: var(--glass-filter);
+  backdrop-filter: var(--glass-filter-lensing);
+  box-shadow: var(--glass-shadow);
 
   transition: height 0.4s cubic-bezier(0.3, 1.2, 0.5, 1), opacity 0.25s ease, transform 0.25s ease;
 }
 
-/* Esconder barra enquanto houver modal ou diálogo aberto */
-body:has([role="dialog"]) .lg-nav,
-body[data-scroll-locked] .lg-nav,
-body:has(.ag-overlay) .lg-nav {
+/* Esconder portal da barra enquanto houver modal ou diálogo aberto */
+.lg-nav-portal {
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+body:has([role="dialog"]) .lg-nav-portal,
+body[data-scroll-locked] .lg-nav-portal,
+body:has(.ag-overlay) .lg-nav-portal {
   opacity: 0;
   pointer-events: none;
   transform: translateY(24px);
 }
 
+/* Estilos da LiquidGlassTabBar (21st.dev) com suporte Light & Dark */
+.lg-tab-bar-base {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.66) 0%,
+    rgba(255, 255, 255, 0.50) 55%,
+    rgba(255, 255, 255, 0.58) 100%
+  );
+  backdrop-filter: blur(24px) saturate(1.85);
+  -webkit-backdrop-filter: blur(24px) saturate(1.85);
+  box-shadow:
+    0 14px 36px -10px rgba(0, 0, 0, 0.28),
+    0 2px 8px rgba(0, 0, 0, 0.10),
+    inset 0 1.5px 1.5px rgba(255, 255, 255, 0.94),
+    inset 0 -1.5px 2px rgba(255, 255, 255, 0.65),
+    0 0 0 1px rgba(0, 0, 0, 0.06);
+}
+
+.dark .lg-tab-bar-base,
+[data-theme="dark"] .lg-tab-bar-base {
+  background: linear-gradient(
+    180deg,
+    rgba(30, 41, 59, 0.72) 0%,
+    rgba(15, 23, 42, 0.58) 55%,
+    rgba(15, 23, 42, 0.68) 100%
+  );
+  box-shadow:
+    0 16px 40px -8px rgba(0, 0, 0, 0.58),
+    0 2px 8px rgba(0, 0, 0, 0.28),
+    inset 0 1.5px 1.5px rgba(255, 255, 255, 0.24),
+    inset 0 -1.5px 2px rgba(255, 255, 255, 0.10),
+    0 0 0 1px rgba(255, 255, 255, 0.14);
+}
+
+.lg-tab-bar-specular {
+  padding: 1.5px;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.95) 0%,
+    rgba(255, 255, 255, 0.28) 50%,
+    rgba(255, 255, 255, 0.85) 100%
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+
+.dark .lg-tab-bar-specular,
+[data-theme="dark"] .lg-tab-bar-specular {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.36) 0%,
+    rgba(255, 255, 255, 0.08) 50%,
+    rgba(255, 255, 255, 0.22) 100%
+  );
+}
+
+.lg-tab-bar-rest-fill {
+  background-color: rgba(0, 0, 0, 0.068);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.55);
+}
+
+.dark .lg-tab-bar-rest-fill,
+[data-theme="dark"] .lg-tab-bar-rest-fill {
+  background-color: rgba(255, 255, 255, 0.14);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.25);
+}
+
+.lg-tab-bar-shell {
+  backdrop-filter: saturate(1.75) contrast(1.05) brightness(1.04);
+  -webkit-backdrop-filter: saturate(1.75) contrast(1.05) brightness(1.04);
+  background: radial-gradient(
+    ellipse at 50% 50%,
+    rgba(255, 255, 255, 0.02) 45%,
+    rgba(255, 255, 255, 0.12) 86%,
+    rgba(255, 255, 255, 0.24) 100%
+  );
+  box-shadow:
+    0 8px 22px rgba(0, 0, 0, 0.16),
+    0 0 0 0.75px rgba(0, 0, 0, 0.08),
+    inset 0 1.5px 2px rgba(255, 255, 255, 0.96),
+    inset 0 -1.5px 2px rgba(255, 255, 255, 0.82),
+    inset 0 0 10px rgba(255, 255, 255, 0.14);
+}
+
+.dark .lg-tab-bar-shell,
+[data-theme="dark"] .lg-tab-bar-shell {
+  background: radial-gradient(
+    ellipse at 50% 50%,
+    rgba(255, 255, 255, 0.04) 45%,
+    rgba(255, 255, 255, 0.12) 86%,
+    rgba(255, 255, 255, 0.22) 100%
+  );
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.45),
+    0 0 0 0.75px rgba(255, 255, 255, 0.16),
+    inset 0 1.5px 2px rgba(255, 255, 255, 0.55),
+    inset 0 -1.5px 2px rgba(255, 255, 255, 0.30),
+    inset 0 0 10px rgba(255, 255, 255, 0.10);
+}
+
 /* Fallback se backdrop-filter não for suportado */
-@supports not (backdrop-filter: blur(14px)) {
+@supports not (backdrop-filter: blur(16px)) {
   .lg-nav {
-    background: var(--lg-nav-glass-fallback);
+    background: var(--glass-fallback-bg);
   }
 }
 
@@ -150,14 +164,11 @@ body:has(.ag-overlay) .lg-nav {
   border-radius: inherit;
   pointer-events: none;
   padding: 1px;
-  background: linear-gradient(135deg,
-    rgba(255, 255, 255, 0.95) 0%,
-    rgba(255, 255, 255, 0) 30%,
-    rgba(255, 255, 255, 0) 70%,
-    rgba(255, 255, 255, 0.70) 100%);
+  background: var(--glass-specular-gradient);
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
+  z-index: 3;
 }
 
 /* Modo encolhido ao rolar a página */
@@ -165,7 +176,7 @@ body:has(.ag-overlay) .lg-nav {
   height: 56px;
 }
 
-/* ── 4. A PÍLULA DESLIZANTE (.lg-nav__pill) ── */
+/* ── 2. A PÍLULA DESLIZANTE (.lg-nav__pill) ── */
 .lg-nav__pill {
   position: absolute;
   top: 5px;
@@ -176,12 +187,12 @@ body:has(.ag-overlay) .lg-nav {
   pointer-events: none;
   z-index: 1;
 
-  background: var(--lg-nav-pill-bg);
-  border: 1px solid var(--lg-nav-pill-border);
-  box-shadow: var(--lg-nav-pill-shadow);
+  background: var(--glass-active-bg);
+  border: 1px solid var(--glass-active-border);
+  box-shadow: var(--glass-active-shadow);
 
   transition:
-    transform 0.5s cubic-bezier(0.3, 1.35, 0.5, 1),
+    transform var(--glass-spring),
     scale 0.3s cubic-bezier(0.3, 1.5, 0.5, 1),
     background 0.3s;
 }
@@ -207,7 +218,7 @@ body:has(.ag-overlay) .lg-nav {
   align-items: center;
   justify-content: center;
   gap: 3px;
-  color: var(--lg-nav-ink-soft);
+  color: var(--glass-ink-soft);
   font-family: inherit;
   font-weight: 600;
   font-size: 11px;
@@ -224,7 +235,7 @@ body:has(.ag-overlay) .lg-nav {
 }
 
 .lg-nav__item:focus-visible {
-  box-shadow: 0 0 0 2px var(--lg-nav-active) inset;
+  box-shadow: 0 0 0 2px var(--glass-accent) inset;
   border-radius: 999px;
 }
 
@@ -241,7 +252,7 @@ body:has(.ag-overlay) .lg-nav {
 
 /* ── 6. ABA ATIVA (.lg-nav__item--on) ── */
 .lg-nav__item--on {
-  color: var(--lg-nav-active);
+  color: var(--glass-accent);
   font-weight: 700;
 }
 
@@ -289,7 +300,7 @@ body:has(.ag-overlay) .lg-nav {
   font-weight: 700;
   line-height: 18px;
   text-align: center;
-  box-shadow: 0 0 0 2px var(--lg-nav-badge-ring), 0 2px 6px rgba(255, 59, 48, 0.45);
+  box-shadow: 0 0 0 2px var(--glass-badge-ring), 0 2px 6px rgba(255, 59, 48, 0.45);
   transition: top 0.3s;
   pointer-events: none;
 }

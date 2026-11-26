@@ -16,6 +16,7 @@ import { SchedulingCalendar } from '@/components/scheduling/SchedulingCalendar';
 import { SchedulingMonthView } from '@/components/scheduling/SchedulingMonthView';
 import { MyReservationsView } from '@/components/scheduling/MyReservationsView';
 import { LiquidGlassNav } from '@/components/scheduling/LiquidGlassNav';
+import { LiquidGlassSegmented } from '@/components/ui/liquid-glass-segmented';
 import { getUserReservations } from '@/services/reservationService';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
@@ -283,6 +284,20 @@ const SchedulingPage = () => {
       showFloatingShapes
     >
       <div className="space-y-4 sm:space-y-6 max-w-7xl mx-auto relative z-10 pb-28 sm:pb-32">
+      {/* ── Filtro SVG de Refração (Lensing) para Liquid Glass ── */}
+      <svg aria-hidden="true" width="0" height="0" style={{ position: 'absolute', width: 0, height: 0, overflow: 'hidden', pointerEvents: 'none' }}>
+        <defs>
+          <filter id="liquid-glass" x="-10%" y="-10%" width="120%" height="120%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.015 0.015" numOctaves="2" seed="2" result="noise" />
+            <feGaussianBlur in="noise" stdDeviation="1.5" result="smoothNoise" />
+            <feDisplacementMap in="SourceGraphic" in2="smoothNoise" scale="8" xChannelSelector="R" yChannelSelector="G" />
+          </filter>
+        </defs>
+      </svg>
+
+      {/* ── Gradientes radiais suaves atrás do cabeçalho para o vidro refratar cor ── */}
+      <div className="scheduling-glass-backdrop" aria-hidden="true" />
+
       {/* ── Glass Nav Row ── Week Selector + Year/Month Selector (Visível apenas em Semanal e Histórico) ── */}
       <AnimatePresence initial={false}>
         {viewMode !== 'my_reservations' && (
@@ -291,10 +306,10 @@ const SchedulingPage = () => {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0, marginTop: 0, marginBottom: 0 }}
-            transition={{ duration: 0.2, ease: 'easeOut' }}
-            style={{ overflow: 'hidden' }}
+            transition={{ duration: shouldReduceMotion ? 0 : 0.2, ease: 'easeOut' }}
+            className="period-bar-motion"
           >
-          <div className="period-bar">
+          <div className="period-bar glass">
           {/* ── Week / Period Navigator ── */}
           <div className="period-bar__surface period-bar__period">
             <button
@@ -352,10 +367,21 @@ const SchedulingPage = () => {
               </button>
             </div>
 
-            {/* Month pills */}
+            {/* Month pills (Liquid Glass 21st.dev droplet) */}
             <div className="period-bar__months">
-              <AnimatePresence mode="popLayout">
-                {Array.from({ length: 12 }, (_, i) => {
+              <LiquidGlassSegmented
+                variant="embedded"
+                height={34}
+                ariaLabel="Selecionar mês"
+                value={String(currentDate.getMonth())}
+                onChange={(id) => {
+                  const i = Number(id);
+                  let targetDate = new Date(currentDate.getFullYear(), i, 1);
+                  if (isSaturday(targetDate)) targetDate = addDays(targetDate, 2);
+                  else if (isSunday(targetDate)) targetDate = addDays(targetDate, 1);
+                  setCurrentDate(targetDate);
+                }}
+                options={Array.from({ length: 12 }, (_, i) => {
                   const date = new Date(currentDate.getFullYear(), i, 1);
                   const isCurrentMonth = i === currentDate.getMonth();
                   const isTodayMonth = i === new Date().getMonth() && currentDate.getFullYear() === new Date().getFullYear();
@@ -364,42 +390,15 @@ const SchedulingPage = () => {
                   const shouldShow = isMonthsExpanded || isVisibleByDefault || isCurrentMonth;
                   if (!shouldShow) return null;
 
-                  return (
-                    <button
-                      key={i}
-                      type="button"
-                      onClick={() => {
-                        let targetDate = new Date(currentDate.getFullYear(), i, 1);
-                        if (isSaturday(targetDate)) targetDate = addDays(targetDate, 2);
-                        else if (isSunday(targetDate)) targetDate = addDays(targetDate, 1);
-                        setCurrentDate(targetDate);
-                      }}
-                      className={cn(
-                        'period-bar__month-pill',
-                        isCurrentMonth && 'period-bar__month-pill--active'
-                      )}
-                    >
-                      {isCurrentMonth && (
-                        <motion.div
-                          layoutId="liquid-glass-month-pill"
-                          className="period-bar__month-highlight"
-                          transition={{
-                            type: 'spring',
-                            stiffness: 400,
-                            damping: 30,
-                          }}
-                        />
-                      )}
-                      <span className="relative z-10">
-                        {format(date, 'MMM', { locale: ptBR }).replace('.', '')}
-                      </span>
-                      {isTodayMonth && !isCurrentMonth && (
-                        <span className="period-bar__today-dot" aria-hidden />
-                      )}
-                    </button>
-                  );
-                })}
-              </AnimatePresence>
+                  const rawLabel = format(date, 'MMM', { locale: ptBR }).replace('.', '');
+                  const label = rawLabel.charAt(0).toUpperCase() + rawLabel.slice(1);
+                  return {
+                    id: String(i),
+                    label,
+                    dot: isTodayMonth && !isCurrentMonth,
+                  };
+                }).filter((item): item is { id: string; label: string; dot: boolean } => item !== null)}
+              />
 
               <button
                 onClick={() => setIsMonthsExpanded(!isMonthsExpanded)}
@@ -418,42 +417,21 @@ const SchedulingPage = () => {
       )}
       </AnimatePresence>
 
-      {/* Barra rápida de Filtro Semanal (Estilo Liquid Glass com pílula deslizante) */}
+      {/* Barra rápida de Filtro Semanal (Liquid Glass 21st.dev com gota óptica arrastável) */}
       {viewMode === 'weekly' && (
-        <div className="flex items-center px-1" role="group" aria-label="Filtrar grade semanal">
-          <div className="liquid-glass-filter-bar">
-            {[
+        <div className="flex items-center px-1 relative z-10" role="group" aria-label="Filtrar grade semanal">
+          <LiquidGlassSegmented
+            variant="surface"
+            height={42}
+            ariaLabel="Filtrar grade semanal"
+            value={calendarFilter}
+            onChange={(id) => setCalendarFilter(id as 'all' | 'sala_google' | 'mine')}
+            options={[
               { id: 'all', label: 'Todos' },
               { id: 'sala_google', label: 'Sala Google' },
               { id: 'mine', label: 'Minha Grade' },
-            ].map((item) => {
-              const isActive = calendarFilter === item.id;
-              return (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={() => setCalendarFilter(item.id as 'all' | 'sala_google' | 'mine')}
-                  className={cn(
-                    'liquid-glass-filter-btn',
-                    isActive && 'active'
-                  )}
-                >
-                  {isActive && (
-                    <motion.div
-                      layoutId="liquid-glass-filter-pill"
-                      className="liquid-glass-pill-highlight"
-                      transition={{
-                        type: 'spring',
-                        stiffness: 400,
-                        damping: 30,
-                      }}
-                    />
-                  )}
-                  <span className="relative z-10">{item.label}</span>
-                </button>
-              );
-            })}
-          </div>
+            ]}
+          />
         </div>
       )}
 

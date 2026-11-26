@@ -1,0 +1,231 @@
+/* ==========================================================================
+   LIQUID GLASS DESIGN SYSTEM — Shared Tokens & Utility Classes
+   Estilo iOS 26 / visionOS (4 camadas: base, realce especular, brilho interno, sombra)
+   ========================================================================== */
+
+:root {
+  /* ── 1. Base (Claro: translúcido sem cinza chapado) ── */
+  --glass-bg: linear-gradient(
+    160deg,
+    rgba(255, 255, 255, 0.38) 0%,
+    rgba(30, 60, 140, 0.08) 50%,
+    rgba(255, 255, 255, 0.32) 100%
+  );
+  --glass-fallback-bg: rgba(245, 248, 255, 0.94);
+  --glass-filter: blur(16px) saturate(180%) brightness(1.05);
+  --glass-filter-lensing: url(#liquid-glass) blur(16px) saturate(180%) brightness(1.05);
+
+  /* ── 2. Realce Especular + 3. Brilho Interno + 4. Sombra Externa ── */
+  --glass-specular-gradient: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.92) 0%,
+    rgba(255, 255, 255, 0.25) 30%,
+    rgba(255, 255, 255, 0.05) 70%,
+    rgba(255, 255, 255, 0.60) 100%
+  );
+  --glass-shadow:
+    0 10px 30px rgba(20, 50, 120, 0.15),
+    0 2px 6px rgba(0, 0, 0, 0.08),
+    inset 1px 1px 0 rgba(255, 255, 255, 0.80),
+    inset -1px -1px 0 rgba(255, 255, 255, 0.20),
+    inset 0 0 12px rgba(255, 255, 255, 0.25);
+
+  /* ── Pílula Ativa (.glass-active) ── */
+  --glass-active-bg: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.96) 0%,
+    rgba(255, 255, 255, 0.78) 100%
+  );
+  --glass-active-border: rgba(255, 255, 255, 0.85);
+  --glass-active-shadow:
+    0 4px 12px rgba(20, 50, 120, 0.16),
+    0 1px 3px rgba(0, 0, 0, 0.06),
+    inset 0 1.5px 1px rgba(255, 255, 255, 1),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.04);
+
+  /* ── Superfície Interna Sutil (sem backdrop-filter aninhado) ── */
+  --glass-inner-bg: rgba(255, 255, 255, 0.24);
+  --glass-inner-border: rgba(255, 255, 255, 0.55);
+
+  /* ── Tipografia & Contraste AA ── */
+  --glass-ink: #0f172a;
+  --glass-ink-soft: rgba(15, 30, 70, 0.65);
+  --glass-ink-hover: #0f1e46;
+  --glass-accent: #0a5cff;
+  --glass-badge-ring: #ffffff;
+  --glass-divider: rgba(15, 30, 70, 0.12);
+
+  /* ── Spring Transition ── */
+  --glass-spring: 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ── Modo Escuro (.dark, [data-theme="dark"], .glass-dark) ── */
+.dark,
+[data-theme="dark"],
+.glass-dark {
+  --glass-bg: linear-gradient(
+    160deg,
+    rgba(255, 255, 255, 0.10) 0%,
+    rgba(30, 50, 110, 0.14) 50%,
+    rgba(255, 255, 255, 0.06) 100%
+  );
+  --glass-fallback-bg: rgba(18, 28, 54, 0.94);
+  --glass-filter: blur(16px) saturate(180%) brightness(1.05);
+  --glass-filter-lensing: url(#liquid-glass) blur(16px) saturate(180%) brightness(1.05);
+
+  --glass-specular-gradient: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.32) 0%,
+    rgba(255, 255, 255, 0.06) 35%,
+    rgba(255, 255, 255, 0.02) 70%,
+    rgba(255, 255, 255, 0.18) 100%
+  );
+  --glass-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.50),
+    0 2px 6px rgba(0, 0, 0, 0.28),
+    inset 1px 1px 0 rgba(255, 255, 255, 0.20),
+    inset -1px -1px 0 rgba(255, 255, 255, 0.06),
+    inset 0 0 12px rgba(255, 255, 255, 0.07);
+
+  --glass-active-bg: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.24) 0%,
+    rgba(255, 255, 255, 0.10) 100%
+  );
+  --glass-active-border: rgba(255, 255, 255, 0.22);
+  --glass-active-shadow:
+    0 4px 14px rgba(0, 0, 0, 0.40),
+    inset 0 1.5px 1px rgba(255, 255, 255, 0.50),
+    inset 0 -1px 2px rgba(255, 255, 255, 0.12);
+
+  --glass-inner-bg: rgba(255, 255, 255, 0.05);
+  --glass-inner-border: rgba(255, 255, 255, 0.12);
+
+  --glass-ink: #f8fafc;
+  --glass-ink-soft: rgba(240, 245, 255, 0.62);
+  --glass-ink-hover: #ffffff;
+  --glass-accent: #8dbbff;
+  --glass-badge-ring: #162035;
+  --glass-divider: rgba(255, 255, 255, 0.14);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not(.light):not(.dark):not([data-theme]) {
+    --glass-bg: linear-gradient(
+      160deg,
+      rgba(255, 255, 255, 0.10) 0%,
+      rgba(30, 50, 110, 0.14) 50%,
+      rgba(255, 255, 255, 0.06) 100%
+    );
+    --glass-fallback-bg: rgba(18, 28, 54, 0.94);
+    --glass-specular-gradient: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.32) 0%,
+      rgba(255, 255, 255, 0.06) 35%,
+      rgba(255, 255, 255, 0.02) 70%,
+      rgba(255, 255, 255, 0.18) 100%
+    );
+    --glass-shadow:
+      0 12px 40px rgba(0, 0, 0, 0.50),
+      0 2px 6px rgba(0, 0, 0, 0.28),
+      inset 1px 1px 0 rgba(255, 255, 255, 0.20),
+      inset -1px -1px 0 rgba(255, 255, 255, 0.06),
+      inset 0 0 12px rgba(255, 255, 255, 0.07);
+    --glass-active-bg: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.24) 0%,
+      rgba(255, 255, 255, 0.10) 100%
+    );
+    --glass-active-border: rgba(255, 255, 255, 0.22);
+    --glass-active-shadow:
+      0 4px 14px rgba(0, 0, 0, 0.40),
+      inset 0 1.5px 1px rgba(255, 255, 255, 0.50),
+      inset 0 -1px 2px rgba(255, 255, 255, 0.12);
+    --glass-inner-bg: rgba(255, 255, 255, 0.05);
+    --glass-inner-border: rgba(255, 255, 255, 0.12);
+    --glass-ink: #f8fafc;
+    --glass-ink-soft: rgba(240, 245, 255, 0.62);
+    --glass-ink-hover: #ffffff;
+    --glass-accent: #8dbbff;
+    --glass-badge-ring: #162035;
+    --glass-divider: rgba(255, 255, 255, 0.14);
+  }
+}
+
+/* ── Classe Compartilhada: .glass (Container Externo) ── */
+.glass {
+  position: relative;
+  background: rgba(255, 255, 255, 0.52);
+  backdrop-filter: blur(20px) saturate(190%) brightness(1.04);
+  -webkit-backdrop-filter: blur(20px) saturate(190%) brightness(1.04);
+  box-shadow:
+    0 10px 30px rgba(20, 50, 120, 0.13),
+    0 2px 6px rgba(0, 0, 0, 0.07),
+    inset 1px 1px 0 rgba(255, 255, 255, 0.82),
+    inset -1px -1px 0 rgba(255, 255, 255, 0.20),
+    inset 0 0 14px rgba(255, 255, 255, 0.28);
+}
+
+.dark .glass,
+[data-theme="dark"] .glass {
+  background: rgba(255, 255, 255, 0.07);
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.50),
+    0 2px 6px rgba(0, 0, 0, 0.28),
+    inset 1px 1px 0 rgba(255, 255, 255, 0.20),
+    inset -1px -1px 0 rgba(255, 255, 255, 0.06),
+    inset 0 0 14px rgba(255, 255, 255, 0.07);
+}
+
+.glass::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  padding: 1px;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.92) 0%,
+    rgba(255, 255, 255, 0.25) 30%,
+    rgba(255, 255, 255, 0.05) 70%,
+    rgba(255, 255, 255, 0.60) 100%
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  z-index: 3;
+}
+
+@supports not (backdrop-filter: blur(16px)) {
+  .glass {
+    background: rgba(245, 248, 255, 0.95);
+  }
+  .dark .glass,
+  [data-theme="dark"] .glass {
+    background: rgba(18, 28, 54, 0.95);
+  }
+}
+
+/* ── Classe Compartilhada: .glass-active (Pílula Ativa Interna) ── */
+.glass-active {
+  background: var(--glass-active-bg);
+  border: 1px solid var(--glass-active-border);
+  box-shadow: var(--glass-active-shadow);
+}
+
+/* ── Preferência por Transparência Reduzida ── */
+@media (prefers-reduced-transparency: reduce) {
+  .glass {
+    background: var(--glass-fallback-bg);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
+/* ── Preferência por Movimento Reduzido ── */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --glass-spring: 0.01ms linear;
+  }
+}
