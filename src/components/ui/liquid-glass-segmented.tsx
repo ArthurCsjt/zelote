@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useCallback } from "react";
+import React, { useRef, useEffect, useCallback, useState } from "react";
 
 export interface LiquidGlassSegmentedOption {
   id: string;
@@ -47,6 +47,23 @@ export function LiquidGlassSegmented({
     0,
     options.findIndex((opt) => opt.id === value)
   );
+
+  /* ── Dark mode reactivo via MutationObserver na classe do <html> ── */
+  const [isDark, setIsDark] = useState(() =>
+    typeof document !== "undefined" &&
+    (document.documentElement.classList.contains("dark") ||
+      document.documentElement.dataset.theme === "dark")
+  );
+  useEffect(() => {
+    const update = () =>
+      setIsDark(
+        document.documentElement.classList.contains("dark") ||
+          document.documentElement.dataset.theme === "dark"
+      );
+    const obs = new MutationObserver(update);
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["class", "data-theme"] });
+    return () => obs.disconnect();
+  }, []);
 
   const barRef = useRef<HTMLDivElement>(null);
   const baseLayerRef = useRef<HTMLDivElement>(null);
@@ -449,7 +466,7 @@ export function LiquidGlassSegmented({
         className={`relative flex h-full shrink-0 items-center justify-center whitespace-nowrap rounded-full px-3.5 text-[12.5px] font-semibold tracking-[-0.01em] ${
           isBlueLayer
             ? "text-[#007AFF] dark:text-[#60A5FA]"
-            : "text-zinc-900/80 dark:text-zinc-200/85"
+            : "text-zinc-950 dark:text-zinc-100"
         }`}
       >
         <span>{opt.label}</span>
@@ -462,17 +479,35 @@ export function LiquidGlassSegmented({
       </div>
     ));
 
-  /* ── Estilos de Material de Vidro aplicados inline para garantir renderização ── */
+  /* ── Material de Vidro fiel ao 21st.dev LiquidGlassTabBar (Light + Dark Fosco) ── */
   const surfaceStyle: React.CSSProperties =
     variant === "surface"
-      ? {
-          background:
-            "linear-gradient(160deg, rgba(255,255,255,0.42) 0%, rgba(30,60,140,0.07) 50%, rgba(255,255,255,0.35) 100%)",
-          backdropFilter: "blur(16px) saturate(180%) brightness(1.05)",
-          WebkitBackdropFilter: "blur(16px) saturate(180%) brightness(1.05)",
-          boxShadow:
-            "0 10px 30px rgba(20,50,120,0.14), 0 2px 6px rgba(0,0,0,0.07), inset 1px 1px 0 rgba(255,255,255,0.80), inset -1px -1px 0 rgba(255,255,255,0.18), inset 0 0 12px rgba(255,255,255,0.22)",
-        }
+      ? isDark
+        ? {
+            background: "rgba(28, 28, 32, 0.84)",
+            backdropFilter: "blur(24px) saturate(140%) brightness(0.92)",
+            WebkitBackdropFilter: "blur(24px) saturate(140%) brightness(0.92)",
+            boxShadow: [
+              "0 14px 36px -10px rgba(0, 0, 0, 0.58)",
+              "0 2px 8px rgba(0, 0, 0, 0.30)",
+              "inset 0 1.5px 1.5px rgba(255, 255, 255, 0.16)",
+              "inset 0 -1.5px 2px rgba(255, 255, 255, 0.05)",
+              "0 0 0 1px rgba(255, 255, 255, 0.12)",
+            ].join(", "),
+          }
+        : {
+            background:
+              "linear-gradient(180deg, rgba(255,255,255,0.66) 0%, rgba(255,255,255,0.50) 55%, rgba(255,255,255,0.58) 100%)",
+            backdropFilter: "blur(24px) saturate(1.85)",
+            WebkitBackdropFilter: "blur(24px) saturate(1.85)",
+            boxShadow: [
+              "0 14px 36px -10px rgba(0, 0, 0, 0.22)",
+              "0 2px 8px rgba(0, 0, 0, 0.08)",
+              "inset 0 1.5px 1.5px rgba(255, 255, 255, 0.94)",
+              "inset 0 -1.5px 2px rgba(255, 255, 255, 0.65)",
+              "0 0 0 1px rgba(0, 0, 0, 0.06)",
+            ].join(", "),
+          }
       : {};
 
   return (
@@ -491,15 +526,16 @@ export function LiquidGlassSegmented({
         style={{ height, ...surfaceStyle }}
         className="relative inline-flex cursor-grab touch-none items-center rounded-full px-[4px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] active:cursor-grabbing"
       >
-        {/* Realce especular: pseudo-elemento via div filho (border gradient) */}
+        {/* Reflexo especular simétrico na borda da barra (21st.dev) */}
         {variant === "surface" && (
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute inset-0 rounded-full"
+            className="pointer-events-none absolute inset-0 rounded-full opacity-50"
             style={{
-              padding: "1px",
-              background:
-                "linear-gradient(135deg, rgba(255,255,255,0.90) 0%, rgba(255,255,255,0.22) 30%, rgba(255,255,255,0.04) 70%, rgba(255,255,255,0.55) 100%)",
+              padding: "1.5px",
+              background: isDark
+                ? "linear-gradient(180deg, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.16) 100%)"
+                : "linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.28) 50%, rgba(255,255,255,0.85) 100%)",
               WebkitMask:
                 "linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)",
               WebkitMaskComposite: "xor",
@@ -523,17 +559,21 @@ export function LiquidGlassSegmented({
           style={{ opacity: 0 }}
           className="pointer-events-none absolute top-0 left-0 z-20 overflow-hidden rounded-full will-change-transform"
         >
-          {/* Preenchimento discreto de repouso — pílula ativa */}
+          {/* Preenchimento discreto de repouso (21st.dev: vidro sutil, não branco chapado) */}
           <div
             ref={restFillRef}
             className="absolute inset-0 rounded-full"
-            style={{
-              background:
-                "linear-gradient(180deg, rgba(255,255,255,0.96) 0%, rgba(255,255,255,0.78) 100%)",
-              boxShadow:
-                "0 4px 12px rgba(20,50,120,0.16), 0 1px 3px rgba(0,0,0,0.06), inset 0 1.5px 1px rgba(255,255,255,1), inset 0 -1px 2px rgba(0,0,0,0.04)",
-              border: "1px solid rgba(255,255,255,0.85)",
-            }}
+            style={
+              isDark
+                ? {
+                    backgroundColor: "rgba(255, 255, 255, 0.14)",
+                    boxShadow: "inset 0 1px 1px rgba(255, 255, 255, 0.25)",
+                  }
+                : {
+                    backgroundColor: "rgba(0, 0, 0, 0.068)",
+                    boxShadow: "inset 0 1px 1px rgba(255, 255, 255, 0.55)",
+                  }
+            }
           />
 
           {/* Camada azul ampliada centralizada na gota */}

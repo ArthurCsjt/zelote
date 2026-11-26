@@ -283,7 +283,7 @@ const SchedulingPage = () => {
       showBackgroundGrid
       showFloatingShapes
     >
-      <div className="space-y-4 sm:space-y-6 max-w-7xl mx-auto relative z-10 pb-28 sm:pb-32">
+      <div className="space-y-1.5 sm:space-y-2 max-w-7xl mx-auto relative z-10 pb-28 sm:pb-32">
       {/* ── Filtro SVG de Refração (Lensing) para Liquid Glass ── */}
       <svg aria-hidden="true" width="0" height="0" style={{ position: 'absolute', width: 0, height: 0, overflow: 'hidden', pointerEvents: 'none' }}>
         <defs>
@@ -294,9 +294,6 @@ const SchedulingPage = () => {
           </filter>
         </defs>
       </svg>
-
-      {/* ── Gradientes radiais suaves atrás do cabeçalho para o vidro refratar cor ── */}
-      <div className="scheduling-glass-backdrop" aria-hidden="true" />
 
       {/* ── Glass Nav Row ── Week Selector + Year/Month Selector (Visível apenas em Semanal e Histórico) ── */}
       <AnimatePresence initial={false}>

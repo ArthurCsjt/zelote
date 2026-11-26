@@ -50,12 +50,10 @@ body:has(.ag-overlay) .lg-nav-portal {
 
 /* Estilos da LiquidGlassTabBar (21st.dev) com suporte Light & Dark */
 .lg-tab-bar-base {
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.66) 0%,
-    rgba(255, 255, 255, 0.50) 55%,
-    rgba(255, 255, 255, 0.58) 100%
-  );
+  background: linear-gradient(180deg,
+      rgba(255, 255, 255, 0.66) 0%,
+      rgba(255, 255, 255, 0.50) 55%,
+      rgba(255, 255, 255, 0.58) 100%);
   backdrop-filter: blur(24px) saturate(1.85);
   -webkit-backdrop-filter: blur(24px) saturate(1.85);
   box-shadow:
@@ -68,28 +66,23 @@ body:has(.ag-overlay) .lg-nav-portal {
 
 .dark .lg-tab-bar-base,
 [data-theme="dark"] .lg-tab-bar-base {
-  background: linear-gradient(
-    180deg,
-    rgba(30, 41, 59, 0.72) 0%,
-    rgba(15, 23, 42, 0.58) 55%,
-    rgba(15, 23, 42, 0.68) 100%
-  );
+  background: rgba(28, 28, 32, 0.84);
+  backdrop-filter: blur(24px) saturate(140%) brightness(0.92);
+  -webkit-backdrop-filter: blur(24px) saturate(140%) brightness(0.92);
   box-shadow:
     0 16px 40px -8px rgba(0, 0, 0, 0.58),
-    0 2px 8px rgba(0, 0, 0, 0.28),
-    inset 0 1.5px 1.5px rgba(255, 255, 255, 0.24),
-    inset 0 -1.5px 2px rgba(255, 255, 255, 0.10),
-    0 0 0 1px rgba(255, 255, 255, 0.14);
+    0 2px 8px rgba(0, 0, 0, 0.30),
+    inset 0 1.5px 1.5px rgba(255, 255, 255, 0.16),
+    inset 0 -1.5px 2px rgba(255, 255, 255, 0.05),
+    0 0 0 1px rgba(255, 255, 255, 0.12);
 }
 
 .lg-tab-bar-specular {
   padding: 1.5px;
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.95) 0%,
-    rgba(255, 255, 255, 0.28) 50%,
-    rgba(255, 255, 255, 0.85) 100%
-  );
+  background: linear-gradient(180deg,
+      rgba(255, 255, 255, 0.95) 0%,
+      rgba(255, 255, 255, 0.28) 50%,
+      rgba(255, 255, 255, 0.85) 100%);
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
@@ -97,12 +90,10 @@ body:has(.ag-overlay) .lg-nav-portal {
 
 .dark .lg-tab-bar-specular,
 [data-theme="dark"] .lg-tab-bar-specular {
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.36) 0%,
-    rgba(255, 255, 255, 0.08) 50%,
-    rgba(255, 255, 255, 0.22) 100%
-  );
+  background: linear-gradient(180deg,
+      rgba(255, 255, 255, 0.36) 0%,
+      rgba(255, 255, 255, 0.08) 50%,
+      rgba(255, 255, 255, 0.22) 100%);
 }
 
 .lg-tab-bar-rest-fill {
@@ -119,12 +110,10 @@ body:has(.ag-overlay) .lg-nav-portal {
 .lg-tab-bar-shell {
   backdrop-filter: saturate(1.75) contrast(1.05) brightness(1.04);
   -webkit-backdrop-filter: saturate(1.75) contrast(1.05) brightness(1.04);
-  background: radial-gradient(
-    ellipse at 50% 50%,
-    rgba(255, 255, 255, 0.02) 45%,
-    rgba(255, 255, 255, 0.12) 86%,
-    rgba(255, 255, 255, 0.24) 100%
-  );
+  background: radial-gradient(ellipse at 50% 50%,
+      rgba(255, 255, 255, 0.02) 45%,
+      rgba(255, 255, 255, 0.12) 86%,
+      rgba(255, 255, 255, 0.24) 100%);
   box-shadow:
     0 8px 22px rgba(0, 0, 0, 0.16),
     0 0 0 0.75px rgba(0, 0, 0, 0.08),
@@ -135,12 +124,10 @@ body:has(.ag-overlay) .lg-nav-portal {
 
 .dark .lg-tab-bar-shell,
 [data-theme="dark"] .lg-tab-bar-shell {
-  background: radial-gradient(
-    ellipse at 50% 50%,
-    rgba(255, 255, 255, 0.04) 45%,
-    rgba(255, 255, 255, 0.12) 86%,
-    rgba(255, 255, 255, 0.22) 100%
-  );
+  background: radial-gradient(ellipse at 50% 50%,
+      rgba(255, 255, 255, 0.04) 45%,
+      rgba(255, 255, 255, 0.12) 86%,
+      rgba(255, 255, 255, 0.22) 100%);
   box-shadow:
     0 8px 24px rgba(0, 0, 0, 0.45),
     0 0 0 0.75px rgba(255, 255, 255, 0.16),
@@ -318,6 +305,7 @@ body:has(.ag-overlay) .lg-nav-portal {
 }
 
 @media (prefers-reduced-motion: reduce) {
+
   .lg-nav,
   .lg-nav__pill,
   .lg-nav__item,
