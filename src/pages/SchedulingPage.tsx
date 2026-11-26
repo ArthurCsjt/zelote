@@ -406,28 +406,28 @@ const SchedulingPage = () => {
       )}
       </AnimatePresence>
 
-      {/* Barra rápida de Filtro Semanal */}
+      {/* Barra rápida de Filtro Semanal (Estilo Liquid Glass) */}
       {viewMode === 'weekly' && (
-        <div className="flex items-center gap-1.5 flex-wrap px-1" role="group" aria-label="Filtrar grade semanal">
-          {[
-            { id: 'all', label: 'Todos' },
-            { id: 'sala_google', label: 'Sala Google' },
-            { id: 'mine', label: 'Minhas' },
-          ].map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => setCalendarFilter(item.id as 'all' | 'sala_google' | 'mine')}
-              className={cn(
-                'px-3 py-1.5 text-xs font-black uppercase border-2 transition-all rounded-full',
-                calendarFilter === item.id
-                  ? 'bg-primary text-primary-foreground border-black dark:border-white shadow-[2px_2px_0px_0px_#000]'
-                  : 'bg-card text-muted-foreground border-border hover:border-foreground/40 hover:text-foreground'
-              )}
-            >
-              {item.label}
-            </button>
-          ))}
+        <div className="flex items-center px-1" role="group" aria-label="Filtrar grade semanal">
+          <div className="liquid-glass-filter-bar">
+            {[
+              { id: 'all', label: 'Todos' },
+              { id: 'sala_google', label: 'Sala Google' },
+              { id: 'mine', label: 'Minhas' },
+            ].map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => setCalendarFilter(item.id as 'all' | 'sala_google' | 'mine')}
+                className={cn(
+                  'liquid-glass-filter-btn',
+                  calendarFilter === item.id && 'active'
+                )}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
         </div>
       )}
 
