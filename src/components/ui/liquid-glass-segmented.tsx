@@ -484,15 +484,16 @@ export function LiquidGlassSegmented({
     variant === "surface"
       ? isDark
         ? {
-            background: "rgba(28, 28, 32, 0.84)",
-            backdropFilter: "blur(24px) saturate(140%) brightness(0.92)",
-            WebkitBackdropFilter: "blur(24px) saturate(140%) brightness(0.92)",
+            background:
+              "linear-gradient(180deg, rgba(48, 50, 58, 0.90) 0%, rgba(36, 38, 46, 0.88) 55%, rgba(42, 44, 52, 0.92) 100%)",
+            backdropFilter: "blur(28px) saturate(160%) brightness(1.06)",
+            WebkitBackdropFilter: "blur(28px) saturate(160%) brightness(1.06)",
             boxShadow: [
-              "0 14px 36px -10px rgba(0, 0, 0, 0.58)",
-              "0 2px 8px rgba(0, 0, 0, 0.30)",
+              "0 14px 36px -10px rgba(0, 0, 0, 0.65)",
+              "0 2px 8px rgba(0, 0, 0, 0.35)",
               "inset 0 1.5px 1.5px rgba(255, 255, 255, 0.16)",
               "inset 0 -1.5px 2px rgba(255, 255, 255, 0.05)",
-              "0 0 0 1px rgba(255, 255, 255, 0.12)",
+              "0 0 0 1px rgba(255, 255, 255, 0.10)",
             ].join(", "),
           }
         : {
