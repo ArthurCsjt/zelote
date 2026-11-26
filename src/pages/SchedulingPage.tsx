@@ -322,11 +322,7 @@ const SchedulingPage = () => {
               <button
                 type="button"
                 onClick={() => setCurrentDate(getInitialSchedulingDate())}
-                className="ml-1 mr-1 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-white rounded-full shrink-0 transition-all hover:scale-105 active:scale-95 shadow-[0_2px_8px_rgba(10,92,255,0.35),inset_0_1px_1px_rgba(255,255,255,0.45)]"
-                style={{
-                  background: 'linear-gradient(180deg, #2575ff 0%, #0a5cff 100%)',
-                  border: '1px solid rgba(255, 255, 255, 0.25)',
-                }}
+                className="period-bar__today-btn"
                 title="Voltar para a semana atual"
               >
                 Hoje

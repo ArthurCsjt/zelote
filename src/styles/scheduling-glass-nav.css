@@ -250,8 +250,8 @@
   gap: 0.5rem;
   align-items: stretch;
 
-  border-radius: 9999px;
-  padding: 5px;
+  border-radius: 1.5rem;
+  padding: 6px;
 
   /* Vidro frio levemente tingido para destacar contra o fundo branco da página */
   background: linear-gradient(160deg,
@@ -305,6 +305,8 @@
   .period-bar {
     flex-direction: row;
     align-items: center;
+    border-radius: 9999px;
+    padding: 5px;
     gap: 6px;
   }
 }
@@ -340,8 +342,8 @@
   justify-content: center;
   flex-shrink: 0;
 
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   padding: 0;
   border-radius: 9999px;
 
@@ -357,9 +359,16 @@
   transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), color 0.2s ease, box-shadow 0.2s ease;
 }
 
+@media (min-width: 640px) {
+  .period-bar__arrow {
+    width: 32px;
+    height: 32px;
+  }
+}
+
 .period-bar__arrow svg {
-  width: 16px;
-  height: 16px;
+  width: 15px;
+  height: 15px;
   display: block;
   flex-shrink: 0;
 }
@@ -394,27 +403,64 @@
 }
 
 .period-bar__arrow--left {
-  margin-right: 4px;
+  margin-right: 2px;
 }
 .period-bar__arrow--right {
-  margin-left: 4px;
+  margin-left: 2px;
+}
+
+.period-bar__today-btn {
+  margin-left: 2px;
+  padding: 3px 8px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #ffffff;
+  border-radius: 9999px;
+  flex-shrink: 0;
+  background: linear-gradient(180deg, #2575ff 0%, #0a5cff 100%);
+  border: 1px solid rgba(255, 255, 255, 0.30);
+  box-shadow: 0 2px 8px rgba(10, 92, 255, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.45);
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+@media (min-width: 640px) {
+  .period-bar__today-btn {
+    padding: 4px 10px;
+    font-size: 11px;
+    margin-left: 4px;
+    margin-right: 2px;
+  }
+}
+
+.period-bar__today-btn:hover {
+  transform: scale(1.05);
+}
+
+.period-bar__today-btn:active {
+  transform: scale(0.95);
 }
 
 /* ── Period Label ─────────────────────────────────────────── */
 .period-bar__period-label {
   flex: 1 1 0%;
+  min-width: 0;
   display: flex;
   align-items: center;
   justify-content: center;
 
-  padding: 0 0.75rem;
+  padding: 0 0.5rem;
   text-align: center;
 
-  font-size: 0.8125rem !important;
+  font-size: 0.75rem !important;
   font-weight: 700 !important;
   letter-spacing: -0.015em !important;
   color: #0f1e46 !important;
   font-variant-numeric: tabular-nums;
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
 
   user-select: none;
@@ -424,9 +470,16 @@
   color: #f8fafc !important;
 }
 
+@media (min-width: 480px) {
+  .period-bar__period-label {
+    font-size: 0.8125rem !important;
+  }
+}
+
 @media (min-width: 768px) {
   .period-bar__period-label {
     font-size: 0.9rem !important;
+    padding: 0 0.75rem;
   }
 }
 
